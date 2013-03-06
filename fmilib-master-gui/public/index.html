@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en" xml:lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta content="text/html;charset=UTF-8" http-equiv="content-type" />
+    <title>BlockDiagram 0.0.1</title>
+    <link href="style/style.css" media="all" rel="stylesheet" type="text/css" />
+    <link href="images/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+    <script src="http://code.jquery.com/jquery.min.js"></script>
+    <script src="http://code.jquery.com/ui/jquery-ui-git.js"></script>
+    <script src="scripts/lib/raphael.js"></script>
+    <script src="scripts/lib/jquery.flot.js"></script>
+    <script src="scripts/blockdiagram.js"></script>
+    <script src="scripts/cosim.js"></script>
+    <script src="scripts/init.js"></script>
+    <style>
+      .block.instantiated {
+        background-color:green;
+        color:black;
+      }
+      #plot {
+        width:600px;
+        height:400px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="rename-simulation-form" title="Rename project">
+      <input id="rename-simulation-name" type="text" placeholder="Project name" />
+    </div>
+    <div id="analysis">
+      <div id="plot"></div>
+    </div>
+    <div id="header">
+      <div id="logo">
+	<h1 id="title"></h1>
+	<p class="uri"></p>
+      </div>
+      <button id="simulate">Simulate</button>
+      <button id="analyse">Analyse</button>
+    </div>
+    <div class="leftmenu">
+      <h1>Components</h1>
+      <ul id="component-list">
+      </ul>
+      <input type="text" placeholder="Add component..." value=""/>
+    </div>
+    <div id="contextmenu" class="rightmenu"></div>
+    <div id="footer">
+      BlockDiagram 0.0.1 | <a href="http://granular.cs.umu.se/browserphysics">Stefan Hedman</a> | <a href="http://www.org.umu.se/umit/english/">UMIT Research Lab</a> | 2012
+    </div>
+    <div id="container-wrapper">
+      <div id="container"></div>
+    </div>
+  </body>
+</html>

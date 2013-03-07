@@ -2,6 +2,13 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
+#include <ctype.h>
+#include <unistd.h>
+
+#define MAX_FMUS 1000
+#define MAX_PATH_LENGTH 1000
+#define MAX_PARAMS 1000
+#define MAX_CONNECTIONS 1000
 
 void printHelp(const char* fmusim) {
     printf("\n  Syntax: %s <N> <fmuPaths> <M> <connections> <K> <params> <tEnd> <h> <logOn> <csvSep>\n", fmusim);
@@ -582,8 +589,156 @@ void fmi1StepFinished(fmi1_component_t c, fmi1_status_t status){
     
 }
 
+typedef struct __connection{
+    int fromFMU;
+    int fromOutputVR;
+    int toFMU;
+    int toInputVR;
+ 
+} connection;
+
+typedef struct __param{
+    int fmuIndex;
+    int valueReference;
+    int valueType; // 0:real, 1:int, 2:bool, 3:string
+
+    char stringValue[1000];
+    int intValue;
+    double realValue;
+    int boolValue;
+} param;
+
+/**
+ * Parses command line using getopt
+ * 
+ * master [OPTIONS] [FMUs...]
+ * 
+ * Flags:
+ *   -t      Simulation end time in seconds e.g. 123.4. Defaults to 1.0.
+ *   -c      Connections specification e.g. "0,0,1,0:0,0,1,0" (fromFMU fromOutput toFMU toInput). Defaults to no connections.
+ *   -h      Timestep size in seconds. Defaults to 0.01.
+ *   -s      CSV separator. Defaults to comma (,)
+ *   -o      Output CSV file. If not given, stdout is output.
+ *   -p      Parameters given as "0 0 param1:1 1 param2"
+ */
+int parseArguments2(int argc,
+                    char *argv[],
+                    int* numFMUs,
+                    char fmuFilePaths[MAX_FMUS][MAX_PATH_LENGTH],
+                    int* numConnections,
+                    connection connections[MAX_CONNECTIONS],
+                    int* numParameters,
+                    param params[MAX_PARAMS],
+                    double* tEnd,
+                    double* timeStepSize,
+                    int* loggingOn,
+                    char* csv_separator,
+                    char outFilePath[MAX_PATH_LENGTH],
+                    int* outFileGiven){
+    int index;
+    int c;
+
+    opterr = 0;
+
+    *outFileGiven = 0;
+
+    while ((c = getopt (argc, argv, "t:c:h:s:o:p:")) != -1){
+
+        int n=0;
+        int skip=0;
+        int l=strlen(optarg);
+        int cont=1;
+        int i=0;
+        connection * conn;
+
+        switch (c) {
+        case 'c':
+            conn = &connections[0];
+            while((n=sscanf(&optarg[n],"%d,%d,%d,%d",&conn->fromFMU,&conn->fromOutputVR,&conn->toFMU,&conn->toInputVR))!=-1 && skip<l && cont){
+                // Now skip everything before the n'th colon
+                char* pos = strchr(&optarg[skip],':');
+                if(pos==NULL){
+                    cont=0;
+                } else {
+                    skip += pos-&optarg[skip]+1; // Dunno why this works... See http://www.cplusplus.com/reference/cstring/strchr/
+                    conn = &connections[i+1];
+                }
+                i++;
+            }
+            *numConnections = i;
+            break;
+            
+        case 't':
+            sscanf(optarg, "%lf", tEnd);
+            break;
+            
+        case 'h':
+            sscanf(optarg,"%lf", timeStepSize);
+            break;
+        case 's':
+            *csv_separator = optarg[0];
+            break;
+        case 'o':
+            strcpy(outFilePath,optarg);
+            *outFileGiven = 1;
+            break;
+        case 'p':
+            // Real if number and contains .
+            // Int if number and only digits
+            // Bool if "true" or "false"
+            // Else: string
+            printf("p=%s\n",optarg);
+            break;
+        case '?':
+            if (optopt == 'c'){
+                fprintf (stderr, "Option -%c requires an argument.\n", optopt);
+            } else if (isprint (optopt)){
+                fprintf (stderr, "Unknown option `-%c'.\n", optopt);
+            } else {
+                fprintf (stderr,
+                        "Unknown option character `\\x%x'.\n",
+                        optopt);
+            }
+            return 1;
+        default:
+            printf("abort %c...\n",c);
+            abort ();
+        }
+    }
+
+    // Parse FMU paths
+    int i=0;
+    for (index = optind; index < argc; index++) {
+        printf ("FMU path: %s\n", argv[index]);
+        strcpy( fmuFilePaths[i] , argv[index] );
+        i++;
+    }
+    *numFMUs = i;
+
+    return 0;
+}
+
 int main( int argc, char *argv[] ) {
+
     int i;
+
+    char fmuPaths[MAX_FMUS][MAX_PATH_LENGTH];
+    char outFilePath[MAX_PATH_LENGTH];
+    param params2[MAX_PARAMS];
+    connection connections2[MAX_CONNECTIONS];
+
+    int N2=1, K2=0;
+    int M2 = 0;
+    double tEnd2 = 1.0;
+    double h2 = 0.1;
+    int loggingOn2 = 1;
+    char csv_separator2 = ',';
+    int outFileGiven;
+    //parseArguments2(argc, argv, &N2, fmuPaths, &M2, connections2, &K2, params2, &tEnd2, &h2, &loggingOn2, &csv_separator2, outFilePath, &outFileGiven);
+
+
+
+
     int N=1, K=0;
     int *connections;
     fmi1_string_t *fileNames;

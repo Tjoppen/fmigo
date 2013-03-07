@@ -654,7 +654,7 @@ int parseArguments2(int argc,
         switch (c) {
         case 'c':
             conn = &connections[0];
-            while((n=sscanf(&optarg[n],"%d,%d,%d,%d",&conn->fromFMU,&conn->fromOutputVR,&conn->toFMU,&conn->toInputVR))!=-1 && skip<l && cont){
+            while((n=sscanf(&optarg[skip],"%d,%d,%d,%d",&conn->fromFMU,&conn->fromOutputVR,&conn->toFMU,&conn->toInputVR))!=-1 && skip<l && cont){
                 // Now skip everything before the n'th colon
                 char* pos = strchr(&optarg[skip],':');
                 if(pos==NULL){
@@ -722,21 +722,40 @@ int main( int argc, char *argv[] ) {
 
     int i;
 
-    char fmuPaths[MAX_FMUS][MAX_PATH_LENGTH];
-    char outFilePath[MAX_PATH_LENGTH];
-    param params2[MAX_PARAMS];
-    connection connections2[MAX_CONNECTIONS];
+    if(0){
 
-    int N2=1, K2=0;
-    int M2 = 0;
-    double tEnd2 = 1.0;
-    double h2 = 0.1;
-    int loggingOn2 = 1;
-    char csv_separator2 = ',';
-    int outFileGiven;
-    //parseArguments2(argc, argv, &N2, fmuPaths, &M2, connections2, &K2, params2, &tEnd2, &h2, &loggingOn2, &csv_separator2, outFilePath, &outFileGiven);
+        char fmuPaths[MAX_FMUS][MAX_PATH_LENGTH];
+        char outFilePath[MAX_PATH_LENGTH];
+        param params2[MAX_PARAMS];
+        connection connections2[MAX_CONNECTIONS];
 
+        int N2=0, K2=0;
+        int M2 = 0;
+        double tEnd2 = 1.0;
+        double h2 = 0.1;
+        int loggingOn2 = 1;
+        char csv_separator2 = ',';
+        int outFileGiven;
+        parseArguments2(argc, argv, &N2, fmuPaths, &M2, connections2, &K2, params2, &tEnd2, &h2, &loggingOn2, &csv_separator2, outFilePath, &outFileGiven);
 
+        printf("FMUS (%d)\n",N2);
+        for(i=0; i<N2; i++){
+            printf("    FMU %d: %s\n",i,fmuPaths[i]);
+        }
+
+        printf("\nCONNECTIONS (%d)\n",M2);
+        for(i=0; i<M2; i++){
+            printf("    FMU%d[%d] ---> FMU%d[%d]\n",connections2[i].fromFMU,
+                                                    connections2[i].fromOutputVR,
+                                                    connections2[i].toFMU,
+                                                    connections2[i].toInputVR);
+        }
+
+        if(outFileGiven==1){
+            printf("\nOUTPUT CSV FILE\n");
+            printf("    %s\n",outFilePath);
+        }
+    }
 
 
     int N=1, K=0;

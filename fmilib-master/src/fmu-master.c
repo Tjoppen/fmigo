@@ -5,6 +5,7 @@
 #include <ctype.h>
 #include <unistd.h>
 
+#define VERSION "0.0.1"
 #define MAX_FMUS 1000
 #define MAX_PATH_LENGTH 1000
 #define MAX_PARAMS 1000
@@ -634,7 +635,9 @@ int parseArguments2(int argc,
                     int* loggingOn,
                     char* csv_separator,
                     char outFilePath[MAX_PATH_LENGTH],
-                    int* outFileGiven){
+                    int* outFileGiven,
+                    int* quiet,
+                    int* version){
     int index;
     int c;
 
@@ -642,17 +645,18 @@ int parseArguments2(int argc,
 
     *outFileGiven = 0;
 
-    while ((c = getopt (argc, argv, "t:c:h:s:o:p:")) != -1){
+    while ((c = getopt (argc, argv, "vq:t:c:h:s:o:p:")) != -1){
 
-        int n=0;
-        int skip=0;
-        int l=strlen(optarg);
-        int cont=1;
-        int i=0;
+        int n, skip, l, cont, i;
         connection * conn;
 
         switch (c) {
         case 'c':
+            n=0;
+            skip=0;
+            l=strlen(optarg);
+            cont=1;
+            i=0;
             conn = &connections[0];
             while((n=sscanf(&optarg[skip],"%d,%d,%d,%d",&conn->fromFMU,&conn->fromOutputVR,&conn->toFMU,&conn->toInputVR))!=-1 && skip<l && cont){
                 // Now skip everything before the n'th colon
@@ -682,6 +686,12 @@ int parseArguments2(int argc,
             strcpy(outFilePath,optarg);
             *outFileGiven = 1;
             break;
+        case 'q':
+            *quiet = 1;
+            break;
+        case 'v':
+            *version = 1;
+            break;
         case 'p':
             // Real if number and contains .
             // Int if number and only digits
@@ -690,6 +700,7 @@ int parseArguments2(int argc,
             printf("p=%s\n",optarg);
             break;
         case '?':
+
             if (optopt == 'c'){
                 fprintf (stderr, "Option -%c requires an argument.\n", optopt);
             } else if (isprint (optopt)){
@@ -709,7 +720,6 @@ int parseArguments2(int argc,
     // Parse FMU paths
     int i=0;
     for (index = optind; index < argc; index++) {
-        printf ("FMU path: %s\n", argv[index]);
         strcpy( fmuFilePaths[i] , argv[index] );
         i++;
     }
@@ -729,31 +739,51 @@ int main( int argc, char *argv[] ) {
         param params2[MAX_PARAMS];
         connection connections2[MAX_CONNECTIONS];
 
-        int N2=0, K2=0;
-        int M2 = 0;
-        double tEnd2 = 1.0;
-        double h2 = 0.1;
-        int loggingOn2 = 1;
+        int N2=0, K2=0, M2=0;
+        double tEnd2=1.0, h2=0.1;
         char csv_separator2 = ',';
-        int outFileGiven;
-        parseArguments2(argc, argv, &N2, fmuPaths, &M2, connections2, &K2, params2, &tEnd2, &h2, &loggingOn2, &csv_separator2, outFilePath, &outFileGiven);
+        int outFileGiven=0, quiet=0, loggingOn2=1, version=0;
+        parseArguments2(argc,
+                        argv,
+                        &N2,
+                        fmuPaths,
+                        &M2,
+                        connections2,
+                        &K2,
+                        params2,
+                        &tEnd2,
+                        &h2,
+                        &loggingOn2,
+                        &csv_separator2,
+                        outFilePath,
+                        &outFileGiven,
+                        &quiet,
+                        &version);
 
-        printf("FMUS (%d)\n",N2);
-        for(i=0; i<N2; i++){
-            printf("    FMU %d: %s\n",i,fmuPaths[i]);
+        if(version){
+            printf(VERSION);
+            printf("\n");
+            return 0;
         }
 
-        printf("\nCONNECTIONS (%d)\n",M2);
-        for(i=0; i<M2; i++){
-            printf("    FMU%d[%d] ---> FMU%d[%d]\n",connections2[i].fromFMU,
-                                                    connections2[i].fromOutputVR,
-                                                    connections2[i].toFMU,
-                                                    connections2[i].toInputVR);
-        }
+        if(!quiet){
+            printf("FMUS (%d)\n",N2);
+            for(i=0; i<N2; i++){
+                printf("    FMU %d: %s\n",i,fmuPaths[i]);
+            }
 
-        if(outFileGiven==1){
-            printf("\nOUTPUT CSV FILE\n");
-            printf("    %s\n",outFilePath);
+            printf("\nCONNECTIONS (%d)\n",M2);
+            for(i=0; i<M2; i++){
+                printf("    FMU%d[%d] ---> FMU%d[%d]\n",connections2[i].fromFMU,
+                                                        connections2[i].fromOutputVR,
+                                                        connections2[i].toFMU,
+                                                        connections2[i].toInputVR);
+            }
+
+            if(outFileGiven==1){
+                printf("\nOUTPUT CSV FILE\n");
+                printf("    %s\n",outFilePath);
+            }
         }
     }
 

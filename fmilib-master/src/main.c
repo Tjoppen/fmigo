@@ -62,18 +62,18 @@ void setInitialValues(int numFMUs, fmi1_import_t** fmus){
 
 // simulate the given FMUs
 static int simulate(fmi1_import_t** fmus,
-                    char fmuFileNames[MAX_FMUS][PATH_MAX],
-                    int N,
-                    connection connections[MAX_CONNECTIONS],
-                    int K,
-                    param params[MAX_PARAMS],
-                    int M,
-                    double tEnd,
-                    double h,
-                    int loggingOn,
-                    char separator,
-                    jm_callbacks callbacks,
-                    int quiet){
+             char fmuFileNames[MAX_FMUS][PATH_MAX],
+             int N,
+             connection connections[MAX_CONNECTIONS],
+             int K,
+             param params[MAX_PARAMS],
+             int M,
+             double tEnd,
+             double h,
+             int loggingOn,
+             char separator,
+             jm_callbacks callbacks,
+             int quiet){
 
     int i;
     int k;
@@ -89,6 +89,7 @@ static int simulate(fmi1_import_t** fmus,
     int nSteps = 0;                                             // Number of steps taken
     FILE** files;                                               // result files
     char** fileNames;                                           // Result file names
+    char** fmuNames;                                            // Result file names
 
     // Allocate
     guids =        (fmi1_string_t**)calloc(sizeof(fmi1_string_t*),N);
@@ -97,6 +98,7 @@ static int simulate(fmi1_import_t** fmus,
     }
     files =       (FILE**)calloc(sizeof(FILE*),N);
     fileNames =   (char**)calloc(sizeof(char*),N);
+    fmuNames =    (char**)calloc(sizeof(char*),N);
 
     // Init all the FMUs
     for(i=0; i<N; i++){ 
@@ -105,7 +107,9 @@ static int simulate(fmi1_import_t** fmus,
         char * a = fmi_import_create_URL_from_abs_path(&callbacks, fmuFileNames[i]);
         fmuLocation = fmi_import_create_URL_from_abs_path(&callbacks, (const char*)fmuFileNames[i]);
 
-        status = fmi1_import_instantiate_slave (fmus[i], "lol", fmuLocation, mimeType, timeout, visible, interactive);
+        fmuNames[i] = calloc(sizeof(char),100);
+        sprintf(fmuNames[i],"fmu%d",i);
+        status = fmi1_import_instantiate_slave (fmus[i], fmuNames[i], fmuLocation, mimeType, timeout, visible, interactive);
         if (status == jm_status_error){
             printf("could not instantiate model\n");
             return 1;
@@ -362,19 +366,24 @@ void importlogger(jm_callbacks* c, jm_string module, jm_log_level_enu_t log_leve
 }
 
 void fmi1Logger(fmi1_component_t c, fmi1_string_t instanceName, fmi1_status_t status, fmi1_string_t category, fmi1_string_t message, ...){
-    if(doLog)
-        printf("%s\n",message);
+    if(doLog){
+        char msg[MAX_LOG_LENGTH];
+        va_list argp;
+        va_start(argp, message);
+        vsprintf(msg, message, argp);
+        printf("fmiStatus = %d;  %s (%s): %s\n", status, instanceName, category, msg);
+    }
 }
 void fmi1StepFinished(fmi1_component_t c, fmi1_status_t status){
     
 }
 
 int main( int argc, char *argv[] ) {
-
     int i;
 
     char fmuPaths[MAX_FMUS][PATH_MAX];
     char outFilePath[PATH_MAX];
+    //char fmuNames[MAX_FMUS][PATH_MAX];
     param params[MAX_PARAMS];
     connection connections[MAX_CONNECTIONS];
 
@@ -517,7 +526,19 @@ int main( int argc, char *argv[] ) {
     }
 
     // All loaded. Simulate.
-    simulate(fmus, fmuPaths, numFMUs, connections, K, params, M, tEnd, h, loggingOn, csv_separator,callbacks,quiet);
+    simulate(fmus,
+             fmuPaths,
+             numFMUs,
+             connections,
+             K,
+             params,
+             M,
+             tEnd,
+             h,
+             loggingOn,
+             csv_separator,
+             callbacks,
+             quiet);
 
     // Clean up
     for(i=0; i<numFMUs; i++){

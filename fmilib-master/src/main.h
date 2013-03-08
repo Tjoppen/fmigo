@@ -20,6 +20,7 @@
 #define DEFAULT_TIMESTEP 0.1
 #define DEFAULT_OUTFILE "result.csv"
 #define DEFAULT_CSVSEP ','
+#define MAX_LOG_LENGTH 1000
 
 // Command line parsed connection
 typedef struct __connection{

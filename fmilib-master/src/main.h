@@ -39,7 +39,6 @@ typedef struct __param{
     int boolValue;
 } param;
 
-int file_exists (char * fileName);
 void printHeader();
 void printHelp(const char* command);
 void outputCSVRow(fmi1_import_t * fmu, fmi1_real_t time, FILE* file, char separator, fmi1_boolean_t header);

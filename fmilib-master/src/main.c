@@ -10,15 +10,6 @@
 
 #include "main.h"
 
-int file_exists (char * fileName){
-   struct stat buf;
-   int i = stat ( fileName, &buf );
-     if ( i == 0 ){
-       return 1;
-     }
-     return 0;
-}
-
 void printHeader(){
     printf("  FMU CO-SIMULATION MASTER CLI %s\n",VERSION);
 }

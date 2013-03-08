@@ -1,3 +1,6 @@
+#ifndef MAIN_H
+#define MAIN_H
+
 #include <fmilib.h>
 #include <stdio.h>
 #include <stdarg.h>
@@ -7,9 +10,6 @@
 #include <regex.h>
 #include <sys/stat.h>
 #include <limits.h>
-
-#ifndef MAIN_H
-#define MAIN_H
 
 #define VERSION "0.1.0"
 #define MAX_FMUS 1000

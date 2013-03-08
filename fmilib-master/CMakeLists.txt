@@ -1,7 +1,15 @@
 cmake_minimum_required(VERSION 2.8)
 
-SET(SRCS src/main.c)
-SET(HEADERS src/main.h)
+SET(SRCS
+    src/main.c
+    src/utils.c
+    src/parseargs.c
+)
+SET(HEADERS
+    src/main.h
+    src/utils.h
+    src/parseargs.h
+)
 
 SET(EXECUTABLE_OUTPUT_PATH "${CMAKE_CURRENT_LIST_DIR}/bin")
 

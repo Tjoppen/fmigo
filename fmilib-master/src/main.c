@@ -11,6 +11,7 @@
 #include "main.h"
 #include "utils.h"
 #include "help.h"
+#include "parseargs.h"
 
 void setInitialValues(int numFMUs, fmi1_import_t** fmus){
     int i,k;
@@ -381,22 +382,23 @@ int main( int argc, char *argv[] ) {
     double tEnd=1.0, h=0.1;
     char csv_separator = ',';
     int outFileGiven=0, quiet=0, loggingOn=0, version=0;
-    parseArguments2(argc,
-                    argv,
-                    &numFMUs,
-                    fmuPaths,
-                    &M,
-                    connections,
-                    &K,
-                    params,
-                    &tEnd,
-                    &h,
-                    &loggingOn,
-                    &csv_separator,
-                    outFilePath,
-                    &outFileGiven,
-                    &quiet,
-                    &version);
+
+    parseArguments(argc,
+                   argv,
+                   &numFMUs,
+                   fmuPaths,
+                   &M,
+                   connections,
+                   &K,
+                   params,
+                   &tEnd,
+                   &h,
+                   &loggingOn,
+                   &csv_separator,
+                   outFilePath,
+                   &outFileGiven,
+                   &quiet,
+                   &version);
 
     if(version){
         printf(VERSION);
@@ -437,19 +439,6 @@ int main( int argc, char *argv[] ) {
 
         printf("\n");
     }
-
-    /*
-    int numFMUs=1, K=0;
-    int *connections;
-    fmi1_string_t *fileNames;
-    fmi1_string_t *params;
-    int M = 0;
-    double tEnd = 1.0;
-    double h = 0.1;
-    int loggingOn = 1;
-    char csv_separator = ',';
-    parseArguments(argc, argv, &numFMUs, &fileNames, &M, &connections, &K, &params, &tEnd, &h, &loggingOn, &csv_separator);
-    */
 
     // Callbacks
     jm_callbacks callbacks;

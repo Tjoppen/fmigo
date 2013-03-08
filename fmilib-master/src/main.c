@@ -8,34 +8,7 @@
 #include <sys/stat.h>
 #include <limits.h>
 
-#define VERSION "0.1.0"
-#define MAX_FMUS 1000
-#define MAX_PARAMS 1000
-#define MAX_PARAM_LENGTH 1000
-#define MAX_CONNECTIONS 1000
-#define DEFAULT_ENDTIME 1.0
-#define DEFAULT_TIMESTEP 0.1
-#define DEFAULT_OUTFILE "result.csv"
-#define DEFAULT_CSVSEP ','
-
-typedef struct __connection{
-    int fromFMU;
-    int fromOutputVR;
-    int toFMU;
-    int toInputVR;
-} connection;
-
-typedef struct __param{
-    int fmuIndex;
-    int valueReference;
-    int valueType; // 0:real, 1:int, 2:bool, 3:string
-
-    char stringValue[1000];
-    int intValue;
-    double realValue;
-    int boolValue;
-} param;
-
+#include "main.h"
 
 int file_exists (char * fileName){
    struct stat buf;

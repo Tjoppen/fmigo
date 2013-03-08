@@ -21,37 +21,40 @@
 #define DEFAULT_OUTFILE "result.csv"
 #define DEFAULT_CSVSEP ','
 
+// Command line parsed connection
 typedef struct __connection{
-    int fromFMU;
-    int fromOutputVR;
-    int toFMU;
-    int toInputVR;
+    int fromFMU;                // Index of FMU
+    int fromOutputVR;           // Value reference
+    int toFMU;                  // FMU index
+    int toInputVR;              // Value reference
 } connection;
 
+// Parsed command line parameter
 typedef struct __param{
-    int fmuIndex;
-    int valueReference;
-    int valueType; // 0:real, 1:int, 2:bool, 3:string. TODO: make enum
+    int fmuIndex;                       // FMU to apply to
+    int valueReference;                 // Value reference to apply to
 
-    char stringValue[1000];
-    int intValue;
-    double realValue;
-    int boolValue;
+    // different versions of the parameter, set depending on how the parsing goes
+    char stringValue[MAX_PARAM_LENGTH]; // String version, always set to what the user wrote
+    int intValue;                       // Integer
+    double realValue;                   // Real
+    int boolValue;                      // Boolean
 } param;
 
-static int simulate(fmi1_import_t** fmus,
-                    char fmuFileNames[MAX_FMUS][PATH_MAX],
-                    int N,
-                    connection connections[MAX_CONNECTIONS],
-                    int K,
-                    param params[MAX_PARAMS],
-                    int M,
-                    double tEnd,
-                    double h,
-                    int loggingOn,
-                    char separator,
-                    jm_callbacks callbacks,
-                    int quiet);
+// Runs all FMUs
+static int simulate(fmi1_import_t** fmus,                       // FMUs to be simulated
+                    char fmuFileNames[MAX_FMUS][PATH_MAX],      // File names of all FMUs
+                    int N,                                      // Number of FMUs
+                    connection connections[MAX_CONNECTIONS],    // Connections
+                    int K,                                      // Number of connections
+                    param params[MAX_PARAMS],                   // Parameters
+                    int M,                                      // Number of parameters
+                    double tEnd,                                // Simulation end time
+                    double h,                                   // Time step
+                    int loggingOn,                              // FMILibrary logging on
+                    char separator,                             // CSV separator
+                    jm_callbacks callbacks,                     // FMILibrary callbacks
+                    int quiet);                                 // Quiet mode
 void importlogger(jm_callbacks* c, jm_string module, jm_log_level_enu_t log_level, jm_string message);
 void fmi1Logger(fmi1_component_t c, fmi1_string_t instanceName, fmi1_status_t status, fmi1_string_t category, fmi1_string_t message, ...);
 void fmi1StepFinished(fmi1_component_t c, fmi1_status_t status);

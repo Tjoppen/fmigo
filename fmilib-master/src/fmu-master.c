@@ -43,6 +43,31 @@ int file_exists (char * fileName){
 }
 
 void printHelp(const char* command) {
+
+    printf("\n");
+    printf("  USAGE\n\n");
+    printf("    %s [FLAGS]... [OPTIONS]... FMUPATHS...\n\n",command);
+    printf("  FLAGS\n\n");
+    printf("    -q  Quiet mode.\n");
+    printf("    -v  Show version and quit.\n");
+    printf("    -l  Show FMILibrary logs.\n");
+    printf("\n");
+    printf("  OPTIONS\n\n");
+    printf("    -t <NUMBER>      End simulation time in seconds. Default: 1.0.\n");
+    printf("    -c <CONNECTIONS> Connection specification. No connections by default.\n");
+    printf("    -p <PARAMS>      Parameter specification. No params by default.\n");
+    printf("    -h <NUMBER>      Timestep size. Default: 0.1.\n");
+    printf("    -o <STRING>      Result output file. Default: result.csv\n");
+    printf("    -s <CHAR>        CSV separator character. Default: ,\n");
+    printf("\n");
+    printf("  FMUPATHS\n\n");
+    printf("    A space separated list of FMU file paths, relative or absolute.\n");
+    printf("\n");
+    printf("  EXAMPLES\n\n");
+    printf("    Coming up.\n");
+    printf("\n");
+
+    /*
     printf("\n  Syntax: %s <N> <fmuPaths> <M> <connections> <K> <params> <tEnd> <h> <logOn> <csvSep>\n", command);
     printf("\n");
     printf("    <N> ............ Number of FMUs included.\n");
@@ -66,6 +91,7 @@ void printHelp(const char* command) {
     printf("  Example with one FMU, 2 connections from valueref 0 to 1 and 2 to 3,\n  tEnd=10, h=0.001, log=on, separator=semicolon:\n\n");
     printf("    %s 1 fmu/cs/bouncingBall.fmu 2 0 0 0 1 0 2 0 3 0 10 0.001 1 s\n",command);
     printf("\n");
+    */
 
     exit(EXIT_FAILURE);
 }

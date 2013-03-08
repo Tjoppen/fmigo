@@ -4,15 +4,17 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <unistd.h>
+#include <regex.h>
 
 #define VERSION "0.0.1"
 #define MAX_FMUS 1000
 #define MAX_PATH_LENGTH 1000
 #define MAX_PARAMS 1000
+#define MAX_PARAM_LENGTH 1000
 #define MAX_CONNECTIONS 1000
 
-void printHelp(const char* fmusim) {
-    printf("\n  Syntax: %s <N> <fmuPaths> <M> <connections> <K> <params> <tEnd> <h> <logOn> <csvSep>\n", fmusim);
+void printHelp(const char* command) {
+    printf("\n  Syntax: %s <N> <fmuPaths> <M> <connections> <K> <params> <tEnd> <h> <logOn> <csvSep>\n", command);
     printf("\n");
     printf("    <N> ............ Number of FMUs included.\n");
     printf("    <fmuPaths> ..... Paths to FMUs, space-separated, relative or absolute.\n");
@@ -30,10 +32,10 @@ void printHelp(const char* fmusim) {
     printf("  Note that each connection is specified with four space-separated integers.\n  If you have M connections, there need to be 4*M of them.\n");
     printf("\n");
     printf("  Example with 2 FMUs, 1 connection from FMU0 (value reference 0) to FMU1 (value\n  reference 0), tEnd=5, h=0.1, log=off, separator=commas:\n\n");
-    printf("    %s 2 fmu/cs/bouncingBall.fmu fmu/cs/bouncingBall.fmu 1 0 0 1 0 0 5 0.1 0 c\n",fmusim);
+    printf("    %s 2 fmu/cs/bouncingBall.fmu fmu/cs/bouncingBall.fmu 1 0 0 1 0 0 5 0.1 0 c\n",command);
     printf("\n");
     printf("  Example with one FMU, 2 connections from valueref 0 to 1 and 2 to 3,\n  tEnd=10, h=0.001, log=on, separator=semicolon:\n\n");
-    printf("    %s 1 fmu/cs/bouncingBall.fmu 2 0 0 0 1 0 2 0 3 0 10 0.001 1 s\n",fmusim);
+    printf("    %s 1 fmu/cs/bouncingBall.fmu 2 0 0 0 1 0 2 0 3 0 10 0.001 1 s\n",command);
     printf("\n");
 }
 
@@ -638,11 +640,8 @@ int parseArguments2(int argc,
                     int* outFileGiven,
                     int* quiet,
                     int* version){
-    int index;
-    int c;
-
+    int index, c;
     opterr = 0;
-
     *outFileGiven = 0;
 
     while ((c = getopt (argc, argv, "vq:t:c:h:s:o:p:")) != -1){
@@ -697,7 +696,47 @@ int parseArguments2(int argc,
             // Int if number and only digits
             // Bool if "true" or "false"
             // Else: string
-            printf("p=%s\n",optarg);
+
+            n=0;
+            skip=0;
+            l=strlen(optarg);
+            cont=1;
+            i=0;
+            char s[MAX_PARAM_LENGTH];
+            param * p = &params[0];
+            while((n=sscanf(&optarg[skip],"%d,%d,%s", &p->fmuIndex, &p->valueReference, s))!=-1 && skip<l && cont){
+                // Now skip everything before the n'th colon
+                char* pos = strchr(&optarg[skip],':');
+                if(pos==NULL){
+                    cont=0;
+                } else {
+                    skip += pos-&optarg[skip]+1; // Dunno why this works... See http://www.cplusplus.com/reference/cstring/strchr/
+
+                    // Check type of the parameter
+                    double realVal;
+                    int intVal;
+                    if( sscanf(s,"%lf",&realVal) != -1 ){ // Real
+                        p->realValue = realVal;
+                    }
+                    if( sscanf(s,"%d",&intVal) != -1 ){ // Integer
+                        p->intValue = intVal;
+                    }
+                    // String
+                    strcpy(p->stringValue,s);
+
+                    if(strcmp(s,"true")==0){
+                        p->boolValue = 1;
+                    }
+                    if(strcmp(s,"false")==0){
+                        p->boolValue = 0;
+                    }
+
+                    p = &params[i+1];
+                }
+                i++;
+            }
+            *numParameters = i;
+
             break;
         case '?':
 
@@ -739,13 +778,13 @@ int main( int argc, char *argv[] ) {
         param params2[MAX_PARAMS];
         connection connections2[MAX_CONNECTIONS];
 
-        int N2=0, K2=0, M2=0;
+        int numFMUs=0, K2=0, M2=0;
         double tEnd2=1.0, h2=0.1;
         char csv_separator2 = ',';
         int outFileGiven=0, quiet=0, loggingOn2=1, version=0;
         parseArguments2(argc,
                         argv,
-                        &N2,
+                        &numFMUs,
                         fmuPaths,
                         &M2,
                         connections2,
@@ -763,16 +802,24 @@ int main( int argc, char *argv[] ) {
         if(version){
             printf(VERSION);
             printf("\n");
-            return 0;
+            return EXIT_SUCCESS;
+        }
+
+        if(numFMUs == 0){
+            printHelp(argv[0]);
+            return EXIT_FAILURE;
         }
 
         if(!quiet){
-            printf("FMUS (%d)\n",N2);
-            for(i=0; i<N2; i++){
-                printf("    FMU %d: %s\n",i,fmuPaths[i]);
+
+            printf("\n  FMU CO-SIMULATION MASTER\n\n");
+
+            printf("  FMUS (%d)\n",numFMUs);
+            for(i=0; i<numFMUs; i++){
+                printf("    %d: %s\n",i,fmuPaths[i]);
             }
 
-            printf("\nCONNECTIONS (%d)\n",M2);
+            printf("\n  CONNECTIONS (%d)\n",M2);
             for(i=0; i<M2; i++){
                 printf("    FMU%d[%d] ---> FMU%d[%d]\n",connections2[i].fromFMU,
                                                         connections2[i].fromOutputVR,
@@ -781,12 +828,11 @@ int main( int argc, char *argv[] ) {
             }
 
             if(outFileGiven==1){
-                printf("\nOUTPUT CSV FILE\n");
+                printf("\n  OUTPUT CSV FILE\n");
                 printf("    %s\n",outFilePath);
             }
         }
     }
-
 
     int N=1, K=0;
     int *connections;
@@ -798,7 +844,6 @@ int main( int argc, char *argv[] ) {
     int loggingOn = 1;
     char csv_separator = ',';
     parseArguments(argc, argv, &N, &fileNames, &M, &connections, &K, &params, &tEnd, &h, &loggingOn, &csv_separator);
-
 
     /*
     printf("num params %d\n",K);
@@ -822,12 +867,15 @@ int main( int argc, char *argv[] ) {
     fmi1_import_t** fmus =            calloc(sizeof(fmi1_import_t*),N);
     fmi_import_context_t** contexts = calloc(sizeof(fmi_import_context_t*),N);
     fmi_version_enu_t* versions =     calloc(sizeof(fmi_version_enu_t),N);
+    const char** tmpPaths = calloc(sizeof(const char*),N);
 
     // Load all FMUs
     for(i=0; i<N; i++){
         
         const char* tmpPath = fmi_import_mk_temp_dir (&callbacks, "/tmp", "FMUMaster");
+        // TODO: should delete the folder too fmi_import_rmdir(jm_callbacks *cb, const char *dir)
 
+        tmpPaths[i] = tmpPath;
         contexts[i] = fmi_import_allocate_context(&callbacks);
         versions[i] = fmi_import_get_fmi_version(contexts[i], fileNames[i], tmpPath);
 
@@ -857,7 +905,7 @@ int main( int argc, char *argv[] ) {
         } else {
             fmi_import_free_context(contexts[i]);
             printf("Only versions 1.0 and 2.0 are supported so far\n");
-            return 1;
+            return EXIT_FAILURE;
         }
     }
 
@@ -868,12 +916,15 @@ int main( int argc, char *argv[] ) {
     for(i=0; i<N; i++){
         fmi1_import_destroy_dllfmu(fmus[i]);
         fmi_import_free_context(contexts[i]);
-        free(fmus);
-        free(contexts);
-        free(versions);
+
+        // Remove the temp dir
+        fmi_import_rmdir(&callbacks, tmpPaths[i]);
     }
+    free(fmus);
+    free(contexts);
+    free(versions);
     free(fileNames);
     free(connections);
 
-    return( 0 );
+    return EXIT_SUCCESS;
 }

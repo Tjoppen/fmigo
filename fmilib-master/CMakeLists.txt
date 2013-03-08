@@ -4,11 +4,13 @@ SET(SRCS
     src/main.c
     src/utils.c
     src/parseargs.c
+    src/help.c
 )
 SET(HEADERS
     src/main.h
     src/utils.h
     src/parseargs.h
+    src/help.h
 )
 
 SET(EXECUTABLE_OUTPUT_PATH "${CMAKE_CURRENT_LIST_DIR}/bin")

@@ -10,6 +10,7 @@
 
 #include "main.h"
 #include "utils.h"
+#include "help.h"
 
 // simulate the given FMUs
 static int simulate(fmi1_import_t** fmus,

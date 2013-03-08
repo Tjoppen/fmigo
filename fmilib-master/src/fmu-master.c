@@ -8,11 +8,15 @@
 #include <sys/stat.h>
 #include <limits.h>
 
-#define VERSION "0.0.1"
+#define VERSION "0.1.0"
 #define MAX_FMUS 1000
 #define MAX_PARAMS 1000
 #define MAX_PARAM_LENGTH 1000
 #define MAX_CONNECTIONS 1000
+#define DEFAULT_ENDTIME 1.0
+#define DEFAULT_TIMESTEP 0.1
+#define DEFAULT_OUTFILE "result.csv"
+#define DEFAULT_CSVSEP ','
 
 typedef struct __connection{
     int fromFMU;
@@ -42,56 +46,66 @@ int file_exists (char * fileName){
      return 0;
 }
 
+void printHeader(){
+    printf("  FMU CO-SIMULATION MASTER CLI %s\n",VERSION);
+}
+
 void printHelp(const char* command) {
 
+    printf("\n");
+    printHeader();
     printf("\n");
     printf("  USAGE\n\n");
     printf("    %s [FLAGS]... [OPTIONS]... FMUPATHS...\n\n",command);
     printf("  FLAGS\n\n");
+    printf("    -h  Show help and quit.\n");
+    printf("    -l  Show FMILibrary logs.\n");
     printf("    -q  Quiet mode.\n");
     printf("    -v  Show version and quit.\n");
-    printf("    -l  Show FMILibrary logs.\n");
     printf("\n");
     printf("  OPTIONS\n\n");
-    printf("    -t <NUMBER>      End simulation time in seconds. Default: 1.0.\n");
-    printf("    -c <CONNECTIONS> Connection specification. No connections by default.\n");
-    printf("    -p <PARAMS>      Parameter specification. No params by default.\n");
-    printf("    -h <NUMBER>      Timestep size. Default: 0.1.\n");
-    printf("    -o <STRING>      Result output file. Default: result.csv\n");
-    printf("    -s <CHAR>        CSV separator character. Default: ,\n");
+    printf("    -c [CONNECTIONS] Connection specification. No connections by default.\n");
+    printf("    -d [NUMBER]      Timestep size. Default: %g.\n",DEFAULT_TIMESTEP);
+    printf("    -o [STRING]      Result output file. Default: %s\n",DEFAULT_OUTFILE);
+    printf("    -p [PARAMS]      Parameter specification. No params by default.\n");
+    printf("    -s [CHAR]        CSV separator character. Default: %c\n",DEFAULT_CSVSEP);
+    printf("    -t [NUMBER]      End simulation time in seconds. Default: %g.\n",DEFAULT_ENDTIME);
     printf("\n");
     printf("  FMUPATHS\n\n");
-    printf("    A space separated list of FMU file paths, relative or absolute.\n");
+    printf("    A space separated list of FMU file paths, relative or absolute. The FMU\n");
+    printf("    paths you specity are referred to with integers; 0 for the first one, 1 for\n    the 2nd etc.\n");
+    printf("\n");
+    printf("  CONNECTIONS\n\n");
+    printf("    Quadruples of positive integers, representing which FMU and value reference\n");
+    printf("    to connect from and what to connect to. Syntax is CONN1:CONN2:CONN3... where\n");
+    printf("    CONNX is four comma-separated integers; FMUFROM,VRFROM,FMUTO,VRTO.\n");
+    printf("\n");
+    printf("    An example connection string is\n\n      0,0,1,0:0,1,1,1\n\n");
+    printf("    which means: connect FMU0 (value reference 0) to FMU1 (vr 0) and FMU0 (vr 1)\n");
+    printf("    to FMU1 (vr 1).\n");
+    printf("\n");
+    printf("  PARAMS\n\n");
+    printf("    Triplets separated by :, specifying FMU index, value reference index and\n");
+    printf("    parameter value. Example setting the three first value references of FMU 0:\n");
+    printf("\n");
+    printf("      0,0,12.3:0,1,true:0,2,9\n");
     printf("\n");
     printf("  EXAMPLES\n\n");
-    printf("    Coming up.\n");
+    printf("    To run an FMU simulation from time 0 to 5 with timestep 0.01:\n\n");
+    printf("      %s -t 5 -d 0.01 ../myFMU.fmu\n",command);
     printf("\n");
-
-    /*
-    printf("\n  Syntax: %s <N> <fmuPaths> <M> <connections> <K> <params> <tEnd> <h> <logOn> <csvSep>\n", command);
+    printf("    To simulate two FMUs connected from the first output of the first FMU\n");
+    printf("    to the first input of the second:\n\n");
+    printf("      %s -c 0,0,1,0 a.fmu b.fmu\n",command);
     printf("\n");
-    printf("    <N> ............ Number of FMUs included.\n");
-    printf("    <fmuPaths> ..... Paths to FMUs, space-separated, relative or absolute.\n");
-    printf("    <M> ............ Number of connections.\n");
-    printf("    <connections> .. Connections given as 4*M space-separated integers. E.g.\n");
-    printf("                     <fromFMU> <fromValueRef> <toFMU> <toValueRef>\n");
-    printf("    <K> ............ Number of parameters.\n");
-    printf("    <params> ....... Parameters given as 3*K space-separated values e.g.\n");
-    printf("                     <FMU:int> <valueRef:int> <value:any>\n");
-    printf("    <tEnd> ......... end  time of simulation, optional, defaults to 1.0 sec\n");
-    printf("    <h> ............ step size of simulation, optional, defaults to 0.1 sec\n");
-    printf("    <logOn> ........ 1 to activate logging,   optional, defaults to 0\n");
-    printf("    <csvSep>........ separator in csv file, optional, c for , s for ; default=c\n");
+    printf("    To simulate quietly (without output to STDOUT) and save the results\n    to %s:\n\n",DEFAULT_OUTFILE);
+    printf("      %s -q -o %s a.fmu\n",command,DEFAULT_OUTFILE);
     printf("\n");
-    printf("  Note that each connection is specified with four space-separated integers.\n  If you have M connections, there need to be 4*M of them.\n");
+    printf("    To show the help page:\n\n");
+    printf("      %s -h\n",command);
     printf("\n");
-    printf("  Example with 2 FMUs, 1 connection from FMU0 (value reference 0) to FMU1 (value\n  reference 0), tEnd=5, h=0.1, log=off, separator=commas:\n\n");
-    printf("    %s 2 fmu/cs/bouncingBall.fmu fmu/cs/bouncingBall.fmu 1 0 0 1 0 0 5 0.1 0 c\n",command);
-    printf("\n");
-    printf("  Example with one FMU, 2 connections from valueref 0 to 1 and 2 to 3,\n  tEnd=10, h=0.001, log=on, separator=semicolon:\n\n");
-    printf("    %s 1 fmu/cs/bouncingBall.fmu 2 0 0 0 1 0 2 0 3 0 10 0.001 1 s\n",command);
-    printf("\n");
-    */
+    printf("  CREDITS\n\n");
+    printf("    The app was built by Stefan Hedman at UMIT Research Lab 2013.\n\n");
 
     exit(EXIT_FAILURE);
 }
@@ -685,19 +699,6 @@ void fmi1StepFinished(fmi1_component_t c, fmi1_status_t status){
     
 }
 
-/**
- * Parses command line using getopt
- * 
- * master [OPTIONS] [FMUs...]
- * 
- * Flags:
- *   -t      Simulation end time in seconds e.g. 123.4. Defaults to 1.0.
- *   -c      Connections specification e.g. "0,0,1,0:0,0,1,0" (fromFMU fromOutput toFMU toInput). Defaults to no connections.
- *   -h      Timestep size in seconds. Defaults to 0.01.
- *   -s      CSV separator. Defaults to comma (,)
- *   -o      Output CSV file. If not given, stdout is output.
- *   -p      Parameters given as "0 0 param1:1 1 param2"
- */
 int parseArguments2(int argc,
                     char *argv[],
                     int* numFMUs,
@@ -718,12 +719,13 @@ int parseArguments2(int argc,
     opterr = 0;
     *outFileGiven = 0;
 
-    while ((c = getopt (argc, argv, "lvqt:c:h:s:o:p:")) != -1){
+    while ((c = getopt (argc, argv, "lvqht:c:d:s:o:p:")) != -1){
 
         int n, skip, l, cont, i;
         connection * conn;
 
         switch (c) {
+
         case 'c':
             n=0;
             skip=0;
@@ -753,22 +755,32 @@ int parseArguments2(int argc,
             sscanf(optarg, "%lf", tEnd);
             break;
             
-        case 'h':
+        case 'd':
             sscanf(optarg,"%lf", timeStepSize);
             break;
+
+        case 'h':
+            printHelp(argv[0]);
+            exit(EXIT_SUCCESS);
+            break;
+
         case 's':
             *csv_separator = optarg[0];
             break;
+
         case 'o':
             strcpy(outFilePath,optarg);
             *outFileGiven = 1;
             break;
+
         case 'q':
             *quiet = 1;
             break;
+
         case 'v':
             *version = 1;
             break;
+
         case 'p':
             // Real if number and contains .
             // Int if number and only digits
@@ -815,6 +827,7 @@ int parseArguments2(int argc,
             }
             *numParameters = i;
             break;
+
         case '?':
 
             if (optopt == 'c'){
@@ -827,6 +840,7 @@ int parseArguments2(int argc,
                         optopt);
             }
             return 1;
+
         default:
             printf("abort %c...\n",c);
             abort ();
@@ -910,7 +924,9 @@ int main( int argc, char *argv[] ) {
 
     if(!quiet){
 
-        printf("\n  FMU CO-SIMULATION MASTER CLI %s\n\n",VERSION);
+        printf("\n");
+        printHeader();
+        printf("\n");
 
         printf("  FMUS (%d)\n",numFMUs);
         for(i=0; i<numFMUs; i++){

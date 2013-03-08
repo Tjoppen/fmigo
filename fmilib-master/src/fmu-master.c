@@ -172,7 +172,8 @@ static int simulate(fmi1_import_t** fmus,
                     double h,
                     int loggingOn,
                     char separator,
-                    jm_callbacks callbacks){
+                    jm_callbacks callbacks,
+                    int quiet){
 
     int i;
     int k;
@@ -478,19 +479,23 @@ static int simulate(fmi1_import_t** fmus,
         if(s != fmi1_status_ok) printf("Error terminating slave instance %d\n",i);
     }
   
-    printf("  SIMULATION TERMINATED SUCCESSFULLY\n\n");
+    if(!quiet){
+        printf("  SIMULATION TERMINATED SUCCESSFULLY\n\n");
 
-    // print simulation summary 
-    printf("  START ............ %g\n", tStart);
-    printf("  END .............. %g\n", tEnd);
-    printf("  STEPS ............ %d\n", nSteps);
-    printf("  TIMESTEP ......... %g\n", h);
+        // print simulation summary 
+        printf("  START ............ %g\n", tStart);
+        printf("  END .............. %g\n", tEnd);
+        printf("  STEPS ............ %d\n", nSteps);
+        printf("  TIMESTEP ......... %g\n", h);
+    }
 
     for(i=0; i<N; i++){
         fclose(files[i]);
     }
 
-    printf("\n");
+    if(!quiet){
+        printf("\n");
+    }
 
     return 1; // success
 }
@@ -687,7 +692,7 @@ int parseArguments2(int argc,
     opterr = 0;
     *outFileGiven = 0;
 
-    while ((c = getopt (argc, argv, "lvq:t:c:h:s:o:p:")) != -1){
+    while ((c = getopt (argc, argv, "lvqt:c:h:s:o:p:")) != -1){
 
         int n, skip, l, cont, i;
         connection * conn;
@@ -879,7 +884,7 @@ int main( int argc, char *argv[] ) {
 
     if(!quiet){
 
-        printf("\n  FMU CO-SIMULATION MASTER\n\n");
+        printf("\n  FMU CO-SIMULATION MASTER CLI %s\n\n",VERSION);
 
         printf("  FMUS (%d)\n",numFMUs);
         for(i=0; i<numFMUs; i++){
@@ -888,13 +893,13 @@ int main( int argc, char *argv[] ) {
 
         printf("\n  CONNECTIONS (%d)\n",M);
         for(i=0; i<M; i++){
-            printf("    FMU%d[%d] ---> FMU%d[%d]\n",connections[i].fromFMU,
+            printf("    FMU %d, value reference %d ---> FMU %d, value reference %d\n",connections[i].fromFMU,
                                                     connections[i].fromOutputVR,
                                                     connections[i].toFMU,
                                                     connections[i].toInputVR);
         }
 
-        if(outFileGiven==1){
+        if(outFileGiven){
             printf("\n  OUTPUT CSV FILE\n");
             printf("    %s\n",outFilePath);
         }
@@ -987,8 +992,12 @@ int main( int argc, char *argv[] ) {
         }
     }
 
+    if(!quiet){
+        printf("  RUNNING SIMULATION...\n\n");
+    }
+
     // All loaded. Simulate.
-    simulate(fmus, fmuPaths, numFMUs, connections, K, params, M, tEnd, h, loggingOn, csv_separator,callbacks);
+    simulate(fmus, fmuPaths, numFMUs, connections, K, params, M, tEnd, h, loggingOn, csv_separator,callbacks,quiet);
 
     // Clean up
     for(i=0; i<numFMUs; i++){

@@ -24,6 +24,8 @@ int parseArguments2(int argc,
     opterr = 0;
     *outFileGiven = 0;
 
+    strcpy(outFilePath,DEFAULT_OUTFILE);
+
     while ((c = getopt (argc, argv, "lvqht:c:d:s:o:p:")) != -1){
 
         int n, skip, l, cont, i;
@@ -100,32 +102,32 @@ int parseArguments2(int argc,
             char s[MAX_PARAM_LENGTH];
             param * p = &params[0];
             while((n=sscanf(&optarg[skip],"%d,%d,%s", &p->fmuIndex, &p->valueReference, s))!=-1 && skip<l && cont){
+
+                // Check type of the parameter
+                double realVal;
+                int intVal;
+                if( sscanf(s,"%lf",&realVal) != -1 ){ // Real
+                    p->realValue = realVal;
+                }
+                if( sscanf(s,"%d",&intVal) != -1 ){ // Integer
+                    p->intValue = intVal;
+                }
+                // String
+                strcpy(p->stringValue,s);
+
+                if(strcmp(s,"true")==0){
+                    p->boolValue = 1;
+                }
+                if(strcmp(s,"false")==0){
+                    p->boolValue = 0;
+                }
+
                 // Now skip everything before the n'th colon
                 char* pos = strchr(&optarg[skip],':');
                 if(pos==NULL){
                     cont=0;
                 } else {
                     skip += pos-&optarg[skip]+1; // Dunno why this works... See http://www.cplusplus.com/reference/cstring/strchr/
-
-                    // Check type of the parameter
-                    double realVal;
-                    int intVal;
-                    if( sscanf(s,"%lf",&realVal) != -1 ){ // Real
-                        p->realValue = realVal;
-                    }
-                    if( sscanf(s,"%d",&intVal) != -1 ){ // Integer
-                        p->intValue = intVal;
-                    }
-                    // String
-                    strcpy(p->stringValue,s);
-
-                    if(strcmp(s,"true")==0){
-                        p->boolValue = 1;
-                    }
-                    if(strcmp(s,"false")==0){
-                        p->boolValue = 0;
-                    }
-
                     p = &params[i+1];
                 }
                 i++;
@@ -152,7 +154,7 @@ int parseArguments2(int argc,
         }
     }
 
-    // Parse FMU paths
+    // Parse FMU paths in the end of the command line
     int i=0;
     for (index = optind; index < argc; index++) {
         strcpy( fmuFilePaths[i] , argv[index] );

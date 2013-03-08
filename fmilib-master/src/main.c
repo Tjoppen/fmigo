@@ -12,6 +12,53 @@
 #include "utils.h"
 #include "help.h"
 
+void setInitialValues(int numFMUs, fmi1_import_t** fmus){
+    int i,k;
+    for(i=0; i<numFMUs; i++){
+        // Set initial values
+        fmi1_import_variable_list_t* vl = fmi1_import_get_variable_list(fmus[i]);
+        int num = fmi1_import_get_variable_list_size(vl);
+        for (k=0; num; k++) {
+            fmi1_import_variable_t* v = fmi1_import_get_variable(vl,k);
+            if(!v) break;
+
+            fmi1_value_reference_t vr[1];
+            vr[0] = fmi1_import_get_variable_vr(v);
+            fmi1_base_type_enu_t type = fmi1_import_get_base_type((fmi1_import_variable_typedef_t*)v);
+            fmi1_real_t lol[1];
+            fmi1_integer_t innt[1];
+            fmi1_boolean_t boool[1];
+            fmi1_string_t striing[1];
+
+            // Set initial values from the XML file
+            if(fmi1_import_get_variable_has_start(v)){
+                switch (type){
+                    case fmi1_base_type_real:
+                        lol[0] = fmi1_import_get_real_variable_start((fmi1_import_real_variable_t*) v);
+                        fmi1_import_set_real(fmus[i],   vr,   1, lol);
+                        break;
+                    case fmi1_base_type_int:
+                    case fmi1_base_type_enum:
+                        innt[0] = fmi1_import_get_integer_variable_start((fmi1_import_integer_variable_t*) v);
+                        fmi1_import_set_integer(fmus[i],   vr,   1, innt);
+                        break;
+                    case fmi1_base_type_bool:
+                        boool[0] = fmi1_import_get_boolean_variable_start((fmi1_import_bool_variable_t*) v);
+                        fmi1_import_set_boolean(fmus[i],   vr,   1, boool);
+                        break;
+                    case fmi1_base_type_str:
+                        striing[0] = fmi1_import_get_string_variable_start((fmi1_import_string_variable_t*) v);
+                        fmi1_import_set_string(fmus[i],   vr,   1, striing);
+                        break;
+                    default: 
+                        fprintf(stderr,"Could not determine type of value reference %d in FMU %d. Continuing without setting initial value...\n", vr[0],i);
+                        break;
+                }
+            }
+        }
+    }
+}
+
 // simulate the given FMUs
 static int simulate(fmi1_import_t** fmus,
                     char fmuFileNames[MAX_FMUS][PATH_MAX],
@@ -29,18 +76,18 @@ static int simulate(fmi1_import_t** fmus,
 
     int i;
     int k;
-    double time;                        // Current time
-    double tStart = 0;                  // Start time
+    double time;                                                // Current time
+    double tStart = 0;                                          // Start time
     fmi1_string_t** guids;
-    jm_status_enu_t status;           // return code of the fmu functions
-    fmi1_string_t fmuLocation = "";           // path to the fmu as URL, "file://C:\QTronic\sales"
+    jm_status_enu_t status;                                     // return code of the fmu functions
+    fmi1_string_t fmuLocation = "";                             // path to the fmu as URL, "file://C:\QTronic\sales"
     fmi1_string_t mimeType = "application/x-fmu-sharedlibrary"; // denotes tool in case of tool coupling
-    fmi1_real_t timeout = 1000;             // wait period in milliseconds, 0 for unlimited wait period
-    fmi1_boolean_t visible = 0;      // no simulator user interface
-    fmi1_boolean_t interactive = 0;  // simulation run without user interaction
-    int nSteps = 0;                     // Number of steps taken
-    FILE** files;                       // result files
-    char** fileNames;                   // Result file names
+    fmi1_real_t timeout = 1000;                                 // wait period in milliseconds, 0 for unlimited wait period
+    fmi1_boolean_t visible = 0;                                 // no simulator user interface
+    fmi1_boolean_t interactive = 0;                             // simulation run without user interaction
+    int nSteps = 0;                                             // Number of steps taken
+    FILE** files;                                               // result files
+    char** fileNames;                                           // Result file names
 
     // Allocate
     guids =        (fmi1_string_t**)calloc(sizeof(fmi1_string_t*),N);
@@ -98,47 +145,33 @@ static int simulate(fmi1_import_t** fmus,
             // Set initial values from the XML file
             if(fmi1_import_get_variable_has_start(v)){
                 switch (type){
-                    case fmi1_base_type_real:
-                        lol[0] = fmi1_import_get_real_variable_start((fmi1_import_real_variable_t*) v);
-                        fmi1_import_set_real(fmus[i],   vr,   1, lol);
-                        break;
-                    case fmi1_base_type_int:
-                    case fmi1_base_type_enum:
-                        innt[0] = fmi1_import_get_integer_variable_start((fmi1_import_integer_variable_t*) v);
-                        fmi1_import_set_integer(fmus[i],   vr,   1, innt);
-                        break;
-                    case fmi1_base_type_bool:
-                        boool[0] = fmi1_import_get_boolean_variable_start((fmi1_import_bool_variable_t*) v);
-                        fmi1_import_set_boolean(fmus[i],   vr,   1, boool);
-                        break;
-                    case fmi1_base_type_str:
-                        striing[0] = fmi1_import_get_string_variable_start((fmi1_import_string_variable_t*) v);
-                        fmi1_import_set_string(fmus[i],   vr,   1, striing);
-                        break;
-                    default: 
-                        printf("Could not determine type of value reference %d in FMU %d. Continuing without connection value transfer...\n", vr[0],i);
-                        return 1;
-                        break;
+                case fmi1_base_type_real:
+                    lol[0] = fmi1_import_get_real_variable_start((fmi1_import_real_variable_t*) v);
+                    fmi1_import_set_real(fmus[i],   vr,   1, lol);
+                    break;
+                case fmi1_base_type_int:
+                case fmi1_base_type_enum:
+                    innt[0] = fmi1_import_get_integer_variable_start((fmi1_import_integer_variable_t*) v);
+                    fmi1_import_set_integer(fmus[i],   vr,   1, innt);
+                    break;
+                case fmi1_base_type_bool:
+                    boool[0] = fmi1_import_get_boolean_variable_start((fmi1_import_bool_variable_t*) v);
+                    fmi1_import_set_boolean(fmus[i],   vr,   1, boool);
+                    break;
+                case fmi1_base_type_str:
+                    striing[0] = fmi1_import_get_string_variable_start((fmi1_import_string_variable_t*) v);
+                    fmi1_import_set_string(fmus[i],   vr,   1, striing);
+                    break;
+                default: 
+                    printf("Could not determine type of value reference %d in FMU %d. Continuing without connection value transfer...\n", vr[0],i);
+                    return 1;
+                    break;
                 }
             }
 
             // Set initial values from the command line, overrides the XML init values
             int j;
             for(j=0; j<K; j++){ // Loop over params
-
-                // Get FMU index and value reference to set
-                /*
-                int fmuIndex = -1;
-                int valueReference = -1;
-                if (sscanf(params[j],"%d", &fmuIndex) != 1){
-                    printf("Could not scan parameter\n");
-                    return 1;
-                }
-                if (sscanf(params[j+1],"%d", &valueReference) != 1){
-                    printf("Could not scan parameter value reference\n");
-                    return 1;
-                }
-                */
 
                 int fmuIndex = params[j].fmuIndex;
                 int valueReference = params[j].valueReference;
@@ -151,67 +184,34 @@ static int simulate(fmi1_import_t** fmus,
                     int tmpInt;
 
                     switch (type){
-                        // Real
-                        case fmi1_base_type_real:
-                            /*
-                            if (sscanf(params[j+2],"%f", &tmpFloat) != 1){
-                                printf("Could not scan parameter %d real value\n",k);
-                                return 1;
-                            }
-                            lol[0] = tmpFloat;
-                            printf("%f\n",tmpFloat);
-                            */
-                            lol[0] = params[j].realValue;
-                            fmi1_import_set_real(fmus[i],   vr,   1, lol);
-                            break;
+                    
+                    case fmi1_base_type_real: // Real
+                        lol[0] = params[j].realValue;
+                        fmi1_import_set_real(fmus[i],   vr,   1, lol);
+                        break;
 
-                        // Integer
-                        case fmi1_base_type_int:
-                        case fmi1_base_type_enum:
-                            /*
-                            if (sscanf(params[j+2],"%d", &tmpInt) != 1){
-                                printf("Could not scan parameter %d integer value\n",k);
-                                return 1;
-                            }
-                            innt[0] = tmpInt;
-                            printf("%d\n",tmpInt);
-                            */
-                            innt[0] = params[j].intValue;
-                            fmi1_import_set_integer(fmus[i],   vr,   1, innt);
-                            break;
+                    case fmi1_base_type_int: // Integer
+                    case fmi1_base_type_enum:
+                        innt[0] = params[j].intValue;
+                        fmi1_import_set_integer(fmus[i],   vr,   1, innt);
+                        break;
 
-                        // Boolean
-                        case fmi1_base_type_bool:
-                            /*
-                            // Use integer input
-                            if (sscanf(params[j+2],"%d", &tmpInt) != 1 || (tmpInt!=0 && tmpInt!=1)){
-                                printf("Could not scan parameter %d boolean (integer) value\n",k);
-                                return 1;
-                            }
-                            boool[0] = tmpInt;
-                            printf("%d\n",tmpInt);
-                            //boool[0] = fmi1_import_get_boolean_variable_start((fmi1_import_bool_variable_t*) v);
-                            */
-                            boool[0] = params[j].boolValue;
-                            fmi1_import_set_boolean(fmus[i],   vr,   1, boool);
-                            break;
+                    // Boolean
+                    case fmi1_base_type_bool:
+                        boool[0] = params[j].boolValue;
+                        fmi1_import_set_boolean(fmus[i],   vr,   1, boool);
+                        break;
 
-                        // String
-                        case fmi1_base_type_str:
-                            /*
-                            // Use the raw string
-                            striing[0] = params[j+2];
-                            printf("%s\n",params[j+2]);
-                            //striing[0] = fmi1_import_get_string_variable_start((fmi1_import_string_variable_t*) v);
-                            */
-                            striing[0] = params[j].stringValue;
-                            fmi1_import_set_string(fmus[i],   vr,   1, striing);
-                            break;
+                    // String
+                    case fmi1_base_type_str:
+                        striing[0] = params[j].stringValue;
+                        fmi1_import_set_string(fmus[i],   vr,   1, striing);
+                        break;
 
-                        default: 
-                            printf("Could not determine type of value reference %d in FMU %d. Continuing without connection value transfer...\n", vr[0],i);
-                            return 1;
-                            break;
+                    default: 
+                        printf("Could not determine type of value reference %d in FMU %d. Continuing without connection value transfer...\n", vr[0],i);
+                        return 1;
+                        break;
                     }
                 }
             }
@@ -420,12 +420,14 @@ int main( int argc, char *argv[] ) {
             printf("    %d: %s\n",i,fmuPaths[i]);
         }
 
-        printf("\n  CONNECTIONS (%d)\n",M);
-        for(i=0; i<M; i++){
-            printf("    FMU %d, value reference %d ---> FMU %d, value reference %d\n",connections[i].fromFMU,
-                                                    connections[i].fromOutputVR,
-                                                    connections[i].toFMU,
-                                                    connections[i].toInputVR);
+        if(M>0){
+            printf("\n  CONNECTIONS (%d)\n",M);
+            for(i=0; i<M; i++){
+                printf("    FMU %d, value reference %d ---> FMU %d, value reference %d\n",connections[i].fromFMU,
+                                                        connections[i].fromOutputVR,
+                                                        connections[i].toFMU,
+                                                        connections[i].toInputVR);
+            }
         }
 
         if(outFileGiven){

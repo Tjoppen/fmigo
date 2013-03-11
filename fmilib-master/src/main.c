@@ -389,10 +389,10 @@ int main( int argc, char *argv[] ) {
 
     doLog = loggingOn;
 
-    fmi1_import_t** fmus =            calloc(sizeof(fmi1_import_t*),numFMUs);
-    fmi_import_context_t** contexts = calloc(sizeof(fmi_import_context_t*),numFMUs);
-    fmi_version_enu_t* versions =     calloc(sizeof(fmi_version_enu_t),numFMUs);
-    const char** tmpPaths = calloc(sizeof(const char*),numFMUs);
+    fmi1_import_t** fmus =              calloc(sizeof(fmi1_import_t*),numFMUs);
+    fmi_import_context_t** contexts =   calloc(sizeof(fmi_import_context_t*),numFMUs);
+    fmi_version_enu_t* versions =       calloc(sizeof(fmi_version_enu_t),numFMUs);
+    const char** tmpPaths =             calloc(sizeof(const char*),numFMUs);
 
     // Load all FMUs
     for(i=0; i<numFMUs; i++){
@@ -455,7 +455,15 @@ int main( int argc, char *argv[] ) {
 
     // Pick stepfunction
     stepfunctionType stepfunction;
-    stepfunction = &jacobiStep;
+    switch(method){
+    case jacobi:
+        stepfunction = &jacobiStep;
+        break;
+    default:
+        fprintf(stderr, "Method enum not correct!\n");
+        exit(EXIT_FAILURE);
+        break;
+    }
 
     // All loaded. Simulate.
     simulate(fmus,
@@ -472,7 +480,7 @@ int main( int argc, char *argv[] ) {
              callbacks,
              quiet,
              stepfunction,
-             csv);
+             outfileFormat);
 
     // Clean up
     for(i=0; i<numFMUs; i++){

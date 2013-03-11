@@ -126,6 +126,102 @@ void setParams(int numFMUs, int numParams, fmi1_import_t ** fmus, param params[M
     }
 }
 
+int jacobiStep( double time,
+                double communicationTimeStep,
+                int numFMUs,
+                fmi1_import_t ** fmus,
+                int numConnections,
+                connection connections[MAX_CONNECTIONS]){
+
+    int ci, found, k, i, l;
+
+    // Temp for transfering values
+    fmi1_base_type_enu_t type;
+    fmi1_value_reference_t vrFrom[1];
+    fmi1_value_reference_t vrTo[1];
+    fmi1_real_t rr[2];
+    fmi1_boolean_t bb[2];
+    fmi1_integer_t ii[2];
+    fmi1_string_t ss[2];
+
+    for(ci=0; ci<numConnections; ci++){ // Loop over connections
+        found = 0;
+        int fmuFrom = connections[ci].fromFMU;
+        vrFrom[0] =   connections[ci].fromOutputVR;
+        int fmuTo =   connections[ci].toFMU;
+        vrTo[0] =     connections[ci].toInputVR;
+
+        //printf("%d %d %d %d\n",connections[ci*4 + 0],connections[ci*4 + 1],connections[ci*4 + 2],connections[ci*4 + 3]);
+
+        // Get variable list of both FMU participating in the connection
+        fmi1_import_variable_list_t* varsFrom = fmi1_import_get_variable_list(fmus[fmuFrom]);
+        fmi1_import_variable_list_t* varsTo =   fmi1_import_get_variable_list(fmus[fmuTo]);
+        int numFrom = fmi1_import_get_variable_list_size(varsFrom);
+        int numTo   = fmi1_import_get_variable_list_size(varsTo);
+
+        for (k=0; numFrom; k++) {
+            fmi1_import_variable_t* v = fmi1_import_get_variable(varsFrom,k);
+            if(!v) break;
+            //vrFrom[0] = fmi1_import_get_variable_vr(v);
+            fmi1_base_type_enu_t typeFrom = fmi1_import_get_base_type((fmi1_import_variable_typedef_t*)v);
+
+            // Now find the input variable
+            for (l=0; !found && l<numTo; l++) {
+
+                fmi1_import_variable_t* vTo = fmi1_import_get_variable(varsTo,l);
+                if(!vTo) break;
+                //vrTo[0] = fmi1_import_get_variable_vr(vTo);
+                fmi1_base_type_enu_t typeTo = fmi1_import_get_base_type((fmi1_import_variable_typedef_t*)vTo);
+
+                // Found the input and output. Check if they have equal types
+                if(typeFrom == typeTo){
+
+                    //printf("Connection %d at T=%g: Transferring value from FMU%d (vr=%d) to FMU%d (vr=%d)\n",ci,time,fmuFrom,vrFrom[0],fmuTo,vrTo[0]);
+
+                    switch (typeFrom){
+                    case fmi1_base_type_real :
+                        fmi1_import_get_real(fmus[fmuFrom], vrFrom, 1, rr);
+                        fmi1_import_set_real(fmus[fmuTo],   vrTo,   1, rr);
+                        break;
+                    case fmi1_base_type_int:
+                    case fmi1_base_type_enum:
+                        fmi1_import_get_integer(fmus[fmuFrom], vrFrom, 1, ii);
+                        fmi1_import_set_integer(fmus[fmuTo],   vrTo,   1, ii);
+                        break;
+                    case fmi1_base_type_bool:
+                        fmi1_import_get_boolean(fmus[fmuFrom], vrFrom, 1, bb);
+                        fmi1_import_set_boolean(fmus[fmuTo],   vrTo,   1, bb);
+                        break;
+                    case fmi1_base_type_str:
+                        fmi1_import_get_string(fmus[fmuFrom], vrFrom, 1, ss);
+                        fmi1_import_set_string(fmus[fmuTo],   vrTo,   1, ss);
+                        break;
+                    default: 
+                        printf("Could not determine type of value reference %d in FMU %d. Continuing without connection value transfer...\n", vrFrom[0],fmuFrom);
+                        break;
+                    }
+
+                    found = 1;
+                } else {
+                    printf("Connection between FMU %d (value ref %d) and %d (value ref %d) had incompatible data types!\n",fmuFrom,vrFrom[0],fmuTo,vrTo[0]);
+                }
+            }
+        }
+    }
+
+    // Step all the FMUs
+    fmi1_status_t status = fmi1_status_ok;
+    for(i=0; i<numFMUs; i++){
+        fmi1_status_t s = fmi1_import_do_step (fmus[i], time, communicationTimeStep, 1);
+        if(s != fmi1_status_ok){
+            status = s;
+            printf("doStep() of FMU %d didn't return fmiOK! Exiting...",i);
+            return 1;
+        }
+    }
+
+    return 0;
+}
 
 // simulate the given FMUs
 static int simulate( fmi1_import_t** fmus,
@@ -140,7 +236,13 @@ static int simulate( fmi1_import_t** fmus,
                      int loggingOn,
                      char separator,
                      jm_callbacks callbacks,
-                     int quiet){
+                     int quiet,
+                     int (*stepfunc)(double time,
+                                     double communicationTimeStep,
+                                     int numFMUs,
+                                     fmi1_import_t ** fmus,
+                                     int numConnections,
+                                     connection connections[MAX_CONNECTIONS])){
 
     int i;
     int k;
@@ -205,128 +307,11 @@ static int simulate( fmi1_import_t** fmus,
         setInitialValues(fmus[i]);
     }
 
-    /*
-    // Set initial values from the XML file
-    for(i=0; i<N; i++){
-        fmi1_import_variable_list_t* vl = fmi1_import_get_variable_list(fmus[i]);
-        int num = fmi1_import_get_variable_list_size(vl);
-        for (k=0; num; k++) {
-            fmi1_import_variable_t* v = fmi1_import_get_variable(vl,k);
-            if(!v) break;
-
-            fmi1_value_reference_t vr[1];
-            vr[0] = fmi1_import_get_variable_vr(v);
-            fmi1_base_type_enu_t type = fmi1_import_get_base_type((fmi1_import_variable_typedef_t*)v);
-            fmi1_real_t lol[1];
-            fmi1_integer_t innt[1];
-            fmi1_boolean_t boool[1];
-            fmi1_string_t striing[1];
-
-            // Set initial values from the XML file
-            if(fmi1_import_get_variable_has_start(v)){
-                switch (type){
-                case fmi1_base_type_real:
-                    lol[0] = fmi1_import_get_real_variable_start((fmi1_import_real_variable_t*) v);
-                    fmi1_import_set_real(fmus[i],   vr,   1, lol);
-                    break;
-                case fmi1_base_type_int:
-                case fmi1_base_type_enum:
-                    innt[0] = fmi1_import_get_integer_variable_start((fmi1_import_integer_variable_t*) v);
-                    fmi1_import_set_integer(fmus[i],   vr,   1, innt);
-                    break;
-                case fmi1_base_type_bool:
-                    boool[0] = fmi1_import_get_boolean_variable_start((fmi1_import_bool_variable_t*) v);
-                    fmi1_import_set_boolean(fmus[i],   vr,   1, boool);
-                    break;
-                case fmi1_base_type_str:
-                    striing[0] = fmi1_import_get_string_variable_start((fmi1_import_string_variable_t*) v);
-                    fmi1_import_set_string(fmus[i],   vr,   1, striing);
-                    break;
-                default: 
-                    printf("Could not determine type of value reference %d in FMU %d. Continuing without connection value transfer...\n", vr[0],i);
-                    return 1;
-                    break;
-                }
-            }
-        }
-    }
-    */
-
     // Set user-given parameters
     setParams(N, K, fmus, params);
 
-    /*
-    // Set initial values from the command line, overrides the XML init values
+    // Output solution for time t0
     for(i=0; i<N; i++){
-        fmi1_import_variable_list_t* vl = fmi1_import_get_variable_list(fmus[i]);
-        int num = fmi1_import_get_variable_list_size(vl);
-        for (k=0; num; k++) {
-            fmi1_import_variable_t* v = fmi1_import_get_variable(vl,k);
-            if(!v) break;
-
-            fmi1_value_reference_t vr[1];
-            vr[0] = fmi1_import_get_variable_vr(v);
-            fmi1_base_type_enu_t type = fmi1_import_get_base_type((fmi1_import_variable_typedef_t*)v);
-            fmi1_real_t lol[1];
-            fmi1_integer_t innt[1];
-            fmi1_boolean_t boool[1];
-            fmi1_string_t striing[1];
-
-            int j;
-            for(j=0; j<K; j++){ // Loop over params
-
-                int fmuIndex = params[j].fmuIndex;
-                int valueReference = params[j].valueReference;
-
-                if( i == fmuIndex && // Correct FMU
-                    vr[0] == valueReference // Correct valuereference
-                    ) {
-
-                    float tmpFloat;
-                    int tmpInt;
-
-                    switch (type){
-                    
-                    case fmi1_base_type_real: // Real
-                        lol[0] = params[j].realValue;
-                        fmi1_import_set_real(fmus[i],   vr,   1, lol);
-                        break;
-
-                    case fmi1_base_type_int: // Integer
-                    case fmi1_base_type_enum:
-                        innt[0] = params[j].intValue;
-                        fmi1_import_set_integer(fmus[i],   vr,   1, innt);
-                        break;
-
-                    // Boolean
-                    case fmi1_base_type_bool:
-                        boool[0] = params[j].boolValue;
-                        fmi1_import_set_boolean(fmus[i],   vr,   1, boool);
-                        break;
-
-                    // String
-                    case fmi1_base_type_str:
-                        striing[0] = params[j].stringValue;
-                        fmi1_import_set_string(fmus[i],   vr,   1, striing);
-                        break;
-
-                    default: 
-                        printf("Could not determine type of value reference %d in FMU %d. Continuing without connection value transfer...\n", vr[0],i);
-                        return 1;
-                        break;
-                    }
-                }
-            }
-        }
-
-        // output solution for time t0
-        outputCSVRow(fmus[i], tStart, files[i], separator, 1);  // output column names
-        outputCSVRow(fmus[i], tStart, files[i], separator, 0); // output values
-    }
-    */
-
-    for(i=0; i<N; i++){
-        // output solution for time t0
         outputCSVRow(fmus[i], tStart, files[i], separator, 1);  // output column names
         outputCSVRow(fmus[i], tStart, files[i], separator, 0); // output values
     }
@@ -346,82 +331,8 @@ static int simulate( fmi1_import_t** fmus,
 
     while (time < tEnd && status==fmi1_status_ok) {
 
-        int ci;
-        for(ci=0; ci<M; ci++){ // Loop over connections
-            found = 0;
-            int fmuFrom = connections[ci].fromFMU;
-            vrFrom[0] =   connections[ci].fromOutputVR;
-            int fmuTo =   connections[ci].toFMU;
-            vrTo[0] =     connections[ci].toInputVR;
-
-            //printf("%d %d %d %d\n",connections[ci*4 + 0],connections[ci*4 + 1],connections[ci*4 + 2],connections[ci*4 + 3]);
-
-            // Get variable list of both FMU participating in the connection
-            fmi1_import_variable_list_t* varsFrom = fmi1_import_get_variable_list(fmus[fmuFrom]);
-            fmi1_import_variable_list_t* varsTo =   fmi1_import_get_variable_list(fmus[fmuTo]);
-            int numFrom = fmi1_import_get_variable_list_size(varsFrom);
-            int numTo   = fmi1_import_get_variable_list_size(varsTo);
-
-            for (k=0; numFrom; k++) {
-                fmi1_import_variable_t* v = fmi1_import_get_variable(varsFrom,k);
-                if(!v) break;
-                //vrFrom[0] = fmi1_import_get_variable_vr(v);
-                fmi1_base_type_enu_t typeFrom = fmi1_import_get_base_type((fmi1_import_variable_typedef_t*)v);
-
-                // Now find the input variable
-                for (l=0; !found && l<numTo; l++) {
-
-                    fmi1_import_variable_t* vTo = fmi1_import_get_variable(varsTo,l);
-                    if(!vTo) break;
-                    //vrTo[0] = fmi1_import_get_variable_vr(vTo);
-                    fmi1_base_type_enu_t typeTo = fmi1_import_get_base_type((fmi1_import_variable_typedef_t*)vTo);
-
-                    // Found the input and output. Check if they have equal types
-                    if(typeFrom == typeTo){
-
-                        //printf("Connection %d at T=%g: Transferring value from FMU%d (vr=%d) to FMU%d (vr=%d)\n",ci,time,fmuFrom,vrFrom[0],fmuTo,vrTo[0]);
-
-                        switch (typeFrom){
-                        case fmi1_base_type_real :
-                            fmi1_import_get_real(fmus[fmuFrom], vrFrom, 1, rr);
-                            fmi1_import_set_real(fmus[fmuTo],   vrTo,   1, rr);
-                            break;
-                        case fmi1_base_type_int:
-                        case fmi1_base_type_enum:
-                            fmi1_import_get_integer(fmus[fmuFrom], vrFrom, 1, ii);
-                            fmi1_import_set_integer(fmus[fmuTo],   vrTo,   1, ii);
-                            break;
-                        case fmi1_base_type_bool:
-                            fmi1_import_get_boolean(fmus[fmuFrom], vrFrom, 1, bb);
-                            fmi1_import_set_boolean(fmus[fmuTo],   vrTo,   1, bb);
-                            break;
-                        case fmi1_base_type_str:
-                            fmi1_import_get_string(fmus[fmuFrom], vrFrom, 1, ss);
-                            fmi1_import_set_string(fmus[fmuTo],   vrTo,   1, ss);
-                            break;
-                        default: 
-                            printf("Could not determine type of value reference %d in FMU %d. Continuing without connection value transfer...\n", vrFrom[0],fmuFrom);
-                            break;
-                        }
-
-                        found = 1;
-                    } else {
-                        printf("Connection between FMU %d (value ref %d) and %d (value ref %d) had incompatible data types!\n",fmuFrom,vrFrom[0],fmuTo,vrTo[0]);
-                    }
-                }
-            }
-        }
-
-        // Step all the FMUs
-        for(i=0; i<N; i++){
-            fmi1_status_t s = fmi1_import_do_step (fmus[i], time, h, 1);
-            //status = fmus[i]->doStep(c[i], time, h, fmiTrue);
-            if(s != fmi1_status_ok){
-                status = s;
-                printf("doStep() of model %s didn't return fmiOK! Exiting...",fmuFileNames[i]);
-                return 0;
-            }
-        }
+        // Step the system of FMUs
+        int result = (*stepfunc)(time, h, N, fmus, M, connections);
 
         // Advance time
         time += h;
@@ -642,7 +553,8 @@ int main( int argc, char *argv[] ) {
              loggingOn,
              csv_separator,
              callbacks,
-             quiet);
+             quiet,
+             jacobiStep);
 
     // Clean up
     for(i=0; i<numFMUs; i++){

@@ -21,6 +21,7 @@ int parseArguments(int argc,
                     char outFilePath[PATH_MAX],
                     int* outFileGiven,
                     int* quiet,
-                    int* version);
+                    int* version,
+                    enum FILEFORMAT * format);
 
 #endif /* PARSEARGS_H */

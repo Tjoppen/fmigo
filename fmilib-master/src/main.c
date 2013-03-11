@@ -299,6 +299,12 @@ void fmi1StepFinished(fmi1_component_t c, fmi1_status_t status){
 }
 
 int main( int argc, char *argv[] ) {
+
+    if(argc == 1){
+        printHelp(argv[0]);
+        exit(EXIT_SUCCESS);
+    }
+
     int i;
 
     char fmuPaths[MAX_FMUS][PATH_MAX];
@@ -311,23 +317,28 @@ int main( int argc, char *argv[] ) {
     double tEnd=1.0, h=0.1;
     char csv_separator = ',';
     int outFileGiven=0, quiet=0, loggingOn=0, version=0;
+    enum FILEFORMAT outfileFormat;
+    int status =parseArguments(argc,
+                               argv,
+                               &numFMUs,
+                               fmuPaths,
+                               &M,
+                               connections,
+                               &K,
+                               params,
+                               &tEnd,
+                               &h,
+                               &loggingOn,
+                               &csv_separator,
+                               outFilePath,
+                               &outFileGiven,
+                               &quiet,
+                               &version,
+                               &outfileFormat);
 
-    parseArguments(argc,
-                   argv,
-                   &numFMUs,
-                   fmuPaths,
-                   &M,
-                   connections,
-                   &K,
-                   params,
-                   &tEnd,
-                   &h,
-                   &loggingOn,
-                   &csv_separator,
-                   outFilePath,
-                   &outFileGiven,
-                   &quiet,
-                   &version);
+    if(status == 1){
+        exit(EXIT_FAILURE);
+    }
 
     if(version){
         printf(VERSION);

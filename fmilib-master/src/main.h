@@ -7,7 +7,6 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <unistd.h>
-#include <regex.h>
 #include <sys/stat.h>
 #include <limits.h>
 

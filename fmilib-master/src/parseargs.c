@@ -4,7 +4,11 @@
 
 #include "parseargs.h"
 
-int parseArguments(int argc,
+void printInvalidArg(char option){
+    fprintf(stderr, "Invalid argument of -%c. Use -h for help.\n",option);
+}
+
+int parseArguments( int argc,
                     char *argv[],
                     int* numFMUs,
                     char fmuFilePaths[MAX_FMUS][PATH_MAX],
@@ -19,16 +23,17 @@ int parseArguments(int argc,
                     char outFilePath[PATH_MAX],
                     int* outFileGiven,
                     int* quiet,
-                    int* version){
+                    int* version,
+                    enum FILEFORMAT * format){
     int index, c;
     opterr = 0;
     *outFileGiven = 0;
 
     strcpy(outFilePath,DEFAULT_OUTFILE);
 
-    while ((c = getopt (argc, argv, "lvqht:c:d:s:o:p:")) != -1){
+    while ((c = getopt (argc, argv, "lvqht:c:d:s:o:p:f:")) != -1){
 
-        int n, skip, l, cont, i;
+        int n, skip, l, cont, i, numScanned;
         connection * conn;
 
         switch (c) {
@@ -54,25 +59,46 @@ int parseArguments(int argc,
             *numConnections = i;
             break;
             
+        case 'd':
+            numScanned = sscanf(optarg,"%lf", timeStepSize);
+            if(numScanned <= 0){
+                printInvalidArg(c);
+                return 1;
+            }
+            break;
+
+        case 'f':
+            if(strcmp(optarg,"csv") == 0){
+                *format = csv;
+            } else {
+                fprintf(stderr,"File format \"%s\" not recognized.\n",optarg);
+                return 1;
+            }
+            break;
+
         case 'l':
             *loggingOn = 1;
             break;
             
         case 't':
-            sscanf(optarg, "%lf", tEnd);
-            break;
-            
-        case 'd':
-            sscanf(optarg,"%lf", timeStepSize);
+            numScanned = sscanf(optarg, "%lf", tEnd);
+            if(numScanned <= 0){
+                printInvalidArg(c);
+                return 1;
+            }
             break;
 
         case 'h':
             printHelp(argv[0]);
-            exit(EXIT_SUCCESS);
-            break;
+            return 1;
 
         case 's':
-            *csv_separator = optarg[0];
+            if(strlen(optarg)==1 && isprint(optarg[0])){
+                *csv_separator = optarg[0];
+            } else {
+                printInvalidArg('s');
+                return 1;
+            }
             break;
 
         case 'o':
@@ -137,20 +163,20 @@ int parseArguments(int argc,
 
         case '?':
 
-            if (optopt == 'c'){
-                fprintf (stderr, "Option -%c requires an argument.\n", optopt);
-            } else if (isprint (optopt)){
-                fprintf (stderr, "Unknown option `-%c'.\n", optopt);
+            if(isprint(optopt)){
+                if(strchr("cdsopf", optopt)){
+                    fprintf (stderr, "Option -%c requires an argument.\n", optopt);
+                } else {
+                    fprintf (stderr, "Unknown option: -%c\n", optopt);
+                }
             } else {
-                fprintf (stderr,
-                        "Unknown option character `\\x%x'.\n",
-                        optopt);
+                fprintf (stderr, "Unknown option character: \\x%x\n", optopt);
             }
             return 1;
 
         default:
             printf("abort %c...\n",c);
-            abort ();
+            return 1;
         }
     }
 
@@ -161,6 +187,10 @@ int parseArguments(int argc,
         i++;
     }
     *numFMUs = i;
+    if(*numFMUs == 0){
+        fprintf(stderr, "No FMUs given. Aborting... (see -h for help)\n");
+        return 1;
+    }
 
     // Check if connections refer to nonexistant FMU index
     for(i=0; i<*numConnections; i++){
@@ -168,11 +198,11 @@ int parseArguments(int argc,
         int to = connections[i].toFMU;
         if(from < 0 || from >= *numFMUs){
             fprintf(stderr,"Connection %d connects from FMU %d, which does not exist.\n", i, from);
-            exit(EXIT_FAILURE);
+            return 1;
         }
         if(to < 0 || to >= *numFMUs){
             fprintf(stderr,"Connection %d connects to FMU %d, which does not exist.\n", i, to);
-            exit(EXIT_FAILURE);
+            return 1;
         }
     }
 
@@ -181,9 +211,9 @@ int parseArguments(int argc,
         int idx = params[i].fmuIndex;
         if(idx < 0 || idx > *numFMUs){
             fprintf(stderr,"Parameter %d refers to FMU %d, which does not exist.\n", i, idx);
-            exit(EXIT_FAILURE);
+            return 1;
         }
     }
 
-    return 0;
+    return 0; // OK
 }

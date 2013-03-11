@@ -8,7 +8,8 @@ void printHeader(){
 }
 
 void printHelp(const char* command) {
-
+    system("man fmu-master");
+    /*
     printf("\n");
     printHeader();
     printf("\n");
@@ -70,7 +71,6 @@ void printHelp(const char* command) {
     printf("\n");
     printf("  CREDITS\n\n");
     printf("    The app was built by Stefan Hedman at UMIT Research Lab 2013.\n\n");
-
-    exit(EXIT_FAILURE);
+    */
 }
 

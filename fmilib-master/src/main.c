@@ -333,14 +333,14 @@ int main( int argc, char *argv[] ) {
                                &outfileFormat,
                                &method);
 
-    if(status == 1){
-        exit(EXIT_FAILURE);
-    }
-
     if(version){
         printf(VERSION);
         printf("\n");
         exit(EXIT_SUCCESS);
+    }
+
+    if(status == 1){
+        exit(EXIT_FAILURE);
     }
 
     if(numFMUs == 0){

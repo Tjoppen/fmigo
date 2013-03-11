@@ -22,3 +22,4 @@ ADD_EXECUTABLE(fmu-master ${HEADERS} ${SRCS})
 TARGET_LINK_LIBRARIES(fmu-master fmilib dl)
 
 INSTALL (TARGETS fmu-master DESTINATION bin)
+INSTALL (FILES ${CMAKE_CURRENT_LIST_DIR}/doc/fmu-master.1.gz DESTINATION man/man1)

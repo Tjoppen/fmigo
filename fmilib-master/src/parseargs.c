@@ -122,6 +122,7 @@ int parseArguments( int argc,
 
         case 'v':
             *version = 1;
+            return 1;
             break;
 
         case 'p':

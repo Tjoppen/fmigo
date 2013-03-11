@@ -22,11 +22,11 @@ void printHelp(const char* command) {
     printf("\n");
     printf("  OPTIONS\n\n");
     printf("    -c [CONNECTIONS] Connection specification. No connections by default.\n");
-    printf("    -d [NUMBER]      Timestep size. Default: %g.\n",DEFAULT_TIMESTEP);
-    printf("    -o [STRING]      Result output file. Default: %s\n",DEFAULT_OUTFILE);
+    printf("    -d [TIMESTEP]    Timestep size. Default: %g.\n",DEFAULT_TIMESTEP);
+    printf("    -o [OUTFILE]     Result output file. Default: %s\n",DEFAULT_OUTFILE);
     printf("    -p [PARAMS]      Parameter specification. No params by default.\n");
-    printf("    -s [CHAR]        CSV separator character. Default: %c\n",DEFAULT_CSVSEP);
-    printf("    -t [NUMBER]      End simulation time in seconds. Default: %g.\n",DEFAULT_ENDTIME);
+    printf("    -s [SEPARATOR]   CSV separator character. Default: %c\n",DEFAULT_CSVSEP);
+    printf("    -t [ENDTIME]     End simulation time in seconds. Default: %g.\n",DEFAULT_ENDTIME);
     printf("\n");
     printf("  FMUPATHS\n\n");
     printf("    A space separated list of FMU file paths, relative or absolute. The FMU\n");

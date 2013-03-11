@@ -21,6 +21,7 @@
 #define DEFAULT_OUTFILE "result.csv"
 #define DEFAULT_CSVSEP ','
 #define MAX_LOG_LENGTH 1000
+#define MAX_GUID_LENGTH 100
 
 // Command line parsed connection
 typedef struct __connection{
@@ -42,6 +43,10 @@ typedef struct __param{
     int boolValue;                      // Boolean
 } param;
 
+enum FILEFORMAT {
+    csv
+} fileformat;
+
 // Runs all FMUs
 static int simulate(fmi1_import_t** fmus,                       // FMUs to be simulated
                     char fmuFileNames[MAX_FMUS][PATH_MAX],      // File names of all FMUs
@@ -56,12 +61,13 @@ static int simulate(fmi1_import_t** fmus,                       // FMUs to be si
                     char separator,                             // CSV separator
                     jm_callbacks callbacks,                     // FMILibrary callbacks
                     int quiet,                                  // Quiet mode
-                    int (*stepfunc)(double time,
+                    int (*stepfunc)(double time,                // System stepping function
                                     double communicationTimeStep,
                                     int numFMUs,
                                     fmi1_import_t ** fmus,
                                     int numConnections,
-                                    connection connections[MAX_CONNECTIONS])
+                                    connection connections[MAX_CONNECTIONS]),
+                    enum FILEFORMAT outFileFormat               // Out file format
                     );
 void importlogger(jm_callbacks* c, jm_string module, jm_log_level_enu_t log_level, jm_string message);
 void fmi1Logger(fmi1_component_t c, fmi1_string_t instanceName, fmi1_status_t status, fmi1_string_t category, fmi1_string_t message, ...);

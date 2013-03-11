@@ -24,14 +24,15 @@ int parseArguments( int argc,
                     int* outFileGiven,
                     int* quiet,
                     int* version,
-                    enum FILEFORMAT * format){
+                    enum FILEFORMAT * format,
+                    enum METHOD * method){
     int index, c;
     opterr = 0;
     *outFileGiven = 0;
 
     strcpy(outFilePath,DEFAULT_OUTFILE);
 
-    while ((c = getopt (argc, argv, "lvqht:c:d:s:o:p:f:")) != -1){
+    while ((c = getopt (argc, argv, "lvqht:c:d:s:o:p:f:m:")) != -1){
 
         int n, skip, l, cont, i, numScanned;
         connection * conn;
@@ -78,6 +79,15 @@ int parseArguments( int argc,
 
         case 'l':
             *loggingOn = 1;
+            break;
+
+        case 'm':
+            if(strcmp(optarg,"jacobi") == 0){
+                *method = jacobi;
+            } else {
+                fprintf(stderr,"Method \"%s\" not recognized.\n",optarg);
+                return 1;
+            }
             break;
             
         case 't':
@@ -164,7 +174,7 @@ int parseArguments( int argc,
         case '?':
 
             if(isprint(optopt)){
-                if(strchr("cdsopf", optopt)){
+                if(strchr("cdsopfm", optopt)){
                     fprintf (stderr, "Option -%c requires an argument.\n", optopt);
                 } else {
                     fprintf (stderr, "Unknown option: -%c\n", optopt);

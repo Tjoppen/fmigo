@@ -46,6 +46,17 @@ enum FILEFORMAT {
     csv
 } fileformat;
 
+enum METHOD {
+    jacobi
+} method;
+
+typedef int (*stepfunctionType)(double time,                // System stepping function
+                                double communicationTimeStep,
+                                int numFMUs,
+                                fmi1_import_t ** fmus,
+                                int numConnections,
+                                connection connections[MAX_CONNECTIONS]);
+
 // Runs all FMUs
 static int simulate(fmi1_import_t** fmus,                       // FMUs to be simulated
                     char fmuFileNames[MAX_FMUS][PATH_MAX],      // File names of all FMUs
@@ -60,12 +71,7 @@ static int simulate(fmi1_import_t** fmus,                       // FMUs to be si
                     char separator,                             // CSV separator
                     jm_callbacks callbacks,                     // FMILibrary callbacks
                     int quiet,                                  // Quiet mode
-                    int (*stepfunc)(double time,                // System stepping function
-                                    double communicationTimeStep,
-                                    int numFMUs,
-                                    fmi1_import_t ** fmus,
-                                    int numConnections,
-                                    connection connections[MAX_CONNECTIONS]),
+                    stepfunctionType stepfunc,
                     enum FILEFORMAT outFileFormat               // Out file format
                     );
 void importlogger(jm_callbacks* c, jm_string module, jm_log_level_enu_t log_level, jm_string message);

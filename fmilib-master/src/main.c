@@ -141,12 +141,7 @@ static int simulate( fmi1_import_t** fmus,
                      char separator,
                      jm_callbacks callbacks,
                      int quiet,
-                     int (*stepfunc)(double time,
-                                     double communicationTimeStep,
-                                     int numFMUs,
-                                     fmi1_import_t ** fmus,
-                                     int numConnections,
-                                     connection connections[MAX_CONNECTIONS]),
+                     stepfunctionType stepfunc,
                      enum FILEFORMAT outFileFormat){
 
     int i;
@@ -217,7 +212,7 @@ static int simulate( fmi1_import_t** fmus,
 
     // Output solution for time t0
     for(i=0; i<N; i++){
-        outputCSVRow(fmus[i], tStart, files[i], separator, 1);  // output column names
+        outputCSVRow(fmus[i], tStart, files[i], separator, 1); // output column names
         outputCSVRow(fmus[i], tStart, files[i], separator, 0); // output values
     }
 
@@ -318,6 +313,7 @@ int main( int argc, char *argv[] ) {
     char csv_separator = ',';
     int outFileGiven=0, quiet=0, loggingOn=0, version=0;
     enum FILEFORMAT outfileFormat;
+    enum METHOD method;
     int status =parseArguments(argc,
                                argv,
                                &numFMUs,
@@ -334,7 +330,8 @@ int main( int argc, char *argv[] ) {
                                &outFileGiven,
                                &quiet,
                                &version,
-                               &outfileFormat);
+                               &outfileFormat,
+                               &method);
 
     if(status == 1){
         exit(EXIT_FAILURE);
@@ -456,6 +453,10 @@ int main( int argc, char *argv[] ) {
         printf("  RUNNING SIMULATION...\n\n");
     }
 
+    // Pick stepfunction
+    stepfunctionType stepfunction;
+    stepfunction = &jacobiStep;
+
     // All loaded. Simulate.
     simulate(fmus,
              fmuPaths,
@@ -470,7 +471,7 @@ int main( int argc, char *argv[] ) {
              csv_separator,
              callbacks,
              quiet,
-             jacobiStep,
+             stepfunction,
              csv);
 
     // Clean up

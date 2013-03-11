@@ -6,7 +6,11 @@
 
 #include "main.h"
 
-int parseArguments(int argc,
+/**
+ * @brief Parses the command line arguments.
+ * @return int Returns 0 if the program should proceed, 1 if the program should end.
+ */
+int parseArguments( int argc,
                     char *argv[],
                     int* numFMUs,
                     char fmuFilePaths[MAX_FMUS][PATH_MAX],
@@ -22,6 +26,7 @@ int parseArguments(int argc,
                     int* outFileGiven,
                     int* quiet,
                     int* version,
-                    enum FILEFORMAT * format);
+                    enum FILEFORMAT * format,
+                    enum METHOD * method);
 
 #endif /* PARSEARGS_H */

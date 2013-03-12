@@ -127,7 +127,6 @@ void setParams(int numFMUs, int numParams, fmi1_import_t ** fmus, param params[M
     }
 }
 
-// simulate the given FMUs
 static int simulate( fmi1_import_t** fmus,
                      char fmuFileNames[MAX_FMUS][PATH_MAX],
                      int N,
@@ -143,7 +142,6 @@ static int simulate( fmi1_import_t** fmus,
                      int quiet,
                      stepfunctionType stepfunc,
                      enum FILEFORMAT outFileFormat){
-
     int i;
     int k;
     double time;                                                // Current time
@@ -157,7 +155,6 @@ static int simulate( fmi1_import_t** fmus,
     fmi1_boolean_t interactive = 0;                             // simulation run without user interaction
     int nSteps = 0;                                             // Number of steps taken
     FILE** files;                                               // result files
-    char** fileNames;                                           // Result file names
     char** fmuNames;                                            // Result file names
 
     // Allocate
@@ -166,39 +163,46 @@ static int simulate( fmi1_import_t** fmus,
         guids[i] = calloc(sizeof(char),MAX_GUID_LENGTH);
     }
     files =       (FILE**)calloc(sizeof(FILE*),N);
-    fileNames =   (char**)calloc(sizeof(char*),N);
     fmuNames =    (char**)calloc(sizeof(char*),N);
+
+    // Open result file
+    FILE * f;
+    if (!(f = fopen("result.csv", "w"))) {
+        fprintf(stderr,"Could not write to %s\n", "result.csv");
+        return 1;
+    }
+
+    // Init FMU names
+    // Todo: should be able to specify via command line
+    for(i=0; i<N; i++){ 
+        fmuNames[i] = calloc(sizeof(char),100);
+        sprintf(fmuNames[i],"fmu%d",i);
+    }
+
+    // Write CSV header
+    if(outFileFormat == csv){
+        writeCsvHeader(f, fmuNames, fmus, N, separator);
+    }
 
     // Init all the FMUs
     for(i=0; i<N; i++){ 
 
-        strcpy((char*)guids[i], fmi1_import_get_GUID ( fmus[i] ) );
-        char * a = fmi_import_create_URL_from_abs_path(&callbacks, fmuFileNames[i]);
+        //strcpy((char*)guids[i], fmi1_import_get_GUID ( fmus[i] ) );
+        //char * a = fmi_import_create_URL_from_abs_path(&callbacks, fmuFileNames[i]);
         fmuLocation = fmi_import_create_URL_from_abs_path(&callbacks, (const char*)fmuFileNames[i]);
 
-        fmuNames[i] = calloc(sizeof(char),100);
-        sprintf(fmuNames[i],"fmu%d",i);
+        // Instantiate the slave
         status = fmi1_import_instantiate_slave (fmus[i], fmuNames[i], fmuLocation, mimeType, timeout, visible, interactive);
         if (status == jm_status_error){
-            printf("could not instantiate model\n");
+            fprintf(stderr,"Could not instantiate model %s\n",fmuFileNames[i]);
             return 1;
-        }
-
-        // Generate out file name like this: "resultN.csv" where N is the FMU index
-        fileNames[i] = calloc(sizeof(char),100);
-        sprintf(fileNames[i],"result%d.csv",i);
-
-        // open result file
-        if (!(files[i] = fopen(fileNames[i], "w"))) {
-            printf("could not write %s\n", fileNames[i]);
-            return 1; // failure
         }
         
         // StopTimeDefined=fmiFalse means: ignore value of tEnd
         fmi1_status_t status = fmi1_import_initialize_slave(fmus[i], tStart, (fmi1_boolean_t)0, tEnd);
         if (status != fmi1_status_ok){
-            printf("Could not initialize model %s",fmuFileNames[i]);
-            return 0;
+            fprintf(stderr,"Could not initialize model %s\n",fmuFileNames[i]);
+            return 1;
         }
     }
 
@@ -210,10 +214,9 @@ static int simulate( fmi1_import_t** fmus,
     // Set user-given parameters
     setParams(N, K, fmus, params);
 
-    // Output solution for time t0
-    for(i=0; i<N; i++){
-        outputCSVRow(fmus[i], tStart, files[i], separator, 1); // output column names
-        outputCSVRow(fmus[i], tStart, files[i], separator, 0); // output values
+    // Write CSV row for time=0
+    if(outFileFormat == csv){
+        writeCsvRow(f, fmus, N, time, separator);
     }
 
     // enter the simulation loop
@@ -237,39 +240,25 @@ static int simulate( fmi1_import_t** fmus,
         // Advance time
         time += h;
 
-        // Write to files
-        for(i=0; i<N; i++){
-            outputCSVRow(fmus[i], time, files[i], separator, 0); // output values for this step
+        if(outFileFormat == csv){
+            writeCsvRow(f, fmus, N, time, separator);
         }
+
         nSteps++;
     }
     
     // end simulation
     for(i=0; i<N; i++){
         fmi1_status_t s = fmi1_import_terminate_slave(fmus[i]);
-        fmi1_import_free_slave_instance (fmus[i]);
-        if(s != fmi1_status_ok) printf("Error terminating slave instance %d\n",i);
-    }
-  
-    if(!quiet){
-        printf("  SIMULATION TERMINATED SUCCESSFULLY\n\n");
-
-        // print simulation summary 
-        printf("  START ............ %g\n", tStart);
-        printf("  END .............. %g\n", tEnd);
-        printf("  STEPS ............ %d\n", nSteps);
-        printf("  TIMESTEP ......... %g\n", h);
+        fmi1_import_free_slave_instance(fmus[i]);
+        if(s != fmi1_status_ok){
+            fprintf(stderr,"Error terminating slave instance %d. Continuing...\n",i);
+        }
     }
 
-    for(i=0; i<N; i++){
-        fclose(files[i]);
-    }
+    fclose(f);
 
-    if(!quiet){
-        printf("\n");
-    }
-
-    return 1; // success
+    return 0; // success
 }
 
 
@@ -466,21 +455,36 @@ int main( int argc, char *argv[] ) {
     }
 
     // All loaded. Simulate.
-    simulate(fmus,
-             fmuPaths,
-             numFMUs,
-             connections,
-             K,
-             params,
-             M,
-             tEnd,
-             h,
-             loggingOn,
-             csv_separator,
-             callbacks,
-             quiet,
-             stepfunction,
-             outfileFormat);
+    int res = simulate( fmus,
+                        fmuPaths,
+                        numFMUs,
+                        connections,
+                        K,
+                        params,
+                        M,
+                        tEnd,
+                        h,
+                        loggingOn,
+                        csv_separator,
+                        callbacks,
+                        quiet,
+                        stepfunction,
+                        outfileFormat);
+
+    if(!quiet){
+        if(res==0){
+            printf("  SIMULATION TERMINATED SUCCESSFULLY\n\n");
+
+            // print simulation summary 
+            printf("  START ............ %g\n", 0.0);
+            printf("  END .............. %g\n", tEnd);
+            //printf("  STEPS ............ %d\n", nSteps);
+            printf("  TIMESTEP ......... %g\n", h);
+            printf("\n");
+        } else {
+            printf("  SIMULATION FAILED\n\n");
+        }
+    }
 
     // Clean up
     for(i=0; i<numFMUs; i++){

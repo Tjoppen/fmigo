@@ -78,7 +78,9 @@ void setParams(int numFMUs, int numParams, fmi1_import_t ** fmus, param params[M
 
             fmi1_value_reference_t vr[1];
             vr[0] = fmi1_import_get_variable_vr(v);
-            fmi1_base_type_enu_t type = fmi1_import_get_base_type((fmi1_import_variable_typedef_t*)v);
+            fmi1_base_type_enu_t type = fmi1_import_get_variable_base_type(v);
+
+            // Temp things to pass to fmi1_import_set_xxx()
             fmi1_real_t lol[1];
             fmi1_integer_t innt[1];
             fmi1_boolean_t boool[1];

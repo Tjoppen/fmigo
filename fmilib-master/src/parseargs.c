@@ -131,6 +131,8 @@ int parseArguments( int argc,
             // Bool if "true" or "false"
             // Else: string
 
+            // TODO check against regexp and if fail: notify
+
             n=0;
             skip=0;
             l=strlen(optarg);
@@ -138,7 +140,20 @@ int parseArguments( int argc,
             i=0;
             char s[MAX_PARAM_LENGTH];
             param * p = &params[0];
-            while((n=sscanf(&optarg[skip],"%d,%d,%s", &p->fmuIndex, &p->valueReference, s))!=-1 && skip<l && cont){
+            int stop = 2;
+            while(cont && (n=sscanf(&optarg[skip],"%d,%d,%s", &p->fmuIndex, &p->valueReference, s))!=-1 && skip<l){
+
+                // Now skip everything before the n'th colon
+                char* pos = strchr(&optarg[skip],':');
+
+                if(pos==NULL){
+                    stop--;
+
+                    if(stop == 0){
+                        cont=0;
+                        break;
+                    }
+                }
 
                 // Check type of the parameter
                 double realVal;
@@ -149,24 +164,31 @@ int parseArguments( int argc,
                 if( sscanf(s,"%d",&intVal) != -1 ){ // Integer
                     p->intValue = intVal;
                 }
-                // String
-                strcpy(p->stringValue,s);
 
-                if(strcmp(s,"true")==0){
+                char buf[MAX_PARAM_LENGTH];
+                strcpy(buf, s);
+                int pos2 = strchr(buf,':')-buf;
+                char buf2[MAX_PARAM_LENGTH];
+                
+                if(strchr(buf,':')==NULL){
+                    strcpy(buf2, buf);
+                    cont = 0;
+                } else {
+                    strncpy(buf2, buf, pos2);
+                }
+
+                // String
+                strcpy(p->stringValue,buf2);
+
+                // Boolean
+                p->boolValue = 0;
+                if(strstr(buf,"true")){
                     p->boolValue = 1;
                 }
-                if(strcmp(s,"false")==0){
-                    p->boolValue = 0;
-                }
 
-                // Now skip everything before the n'th colon
-                char* pos = strchr(&optarg[skip],':');
-                if(pos==NULL){
-                    cont=0;
-                } else {
-                    skip += pos-&optarg[skip]+1; // Dunno why this works... See http://www.cplusplus.com/reference/cstring/strchr/
-                    p = &params[i+1];
-                }
+                skip += pos-&optarg[skip]+1; // Dunno why this works... See http://www.cplusplus.com/reference/cstring/strchr/
+                p = p + 1;
+                
                 i++;
             }
             *numParameters = i;
@@ -220,6 +242,7 @@ int parseArguments( int argc,
     // Check if parameters refer to nonexistant FMU index
     for(i=0; i<*numParameters; i++){
         int idx = params[i].fmuIndex;
+
         if(idx < 0 || idx > *numFMUs){
             fprintf(stderr,"Parameter %d refers to FMU %d, which does not exist.\n", i, idx);
             return 1;

@@ -21,12 +21,17 @@ void setInitialValues(fmi1_import_t* fmu){
     fmi1_import_variable_list_t* vl = fmi1_import_get_variable_list(fmu);
     int num = fmi1_import_get_variable_list_size(vl);
     for (k=0; num; k++) {
-        fmi1_import_variable_t* v = fmi1_import_get_variable(vl,k);
+        fmi1_import_variable_t * v = fmi1_import_get_variable(vl,k);
         if(!v) break;
 
         fmi1_value_reference_t vr[1];
         vr[0] = fmi1_import_get_variable_vr(v);
-        fmi1_base_type_enu_t type = fmi1_import_get_base_type((fmi1_import_variable_typedef_t*)v);
+
+        fmi1_import_variable_typedef_t * vt = fmi1_import_get_variable_declared_type(v);
+
+        fmi1_base_type_enu_t bt;
+        bt = fmi1_import_get_variable_base_type(v);
+
         fmi1_real_t lol[1];
         fmi1_integer_t innt[1];
         fmi1_boolean_t boool[1];
@@ -34,27 +39,27 @@ void setInitialValues(fmi1_import_t* fmu){
 
         // Set initial values from the XML file
         if(fmi1_import_get_variable_has_start(v)){
-            switch (type){
-                case fmi1_base_type_real:
-                    lol[0] = fmi1_import_get_real_variable_start((fmi1_import_real_variable_t*) v);
-                    fmi1_import_set_real(fmu,   vr,   1, lol);
-                    break;
-                case fmi1_base_type_int:
-                case fmi1_base_type_enum:
-                    innt[0] = fmi1_import_get_integer_variable_start((fmi1_import_integer_variable_t*) v);
-                    fmi1_import_set_integer(fmu,   vr,   1, innt);
-                    break;
-                case fmi1_base_type_bool:
-                    boool[0] = fmi1_import_get_boolean_variable_start((fmi1_import_bool_variable_t*) v);
-                    fmi1_import_set_boolean(fmu,   vr,   1, boool);
-                    break;
-                case fmi1_base_type_str:
-                    striing[0] = fmi1_import_get_string_variable_start((fmi1_import_string_variable_t*) v);
-                    fmi1_import_set_string(fmu,   vr,   1, striing);
-                    break;
-                default: 
-                    fprintf(stderr,"Could not determine type of value reference %d in FMU. Continuing without setting initial value...\n", vr[0]);
-                    break;
+            switch (bt){
+            case fmi1_base_type_real:
+                lol[0] = fmi1_import_get_real_variable_start((fmi1_import_real_variable_t*) v);
+                fmi1_import_set_real(fmu,   vr,   1, lol);
+                break;
+            case fmi1_base_type_int:
+            case fmi1_base_type_enum:
+                innt[0] = fmi1_import_get_integer_variable_start((fmi1_import_integer_variable_t*) v);
+                fmi1_import_set_integer(fmu,   vr,   1, innt);
+                break;
+            case fmi1_base_type_bool:
+                boool[0] = fmi1_import_get_boolean_variable_start((fmi1_import_bool_variable_t*) v);
+                fmi1_import_set_boolean(fmu,   vr,   1, boool);
+                break;
+            case fmi1_base_type_str:
+                striing[0] = fmi1_import_get_string_variable_start((fmi1_import_string_variable_t*) v);
+                fmi1_import_set_string(fmu,   vr,   1, striing);
+                break;
+            default: 
+                fprintf(stderr,"Could not determine type of value reference %d in FMU. Continuing without setting initial value...\n", vr[0]);
+                break;
             }
         }
     }
@@ -232,10 +237,17 @@ static int simulate( fmi1_import_t** fmus,
     int found = 0;
     status = fmi1_status_ok;
 
+    int simulationStatus = 0; // Success
+
     while (time < tEnd && status==fmi1_status_ok) {
 
         // Step the system of FMUs
         int result = (*stepfunc)(time, h, N, fmus, M, connections);
+
+        if(result != 0){
+            simulationStatus = 1; // Error
+            break;
+        }
 
         // Advance time
         time += h;
@@ -253,12 +265,13 @@ static int simulate( fmi1_import_t** fmus,
         fmi1_import_free_slave_instance(fmus[i]);
         if(s != fmi1_status_ok){
             fprintf(stderr,"Error terminating slave instance %d. Continuing...\n",i);
+            simulationStatus = 1; // error
         }
     }
 
     fclose(f);
 
-    return 0; // success
+    return simulationStatus;
 }
 
 

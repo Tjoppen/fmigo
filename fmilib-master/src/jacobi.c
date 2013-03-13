@@ -44,7 +44,7 @@ int jacobiStep( double time,
             fmi1_import_variable_t* v = fmi1_import_get_variable(varsFrom,k);
             if(!v) break;
             //vrFrom[0] = fmi1_import_get_variable_vr(v);
-            fmi1_base_type_enu_t typeFrom = fmi1_import_get_base_type((fmi1_import_variable_typedef_t*)v);
+            fmi1_base_type_enu_t typeFrom = fmi1_import_get_variable_base_type(v);
 
             // Now find the input variable
             for (l=0; !found && l<numTo; l++) {
@@ -52,7 +52,7 @@ int jacobiStep( double time,
                 fmi1_import_variable_t* vTo = fmi1_import_get_variable(varsTo,l);
                 if(!vTo) break;
                 //vrTo[0] = fmi1_import_get_variable_vr(vTo);
-                fmi1_base_type_enu_t typeTo = fmi1_import_get_base_type((fmi1_import_variable_typedef_t*)vTo);
+                fmi1_base_type_enu_t typeTo = fmi1_import_get_variable_base_type(vTo);
 
                 // Found the input and output. Check if they have equal types
                 if(typeFrom == typeTo){
@@ -60,7 +60,7 @@ int jacobiStep( double time,
                     //printf("Connection %d at T=%g: Transferring value from FMU%d (vr=%d) to FMU%d (vr=%d)\n",ci,time,fmuFrom,vrFrom[0],fmuTo,vrTo[0]);
 
                     switch (typeFrom){
-                    case fmi1_base_type_real :
+                    case fmi1_base_type_real:
                         fmi1_import_get_real(fmus[fmuFrom], vrFrom, 1, rr);
                         fmi1_import_set_real(fmus[fmuTo],   vrTo,   1, rr);
                         break;
@@ -96,7 +96,7 @@ int jacobiStep( double time,
         fmi1_status_t s = fmi1_import_do_step (fmus[i], time, communicationTimeStep, 1);
         if(s != fmi1_status_ok){
             status = s;
-            printf("doStep() of FMU %d didn't return fmiOK! Exiting...",i);
+            printf("doStep() of FMU %d didn't return fmiOK! Exiting...\n",i);
             return 1;
         }
     }

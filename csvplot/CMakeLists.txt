@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 2.8)
+
+FILE(COPY        ${CMAKE_CURRENT_LIST_DIR}/csvplot.py
+     DESTINATION ${CMAKE_CURRENT_LIST_DIR}/bin)
+
+INSTALL(PROGRAMS ${CMAKE_CURRENT_LIST_DIR}/bin/csvplot DESTINATION bin)

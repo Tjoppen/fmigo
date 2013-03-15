@@ -160,13 +160,13 @@ void writeCsvRow(FILE* file,
             const char* s = fmi1_import_get_variable_name(v);
 
             // output values
-            fmi1_base_type_enu_t type = fmi1_import_get_base_type((fmi1_import_variable_typedef_t*)v);
+            fmi1_base_type_enu_t type = fmi1_import_get_variable_base_type(v);
             fmi1_value_reference_t vr[1];
             vr[0] = fmi1_import_get_variable_vr(v);
             fmi1_real_t rr[1];
             fmi1_boolean_t bb[1];
             fmi1_integer_t ii[1];
-            fmi1_string_t ss[1];
+            fmi1_string_t ss[1000];
             switch (type){
             case fmi1_base_type_real :
                 fmi1_import_get_real(fmus[j], vr, 1, rr);
@@ -188,7 +188,7 @@ void writeCsvRow(FILE* file,
                 fprintf(file, "%c%d", separator, bb[0]);
                 break;
             case fmi1_base_type_str:
-                fmi1_import_get_string(fmus[j], vr, 1, &s);
+                fmi1_import_get_string(fmus[j], vr, 1, ss);
                 fprintf(file, "%c%s", separator, ss[0]);
                 break;
             default: 

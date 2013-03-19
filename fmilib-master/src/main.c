@@ -53,7 +53,7 @@ int main( int argc, char *argv[] ) {
     int numFMUs=0, K=0, M=0;
     double tEnd=1.0, h=0.1;
     char csv_separator = ',';
-    int outFileGiven=0, quiet=0, loggingOn=0, version=0;
+    int outFileGiven=0, quiet=0, loggingOn=0, version=0, realtime=0;
     enum FILEFORMAT outfileFormat;
     enum METHOD method;
     int status =parseArguments(argc,
@@ -73,7 +73,8 @@ int main( int argc, char *argv[] ) {
                                &quiet,
                                &version,
                                &outfileFormat,
-                               &method);
+                               &method,
+                               &realtime);
 
     if(version){
         // version flag given
@@ -225,7 +226,8 @@ int main( int argc, char *argv[] ) {
                         callbacks,
                         quiet,
                         stepfunction,
-                        outfileFormat);
+                        outfileFormat,
+                        realtime);
 
     if(!quiet){
         if(res==0){

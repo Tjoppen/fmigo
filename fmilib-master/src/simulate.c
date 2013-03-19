@@ -1,7 +1,19 @@
 #include <fmilib.h>
 #include <stdio.h>
+#include <time.h>
+#include <sys/time.h>
 
 #include "simulate.h"
+
+void diff(struct timespec start, struct timespec end, struct timespec * diffTime){
+    if ((end.tv_nsec-start.tv_nsec)<0) {
+        diffTime->tv_sec = end.tv_sec-start.tv_sec-1;
+        diffTime->tv_nsec = 1000000000+end.tv_nsec-start.tv_nsec;
+    } else {
+        diffTime->tv_sec = end.tv_sec-start.tv_sec;
+        diffTime->tv_nsec = end.tv_nsec-start.tv_nsec;
+    }
+}
 
 int simulate(fmi1_import_t** fmus,
              char fmuFileNames[MAX_FMUS][PATH_MAX],
@@ -17,7 +29,8 @@ int simulate(fmi1_import_t** fmus,
              jm_callbacks callbacks,
              int quiet,
              stepfunctionType stepfunc,
-             enum FILEFORMAT outFileFormat){
+             enum FILEFORMAT outFileFormat,
+             int realTimeMode){
     int i;
     int k;
     double time;                                                // Current time
@@ -110,7 +123,11 @@ int simulate(fmi1_import_t** fmus,
 
     int simulationStatus = 0; // Success
 
+    struct timespec time1, time2, diffTime;
+
     while (time < tEnd && status==fmi1_status_ok) {
+
+        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time1);
 
         // Step the system of FMUs
         int result = (*stepfunc)(time, h, N, fmus, M, connections);
@@ -128,6 +145,15 @@ int simulate(fmi1_import_t** fmus,
         }
 
         nSteps++;
+
+        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time2);
+
+        if(realTimeMode){
+            diff(time1,time2, &diffTime);            
+            long int s = h*1e6 - diffTime.tv_sec * 1e6 + diffTime.tv_nsec / 1e3;
+            if(s < 0) s = 0;
+            usleep(s);
+        }
     }
     
     // end simulation

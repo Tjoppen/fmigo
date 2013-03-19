@@ -29,6 +29,7 @@ int simulate(fmi1_import_t** fmus,
              jm_callbacks callbacks,
              int quiet,
              stepfunctionType stepfunc,
-             enum FILEFORMAT outFileFormat);
+             enum FILEFORMAT outFileFormat,
+             int realTimeMode);
 
 #endif /* SIMULATE_H */

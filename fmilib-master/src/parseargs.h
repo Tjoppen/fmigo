@@ -27,6 +27,7 @@ int parseArguments( int argc,
                     int* quiet,
                     int* version,
                     enum FILEFORMAT * format,
-                    enum METHOD * method);
+                    enum METHOD * method,
+                    int * realtime);
 
 #endif /* PARSEARGS_H */

@@ -25,14 +25,15 @@ int parseArguments( int argc,
                     int* quiet,
                     int* version,
                     enum FILEFORMAT * format,
-                    enum METHOD * method){
+                    enum METHOD * method,
+                    int * realtime){
     int index, c;
     opterr = 0;
     *outFileGiven = 0;
 
     strcpy(outFilePath,DEFAULT_OUTFILE);
 
-    while ((c = getopt (argc, argv, "lvqht:c:d:s:o:p:f:m:")) != -1){
+    while ((c = getopt (argc, argv, "rlvqht:c:d:s:o:p:f:m:")) != -1){
 
         int n, skip, l, cont, i, numScanned;
         connection * conn;
@@ -101,6 +102,10 @@ int parseArguments( int argc,
         case 'h':
             printHelp(argv[0]);
             return 1;
+
+        case 'r':
+            *realtime = 1;
+            break;
 
         case 's':
             if(strlen(optarg)==1 && isprint(optarg[0])){

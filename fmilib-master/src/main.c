@@ -22,18 +22,7 @@ void importlogger(jm_callbacks* c, jm_string module, jm_log_level_enu_t log_leve
         printf("%10s,\tlog level %2d:\t%s\n", module, log_level, message);
 }
 
-void fmi1Logger(fmi1_component_t c, fmi1_string_t instanceName, fmi1_status_t status, fmi1_string_t category, fmi1_string_t message, ...){
-    if(doLog){
-        char msg[MAX_LOG_LENGTH];
-        va_list argp;
-        va_start(argp, message);
-        vsprintf(msg, message, argp);
-        printf("fmiStatus = %d;  %s (%s): %s\n", status, instanceName, category, msg);
-    }
-}
-void fmi1StepFinished(fmi1_component_t c, fmi1_status_t status){
-    
-}
+//void fmi1StepFinished(fmi1_component_t c, fmi1_status_t status){ }
 
 int main( int argc, char *argv[] ) {
 
@@ -171,10 +160,10 @@ int main( int argc, char *argv[] ) {
 
             int registerGlobally = 0;
             fmi1_callback_functions_t callBackFunctions;
-            callBackFunctions.logger = fmi1Logger;
+            callBackFunctions.logger = fmi1_log_forwarding;
             callBackFunctions.allocateMemory = calloc;
             callBackFunctions.freeMemory = free;
-            callBackFunctions.stepFinished = fmi1StepFinished;
+            //callBackFunctions.stepFinished = fmi1StepFinished;
             jm_status_enu_t status = fmi1_import_create_dllfmu  ( fmus[i], callBackFunctions, registerGlobally );
             if(status == jm_status_success){
                 // Successfully loaded DLL!
@@ -185,6 +174,36 @@ int main( int argc, char *argv[] ) {
                 exit(EXIT_FAILURE);
             }
         } else if(versions[i] == fmi_version_2_0_enu) {
+    
+            // Test some fmu2 stuff
+            fmi2_import_t * fmu;
+            fmu = fmi2_import_parse_xml(contexts[i], tmpPath, 0);
+            if(!fmu){
+                fprintf(stderr,"Could not load XML\n");
+                exit(EXIT_FAILURE);
+            }
+
+            if(fmi2_import_get_fmu_kind(fmu) != fmi2_fmu_kind_cs) {
+                fprintf(stderr,"Only CS 2.0 is supported by this code\n");
+                exit(EXIT_FAILURE);
+            }
+
+            fmi2_callback_functions_t callBackFunctions;
+
+            callBackFunctions.logger = fmi2_log_forwarding;
+            callBackFunctions.allocateMemory = calloc;
+            callBackFunctions.freeMemory = free;
+            callBackFunctions.componentEnvironment = fmu;
+
+            jm_status_enu_t status = fmi2_import_create_dllfmu(fmu, fmi2_fmu_kind_cs, &callBackFunctions);
+            if(status == jm_status_error) {
+                printf("Could not create the DLL loading mechanism(C-API) (error: %s).\n", fmi2_import_get_last_error(fmu));
+                exit(EXIT_FAILURE);
+            }
+
+            fmi2_import_destroy_dllfmu(fmu);
+            fmi2_import_free(fmu);
+
             fprintf(stderr,"FMI v2.0 not supported yet.\n");
             exit(EXIT_FAILURE);
 

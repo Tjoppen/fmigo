@@ -135,7 +135,9 @@ int simulate(fmi1_import_t** fmus,
 
     while (time < tEnd && status==fmi1_status_ok) {
 
-        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time1);
+        if(realTimeMode){
+            clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time1);
+        }
 
         // Step the system of FMUs
         int result = (*stepfunc)(time, h, N, fmus, M, connections);
@@ -154,9 +156,9 @@ int simulate(fmi1_import_t** fmus,
 
         nSteps++;
 
-        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time2);
-
         if(realTimeMode){
+            clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time2);
+
             diff(time1,time2, &diffTime);            
             long int s = h*1e6 - diffTime.tv_sec * 1e6 + diffTime.tv_nsec / 1e3;
             if(s < 0) s = 0;

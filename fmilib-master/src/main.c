@@ -212,6 +212,7 @@ int main( int argc, char *argv[] ) {
     }
 
     // All loaded. Simulate.
+    int numSteps;
     int res = simulate( fmus,
                         fmuPaths,
                         numFMUs,
@@ -228,7 +229,8 @@ int main( int argc, char *argv[] ) {
                         stepfunction,
                         outfileFormat,
                         outFilePath,
-                        realtime);
+                        realtime,
+                        &numSteps);
 
     if(!quiet){
         if(res==0){
@@ -237,7 +239,7 @@ int main( int argc, char *argv[] ) {
             // print simulation summary 
             printf("  START ............ %g\n", 0.0);
             printf("  END .............. %g\n", tEnd);
-            //printf("  STEPS ............ %d\n", nSteps);
+            printf("  STEPS ............ %d\n", numSteps);
             printf("  TIMESTEP ......... %g\n", h);
             printf("\n");
         } else {

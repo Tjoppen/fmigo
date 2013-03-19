@@ -31,7 +31,8 @@ int simulate(fmi1_import_t** fmus,
              stepfunctionType stepfunc,
              enum FILEFORMAT outFileFormat,
              char outFilePath[PATH_MAX],
-             int realTimeMode){
+             int realTimeMode,
+             int * numSteps){
     int i;
     int k;
     double time;                                                // Current time
@@ -168,6 +169,8 @@ int simulate(fmi1_import_t** fmus,
     }
 
     fclose(f);
+
+    *numSteps = nSteps;
 
     return simulationStatus;
 }

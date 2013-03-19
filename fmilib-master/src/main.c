@@ -34,8 +34,6 @@ void importlogger(jm_callbacks* c, jm_string module, jm_log_level_enu_t log_leve
         printf("%10s,\tlog level %2d:\t%s\n", module, log_level, message);
 }
 
-//void fmi1StepFinished(fmi1_component_t c, fmi1_status_t status){ }
-
 int main( int argc, char *argv[] ) {
 
     if(argc == 1){
@@ -51,8 +49,8 @@ int main( int argc, char *argv[] ) {
     param params[MAX_PARAMS];
     connection connections[MAX_CONNECTIONS];
 
-    int numFMUs=0, K=0, M=0;
-    double tEnd=1.0, h=0.1;
+    int numFMUs=0, numParameters=0, numConnections=0;
+    double tEnd=1.0, timeStep=0.1;
     char csv_separator = ',';
     int outFileGiven=0, quiet=0, loggingOn=0, version=0, realtime=0;
     enum FILEFORMAT outfileFormat;
@@ -61,12 +59,12 @@ int main( int argc, char *argv[] ) {
                                argv,
                                &numFMUs,
                                fmuPaths,
-                               &M,
+                               &numConnections,
                                connections,
-                               &K,
+                               &numParameters,
                                params,
                                &tEnd,
-                               &h,
+                               &timeStep,
                                &loggingOn,
                                &csv_separator,
                                outFilePath,
@@ -157,7 +155,6 @@ int main( int argc, char *argv[] ) {
             callBackFunctions.logger = doLog ? fmi1_log_forwarding : fmi1_null_logger;
             callBackFunctions.allocateMemory = calloc;
             callBackFunctions.freeMemory = free;
-            //callBackFunctions.stepFinished = fmi1StepFinished;
             jm_status_enu_t status = fmi1_import_create_dllfmu  ( fmus1[i], callBackFunctions, registerGlobally );
             if(status == jm_status_success){
                 // Successfully loaded DLL!
@@ -217,9 +214,9 @@ int main( int argc, char *argv[] ) {
                 }
             }
 
-            if(M>0){
-                printf("\n  CONNECTIONS (%d)\n",M);
-                for(i=0; i<M; i++){
+            if(numConnections > 0){
+                printf("\n  CONNECTIONS (%d)\n",numConnections);
+                for(i=0; i<numConnections; i++){
                     printf("    FMU %d, value reference %d ---> FMU %d, value reference %d\n",  connections[i].fromFMU,
                                                                                                 connections[i].fromOutputVR,
                                                                                                 connections[i].toFMU,
@@ -253,11 +250,11 @@ int main( int argc, char *argv[] ) {
                             fmuPaths,
                             numFMUs,
                             connections,
-                            K,
+                            numParameters,
                             params,
-                            M,
+                            numConnections,
                             tEnd,
-                            h,
+                            timeStep,
                             loggingOn,
                             csv_separator,
                             callbacks,
@@ -276,7 +273,7 @@ int main( int argc, char *argv[] ) {
                 printf("  START ............ %g\n", 0.0);
                 printf("  END .............. %g\n", tEnd);
                 printf("  STEPS ............ %d\n", numSteps);
-                printf("  TIMESTEP ......... %g\n", h);
+                printf("  TIMESTEP ......... %g\n", timeStep);
                 printf("\n");
             } else {
                 printf("  SIMULATION FAILED\n\n");
@@ -311,6 +308,7 @@ int main( int argc, char *argv[] ) {
     free(fmus2);
     free(contexts);
     free(versions);
+    free(tmpPaths);
 
     if(doSimulate){
         return EXIT_SUCCESS;

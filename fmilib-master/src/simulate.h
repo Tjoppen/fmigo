@@ -30,6 +30,7 @@ int simulate(fmi1_import_t** fmus,
              int quiet,
              stepfunctionType stepfunc,
              enum FILEFORMAT outFileFormat,
+             char outFile[PATH_MAX],
              int realTimeMode);
 
 #endif /* SIMULATE_H */

@@ -131,13 +131,6 @@ int parseArguments( int argc,
             break;
 
         case 'p':
-            // Real if number and contains .
-            // Int if number and only digits
-            // Bool if "true" or "false"
-            // Else: string
-
-            // TODO check against regexp and if fail: notify
-
             n=0;
             skip=0;
             l=strlen(optarg);
@@ -160,7 +153,7 @@ int parseArguments( int argc,
                     }
                 }
 
-                // Check type of the parameter
+                // Try to read all types of parameters and store.
                 double realVal;
                 int intVal;
                 if( sscanf(s,"%lf",&realVal) != -1 ){ // Real

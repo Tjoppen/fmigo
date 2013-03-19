@@ -46,7 +46,7 @@ int main( int argc, char *argv[] ) {
     int i;
 
     char fmuPaths[MAX_FMUS][PATH_MAX];
-    char outFilePath[PATH_MAX];
+    char outFilePath[PATH_MAX] = "result.csv";
     param params[MAX_PARAMS];
     connection connections[MAX_CONNECTIONS];
 
@@ -227,6 +227,7 @@ int main( int argc, char *argv[] ) {
                         quiet,
                         stepfunction,
                         outfileFormat,
+                        outFilePath,
                         realtime);
 
     if(!quiet){

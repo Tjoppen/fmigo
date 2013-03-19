@@ -30,6 +30,7 @@ int simulate(fmi1_import_t** fmus,
              int quiet,
              stepfunctionType stepfunc,
              enum FILEFORMAT outFileFormat,
+             char outFilePath[PATH_MAX],
              int realTimeMode){
     int i;
     int k;
@@ -56,8 +57,8 @@ int simulate(fmi1_import_t** fmus,
 
     // Open result file
     FILE * f;
-    if (!(f = fopen("result.csv", "w"))) {
-        fprintf(stderr,"Could not write to %s\n", "result.csv");
+    if (!(f = fopen(outFilePath, "w"))) {
+        fprintf(stderr,"Could not write to %s\n", outFilePath);
         return 1;
     }
 

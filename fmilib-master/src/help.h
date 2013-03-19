@@ -2,6 +2,6 @@
 #define HELP_H
 
 void printHeader();
-void printHelp(const char* command);
+void printHelp();
 
 #endif /* HELP_H */

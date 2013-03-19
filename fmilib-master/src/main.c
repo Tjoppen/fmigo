@@ -38,8 +38,8 @@ void fmi1StepFinished(fmi1_component_t c, fmi1_status_t status){
 int main( int argc, char *argv[] ) {
 
     if(argc == 1){
-        // No args given
-        printHelp(argv[0]);
+        // No args given, print help
+        printHelp();
         exit(EXIT_SUCCESS);
     }
 
@@ -47,7 +47,6 @@ int main( int argc, char *argv[] ) {
 
     char fmuPaths[MAX_FMUS][PATH_MAX];
     char outFilePath[PATH_MAX];
-    //char fmuNames[MAX_FMUS][PATH_MAX];
     param params[MAX_PARAMS];
     connection connections[MAX_CONNECTIONS];
 
@@ -77,17 +76,20 @@ int main( int argc, char *argv[] ) {
                                &method);
 
     if(version){
+        // version flag given
         printf(VERSION);
         printf("\n");
         exit(EXIT_SUCCESS);
     }
 
     if(status == 1){
+        // Exit
         exit(EXIT_FAILURE);
     }
 
     if(numFMUs == 0){
-        printHelp(argv[0]);
+        // No fmus...
+        printHelp();
         exit(EXIT_FAILURE);
     }
 

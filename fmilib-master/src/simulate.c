@@ -16,7 +16,7 @@ void diff(struct timespec start, struct timespec end, struct timespec * diffTime
 }
 
 int simulate(fmi1_import_t** fmus,
-             char fmuFileNames[MAX_FMUS][PATH_MAX],
+             char fmuPaths[MAX_FMUS][PATH_MAX],
              int N,
              connection connections[MAX_CONNECTIONS],
              int K,
@@ -84,20 +84,20 @@ int simulate(fmi1_import_t** fmus,
         // Get guid
         //strcpy((char*)guids[i], fmi1_import_get_GUID ( fmus[i] ) );
 
-        //char * a = fmi_import_create_URL_from_abs_path(&callbacks, fmuFileNames[i]);
-        fmuLocation = fmi_import_create_URL_from_abs_path(&callbacks, (const char*)fmuFileNames[i]);
+        //char * a = fmi_import_create_URL_from_abs_path(&callbacks, fmuPaths[i]);
+        fmuLocation = fmi_import_create_URL_from_abs_path(&callbacks, (const char*)fmuPaths[i]);
 
         // Instantiate the slave
         status = fmi1_import_instantiate_slave (fmus[i], fmuNames[i], fmuLocation, mimeType, timeout, visible, interactive);
         if (status == jm_status_error){
-            fprintf(stderr,"Could not instantiate model %s\n",fmuFileNames[i]);
+            fprintf(stderr,"Could not instantiate model %s\n",fmuPaths[i]);
             return 1;
         }
         
         // StopTimeDefined=fmiFalse means: ignore value of tEnd
         fmi1_status_t status = fmi1_import_initialize_slave(fmus[i], tStart, (fmi1_boolean_t)0, tEnd);
         if (status != fmi1_status_ok){
-            fprintf(stderr,"Could not initialize model %s\n",fmuFileNames[i]);
+            fprintf(stderr,"Could not initialize model %s\n",fmuPaths[i]);
             return 1;
         }
     }

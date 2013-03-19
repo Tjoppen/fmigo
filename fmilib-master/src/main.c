@@ -17,6 +17,18 @@
 
 int doLog = 0;
 
+void fmi1_null_logger(  fmi1_component_t    c,
+                        fmi1_string_t   instanceName,
+                        fmi1_status_t   status,
+                        fmi1_string_t   category,
+                        fmi1_string_t   message, ... ) { }
+
+void fmi2_null_logger(  fmi2_component_t c,
+                        fmi2_string_t instanceName,
+                        fmi2_status_t status,
+                        fmi2_string_t category,
+                        fmi2_string_t message, ...){ }
+
 void importlogger(jm_callbacks* c, jm_string module, jm_log_level_enu_t log_level, jm_string message){
     if(doLog)
         printf("%10s,\tlog level %2d:\t%s\n", module, log_level, message);
@@ -97,10 +109,10 @@ int main( int argc, char *argv[] ) {
         if(M>0){
             printf("\n  CONNECTIONS (%d)\n",M);
             for(i=0; i<M; i++){
-                printf("    FMU %d, value reference %d ---> FMU %d, value reference %d\n",connections[i].fromFMU,
-                                                        connections[i].fromOutputVR,
-                                                        connections[i].toFMU,
-                                                        connections[i].toInputVR);
+                printf("    FMU %d, value reference %d ---> FMU %d, value reference %d\n",  connections[i].fromFMU,
+                                                                                            connections[i].fromOutputVR,
+                                                                                            connections[i].toFMU,
+                                                                                            connections[i].toInputVR);
             }
         }
 
@@ -124,7 +136,8 @@ int main( int argc, char *argv[] ) {
 
     doLog = loggingOn;
 
-    fmi1_import_t** fmus =              calloc(sizeof(fmi1_import_t*),numFMUs);
+    fmi1_import_t** fmus1 =             calloc(sizeof(fmi1_import_t*),numFMUs);
+    fmi2_import_t** fmus2 =             calloc(sizeof(fmi2_import_t*),numFMUs);
     fmi_import_context_t** contexts =   calloc(sizeof(fmi_import_context_t*),numFMUs);
     fmi_version_enu_t* versions =       calloc(sizeof(fmi_version_enu_t),numFMUs);
     const char** tmpPaths =             calloc(sizeof(const char*),numFMUs);
@@ -151,20 +164,20 @@ int main( int argc, char *argv[] ) {
 
         if(versions[i] == fmi_version_1_enu) {
 
-            fmus[i] = fmi1_import_parse_xml ( contexts[i], tmpPath );
+            fmus1[i] = fmi1_import_parse_xml ( contexts[i], tmpPath );
 
-            if(!fmus[i]){
+            if(!fmus1[i]){
                 fprintf(stderr,"Could not load XML\n");
                 exit(EXIT_FAILURE);
             }
 
             int registerGlobally = 0;
             fmi1_callback_functions_t callBackFunctions;
-            callBackFunctions.logger = fmi1_log_forwarding;
+            callBackFunctions.logger = doLog ? fmi1_log_forwarding : fmi1_null_logger;
             callBackFunctions.allocateMemory = calloc;
             callBackFunctions.freeMemory = free;
             //callBackFunctions.stepFinished = fmi1StepFinished;
-            jm_status_enu_t status = fmi1_import_create_dllfmu  ( fmus[i], callBackFunctions, registerGlobally );
+            jm_status_enu_t status = fmi1_import_create_dllfmu  ( fmus1[i], callBackFunctions, registerGlobally );
             if(status == jm_status_success){
                 // Successfully loaded DLL!
 
@@ -190,7 +203,7 @@ int main( int argc, char *argv[] ) {
 
             fmi2_callback_functions_t callBackFunctions;
 
-            callBackFunctions.logger = fmi2_log_forwarding;
+            callBackFunctions.logger = doLog ? fmi2_log_forwarding : fmi2_null_logger;
             callBackFunctions.allocateMemory = calloc;
             callBackFunctions.freeMemory = free;
             callBackFunctions.componentEnvironment = fmu;
@@ -201,6 +214,7 @@ int main( int argc, char *argv[] ) {
                 exit(EXIT_FAILURE);
             }
 
+            // Clean up
             fmi2_import_destroy_dllfmu(fmu);
             fmi2_import_free(fmu);
 
@@ -232,7 +246,7 @@ int main( int argc, char *argv[] ) {
 
     // All loaded. Simulate.
     int numSteps;
-    int res = simulate( fmus,
+    int res = simulate( fmus1,
                         fmuPaths,
                         numFMUs,
                         connections,
@@ -268,13 +282,13 @@ int main( int argc, char *argv[] ) {
 
     // Clean up
     for(i=0; i<numFMUs; i++){
-        fmi1_import_destroy_dllfmu(fmus[i]);
+        fmi1_import_destroy_dllfmu(fmus1[i]);
         fmi_import_free_context(contexts[i]);
 
         // Remove the temp dir
         fmi_import_rmdir(&callbacks, tmpPaths[i]);
     }
-    free(fmus);
+    free(fmus1);
     free(contexts);
     free(versions);
 

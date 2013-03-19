@@ -58,9 +58,13 @@ int simulate(fmi1_import_t** fmus,
 
     // Open result file
     FILE * f;
-    if (!(f = fopen(outFilePath, "w"))) {
-        fprintf(stderr,"Could not write to %s\n", outFilePath);
-        return 1;
+    if(strcmp(outFilePath,"stdout")==0){
+        f = stdout;
+    } else {
+        if (!(f = fopen(outFilePath, "w"))) {
+            fprintf(stderr,"Could not write to %s\n", outFilePath);
+            return 1;
+        }
     }
 
     // Init FMU names
@@ -105,13 +109,14 @@ int simulate(fmi1_import_t** fmus,
     // Set user-given parameters
     setParams(N, K, fmus, params);
 
+    time = tStart;
+
     // Write CSV row for time=0
     if(outFileFormat == csv){
         writeCsvRow(f, fmus, N, time, separator);
     }
 
     // enter the simulation loop
-    time = tStart;
     int l;
     fmi1_base_type_enu_t type;
     fmi1_value_reference_t vrFrom[1];

@@ -1,5 +1,5 @@
-#ifndef MAIN_H
-#define MAIN_H
+#ifndef HELP_H
+#define HELP_H
 
 void printHeader();
 void printHelp(const char* command);

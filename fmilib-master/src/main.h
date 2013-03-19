@@ -56,27 +56,6 @@ typedef int (*stepfunctionType)(double time,                // System stepping f
                                 fmi1_import_t ** fmus,
                                 int numConnections,
                                 connection connections[MAX_CONNECTIONS]);
-
-/**
- * Simulate the given FMUs.
- * Returns 0 on success, else an error code.
- */
-static int simulate(fmi1_import_t** fmus,                       // FMUs to be simulated
-                    char fmuFileNames[MAX_FMUS][PATH_MAX],      // File names of all FMUs
-                    int N,                                      // Number of FMUs
-                    connection connections[MAX_CONNECTIONS],    // Connections
-                    int K,                                      // Number of connections
-                    param params[MAX_PARAMS],                   // Parameters
-                    int M,                                      // Number of parameters
-                    double tEnd,                                // Simulation end time
-                    double h,                                   // Time step
-                    int loggingOn,                              // FMILibrary logging on
-                    char separator,                             // CSV separator
-                    jm_callbacks callbacks,                     // FMILibrary callbacks
-                    int quiet,                                  // Quiet mode
-                    stepfunctionType stepfunc,                  // Stepping function
-                    enum FILEFORMAT outFileFormat               // Out file format
-                    );
 void importlogger(jm_callbacks* c, jm_string module, jm_log_level_enu_t log_level, jm_string message);
 void fmi1Logger(fmi1_component_t c, fmi1_string_t instanceName, fmi1_status_t status, fmi1_string_t category, fmi1_string_t message, ...);
 void fmi1StepFinished(fmi1_component_t c, fmi1_status_t status);

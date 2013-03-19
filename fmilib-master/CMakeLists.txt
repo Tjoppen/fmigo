@@ -6,6 +6,7 @@ SET(SRCS
     src/parseargs.c
     src/help.c
     src/jacobi.c
+    src/simulate.c
 )
 SET(HEADERS
     src/main.h
@@ -13,6 +14,7 @@ SET(HEADERS
     src/parseargs.h
     src/help.h
     src/jacobi.h
+    src/simulate.h
 )
 
 SET(EXECUTABLE_OUTPUT_PATH "${CMAKE_CURRENT_LIST_DIR}/bin")

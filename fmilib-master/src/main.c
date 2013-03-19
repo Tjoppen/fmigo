@@ -101,27 +101,6 @@ int main( int argc, char *argv[] ) {
         printHeader();
         printf("\n");
 
-        printf("  FMUS (%d)\n",numFMUs);
-        for(i=0; i<numFMUs; i++){
-            printf("    %d: %s\n",i,fmuPaths[i]);
-        }
-
-        if(M>0){
-            printf("\n  CONNECTIONS (%d)\n",M);
-            for(i=0; i<M; i++){
-                printf("    FMU %d, value reference %d ---> FMU %d, value reference %d\n",  connections[i].fromFMU,
-                                                                                            connections[i].fromOutputVR,
-                                                                                            connections[i].toFMU,
-                                                                                            connections[i].toInputVR);
-            }
-        }
-
-        if(outFileGiven){
-            printf("\n  OUTPUT CSV FILE\n");
-            printf("    %s\n",outFilePath);
-        }
-
-        printf("\n");
     }
 
     // Callbacks
@@ -141,6 +120,8 @@ int main( int argc, char *argv[] ) {
     fmi_import_context_t** contexts =   calloc(sizeof(fmi_import_context_t*),numFMUs);
     fmi_version_enu_t* versions =       calloc(sizeof(fmi_version_enu_t),numFMUs);
     const char** tmpPaths =             calloc(sizeof(const char*),numFMUs);
+
+    int doSimulate = 1;
 
     // Load all FMUs
     for(i=0; i<numFMUs; i++){
@@ -189,14 +170,13 @@ int main( int argc, char *argv[] ) {
         } else if(versions[i] == fmi_version_2_0_enu) {
     
             // Test some fmu2 stuff
-            fmi2_import_t * fmu;
-            fmu = fmi2_import_parse_xml(contexts[i], tmpPath, 0);
-            if(!fmu){
+            fmus2[i] = fmi2_import_parse_xml(contexts[i], tmpPath, 0);
+            if(!fmus2[i]){
                 fprintf(stderr,"Could not load XML\n");
                 exit(EXIT_FAILURE);
             }
 
-            if(fmi2_import_get_fmu_kind(fmu) != fmi2_fmu_kind_cs) {
+            if(fmi2_import_get_fmu_kind(fmus2[i]) != fmi2_fmu_kind_cs) {
                 fprintf(stderr,"Only CS 2.0 is supported by this code\n");
                 exit(EXIT_FAILURE);
             }
@@ -206,20 +186,16 @@ int main( int argc, char *argv[] ) {
             callBackFunctions.logger = doLog ? fmi2_log_forwarding : fmi2_null_logger;
             callBackFunctions.allocateMemory = calloc;
             callBackFunctions.freeMemory = free;
-            callBackFunctions.componentEnvironment = fmu;
+            callBackFunctions.componentEnvironment = fmus2[i];
 
-            jm_status_enu_t status = fmi2_import_create_dllfmu(fmu, fmi2_fmu_kind_cs, &callBackFunctions);
+            jm_status_enu_t status = fmi2_import_create_dllfmu(fmus2[i], fmi2_fmu_kind_cs, &callBackFunctions);
             if(status == jm_status_error) {
-                printf("Could not create the DLL loading mechanism(C-API) (error: %s).\n", fmi2_import_get_last_error(fmu));
+                printf("Could not create the DLL loading mechanism(C-API) (error: %s).\n", fmi2_import_get_last_error(fmus2[i]));
                 exit(EXIT_FAILURE);
             }
 
-            // Clean up
-            fmi2_import_destroy_dllfmu(fmu);
-            fmi2_import_free(fmu);
-
             fprintf(stderr,"FMI v2.0 not supported yet.\n");
-            exit(EXIT_FAILURE);
+            doSimulate = 0;
 
         } else {
             fprintf(stderr,"FMI version not recognized.\n");
@@ -228,69 +204,117 @@ int main( int argc, char *argv[] ) {
         }
     }
 
-    if(!quiet){
-        printf("  RUNNING SIMULATION...\n\n");
-    }
+    if(doSimulate){
 
-    // Pick stepfunction
-    stepfunctionType stepfunction;
-    switch(method){
-    case jacobi:
-        stepfunction = &jacobiStep;
-        break;
-    default:
-        fprintf(stderr, "Method enum not correct!\n");
-        exit(EXIT_FAILURE);
-        break;
-    }
+        if(!quiet){
 
-    // All loaded. Simulate.
-    int numSteps;
-    int res = simulate( fmus1,
-                        fmuPaths,
-                        numFMUs,
-                        connections,
-                        K,
-                        params,
-                        M,
-                        tEnd,
-                        h,
-                        loggingOn,
-                        csv_separator,
-                        callbacks,
-                        quiet,
-                        stepfunction,
-                        outfileFormat,
-                        outFilePath,
-                        realtime,
-                        &numSteps);
+            printf("  FMUS (%d)\n",numFMUs);
+            for(i=0; i<numFMUs; i++){
+                printf("    %d: %s",i,fmuPaths[i]);
+                switch(versions[i]){
+                    case fmi_version_1_enu:   printf(" (v1.0)\n"); break;
+                    case fmi_version_2_0_enu: printf(" (v2.0)\n"); break;
+                }
+            }
 
-    if(!quiet){
-        if(res==0){
-            printf("  SIMULATION TERMINATED SUCCESSFULLY\n\n");
+            if(M>0){
+                printf("\n  CONNECTIONS (%d)\n",M);
+                for(i=0; i<M; i++){
+                    printf("    FMU %d, value reference %d ---> FMU %d, value reference %d\n",  connections[i].fromFMU,
+                                                                                                connections[i].fromOutputVR,
+                                                                                                connections[i].toFMU,
+                                                                                                connections[i].toInputVR);
+                }
+            }
 
-            // print simulation summary 
-            printf("  START ............ %g\n", 0.0);
-            printf("  END .............. %g\n", tEnd);
-            printf("  STEPS ............ %d\n", numSteps);
-            printf("  TIMESTEP ......... %g\n", h);
+            printf("\n  OUTPUT CSV FILE\n");
+            printf("    %s\n",outFilePath);
+
             printf("\n");
-        } else {
-            printf("  SIMULATION FAILED\n\n");
+
+            printf("  RUNNING SIMULATION...\n\n");
+        }
+
+        // Pick stepfunction
+        stepfunctionType stepfunction;
+        switch(method){
+        case jacobi:
+            stepfunction = &jacobiStep;
+            break;
+        default:
+            fprintf(stderr, "Method enum not correct!\n");
+            exit(EXIT_FAILURE);
+            break;
+        }
+
+        // All loaded. Simulate.
+        int numSteps;
+        int res = simulate( fmus1,
+                            fmuPaths,
+                            numFMUs,
+                            connections,
+                            K,
+                            params,
+                            M,
+                            tEnd,
+                            h,
+                            loggingOn,
+                            csv_separator,
+                            callbacks,
+                            quiet,
+                            stepfunction,
+                            outfileFormat,
+                            outFilePath,
+                            realtime,
+                            &numSteps);
+
+        if(!quiet){
+            if(res==0){
+                printf("  SIMULATION TERMINATED SUCCESSFULLY\n\n");
+
+                // print simulation summary 
+                printf("  START ............ %g\n", 0.0);
+                printf("  END .............. %g\n", tEnd);
+                printf("  STEPS ............ %d\n", numSteps);
+                printf("  TIMESTEP ......... %g\n", h);
+                printf("\n");
+            } else {
+                printf("  SIMULATION FAILED\n\n");
+            }
         }
     }
 
     // Clean up
     for(i=0; i<numFMUs; i++){
-        fmi1_import_destroy_dllfmu(fmus1[i]);
+
+        // Free the FMU
+        switch(versions[i]){
+            case fmi_version_1_enu:
+                fmi1_import_destroy_dllfmu(fmus1[i]);
+                fmi1_import_free(fmus1[i]);
+                break;
+            case fmi_version_2_0_enu:
+                fmi2_import_destroy_dllfmu(fmus2[i]);
+                fmi2_import_free(fmus2[i]);
+                break;
+        }
+
+        // Free context
         fmi_import_free_context(contexts[i]);
 
         // Remove the temp dir
         fmi_import_rmdir(&callbacks, tmpPaths[i]);
     }
+
+    // Free arrays
     free(fmus1);
+    free(fmus2);
     free(contexts);
     free(versions);
 
-    return EXIT_SUCCESS;
+    if(doSimulate){
+        return EXIT_SUCCESS;
+    } else {
+        return EXIT_FAILURE;
+    }
 }

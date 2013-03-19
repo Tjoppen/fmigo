@@ -68,10 +68,9 @@ int simulate(fmi1_import_t** fmus,
     }
 
     // Init FMU names
-    // Todo: should be able to specify via command line
     for(i=0; i<N; i++){ 
         fmuNames[i] = calloc(sizeof(char),100);
-        sprintf(fmuNames[i],"fmu%d",i);
+        sprintf(fmuNames[i],"%s%d",fmi1_import_get_model_name(fmus[i]),i);
     }
 
     // Write CSV header
@@ -82,7 +81,9 @@ int simulate(fmi1_import_t** fmus,
     // Init all the FMUs
     for(i=0; i<N; i++){ 
 
+        // Get guid
         //strcpy((char*)guids[i], fmi1_import_get_GUID ( fmus[i] ) );
+
         //char * a = fmi_import_create_URL_from_abs_path(&callbacks, fmuFileNames[i]);
         fmuLocation = fmi_import_create_URL_from_abs_path(&callbacks, (const char*)fmuFileNames[i]);
 

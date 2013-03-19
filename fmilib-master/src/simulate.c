@@ -37,7 +37,6 @@ int simulate(fmi1_import_t** fmus,
     int k;
     double time;                                                // Current time
     double tStart = 0;                                          // Start time
-    fmi1_string_t** guids;
     jm_status_enu_t status;                                     // return code of the fmu functions
     fmi1_string_t fmuLocation = "";                             // path to the fmu as URL, "file://C:\QTronic\sales"
     fmi1_string_t mimeType = "application/x-fmu-sharedlibrary"; // denotes tool in case of tool coupling
@@ -45,15 +44,9 @@ int simulate(fmi1_import_t** fmus,
     fmi1_boolean_t visible = 0;                                 // no simulator user interface
     fmi1_boolean_t interactive = 0;                             // simulation run without user interaction
     int nSteps = 0;                                             // Number of steps taken
-    FILE** files;                                               // result files
     char** fmuNames;                                            // Result file names
 
     // Allocate
-    guids =        (fmi1_string_t**)calloc(sizeof(fmi1_string_t*),N);
-    for(i=0; i<N; i++){
-        guids[i] = calloc(sizeof(char),MAX_GUID_LENGTH);
-    }
-    files =       (FILE**)calloc(sizeof(FILE*),N);
     fmuNames =    (char**)calloc(sizeof(char*),N);
 
     // Open result file
@@ -80,9 +73,6 @@ int simulate(fmi1_import_t** fmus,
 
     // Init all the FMUs
     for(i=0; i<N; i++){ 
-
-        // Get guid
-        //strcpy((char*)guids[i], fmi1_import_get_GUID ( fmus[i] ) );
 
         //char * a = fmi_import_create_URL_from_abs_path(&callbacks, fmuPaths[i]);
         fmuLocation = fmi_import_create_URL_from_abs_path(&callbacks, (const char*)fmuPaths[i]);

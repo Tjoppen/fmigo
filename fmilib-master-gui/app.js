@@ -1,11 +1,7 @@
-
-/**
- * Module dependencies.
- */
-
 var express = require('express')
   , routes = require('./routes')
-  , http = require('http');
+  , http = require('http')
+  , config = require('config.json');
 
 var app = express();
 
@@ -26,6 +22,6 @@ app.configure('development', function(){
 
 app.get('/', routes.index);
 
-http.createServer(app).listen(3000);
+http.createServer(app).listen(config.port);
 
-console.log("Express server listening on port 3000");
+console.log("Express server listening on port "+config.port);

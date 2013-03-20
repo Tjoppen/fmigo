@@ -1,188 +1,34 @@
-/* Reset */
-* {
-    padding:0;
-    margin:0;
-}
-html,body {
-    overflow: hidden;
-}
-#logo {
-    display:inline-block;
-    vertical-align:top;
-}
-button {
-    border:0;
-    background: #666;
-    margin-top:10px;
-    margin-bottom:10px;
-    margin-left:10px;
-    padding:6px;
-    overflow: hidden;
-    -moz-border-radius: 8px;
-    -webkit-border-radius: 8px;
-    -o-border-radius: 8px;
-    -ms-border-radius: 8px;
-    -khtml-border-radius: 8px;
-    border-radius: 8px;
-}
-
-#header button {
-    vertical-align:top;
-    display:inline-block;
-    font-size: 18px;
-    padding: 12px;
-}
-
-#footer {
-    position:absolute;
-    bottom:10px;
-    left:5px;
-}
-
-h1,h2, p, .ui-dialog-title {
-    margin:10px;
-}
-
-h1, .ui-dialog-title {
-    font-size: 24px;
-    font-family: Georgia;
-    padding:0;
-    margin-top:7px;
-    text-decoration:none;
-    font-weight: normal;
-}
-
 body {
-    color: #AAA;
-    background-color:#555;
-    font-family: Verdana, Arial, Helvetica, sans-serif;
-    font-size:12px;    
-}
-a {
-    color: #AAA;
-}
-p > a {
-    text-decoration:underline;
-}
-input {
-    border:0;    
-    -moz-border-radius: 3px;
-    -webkit-border-radius: 3px;
-    -o-border-radius: 3px;
-    -ms-border-radius: 3px;
-    -khtml-border-radius: 3px;
-    border-radius: 3px;
-    padding:3px;
-}
-.leftmenu, .rightmenu, .block, #header, .ui-dialog {
-    background: #222;
-    padding: 6px;
     overflow: hidden;
-    -moz-border-radius: 8px;
-    -webkit-border-radius: 8px;
-    -o-border-radius: 8px;
-    -ms-border-radius: 8px;
-    -khtml-border-radius: 8px;
-    border-radius: 8px;
-    font-size: 10px;
-}
-.rightmenu, .leftmenu, .block {
-    position: absolute !important;
-}
-#header {
-    position:relative;
-    margin-top:5px;
-    margin-bottom:5px;
-}
-.leftmenu, .rightmenu {
-    z-index: 50;
-    min-width: 200px;
-    max-width: 500px;
-    display:inline-block;
-}
-.leftmenu {
-    left:0px;
-}
-.rightmenu {
-    right:0px;
-}
-.rightmenu  input[type=text], .leftmenu input[type=text], .ui-dialog-content {
-    width:180px;
-    margin:5px;
-}
-#container-wrapper {
-    position:relative;
-    left:200px;
+    padding-top:20px;
 }
 
-.leftmenu h1, .rightmenu h1 {
-    font-size:16px;
-}
-.rightmenu li a, .leftmenu li a {
-    width:180px;
-    display:block;
-    padding:7px 8px;
-    -moz-border-radius: 8px;
-    -webkit-border-radius: 8px;
-    -o-border-radius: 8px;
-    -ms-border-radius: 8px;
-    -khtml-border-radius: 8px;
-    border-radius: 8px;
-}
-.rightmenu li a:hover, .leftmenu li a:hover {
-    background-color:#444;
-}
-
-.block {
-    min-width: 80px;
-    z-index:100;
-}
-
-.block .head {
-    font-weight: normal;
-    letter-spacing: 1px;
+.footer {
     text-align: center;
+    padding: 30px 0;
+    margin-top: 70px;
+    border-top: 1px solid #e5e5e5;
+    background-color: #f5f5f5;
+}
+.footer p {
+    margin-bottom: 0;
+    color: #777;
+}
+.footer-links {
+    margin: 10px 0;   
+}
+.footer-links li {
+    display: inline;
+    padding: 0 2px;
+}
+.footer-links li:first-child {
+    padding-left: 0;
 }
 
-.block .inputs, .block .outputs {
-    display:inline-block;
+#container {
+    width:100%;
 }
 
-.pin {
-    padding-top:4px;
-}
-
-.block .outputs {
-    position:relative;
-    text-align:right;
-    float:right;
-}
-
-.block.selected {
-    border:1px solid #ddd;
-}
-
-
-/* --- jQuery UI --- */
-.ui-autocomplete a {
-    display:inline-block;
-    background-color:#222;
-    padding:10px 10px;
-}
-ul.ui-autocomplete {
-    list-style-type:none;
-}
-.ui-autocomplete .ui-state-focus {
-    background-color:#444;
-}
-.ui-widget-overlay {
-    background-color:#AAA;
-    position: absolute;
-    top: 0;
-    left: 0;
-    opacity:0.3;
-}
-#rename-simulation-form.ui-dialog-content {
-    text-align:center;
-    padding-top:30px;
+#container div {
+    float:left;
 }

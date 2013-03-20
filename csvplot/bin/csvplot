@@ -38,7 +38,7 @@ for fName in args.files:
     f = open(fName, 'r')
 
     # Check to see if the file starts with headers or data:
-    dialect = csv.Sniffer().has_header(f.read(1024))
+    dialect = csv.Sniffer().has_header(f.read(10*1024))
     f.seek(0)
     reader = csv.reader(f)
 
@@ -75,7 +75,6 @@ if args.columns:
     for c in series_dict.keys():
         if not c in args.columns.split(",") and c != args.xcolumn:
             del series_dict[c]
-
 
 # Plot each data series
 num_cols = len(names)

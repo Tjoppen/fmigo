@@ -28,6 +28,7 @@ int parseArguments( int argc,
                     int* version,
                     enum FILEFORMAT * format,
                     enum METHOD * method,
-                    int * realtime);
+                    int * realtime,
+                    int * printXML);
 
 #endif /* PARSEARGS_H */

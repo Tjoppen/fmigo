@@ -26,14 +26,15 @@ int parseArguments( int argc,
                     int* version,
                     enum FILEFORMAT * format,
                     enum METHOD * method,
-                    int * realtime){
+                    int * realtime,
+                    int * printXML){
     int index, c;
     opterr = 0;
     *outFileGiven = 0;
 
     strcpy(outFilePath,DEFAULT_OUTFILE);
 
-    while ((c = getopt (argc, argv, "rlvqht:c:d:s:o:p:f:m:")) != -1){
+    while ((c = getopt (argc, argv, "xrlvqht:c:d:s:o:p:f:m:")) != -1){
 
         int n, skip, l, cont, i, numScanned;
         connection * conn;
@@ -190,6 +191,10 @@ int parseArguments( int argc,
                 i++;
             }
             *numParameters = i;
+            break;
+
+        case 'x':
+            *printXML = 1;
             break;
 
         case '?':

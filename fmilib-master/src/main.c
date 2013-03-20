@@ -35,6 +35,8 @@ void importlogger(jm_callbacks* c, jm_string module, jm_log_level_enu_t log_leve
 
 int main( int argc, char *argv[] ) {
 
+    int exitCode = EXIT_SUCCESS;
+
     if(argc == 1){
         // No args given, print help
         printHelp();
@@ -43,6 +45,8 @@ int main( int argc, char *argv[] ) {
 
     int i;
 
+    int doSimulate = 1;
+    
     char fmuPaths[MAX_FMUS][PATH_MAX];
     char outFilePath[PATH_MAX] = "result.csv";
     param params[MAX_PARAMS];
@@ -51,7 +55,7 @@ int main( int argc, char *argv[] ) {
     int numFMUs=0, numParameters=0, numConnections=0;
     double tEnd=1.0, timeStep=0.1;
     char csv_separator = ',';
-    int outFileGiven=0, quiet=0, loggingOn=0, version=0, realtime=0;
+    int outFileGiven=0, quiet=0, loggingOn=0, version=0, realtime=0, printXML=0;
     enum FILEFORMAT outfileFormat;
     enum METHOD method;
     int status =parseArguments(argc,
@@ -72,7 +76,14 @@ int main( int argc, char *argv[] ) {
                                &version,
                                &outfileFormat,
                                &method,
-                               &realtime);
+                               &realtime,
+                               &printXML);
+
+    if(printXML){
+        // Should print XML and quit
+        quiet = 1;
+        doSimulate = 0;
+    }
 
     if(version){
         // version flag given
@@ -118,8 +129,6 @@ int main( int argc, char *argv[] ) {
     fmi_version_enu_t* versions =       calloc(sizeof(fmi_version_enu_t),numFMUs);
     const char** tmpPaths =             calloc(sizeof(const char*),numFMUs);
 
-    int doSimulate = 1;
-
     // Load all FMUs
     for(i=0; i<numFMUs; i++){
         
@@ -136,9 +145,25 @@ int main( int argc, char *argv[] ) {
 
         const char* tmpPath = fmi_import_mk_temp_dir (&callbacks, "/tmp", "FMUMaster");
 
+
         tmpPaths[i] = tmpPath;
         contexts[i] = fmi_import_allocate_context(&callbacks);
         versions[i] = fmi_import_get_fmi_version(contexts[i], fmuPaths[i], tmpPath);
+
+        if(printXML){
+            char xmlPath[PATH_MAX];
+            char ch;
+            strcpy(xmlPath,tmpPath);
+            strcat(xmlPath,"/modelDescription.xml");
+            FILE * xmlFile = fopen(xmlPath,"r");
+            if(xmlFile){
+                while( ( ch = fgetc(xmlFile) ) != EOF )
+                    printf("%c",ch);
+                fclose(xmlFile);
+            } else {
+                printf("Could not open XML file %s...\n",xmlPath);
+            }
+        }
 
         if(versions[i] == fmi_version_1_enu) {
 
@@ -192,6 +217,7 @@ int main( int argc, char *argv[] ) {
 
             fprintf(stderr,"FMI v2.0 not supported yet.\n");
             doSimulate = 0;
+            exitCode = EXIT_FAILURE;
 
         } else {
             fprintf(stderr,"FMI version not recognized.\n");
@@ -309,9 +335,5 @@ int main( int argc, char *argv[] ) {
     free(versions);
     free(tmpPaths);
 
-    if(doSimulate){
-        return EXIT_SUCCESS;
-    } else {
-        return EXIT_FAILURE;
-    }
+    return exitCode;
 }

@@ -79,7 +79,13 @@ exports.simulate = function(req,res){
     // TODO
 
     // Construct command line
-    var commandLine = config.fmuMasterCommand + " -q -o stdout -p " + parameters.join(":") + " " + fmuPaths.join(" ");
+    var commandLine = config.fmuMasterCommand + " -q -o stdout";
+    if(parameters.length){
+        commandLine += " -p " + parameters.join(":");
+    }
+
+    commandLine += " "+fmuPaths.join(" ");
+    
     console.log("running ",commandLine);
 
     // TODO check number of running processes

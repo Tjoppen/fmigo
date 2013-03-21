@@ -15,6 +15,9 @@
                 <h3>Simulate</h3>
             </div>
             <div class="modal-body">
+                <div id="no-fmus-in-simulation-message" style="display:none">
+                    <p>You have no FMUs in your simulation...</p>
+                </div>
                 <div>
                     <label for="timestep">Time step size</label>
                     <input type="number" value="0.001"/>
@@ -47,7 +50,7 @@
                             </ul>
                         </li>
                         <li class="divider-vertical"></li>
-                        <li><a data-toggle="modal" href="#simulateModal">Simulate...</a></li>
+                        <li><a data-toggle="modal" id="nav-simulate" href="#simulateModal">Simulate...</a></li>
                     </ul>
                 </div>
             </div>
@@ -209,19 +212,46 @@
     $("#simulate-button").click(function(e){
         // Serialize the whole diagram
         var json = {
-            connections : [{
+            /* Connections: on format
+            {
                 fromFMU : "wheelloader0",
                 toFMU : "agxVehicle0",
                 fromVR : 0,
                 toVR : 0
-            }],
-            fmus : {
+            }
+            */
+            connections : [],
+
+            /*
+            FMUs on format:
+            {
                 wheelloader0 : {
                     fmu : "wheelloader.fmu",
                     initialValues : { "0" : 0.07, }
                 },
             }
+            */
+            fmus : {}
         };
+
+        var numFMUs = 0;
+        $(".fmu").each(function(i,el){
+            numFMUs++;
+            $el = $(el);
+            var file = $el.attr("data-file");
+            var id = $el.attr("data-identifyer");
+            json.fmus[id] = {
+                fmu : file,
+                initialValues:{}
+            }
+            var vrList = $el.parent().find(".initial-values dt");
+            var valueList = $el.parent().find(".initial-values dd");
+            for(var j=0; j<valueList.length; j++){
+                var vr = parseInt($(vrList[j]).html());
+                var val = $(valueList[j]).html();
+                json.fmus[id].initialValues[vr+""] = val;
+            }
+        });
 
         $.ajax({
             url : "simulate",
@@ -234,6 +264,16 @@
                 console.log(data);
             }
         });
+    });
+
+    $("#nav-simulate").click(function(){
+        if(!$(".fmu").length){
+            $("#no-fmus-in-simulation-message").show();
+            $("#simulate-button").hide();
+        } else {
+            $("#no-fmus-in-simulation-message").hide();
+            $("#simulate-button").show();
+        }
     });
 
     </script>

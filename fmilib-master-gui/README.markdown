@@ -13,6 +13,13 @@ Then install needed NPM packages:
 ```
 npm install
 ```
+You will also need the ```fmu-master``` from UMIT Research Lab.
+
+Now create a config file:
+```
+cp config-sample.json config.json;
+```
+...and edit it so it fits your setup.
 
 ## Run
 To start the server, run

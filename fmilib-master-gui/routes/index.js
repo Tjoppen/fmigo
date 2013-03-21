@@ -49,3 +49,49 @@ exports.modelDescription = function(req,res){
         }
     });
 };
+
+exports.simulate = function(req,res){
+    var b = req.body;
+
+    // Construct fmu paths
+    var fmuToIndex = {};
+    var fmuPaths = [];
+    var idx = 0;
+    for(var name in b.fmus){
+        fmuPaths.push(fmuDir + "/" + b.fmus[name].fmu);
+        fmuToIndex[name] = idx;
+        idx++;
+    }
+
+    // Construct parameter triplets
+    var parameters = [];
+    for(var name in b.fmus){
+        for(key in b.fmus[name].initialValues){
+            var value = b.fmus[name].initialValues[key];
+            var vr = parseInt(key);
+            var fmuIdx = parseInt(fmuToIndex[name]);
+            parameters.push([fmuIdx,vr,value].join(","));
+        }
+    }
+
+    // Construct connection quads
+    var connections = [];
+    // TODO
+
+    // Construct command line
+    var commandLine = config.fmuMasterCommand + " -q -o stdout -p " + parameters.join(":") + " " + fmuPaths.join(" ");
+    console.log("running ",commandLine);
+
+    // TODO check number of running processes
+    child_process.exec(commandLine,function(err,stdout,stderr){
+
+        // error?
+        if(err){
+            console.error(err);
+            return res.send(500);
+        }
+        res.header("text/csv");
+        res.send(200,stdout);
+    });
+
+};

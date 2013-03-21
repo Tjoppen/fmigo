@@ -15,9 +15,10 @@
                 <h3>Simulate</h3>
             </div>
             <div class="modal-body">
-                <p>Settings...</p>
-                <label for="timestep">Time step size</label>
-                <input type="number" value="0.001"/>
+                <div>
+                    <label for="timestep">Time step size</label>
+                    <input type="number" value="0.001"/>
+                </div>
             </div>
             <div class="modal-footer">
                 <a href="#" class="btn" data-dismiss="modal">Cancel</a>
@@ -206,7 +207,33 @@
 
     // User clicks "simulate"
     $("#simulate-button").click(function(e){
-        
+        // Serialize the whole diagram
+        var json = {
+            connections : [{
+                fromFMU : "wheelloader0",
+                toFMU : "agxVehicle0",
+                fromVR : 0,
+                toVR : 0
+            }],
+            fmus : {
+                wheelloader0 : {
+                    fmu : "wheelloader.fmu",
+                    initialValues : { "0" : 0.07, }
+                },
+            }
+        };
+
+        $.ajax({
+            url : "simulate",
+            type:"POST",
+            data : json,
+            success : function(data){
+                console.log(data);
+            },
+            error : function(data){
+                console.log(data);
+            }
+        });
     });
 
     </script>

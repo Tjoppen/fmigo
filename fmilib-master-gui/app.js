@@ -22,6 +22,7 @@ app.configure('development', function(){
 
 app.get('/',                                    routes.index);
 app.get('/fmus/:filename/modelDescription.xml', routes.modelDescription);
+app.post('/simulate',                           routes.simulate);
 
 http.createServer(app).listen(config.port);
 

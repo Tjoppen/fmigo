@@ -9,6 +9,21 @@
   </head>
   <body>
     <div class="container">
+        <div class="modal hide fade" id="simulateModal">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h3>Simulate</h3>
+            </div>
+            <div class="modal-body">
+                <p>Settings...</p>
+                <label for="timestep">Time step size</label>
+                <input type="number" value="0.001"/>
+            </div>
+            <div class="modal-footer">
+                <a href="#" class="btn" data-dismiss="modal">Cancel</a>
+                <a href="#" id="simulate-button" class="btn btn-primary">Simulate</a>
+            </div>
+        </div>
         <div class="navbar">
             <div class="navbar-inner">
                 <div class="container" style="width: auto;">
@@ -17,10 +32,11 @@
                         <li class="divider-vertical"></li>
                         <li class="dropdown">
                             <a id="drop1" href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">Import FMU <b class="caret"></b></a>
-                            <ul class="dropdown-menu" role="menu" aria-labelledby="drop1" id="fmu-dropdown">
-                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#" data-fmu="wheelloader">wheelloader</a></li>
-                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#" data-fmu="agxVehicle">agxVehicle</a></li>
-                            </ul>
+                            <ul class="dropdown-menu" role="menu" aria-labelledby="drop1" id="fmu-dropdown"><%
+                            for(var i=0; i<fmus.length; i++){ %>
+                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#" data-file="<%=fmus[i]%>" data-identifyer="<%=fmus[i].replace(".fmu","")%>"><%=fmus[i]%></a></li><%
+                            }
+                            %></ul>
                         </li>
                         <li class="divider-vertical"></li>
                         <li class="dropdown">
@@ -30,47 +46,37 @@
                             </ul>
                         </li>
                         <li class="divider-vertical"></li>
-                        <li><a href="#">Simulate...</a></li>
+                        <li><a data-toggle="modal" href="#simulateModal">Simulate...</a></li>
                     </ul>
                 </div>
             </div>
         </div>
         <div class="row">
             <div id="diagram" class="span8">
-              <h3>Block diagram</h3>
-              <p>This should be a block diagram but keep in mind that this is a prototype.</p>
+              <h3>FMU instances</h3>
+              <p>This should be a block diagram but keep in mind that this is just a prototype.</p>
                 <table id="fmu-table" class="table table-hover">
                     <thead>
-                        <th>FMU identifyer</th>
+                        <th>Instance name</th>
                     </thead>
-                    <tbody>
-                    </tbody>
                 </table>
             </div>
-            <div id="selection-menu" class="span4">
+            <div id="selection-menu" class="span4" data-editing="">
                 <h3 class="head">Selection menu</h3>
                 <p id="variables-loading-message" style="display:none">Loading variables...</p>
                 <table id="init-vals" style="display:none" class="table table-hover">
-                    <thead>
-                        <th>Initial states</th>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>state_name</td>
-                            <td><input type="number"></td>
-                        </tr>
-                    </tbody>
+                    <tr><th colspan="2">Initial states</th></tr>
+                    <tr>
+                        <td>state_name</td>
+                        <td><input type="number"></td>
+                    </tr>
                 </table>
                 <table id="parameters" style="display:none" class="table table-hover">
-                    <thead>
-                        <th>Parameters</th>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>param_name</td>
-                            <td><input type="number"></td>
-                        </tr>
-                    </tbody>
+                    <tr><th colspan="2">Parameters</th></tr>
+                    <tr>
+                        <td>param_name</td>
+                        <td><input type="number"></td>
+                    </tr>
                 </table>
             </div>
         </div>
@@ -90,26 +96,119 @@
     <script>
         // Add FMU
         $("#fmu-dropdown li a").click(function(){
-
-            var id = $(this).attr("data-fmu");
+            var id = $(this).attr("data-identifyer");
+            var file = $(this).attr("data-file");
+            var instanceName = id + "0"; // Todo fix
 
             // Add to the diagram
-            var $fmu = $("<tr><td><a class=\"fmu\" href=\"#\">"+id+"</a></td></tr>");
+            var $fmu = $("<tr><td><a class=\"fmu\" data-identifyer=\""+id+"\" data-instance=\""+instanceName+"\" data-file=\""+file+"\" href=\"#\">"+instanceName+"</a><dl class=\"initial-values\"></dl></td></tr>");
             $("#fmu-table").append($fmu);
 
             // Select the FMU
             $fmu.click(function(){
-                $("#selection-menu .head").html(id);
+                var instance = $(this).find("a").attr("data-instance");
+                $("#selection-menu").attr("data-editing",instance);
+
+                var file = $(this).find("a").attr("data-file");
+                $("#selection-menu .head").html(instance);
                 $("#variables-loading-message").show();
                 $("#parameters").hide();
                 $("#init-vals").hide();
-                setTimeout(function(){
-                    $("#variables-loading-message").hide();
-                    $("#parameters").show();
-                    $("#init-vals").show();
-                },500);
+                $.ajax({
+                    url : "fmus/"+file+"/modelDescription.xml",
+                    success : function(data){
+                        //console.log(data);
+                        var $xml = $(data);
+
+                        // Hide loading message
+                        $("#variables-loading-message").hide();
+
+                        // Remove all old params
+                        $("#parameters tr:not(:first), #init-vals tr:not(:first)").remove();
+
+                        var fmiVersion = $xml.find("fmiModelDescription").attr("fmiVersion");
+                        if(fmiVersion == "1.0"){
+
+                            $xml.find("ScalarVariable").each(function(i,el){
+
+                                var $el = $(el),
+                                    inputHTML,
+                                    variability,
+                                    $sub;
+
+                                // Get var type
+                                if($el.find("Real").length){
+                                    $sub = $el.find("Real");
+                                    variability = $sub.attr("variability");
+                                    start = (parseFloat($sub.attr("start"))+"") || "0.0";
+                                    inputHTML = "<input type=\"text\" value=\""+start+"\"/>";
+
+                                } else if($el.find("Integer").length){
+                                    $sub = $el.find("Integer");
+                                    variability = $sub.attr("variability");
+                                    start = paseInt($sub.attr("start")) || "0";
+                                    inputHTML = "<input type=\"number\" value=\""+start+"\">";
+
+                                } else if($el.find("Boolean").length){
+                                    $sub = $el.find("Boolean");
+                                    inputHTML = "<input type=\"checkbox\" value=\"1\""+($sub.attr("start")=="true" ? " checked" : "")+">";
+                                    variability = $el.find("Boolean").attr("variability");
+
+                                } else if($el.find("String").length){
+                                    $sub = $el.find("String");
+                                    variability = $sub.attr("variability");
+                                    start = $sub.attr("start") || "";
+                                    inputHTML = "<input type=\"text\" value=\""+start+"\">";
+                                }
+
+                                var $param = $("<tr data-valueReference=\""+$el.attr("valueReference")+"\" title=\""+$el.attr("description")+"\"><td>"+$el.attr("name")+"</td><td>"+inputHTML+"</td></tr>");
+
+                                $param.find("input").change(function(e){
+                                    // Get new value
+                                    $target = $(this);
+                                    var val = $target.val();
+                                    var vr = $target.parents("tr").attr("data-valueReference");
+                                    var identifyer = $("#selection-menu").attr("data-editing");
+
+                                    // Set it
+                                    console.log($('#diagram'),
+                                                $('#diagram .fmu[data-instance="'+identifyer+'"]'),
+                                                $('#diagram .fmu[data-instance="'+identifyer+'"] .initial-values'));
+                                    $('#diagram .fmu[data-instance="'+identifyer+'"]').parent().find('.initial-values').append("<dt>"+vr+"</dt><dd>"+val+"</dd>");
+                                });
+
+                                // Insert in correct table
+                                switch(variability){
+                                    case "parameter":
+                                        $("#parameters").append($param);
+                                        break;
+                                    case "continuous":
+                                    default: 
+                                        $("#init-vals").append($param);
+                                        break;
+                                }
+                            });
+
+                        } else {
+                            alert("Only FMI version 1.0 is supported so far, but \""+fmiVersion+"\" was given");
+                        }
+
+                        // Only show if there is something to show
+                        if($("#init-vals  tr").length > 1) $("#init-vals") .show();
+                        if($("#parameters tr").length > 1) $("#parameters").show();
+                    },
+                    error: function(data){
+                        console.log(data);
+                    }
+                });
             });
         });
+
+    // User clicks "simulate"
+    $("#simulate-button").click(function(e){
+        
+    });
+
     </script>
 </body>
 </html>

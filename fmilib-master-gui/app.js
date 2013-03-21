@@ -20,7 +20,8 @@ app.configure('development', function(){
   app.use(express.errorHandler());
 });
 
-app.get('/', routes.index);
+app.get('/',                                    routes.index);
+app.get('/fmus/:filename/modelDescription.xml', routes.modelDescription);
 
 http.createServer(app).listen(config.port);
 

@@ -1,5 +1,5 @@
 body {
-    overflow: hidden;
+    /* overflow: hidden;*/
     padding-top:20px;
 }
 
@@ -31,4 +31,8 @@ body {
 
 #container div {
     float:left;
+}
+
+.initial-values {
+    display: none;
 }

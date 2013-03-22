@@ -196,7 +196,7 @@
                                     inputHTML = "<input type=\"text\" value=\""+start+"\">";
                                 }
 
-                                var $param = $("<tr data-valueReference=\""+$el.attr("valueReference")+"\" title=\""+$el.attr("description")+"\"><td>"+$el.attr("name")+"</td><td>"+inputHTML+"</td><td>"+$el.attr("description")+"</td></tr>");
+                                var $param = $("<tr data-valueReference=\""+$el.attr("valueReference")+"\"><td>"+$el.attr("name")+"</td><td>"+inputHTML+"</td><td>"+($el.attr("description") || "")+"</td></tr>");
 
                                 $param.find("input").change(function(e){
                                     // Get new value

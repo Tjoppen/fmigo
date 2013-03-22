@@ -82,20 +82,21 @@ exports.simulate = function(req,res){
     var args = ["-q","-o","stdout"];
 
     // Construct command line
-    var commandLine = config.fmuMasterCommand + " -q -o stdout";
     if(parameters.length){
-        commandLine += " -p " + parameters.join(":");
         args.push("-p",parameters.join(":"));
     }
 
     // Time step
     if(b.timestep){
-        commandLine += " -d "+parseFloat(b.timestep);
         args.push("-d",parseFloat(b.timestep));
     }
 
+    // Time step
+    if(b.endTime){
+        args.push("-t",parseFloat(b.endTime));
+    }
+
     // Add fmu paths to the end of the command line
-    commandLine += " "+fmuPaths.join(" ");
     args = args.concat(fmuPaths);
     
     //console.log("running ",commandLine," or ", config.fmuMasterCommand+" "+args.join(" "));

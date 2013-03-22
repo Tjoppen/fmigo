@@ -20,8 +20,12 @@
                 </div>
                 <div id="simulation-parameters">
                     <p>Please enter simulation parameters, then press <i>Simulate</i>.</p>
+
                     <label for="timestep">Time step size</label>
                     <input type="number" id="timestep" value="0.01"/>
+
+                    <label for="endTime">Simulation end time</label>
+                    <input type="number" id="endTime" value="1.0"/>
                 </div>
             </div>
             <div class="modal-footer">
@@ -168,30 +172,26 @@
 
                                 var $el = $(el),
                                     inputHTML,
-                                    variability,
                                     $sub;
+                                var variability = $el.attr("variability");
 
                                 // Get var type
                                 if($el.find("Real").length){
                                     $sub = $el.find("Real");
-                                    variability = $sub.attr("variability");
                                     start = (parseFloat($sub.attr("start"))+"") || "0.0";
                                     inputHTML = "<input type=\"text\" value=\""+start+"\"/>";
 
                                 } else if($el.find("Integer").length){
                                     $sub = $el.find("Integer");
-                                    variability = $sub.attr("variability");
                                     start = paseInt($sub.attr("start")) || "0";
                                     inputHTML = "<input type=\"number\" value=\""+start+"\">";
 
                                 } else if($el.find("Boolean").length){
                                     $sub = $el.find("Boolean");
                                     inputHTML = "<input type=\"checkbox\" value=\"1\""+($sub.attr("start")=="true" ? " checked" : "")+">";
-                                    variability = $el.find("Boolean").attr("variability");
 
                                 } else if($el.find("String").length){
                                     $sub = $el.find("String");
-                                    variability = $sub.attr("variability");
                                     start = $sub.attr("start") || "";
                                     inputHTML = "<input type=\"text\" value=\""+start+"\">";
                                 }
@@ -260,7 +260,8 @@
             }
             */
             fmus : {},
-            timestep : 0.01,
+            timestep : $("#timestep").val(),
+            endTime : $("#endTime").val()
         };
 
         // Add fmus to the JSON
@@ -282,9 +283,6 @@
                 json.fmus[id].initialValues[vr+""] = val;
             }
         });
-
-        // Get timestep
-        json.timestep = $("#timestep").val();
 
         $.ajax({
             url : "simulate",

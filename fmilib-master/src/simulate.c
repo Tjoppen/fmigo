@@ -5,6 +5,9 @@
 
 #include "simulate.h"
 
+/**
+ * Computes time difference between start and end timespecs, and stores the result in diffTime.
+ */
 void diff(struct timespec start, struct timespec end, struct timespec * diffTime){
     if ((end.tv_nsec-start.tv_nsec)<0) {
         diffTime->tv_sec = end.tv_sec-start.tv_sec-1;
@@ -15,6 +18,9 @@ void diff(struct timespec start, struct timespec end, struct timespec * diffTime
     }
 }
 
+/**
+ * 
+ */
 int simulate(fmi1_import_t** fmus,
              char fmuPaths[MAX_FMUS][PATH_MAX],
              int N,

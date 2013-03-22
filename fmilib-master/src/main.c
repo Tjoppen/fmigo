@@ -46,7 +46,7 @@ int main( int argc, char *argv[] ) {
     int i;
 
     int doSimulate = 1;
-    
+
     char fmuPaths[MAX_FMUS][PATH_MAX];
     char outFilePath[PATH_MAX] = "result.csv";
     param params[MAX_PARAMS];
@@ -104,11 +104,9 @@ int main( int argc, char *argv[] ) {
     }
 
     if(!quiet){
-
         printf("\n");
         printHeader();
         printf("\n");
-
     }
 
     // Callbacks
@@ -144,7 +142,6 @@ int main( int argc, char *argv[] ) {
         }
 
         const char* tmpPath = fmi_import_mk_temp_dir (&callbacks, "/tmp", "FMUMaster");
-
 
         tmpPaths[i] = tmpPath;
         contexts[i] = fmi_import_allocate_context(&callbacks);

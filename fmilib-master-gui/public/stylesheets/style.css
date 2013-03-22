@@ -54,3 +54,8 @@ body {
 #plot canvas {
     margin-left: 20px;
 }
+
+#plot-menu {
+    overflow-y:scroll;
+    height:600px;
+}

@@ -18,9 +18,10 @@
                 <div id="no-fmus-in-simulation-message" style="display:none">
                     <p>You have no FMUs in your simulation...</p>
                 </div>
-                <div>
+                <div id="simulation-parameters">
+                    <p>Please enter simulation parameters, then press <i>Simulate</i>.</p>
                     <label for="timestep">Time step size</label>
-                    <input type="number" id="timestep" value="0.001"/>
+                    <input type="number" id="timestep" value="0.01"/>
                 </div>
             </div>
             <div class="modal-footer">
@@ -60,11 +61,12 @@
         </div>
         <div class="row" id="simulation-view">
             <div id="diagram" class="span8">
-              <h3>FMU instances</h3>
-              <p>This should be a block diagram but keep in mind that this is just a prototype.</p>
+                <h3>FMU Master</h3>
+                <p>Welcome to the FMU co-simulation master. Use this app to simulate models from various simulation tools.</p>
+                <p>First, choose <i>Import FMU</i> to load a model. Select it in the list below to edit its parameters. Then press <i>Simulate</i>.</p>
                 <table id="fmu-table" class="table table-hover">
                     <thead>
-                        <th>Instance name</th>
+                        <th>Imported FMUs:</th>
                     </thead>
                 </table>
             </div>
@@ -73,17 +75,21 @@
                 <p id="variables-loading-message" style="display:none">Loading variables...</p>
                 <table id="init-vals" style="display:none" class="table table-hover">
                     <tr><th colspan="2">Initial states</th></tr>
+                    <!--
                     <tr>
                         <td>state_name</td>
                         <td><input type="number"></td>
                     </tr>
+                    -->
                 </table>
                 <table id="parameters" style="display:none" class="table table-hover">
                     <tr><th colspan="2">Parameters</th></tr>
+                    <!--
                     <tr>
                         <td>param_name</td>
                         <td><input type="number"></td>
                     </tr>
+                    -->
                 </table>
             </div>
         </div>
@@ -95,7 +101,10 @@
             </div>
             <div id="plot-menu" class="span4">
                 <table id="plot-columns" class="table table-hover">
-                    <tr><th colspan="2">Plot columns</th></tr>
+                    <tr>
+                        <th>Plot columns</th>
+                        <th><input type="checkbox" id="plot-columns-showall" checked="checked"></th>
+                    </tr>
                 </table>
             </div>
         </div>
@@ -277,6 +286,9 @@
             success : function(data){
                 parseCSVdata(data);
                 plotSelectedData();
+                /*$("#simulateModal").addClass("hide");*/
+                $("#simulateModal").modal('hide');
+                $("#nav-analysis").trigger("click");
             },
             error : function(data){
                 console.error("Something went wrong!");
@@ -288,10 +300,10 @@
     $("#nav-simulate").click(function(){
         if(!$(".fmu").length){
             $("#no-fmus-in-simulation-message").show();
-            $("#simulate-button").hide();
+            $("#simulate-button,#simulation-parameters").hide();
         } else {
             $("#no-fmus-in-simulation-message").hide();
-            $("#simulate-button").show();
+            $("#simulate-button,#simulation-parameters").show();
         }
     });
 
@@ -307,6 +319,16 @@
         $("#nav-analysis").parent().removeClass("active");
         $("#analysis-view").hide();
         $("#simulation-view").show();
+    });
+
+    // Toggle all plot columns
+    $("#plot-columns-showall").change(function(){
+        if($("#plot-columns-showall").is(":checked")){
+            $("#plot-columns tr:not(:first) input").prop("checked",true);
+        } else {
+            $("#plot-columns tr:not(:first) input").prop("checked",false);
+        }
+        plotSelectedData();
     });
 
     var plotData = [];
@@ -327,8 +349,9 @@
             for(var i=1; i<headers.length; i++){
                 plotData.push([]);
                 var id = "plot-vr-checkbox-"+i;
-                $("#plot-columns").append("<tr><td><label for=\""+id+"\">"+headers[i]+"</label></td><td><input type=\"checkbox\" id=\""+id+"\" checked></td></tr>");
+                $("#plot-columns").append("<tr><td><label for=\""+id+"\">"+headers[i]+"</label></td><td><input type=\"checkbox\" id=\""+id+"\" checked=\"checked\"></td></tr>");
             }
+            $("#plot-columns tr:not(:first) input").change(plotSelectedData);
 
             for(var i=0; i<lines.length; i++){
                 var strings = lines[i].split(",");
@@ -344,9 +367,15 @@
     }
 
     function plotSelectedData(){
-        var selectedData = plotData; // Todo: filter
+        var selectedData = [];
+        $("#plot-columns tr:not(:first) input").each(function(i,el){
+            if($(el).is(":checked")){
+                selectedData.push(plotData[i]);
+            }
+        });
         $.plot("#plot", selectedData);
     }
+
 
     </script>
 </body>

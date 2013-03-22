@@ -8,7 +8,10 @@
     <link href="bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
   </head>
   <body>
+    <!-- Container for everything -->
     <div class="container">
+
+        <!-- Simulate popup/modal -->
         <div class="modal hide fade" id="simulateModal">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
@@ -33,6 +36,8 @@
                 <a href="#" id="simulate-button" class="btn btn-primary">Simulate</a>
             </div>
         </div>
+
+        <!-- Navigation bar at top -->
         <div class="navbar">
             <div class="navbar-inner">
                 <div class="container" style="width: auto;">
@@ -63,6 +68,8 @@
                 </div>
             </div>
         </div>
+
+        <!-- The simulation view, showing the current simulation system -->
         <div class="row" id="simulation-view">
             <div id="diagram" class="span6">
                 <h3>FMU Master</h3>
@@ -73,7 +80,11 @@
                         <th>Imported FMUs:</th>
                     </thead>
                 </table>
+                <table id="connection-table" class="table table-hover">
+                </table>
             </div>
+
+            <!-- Selection menu / context menu -->
             <div id="selection-menu" class="span6" data-editing="">
                 <h3 class="head">Selection menu</h3>
                 <p id="variables-loading-message" style="display:none">Loading variables...</p>
@@ -105,6 +116,7 @@
             </div>
         </div>
 
+        <!-- Analysis view, with plot -->
         <div class="row" id="analysis-view" style="display:none">
             <div id="analysis" class="span8">
               <h3>Analysis</h3>
@@ -120,6 +132,7 @@
             </div>
         </div>
 
+        <!-- footer info -->
         <footer class="footer">
           <div class="container">
             <p>UMIT Research Lab 2013</p>
@@ -127,11 +140,13 @@
         </footer>
     </div>
 
+    <!-- Le javascript, at bottom for faster page load -->
     <script src="javascripts/lib/raphael.js"></script>
     <script src="javascripts/lib/jquery.js"></script>
     <script src="javascripts/lib/jquery.flot.js"></script>
     <script src="bootstrap/js/bootstrap.js"></script>
 
+    <!-- Main client script -->
     <script>
         // Add FMU
         $("#fmu-dropdown li a").click(function(){
@@ -366,8 +381,6 @@
                 }
             }
 
-        } else {
-
         }
     }
 
@@ -380,7 +393,6 @@
         });
         $.plot("#plot", selectedData);
     }
-
 
     </script>
 </body>

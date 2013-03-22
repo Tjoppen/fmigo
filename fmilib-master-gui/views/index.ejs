@@ -60,7 +60,7 @@
             </div>
         </div>
         <div class="row" id="simulation-view">
-            <div id="diagram" class="span8">
+            <div id="diagram" class="span6">
                 <h3>FMU Master</h3>
                 <p>Welcome to the FMU co-simulation master. Use this app to simulate models from various simulation tools.</p>
                 <p>First, choose <i>Import FMU</i> to load a model. Select it in the list below to edit its parameters. Then press <i>Simulate</i>.</p>
@@ -70,20 +70,27 @@
                     </thead>
                 </table>
             </div>
-            <div id="selection-menu" class="span4" data-editing="">
+            <div id="selection-menu" class="span6" data-editing="">
                 <h3 class="head">Selection menu</h3>
                 <p id="variables-loading-message" style="display:none">Loading variables...</p>
                 <table id="init-vals" style="display:none" class="table table-hover">
-                    <tr><th colspan="2">Initial states</th></tr>
+                    <tr>
+                        <th colspan="2">Initial state</th>
+                        <th>Description</th>
+                    </tr>
                     <!--
                     <tr>
                         <td>state_name</td>
                         <td><input type="number"></td>
+                        <td>Description...</td>
                     </tr>
                     -->
                 </table>
                 <table id="parameters" style="display:none" class="table table-hover">
-                    <tr><th colspan="2">Parameters</th></tr>
+                    <tr>
+                        <th colspan="2">Parameter</th>
+                        <th>Description</th>
+                    </tr>
                     <!--
                     <tr>
                         <td>param_name</td>
@@ -189,7 +196,7 @@
                                     inputHTML = "<input type=\"text\" value=\""+start+"\">";
                                 }
 
-                                var $param = $("<tr data-valueReference=\""+$el.attr("valueReference")+"\" title=\""+$el.attr("description")+"\"><td>"+$el.attr("name")+"</td><td>"+inputHTML+"</td></tr>");
+                                var $param = $("<tr data-valueReference=\""+$el.attr("valueReference")+"\" title=\""+$el.attr("description")+"\"><td>"+$el.attr("name")+"</td><td>"+inputHTML+"</td><td>"+$el.attr("description")+"</td></tr>");
 
                                 $param.find("input").change(function(e){
                                     // Get new value
@@ -253,7 +260,7 @@
             }
             */
             fmus : {},
-            timestep : 0.001,
+            timestep : 0.01,
         };
 
         // Add fmus to the JSON

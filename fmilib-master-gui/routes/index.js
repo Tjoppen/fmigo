@@ -98,9 +98,7 @@ exports.simulate = function(req,res){
     commandLine += " "+fmuPaths.join(" ");
     args = args.concat(fmuPaths);
     
-    console.log("running ",commandLine," or ", config.fmuMasterCommand+" "+args.join(" "));
-
-
+    //console.log("running ",commandLine," or ", config.fmuMasterCommand+" "+args.join(" "));
 
     // TODO check number of running processes
     res.writeHead(200, { 'Content-Type': 'text/csv' });

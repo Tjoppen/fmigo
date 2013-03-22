@@ -1,6 +1,7 @@
 body {
     /* overflow: hidden;*/
     padding-top:20px;
+    overflow-y: scroll;
 }
 
 .footer {
@@ -40,4 +41,16 @@ body {
 .modal-body input, .modal-body label {
     display: inline-block;
     width:250px;
+}
+
+#plot {
+    padding: 20px 15px 15px 15px;
+    width:700px;
+    height:500px;
+    font-size: 14px;
+    line-height: 14px;
+}
+
+#plot canvas {
+    margin-left: 20px;
 }

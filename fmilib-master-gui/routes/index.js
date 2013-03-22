@@ -63,6 +63,7 @@ exports.simulate = function(req,res){
         idx++;
     }
 
+
     // Construct parameter triplets
     var parameters = [];
     for(var name in b.fmus){
@@ -78,26 +79,43 @@ exports.simulate = function(req,res){
     var connections = [];
     // TODO
 
+    var args = ["-q","-o","stdout"];
+
     // Construct command line
     var commandLine = config.fmuMasterCommand + " -q -o stdout";
     if(parameters.length){
         commandLine += " -p " + parameters.join(":");
+        args.push("-p",parameters.join(":"));
     }
 
+    // Time step
+    if(b.timestep){
+        commandLine += " -d "+parseFloat(b.timestep);
+        args.push("-d",parseFloat(b.timestep));
+    }
+
+    // Add fmu paths to the end of the command line
     commandLine += " "+fmuPaths.join(" ");
+    args = args.concat(fmuPaths);
     
-    console.log("running ",commandLine);
+    console.log("running ",commandLine," or ", config.fmuMasterCommand+" "+args.join(" "));
+
+
 
     // TODO check number of running processes
-    child_process.exec(commandLine,function(err,stdout,stderr){
-
-        // error?
-        if(err){
-            console.error(err);
-            return res.send(500);
-        }
-        res.header("text/csv");
-        res.send(200,stdout);
+    res.writeHead(200, { 'Content-Type': 'text/csv' });
+    var master = child_process.spawn(config.fmuMasterCommand, args);
+    master.stdout.on('data', function (data) {
+        // Got a chunk of data
+        res.write(data);
+    });
+    master.stderr.on('data', function (data) {
+        // Got error
+        console.error(data.toString());
+        master.kill();
+    });
+    master.on('exit', function (code) {
+        res.end();
     });
 
 };

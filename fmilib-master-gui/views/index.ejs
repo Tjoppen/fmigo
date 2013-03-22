@@ -20,7 +20,7 @@
                 </div>
                 <div>
                     <label for="timestep">Time step size</label>
-                    <input type="number" value="0.001"/>
+                    <input type="number" id="timestep" value="0.001"/>
                 </div>
             </div>
             <div class="modal-footer">
@@ -33,7 +33,7 @@
                 <div class="container" style="width: auto;">
                     <a class="brand" href="#">FMU Master</a>
                     <ul class="nav" role="navigation">
-                        <li class="divider-vertical"></li>
+                        <li class="active"><a href="#" id="nav-simulation">Simulation</a></li>
                         <li class="dropdown">
                             <a id="drop1" href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">Import FMU <b class="caret"></b></a>
                             <ul class="dropdown-menu" role="menu" aria-labelledby="drop1" id="fmu-dropdown"><%
@@ -42,7 +42,7 @@
                             }
                             %></ul>
                         </li>
-                        <li class="divider-vertical"></li>
+                        <!--
                         <li class="dropdown">
                             <a href="#" id="drop2" role="button" class="dropdown-toggle" data-toggle="dropdown">Options <b class="caret"></b></a>
                             <ul class="dropdown-menu" role="menu" aria-labelledby="drop2">
@@ -50,12 +50,15 @@
                             </ul>
                         </li>
                         <li class="divider-vertical"></li>
+                        -->
                         <li><a data-toggle="modal" id="nav-simulate" href="#simulateModal">Simulate...</a></li>
+                        <li class="divider-vertical"></li>
+                        <li><a href="#" id="nav-analysis">Analysis</a></li>
                     </ul>
                 </div>
             </div>
         </div>
-        <div class="row">
+        <div class="row" id="simulation-view">
             <div id="diagram" class="span8">
               <h3>FMU instances</h3>
               <p>This should be a block diagram but keep in mind that this is just a prototype.</p>
@@ -81,6 +84,18 @@
                         <td>param_name</td>
                         <td><input type="number"></td>
                     </tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="row" id="analysis-view" style="display:none">
+            <div id="analysis" class="span8">
+              <h3>Analysis</h3>
+              <div id="plot"></div>
+            </div>
+            <div id="plot-menu" class="span4">
+                <table id="plot-columns" class="table table-hover">
+                    <tr><th colspan="2">Plot columns</th></tr>
                 </table>
             </div>
         </div>
@@ -175,9 +190,6 @@
                                     var identifyer = $("#selection-menu").attr("data-editing");
 
                                     // Set it
-                                    console.log($('#diagram'),
-                                                $('#diagram .fmu[data-instance="'+identifyer+'"]'),
-                                                $('#diagram .fmu[data-instance="'+identifyer+'"] .initial-values'));
                                     $('#diagram .fmu[data-instance="'+identifyer+'"]').parent().find('.initial-values').append("<dt>"+vr+"</dt><dd>"+val+"</dd>");
                                 });
 
@@ -231,9 +243,11 @@
                 },
             }
             */
-            fmus : {}
+            fmus : {},
+            timestep : 0.001,
         };
 
+        // Add fmus to the JSON
         var numFMUs = 0;
         $(".fmu").each(function(i,el){
             numFMUs++;
@@ -253,15 +267,20 @@
             }
         });
 
+        // Get timestep
+        json.timestep = $("#timestep").val();
+
         $.ajax({
             url : "simulate",
             type:"POST",
             data : json,
             success : function(data){
-                console.log(data);
+                parseCSVdata(data);
+                plotSelectedData();
             },
             error : function(data){
-                console.log(data);
+                console.error("Something went wrong!");
+                console.error(data);
             }
         });
     });
@@ -275,6 +294,59 @@
             $("#simulate-button").show();
         }
     });
+
+    $("#nav-analysis").click(function(){
+        $("#nav-analysis").parent().addClass("active");
+        $("#nav-simulation").parent().removeClass("active");
+        $("#simulation-view").hide();
+        $("#analysis-view").show();
+    });
+
+    $("#nav-simulation").click(function(){
+        $("#nav-simulation").parent().addClass("active");
+        $("#nav-analysis").parent().removeClass("active");
+        $("#analysis-view").hide();
+        $("#simulation-view").show();
+    });
+
+    var plotData = [];
+    var headers = [];
+    function parseCSVdata(csvData){
+        plotData = [];
+
+        // Empty the column selection menu
+        $("#plot-columns tr:not(:first)").remove();
+
+        // Construct data
+        if(csvData){
+            var lines = csvData.split("\n");
+            var header = lines.shift();
+            headers = header.split(",");
+
+            // Add all headers to the table
+            for(var i=1; i<headers.length; i++){
+                plotData.push([]);
+                var id = "plot-vr-checkbox-"+i;
+                $("#plot-columns").append("<tr><td><label for=\""+id+"\">"+headers[i]+"</label></td><td><input type=\"checkbox\" id=\""+id+"\" checked></td></tr>");
+            }
+
+            for(var i=0; i<lines.length; i++){
+                var strings = lines[i].split(",");
+                var time = parseFloat(strings[0]);
+                for(var j=1; j<strings.length; j++){
+                    plotData[j-1].push([time,parseFloat(strings[j])]);
+                }
+            }
+
+        } else {
+
+        }
+    }
+
+    function plotSelectedData(){
+        var selectedData = plotData; // Todo: filter
+        $.plot("#plot", selectedData);
+    }
 
     </script>
 </body>

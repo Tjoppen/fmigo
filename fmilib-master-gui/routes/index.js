@@ -15,9 +15,21 @@ function getModelDescriptionXML(fmuFile,callback){
         callback(null,stdout);
     });
 }
+// Get fmuPaths relative to the fmuDir
 function getAvailableFMUs(callback){
-    fs.readdir(fmuDir,function(err,files){
-        callback(err,files);
+    child_process.exec("find "+fmuDir+" -type f -name *.fmu",function(err,stdout,stderr){
+        if(err) return callback(err);
+        if(stderr) return callback(new Error(stderr));
+
+        var files = [];
+        var shortened = stdout.replace(new RegExp(fmuDir+"/","g"),"");
+        var paths = shortened.split("\n");
+        for(var i=0; i<paths.length; i++){
+            if(paths[i]){
+                files.push(paths[i]);
+            }
+        }
+        callback(null,files);
     });
 }
 
@@ -30,12 +42,10 @@ exports.index = function(req,res){
     });
 };
 
-// GET /fmus/:filename/modelDescription.xml
+// GET /fmus/[fmuPath]/modelDescription.xml
 exports.modelDescription = function(req,res){
-
     // Todo should check if FMU exists
-
-    getModelDescriptionXML(req.params.filename,function(err,xml){
+    getModelDescriptionXML(req.params[0],function(err,xml){
         if(err){
             // Got an error.
             console.error(err);

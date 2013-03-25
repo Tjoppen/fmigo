@@ -29,6 +29,9 @@
 
                     <label for="endTime">Simulation end time</label>
                     <input type="number" id="endTime" value="1.0"/>
+
+                    <label for="realTime">Real time mode</label>
+                    <input type="checkbox" id="realTime" value="1"/>
                 </div>
             </div>
             <div class="modal-footer">
@@ -48,19 +51,14 @@
                             <a id="drop1" href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">Import FMU <b class="caret"></b></a>
                             <ul class="dropdown-menu" role="menu" aria-labelledby="drop1" id="fmu-dropdown"><%
                             for(var i=0; i<fmus.length; i++){ %>
-                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#" data-file="<%=fmus[i]%>" data-identifyer="<%=fmus[i].replace(".fmu","")%>"><%=fmus[i]%></a></li><%
+                                <li role="presentation">
+                                    <a role="menuitem" tabindex="-1" href="#" data-fmuPath="<%=fmus[i]%>" data-identifyer="<%=fmus[i].replace(".fmu","")%>">
+                                        <%=fmus[i]%>
+                                    </a>
+                                </li><%
                             }
                             %></ul>
                         </li>
-                        <!--
-                        <li class="dropdown">
-                            <a href="#" id="drop2" role="button" class="dropdown-toggle" data-toggle="dropdown">Options <b class="caret"></b></a>
-                            <ul class="dropdown-menu" role="menu" aria-labelledby="drop2">
-                                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Dummy option</a></li>
-                            </ul>
-                        </li>
-                        <li class="divider-vertical"></li>
-                        -->
                         <li><a data-toggle="modal" id="nav-simulate" href="#simulateModal">Simulate...</a></li>
                         <li class="divider-vertical"></li>
                         <li><a href="#" id="nav-analysis">Analysis</a></li>
@@ -75,13 +73,36 @@
                 <h3>FMU Master</h3>
                 <p>Welcome to the FMU co-simulation master. Use this app to simulate models from various simulation tools.</p>
                 <p>First, choose <i>Import FMU</i> to load a model. Select it in the list below to edit its parameters. Then press <i>Simulate</i>.</p>
+                
+                <h4>FMU instances</h4>
                 <table id="fmu-table" class="table table-hover">
-                    <thead>
-                        <th>Imported FMUs:</th>
-                    </thead>
+                    <tr>
+                        <th>Instance name</th>
+                    </tr>
                 </table>
+
+                <h4>Connections</h4>
                 <table id="connection-table" class="table table-hover">
+                    <tr>
+                        <th>From</th>
+                        <th>To</th>
+                    </tr>
+                    <!--
+                    <tr data-fromFmuIndex="0" data-toFmuIndex="1" data-fromValueReference="0" data-toValueReference="1">
+                        <td>fmu0.out</td>
+                        <td>fmu1.in</td>
+                    </tr>
+                    -->
                 </table>
+                From 
+                <select id="connection-from-select">
+                    <option selected value="">Pick...</option>
+                </select>
+                 to 
+                <select id="connection-to-select">
+                    <option selected value="">Pick...</option>
+                </select>
+                <button id="connection-add-button">Add connection</button>
             </div>
 
             <!-- Selection menu / context menu -->
@@ -148,110 +169,171 @@
 
     <!-- Main client script -->
     <script>
+
+        // Get model description from an FMU
+        var cachedModelDescriptions = {}; // fmuPath => XMLDoc
+        function getModelDescription(fmuPath,callback){
+            if(cachedModelDescriptions[fmuPath]){
+                callback(null,cachedModelDescriptions[fmuPath]);
+            } else {
+                $.ajax({
+                    url : "fmus/"+fmuPath+"/modelDescription.xml",
+                    success : function(data){
+                        callback(null,data);
+                        cachedModelDescriptions[fmuPath] = data;
+                    },
+                    error: function(data){
+                        callback(data);
+                    }
+                });
+            }
+        }
+
+        // callback(err,valueReferences,names,types,variabilities,starts,descriptions,causalities)
+        function getModelVariables(fmuPath,callback){
+            var vrs=[],
+                names=[],
+                types=[],
+                variabilities=[],
+                descriptions=[],
+                causalities=[],
+                starts=[];
+
+            getModelDescription(fmuPath,function(err,data){
+                if(err){
+                    console.error(err);
+                    return;
+                }
+
+                var $xml = $(data);
+
+                var fmiVersion = $xml.find("fmiModelDescription").attr("fmiVersion");
+                if(fmiVersion == "1.0"){
+                    $xml.find("ScalarVariable").each(function(i,el){
+                        var $el = $(el),
+                            $sub;
+                        variabilities.push($el.attr("variability"));
+                        causalities.push($el.attr("causality"));
+
+                        // Get var type
+                        if($el.find("Real").length){
+                            $sub = $el.find("Real");
+                            starts.push(parseFloat($sub.attr("start")) || 0.0);
+                            types.push("Real");
+
+                        } else if($el.find("Integer").length){
+                            $sub = $el.find("Integer");
+                            starts.push(parseInt($sub.attr("start")) || 0);
+                            types.push("Integer");
+
+                        } else if($el.find("Boolean").length){
+                            $sub = $el.find("Boolean");
+                            starts.push($sub.attr("start")=="true");
+                            types.push("Boolean");
+
+                        } else if($el.find("String").length){
+                            $sub = $el.find("String");
+                            starts.push($sub.attr("start") || "");
+                            types.push("String");
+                        }
+                        vrs.push(parseInt($el.attr("valueReference")));
+                        names.push($el.attr("name"));
+                        descriptions.push($el.attr("description") || "");
+                    });
+                } else {
+                    alert("Only FMI version 1.0 is supported so far, but \""+fmiVersion+"\" was given");
+                }
+
+                callback(null,vrs,names,types,variabilities,starts,descriptions,causalities);
+            });
+        }
+
         // Add FMU
         $("#fmu-dropdown li a").click(function(){
             var id = $(this).attr("data-identifyer");
-            var file = $(this).attr("data-file");
+            var file = $(this).attr("data-fmuPath");
             var instanceName = id + "0"; // Todo fix
 
             // Add to the diagram
-            var $fmu = $("<tr><td><a class=\"fmu\" data-identifyer=\""+id+"\" data-instance=\""+instanceName+"\" data-file=\""+file+"\" href=\"#\">"+instanceName+"</a><dl class=\"initial-values\"></dl></td></tr>");
+            var $fmu = $("<tr><td><a class=\"fmu\" data-identifyer=\""+id+"\" data-instance=\""+instanceName+"\" data-fmuPath=\""+file+"\" href=\"#\">"+instanceName+"</a><dl class=\"initial-values\"></dl></td></tr>");
             $("#fmu-table").append($fmu);
+
+            // Update connection selectors
+            updateConnectionSelectors();
 
             // Select the FMU
             $fmu.click(function(){
                 var instance = $(this).find("a").attr("data-instance");
                 $("#selection-menu").attr("data-editing",instance);
 
-                var file = $(this).find("a").attr("data-file");
+                var file = $(this).find("a").attr("data-fmuPath");
                 $("#selection-menu .head").html(instance);
                 $("#variables-loading-message").show();
                 $("#parameters").hide();
                 $("#init-vals").hide();
-                $.ajax({
-                    url : "fmus/"+file+"/modelDescription.xml",
-                    success : function(data){
-                        //console.log(data);
-                        var $xml = $(data);
 
-                        // Hide loading message
-                        $("#variables-loading-message").hide();
+                getModelVariables(file,function(err,vrs,names,types,variabilities,starts,descriptions,causalities){
+                    if(err){
+                        console.error(err);
+                        return;
+                    }
 
-                        // Remove all old params
-                        $("#parameters tr:not(:first), #init-vals tr:not(:first)").remove();
+                    // Hide loading message
+                    $("#variables-loading-message").hide();
 
-                        var fmiVersion = $xml.find("fmiModelDescription").attr("fmiVersion");
-                        if(fmiVersion == "1.0"){
+                    // Remove all old params
+                    $("#parameters tr:not(:first), #init-vals tr:not(:first)").remove();
 
-                            $xml.find("ScalarVariable").each(function(i,el){
+                    for(var i=0; i<vrs.length; i++){
+                        var variability = variabilities[i],
+                            vr = vrs[i],
+                            type = types[i],
+                            start = starts[i],
+                            name = names[i],
+                            description = descriptions[i],
+                            inputHTML="";
 
-                                var $el = $(el),
-                                    inputHTML,
-                                    $sub;
-                                var variability = $el.attr("variability");
-
-                                // Get var type
-                                if($el.find("Real").length){
-                                    $sub = $el.find("Real");
-                                    start = (parseFloat($sub.attr("start"))+"") || "0.0";
-                                    inputHTML = "<input type=\"text\" value=\""+start+"\"/>";
-
-                                } else if($el.find("Integer").length){
-                                    $sub = $el.find("Integer");
-                                    start = paseInt($sub.attr("start")) || "0";
-                                    inputHTML = "<input type=\"number\" value=\""+start+"\">";
-
-                                } else if($el.find("Boolean").length){
-                                    $sub = $el.find("Boolean");
-                                    inputHTML = "<input type=\"checkbox\" value=\"1\""+($sub.attr("start")=="true" ? " checked" : "")+">";
-
-                                } else if($el.find("String").length){
-                                    $sub = $el.find("String");
-                                    start = $sub.attr("start") || "";
-                                    inputHTML = "<input type=\"text\" value=\""+start+"\">";
-                                }
-
-                                var $param = $("<tr data-valueReference=\""+$el.attr("valueReference")+"\"><td>"+$el.attr("name")+"</td><td>"+inputHTML+"</td><td>"+($el.attr("description") || "")+"</td></tr>");
-
-                                $param.find("input").change(function(e){
-                                    // Get new value
-                                    $target = $(this);
-                                    var val = $target.val();
-                                    var vr = $target.parents("tr").attr("data-valueReference");
-                                    var identifyer = $("#selection-menu").attr("data-editing");
-
-                                    // Set it
-                                    $('#diagram .fmu[data-instance="'+identifyer+'"]').parent().find('.initial-values').append("<dt>"+vr+"</dt><dd>"+val+"</dd>");
-                                });
-
-                                // Insert in correct table
-                                switch(variability){
-                                    case "parameter":
-                                        $("#parameters").append($param);
-                                        break;
-                                    case "continuous":
-                                    default: 
-                                        $("#init-vals").append($param);
-                                        break;
-                                }
-                            });
-
-                        } else {
-                            alert("Only FMI version 1.0 is supported so far, but \""+fmiVersion+"\" was given");
+                        // Get var type
+                        switch(type){
+                            case "Real":    inputHTML = "<input type=\"text\"     value=\""+start+"\"/>";                       break;
+                            case "Integer": inputHTML = "<input type=\"number\"   value=\""+start+"\">";                        break;
+                            case "Boolean": inputHTML = "<input type=\"checkbox\" value=\"1\""+(start ? " checked" : "")+">";   break;
+                            case "String":  inputHTML = "<input type=\"text\"     value=\""+start+"\">";                        break;
+                            default:
+                                console.error("type "+type+" not recognized.");
+                                break;
                         }
 
-                        // Only show if there is something to show
-                        if($("#init-vals  tr").length > 1) $("#init-vals") .show();
-                        if($("#parameters tr").length > 1) $("#parameters").show();
-                    },
-                    error: function(data){
-                        console.log(data);
+                        var $param = $("<tr data-valueReference=\""+vr+"\"><td>"+name+"</td><td>"+inputHTML+"</td><td>"+description+"</td></tr>");
+
+                        $param.find("input").change(function(e){
+                            // Get new value
+                            var $target = $(this);
+                            var val = $target.val();
+                            var vr = $target.parents("tr").attr("data-valueReference");
+                            var identifyer = $("#selection-menu").attr("data-editing");
+
+                            // Set it
+                            $('#diagram .fmu[data-instance="'+identifyer+'"]').parent().find('.initial-values').append("<dt>"+vr+"</dt><dd>"+val+"</dd>");
+                        });
+
+                        // Insert in correct table
+                        switch(variability){
+                            case "parameter": $("#parameters").append($param);  break;
+                            default:          $("#init-vals").append($param);   break;
+                        }
                     }
+
+                    // Only show if there is something to show
+                    if($("#init-vals  tr").length > 1) $("#init-vals") .show();
+                    if($("#parameters tr").length > 1) $("#parameters").show();
+
                 });
+
             });
         });
 
-    // User clicks "simulate"
+    // User clicks "simulate" in the simulation modal
     $("#simulate-button").click(function(e){
         // Serialize the whole diagram
         var json = {
@@ -261,22 +343,20 @@
                 toFMU : "agxVehicle0",
                 fromVR : 0,
                 toVR : 0
-            }
-            */
+            } */
             connections : [],
 
-            /*
-            FMUs on format:
+            /* FMUs on format:
             {
                 wheelloader0 : {
                     fmu : "wheelloader.fmu",
                     initialValues : { "0" : 0.07, }
                 },
-            }
-            */
+            } */
             fmus : {},
             timestep : $("#timestep").val(),
-            endTime : $("#endTime").val()
+            endTime : $("#endTime").val(),
+            realTime : $("#realTime").val(),
         };
 
         // Add fmus to the JSON
@@ -284,7 +364,7 @@
         $(".fmu").each(function(i,el){
             numFMUs++;
             $el = $(el);
-            var file = $el.attr("data-file");
+            var file = $el.attr("data-fmuPath");
             var id = $el.attr("data-identifyer");
             json.fmus[id] = {
                 fmu : file,
@@ -299,6 +379,17 @@
             }
         });
 
+        // Add connections
+        $("#connection-table tr:not(:first)").each(function(i,el){
+            var $el = $(el);
+            json.connections.push({
+                fromFMU : parseInt($el.attr("data-fromFmuIndex")),
+                toFMU :   parseInt($el.attr("data-toFmuIndex")),
+                fromVR :  parseInt($el.attr("data-fromValueReference")),
+                toVR :    parseInt($el.attr("data-toValueReference"))
+            });
+        });
+
         $.ajax({
             url : "simulate",
             type:"POST",
@@ -306,7 +397,6 @@
             success : function(data){
                 parseCSVdata(data);
                 plotSelectedData();
-                /*$("#simulateModal").addClass("hide");*/
                 $("#simulateModal").modal('hide');
                 $("#nav-analysis").trigger("click");
             },
@@ -317,6 +407,7 @@
         });
     });
 
+    // Click navbar "Simulate...", modal appears
     $("#nav-simulate").click(function(){
         if(!$(".fmu").length){
             $("#no-fmus-in-simulation-message").show();
@@ -327,6 +418,7 @@
         }
     });
 
+    // Switch to analysis view
     $("#nav-analysis").click(function(){
         $("#nav-analysis").parent().addClass("active");
         $("#nav-simulation").parent().removeClass("active");
@@ -334,12 +426,14 @@
         $("#analysis-view").show();
     });
 
+    // Switch to simulation view
     $("#nav-simulation").click(function(){
         $("#nav-simulation").parent().addClass("active");
         $("#nav-analysis").parent().removeClass("active");
         $("#analysis-view").hide();
         $("#simulation-view").show();
     });
+
 
     // Toggle all plot columns
     $("#plot-columns-showall").change(function(){
@@ -349,6 +443,46 @@
             $("#plot-columns tr:not(:first) input").prop("checked",false);
         }
         plotSelectedData();
+    });
+
+    function updateConnectionSelectors(){
+        // Clear all options
+        $("#connection-from-select option:not(:first)").remove();
+        $("#connection-to-select option:not(:first)").remove();
+
+        // Add possible outputs
+        $(".fmu").each(function(i,el){
+            var instanceName = $(el).attr("data-instance");
+            getModelVariables($(el).attr("data-fmuPath"),function(err,vrs,names,types,variabilities,starts,descriptions,causalities){
+                for(var j=0; j<vrs.length; j++){
+                    var html = "<option value=\""+i+" "+vrs[j]+"\">"+instanceName+"."+names[j]+"</option>";
+                    switch(causalities[j]){
+                        case "output": $("#connection-from-select").append(html); break;
+                        case "input":  $("#connection-to-select")  .append(html); break;
+                    }
+                }
+            });
+        });
+    }
+
+    // Clicked the "add connection" button
+    $("#connection-add-button").click(function(e){
+        var opt1 = $("#connection-from-select option:selected").val();
+        var html1 = $("#connection-from-select option:selected").html();
+        var opt2 = $("#connection-to-select option:selected").val();
+        var html2 = $("#connection-to-select option:selected").html();
+        if(opt1 && opt2){
+            // Get selected inputs and outputs
+            var temp1 = opt1.split(" ");
+            var fromFMU = parseInt(temp1[0]);
+            var fromVR = parseInt(temp1[1]);
+
+            var temp2 = opt2.split(" ");
+            var toFMU = parseInt(temp2[0]);
+            var toVR = parseInt(temp2[1]);
+
+            $("#connection-table").append("<tr data-fromFmuIndex='"+fromFMU+"' data-toFmuIndex='"+toFMU+"' data-fromValueReference='"+fromVR+"' data-toValueReference='"+toVR+"'><td>"+html1+"</td><td>"+html2+"</td></tr>");
+        }
     });
 
     var plotData = [];

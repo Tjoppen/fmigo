@@ -8,7 +8,7 @@ function getModelDescriptionXML(fmuFile,callback){
     var command = config.fmuMasterCommand;
     var args = ["-qx",fmuDir+"/"+fmuFile];
     var commandLine = command+" "+args.join(" ");
-    console.log(commandLine);
+    //console.log(commandLine);
     child_process.exec(commandLine,function(err,stdout,stderr){
         if(err) return callback(err);
         if(stderr) return callback(new Error(stderr));
@@ -63,7 +63,6 @@ exports.simulate = function(req,res){
         idx++;
     }
 
-
     // Construct parameter triplets
     var parameters = [];
     for(var name in b.fmus){
@@ -74,10 +73,6 @@ exports.simulate = function(req,res){
             parameters.push([fmuIdx,vr,value].join(","));
         }
     }
-
-    // Construct connection quads
-    var connections = [];
-    // TODO
 
     var args = ["-q","-o","stdout"];
 
@@ -96,10 +91,20 @@ exports.simulate = function(req,res){
         args.push("-t",parseFloat(b.endTime));
     }
 
+    // Construct connection quads
+    var connections = [];
+    for(var i=0; i<b.connections.length; i++){
+        var c = b.connections[i];
+        connections.push([c.fromFMU, c.fromVR, c.toFMU, c.toVR].join(","));
+    }
+    if(connections.length){
+        args.push("-c",connections.join(":"));
+    }
+
     // Add fmu paths to the end of the command line
     args = args.concat(fmuPaths);
     
-    //console.log("running ",commandLine," or ", config.fmuMasterCommand+" "+args.join(" "));
+    //console.log("running ", config.fmuMasterCommand+" "+args.join(" "));
 
     // TODO check number of running processes
     res.writeHead(200, { 'Content-Type': 'text/csv' });

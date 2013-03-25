@@ -30,8 +30,20 @@
                     <label for="endTime">Simulation end time</label>
                     <input type="number" id="endTime" value="1.0"/>
 
+                    <label for="cosimAlgo">Co-simulation algorithm</label>
+                    <select id="cosimAlgo">
+                        <option selected>Jacobi</option>
+                    </select>
+
                     <label for="realTime">Real time mode</label>
                     <input type="checkbox" id="realTime" value="1"/>
+
+                </div>
+                <div id="simulation-progress" style="display:none">
+                    <p>Please wait while crunching numbers...</p>
+                    <div class="progress progress-striped active">
+                        <div class="bar" style="width:100%;"></div>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -94,15 +106,13 @@
                     </tr>
                     -->
                 </table>
-                From 
                 <select id="connection-from-select">
-                    <option selected value="">Pick...</option>
+                    <option selected value="">Pick an output...</option>
                 </select>
-                 to 
                 <select id="connection-to-select">
-                    <option selected value="">Pick...</option>
+                    <option selected value="">Pick an input...</option>
                 </select>
-                <button id="connection-add-button">Add connection</button>
+                <a href="#" id="connection-add-button" class="btn btn-primary">Add connection</a>
             </div>
 
             <!-- Selection menu / context menu -->
@@ -390,11 +400,19 @@
             });
         });
 
+        // Progress bar
+        $("#simulateModal .modal-body > div").hide();
+        $("#simulation-progress").show();
+        $("#simulateModal .modal-footer").hide();
+
+        // Send request
         $.ajax({
             url : "simulate",
-            type:"POST",
+            type : "POST",
             data : json,
             success : function(data){
+                $("#simulation-progress").hide();
+                $("#simulateModal .modal-footer").show();
                 parseCSVdata(data);
                 plotSelectedData();
                 $("#simulateModal").modal('hide');

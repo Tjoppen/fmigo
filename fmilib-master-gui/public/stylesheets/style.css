@@ -38,7 +38,7 @@ body {
     display: none;
 }
 
-.modal-body input, .modal-body label {
+.modal-body input, .modal-body input[type="checkbox"], .modal-body label {
     display: inline-block;
     width:250px;
 }
@@ -58,4 +58,9 @@ body {
 #plot-menu {
     overflow-y:scroll;
     height:600px;
+}
+
+#connection-from-select, #connection-to-select, #connection-add-button {
+    width:30%;
+    vertical-align: top;
 }

@@ -50,6 +50,7 @@ exports.modelDescription = function(req,res){
     });
 };
 
+// POST /simulate
 exports.simulate = function(req,res){
     var b = req.body;
 
@@ -91,14 +92,21 @@ exports.simulate = function(req,res){
         args.push("-t",parseFloat(b.endTime));
     }
 
+    // Real time mode
+    if(b.realTime){
+        args.push("-r");
+    }
+
     // Construct connection quads
     var connections = [];
-    for(var i=0; i<b.connections.length; i++){
-        var c = b.connections[i];
-        connections.push([c.fromFMU, c.fromVR, c.toFMU, c.toVR].join(","));
-    }
-    if(connections.length){
-        args.push("-c",connections.join(":"));
+    if(b.connections){
+        for(var i=0; i<b.connections.length; i++){
+            var c = b.connections[i];
+            connections.push([c.fromFMU, c.fromVR, c.toFMU, c.toVR].join(","));
+        }
+        if(connections.length){
+            args.push("-c",connections.join(":"));
+        }
     }
 
     // Add fmu paths to the end of the command line
@@ -121,5 +129,5 @@ exports.simulate = function(req,res){
     master.on('exit', function (code) {
         res.end();
     });
-
 };
+

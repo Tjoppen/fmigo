@@ -86,7 +86,7 @@ typedef int (*fmi1stepfunction)(double time,                // System stepping f
                                 int numConnections,
                                 connection connections[MAX_CONNECTIONS]);
 /**
- * @todo
+ * @todo Implement me!
  * @return int Zero if successful, otherwise error code.
  */
 typedef int (*fmi2stepfunction)(double time,                

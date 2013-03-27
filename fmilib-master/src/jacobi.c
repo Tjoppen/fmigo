@@ -3,16 +3,25 @@
 
 #include "main.h"
 
+int fmi2JacobiStep( double time,
+                    double communicationTimeStep,
+                    int numFMUs,
+                    fmi2_import_t ** fmus,
+                    int numConnections,
+                    connection connections[MAX_CONNECTIONS]){
+    return 1;
+}
+
 /**
  * Jacobi is a stepping method where we step the subsystems in parallel.
  * The order of connections will therefore not matter.
  */
-int jacobiStep( double time,
-                double communicationTimeStep,
-                int numFMUs,
-                fmi1_import_t ** fmus,
-                int numConnections,
-                connection connections[MAX_CONNECTIONS]){
+int fmi1JacobiStep( double time,
+                    double communicationTimeStep,
+                    int numFMUs,
+                    fmi1_import_t ** fmus,
+                    int numConnections,
+                    connection connections[MAX_CONNECTIONS]){
 
     int ci, found, k, i, l;
 

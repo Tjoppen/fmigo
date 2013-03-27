@@ -127,6 +127,8 @@ int main( int argc, char *argv[] ) {
     fmi_version_enu_t* versions =       calloc(sizeof(fmi_version_enu_t),numFMUs);
     const char** tmpPaths =             calloc(sizeof(const char*),numFMUs);
 
+    int numFMU1 = 0, numFMU2 = 0; // Count the number of each version
+
     // Load all FMUs
     for(i=0; i<numFMUs; i++){
         
@@ -162,7 +164,9 @@ int main( int argc, char *argv[] ) {
             }
         }
 
-        if(versions[i] == fmi_version_1_enu) {
+        if(versions[i] == fmi_version_1_enu) { // FMI 1.0
+
+            numFMU1++;
 
             fmus1[i] = fmi1_import_parse_xml ( contexts[i], tmpPath );
 
@@ -185,8 +189,10 @@ int main( int argc, char *argv[] ) {
                 fprintf(stderr,"There was an error loading the FMU dll.\n");
                 exit(EXIT_FAILURE);
             }
-        } else if(versions[i] == fmi_version_2_0_enu) {
+        } else if(versions[i] == fmi_version_2_0_enu) { // FMI 2.0
     
+            numFMU2++;
+
             // Test some fmu2 stuff
             fmus2[i] = fmi2_import_parse_xml(contexts[i], tmpPath, 0);
             if(!fmus2[i]){
@@ -223,6 +229,12 @@ int main( int argc, char *argv[] ) {
         }
     }
 
+    if(numFMU1 && numFMU2){
+        fprintf(stderr, "Sorry, you can only simulate FMUs of the same version together.\n");
+        doSimulate = 0;
+        exitCode = EXIT_FAILURE;
+    }
+
     if(doSimulate){
 
         if(!quiet){
@@ -254,38 +266,78 @@ int main( int argc, char *argv[] ) {
             printf("  RUNNING SIMULATION...\n\n");
         }
 
-        // Pick stepfunction
-        fmi1stepfunction stepfunction;
-        switch(method){
-        case jacobi:
-            stepfunction = &jacobiStep;
-            break;
-        default:
-            fprintf(stderr, "Method enum not correct!\n");
-            exit(EXIT_FAILURE);
-            break;
-        }
+        int res, numSteps;
 
-        // All loaded. Simulate.
-        int numSteps;
-        int res = fmi1simulate( fmus1,
-                            fmuPaths,
-                            numFMUs,
-                            connections,
-                            numParameters,
-                            params,
-                            numConnections,
-                            tEnd,
-                            timeStep,
-                            loggingOn,
-                            csv_separator,
-                            callbacks,
-                            quiet,
-                            stepfunction,
-                            outfileFormat,
-                            outFilePath,
-                            realtime,
-                            &numSteps);
+        if(numFMU1){
+
+            // Pick stepfunction
+            fmi1stepfunction stepfunction;
+            switch(method){
+            case jacobi:
+                stepfunction = &fmi1JacobiStep;
+                break;
+            default:
+                fprintf(stderr, "Method enum not correct!\n");
+                exit(EXIT_FAILURE);
+                break;
+            }
+
+            // All loaded. Simulate.
+            res = fmi1simulate( fmus1,
+                                fmuPaths,
+                                numFMUs,
+                                connections,
+                                numParameters,
+                                params,
+                                numConnections,
+                                tEnd,
+                                timeStep,
+                                loggingOn,
+                                csv_separator,
+                                callbacks,
+                                quiet,
+                                stepfunction,
+                                outfileFormat,
+                                outFilePath,
+                                realtime,
+                                &numSteps);
+        } else if(numFMU2){
+            
+            // Pick stepfunction
+            fmi2stepfunction stepfunction;
+            switch(method){
+            case jacobi:
+                stepfunction = &fmi2JacobiStep;
+                break;
+            default:
+                fprintf(stderr, "Method enum not correct!\n");
+                exit(EXIT_FAILURE);
+                break;
+            }
+
+            // All loaded. Simulate.
+            res = fmi2simulate( fmus2,
+                                fmuPaths,
+                                numFMUs,
+                                connections,
+                                numParameters,
+                                params,
+                                numConnections,
+                                tEnd,
+                                timeStep,
+                                loggingOn,
+                                csv_separator,
+                                callbacks,
+                                quiet,
+                                stepfunction,
+                                outfileFormat,
+                                outFilePath,
+                                realtime,
+                                &numSteps);
+
+        } else {
+            fprintf(stderr, "Something went wrong...\n");
+        }
 
         if(!quiet){
             if(res==0){

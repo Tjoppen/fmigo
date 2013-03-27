@@ -6,6 +6,7 @@ SET(SRCS
     src/parseargs.c
     src/help.c
     src/jacobi.c
+    src/gs.c
     src/simulate.c
 )
 SET(HEADERS
@@ -14,6 +15,7 @@ SET(HEADERS
     src/parseargs.h
     src/help.h
     src/jacobi.h
+    src/gs.h
     src/simulate.h
 )
 

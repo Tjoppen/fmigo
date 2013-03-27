@@ -27,16 +27,18 @@ int parseArguments( int argc,
                     enum FILEFORMAT * format,
                     enum METHOD * method,
                     int * realtime,
-                    int * printXML){
+                    int * printXML,
+                    int stepOrder[MAX_STEP_ORDER],
+                    int * numStepOrder){
     int index, c;
     opterr = 0;
     *outFileGiven = 0;
 
     strcpy(outFilePath,DEFAULT_OUTFILE);
 
-    while ((c = getopt (argc, argv, "xrlvqht:c:d:s:o:p:f:m:")) != -1){
+    while ((c = getopt (argc, argv, "xrlvqht:c:d:s:o:p:f:m:g:")) != -1){
 
-        int n, skip, l, cont, i, numScanned;
+        int n, skip, l, cont, i, numScanned, stop;
         connection * conn;
 
         switch (c) {
@@ -86,8 +88,10 @@ int parseArguments( int argc,
         case 'm':
             if(strcmp(optarg,"jacobi") == 0){
                 *method = jacobi;
+            } else if(strcmp(optarg,"gs") == 0){
+                *method = gs;
             } else {
-                fprintf(stderr,"Method \"%s\" not recognized.\n",optarg);
+                fprintf(stderr,"Method \"%s\" not recognized. Use \"jacobi\" or \"gs\".\n",optarg);
                 return 1;
             }
             break;
@@ -98,6 +102,37 @@ int parseArguments( int argc,
                 printInvalidArg(c);
                 return 1;
             }
+            break;
+
+        case 'g':
+            // Step order spec
+            n=0;
+            skip=0;
+            l=strlen(optarg);
+            cont=1;
+            i=0;
+            int scannedInt;
+            stop = 2;
+            int nStepOrder = 0;
+            while(cont && (n=sscanf(&optarg[skip],"%d", &scannedInt))!=-1 && skip<l){
+                // Now skip everything before the n'th comma
+                char* pos = strchr(&optarg[skip],',');
+                if(pos==NULL){
+                    stop--;
+                    if(stop == 0){
+                        cont=0;
+                        break;
+                    }
+                    stepOrder[i] = scannedInt;
+                    nStepOrder++;
+                    break;
+                }
+                stepOrder[i] = scannedInt;
+                nStepOrder++;
+                skip += pos-&optarg[skip]+1; // Dunno why this works... See http://www.cplusplus.com/reference/cstring/strchr/
+                i++;
+            }
+            *numStepOrder = nStepOrder;
             break;
 
         case 'h':
@@ -139,7 +174,7 @@ int parseArguments( int argc,
             i=0;
             char s[MAX_PARAM_LENGTH];
             param * p = &params[0];
-            int stop = 2;
+            stop = 2;
             while(cont && (n=sscanf(&optarg[skip],"%d,%d,%s", &p->fmuIndex, &p->valueReference, s))!=-1 && skip<l){
 
                 // Now skip everything before the n'th colon

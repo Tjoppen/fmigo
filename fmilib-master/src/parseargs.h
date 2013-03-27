@@ -28,6 +28,8 @@
  * @param method
  * @param realtimeMode
  * @param printXML
+ * @param stepOrder
+ * @param numStepOrder
  * @return int Returns 0 if the program should proceed, 1 if the program should end.
  */
 int parseArguments( int argc,
@@ -49,6 +51,8 @@ int parseArguments( int argc,
                     enum FILEFORMAT * fileFormat,
                     enum METHOD * method,
                     int * realtimeMode,
-                    int * printXML);
+                    int * printXML,
+                    int stepOrder[MAX_STEP_ORDER],
+                    int * numStepOrder);
 
 #endif /* PARSEARGS_H */

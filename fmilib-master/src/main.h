@@ -21,6 +21,7 @@
 #define DEFAULT_CSVSEP ','
 #define MAX_LOG_LENGTH 1000
 #define MAX_GUID_LENGTH 100
+#define MAX_STEP_ORDER 1000
 
 
 /**
@@ -72,7 +73,8 @@ enum FILEFORMAT {
 } fileformat;
 
 enum METHOD {
-    jacobi
+    jacobi,
+    gs
 } method;
 
 /**
@@ -84,7 +86,9 @@ typedef int (*fmi1stepfunction)(double time,                // System stepping f
                                 int numFMUs,
                                 fmi1_import_t ** fmus,
                                 int numConnections,
-                                connection connections[MAX_CONNECTIONS]);
+                                connection connections[MAX_CONNECTIONS],
+                                int numStepOrder,
+                                int stepOrder[MAX_STEP_ORDER]);
 /**
  * @todo Implement me!
  * @return int Zero if successful, otherwise error code.
@@ -94,7 +98,9 @@ typedef int (*fmi2stepfunction)(double time,
                                 int numFMUs,
                                 fmi2_import_t ** fmus,
                                 int numConnections,
-                                connection connections[MAX_CONNECTIONS]);
+                                connection connections[MAX_CONNECTIONS],
+                                int numStepOrder,
+                                int stepOrder[MAX_STEP_ORDER]);
 
 void importlogger(jm_callbacks* c, jm_string module, jm_log_level_enu_t log_level, jm_string message);
 void fmi1Logger(fmi1_component_t c, fmi1_string_t instanceName, fmi1_status_t status, fmi1_string_t category, fmi1_string_t message, ...);

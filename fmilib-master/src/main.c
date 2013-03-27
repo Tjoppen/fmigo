@@ -12,6 +12,7 @@
 #include "help.h"
 #include "parseargs.h"
 #include "jacobi.h"
+#include "gs.h"
 #include "simulate.h"
 
 int doLog = 0;
@@ -52,10 +53,11 @@ int main( int argc, char *argv[] ) {
     param params[MAX_PARAMS];
     connection connections[MAX_CONNECTIONS];
 
+    int stepOrder[MAX_STEP_ORDER];
     int numFMUs=0, numParameters=0, numConnections=0;
     double tEnd=1.0, timeStep=0.1;
     char csv_separator = ',';
-    int outFileGiven=0, quiet=0, loggingOn=0, version=0, realtime=0, printXML=0;
+    int outFileGiven=0, quiet=0, loggingOn=0, version=0, realtime=0, printXML=0, numStepOrder=0;
     enum FILEFORMAT outfileFormat;
     enum METHOD method;
     int status =parseArguments(argc,
@@ -77,7 +79,9 @@ int main( int argc, char *argv[] ) {
                                &outfileFormat,
                                &method,
                                &realtime,
-                               &printXML);
+                               &printXML,
+                               stepOrder,
+                               &numStepOrder);
 
     if(printXML){
         // Should print XML and quit
@@ -276,6 +280,9 @@ int main( int argc, char *argv[] ) {
             case jacobi:
                 stepfunction = &fmi1JacobiStep;
                 break;
+            case gs:
+                stepfunction = &fmi1GaussSeidelStep;
+                break;
             default:
                 fprintf(stderr, "Method enum not correct!\n");
                 exit(EXIT_FAILURE);
@@ -300,7 +307,9 @@ int main( int argc, char *argv[] ) {
                                 outfileFormat,
                                 outFilePath,
                                 realtime,
-                                &numSteps);
+                                &numSteps,
+                                numStepOrder,
+                                stepOrder);
         } else if(numFMU2){
             
             // Pick stepfunction

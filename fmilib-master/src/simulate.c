@@ -18,7 +18,6 @@ void diff(struct timespec start, struct timespec end, struct timespec * diffTime
     }
 }
 
-
 int fmi2simulate(fmi2_import_t** fmus,
                  char fmuPaths[MAX_FMUS][PATH_MAX],
                  int numFMUs,
@@ -58,7 +57,10 @@ int fmi1simulate(fmi1_import_t** fmus,
                  enum FILEFORMAT outFileFormat,
                  char outFilePath[PATH_MAX],
                  int realTimeMode,
-                 int * numSteps){
+                 int * numSteps,
+                 int numStepOrder,
+                 int stepOrder[MAX_STEP_ORDER]){
+
     int i;
     int k;
     double time;                                                // Current time
@@ -156,7 +158,7 @@ int fmi1simulate(fmi1_import_t** fmus,
         }
 
         // Step the system of FMUs
-        int result = (*stepfunc)(time, timeStep, numFMUs, fmus, numConnections, connections);
+        int result = (*stepfunc)(time, timeStep, numFMUs, fmus, numConnections, connections, numStepOrder, stepOrder);
 
         if(result != 0){
             simulationStatus = 1; // Error

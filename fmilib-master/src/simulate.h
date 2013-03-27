@@ -32,6 +32,8 @@ void setParams(int numFMUs, int numParams, fmi1_import_t ** fmus, param params[M
  * @param outFilePath Out file path
  * @param realTimeModeEnabled If the execution of a system step was faster than the timeStep, a sleep will be made the remaining time.
  * @param numSteps The resulting number of steps
+ * @param numStepOrder Number of elements in stepOrder
+ * @param stepOrder Array of FMU indices, indicating which order to step and transfer values from.
  * @returns Zero on success, else an error code.
  */
 int fmi1simulate(   fmi1_import_t** fmus,
@@ -51,7 +53,9 @@ int fmi1simulate(   fmi1_import_t** fmus,
                     enum FILEFORMAT outFileFormat,
                     char outFilePath[PATH_MAX],
                     int realTimeModeEnabled,
-                    int * numSteps);
+                    int * numSteps,
+                    int numStepOrder,
+                    int stepOrder[MAX_STEP_ORDER]);
 
 /**
  * @todo

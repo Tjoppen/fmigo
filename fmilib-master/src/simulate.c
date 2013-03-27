@@ -18,7 +18,7 @@ void diff(struct timespec start, struct timespec end, struct timespec * diffTime
     }
 }
 
-int simulate(fmi1_import_t** fmus,
+int fmi1simulate(fmi1_import_t** fmus,
              char fmuPaths[MAX_FMUS][PATH_MAX],
              int numFMUs,
              connection connections[MAX_CONNECTIONS],
@@ -31,7 +31,7 @@ int simulate(fmi1_import_t** fmus,
              char separator,
              jm_callbacks callbacks,
              int quiet,
-             stepfunctionType stepfunc,
+             fmi1stepfunction stepfunc,
              enum FILEFORMAT outFileFormat,
              char outFilePath[PATH_MAX],
              int realTimeMode,

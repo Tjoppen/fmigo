@@ -34,23 +34,45 @@ void setParams(int numFMUs, int numParams, fmi1_import_t ** fmus, param params[M
  * @param numSteps The resulting number of steps
  * @returns Zero on success, else an error code.
  */
-int simulate(fmi1_import_t** fmus,
-             char fmuPaths[MAX_FMUS][PATH_MAX],
-             int numFMUs,
-             connection connections[MAX_CONNECTIONS],
-             int numParams,
-             param params[MAX_PARAMS],
-             int numConnections,
-             double tEnd,
-             double timeStep,
-             int loggingEnabled,
-             char csvSeparator,
-             jm_callbacks callbacks,
-             int quietModeEnabled,
-             stepfunctionType stepfunc,
-             enum FILEFORMAT outFileFormat,
-             char outFilePath[PATH_MAX],
-             int realTimeModeEnabled,
-             int * numSteps);
+int fmi1simulate(   fmi1_import_t** fmus,
+                    char fmuPaths[MAX_FMUS][PATH_MAX],
+                    int numFMUs,
+                    connection connections[MAX_CONNECTIONS],
+                    int numParams,
+                    param params[MAX_PARAMS],
+                    int numConnections,
+                    double tEnd,
+                    double timeStep,
+                    int loggingEnabled,
+                    char csvSeparator,
+                    jm_callbacks callbacks,
+                    int quietModeEnabled,
+                    fmi1stepfunction stepfunc,
+                    enum FILEFORMAT outFileFormat,
+                    char outFilePath[PATH_MAX],
+                    int realTimeModeEnabled,
+                    int * numSteps);
+
+/**
+ * @todo
+ */
+int fmi2simulate(   fmi2_import_t** fmus,
+                    char fmuPaths[MAX_FMUS][PATH_MAX],
+                    int numFMUs,
+                    connection connections[MAX_CONNECTIONS],
+                    int numParams,
+                    param params[MAX_PARAMS],
+                    int numConnections,
+                    double tEnd,
+                    double timeStep,
+                    int loggingEnabled,
+                    char csvSeparator,
+                    jm_callbacks callbacks,
+                    int quietModeEnabled,
+                    fmi1stepfunction stepfunc,
+                    enum FILEFORMAT outFileFormat,
+                    char outFilePath[PATH_MAX],
+                    int realTimeModeEnabled,
+                    int * numSteps);
 
 #endif /* SIMULATE_H */

@@ -255,7 +255,7 @@ int main( int argc, char *argv[] ) {
         }
 
         // Pick stepfunction
-        stepfunctionType stepfunction;
+        fmi1stepfunction stepfunction;
         switch(method){
         case jacobi:
             stepfunction = &jacobiStep;
@@ -268,7 +268,7 @@ int main( int argc, char *argv[] ) {
 
         // All loaded. Simulate.
         int numSteps;
-        int res = simulate( fmus1,
+        int res = fmi1simulate( fmus1,
                             fmuPaths,
                             numFMUs,
                             connections,

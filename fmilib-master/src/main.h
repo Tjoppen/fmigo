@@ -79,12 +79,23 @@ enum METHOD {
  * @brief Stepping function signature, for global Master stepping functions such as Jacobi and Gauss-Seidel
  * @return int Zero if successful, otherwise error code.
  */
-typedef int (*stepfunctionType)(double time,                // System stepping function
+typedef int (*fmi1stepfunction)(double time,                // System stepping function
                                 double communicationTimeStep,
                                 int numFMUs,
                                 fmi1_import_t ** fmus,
                                 int numConnections,
                                 connection connections[MAX_CONNECTIONS]);
+/**
+ * @todo
+ * @return int Zero if successful, otherwise error code.
+ */
+typedef int (*fmi2stepfunction)(double time,                
+                                double communicationTimeStep,
+                                int numFMUs,
+                                fmi2_import_t ** fmus,
+                                int numConnections,
+                                connection connections[MAX_CONNECTIONS]);
+
 void importlogger(jm_callbacks* c, jm_string module, jm_log_level_enu_t log_level, jm_string message);
 void fmi1Logger(fmi1_component_t c, fmi1_string_t instanceName, fmi1_status_t status, fmi1_string_t category, fmi1_string_t message, ...);
 void fmi1StepFinished(fmi1_component_t c, fmi1_status_t status);

@@ -7,7 +7,27 @@
 #include "main.h"
 
 /**
- * @brief Parses the command line arguments.
+ * @brief Parses the command line arguments and stores in the given variable pointer targets.
+ * @param argc Given by system
+ * @param argv Given by system
+ * @param numFMUs
+ * @param fmuFilePaths
+ * @param numConnections
+ * @param connections
+ * @param numParameters
+ * @param params
+ * @param tEnd
+ * @param timeStepSize
+ * @param loggingOn
+ * @param csv_separator
+ * @param outFilePath
+ * @param outFileGiven
+ * @param quietMode
+ * @param versionMode
+ * @param fileFormat
+ * @param method
+ * @param realtimeMode
+ * @param printXML
  * @return int Returns 0 if the program should proceed, 1 if the program should end.
  */
 int parseArguments( int argc,
@@ -24,11 +44,11 @@ int parseArguments( int argc,
                     char* csv_separator,
                     char outFilePath[PATH_MAX],
                     int* outFileGiven,
-                    int* quiet,
-                    int* version,
-                    enum FILEFORMAT * format,
+                    int* quietMode,
+                    int* versionMode,
+                    enum FILEFORMAT * fileFormat,
                     enum METHOD * method,
-                    int * realtime,
+                    int * realtimeMode,
                     int * printXML);
 
 #endif /* PARSEARGS_H */

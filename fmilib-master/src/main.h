@@ -22,7 +22,19 @@
 #define MAX_LOG_LENGTH 1000
 #define MAX_GUID_LENGTH 100
 
-// Command line parsed connection
+
+/**
+ * @struct __connection
+ * @brief Storage struct for a parsed connection
+ * @var connection::fromFMU
+ * @brief Index of the FMU that the connection goes from.
+ * @var connection::toFMU
+ * @brief Index of the FMU that the connection goes to.
+ * @var connection::fromOutputVR
+ * @brief Value reference of the variable to connect from.
+ * @var connection::toInputVR
+ * @brief Value reference of the variable to connect to.
+ */
 typedef struct __connection{
     int fromFMU;                // Index of FMU
     int fromOutputVR;           // Value reference
@@ -30,12 +42,25 @@ typedef struct __connection{
     int toInputVR;              // Value reference
 } connection;
 
-// Parsed command line parameter
+/**
+ * @struct __param
+ * @brief Storage struct for a parsed parameter
+ * @var param::fmuIndex
+ * @brief The index of the FMU to apply the parameter on. The index refers to the position in the fmus array
+ * @var param::valueReference
+ * @brief Value reference of the parameter
+ * @var param::stringValue
+ * @brief String version of the parsed parameter.
+ * @var param::intValue
+ * @brief The integer version of it, if it could be parsed as an int. Otherwise zero.
+ * @var param::realValue
+ * @brief The real version of it, if it could be parsed as a real. Otherwise zero.
+ * @var param::boolValue
+ * @brief The boolean version of it, if it could be parsed as a boolean. Otherwise zero.
+ */
 typedef struct __param{
-    int fmuIndex;                       // FMU to apply to
+    int fmuIndex;
     int valueReference;                 // Value reference to apply to
-
-    // different versions of the parameter, set depending on how the parsing goes
     char stringValue[MAX_PARAM_LENGTH]; // String version, always set to what the user wrote
     int intValue;                       // Integer
     double realValue;                   // Real
@@ -50,6 +75,10 @@ enum METHOD {
     jacobi
 } method;
 
+/**
+ * @brief Stepping function signature, for global Master stepping functions such as Jacobi and Gauss-Seidel
+ * @return int Zero if successful, otherwise error code.
+ */
 typedef int (*stepfunctionType)(double time,                // System stepping function
                                 double communicationTimeStep,
                                 int numFMUs,

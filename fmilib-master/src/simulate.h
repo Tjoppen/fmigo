@@ -6,32 +6,51 @@
 
 #include "main.h"
 
+/// @brief Sets the initial values for the given FMU. It simply reads from XML and does setXXX() in the FMU.
 void setInitialValues(fmi1_import_t* fmu);
 
-// Set initial values from the command line, overrides the XML init values
+/// @brief Set initial values from the command line, overrides the XML init values
 void setParams(int numFMUs, int numParams, fmi1_import_t ** fmus, param params[MAX_PARAMS]);
 
 /**
- * Simulate the given FMUs.
- * Returns 0 on success, else an error code.
+ * @brief Simulate the given FMUs.
+ * @param fmus The FMUs to simulate
+ * @param fmuPaths Filenames of the FMUs
+ * @param numFMUs The number of FMUs
+ * @param connections
+ * @param numConnections
+ * @param params
+ * @param numParams
+ * @param tEnd
+ * @param timeStep
+ * @param loggingEnabled
+ * @param csvSeparator
+ * @param callbacks
+ * @param quietModeEnabled If nonzero, no extra output to stdout is made
+ * @param stepfunc Stepping algorithm to use
+ * @param outFileFormat Which output file format to use
+ * @param outFilePath Out file path
+ * @param realTimeModeEnabled If the execution of a system step was faster than the timeStep, a sleep will be made the remaining time.
+ * @param numSteps The resulting number of steps
+ * @returns Zero on success, else an error code.
  */
 int simulate(fmi1_import_t** fmus,
-             char fmuFileNames[MAX_FMUS][PATH_MAX],
-             int N,
+             char fmuPaths[MAX_FMUS][PATH_MAX],
+             int numFMUs,
              connection connections[MAX_CONNECTIONS],
-             int K,
+             int numParams,
              param params[MAX_PARAMS],
-             int M,
+             int numConnections,
              double tEnd,
-             double h,
-             int loggingOn,
-             char separator,
+             double timeStep,
+             int loggingEnabled,
+             char csvSeparator,
              jm_callbacks callbacks,
-             int quiet,
+             int quietModeEnabled,
              stepfunctionType stepfunc,
              enum FILEFORMAT outFileFormat,
-             char outFile[PATH_MAX],
-             int realTimeMode,
+             char outFilePath[PATH_MAX],
+             int realTimeModeEnabled,
              int * numSteps);
 
 #endif /* SIMULATE_H */

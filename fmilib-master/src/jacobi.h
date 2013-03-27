@@ -1,6 +1,7 @@
 #ifndef JACOBI_H
 #define JACOBI_H
 
+// Takes a Jacobi co-simulation step
 int jacobiStep( double time,
                 double communicationTimeStep,
                 int numFMUs,

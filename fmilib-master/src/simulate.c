@@ -18,18 +18,15 @@ void diff(struct timespec start, struct timespec end, struct timespec * diffTime
     }
 }
 
-/**
- * 
- */
 int simulate(fmi1_import_t** fmus,
              char fmuPaths[MAX_FMUS][PATH_MAX],
-             int N,
+             int numFMUs,
              connection connections[MAX_CONNECTIONS],
-             int K,
+             int numParameters,
              param params[MAX_PARAMS],
-             int M,
+             int numConnections,
              double tEnd,
-             double h,
+             double timeStep,
              int loggingOn,
              char separator,
              jm_callbacks callbacks,
@@ -53,7 +50,7 @@ int simulate(fmi1_import_t** fmus,
     char** fmuNames;                                            // Result file names
 
     // Allocate
-    fmuNames =    (char**)calloc(sizeof(char*),N);
+    fmuNames =    (char**)calloc(sizeof(char*),numFMUs);
 
     // Open result file
     FILE * f;
@@ -67,18 +64,18 @@ int simulate(fmi1_import_t** fmus,
     }
 
     // Init FMU names
-    for(i=0; i<N; i++){ 
+    for(i=0; i<numFMUs; i++){ 
         fmuNames[i] = calloc(sizeof(char),100);
         sprintf(fmuNames[i],"%s%d",fmi1_import_get_model_name(fmus[i]),i);
     }
 
     // Write CSV header
     if(outFileFormat == csv){
-        writeCsvHeader(f, fmuNames, fmus, N, separator);
+        writeCsvHeader(f, fmuNames, fmus, numFMUs, separator);
     }
 
     // Init all the FMUs
-    for(i=0; i<N; i++){ 
+    for(i=0; i<numFMUs; i++){ 
 
         //char * a = fmi_import_create_URL_from_abs_path(&callbacks, fmuPaths[i]);
         fmuLocation = fmi_import_create_URL_from_abs_path(&callbacks, (const char*)fmuPaths[i]);
@@ -99,18 +96,18 @@ int simulate(fmi1_import_t** fmus,
     }
 
     // Set initial values from the XML file
-    for(i=0; i<N; i++){
+    for(i=0; i<numFMUs; i++){
         setInitialValues(fmus[i]);
     }
 
     // Set user-given parameters
-    setParams(N, K, fmus, params);
+    setParams(numFMUs, numParameters, fmus, params);
 
     time = tStart;
 
     // Write CSV row for time=0
     if(outFileFormat == csv){
-        writeCsvRow(f, fmus, N, time, separator);
+        writeCsvRow(f, fmus, numFMUs, time, separator);
     }
 
     // enter the simulation loop
@@ -136,7 +133,7 @@ int simulate(fmi1_import_t** fmus,
         }
 
         // Step the system of FMUs
-        int result = (*stepfunc)(time, h, N, fmus, M, connections);
+        int result = (*stepfunc)(time, timeStep, numFMUs, fmus, numConnections, connections);
 
         if(result != 0){
             simulationStatus = 1; // Error
@@ -144,10 +141,10 @@ int simulate(fmi1_import_t** fmus,
         }
 
         // Advance time
-        time += h;
+        time += timeStep;
 
         if(outFileFormat == csv){
-            writeCsvRow(f, fmus, N, time, separator);
+            writeCsvRow(f, fmus, numFMUs, time, separator);
         }
 
         nSteps++;
@@ -156,14 +153,14 @@ int simulate(fmi1_import_t** fmus,
             clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time2);
 
             diff(time1,time2, &diffTime);            
-            long int s = h*1e6 - diffTime.tv_sec * 1e6 + diffTime.tv_nsec / 1e3;
+            long int s = timeStep*1e6 - diffTime.tv_sec * 1e6 + diffTime.tv_nsec / 1e3;
             if(s < 0) s = 0;
             usleep(s);
         }
     }
     
     // end simulation
-    for(i=0; i<N; i++){
+    for(i=0; i<numFMUs; i++){
         fmi1_status_t s = fmi1_import_terminate_slave(fmus[i]);
         fmi1_import_free_slave_instance(fmus[i]);
         if(s != fmi1_status_ok){

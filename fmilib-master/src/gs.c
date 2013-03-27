@@ -3,10 +3,6 @@
 
 #include "main.h"
 
-/**
- * Gauss-Seidel is a stepping method where we step the subsystems in serial.
- * The order of connections will therefore matter.
- */
 int gsStep(     double time,
                 double communicationTimeStep,
                 int numFMUs,

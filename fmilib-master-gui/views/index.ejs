@@ -349,10 +349,10 @@
         var json = {
             /* Connections: on format
             {
-                fromFMU : "wheelloader0",
-                toFMU : "agxVehicle0",
-                fromVR : 0,
-                toVR : 0
+                fromFMU : 0, // Index
+                toFMU : 1,   // Index
+                fromVR : 0,  // Valuereference
+                toVR : 2     // Valuereference
             } */
             connections : [],
 
@@ -532,7 +532,6 @@
                     plotData[j-1].push([time,parseFloat(strings[j])]);
                 }
             }
-
         }
     }
 

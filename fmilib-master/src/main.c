@@ -15,8 +15,6 @@
 #include "gs.h"
 #include "simulate.h"
 
-int doLog = 0;
-
 void fmi1_null_logger(  fmi1_component_t    c,
                         fmi1_string_t   instanceName,
                         fmi1_status_t   status,
@@ -30,12 +28,10 @@ void fmi2_null_logger(  fmi2_component_t c,
                         fmi2_string_t message, ...){ }
 
 void importlogger(jm_callbacks* c, jm_string module, jm_log_level_enu_t log_level, jm_string message){
-    if(doLog)
-        printf("%10s,\tlog level %2d:\t%s\n", module, log_level, message);
+    printf("%10s,\tlog level %2d:\t%s\n", module, log_level, message);
 }
 
 int main( int argc, char *argv[] ) {
-
     int exitCode = EXIT_SUCCESS;
 
     if(argc == 1){
@@ -123,8 +119,6 @@ int main( int argc, char *argv[] ) {
     callbacks.log_level = loggingOn ? jm_log_level_all : jm_log_level_fatal;
     callbacks.context = 0;
 
-    doLog = loggingOn;
-
     fmi1_import_t** fmus1 =             calloc(sizeof(fmi1_import_t*),numFMUs);
     fmi2_import_t** fmus2 =             calloc(sizeof(fmi2_import_t*),numFMUs);
     fmi_import_context_t** contexts =   calloc(sizeof(fmi_import_context_t*),numFMUs);
@@ -181,7 +175,7 @@ int main( int argc, char *argv[] ) {
 
             int registerGlobally = 0;
             fmi1_callback_functions_t callBackFunctions;
-            callBackFunctions.logger = doLog ? fmi1_log_forwarding : fmi1_null_logger;
+            callBackFunctions.logger = loggingOn ? fmi1_log_forwarding : fmi1_null_logger;
             callBackFunctions.allocateMemory = calloc;
             callBackFunctions.freeMemory = free;
             jm_status_enu_t status = fmi1_import_create_dllfmu  ( fmus1[i], callBackFunctions, registerGlobally );
@@ -211,7 +205,7 @@ int main( int argc, char *argv[] ) {
 
             fmi2_callback_functions_t callBackFunctions;
 
-            callBackFunctions.logger = doLog ? fmi2_log_forwarding : fmi2_null_logger;
+            callBackFunctions.logger = loggingOn ? fmi2_log_forwarding : fmi2_null_logger;
             callBackFunctions.allocateMemory = calloc;
             callBackFunctions.freeMemory = free;
             callBackFunctions.componentEnvironment = fmus2[i];

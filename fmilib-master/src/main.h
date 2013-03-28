@@ -10,7 +10,7 @@
 #include <sys/stat.h>
 #include <limits.h>
 
-#define VERSION "0.1.2"
+#define VERSION "0.1.3"
 #define MAX_FMUS 1000
 #define MAX_PARAMS 1000
 #define MAX_PARAM_LENGTH 1000
@@ -22,7 +22,6 @@
 #define MAX_LOG_LENGTH 1000
 #define MAX_GUID_LENGTH 100
 #define MAX_STEP_ORDER 1000
-
 
 /**
  * @struct __connection

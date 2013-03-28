@@ -287,5 +287,13 @@ int parseArguments( int argc,
         }
     }
 
+    // Default step order is all FMUs in their current order
+    if(*numStepOrder == 0){
+        *numStepOrder = *numFMUs;
+        for(c=0; c<*numFMUs; c++){
+            stepOrder[c] = c;
+        }
+    }
+
     return 0; // OK
 }

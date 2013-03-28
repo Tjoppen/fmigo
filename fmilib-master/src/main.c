@@ -14,25 +14,9 @@
 #include "jacobi.h"
 #include "gs.h"
 #include "simulate.h"
-
-void fmi1_null_logger(  fmi1_component_t    c,
-                        fmi1_string_t   instanceName,
-                        fmi1_status_t   status,
-                        fmi1_string_t   category,
-                        fmi1_string_t   message, ... ) { }
-
-void fmi2_null_logger(  fmi2_component_t c,
-                        fmi2_string_t instanceName,
-                        fmi2_status_t status,
-                        fmi2_string_t category,
-                        fmi2_string_t message, ...){ }
-
-void importlogger(jm_callbacks* c, jm_string module, jm_log_level_enu_t log_level, jm_string message){
-    printf("%10s,\tlog level %2d:\t%s\n", module, log_level, message);
-}
+#include "log.h"
 
 int main( int argc, char *argv[] ) {
-    int exitCode = EXIT_SUCCESS;
 
     if(argc == 1){
         // No args given, print help
@@ -40,20 +24,29 @@ int main( int argc, char *argv[] ) {
         exit(EXIT_SUCCESS);
     }
 
-    int i;
-
-    int doSimulate = 1;
+    int exitCode = EXIT_SUCCESS,
+        i,
+        doSimulate = 1;
 
     char fmuPaths[MAX_FMUS][PATH_MAX];
     char outFilePath[PATH_MAX] = "result.csv";
     param params[MAX_PARAMS];
     connection connections[MAX_CONNECTIONS];
 
-    int stepOrder[MAX_STEP_ORDER];
-    int numFMUs=0, numParameters=0, numConnections=0;
-    double tEnd=1.0, timeStep=0.1;
+    int stepOrder[MAX_STEP_ORDER],
+        numFMUs=0,
+        numParameters=0,
+        numConnections=0,
+        outFileGiven=0,
+        quiet=0,
+        loggingOn=0,
+        version=0,
+        realtime=0,
+        printXML=0,
+        numStepOrder=0;
+    double tEnd=1.0,
+           timeStep=0.1;
     char csv_separator = ',';
-    int outFileGiven=0, quiet=0, loggingOn=0, version=0, realtime=0, printXML=0, numStepOrder=0;
     enum FILEFORMAT outfileFormat;
     enum METHOD method;
     int status =parseArguments(argc,

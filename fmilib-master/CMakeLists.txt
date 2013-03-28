@@ -8,6 +8,7 @@ SET(SRCS
     src/jacobi.c
     src/gs.c
     src/simulate.c
+    src/log.c
 )
 SET(HEADERS
     src/main.h
@@ -17,6 +18,7 @@ SET(HEADERS
     src/jacobi.h
     src/gs.h
     src/simulate.h
+    src/log.h
 )
 
 SET(EXECUTABLE_OUTPUT_PATH "${CMAKE_CURRENT_LIST_DIR}/bin")

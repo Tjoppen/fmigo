@@ -122,7 +122,7 @@ exports.simulate = function(req,res){
     // Add fmu paths to the end of the command line
     args = args.concat(fmuPaths);
     
-    //console.log("running ", config.fmuMasterCommand+" "+args.join(" "));
+    console.log(config.fmuMasterCommand+" "+args.join(" "));
 
     // TODO check number of running processes
     res.writeHead(200, { 'Content-Type': 'text/csv' });

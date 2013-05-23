@@ -18,9 +18,14 @@ parser.add_argument('-l','--link',
                     type=str,
                     help='Libraries to link with, separated with commas.',
                     default='')
+parser.add_argument('-d','--definitions',
+                    type=str,
+                    help='Adds -D define flags to the compilation of source files. Separate with commas and remove the -. Example: -d DFLAG,DKEY=VALUE,msse3',
+                    default='')
 args = parser.parse_args()
 
 link_libraries = args.link.split(",")
+definitions = "-"+(" -".join(args.definitions.split(",")))
 
 # For logging errors and messages
 def log(m):
@@ -29,8 +34,7 @@ def log(m):
 # Get model identifier
 modelIdentifier = "modelIdentifier"
 tree = e.parse('modelDescription.xml')
-for atype in tree.findall('fmiModelDescription'):
-    modelIdentifier = atype.get('modelIdentifier')
+modelIdentifier = tree.getroot().get('modelIdentifier')
 
 # Get system info
 system = platform.system()
@@ -55,29 +59,30 @@ with open(path,'w') as f:
         exit(1)
 
     # Create a CMakeLists.txt
-    f.write("""CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+    cmakestuff = """CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 SET(ARCH "%s" CACHE STRING "Architecture: linux64, linux32, win32...")
 SET(TARGET %s)
 SET(SRCS %s)
 SET(HEADERS %s)
+ADD_DEFINITIONS( %s )
 ADD_LIBRARY(${TARGET} SHARED ${SRCS} ${HEADERS})
 SET_TARGET_PROPERTIES(${TARGET} PROPERTIES PREFIX "")
 SET_TARGET_PROPERTIES(${TARGET} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/binaries/${ARCH}")
-TARGET_LINK_LIBRARIES( ${TARGET} %s )""" % (arch, modelIdentifier, " ".join(c_files), " ".join(h_files), " ".join(link_libraries) ) )
-
+TARGET_LINK_LIBRARIES( ${TARGET} %s )""" % (arch, modelIdentifier, " ".join(c_files), " ".join(h_files), definitions, " ".join(link_libraries) )
+    f.write( cmakestuff )
     f.close()
 
     # Run CMake
     os.chdir(d)
     if subprocess.call(["cmake", "."]) == 0:
         if subprocess.call(["make"]) == 0:
+
             # Zip everything needed in FMU
             with zipfile.ZipFile("%s.fmu" % (modelIdentifier), 'w') as myzip:
                 # TODO: Should look up what library type (.so, .dll... was created)
                 myzip.write(pjoin('binaries',arch,modelIdentifier+".so"))
                 os.chdir(cwd)
                 myzip.write('modelDescription.xml')
-
                 sources = [ pjoin("sources",s) for s in os.listdir(pjoin(cwd,"sources")) if os.path.isfile(pjoin(cwd,"sources",s)) and (".c" in s or ".h" in s) ]
                 for s in sources:
                     myzip.write(s)

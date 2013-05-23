@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import sys, platform, tempfile, os, subprocess, zipfile, argparse, shutil
+import sys, platform, tempfile, os, subprocess, zipfile, argparse, shutil, re
 import xml.etree.ElementTree as e
 from os.path import join as pjoin
 
@@ -23,9 +23,10 @@ parser.add_argument('-d','--definitions',
                     help='Adds -D define flags to the compilation of source files. Separate with commas and remove the -. Example: -d DFLAG,DKEY=VALUE,msse3',
                     default='')
 args = parser.parse_args()
-
 link_libraries = args.link.split(",")
-definitions = "-"+(" -".join(args.definitions.split(",")))
+definitions = " -".join(args.definitions.split(","))
+if len(definitions):
+    definitions = "-"+definitions
 
 # For logging errors and messages
 def log(m):
@@ -39,7 +40,6 @@ modelIdentifier = tree.getroot().get('modelIdentifier')
 # Get system info
 system = platform.system()
 is_64bits = sys.maxsize > 2**32
-
 arch = system.lower()+( "64" if is_64bits else "32")
 
 # Create temp dir for the cmake file
@@ -50,7 +50,7 @@ with open(path,'w') as f:
 
     # Find all .c and .h files in the current FMU folder
     cwd = os.getcwd()
-    c_files = [ pjoin(cwd,"sources",s) for s in os.listdir(pjoin(cwd,"sources")) if os.path.isfile(pjoin(cwd,"sources",s)) and (".c" in s or ".cpp" in s) ]
+    c_files = [ pjoin(cwd,"sources",s) for s in os.listdir(pjoin(cwd,"sources")) if os.path.isfile(pjoin(cwd,"sources",s)) and re.match(r"^.*\.cp?p?$",s) ]
     h_files = [ pjoin(cwd,"sources",s) for s in os.listdir(pjoin(cwd,"sources")) if os.path.isfile(pjoin(cwd,"sources",s)) and ".h" in s ]
 
     # Check if there were any files
@@ -71,10 +71,15 @@ SET_TARGET_PROPERTIES(${TARGET} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CUR
 TARGET_LINK_LIBRARIES( ${TARGET} %s )""" % (arch, modelIdentifier, " ".join(c_files), " ".join(h_files), definitions, " ".join(link_libraries) )
     f.write( cmakestuff )
     f.close()
+    print("\nCreated CMakeLists.txt (%s):\n" % (path))
+    print cmakestuff
+    print("");
 
     # Run CMake
+    print("Running CMake...\n");
     os.chdir(d)
     if subprocess.call(["cmake", "."]) == 0:
+        print("\nRunning make...\n");
         if subprocess.call(["make"]) == 0:
 
             # Zip everything needed in FMU
@@ -89,7 +94,7 @@ TARGET_LINK_LIBRARIES( ${TARGET} %s )""" % (arch, modelIdentifier, " ".join(c_fi
 
             # Move the FMU to the out directory
             shutil.move(pjoin(d,modelIdentifier+".fmu"),args.outdir)
-            log("%s created." % (pjoin(args.outdir,modelIdentifier+".fmu")));
+            print("\n"+pjoin(args.outdir,modelIdentifier+".fmu")+" created.");
         else:
             log("Make failed.")
     else:

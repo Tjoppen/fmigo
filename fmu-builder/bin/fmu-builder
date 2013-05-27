@@ -20,7 +20,7 @@ parser.add_argument('-l','--link',
                     default='')
 parser.add_argument('-d','--definitions',
                     type=str,
-                    help='Adds -D define flags to the compilation of source files. Separate with commas and remove the -. Example: -d DFLAG,DKEY=VALUE,msse3',
+                    help='Adds flags to the compiler. Separate with commas and remove the -. Example: -d DFLAG,DKEY=VALUE,msse3',
                     default='')
 args = parser.parse_args()
 link_libraries = args.link.split(",")
@@ -32,10 +32,27 @@ if len(definitions):
 def log(m):
     print "%s: %s" % (sys.argv[0],m)
 
-# Get model identifier
-modelIdentifier = "modelIdentifier"
+# Parse xml file
 tree = e.parse('modelDescription.xml')
-modelIdentifier = tree.getroot().get('modelIdentifier')
+root = tree.getroot()
+
+# Get FMU version
+fmiVersion = root.get('fmiVersion')
+
+# Get FMU type (co-simulation or model exchange)
+fmuType = "cs"
+
+print fmiVersion
+
+# Get model identifier.
+modelIdentifier = "modelIdentifier"
+if fmiVersion == "1.0":
+    modelIdentifier = root.get('modelIdentifier')
+elif fmiVersion == "2.0":
+    if fmuType == "cs":
+        modelIdentifier = root.find('CoSimulation').get('modelIdentifier')
+    elif fmuType == "me":
+        modelIdentifier = root.find('ModelExchange').get('modelIdentifier')
 
 # Get system info
 system = platform.system()

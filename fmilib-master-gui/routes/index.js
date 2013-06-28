@@ -133,8 +133,8 @@ exports.simulate = function(req,res){
     });
     master.stderr.on('data', function (data) {
         // Got error
-        console.error(data.toString());
-        master.kill();
+        console.error("Master encountered error, though we continue:",data.toString());
+        //master.kill();
     });
     master.on('exit', function (code) {
         res.end();

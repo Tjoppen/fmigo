@@ -1,6 +1,6 @@
 #include "fmi.h"
 
-void loggerFunction(fmiComponentEnvironment componentEnvironment,
+void logger(fmiComponentEnvironment componentEnvironment,
                     fmiString instanceName,
                     fmiStatus status,
                     fmiString category,
@@ -10,7 +10,7 @@ void loggerFunction(fmiComponentEnvironment componentEnvironment,
 
 int main(){
     fmiCallbackFunctions cbf;
-    cbf.logger = loggerFunction; //logger function
+    cbf.logger = logger; //logger function
     cbf.allocateMemory = calloc;
     cbf.freeMemory = free;
     cbf.stepFinished = NULL; //synchronous execution
@@ -25,64 +25,99 @@ int main(){
 
     // Start and stop time
     fmiReal startTime = 0;
-    fmiReal stopTime =  1;
+    fmiReal stopTime =  10;
 
     // communication step size
     fmiReal h = 0.1;
 
     // set all variable start values (of "ScalarVariable / <type> / start")
-    //fmiSetReal/Integer/Boolean/String(s1, ...);
-    //fmiSetReal/Integer/Boolean/String(s2, ...);
 
     fmiSetupExperiment(s1, fmiFalse, 0.0, startTime, fmiTrue, stopTime);
-    fmiSetupExperiment(s1, fmiFalse, 0.0, startTime, fmiTrue, stopTime);
+    fmiSetupExperiment(s2, fmiFalse, 0.0, startTime, fmiTrue, stopTime);
 
     fmiEnterInitializationMode(s1);
     fmiEnterInitializationMode(s2);
 
     // set the input values at time = startTime
-    //fmiSetReal/Integer/Boolean/String(s1, ...);
-    //fmiSetReal/Integer/Boolean/String(s2, ...);
-    //fmiExitInitializationMode(s1);
-    //fmiExitInitializationMode(s2);
+    fmiValueReference amp[1] = {VR_AMPLITUDE};
+    fmiReal amps[1] = {0};
+    fmiSetReal(s1,amp,1,amps);
+    amps[0] = 1;
+    fmiSetReal(s2,amp,1,amps);
+
+    fmiExitInitializationMode(s1);
+    fmiExitInitializationMode(s2);
 
     fmiReal tc = startTime; //Current master time
     fmiStatus status = fmiOK;
     fmiBoolean boolVal, terminateSimulation = fmiFalse;
 
+    size_t nUnknown = 1;
+    size_t nKnown = 1;
+    fmiValueReference vUnknown_ref[1] = {VR_V};
+    fmiValueReference vKnown_ref[1] = {VR_F};
+    fmiReal dvUnknown[1] = {0};
+    fmiReal dvKnown[1] = {1};
+    fmiValueReference get_velocity_refs[1] = {VR_V};
+    fmiReal get_real_vals[1] = {0};
+    fmiValueReference get_pos_refs[1] = {VR_X};
+    int i,j;
+    fmiReal E = 0, d=3;
+
+    fmiFMUstate state1 = NULL;
+    fmiFMUstate state2 = NULL;
 
     while ((tc < stopTime) && (status == fmiOK)) {
+        printf("\n=== T=%g ===\n",tc);
 
-        printf("t = %g\n",tc);
+        fmiReal a = 4/(1+4*d)/h;
+        fmiReal b = 4*d/(1+4*d);
 
-        // retrieve outputs
-        //fmiGetReal(s1, ..., 1, &y1);
-        //fmiGetReal(s2, ..., 1, &y2);
-
-        // set inputs
-        //fmiSetReal(s1, ..., 1, &y2);
-        //fmiSetReal(s2, ..., 1, &y1);
-
-        //call slave s1 and check status
+        // Get Z setting input forces = 0 and stepping
+        status = fmiGetFMUstate(s1, &state1);
+        status = fmiGetFMUstate(s2, &state2);
         status = fmiDoStep(s1, tc, h, fmiTrue);
-        switch (status) {
-        case fmiDiscard:
-            fmiGetBooleanStatus(s1, fmiTerminated, &boolVal);
-            if (boolVal == fmiTrue)
-                printf("Slave s1 wants to terminate simulation.");
-        case fmiError:
-        case fmiFatal:
-            terminateSimulation = fmiTrue;
-            break;
-        }
+        status = fmiDoStep(s2, tc, h, fmiTrue);
+        fmiGetReal(s1,get_velocity_refs,1,get_real_vals);
+        fmiReal Z = get_real_vals[0];
+        fmiGetReal(s2,get_velocity_refs,1,get_real_vals);
+        Z -= get_real_vals[0];
 
-        if (terminateSimulation)
-            break;
+        // Go back to prev state
+        status = fmiSetFMUstate(s1,state1);
+        status = fmiSetFMUstate(s2,state2);
 
-        // call slave s2 and check status as above
+        // Get inv(M)*G' by setting input forces to the corresponding jacobian entry
+        status = fmiGetDirectionalDerivative(s1, vUnknown_ref, nUnknown, vKnown_ref, nKnown, dvKnown, dvUnknown);
+        fmiReal S = dvUnknown[0];
+        status = fmiGetDirectionalDerivative(s2, vUnknown_ref, nUnknown, vKnown_ref, nKnown, dvKnown, dvUnknown);
+        S += dvUnknown[0];
+
+        // Assemble g and G*W
+        fmiGetReal(s1,get_pos_refs,1,get_real_vals);
+        fmiReal g = get_real_vals[0];
+        fmiGetReal(s2,get_pos_refs,1,get_real_vals);
+        g -= get_real_vals[0];
+        fmiGetReal(s1,get_velocity_refs,1,get_real_vals);
+        fmiReal GW = get_real_vals[0];
+        fmiGetReal(s2,get_velocity_refs,1,get_real_vals);
+        GW -= get_real_vals[0];
+
+        // Solve constraints
+        fmiReal lambda = ( - a*g - b*GW - Z ) / (S + E);
+
+        // Apply master force as external force
+        fmiValueReference force_vrs[1] = {VR_F};
+        fmiReal force[1] = {lambda};
+        fmiSetReal(s1,force_vrs,1,force);
+        force[0] = -lambda;
+        fmiSetReal(s2,force_vrs,1,force);
+
+        // Step slave systems
+        status = fmiDoStep(s1, tc, h, fmiTrue);
         status = fmiDoStep(s2, tc, h, fmiTrue);
 
-        // increment master time
+        // Increment master time
         tc += h;
     }
 

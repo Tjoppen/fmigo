@@ -1,20 +1,14 @@
+#ifndef fmi_h
+#define fmi_h
+
 #include <stdio.h>
 #include <string.h>
 
 #include "fmiFunctions.h"
 
-// Our model struct
-typedef struct {
-    fmiReal    *r;
-    fmiInteger *i;
-    fmiBoolean *b;
-    fmiString  *s;
-    fmiBoolean *isPositive;
-    fmiReal time;
-    fmiString instanceName;
-    fmiString GUID;
-    const fmiCallbackFunctions* functions;
-    fmiBoolean loggingOn;
-    fmiFMUstate state;
-    fmiEventInfo eventInfo;
-} SlaveInstance;
+#define VR_X 0
+#define VR_V 1
+#define VR_F 2
+#define VR_AMPLITUDE 3
+
+#endif

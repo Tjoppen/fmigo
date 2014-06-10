@@ -161,8 +161,11 @@ fmiStatus fmiSetString (fmiComponent c, const fmiValueReference vr[], size_t nvr
 fmiStatus fmiGetFMUstate (fmiComponent c, fmiFMUstate* FMUstate){
     SlaveInstance* s = (SlaveInstance*)c;
 
-    // Allocate struct
-    SlaveInstance* copy = s->functions->allocateMemory(sizeof(SlaveInstance),1);
+    // Allocate struct if needed (see section 2.1.8 of FMI 2.0 RC1)
+    SlaveInstance* copy = *FMUstate;
+
+    if (!copy)
+        copy = s->functions->allocateMemory(sizeof(SlaveInstance),1);
 
     // Set members
     *copy = *s;

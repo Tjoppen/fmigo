@@ -121,6 +121,9 @@ int main(){
         tc += h;
     }
 
+    fmiFreeFMUstate(s1, state1);
+    fmiFreeFMUstate(s2, state2);
+
     // Shutdown sub-phase
     if ((status != fmiError) && (status != fmiFatal)) {
         fmiTerminate(s1);

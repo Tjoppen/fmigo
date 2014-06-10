@@ -157,18 +157,31 @@ fmiStatus fmiSetString (fmiComponent c, const fmiValueReference vr[], size_t nvr
     return fmiOK;
 }
 
+// Internal function
+void copySlaveInstance(const SlaveInstance * from, SlaveInstance * to){
+    to->functions =           from->functions;
+    to->initializationMode =  from->initializationMode;
+    to->instanceName =        from->instanceName;
+    to->GUID =                from->GUID;
+    to->time =                from->time;
+    to->invMass =             from->invMass;
+    to->x =                   from->x;
+    to->v =                   from->v;
+    to->f =                   from->f;
+    to->lambda =              from->lambda;
+    to->amplitude =           from->amplitude;
+}
+
 // Makes a copy of the internal state and returns a pointer to it
 fmiStatus fmiGetFMUstate (fmiComponent c, fmiFMUstate* FMUstate){
     SlaveInstance* s = (SlaveInstance*)c;
 
-    // Allocate struct if needed (see section 2.1.8 of FMI 2.0 RC1)
-    SlaveInstance* copy = *FMUstate;
-
-    if (!copy)
-        copy = s->functions->allocateMemory(sizeof(SlaveInstance),1);
+    // Allocate struct
+    SlaveInstance* copy = s->functions->allocateMemory(sizeof(SlaveInstance),1);
 
     // Set members
-    *copy = *s;
+    copySlaveInstance(s,copy);
+
     *FMUstate = copy;
 
     return fmiOK;
@@ -177,7 +190,7 @@ fmiStatus fmiGetFMUstate (fmiComponent c, fmiFMUstate* FMUstate){
 fmiStatus fmiSetFMUstate (fmiComponent c, fmiFMUstate FMUstate){
     SlaveInstance* s = (SlaveInstance*)c;
     SlaveInstance* state = (SlaveInstance*)FMUstate;
-    *state = *s;
+    copySlaveInstance(state,s);
     return fmiOK;
 }
 
@@ -216,7 +229,8 @@ fmiStatus fmiGetDirectionalDerivative(  fmiComponent c,
 
     if(nKnown > 0 && nUnknown > 0){
         if(vKnown_ref[0] == VR_F && vUnknown_ref[0] == VR_V){
-            SlaveInstance temp = *s;
+            SlaveInstance temp;
+            copySlaveInstance(s,&temp);
             temp.f = dvKnown[0];
             step(&temp,1.0,fmiFalse); // use dt = 1, then the scaling will be ok?
             dvUnknown[0] = temp.v;

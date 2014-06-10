@@ -1,0 +1,6 @@
+{
+    "port" :                3333,
+    "host" :                "localhost",
+    "fmuMasterCommand" :    "/usr/local/bin/fmu-master",
+    "maxSubProcesses" :     4
+}

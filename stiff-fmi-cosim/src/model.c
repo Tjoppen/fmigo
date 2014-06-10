@@ -1,3 +1,4 @@
+#include <math.h>
 #include "model.h"
 
 void step(SlaveInstance * s, fmiReal h, fmiBoolean rhs_enabled){

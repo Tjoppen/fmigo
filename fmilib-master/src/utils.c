@@ -34,7 +34,8 @@ void fmi1TransferConnectionValues(connection c, fmi1_import_t ** fmus){
     for (k=0; numFrom; k++) {
         fmi1_import_variable_t* v = fmi1_import_get_variable(varsFrom,k);
         if(!v) break;
-        //vrFrom[0] = fmi1_import_get_variable_vr(v);
+        if (fmi1_import_get_variable_vr(v) != c.fromOutputVR) continue;
+
         fmi1_base_type_enu_t typeFrom = fmi1_import_get_variable_base_type(v);
 
         // Now find the input variable
@@ -42,7 +43,8 @@ void fmi1TransferConnectionValues(connection c, fmi1_import_t ** fmus){
 
             fmi1_import_variable_t* vTo = fmi1_import_get_variable(varsTo,l);
             if(!vTo) break;
-            //vrTo[0] = fmi1_import_get_variable_vr(vTo);
+            if (fmi1_import_get_variable_vr(vTo) != c.toInputVR) continue;
+
             fmi1_base_type_enu_t typeTo = fmi1_import_get_variable_base_type(vTo);
 
             // Found the input and output. Check if they have equal types
@@ -75,7 +77,7 @@ void fmi1TransferConnectionValues(connection c, fmi1_import_t ** fmus){
 
                 found = 1;
             } else {
-                printf("Connection between FMU %d (value ref %d) and %d (value ref %d) had incompatible data types!\n",fmuFrom,vrFrom[0],fmuTo,vrTo[0]);
+                printf("Connection between FMU %d (value ref %d) and %d (value ref %d) had incompatible data types! (%d != %d)\n",fmuFrom,vrFrom[0],fmuTo,vrTo[0],typeFrom,typeTo);
             }
         }
     }

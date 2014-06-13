@@ -136,16 +136,14 @@ int main( int argc, char *argv[] ) {
             exit(EXIT_FAILURE);
         }
 
-        const char* tmpPath = fmi_import_mk_temp_dir (&callbacks, "/tmp", "FMUMaster");
-
-        tmpPaths[i] = tmpPath;
+        tmpPaths[i] = fmi_import_mk_temp_dir (&callbacks, "/tmp", "FMUMaster");
         contexts[i] = fmi_import_allocate_context(&callbacks);
-        versions[i] = fmi_import_get_fmi_version(contexts[i], fmuPaths[i], tmpPath);
+        versions[i] = fmi_import_get_fmi_version(contexts[i], fmuPaths[i], tmpPaths[i]);
 
         if(printXML){
             char xmlPath[PATH_MAX];
             char ch;
-            strcpy(xmlPath,tmpPath);
+            strcpy(xmlPath,tmpPaths[i]);
             strcat(xmlPath,"/modelDescription.xml");
             FILE * xmlFile = fopen(xmlPath,"r");
             if(xmlFile){
@@ -161,7 +159,7 @@ int main( int argc, char *argv[] ) {
 
             numFMU1++;
 
-            fmus1[i] = fmi1_import_parse_xml ( contexts[i], tmpPath );
+            fmus1[i] = fmi1_import_parse_xml ( contexts[i], tmpPaths[i] );
 
             if(!fmus1[i]){
                 fprintf(stderr,"Could not load XML\n");
@@ -187,7 +185,7 @@ int main( int argc, char *argv[] ) {
             numFMU2++;
 
             // Test some fmu2 stuff
-            fmus2[i] = fmi2_import_parse_xml(contexts[i], tmpPath, 0);
+            fmus2[i] = fmi2_import_parse_xml(contexts[i], tmpPaths[i], 0);
             if(!fmus2[i]){
                 fprintf(stderr,"Could not load XML\n");
                 exit(EXIT_FAILURE);
@@ -280,7 +278,7 @@ int main( int argc, char *argv[] ) {
 
             // All loaded. Simulate.
             res = fmi1simulate( fmus1,
-                                fmuPaths,
+                                tmpPaths, //pass unzipped paths
                                 numFMUs,
                                 connections,
                                 numParameters,
@@ -316,7 +314,7 @@ int main( int argc, char *argv[] ) {
 
             // All loaded. Simulate.
             res = fmi2simulate( fmus2,
-                                fmuPaths,
+                                tmpPaths, //pass unzipped paths
                                 numFMUs,
                                 connections,
                                 numParameters,

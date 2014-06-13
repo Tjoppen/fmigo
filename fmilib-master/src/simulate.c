@@ -19,7 +19,7 @@ void diff(struct timespec start, struct timespec end, struct timespec * diffTime
 }
 
 int fmi2simulate(fmi2_import_t** fmus,
-                 char fmuPaths[MAX_FMUS][PATH_MAX],
+                 const char **fmuPaths,
                  int numFMUs,
                  connection connections[MAX_CONNECTIONS],
                  int numParameters,
@@ -42,7 +42,7 @@ int fmi2simulate(fmi2_import_t** fmus,
 }
 
 int fmi1simulate(fmi1_import_t** fmus,
-                 char fmuPaths[MAX_FMUS][PATH_MAX],
+                 const char **fmuPaths,
                  int numFMUs,
                  connection connections[MAX_CONNECTIONS],
                  int numParameters,

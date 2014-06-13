@@ -37,7 +37,7 @@ void setParams(fmi1_import_t * fmu, int i, int numParams, param params[MAX_PARAM
  * @returns Zero on success, else an error code.
  */
 int fmi1simulate(   fmi1_import_t** fmus,
-                    char fmuPaths[MAX_FMUS][PATH_MAX],
+                    const char **fmuPaths,
                     int numFMUs,
                     connection connections[MAX_CONNECTIONS],
                     int numParams,
@@ -62,7 +62,7 @@ int fmi1simulate(   fmi1_import_t** fmus,
  * @todo
  */
 int fmi2simulate(   fmi2_import_t** fmus,
-                    char fmuPaths[MAX_FMUS][PATH_MAX],
+                    const char **fmuPaths,
                     int numFMUs,
                     connection connections[MAX_CONNECTIONS],
                     int numParams,

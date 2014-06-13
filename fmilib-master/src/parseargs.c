@@ -176,6 +176,10 @@ int parseArguments( int argc,
             param * p = &params[0];
             stop = 2;
             while(cont && (n=sscanf(&optarg[skip],"%d,%d,%s", &p->fmuIndex, &p->valueReference, s))!=-1 && skip<l){
+                if (i >= MAX_PARAMS) {
+                    fprintf(stderr, "Too many parameters specified - max = %d\n", MAX_PARAMS);
+                    return 1;
+                }
 
                 // Now skip everything before the n'th colon
                 char* pos = strchr(&optarg[skip],':');
@@ -254,6 +258,10 @@ int parseArguments( int argc,
     // Parse FMU paths in the end of the command line
     int i=0;
     for (index = optind; index < argc; index++) {
+        if (i >= MAX_FMUS) {
+            fprintf(stderr, "Too many FMUs specified - max = %d\n", MAX_FMUS);
+            return 1;
+        }
         strcpy( fmuFilePaths[i] , argv[index] );
         i++;
     }

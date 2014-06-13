@@ -281,7 +281,7 @@ int parseArguments( int argc,
     for(i=0; i<*numParameters; i++){
         int idx = params[i].fmuIndex;
 
-        if(idx < 0 || idx > *numFMUs){
+        if(idx < 0 || idx >= *numFMUs){
             fprintf(stderr,"Parameter %d refers to FMU %d, which does not exist.\n", i, idx);
             return 1;
         }

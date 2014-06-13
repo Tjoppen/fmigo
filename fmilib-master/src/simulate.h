@@ -10,7 +10,7 @@
 void setInitialValues(fmi1_import_t* fmu);
 
 /// @brief Set initial values from the command line, overrides the XML init values
-void setParams(int numFMUs, int numParams, fmi1_import_t ** fmus, param params[MAX_PARAMS]);
+void setParams(fmi1_import_t * fmu, int i, int numParams, param params[MAX_PARAMS]);
 
 /**
  * @brief Simulate the given FMUs.

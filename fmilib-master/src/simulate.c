@@ -112,7 +112,13 @@ int fmi1simulate(fmi1_import_t** fmus,
             fprintf(stderr,"Could not instantiate model %s\n",fmuPaths[i]);
             return 1;
         }
-        
+
+        // Set initial values from the XML file
+        setInitialValues(fmus[i]);
+
+        // Set user-given parameters
+        setParams(fmus[i], i, numParameters, params);
+
         // StopTimeDefined=fmiFalse means: ignore value of tEnd
         fmi1_status_t status = fmi1_import_initialize_slave(fmus[i], tStart, (fmi1_boolean_t)0, tEnd);
         if (status != fmi1_status_ok){
@@ -120,14 +126,6 @@ int fmi1simulate(fmi1_import_t** fmus,
             return 1;
         }
     }
-
-    // Set initial values from the XML file
-    for(i=0; i<numFMUs; i++){
-        setInitialValues(fmus[i]);
-    }
-
-    // Set user-given parameters
-    setParams(numFMUs, numParameters, fmus, params);
 
     time = tStart;
 
@@ -256,11 +254,9 @@ void setInitialValues(fmi1_import_t* fmu){
 }
 
 // Set initial values from the command line, overrides the XML init values
-void setParams(int numFMUs, int numParams, fmi1_import_t ** fmus, param params[MAX_PARAMS]){
-    int i,j,k;
-    for(i=0; i<numFMUs; i++){
-
-        fmi1_import_variable_list_t* vl = fmi1_import_get_variable_list(fmus[i]);
+void setParams(fmi1_import_t * fmu, int i, int numParams, param params[MAX_PARAMS]){
+    int j,k;
+        fmi1_import_variable_list_t* vl = fmi1_import_get_variable_list(fmu);
         int num = fmi1_import_get_variable_list_size(vl);
         for (k=0; num; k++) {
             fmi1_import_variable_t* v = fmi1_import_get_variable(vl,k);
@@ -293,25 +289,25 @@ void setParams(int numFMUs, int numParams, fmi1_import_t ** fmus, param params[M
                     
                     case fmi1_base_type_real: // Real
                         lol[0] = params[j].realValue;
-                        fmi1_import_set_real(fmus[i],   vr,   1, lol);
+                        fmi1_import_set_real(fmu,   vr,   1, lol);
                         break;
 
                     case fmi1_base_type_int: // Integer
                     case fmi1_base_type_enum:
                         innt[0] = params[j].intValue;
-                        fmi1_import_set_integer(fmus[i],   vr,   1, innt);
+                        fmi1_import_set_integer(fmu,   vr,   1, innt);
                         break;
 
                     // Boolean
                     case fmi1_base_type_bool:
                         boool[0] = params[j].boolValue;
-                        fmi1_import_set_boolean(fmus[i],   vr,   1, boool);
+                        fmi1_import_set_boolean(fmu,   vr,   1, boool);
                         break;
 
                     // String
                     case fmi1_base_type_str:
                         striing[0] = params[j].stringValue;
-                        fmi1_import_set_string(fmus[i],   vr,   1, striing);
+                        fmi1_import_set_string(fmu,   vr,   1, striing);
                         break;
 
                     default: 
@@ -321,5 +317,4 @@ void setParams(int numFMUs, int numParams, fmi1_import_t ** fmus, param params[M
                 }
             }
         }
-    }
 }

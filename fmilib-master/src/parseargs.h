@@ -53,6 +53,7 @@ int parseArguments( int argc,
                     int * realtimeMode,
                     int * printXML,
                     int stepOrder[MAX_STEP_ORDER],
-                    int * numStepOrder);
+                    int * numStepOrder,
+                    int fmuVisibilities[MAX_FMUS]);
 
 #endif /* PARSEARGS_H */

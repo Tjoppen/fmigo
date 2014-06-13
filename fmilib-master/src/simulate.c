@@ -35,7 +35,8 @@ int fmi2simulate(fmi2_import_t** fmus,
                  enum FILEFORMAT outFileFormat,
                  char outFilePath[PATH_MAX],
                  int realTimeMode,
-                 int * numSteps){
+                 int * numSteps,
+                 int fmuVisibilities[MAX_FMUS]){
     fprintf(stderr, "fmi2simulate not implemented yet.\n");
     return 1;
 }
@@ -59,7 +60,8 @@ int fmi1simulate(fmi1_import_t** fmus,
                  int realTimeMode,
                  int * numSteps,
                  int numStepOrder,
-                 int stepOrder[MAX_STEP_ORDER]){
+                 int stepOrder[MAX_STEP_ORDER],
+                 int fmuVisibilities[MAX_FMUS]){
 
     int i;
     int k;
@@ -69,7 +71,6 @@ int fmi1simulate(fmi1_import_t** fmus,
     fmi1_string_t fmuLocation = "";                             // path to the fmu as URL, "file://C:\QTronic\sales"
     fmi1_string_t mimeType = "application/x-fmu-sharedlibrary"; // denotes tool in case of tool coupling
     fmi1_real_t timeout = 1000;                                 // wait period in milliseconds, 0 for unlimited wait period
-    fmi1_boolean_t visible = 0;                                 // no simulator user interface
     fmi1_boolean_t interactive = 0;                             // simulation run without user interaction
     int nSteps = 0;                                             // Number of steps taken
     char** fmuNames;                                            // Result file names
@@ -106,7 +107,7 @@ int fmi1simulate(fmi1_import_t** fmus,
         fmuLocation = fmi_import_create_URL_from_abs_path(&callbacks, (const char*)fmuPaths[i]);
 
         // Instantiate the slave
-        status = fmi1_import_instantiate_slave (fmus[i], fmuNames[i], fmuLocation, mimeType, timeout, visible, interactive);
+        status = fmi1_import_instantiate_slave (fmus[i], fmuNames[i], fmuLocation, mimeType, timeout, fmuVisibilities[i], interactive);
         if (status == jm_status_error){
             fprintf(stderr,"Could not instantiate model %s\n",fmuPaths[i]);
             return 1;

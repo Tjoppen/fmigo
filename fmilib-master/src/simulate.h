@@ -55,7 +55,8 @@ int fmi1simulate(   fmi1_import_t** fmus,
                     int realTimeModeEnabled,
                     int * numSteps,
                     int numStepOrder,
-                    int stepOrder[MAX_STEP_ORDER]);
+                    int stepOrder[MAX_STEP_ORDER],
+                    int fmuVisibilities[MAX_FMUS]);
 
 /**
  * @todo
@@ -77,6 +78,7 @@ int fmi2simulate(   fmi2_import_t** fmus,
                     enum FILEFORMAT outFileFormat,
                     char outFilePath[PATH_MAX],
                     int realTimeModeEnabled,
-                    int * numSteps);
+                    int * numSteps,
+                    int fmuVisibilities[MAX_FMUS]);
 
 #endif /* SIMULATE_H */

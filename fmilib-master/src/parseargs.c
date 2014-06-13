@@ -29,16 +29,17 @@ int parseArguments( int argc,
                     int * realtime,
                     int * printXML,
                     int stepOrder[MAX_STEP_ORDER],
-                    int * numStepOrder){
+                    int * numStepOrder,
+                    int fmuVisibilities[MAX_FMUS]){
     int index, c;
     opterr = 0;
     *outFileGiven = 0;
 
     strcpy(outFilePath,DEFAULT_OUTFILE);
 
-    while ((c = getopt (argc, argv, "xrlvqht:c:d:s:o:p:f:m:g:")) != -1){
-
-        int n, skip, l, cont, i, numScanned, stop;
+    while ((c = getopt (argc, argv, "xrlvqht:c:d:s:o:p:f:m:g:w:")) != -1){
+        int n, skip, l, cont, i, numScanned, stop, vis;
+        const char *opt;
         connection * conn;
 
         switch (c) {
@@ -234,6 +235,26 @@ int parseArguments( int argc,
 
         case 'x':
             *printXML = 1;
+            break;
+
+        case 'w':
+            //visibilities
+            opt = optarg;
+
+            //silently ignore superfluous visibilities
+            for (i = 0; i < MAX_FMUS; i++) {
+                if ((n = sscanf(opt, "%d", &vis)) != 1) {
+                    break;
+                }
+
+                fmuVisibilities[i] = vis;
+
+                //skip past next ':', if any
+                if (!(opt = strchr(opt, ':'))) {
+                    break;
+                }
+                opt++;
+            }
             break;
 
         case '?':

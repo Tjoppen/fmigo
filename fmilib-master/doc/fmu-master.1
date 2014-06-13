@@ -4,7 +4,7 @@ fmu-master \- simulate FMUs
 .SH SYNOPSIS
 .ll +8
 .B fmu-master
-.RB [ " \-hlqrvcdfmopst " ]
+.RB [ " \-hlqrvcwdfmopst " ]
 [
 .I "files \&..."
 ]
@@ -45,6 +45,19 @@ An example connection string is
 which means: connect FMU0 (value reference 0) to FMU1 (vr 0) and FMU0 (vr 1)
 to FMU1 (vr 1).
 Default is no connections.
+.TP
+.B \-w [VISIBILITIES]
+Visibility specification. Syntax is
+
+    VIS0:VIS1:VIS2...
+
+where VISX is 1 or 0 depending on whether FMUX's simulator application window should be visible or not.
+Example:
+
+    0:1:1:0
+
+which means: show simulator windows for FMU1 and FMU2, but not FMU0 or FMU3.
+By default no windows are shown (batch mode).
 .TP
 .B \-d [TIMESTEP]
 Timestep size. Default is 0.1.

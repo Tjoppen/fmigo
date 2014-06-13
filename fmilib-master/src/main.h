@@ -10,7 +10,7 @@
 #include <sys/stat.h>
 #include <limits.h>
 
-#define VERSION "0.1.3"
+#define VERSION "0.1.4"
 #define MAX_FMUS 1000
 #define MAX_PARAMS 1000
 #define MAX_PARAM_LENGTH 1000

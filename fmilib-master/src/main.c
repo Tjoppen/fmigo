@@ -29,6 +29,7 @@ int main( int argc, char *argv[] ) {
         doSimulate = 1;
 
     char fmuPaths[MAX_FMUS][PATH_MAX];
+    int fmuVisibilities[MAX_FMUS] = {0};
     char outFilePath[PATH_MAX] = "result.csv";
     param params[MAX_PARAMS];
     connection connections[MAX_CONNECTIONS];
@@ -70,7 +71,8 @@ int main( int argc, char *argv[] ) {
                                &realtime,
                                &printXML,
                                stepOrder,
-                               &numStepOrder);
+                               &numStepOrder,
+                               fmuVisibilities);
 
     if(printXML){
         // Should print XML and quit
@@ -296,7 +298,8 @@ int main( int argc, char *argv[] ) {
                                 realtime,
                                 &numSteps,
                                 numStepOrder,
-                                stepOrder);
+                                stepOrder,
+                                fmuVisibilities);
         } else if(numFMU2){
             
             // Pick stepfunction
@@ -329,7 +332,8 @@ int main( int argc, char *argv[] ) {
                                 outfileFormat,
                                 outFilePath,
                                 realtime,
-                                &numSteps);
+                                &numSteps,
+                                fmuVisibilities);
 
         } else {
             fprintf(stderr, "Something went wrong...\n");

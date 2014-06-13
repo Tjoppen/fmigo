@@ -1,0 +1,83 @@
+.TH FMU-MASTER 1 local
+.SH NAME
+fmu-master \- simulate FMUs
+.SH SYNOPSIS
+.ll +8
+.B fmu-master
+.RB [ " \-hlqrvcdfmopst " ]
+[
+.I "files \&..."
+]
+.ll -8
+.br
+.SH DESCRIPTION
+.I fmu-master
+simulates FMUs using the FMILibrary from JModelica.org
+.SH FLAGS
+.TP
+.B \-h
+Show help and quit.
+.TP
+.B \-l
+Show FMILibrary logs.
+.TP
+.B \-q
+Quiet mode, do not print simulation info to STDOUT. This flag should be used together with -r.
+.TP
+.B \-r
+Real time mode. Will usleep() in between communication steps if the execution was faster than real time.
+.TP
+.B \-v
+Show version and quit.
+.TP
+.B \-x
+Print XML and quit.
+.SH OPTIONS
+.TP
+.B \-c [CONNECTIONS]
+Connection specification. No connections by default. Quadruples of positive integers, representing which FMU and value reference to connect from and what to connect to. Syntax is
+
+    CONN1:CONN2:CONN3...
+
+where CONNX is four comma-separated integers; FMUFROM,VRFROM,FMUTO,VRTO.
+An example connection string is
+0,0,1,0:0,1,1,1
+which means: connect FMU0 (value reference 0) to FMU1 (vr 0) and FMU0 (vr 1)
+to FMU1 (vr 1).
+Default is no connections.
+.TP
+.B \-d [TIMESTEP]
+Timestep size. Default is 0.1.
+.TP
+.B \-f [OUTFORMAT]
+Output file format. Currently only "csv" is supported, and it is also the default.
+.TP
+.B \-g [STEPPING ORDER SPEC]
+FMU stepping order. Used in serial algorithms. Should be a comma separated list of FMU indices. If the list starts with 0, then the first FMU will be stepped, and its utput values will be transferred through their connections (if any).
+.TP
+.B \-m [METHOD]
+Stepping method. Available methods are "jacobi" (Jacobi, parallel) and "gs" (Gauss-Seidel, serial). Default is "jacobi".
+.TP
+.B \-o [OUTFILE]
+Result output file. If set to "stdout", then output will be to STDOUT. Default value is "result.csv".
+.TP
+.B \-p [PARAMS]
+Parameter specification. Triplets separated by :, specifying FMU index, value reference index and parameter value. Example setting the three first value references of FMU 0: "0,0,12.3:0,1,true:0,2,9". Default is no parameters.
+.TP
+.B \-s [SEPARATOR]
+CSV separator character. Default is comma (,).
+.TP
+.B \-t [ENDTIME]
+End simulation time in seconds. Default is 1.0.
+.SH EXAMPLES
+To run an FMU simulation from time 0 to 5 with timestep 0.01:
+    fmu-master -t 5 -d 0.01 ../myFMU.fmu
+
+To simulate two FMUs connected from the first output of the first FMU to the first input of the second:
+    fmu-master -c 0,0,1,0 a.fmu b.fmu
+
+To simulate quietly (without output to STDOUT) and save the results to file:
+    fmu-master -q -o out.csv a.fmu
+
+.SH "ABOUT"
+The app was built by Stefan Hedman at UMIT Research Lab 2013.

@@ -373,6 +373,7 @@ int main( int argc, char *argv[] ) {
 
         // Remove the temp dir
         fmi_import_rmdir(&callbacks, tmpPaths[i]);
+        callbacks.free(tmpPaths[i]);
     }
 
     // Free arrays

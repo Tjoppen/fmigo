@@ -81,6 +81,8 @@ void fmi1TransferConnectionValues(connection c, fmi1_import_t ** fmus){
             }
         }
     }
+    fmi1_import_free_variable_list(varsFrom);
+    fmi1_import_free_variable_list(varsTo);
 }
 
 
@@ -140,6 +142,7 @@ void writeCsvHeader(FILE* file,
             } else
                 fprintf(file, "%c%s.%s", separator, fmuNames[j], s);
         } // for
+        fmi1_import_free_variable_list(vl);
     }
     
     // terminate this row
@@ -214,6 +217,7 @@ void writeCsvRow(FILE* file,
                 break;
             }
         }
+        fmi1_import_free_variable_list(vl);
     }
     
     // terminate this row

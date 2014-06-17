@@ -73,10 +73,7 @@ int fmi1simulate(fmi1_import_t** fmus,
     fmi1_real_t timeout = 1000;                                 // wait period in milliseconds, 0 for unlimited wait period
     fmi1_boolean_t interactive = 0;                             // simulation run without user interaction
     int nSteps = 0;                                             // Number of steps taken
-    char** fmuNames;                                            // Result file names
-
-    // Allocate
-    fmuNames =    (char**)calloc(sizeof(char*),numFMUs);
+    char* fmuNames[MAX_FMUS];                                   // Result file names
 
     // Open result file
     FILE * f;
@@ -108,6 +105,7 @@ int fmi1simulate(fmi1_import_t** fmus,
 
         // Instantiate the slave
         status = fmi1_import_instantiate_slave (fmus[i], fmuNames[i], fmuLocation, mimeType, timeout, fmuVisibilities[i], interactive);
+        callbacks.free(fmuLocation);
         if (status == jm_status_error){
             fprintf(stderr,"Could not instantiate model %s\n",fmuPaths[i]);
             return 1;
@@ -191,6 +189,7 @@ int fmi1simulate(fmi1_import_t** fmus,
             fprintf(stderr,"Error terminating slave instance %d. Continuing...\n",i);
             simulationStatus = 1; // error
         }
+        free(fmuNames[i]);
     }
 
     fclose(f);
@@ -251,6 +250,7 @@ void setInitialValues(fmi1_import_t* fmu){
             }
         }
     }
+    fmi1_import_free_variable_list(vl);
 }
 
 // Set initial values from the command line, overrides the XML init values
@@ -317,4 +317,5 @@ void setParams(fmi1_import_t * fmu, int i, int numParams, param params[MAX_PARAM
                 }
             }
         }
+        fmi1_import_free_variable_list(vl);
 }

@@ -97,6 +97,8 @@ int fmi1simulate(fmi1_import_t** fmus,
         writeCsvHeader(f, fmuNames, fmus, numFMUs, separator);
     }
 
+    printf("  PARAMETERS (%d)\n", numParameters);
+
     // Init all the FMUs
     for(i=0; i<numFMUs; i++){ 
 
@@ -127,6 +129,7 @@ int fmi1simulate(fmi1_import_t** fmus,
         }
     }
 
+    printf("\n");
     time = tStart;
 
     // Write CSV row for time=0
@@ -279,28 +282,33 @@ int setParams(fmi1_import_t * fmu, int fmuIndex, int numParams, param params[MAX
                     fmi1_boolean_t boool[1];
                     fmi1_string_t striing[1];
 
+                    printf("    FMU %d, VR %d (%s) = ", fmuIndex, params[j].valueReference, fmi1_import_get_variable_name(v));
                     switch (params[j].type){
                     
                     case fmi1_base_type_real: // Real
                         lol[0] = params[j].realValue;
+                        printf("%f\n", params[j].realValue);
                         fmi1_import_set_real(fmu, &params[j].valueReference,   1, lol);
                         break;
 
                     case fmi1_base_type_int: // Integer
                     case fmi1_base_type_enum:
                         innt[0] = params[j].intValue;
+                        printf("%i\n", params[j].intValue);
                         fmi1_import_set_integer(fmu, &params[j].valueReference,   1, innt);
                         break;
 
                     // Boolean
                     case fmi1_base_type_bool:
                         boool[0] = params[j].boolValue;
+                        printf("%s\n", params[j].boolValue ? "true" : "false");
                         fmi1_import_set_boolean(fmu, &params[j].valueReference,   1, boool);
                         break;
 
                     // String
                     case fmi1_base_type_str:
                         striing[0] = params[j].stringValue;
+                        printf("%s\n", params[j].stringValue);
                         fmi1_import_set_string(fmu, &params[j].valueReference,   1, striing);
                         break;
 

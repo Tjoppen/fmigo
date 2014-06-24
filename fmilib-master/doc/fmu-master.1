@@ -39,11 +39,26 @@ Connection specification. No connections by default. Quadruples of positive inte
 
     CONN1:CONN2:CONN3...
 
-where CONNX is four comma-separated integers; FMUFROM,VRFROM,FMUTO,VRTO.
+where CONNX is an optional type character folowed by comma, followed by four comma-separated integers; [TYPE,]FMUFROM,VRFROM,FMUTO,VRTO.
+If TYPE is absent then the connection is assumed to be of type real.
 An example connection string is
-0,0,1,0:0,1,1,1
-which means: connect FMU0 (value reference 0) to FMU1 (vr 0) and FMU0 (vr 1)
+
+    0,0,1,0:0,1,1,1
+
+which means: connect real values FMU0 (value reference 0) to FMU1 (vr 0) and FMU0 (vr 1)
 to FMU1 (vr 1).
+Another example:
+
+    i,0,1,1,2
+
+which means: connect integer value FMU0 VR1 to FMU1 VR2.
+Possible types:
+
+    r - Real
+    i - Integer
+    b - Boolean
+    s - String
+
 Default is no connections.
 .TP
 .B \-w [VISIBILITIES]
@@ -75,7 +90,16 @@ Stepping method. Available methods are "jacobi" (Jacobi, parallel) and "gs" (Gau
 Result output file. If set to "stdout", then output will be to STDOUT. Default value is "result.csv".
 .TP
 .B \-p [PARAMS]
-Parameter specification. Triplets separated by :, specifying FMU index, value reference index and parameter value. Example setting the three first value references of FMU 0: "0,0,12.3:0,1,true:0,2,9". Default is no parameters.
+Parameter specification.
+Entries are separated by :, each entry consists of an optional type (assumed real if not present) followed by a comma separated triplet of FMU index, value reference and value.
+Example:
+
+    b,0,0,true:r,0,0,0:s,0,0,hello
+
+which means set FMU0 boolean VR0 to true, FMU0 real VR0 to zero and FMU0 string VR0 to "hello".
+Note that despite identical value references these entries refer to different parameters since VRs apply with respect to a base type.
+See -c option for a list of possible types (i, r, s, b).
+Default is no parameters.
 .TP
 .B \-s [SEPARATOR]
 CSV separator character. Default is comma (,).

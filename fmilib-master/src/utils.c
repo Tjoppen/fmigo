@@ -25,37 +25,26 @@ void fmi1TransferConnectionValues(connection c, fmi1_import_t ** fmus){
     int fmuTo =   c.toFMU;
     vrTo[0] =     c.toInputVR;
 
-    // Get variable list of both FMU participating in the connection
-    fmi1_import_variable_list_t* varsFrom = fmi1_import_get_variable_list(fmus[fmuFrom]);
-    fmi1_import_variable_list_t* varsTo =   fmi1_import_get_variable_list(fmus[fmuTo]);
-    int numFrom = fmi1_import_get_variable_list_size(varsFrom);
-    int numTo   = fmi1_import_get_variable_list_size(varsTo);
+    fmi1_import_variable_t* v = fmi1_import_get_variable_by_vr(fmus[fmuFrom], c.type, c.fromOutputVR);
+    fmi1_import_variable_t* vTo = fmi1_import_get_variable_by_vr(fmus[fmuTo], c.type, c.toInputVR);
 
-    for (k=0; numFrom; k++) {
-        fmi1_import_variable_t* v = fmi1_import_get_variable(varsFrom,k);
-        if(!v) break;
-        if (fmi1_import_get_variable_vr(v) != c.fromOutputVR) continue;
+    if (!v) {
+        printf("Unable to find input variable (FMU %d, VR %d, type %d)\n", fmuFrom, c.fromOutputVR, c.type);
+        return;
+    }
 
-        fmi1_base_type_enu_t typeFrom = fmi1_import_get_variable_base_type(v);
+    if (!vTo) {
+        printf("Unable to find output variable (FMU %d, VR %d, type %d)\n", fmuTo, c.toInputVR, c.type);
+        return;
+    }
 
-        // Now find the input variable
-        for (l=0; !found && l<numTo; l++) {
-
-            fmi1_import_variable_t* vTo = fmi1_import_get_variable(varsTo,l);
-            if(!vTo) break;
-            if (fmi1_import_get_variable_vr(vTo) != c.toInputVR) continue;
-
-            fmi1_base_type_enu_t typeTo = fmi1_import_get_variable_base_type(vTo);
-
-            // Found the input and output. Check if they have equal types
-            if(typeFrom == typeTo){
-
-                //printf("Connection %d: Transferring value from FMU%d (vr=%d) to FMU%d (vr=%d)\n",ci,fmuFrom,vrFrom[0],fmuTo,vrTo[0]);
-
-                switch (typeFrom){
+                switch (c.type){
                 case fmi1_base_type_real:
                     fmi1_import_get_real(fmus[fmuFrom], vrFrom, 1, rr);
                     fmi1_import_set_real(fmus[fmuTo],   vrTo,   1, rr);
+                    //printf("%s -> %s: %f\n", fmi1_import_get_variable_name(v), fmi1_import_get_variable_name(vTo), rr[0]);
+                    //printf("% .2f ", rr[0]);
+                    printf("%s = % .2f ", fmi1_import_get_variable_name(v), rr[0]);
                     break;
                 case fmi1_base_type_int:
                 case fmi1_base_type_enum:
@@ -74,15 +63,6 @@ void fmi1TransferConnectionValues(connection c, fmi1_import_t ** fmus){
                     printf("Could not determine type of value reference %d in FMU %d. Continuing without connection value transfer...\n", vrFrom[0],fmuFrom);
                     break;
                 }
-
-                found = 1;
-            } else {
-                printf("Connection between FMU %d (value ref %d) and %d (value ref %d) had incompatible data types! (%d != %d)\n",fmuFrom,vrFrom[0],fmuTo,vrTo[0],typeFrom,typeTo);
-            }
-        }
-    }
-    fmi1_import_free_variable_list(varsFrom);
-    fmi1_import_free_variable_list(varsTo);
 }
 
 

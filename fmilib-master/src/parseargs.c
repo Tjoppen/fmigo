@@ -8,6 +8,16 @@ void printInvalidArg(char option){
     fprintf(stderr, "Invalid argument of -%c. Use -h for help.\n",option);
 }
 
+static fmi1_base_type_enu_t type_from_char(char type) {
+    switch (type) {
+    default:
+    case 'r': return fmi1_base_type_real;
+    case 'i': return fmi1_base_type_int;
+    case 'b': return fmi1_base_type_bool;
+    case 's': return fmi1_base_type_str;
+    }
+}
+
 int parseArguments( int argc,
                     char *argv[],
                     int* numFMUs,
@@ -39,32 +49,55 @@ int parseArguments( int argc,
 
     while ((c = getopt (argc, argv, "xrlvqht:c:d:s:o:p:f:m:g:w:")) != -1){
         int n, skip, l, cont, i, numScanned, stop, vis;
-        const char *opt;
+        char *opt, *opt2;
         connection * conn;
+        char type;
+        char s[MAX_PARAM_LENGTH];
+        param * p;
 
         switch (c) {
 
         case 'c':
-            n=0;
-            skip=0;
-            l=strlen(optarg);
-            cont=1;
-            i=0;
             conn = &connections[0];
-            while((n=sscanf(&optarg[skip],"%d,%d,%d,%d",&conn->fromFMU,&conn->fromOutputVR,&conn->toFMU,&conn->toInputVR))!=-1 && skip<l && cont){
-                // Now skip everything before the n'th colon
-                char* pos = strchr(&optarg[skip],':');
-                if(pos==NULL){
-                    cont=0;
-                } else {
-                    skip += pos-&optarg[skip]+1; // Dunno why this works... See http://www.cplusplus.com/reference/cstring/strchr/
-                    conn = &connections[i+1];
+            opt = optarg;
+
+            for (i = 0; i < MAX_CONNECTIONS;) {
+                //if there's a colon, null it so sscanf() can work
+                if ((opt2 = strchr(opt, ':'))) {
+                    *opt2 = 0;
                 }
+
+                //expect [type,]fmuFrom,vrFrom,fmuTo,vrTo
+                if ((n = sscanf(opt, "%c,%d,%d,%d,%d", &type, &conn->fromFMU, &conn->fromOutputVR, &conn->toFMU, &conn->toInputVR)) != 5) {
+                    //type probably missing - guess real
+                    type = 'r';
+                    if ((n = sscanf(opt, "%d,%d,%d,%d", &conn->fromFMU, &conn->fromOutputVR, &conn->toFMU, &conn->toInputVR)) != 4) {
+                        fprintf(stderr, "Badly formatted connection: %s\n", opt);
+                        return 1;
+                    }
+                }
+
+                //printf("%c %d %d %d %d\n", type, conn->fromFMU, conn->fromOutputVR, conn->toFMU, conn->toInputVR);
+                conn->type = type_from_char(type);
                 i++;
+                conn++;
+
+                //skip past next ':', if any. else stop
+                if (!opt2) {
+                    break;
+                }
+
+                opt = opt2 + 1;
             }
+
+            if (i >= MAX_CONNECTIONS) {
+                fprintf(stderr, "Too many connections specified - max = %d\n", MAX_CONNECTIONS);
+                return 1;
+            }
+
             *numConnections = i;
             break;
-            
+
         case 'd':
             numScanned = sscanf(optarg,"%lf", timeStepSize);
             if(numScanned <= 0){
@@ -168,68 +201,59 @@ int parseArguments( int argc,
             break;
 
         case 'p':
-            n=0;
-            skip=0;
-            l=strlen(optarg);
-            cont=1;
-            i=0;
-            char s[MAX_PARAM_LENGTH];
-            param * p = &params[0];
-            stop = 2;
-            while(cont && (n=sscanf(&optarg[skip],"%d,%d,%s", &p->fmuIndex, &p->valueReference, s))!=-1 && skip<l){
-                if (i >= MAX_PARAMS) {
-                    fprintf(stderr, "Too many parameters specified - max = %d\n", MAX_PARAMS);
-                    return 1;
+            p = &params[0];
+            opt = optarg;
+
+            for (i = 0; i < MAX_PARAMS;) {
+                //if there's a colon, null it so sscanf() can work
+                if ((opt2 = strchr(opt, ':'))) {
+                    *opt2 = 0;
                 }
 
-                // Now skip everything before the n'th colon
-                char* pos = strchr(&optarg[skip],':');
-
-                if(pos==NULL){
-                    stop--;
-
-                    if(stop == 0){
-                        cont=0;
-                        break;
+                //expect [type,]FMU,VR,value
+                if ((n = sscanf(opt, "%c,%d,%d,%s", &type, &p->fmuIndex, &p->valueReference, s)) != 4) {
+                    //type probably missing - guess real
+                    type = 'r';
+                    if ((n = sscanf(opt, "%d,%d,%s", &p->fmuIndex, &p->valueReference, s)) != 3) {
+                        fprintf(stderr, "Badly formatted parameter: %s\n", opt);
+                        return 1;
                     }
                 }
 
-                // Try to read all types of parameters and store.
-                double realVal;
-                int intVal;
-                if( sscanf(s,"%lf",&realVal) != -1 ){ // Real
-                    p->realValue = realVal;
-                }
-                if( sscanf(s,"%d",&intVal) != -1 ){ // Integer
-                    p->intValue = intVal;
-                }
+                //printf("%c %d %d %s\n", type, p->fmuIndex, p->valueReference, s);
+                p->type = type_from_char(type);
 
-                char buf[MAX_PARAM_LENGTH];
-                strcpy(buf, s);
-                int pos2 = strchr(buf,':')-buf;
-                char buf2[MAX_PARAM_LENGTH];
-                
-                if(strchr(buf,':')==NULL){
-                    strcpy(buf2, buf);
-                    cont = 0;
-                } else {
-                    strncpy(buf2, buf, pos2);
+                switch (p->type) {
+                case fmi1_base_type_real:
+                    p->realValue = atof(s);
+                    break;
+                case fmi1_base_type_int:
+                    p->intValue = atoi(s);
+                    break;
+                case fmi1_base_type_bool:
+                    p->boolValue = !strcasecmp(s, "true");
+                    break;
+                case fmi1_base_type_str:
+                    snprintf(p->stringValue, MAX_PARAM_LENGTH, "%s", s);
+                    break;
                 }
 
-                // String
-                strcpy(p->stringValue,buf2);
-
-                // Boolean
-                p->boolValue = 0;
-                if(strstr(buf,"true")){
-                    p->boolValue = 1;
-                }
-
-                skip += pos-&optarg[skip]+1; // Dunno why this works... See http://www.cplusplus.com/reference/cstring/strchr/
-                p = p + 1;
-                
                 i++;
+                p++;
+
+                //skip past next ':', if any. else stop
+                if (!opt2) {
+                    break;
+                }
+
+                opt = opt2 + 1;
             }
+
+            if (i >= MAX_PARAMS) {
+                fprintf(stderr, "Too many parameters specified - max = %d\n", MAX_PARAMS);
+                return 1;
+            }
+
             *numParameters = i;
             break;
 

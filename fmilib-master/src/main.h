@@ -10,7 +10,7 @@
 #include <sys/stat.h>
 #include <limits.h>
 
-#define VERSION "0.1.4"
+#define VERSION "0.1.5"
 #define MAX_FMUS 1000
 #define MAX_PARAMS 1000
 #define MAX_PARAM_LENGTH 1000
@@ -40,6 +40,7 @@ typedef struct __connection{
     int fromOutputVR;           // Value reference
     int toFMU;                  // FMU index
     int toInputVR;              // Value reference
+    fmi1_base_type_enu_t type;
 } connection;
 
 /**
@@ -61,6 +62,7 @@ typedef struct __connection{
 typedef struct __param{
     int fmuIndex;
     int valueReference;                 // Value reference to apply to
+    fmi1_base_type_enu_t type;
     char stringValue[MAX_PARAM_LENGTH]; // String version, always set to what the user wrote
     int intValue;                       // Integer
     double realValue;                   // Real

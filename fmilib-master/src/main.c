@@ -242,10 +242,31 @@ int main( int argc, char *argv[] ) {
             if(numConnections > 0){
                 printf("\n  CONNECTIONS (%d)\n",numConnections);
                 for(i=0; i<numConnections; i++){
-                    printf("    FMU %d, value reference %d ---> FMU %d, value reference %d\n",  connections[i].fromFMU,
-                                                                                                connections[i].fromOutputVR,
-                                                                                                connections[i].toFMU,
-                                                                                                connections[i].toInputVR);
+                    const char *nameA;
+                    const char *nameB;
+
+                    if (numFMU1) {
+                        fmi1_import_variable_t* v;
+                        v = fmi1_import_get_variable_by_vr(fmus1[connections[i].fromFMU], connections[i].type, connections[i].fromOutputVR);
+                        nameA = v ? fmi1_import_get_variable_name(v) : NULL;
+                        v = fmi1_import_get_variable_by_vr(fmus1[connections[i].toFMU], connections[i].type, connections[i].toInputVR);
+                        nameB = v ? fmi1_import_get_variable_name(v) : NULL;
+                    } else {
+                        fmi2_import_variable_t* v;
+                        fmi2_base_type_enu_t t;
+                        v = fmi2_import_get_variable_by_vr(fmus1[connections[i].fromFMU], connections[i].type, connections[i].fromOutputVR);
+                        nameA = v ? fmi2_import_get_variable_name(v) : NULL;
+                        v = fmi2_import_get_variable_by_vr(fmus1[connections[i].toFMU], connections[i].type, connections[i].toInputVR);
+                        nameB = v ? fmi2_import_get_variable_name(v) : NULL;
+                    }
+
+                    printf("    FMU %d, VR %d (%s) ---> FMU %d, VR %d (%s)\n",
+                            connections[i].fromFMU,
+                            connections[i].fromOutputVR,
+                            nameA,
+                            connections[i].toFMU,
+                            connections[i].toInputVR,
+                            nameB);
                 }
             }
 

@@ -100,7 +100,7 @@ TARGET_LINK_LIBRARIES( ${TARGET} %s )""" % (arch, modelIdentifier, " ".join(c_fi
         if subprocess.call(["make"]) == 0:
 
             # Zip everything needed in FMU
-            with zipfile.ZipFile("%s.fmu" % (modelIdentifier), 'w') as myzip:
+            with zipfile.ZipFile("%s.fmu" % (modelIdentifier), 'w', zipfile.ZIP_DEFLATED) as myzip:
                 # TODO: Should look up what library type (.so, .dll... was created)
                 myzip.write(pjoin('binaries',arch,modelIdentifier+".so"))
                 os.chdir(cwd)

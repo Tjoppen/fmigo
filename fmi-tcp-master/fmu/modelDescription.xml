@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fmiModelDescription
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  fmiVersion="2.0"
+  modelName="Vanilla FMU"
+  guid="{d4d1577c-e2bb-402c-83ef-67e17dcf3647}"
+  generationTool="Simovate Vanilla FMU"
+  generationDateAndTime="2014-02-27T18:50:34Z"
+  variableNamingConvention="structured"
+  numberOfEventIndicators="4">
+  <CoSimulation
+    modelIdentifier="BouncingBall"
+    canHandleVariableCommunicationStepSize="true"
+    canHandleEvents="true"
+    canInterpolateInputs="true"
+    maxOutputDerivativeOrder="1"
+    canBeInstantiatedOnlyOncePerProcess="true"
+    canGetAndSetFMUstate="true"
+    providesDirectionalDerivatives="true"/>
+  <DefaultExperiment startTime="0.0"
+    stopTime="1.0"
+    tolerance="0.0001"/>
+  <ModelVariables>
+  </ModelVariables>
+  <ModelStructure>
+  </ModelStructure>
+</fmiModelDescription>

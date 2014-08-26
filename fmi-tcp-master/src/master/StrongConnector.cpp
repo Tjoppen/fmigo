@@ -3,8 +3,9 @@
 
 using namespace fmitcp_master;
 
-StrongConnector::StrongConnector(FMIClient* slave){
-    m_conn.m_userData = (void*)slave;
+StrongConnector::StrongConnector(FMIClient* slave) : sc::Connector() {
+    m_userData = (void*)slave;
+    m_hasPosition = m_hasQuaternion = m_hasShaftAngle = m_hasVelocity = m_hasAcceleration = m_hasAngularVelocity = m_hasAngularAcceleration = m_hasForce = m_hasTorque = false;
 }
 
 StrongConnector::~StrongConnector(){
@@ -26,6 +27,11 @@ void StrongConnector::setQuaternionValueRefs(int x, int y, int z, int w){
     m_vref_quaternion[3] = w;
 }
 
+void StrongConnector::setShaftAngleValueRef(int x){
+    m_hasShaftAngle = true;
+    m_vref_shaftAngle = x;
+}
+
 void StrongConnector::setVelocityValueRefs(int x, int y, int z){
     m_hasVelocity = true;
     m_vref_velocity[0] = x;
@@ -33,11 +39,25 @@ void StrongConnector::setVelocityValueRefs(int x, int y, int z){
     m_vref_velocity[2] = z;
 }
 
+void StrongConnector::setAccelerationValueRefs(int x, int y, int z){
+    m_hasAcceleration = true;
+    m_vref_acceleration[0] = x;
+    m_vref_acceleration[1] = y;
+    m_vref_acceleration[2] = z;
+}
+
 void StrongConnector::setAngularVelocityValueRefs(int x, int y, int z){
     m_hasAngularVelocity = true;
     m_vref_angularVelocity[0] = x;
     m_vref_angularVelocity[1] = y;
     m_vref_angularVelocity[2] = z;
+}
+
+void StrongConnector::setAngularAccelerationValueRefs(int x, int y, int z){
+    m_hasAngularAcceleration = true;
+    m_vref_angularAcceleration[0] = x;
+    m_vref_angularAcceleration[1] = y;
+    m_vref_angularAcceleration[2] = z;
 }
 
 void StrongConnector::setForceValueRefs(int x, int y, int z){
@@ -57,8 +77,11 @@ void StrongConnector::setTorqueValueRefs(int x, int y, int z){
 
 bool StrongConnector::hasPosition(){ return m_hasPosition; };
 bool StrongConnector::hasQuaternion(){ return m_hasQuaternion; };
+bool StrongConnector::hasShaftAngle(){ return m_hasShaftAngle; };
 bool StrongConnector::hasVelocity(){ return m_hasVelocity; };
+bool StrongConnector::hasAcceleration(){ return m_hasAcceleration; };
 bool StrongConnector::hasAngularVelocity(){ return m_hasAngularVelocity; };
+bool StrongConnector::hasAngularAcceleration(){ return m_hasAngularAcceleration; };
 bool StrongConnector::hasForce(){ return m_hasForce; };
 bool StrongConnector::hasTorque(){ return m_hasTorque; };
 
@@ -78,6 +101,15 @@ std::vector<int> StrongConnector::getVelocityValueRefs() const {
     return result;
 };
 
+std::vector<int> StrongConnector::getAccelerationValueRefs() const {
+    std::vector<int> result;
+    if(m_hasAcceleration){
+        for(int i=0; i<3; i++)
+            result.push_back(m_vref_acceleration[i]);
+    }
+    return result;
+}
+
 std::vector<int> StrongConnector::getPositionValueRefs() const {
     std::vector<int> result;
     for(int i=0; m_hasPosition && i<3; i++)
@@ -92,6 +124,14 @@ std::vector<int> StrongConnector::getQuaternionValueRefs() const {
     return result;
 };
 
+std::vector<int> StrongConnector::getShaftAngleValueRefs() const {
+    std::vector<int> result;
+    if (m_hasShaftAngle) {
+        result.push_back(m_vref_shaftAngle);
+    }
+    return result;
+}
+
 std::vector<int> StrongConnector::getAngularVelocityValueRefs() const {
     std::vector<int> result;
     for(int i=0; m_hasAngularVelocity && i<3; i++)
@@ -99,33 +139,44 @@ std::vector<int> StrongConnector::getAngularVelocityValueRefs() const {
     return result;
 };
 
+std::vector<int> StrongConnector::getAngularAccelerationValueRefs() const {
+    std::vector<int> result;
+    for(int i=0; m_hasAngularAcceleration && i<3; i++)
+#ifdef ENABLE_DEMO_HACKS
+        if (m_vref_angularAcceleration[i] >= 0)
+#endif
+        result.push_back(m_vref_angularAcceleration[i]);
+    return result;
+};
+
 std::vector<int> StrongConnector::getTorqueValueRefs() const {
     std::vector<int> result;
     for(int i=0; m_hasTorque && i<3; i++)
+#ifdef ENABLE_DEMO_HACKS
+        if (m_vref_torque[i] >= 0)
+#endif
         result.push_back(m_vref_torque[i]);
     return result;
 };
 
-sc::Connector * StrongConnector::getConnector(){
-    return &m_conn;
-}
-
 void StrongConnector::setValues(std::vector<int> valueReferences, std::vector<double> values){
+    //NOTE: acceleration values are never written, only read
     assert(valueReferences.size() == values.size());
 
     for(int i=0; i<valueReferences.size(); i++){
         int vr = valueReferences[i];
         double val = values[i];
         for(int j=0; j<3; j++){
-            if(vr == m_vref_position[j])        m_conn.m_position[j] =          val;
-            if(vr == m_vref_velocity[j])        m_conn.m_velocity[j] =          val;
-            if(vr == m_vref_angularVelocity[j]) m_conn.m_angularVelocity[j] =   val;
-            if(vr == m_vref_force[j])           m_conn.m_force[j] =             val;
-            if(vr == m_vref_torque[j])          m_conn.m_torque[j] =            val;
+            if(m_hasPosition        && vr == m_vref_position[j])        m_position[j] =          val;
+            if(m_hasVelocity        && vr == m_vref_velocity[j])        m_velocity[j] =          val;
+            if(m_hasAngularVelocity && vr == m_vref_angularVelocity[j]) m_angularVelocity[j] =   val;
+            if(m_hasForce           && vr == m_vref_force[j])           m_force[j] =             val;
+            if(m_hasTorque          && vr == m_vref_torque[j])          m_torque[j] =            val;
         }
         for(int j=0; j<4; j++){
-            if(vr == m_vref_quaternion[j])      m_conn.m_quaternion[j] =        val;
+            if(m_hasQuaternion      && vr == m_vref_quaternion[j])      m_quaternion[j] =        val;
         }
+        if (m_hasShaftAngle         && vr == m_vref_shaftAngle)         m_shaftAngle =           val;
     }
 };
 
@@ -136,8 +187,8 @@ void StrongConnector::setFutureValues(std::vector<int> valueReferences, std::vec
         int vr = valueReferences[i];
         double val = values[i];
         for(int j=0; j<3; j++){
-            if(vr == m_vref_velocity[j])        m_conn.m_futureVelocity[j] =          val;
-            if(vr == m_vref_angularVelocity[j]) m_conn.m_futureAngularVelocity[j] =   val;
+            if(m_hasVelocity        && vr == m_vref_velocity[j])        m_futureVelocity[j] =          val;
+            if(m_hasAngularVelocity && vr == m_vref_angularVelocity[j]) m_futureAngularVelocity[j] =   val;
         }
     }
 };

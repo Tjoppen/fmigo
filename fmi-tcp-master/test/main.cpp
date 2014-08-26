@@ -5,6 +5,7 @@
 #include <fmitcp/EventPump.h>
 #include "master/Master.h"
 #include "common/common.h"
+#include <sc/LockConstraint.h>
 
 using namespace fmitcp_master;
 
@@ -150,8 +151,12 @@ int main(int argc, char *argv[] ) {
     connB->setTorqueValueRefs(16,17,18);
 
     // Create strong connections
-    StrongConnection sconn(connA,connB,StrongConnection::CONNECTION_LOCK);
-    master.addStrongConnection(&sconn);
+    sc::Vec3 localAnchorA(0,0,0);
+    sc::Vec3 localAnchorB(0,0,0);
+    sc::Quat localOrientationA(0,0,0,1);
+    sc::Quat localOrientationB(0,0,0,1);
+    sc::Constraint *conn = new sc::LockConstraint(connA, connB, localAnchorA, localAnchorB, localOrientationA, localOrientationB);
+    master.addStrongConnection(conn);
 
     // Test weak connection
     master.createWeakConnection(slaveA, slaveB, 0, 0);

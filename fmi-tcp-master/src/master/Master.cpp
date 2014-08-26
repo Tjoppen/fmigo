@@ -6,9 +6,9 @@
 
 #include "master/Master.h"
 #include "master/FMIClient.h"
-#include "master/StrongConnection.h"
 #include "master/WeakConnection.h"
 #include "common/url_parser.h"
+#include "common/common.h"
 
 using namespace fmitcp_master;
 
@@ -54,10 +54,20 @@ fmitcp::Logger * Master::getLogger(){
 
 
 FMIClient* Master::connectSlave(std::string uri){
-    struct parsed_url * url = parse_url(uri.c_str());
+    /*struct parsed_url * url = parse_url(uri.c_str());
+
+    if (!url || !url->port || !url->host) {
+        if (url) {
+            parsed_url_free(url);
+        }
+
+        return NULL;
+    }
+
     long port = atoi(url->port);
 
-    FMIClient* client = new FMIClient(this,m_pump);
+    FMIClient* client = new FMIClient(m_pump);
+    //client->m_master = this;
     client->connect(url->host,port);
     m_slaves.push_back(client);
 
@@ -68,7 +78,8 @@ FMIClient* Master::connectSlave(std::string uri){
 
     parsed_url_free(url);
 
-    return client;
+    return client;*/
+    return NULL;
 }
 
 void Master::simulate(){
@@ -103,7 +114,6 @@ void Master::simulate(){
     */
 
     m_pump->startEventLoop();
-    tick();
 }
 
 FMIClient * Master::getSlave(int id){
@@ -345,10 +355,12 @@ void Master::setStrongCouplingForces(){
 void Master::getWeakConnectionReals(){
     setState(MASTER_STATE_GET_WEAK_REALS);
 
+    map<FMIClient*, vector<int> > clientWeakRefs = getOutputWeakRefs(m_weakConnections);
+
     for(int i=0; i<m_slaves.size(); i++){
         m_logger.log(fmitcp::Logger::LOG_DEBUG,"Getting weak coupling reals for slave %d...\n", i);
         m_slaves[i]->m_state = FMICLIENT_STATE_WAITING_GET_REAL;
-        std::vector<int> valueRefs;
+        std::vector<int> valueRefs = clientWeakRefs[m_slaves[i]];
         m_slaves[i]->fmi2_import_get_real(0,0,valueRefs);
     }
 }
@@ -356,12 +368,12 @@ void Master::getWeakConnectionReals(){
 void Master::setWeakConnectionReals(){
     setState(MASTER_STATE_SET_WEAK_REALS);
 
+    map<FMIClient*, pair<vector<int>, vector<double> > > refValues = getInputWeakRefsAndValues(m_weakConnections);
+
     for(int i=0; i<m_slaves.size(); i++){
         m_logger.log(fmitcp::Logger::LOG_DEBUG,"Setting weak coupling reals for slave %d...\n", i);
         m_slaves[i]->m_state = FMICLIENT_STATE_WAITING_SET_REAL;
-        std::vector<int> valueRefs;
-        std::vector<double> values;
-        m_slaves[i]->fmi2_import_set_real(0,0,valueRefs,values);
+        m_slaves[i]->fmi2_import_set_real(0, 0, refValues[m_slaves[i]].first, refValues[m_slaves[i]].second);
     }
 }
 
@@ -386,6 +398,7 @@ void Master::setState(MasterState state){
     case MASTER_STATE_GET_WEAK_REALS:                   m_logger.log(fmitcp::Logger::LOG_DEBUG,"=== MASTER_STATE_GET_WEAK_REALS ===\n");                    break;
     case MASTER_STATE_SET_WEAK_REALS:                   m_logger.log(fmitcp::Logger::LOG_DEBUG,"=== MASTER_STATE_SET_WEAK_REALS ===\n");                    break;
     case MASTER_STATE_GET_STRONG_CONNECTOR_STATES:      m_logger.log(fmitcp::Logger::LOG_DEBUG,"=== MASTER_STATE_GET_STRONG_CONNECTOR_STATES ===\n");       break;
+    case MASTER_STATE_GET_OUTPUTS:                      m_logger.log(fmitcp::Logger::LOG_DEBUG,"=== MASTER_STATE_GET_OUTPUTS ===\n");                       break;
     case MASTER_STATE_DONE:                             m_logger.log(fmitcp::Logger::LOG_DEBUG,"=== MASTER_STATE_DONE ===\n");                              break;
 
     default:
@@ -458,7 +471,7 @@ void Master::tick(){
     case MASTER_STATE_START_SIMLOOP:
 
         // All slaves are initialized.
-        if(m_strongConnections.size()){
+        if(m_strongCouplingSolver.getNumConstraints()){
             // There are strong connections. We must now get states.
             getSlaveStates();
 
@@ -561,6 +574,27 @@ void Master::tick(){
 
     case MASTER_STATE_STEPPING_SLAVES:
         if(allClientsHaveState(FMICLIENT_STATE_DONE_DOSTEP)){
+            //get outputs
+            setState(MASTER_STATE_GET_OUTPUTS);
+            for (size_t i = 0; i < m_slaves.size(); i++) {
+                m_slaves[i]->m_state = FMICLIENT_STATE_WAITING_GET_REAL;
+                std::vector<int> valueRefs = m_slaves[i]->getRealOutputValueReferences();
+                m_slaves[i]->fmi2_import_get_real(0,0,valueRefs);
+            }
+        }
+        break;
+
+    case MASTER_STATE_GET_OUTPUTS:
+        if(allClientsHaveState(FMICLIENT_STATE_DONE_GET_REAL)){
+            //print outputs to stdout
+            printf("%f", m_time - m_timeStep);  //-m_timeStep since it already got incremented
+            for (size_t i = 0; i < m_slaves.size(); i++) {
+                for (size_t x = 0; x < m_slaves[i]->m_getRealValues.size(); x++) {
+                    printf(",%f", m_slaves[i]->m_getRealValues[x]);
+                }
+            }
+            printf("\n");
+
             // Next step?
             if((m_endTimeDefined && m_time < m_endTime) || !m_endTimeDefined){
                 //stepSlaves(false);
@@ -579,9 +613,8 @@ void Master::tick(){
     }
 }
 
-void Master::addStrongConnection(StrongConnection* conn){
-    m_strongCouplingSolver.addConstraint(conn->getConstraint());
-    m_strongConnections.push_back(conn);
+void Master::addStrongConnection(sc::Constraint* conn){
+    m_strongCouplingSolver.addConstraint(conn);
 };
 
 void Master::createWeakConnection(FMIClient* slaveA, FMIClient* slaveB, int valueReferenceA, int valueReferenceB){

@@ -9,185 +9,334 @@
 #include "master/Master.h"
 #include "master/FMIClient.h"
 #include "common/common.h"
+#include "master/WeakMasters.h"
+#include "common/url_parser.h"
+#include "master/parseargs.h"
+#include <sc/BallJointConstraint.h>
+#include <sc/LockConstraint.h>
+#include <sc/ShaftConstraint.h>
+#include "master/StrongMaster.h"
+#include <sys/time.h>
+#include <unistd.h>
 
 using namespace fmitcp_master;
+using namespace fmitcp;
+using namespace sc;
 
-void printHelp(){
-    printf("Usage\n\
-\n\
-master [OPTIONS] [FMU_URLS...]\n\
-\n\
-OPTIONS\n\
-\n\
-    --timeStep [NUMBER]\n\
-            Timestep size. Default is 0.1.\n\
-\n\
-    --stopAfter [NUMBER]\n\
-        End simulation time in seconds. Default is 1.0.\n\
-\n\
-    --weakMethod [STRING]\n\
-        Stepping  method for weak coupling connections. Must be \"parallel\" or \"serial\". Default is \"parallel\".\n\
-\n\
-    --weakConnections [STRING]\n\
-        Connection  specification. No connections by default. Quadruples of\n\
-        positive integers, representing which FMU and value reference to connect\n\
-        from and what to connect to. Syntax is\n\
-\n\
-            CONN1:CONN2:CONN3...\n\
-\n\
-        where CONNX is four comma-separated integers FMUFROM,VRFROM,FMUTO,VRTO.\n\
-        An example connection string is\n\
-\n\
-            0,0,1,0:0,1,1,1\n\
-\n\
-        which means: connect FMU0 (value reference 0) to FMU1 (vr 0) and FMU0\n\
-        (vr 1) to FMU1 (vr 1).  Default is no  connections.\n\
-\n\
-    --strongConnections [STRING]\n\
-        TODO\n\
-\n\
-    --help\n\
-        You're looking at it.\n\
-\n\
-FMU_URLS\n\
-\n\
-    Urls to FMU servers, separated by spaces. For example \"tcp://fmiserver.com:1234\".\n\
-\n\
-EXAMPLES\n\
-\n\
-    master --weakConnections 0,0,0,0:0,0,0,0 tcp://localhost:3000\n\n");fflush(NULL);
+static FMIClient* connectSlave(std::string uri, fmitcp::EventPump *pump, int slaveId){
+    struct parsed_url * url = parse_url(uri.c_str());
+
+    if (!url || !url->port || !url->host) {
+        parsed_url_free(url);
+        return NULL;
+    }
+
+    FMIClient* client = new FMIClient(pump, slaveId, url->host, atoi(url->port));
+    parsed_url_free(url);
+
+    return client;
+}
+
+static vector<FMIClient*> setupSlaves(vector<string> fmuURIs, EventPump *pump) {
+    vector<FMIClient*> slaves;
+    int slaveId = 0;
+    for (auto it = fmuURIs.begin(); it != fmuURIs.end(); it++, slaveId++) {
+        // Assume URI to slave
+        FMIClient *slave = connectSlave(*it, pump, slaveId);
+
+        if (!slave) {
+            fprintf(stderr, "Failed to connect slave with URI %s\n", it->c_str());
+            exit(1);
+        }
+
+        slaves.push_back(slave);
+    }
+    return slaves;
+}
+
+static vector<WeakConnection*> setupWeakConnections(vector<connection> connections, vector<FMIClient*> slaves) {
+    vector<WeakConnection*> weakConnections;
+    for (auto it = connections.begin(); it != connections.end(); it++) {
+        if (it->type == fmi2_base_type_real) {
+            printf("Creating weak connection %d %d %d %d\n", it->fromFMU, it->fromOutputVR, it->toFMU, it->toInputVR);
+            weakConnections.push_back(new WeakConnection(slaves[it->fromFMU], slaves[it->toFMU], it->fromOutputVR, it->toInputVR));
+        } else {
+            fprintf(stderr, "Unsupported connection type %i\n", it->type);
+            exit(1);
+        }
+    }
+    return weakConnections;
+}
+
+static void setupConstraintsAndSolver(vector<strongconnection> strongConnections, vector<FMIClient*> slaves, Solver *solver) {
+    for (auto it = strongConnections.begin(); it != strongConnections.end(); it++) {
+        //NOTE: this leaks memory, but I don't really care since it's only setup
+        StrongConnector *scA = slaves[it->fromFMU]->createConnector();
+        StrongConnector *scB = slaves[it->toFMU]->createConnector();
+        Constraint *con;
+        char t = tolower(it->type[0]);
+
+        switch (t) {
+        case 'b':
+        case 'l':
+            if (it->vrs.size() != 38) {
+                fprintf(stderr, "Bad %s specification: need 38 VRs ([XYZpos + XYZacc + XYZforce + Quat + XYZrotAcc + XYZtorque] x 2), got %zu\n",
+                        t == 'b' ? "ball joint" : "lock", it->vrs.size());
+                exit(1);
+            }
+
+            scA->setPositionValueRefs           (it->vrs[0], it->vrs[1], it->vrs[2]);
+            scA->setAccelerationValueRefs       (it->vrs[3], it->vrs[4], it->vrs[5]);
+            scA->setForceValueRefs              (it->vrs[6], it->vrs[7], it->vrs[8]);
+            scA->setQuaternionValueRefs         (it->vrs[9], it->vrs[10],it->vrs[11],it->vrs[12]);
+            scA->setAngularAccelerationValueRefs(it->vrs[13],it->vrs[14],it->vrs[15]);
+            scA->setTorqueValueRefs             (it->vrs[16],it->vrs[17],it->vrs[18]);
+
+            scB->setPositionValueRefs           (it->vrs[19],it->vrs[20],it->vrs[21]);
+            scB->setAccelerationValueRefs       (it->vrs[22],it->vrs[23],it->vrs[24]);
+            scB->setForceValueRefs              (it->vrs[25],it->vrs[26],it->vrs[27]);
+            scB->setQuaternionValueRefs         (it->vrs[28],it->vrs[29],it->vrs[30],it->vrs[31]);
+            scB->setAngularAccelerationValueRefs(it->vrs[32],it->vrs[33],it->vrs[34]);
+            scB->setTorqueValueRefs             (it->vrs[35],it->vrs[36],it->vrs[37]);
+
+            con = t == 'b' ? new BallJointConstraint(scA, scB, Vec3(), Vec3())
+                           : new LockConstraint(scA, scB, Vec3(), Vec3(), Quat(), Quat());
+
+            break;
+        case 's':
+        {
+            if (it->vrs.size() != 7) {
+                fprintf(stderr, "Bad shaft specification: need axis (0 = X, 1 = Y, 2 = Z) and 6 VRs ([shaft angle + angular acceleration + torque] x 2)\n");
+                exit(1);
+            }
+
+            int axis = it->vrs[0];
+
+            if (axis < 0 || axis > 2) {
+                fprintf(stderr, "Bad axis: %i\n", axis);
+                exit(1);
+            }
+
+            scA->setShaftAngleValueRef(it->vrs[1]);
+            scA->setAngularAccelerationValueRefs(axis == 0 ? it->vrs[2] : -1, axis == 1 ? it->vrs[2] : -1, axis == 2 ? it->vrs[2] : -1);
+            scA->setTorqueValueRefs             (axis == 0 ? it->vrs[3] : -1, axis == 1 ? it->vrs[3] : -1, axis == 2 ? it->vrs[3] : -1);
+
+            scB->setShaftAngleValueRef(it->vrs[4]);
+            scB->setAngularAccelerationValueRefs(axis == 0 ? it->vrs[5] : -1, axis == 1 ? it->vrs[5] : -1, axis == 2 ? it->vrs[5] : -1);
+            scB->setTorqueValueRefs             (axis == 0 ? it->vrs[6] : -1, axis == 1 ? it->vrs[6] : -1, axis == 2 ? it->vrs[6] : -1);
+
+            con = new ShaftConstraint(scA, scB, axis);
+            break;
+        }
+        default:
+            fprintf(stderr, "Unknown strong connector type: %s\n", it->type.c_str());
+            exit(1);
+        }
+
+        solver->addConstraint(con);
+    }
+
+    for (auto it = slaves.begin(); it != slaves.end(); it++) {
+        solver->addSlave(*it);
+   }
+}
+
+static void cleanUp(BaseMaster *master, vector<FMIClient*> slaves, vector<WeakConnection*> weakConnections) {
+    //clean up
+    delete master;
+
+    for (size_t x = 0; x < slaves.size(); x++) {
+        delete slaves[x];
+    }
+
+    for (size_t x = 0; x < weakConnections.size(); x++) {
+        delete weakConnections[x];
+    }
+}
+
+static void sendUserParams(BaseMaster *master, vector<FMIClient*> slaves, map<pair<int,fmi2_base_type_enu_t>, vector<param> > params) {
+    for (auto it = params.begin(); it != params.end(); it++) {
+        FMIClient *client = slaves[it->first.first];
+        vector<int> vrs;
+        for (auto it2 = it->second.begin(); it2 != it->second.end(); it2++) {
+            vrs.push_back(it2->valueReference);
+        }
+
+        switch (it->first.second) {
+        case fmi2_base_type_real: {
+            vector<double> values;
+            for (auto it2 = it->second.begin(); it2 != it->second.end(); it2++) {
+                values.push_back(it2->realValue);
+            }
+            master->send(client, &FMIClient::fmi2_import_set_real, 0, 0, vrs, values);
+            break;
+        }
+        case fmi2_base_type_enum:
+        case fmi2_base_type_int: {
+            vector<int> values;
+            for (auto it2 = it->second.begin(); it2 != it->second.end(); it2++) {
+                values.push_back(it2->intValue);
+            }
+            master->send(client, &FMIClient::fmi2_import_set_integer, 0, 0, vrs, values);
+            break;
+        }
+        case fmi2_base_type_bool: {
+            vector<bool> values;
+            for (auto it2 = it->second.begin(); it2 != it->second.end(); it2++) {
+                values.push_back(it2->boolValue);
+            }
+            master->send(client, &FMIClient::fmi2_import_set_boolean, 0, 0, vrs, values);
+            break;
+        }
+        case fmi2_base_type_str: {
+            vector<string> values;
+            for (auto it2 = it->second.begin(); it2 != it->second.end(); it2++) {
+                values.push_back(it2->stringValue);
+            }
+            master->send(client, &FMIClient::fmi2_import_set_string, 0, 0, vrs, values);
+            break;
+        }
+        }
+    }
 }
 
 int main(int argc, char *argv[] ) {
-
-    printf("FMI Master %s\n",FMITCPMASTER_VERSION);fflush(NULL);
-
     fmitcp::Logger logger;
     fmitcp::EventPump pump;
-    Master master(logger,&pump);
-    master.setTimeStep(0.1);
-    master.setEnableEndTime(false);
-    master.setWeakMethod(PARALLEL);
+    double timeStep = 0.1;
+    double startTime = 0;
+    double endTime = 10;
+    double relativeTolerance = 0.0001;
+    double relaxation = 3,
+           compliance = 0.001;
+    vector<string> fmuURIs;
+    vector<connection> connections;
+    map<pair<int,fmi2_base_type_enu_t>, vector<param> > params;
+    int loggingOn = 0;
+    char csv_separator = ',';
+    string outFilePath = DEFAULT_OUTFILE;
+    int quietMode = 0;
+    FILEFORMAT fileFormat = csv;
+    METHOD method = jacobi;
+    int realtimeMode = 0;
+    int printXML = 0;
+    vector<int> stepOrder;
+    vector<int> fmuVisibilities;
+    vector<strongconnection> scs;
+    Solver solver;
 
-    const char* connectionsArg;
-    int i, j;
+    if (parseArguments(
+            argc, argv, &fmuURIs, &connections, &params, &endTime, &timeStep,
+            &loggingOn, &csv_separator, &outFilePath, &quietMode, &fileFormat,
+            &method, &realtimeMode, &printXML, &stepOrder, &fmuVisibilities,
+            &scs)) {
+        return 1;
+    }
 
-    // Connections
-    vector<int> strong_slaveA;
-    vector<int> strong_slaveB;
-    vector<int> strong_connA;
-    vector<int> strong_connB;
+    if (printXML) {
+        fprintf(stderr, "XML mode not implemented\n");
+        return 1;
+    }
 
-    vector<int> weak_slaveA;
-    vector<int> weak_slaveB;
-    vector<int> weak_connA;
-    vector<int> weak_connB;
+    vector<FMIClient*> slaves = setupSlaves(fmuURIs, &pump);
+    vector<WeakConnection*> weakConnections = setupWeakConnections(connections, slaves);
+    setupConstraintsAndSolver(scs, slaves, &solver);
 
-    vector<FMIClient*> slaves;
+    BaseMaster *master;
 
-    for (j = 1; j < argc; j++) {
-        std::string arg = argv[j];
-        bool last = (j == argc-1);
-
-        if (arg == "-h" || arg == "--help") {
-            printHelp();
-            return EXIT_SUCCESS;
-
-        } else if (arg == "--timeStep" && !last) {
-            std::string nextArg = argv[j+1];
-            double timeStepSize = ::atof(nextArg.c_str());
-            j++;
-
-            if(timeStepSize <= 0){
-                fprintf(stderr,"Invalid timeStepSize.");
-                return EXIT_FAILURE;
-            }
-
-            master.setTimeStep(timeStepSize);
-
-        } else if (arg == "--version") {
-            printf("%s\n",FMITCPMASTER_VERSION);
-            return EXIT_SUCCESS;
-
-        } else if ((arg == "-t" || arg == "--stopAfter") && !last) {
-            std::string nextArg = argv[j+1];
-            double endTime = ::atof(nextArg.c_str());
-            j++;
-
-            if (endTime <= 0) {
-                fprintf(stderr,"Invalid end time.");
-                return EXIT_FAILURE;
-            }
-
-            master.setEnableEndTime(true);
-            master.setEndTime(endTime);
-
-        } else if ((arg == "-wm" || arg == "--weakMethod") && !last) {
-            std::string nextArg = argv[j+1];
-            j++;
-
-            if (nextArg == "parallel") {
-                master.setWeakMethod(PARALLEL);
-
-            } else if (nextArg == "serial") {
-                master.setWeakMethod(SERIAL);
-
-            } else {
-                fprintf(stderr,"Weak coupling method not recognized.\n");
-                return EXIT_FAILURE;
-
-            }
-
-        } else if ((arg == "-wc" || arg == "--weakConnections") && !last) {
-            std::string nextArg = argv[j+1];
-            j++;
-
-            // Get connections
-            vector<string> conns = split(nextArg,':');
-            for(i=0; i<conns.size(); i++){
-                vector<string> quad = split(conns[i],',');
-                weak_slaveA.push_back(string_to_int(quad[0]));
-                weak_slaveB.push_back(string_to_int(quad[1]));
-                weak_connA .push_back(string_to_int(quad[2]));
-                weak_connB .push_back(string_to_int(quad[3]));
-            }
-
-        } else if ((arg == "-sc" || arg == "--strongConnections") && !last) {
-            std::string nextArg = argv[j+1];
-            j++;
-
-            // Get connections
-            vector<string> conns = split(nextArg,':');
-            for(i=0; i<conns.size(); i++){
-                vector<string> quad = split(conns[i],',');
-                strong_slaveA.push_back(string_to_int(quad[0]));
-                strong_slaveB.push_back(string_to_int(quad[1]));
-                strong_connA .push_back(string_to_int(quad[2]));
-                strong_connB .push_back(string_to_int(quad[3]));
-            }
-
-        } else if (arg ==  "--debug") {
-            // debugFlag = 1;
-            // Todo: set flag in logger
-
-        } else {
-            // Assume URI to slave
-            slaves.push_back(master.connectSlave(arg));
+    if (scs.size()) {
+        if (method != jacobi) {
+            fprintf(stderr, "Can only do Jacobi stepping for weak connections when also doing strong coupling\n");
+            return 1;
         }
+
+        solver.setSpookParams(relaxation,compliance,timeStep);
+        master = new StrongMaster(&pump, slaves, weakConnections, solver);
+    } else {
+        master = (method == gs) ?           (BaseMaster*)new GaussSeidelMaster(&pump, slaves, weakConnections) :
+                                            (BaseMaster*)new JacobiMaster(&pump, slaves, weakConnections);
     }
 
-    // Set connections
-    // TODO : How should these connections be specified via command line???
-    //for(i=0; i<strong_slaveA.size(); i++)
-    //    master.createStrongConnection(slaves[strong_slaveA[i]], slaves[strong_slaveB[i]], strong_connA[i], strong_connB[i]);
-
-    // Weak coupling
-    for(i=0; i<weak_slaveA.size(); i++){
-        printf("Creating weak connection %d %d %d %d\n",weak_slaveA[i],weak_slaveB[i],weak_connA[i],weak_connB[i]); fflush(NULL);
-        master.createWeakConnection(slaves[weak_slaveA[i]], slaves[weak_slaveB[i]], weak_connA[i], weak_connB[i]);
+    //hook clients to master
+    for (auto it = slaves.begin(); it != slaves.end(); it++) {
+        (*it)->m_master = master;
     }
 
-    master.simulate();
+    //init
+    master->send(slaves, &FMIClient::connect);
+    master->send(slaves, &FMIClient::getXml, 0, 0);
+
+    for (size_t x = 0; x < slaves.size(); x++) {
+        //set visibility based on command line
+        master->send(slaves[x], &FMIClient::fmi2_import_instantiate2, 0, x < fmuVisibilities.size() ? fmuVisibilities[x] : false);
+    }
+
+    //TODO: send initial values parsed from XML
+
+    //send user-defined parameters
+    sendUserParams(master, slaves, params);
+
+    master->block(slaves, &FMIClient::fmi2_import_initialize_slave, 0, 0, true, relativeTolerance, startTime, endTime >= 0, endTime);
+
+    double t = startTime;
+    timeval t1;
+    gettimeofday(&t1, NULL);
+
+    //run
+    while (endTime < 0 || t < endTime) {
+        if (realtimeMode) {
+            double t_wall;
+
+            //delay loop
+            for (;;) {
+                timeval t2;
+                gettimeofday(&t2, NULL);
+
+                t_wall = ((double)t2.tv_sec - t1.tv_sec) + 1.0e-6 * ((double)t2.tv_usec - t1.tv_usec);
+                int us = 1000000 * (t - t_wall);
+
+                if (us <= 0)
+                    break;
+
+                usleep(us);
+            }
+
+            if (t_wall > t + 1) {
+                //print slowdown factor if we start running behind wall clock
+                fprintf(stderr, "t=%.3f, t_wall = %.3f (slowdown = realtime / %.2f)\n", t, t_wall, t_wall / t);
+            } else {
+                fprintf(stderr, "t=%.3f, t_wall = %.3f\n", t, t_wall);
+            }
+        } else {
+            fprintf(stderr, "t=%.3f\n", t);
+        }
+
+        //get outputs
+        for (auto it = slaves.begin(); it != slaves.end(); it++) {
+            master->send(*it, &FMIClient::fmi2_import_get_real, 0, 0, (*it)->getRealOutputValueReferences());
+        }
+
+        master->wait();
+
+        //print as CSV
+        printf("%f", t);
+        for (auto it = slaves.begin(); it != slaves.end(); it++) {
+            for (auto it2 = (*it)->m_getRealValues.begin(); it2 != (*it)->m_getRealValues.end(); it2++) {
+                printf("%c%f", csv_separator, *it2);
+            }
+        }
+
+#ifdef ENABLE_DEMO_HACKS
+        //TESTING: send params every frame
+        sendUserParams(master, slaves, params);
+#endif
+
+        master->runIteration(t, timeStep);
+        printf("\n");
+        t += timeStep;
+    }
+
+    cleanUp(master, slaves, weakConnections);
 
     return 0;
 }

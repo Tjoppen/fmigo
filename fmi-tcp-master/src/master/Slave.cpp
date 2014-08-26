@@ -13,14 +13,6 @@ Slave::~Slave(){
 
 }
 
-void Slave::sendCommand(char* data, size_t size){
-  //debugPrint(debugFlag, stderr, "--> %d: %.*s\n", index, size, data);fflush(NULL);
-  char cmd[size+1];
-  strcpy(cmd, data);
-  strcat(cmd, "\n");
-  lw_stream_write(m_client, cmd, size+1);
-}
-
 void Slave::doStep(){
 
 }

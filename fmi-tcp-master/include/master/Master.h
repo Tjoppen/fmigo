@@ -9,13 +9,11 @@
 #include <fmitcp/Logger.h>
 #include <sc/Solver.h>
 
-#include "master/StrongConnection.h"
 #include "master/WeakConnection.h"
 
 namespace fmitcp_master {
 
     class FMIClient;
-    enum FMIClientState;
 
     enum WeakCouplingAlgorithm {
         SERIAL,
@@ -72,6 +70,7 @@ namespace fmitcp_master {
         MASTER_STATE_GET_WEAK_REALS,
         MASTER_STATE_SET_WEAK_REALS,
         MASTER_STATE_GET_STRONG_CONNECTOR_STATES,
+        MASTER_STATE_GET_OUTPUTS,
         MASTER_STATE_DONE
     };
 
@@ -85,9 +84,6 @@ namespace fmitcp_master {
 
         /// All weak connections defined
         std::vector<WeakConnection*> m_weakConnections;
-
-        /// All strong connections
-        std::vector<StrongConnection*> m_strongConnections;
 
         /// All connected slaves
         std::vector<FMIClient*> m_slaves;
@@ -171,7 +167,7 @@ namespace fmitcp_master {
         void setWeakMethod(WeakCouplingAlgorithm algorithm);
 
         /// Create strong connection
-        void addStrongConnection(StrongConnection* conn);
+        void addStrongConnection(sc::Constraint* conn);
 
         /// Create weak connection between the slaves
         void createWeakConnection(FMIClient* slaveA, FMIClient* slaveB, int valueReferenceA, int valueReferenceB);

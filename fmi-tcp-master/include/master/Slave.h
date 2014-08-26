@@ -38,7 +38,6 @@ namespace fmitcp_master {
         SlaveState m_state;
         lw_client m_client;
         int m_id;
-        void sendCommand(char* data, size_t size);
     };
 };
 

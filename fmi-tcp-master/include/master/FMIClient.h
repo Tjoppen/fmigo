@@ -7,10 +7,11 @@
 #include <sc/Slave.h>
 #include <string>
 #include "master/StrongConnector.h"
+#include <deque>
 
 namespace fmitcp_master {
 
-    class Master;
+    class BaseMaster;
 
     /// Current state of the FMI Client
     enum FMIClientState {
@@ -40,15 +41,14 @@ namespace fmitcp_master {
     };
 
     /// Adds high-level FMI methods to the Client, similar to FMILibrary functions.
-    class FMIClient : public fmitcp::Client {
+    class FMIClient : public fmitcp::Client, public sc::Slave {
 
     private:
         int m_id;
-        Master * m_master;
-        string m_xml;
+        string m_host;
+        long m_port;
+        std::string m_xml;
         bool m_initialized;
-        std::vector<StrongConnector*> m_strongConnectors;
-        sc::Slave m_strongCouplingSlave;
 
         // variables for modelDescription.xml
         jm_callbacks m_jmCallbacks;
@@ -56,7 +56,7 @@ namespace fmitcp_master {
         fmi_import_context_t* m_context;
         // FMI 2.0
         fmi2_import_t* m_fmi2Instance;
-        fmi2_import_variable_list_t* m_fmi2Variables;
+        fmi2_import_variable_list_t* m_fmi2Outputs;
 
         // For accumulating getDirectionalDerivative requests
         std::vector< std::vector<int> > m_dd_v_refs;
@@ -64,6 +64,7 @@ namespace fmitcp_master {
         std::vector< std::vector<double> > m_dd_dvs;
 
     public:
+        BaseMaster * m_master;
 
         /// Current state of the client
         FMIClientState m_state;
@@ -76,19 +77,22 @@ namespace fmitcp_master {
         /// Last fetched result from getReal
         std::vector<double> m_getRealValues;
 
+        /// Values returned from calls to fmiGetDirectionalDerivative()
+        std::deque<std::vector<double> > m_getDirectionalDerivativeValues;
+
         /// Create a new client for the Master, driven by the given eventpump.
-        FMIClient(Master* master, fmitcp::EventPump* pump);
+        FMIClient(fmitcp::EventPump* pump, int id, std::string host, long port);
         virtual ~FMIClient();
 
         int getId();
-        void setId(int id);
+
+        void connect(void);
 
         FMIClientState getState();
         bool isInitialized();
 
         /// Create a strong coupling connector for this client
         StrongConnector* createConnector();
-        int getNumConnectors();
 
         /// Get a connector. See getNumConnectors().
         StrongConnector* getConnector(int i);
@@ -110,6 +114,8 @@ namespace fmitcp_master {
 
         /// Get "result" value references, this is velocities
         std::vector<int> getStrongSeedOutputValueReferences();
+
+        std::vector<int> getRealOutputValueReferences();
 
         void setConnectorValues          (std::vector<int> valueRefs, std::vector<double> values);
         void setConnectorFutureVelocities(std::vector<int> valueRefs, std::vector<double> values);

@@ -5,6 +5,8 @@ INCLUDE(FindProtobuf)
 FIND_PACKAGE(Protobuf REQUIRED)
 FIND_PACKAGE(Threads REQUIRED)
 
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+
 INCLUDE_DIRECTORIES(${FMIL_INCLUDE_DIR} ${STRONG_COUPLING_INCLUDE_DIR} ${FMITCP_INCLUDE_DIR} ${LACEWING_INCLUDE_DIR} ${PROTOBUF_INCLUDE_DIR} include)
 LINK_DIRECTORIES   (${FMIL_LIBS_DIR}    ${STRONG_COUPLING_LIBS_DIR}    ${FMITCP_LIBS_DIR}    ${LACEWING_LIBS_DIR}    ${PROTOBUF_LIBRARY})
 
@@ -14,16 +16,17 @@ SET(MASTER_SRCS
     src/master/main.cpp
     src/master/Master.cpp
     src/master/FMIClient.cpp
-    src/master/StrongConnection.cpp
     src/master/WeakConnection.cpp
     src/common/url_parser.c
     src/common/common.cpp
+    src/master/BaseMaster.cpp
+    src/master/parseargs.cpp
+    src/master/StrongMaster.cpp
 )
 SET(MASTER_HEADERS
     include/master/Connection.h
     include/master/Master.h
     include/master/FMIClient.h
-    include/master/StrongConnection.h
     include/master/StrongConnector.h
     include/master/WeakConnection.h
     include/common/common.h
@@ -35,7 +38,6 @@ SET(TEST_SRCS
     src/master/Connection.cpp
     src/master/Master.cpp
     src/master/FMIClient.cpp
-    src/master/StrongConnection.cpp
     src/master/StrongConnector.cpp
     src/master/WeakConnection.cpp
     src/common/url_parser.c
@@ -45,7 +47,6 @@ SET(TEST_HEADERS
     include/master/Connection.h
     include/master/Master.h
     include/master/FMIClient.h
-    include/master/StrongConnection.h
     include/master/StrongConnector.h
     include/master/WeakConnection.h
     include/common/common.h
@@ -60,8 +61,8 @@ SET(SLAVE_HEADERS
 
 SET(EXECUTABLE_OUTPUT_PATH "${CMAKE_CURRENT_LIST_DIR}/bin")
 
-ADD_EXECUTABLE(master ${MASTER_HEADERS} ${MASTER_SRCS})
-ADD_EXECUTABLE(slave  ${SLAVE_HEADERS}  ${SLAVE_SRCS})
+ADD_EXECUTABLE(fmi-tcp-master ${MASTER_HEADERS} ${MASTER_SRCS})
+ADD_EXECUTABLE(fmi-tcp-slave  ${SLAVE_HEADERS}  ${SLAVE_SRCS})
 ADD_EXECUTABLE(test   ${TEST_HEADERS}   ${TEST_SRCS})
 
 IF(WIN32)
@@ -80,8 +81,8 @@ IF(WIN32)
         ${Boost_SYSTEM_LIBRARY}
         protobuf
         ${CMAKE_THREAD_LIBS_INIT})
-    TARGET_LINK_LIBRARIES(master ${WINLIBS})
-    TARGET_LINK_LIBRARIES(slave  ${WINLIBS})
+    TARGET_LINK_LIBRARIES(fmi-tcp-master ${WINLIBS})
+    TARGET_LINK_LIBRARIES(fmi-tcp-slave  ${WINLIBS})
     TARGET_LINK_LIBRARIES(test   ${WINLIBS})
 ELSE(WIN32)
     SET(LINUXLIBS
@@ -89,15 +90,17 @@ ELSE(WIN32)
         fmilib
         lacewing
         dl
-        sc m umfpack amd cblas atlas # For strong coupling
+        sc m umfpack amd blas atlas cholmod colamd suitesparseconfig # For strong coupling
         ${Boost_FILESYSTEM_LIBRARY}
         ${Boost_SYSTEM_LIBRARY}
         ${PROTOBUF_LIBRARY}
         ${CMAKE_THREAD_LIBS_INIT})
-    TARGET_LINK_LIBRARIES(master ${LINUXLIBS})
-    TARGET_LINK_LIBRARIES(slave  ${LINUXLIBS})
+    TARGET_LINK_LIBRARIES(fmi-tcp-master ${LINUXLIBS})
+    TARGET_LINK_LIBRARIES(fmi-tcp-slave  ${LINUXLIBS})
     TARGET_LINK_LIBRARIES(test   ${LINUXLIBS})
 ENDIF(WIN32)
+
+INSTALL(TARGETS fmi-tcp-master fmi-tcp-slave DESTINATION bin)
 
 SET(FMU_SRCS
   fmu/fmu_interface.c

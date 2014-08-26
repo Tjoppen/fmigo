@@ -2,7 +2,7 @@
 #include <fmitcp/Client.h>
 #include <fmitcp/Logger.h>
 
-#include "master/Master.h"
+#include "master/BaseMaster.h"
 #include "common/common.h"
 #include "master/FMIClient.h"
 
@@ -15,15 +15,18 @@ void jmCallbacksLoggerClient(jm_callbacks* c, jm_string module, jm_log_level_enu
   printf("[module = %s][log level = %s] %s\n", module, jm_log_level_to_string(log_level), message);fflush(NULL);
 }
 
-FMIClient::FMIClient(Master* master, fmitcp::EventPump* pump) : fmitcp::Client(pump) {
-    m_master = master;
+FMIClient::FMIClient(fmitcp::EventPump* pump, int id, string host, long port) : fmitcp::Client(pump), sc::Slave() {
+    m_id = id;
+    m_host = host;
+    m_port = port;
+    m_master = NULL;
     m_initialized = false;
     m_state = FMICLIENT_STATE_START;
     m_isInstantiated = false;
     m_numDirectionalDerivativesLeft = 0;
     m_fmi2Instance = NULL;
     m_context = NULL;
-    m_fmi2Variables = NULL;
+    m_fmi2Outputs = NULL;
 };
 
 FMIClient::~FMIClient() {
@@ -31,8 +34,12 @@ FMIClient::~FMIClient() {
   if(m_fmi2Instance!=NULL)  fmi2_import_free(m_fmi2Instance);
   if(m_context!=NULL)       fmi_import_free_context(m_context);
   fmi_import_rmdir(&m_jmCallbacks, m_workingDir.c_str());
-  if(m_fmi2Variables!=NULL) free(m_fmi2Variables);
+  if(m_fmi2Outputs!=NULL)   fmi2_import_free_variable_list(m_fmi2Outputs);
 };
+
+void FMIClient::connect(void) {
+    Client::connect(m_host, m_port);
+}
 
 /// Accumulate a get_directional_derivative request
 void FMIClient::pushDirectionalDerivativeRequest(int fmiId, std::vector<int> v_ref, std::vector<int> z_ref, std::vector<double> dv){
@@ -76,10 +83,6 @@ int FMIClient::getId(){
     return m_id;
 };
 
-void FMIClient::setId(int id){
-    m_id = id;
-};
-
 FMIClientState FMIClient::getState(){
     return m_state;
 };
@@ -102,7 +105,6 @@ void FMIClient::onGetXmlRes(int mid, fmitcp_proto::jm_log_level_enu_t logLevel, 
   // working directory
   char* dir = fmi_import_mk_temp_dir(&m_jmCallbacks, NULL, "fmitcp_master_");
   m_workingDir = dir; // convert to std::string
-  free(dir);
   // save the xml as a file i.e modelDescription.xml
   ofstream xmlFile (m_workingDir.append("/modelDescription.xml").c_str());
   xmlFile << m_xml;
@@ -110,14 +112,10 @@ void FMIClient::onGetXmlRes(int mid, fmitcp_proto::jm_log_level_enu_t logLevel, 
   // import allocate context
   m_context = fmi_import_allocate_context(&m_jmCallbacks);
   // parse the xml file
-  m_fmi2Instance = fmi2_import_parse_xml(m_context, m_workingDir.c_str(), 0);
+  m_fmi2Instance = fmi2_import_parse_xml(m_context, dir, 0);
+  free(dir);
   if (m_fmi2Instance) {
-    /* 0 - original order as found in the XML file;
-     * 1 - sorted alphabetically by variable name;
-     * 2 sorted by types/value references.
-     */
-    int sortOrder = 0;
-    m_fmi2Variables = fmi2_import_get_variable_list(m_fmi2Instance, sortOrder);
+    m_fmi2Outputs = fmi2_import_get_outputs_list(m_fmi2Instance);
   } else {
     m_logger.log(fmitcp::Logger::LOG_ERROR, "Error parsing the modelDescription.xml file contained in %s\n", m_workingDir.c_str());
   }
@@ -176,6 +174,12 @@ void FMIClient::on_fmi2_import_free_fmu_state_res(int mid, fmitcp_proto::fmi2_st
 };
 
 void FMIClient::on_fmi2_import_get_directional_derivative_res(int mid, const vector<double>& dz, fmitcp_proto::fmi2_status_t status){
+    /*for (size_t x = 0; x < dz.size(); x++) {
+        fprintf(stderr, "%f ", dz[x]);
+    }
+    fprintf(stderr, "\n");*/
+
+    m_getDirectionalDerivativeValues.push_back(dz);
     m_master->onSlaveDirectionalDerivative(this);
 }
 
@@ -215,60 +219,57 @@ void FMIClient::on_fmi2_import_get_directional_derivative_res(int mid, const vec
 
 StrongConnector * FMIClient::createConnector(){
     StrongConnector * conn = new StrongConnector(this);
-    m_strongConnectors.push_back(conn);
+    addConnector(conn);
     return conn;
 };
 
-int FMIClient::getNumConnectors(){
-    return m_strongConnectors.size();
-}
-
 StrongConnector* FMIClient::getConnector(int i){
-    return m_strongConnectors[i];
+    return (StrongConnector*) Slave::getConnector(i);
 };
 
 void FMIClient::setConnectorValues(std::vector<int> valueRefs, std::vector<double> values){
-    for(int i=0; i<getNumConnectors(); i++)
+    for(int i=0; i<numConnectors(); i++)
         getConnector(i)->setValues(valueRefs,values);
 };
 
 void FMIClient::setConnectorFutureVelocities(std::vector<int> valueRefs, std::vector<double> values){
-    for(int i=0; i<getNumConnectors(); i++)
+    for(int i=0; i<numConnectors(); i++)
         getConnector(i)->setFutureValues(valueRefs,values);
 };
 
 std::vector<int> FMIClient::getStrongConnectorValueReferences(){
     std::vector<int> valueRefs;
 
-    for(int i=0; i<getNumConnectors(); i++){
+    for(int i=0; i<numConnectors(); i++){
         StrongConnector* c = getConnector(i);
 
         // Do we need position?
         if(c->hasPosition()){
             std::vector<int> refs = c->getPositionValueRefs();
-            for(int k=0; k<refs.size(); k++)
-                valueRefs.push_back(refs[k]);
+            valueRefs.insert(valueRefs.end(), refs.begin(), refs.end());
         }
 
         // Do we need quaternion?
         if(c->hasQuaternion()){
             std::vector<int> refs = c->getQuaternionValueRefs();
-            for(int k=0; k<refs.size(); k++)
-                valueRefs.push_back(refs[k]);
+            valueRefs.insert(valueRefs.end(), refs.begin(), refs.end());
+        }
+
+        if (c->hasShaftAngle()) {
+            std::vector<int> refs = c->getShaftAngleValueRefs();
+            valueRefs.insert(valueRefs.end(), refs.begin(), refs.end());
         }
 
         // Do we need velocity?
         if(c->hasVelocity()){
             std::vector<int> refs = c->getVelocityValueRefs();
-            for(int k=0; k<refs.size(); k++)
-                valueRefs.push_back(refs[k]);
+            valueRefs.insert(valueRefs.end(), refs.begin(), refs.end());
         }
 
         // Do we need angular velocity?
         if(c->hasAngularVelocity()){
             std::vector<int> refs = c->getAngularVelocityValueRefs();
-            for(int k=0; k<refs.size(); k++)
-                valueRefs.push_back(refs[k]);
+            valueRefs.insert(valueRefs.end(), refs.begin(), refs.end());
         }
     }
 
@@ -276,77 +277,18 @@ std::vector<int> FMIClient::getStrongConnectorValueReferences(){
 };
 
 std::vector<int> FMIClient::getStrongSeedInputValueReferences(){
-    std::vector<int> valueRefs;
-
-    for(int i=0; i<getNumConnectors(); i++){
-        StrongConnector* c = getConnector(i);
-
-        // Do we need position?
-        if(c->hasPosition()){
-            std::vector<int> refs = c->getPositionValueRefs();
-            for(int k=0; k<refs.size(); k++)
-                valueRefs.push_back(refs[k]);
-        }
-
-        // Do we need quaternion?
-        if(c->hasQuaternion()){
-            std::vector<int> refs = c->getQuaternionValueRefs();
-            for(int k=0; k<refs.size(); k++)
-                valueRefs.push_back(refs[k]);
-        }
-
-        // Do we need velocity?
-        if(c->hasVelocity()){
-            std::vector<int> refs = c->getVelocityValueRefs();
-            for(int k=0; k<refs.size(); k++)
-                valueRefs.push_back(refs[k]);
-        }
-
-        // Do we need angular velocity?
-        if(c->hasAngularVelocity()){
-            std::vector<int> refs = c->getAngularVelocityValueRefs();
-            for(int k=0; k<refs.size(); k++)
-                valueRefs.push_back(refs[k]);
-        }
-    }
-
-    return valueRefs;
+    //this used to be just a copy-paste of getStrongConnectorValueReferences() - better to just call the function itself directly
+    return getStrongConnectorValueReferences();
 };
 
 std::vector<int> FMIClient::getStrongSeedOutputValueReferences(){
-    std::vector<int> valueRefs;
-
-    for(int i=0; i<getNumConnectors(); i++){
-        StrongConnector* c = getConnector(i);
-
-        // Do we need position?
-        if(c->hasPosition()){
-            std::vector<int> refs = c->getPositionValueRefs();
-            for(int k=0; k<refs.size(); k++)
-                valueRefs.push_back(refs[k]);
-        }
-
-        // Do we need quaternion?
-        if(c->hasQuaternion()){
-            std::vector<int> refs = c->getQuaternionValueRefs();
-            for(int k=0; k<refs.size(); k++)
-                valueRefs.push_back(refs[k]);
-        }
-
-        // Do we need velocity?
-        if(c->hasVelocity()){
-            std::vector<int> refs = c->getVelocityValueRefs();
-            for(int k=0; k<refs.size(); k++)
-                valueRefs.push_back(refs[k]);
-        }
-
-        // Do we need angular velocity?
-        if(c->hasAngularVelocity()){
-            std::vector<int> refs = c->getAngularVelocityValueRefs();
-            for(int k=0; k<refs.size(); k++)
-                valueRefs.push_back(refs[k]);
-        }
-    }
-
-    return valueRefs;
+    //same here - just a copy-paste job
+    return getStrongConnectorValueReferences();
 };
+
+std::vector<int> FMIClient::getRealOutputValueReferences() {
+    const fmi2_value_reference_t *vrs = fmi2_import_get_value_referece_list(m_fmi2Outputs);
+    size_t n = fmi2_import_get_variable_list_size(m_fmi2Outputs);
+
+    return std::vector<int>(vrs, vrs + n);
+}

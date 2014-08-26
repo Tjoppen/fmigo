@@ -3,15 +3,55 @@
 #include <string>
 
 void fmitcp::sendProtoBuffer(lw_client c, fmitcp_proto::fmitcp_message * message){
-    std::string s;
-    bool status = message->SerializeToString(&s);
-    //printf("serialize status=%d\n", status);
-    lw_stream_write(c, s.c_str(), s.size());
-    //std::string newline = "\n";
-    //lw_stream_write(c, newline.c_str(),newline.size());
-    //fflush(NULL);
-    //
-    printf("sendProtoBuffer(%s)\n", message->DebugString().c_str());
+    std::string s = message->SerializeAsString();
+
+    char sz[4] = {
+        //big endian network order is customary
+        s.size() >> 24,
+        s.size() >> 16,
+        s.size() >> 8,
+        s.size(),
+    };
+
+    //fprintf(stderr, "> sz: %02x,%02x,%02x,%02x (%zu)\n", (unsigned char)sz[0], (unsigned char)sz[1], (unsigned char)sz[2], (unsigned char)sz[3], s.size());
+
+    //send everything in one call to lessen impact of lack of Nagle's
+    string total = string(sz, 4) + s;
+    lw_stream_write(c, total.c_str(), total.size());
+
+    //printf("sendProtoBuffer(%s)\n", message->DebugString().c_str());
+}
+
+vector<string> fmitcp::unpackBuffer(const char* indata, long insize, string *tail) {
+    vector<string> messages;
+
+    string temp = *tail + string(indata, insize);
+    const char *data = temp.c_str();
+    long size = temp.size();
+    long ofs = 0;
+
+    for (; ofs < size - 4;) {
+        //big endian (network order)
+        size_t sz = (((unsigned char)data[ofs+0]) << 24) +
+                    (((unsigned char)data[ofs+1]) << 16) +
+                    (((unsigned char)data[ofs+2]) << 8) +
+                     ((unsigned char)data[ofs+3]);
+
+        //fprintf(stderr, "< sz: %02x,%02x,%02x,%02x (%zu) %s\n", (unsigned char)data[ofs+0], (unsigned char)data[ofs+1], (unsigned char)data[ofs+2], (unsigned char)data[ofs+3], sz, data+ofs);
+
+        if (ofs + 4 + sz > size) {
+            break;
+        }
+
+        ofs += 4;
+        messages.push_back(string(data + ofs, sz));
+        ofs += sz;
+    }
+
+    //give remaining bytes, if any
+    *tail = string(data + ofs, size - ofs);
+
+    return messages;
 }
 
 string fmitcp::dataToString(const char* data, long size) {

@@ -22,6 +22,7 @@ namespace fmitcp {
     lw_server m_server;
     bool m_sendDummyResponses;
     bool m_fmuParsed;
+    std::string tail;   //leftover data from last clientData() call
 
   protected:
     EventPump * m_pump;
@@ -74,9 +75,6 @@ namespace fmitcp {
 
     /// Set to true to start ignoring the local FMU and just send back dummy responses. Good for debugging the protocol.
     void sendDummyResponses(bool);
-
-    /// Send a binary message to the client
-    void sendMessage(lw_client c, fmitcp_proto::fmitcp_message* message);
 
     Logger* getLogger() {return &m_logger;}
     void setLogger(const Logger &logger) {m_logger = logger;}

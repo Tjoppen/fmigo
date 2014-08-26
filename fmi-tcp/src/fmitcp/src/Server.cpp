@@ -149,9 +149,6 @@ void Server::init(EventPump * pump) {
 
 void Server::clientConnected(lw_client c) {
   m_logger.log(Logger::LOG_NETWORK,"+ Client connected.\n");
-  string msg = "connected\n";
-  lw_stream_write(c,msg.c_str(),msg.size());
-  m_logger.log(Logger::LOG_DEBUG,"Sent connected message to new client.\n");
   onClientConnect();
 }
 
@@ -172,10 +169,11 @@ void Server::clientDisconnected(lw_client c) {
 }
 
 void Server::clientData(lw_client c, const char *data, size_t size) {
-  string data2(data, size);
+ //undo the framing - we might have gotten more than one packet
+ vector<string> messages = unpackBuffer(data, size, &tail);
 
-  if(data2 == "\n")
-    return;
+ for (size_t x = 0; x < messages.size(); x++) {
+  string data2 = messages[x];
 
   // Construct message
   fmitcp_proto::fmitcp_message req;
@@ -193,13 +191,13 @@ void Server::clientData(lw_client c, const char *data, size_t size) {
     // Unpack message
     fmitcp_proto::fmi2_import_instantiate_req * r = req.mutable_fmi2_import_instantiate_req();
     int messageId = r->message_id();
+    fmi2_boolean_t visible = r->visible();
 
-    m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_instantiate_req(mid=%d)\n",messageId);
+    m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_instantiate_req(mid=%d,visible=%d)\n",messageId, visible);
 
     jm_status_enu_t status = jm_status_success;
     if (!m_sendDummyResponses) {
       // instantiate FMU
-      fmi2_boolean_t visible = fmi2_false;
       status = fmi2_import_instantiate(m_fmi2Instance, m_instanceName, fmi2_cosimulation, m_resourcePath, visible);
     }
 
@@ -1012,8 +1010,9 @@ void Server::clientData(lw_client c, const char *data, size_t size) {
   }
 
   if (sendResponse) {
-    sendMessage(c, &res);
+    fmitcp::sendProtoBuffer(c,&res);
   }
+ }
 }
 
 void Server::error(lw_server s, lw_error error) {
@@ -1043,8 +1042,4 @@ void Server::host(string hostName, long port) {
 
 void Server::sendDummyResponses(bool sendDummyResponses) {
   m_sendDummyResponses = sendDummyResponses;
-}
-
-void Server::sendMessage(lw_client c, fmitcp_proto::fmitcp_message* message) {
-  fmitcp::sendProtoBuffer(c,message);
 }

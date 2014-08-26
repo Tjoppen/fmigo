@@ -41,6 +41,7 @@ namespace fmitcp {
 
   /// Send a binary protobuf to a client
   void sendProtoBuffer(lw_client c, fmitcp_proto::fmitcp_message * message);
+  std::vector<std::string> unpackBuffer(const char* data, long size, std::string *tail);
 
   /// Convert incoming data to a C++ string
   string dataToString(const char* data, long size);

@@ -29,10 +29,11 @@ namespace fmitcp {
 
     private:
         lw_client m_client;
+        std::string tail;
 
     public:
         Client(EventPump * pump);
-        ~Client();
+        virtual ~Client();
 
         /// Connect the client to a server
         void connect(string host, long port);
@@ -112,7 +113,8 @@ namespace fmitcp {
         // FMI functions follow. These should correspond to FMILibrary functions.
 
         // =========== FMI 2.0 (CS) Co-Simulation functions ===========
-        void fmi2_import_instantiate(int message_id);
+        void fmi2_import_instantiate(int message_id);               //calls fmi2_import_instantiate2() with visible=false (backward compatibility)
+        void fmi2_import_instantiate2(int message_id, bool visible);
         void fmi2_import_initialize_slave(int message_id, int fmuId, bool toleranceDefined, double tolerance, double startTime,
             bool stopTimeDefined, double stopTime);
         void fmi2_import_terminate_slave(int mid, int fmuId);

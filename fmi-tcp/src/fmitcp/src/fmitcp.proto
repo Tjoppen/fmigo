@@ -255,6 +255,7 @@ message fmi2_event_info_t {
 // Wrapper for the FMI function fmiInstantiate(...)
 message fmi2_import_instantiate_req {
     required int32 message_id = 1;
+    optional bool  visible = 2;     //optional to maximize backward compatibility
 }
 message fmi2_import_instantiate_res {
     required int32 message_id = 1;
@@ -432,6 +433,7 @@ message fmi2_import_instantiate_model_req {
     required int32 fmuId = 2;
     required string instanceName = 3;
     required string resourceLocation = 4;
+    optional bool  visible = 5;     //optional to maximize backward compatibility
 }
 message fmi2_import_instantiate_model_res {
     required int32 message_id = 1;

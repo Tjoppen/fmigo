@@ -17,13 +17,13 @@ Logger::~Logger(){
 void Logger::log(Logger::LogMessageType type, const char * format, ...){
     // Print prefix
     if(m_prefix != ""){
-        printf("%s",m_prefix.c_str());
+        fprintf(stderr, "%s",m_prefix.c_str());
     }
 
     // Print message
     va_list args;
     va_start(args, format);
-    vfprintf(stdout, format, args);
+    vfprintf(stderr, format, args);
     va_end(args);
     fflush(NULL);
 }

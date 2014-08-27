@@ -1028,11 +1028,9 @@ void Server::host(string hostName, long port) {
   lw_server_on_data(      m_server, serverOnData);
   lw_server_on_disconnect(m_server, serverOnDisconnect);
   lw_server_on_error(     m_server, serverOnError);
-  // setup the server host name and port
-  lw_addr host = lw_addr_new_port(hostName.c_str(), port);
+  // setup the server port
   lw_filter filter = lw_filter_new();
-  lw_filter_set_ipv6(filter, lw_false);
-  lw_filter_set_local(filter, host);
+  lw_filter_set_local_port(filter, port);
   // host/start the server
   lw_server_host_filter(m_server, filter);
   lw_filter_delete(filter);

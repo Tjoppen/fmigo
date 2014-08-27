@@ -58,7 +58,7 @@ static vector<WeakConnection*> setupWeakConnections(vector<connection> connectio
     vector<WeakConnection*> weakConnections;
     for (auto it = connections.begin(); it != connections.end(); it++) {
         if (it->type == fmi2_base_type_real) {
-            printf("Creating weak connection %d %d %d %d\n", it->fromFMU, it->fromOutputVR, it->toFMU, it->toInputVR);
+            fprintf(stderr, "Creating weak connection %d %d %d %d\n", it->fromFMU, it->fromOutputVR, it->toFMU, it->toInputVR);
             weakConnections.push_back(new WeakConnection(slaves[it->fromFMU], slaves[it->toFMU], it->fromOutputVR, it->toInputVR));
         } else {
             fprintf(stderr, "Unsupported connection type %i\n", it->type);

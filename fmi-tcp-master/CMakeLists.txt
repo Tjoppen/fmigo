@@ -90,7 +90,8 @@ ELSE(WIN32)
         fmilib
         lacewing
         dl
-        sc m umfpack amd blas atlas cholmod colamd suitesparseconfig # For strong coupling
+        ##sc m umfpack amd blas atlas cholmod colamd suitesparseconfig # For strong coupling
+        sc m umfpack amd blas cholmod colamd suitesparseconfig # For strong coupling
         ${Boost_FILESYSTEM_LIBRARY}
         ${Boost_SYSTEM_LIBRARY}
         ${PROTOBUF_LIBRARY}
@@ -127,6 +128,7 @@ SET_TARGET_PROPERTIES(vanilla
 EXECUTE_PROCESS(COMMAND rm -r -f "${CMAKE_CURRENT_LIST_DIR}/bin/binaries")
 EXECUTE_PROCESS(COMMAND rm -f "${CMAKE_CURRENT_LIST_DIR}/bin/vanilla.fmu")
 
+if ( 0 ) 
 # create the needed directories
 EXECUTE_PROCESS(COMMAND mkdir -p "${CMAKE_CURRENT_LIST_DIR}/bin/binaries/win32")
 
@@ -137,3 +139,5 @@ EXECUTE_PROCESS(COMMAND cp "${CMAKE_CURRENT_LIST_DIR}/fmu/modelDescription.xml" 
 # make a zip file
 EXECUTE_PROCESS(COMMAND zip -r "vanilla.fmu" "binaries" "modelDescription.xml"
                 WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/bin)
+
+endif ( 0 ) 

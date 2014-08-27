@@ -30,7 +30,7 @@ if len(definitions):
 
 # For logging errors and messages
 def log(m):
-    print "%s: %s" % (sys.argv[0],m)
+    print( "%s: %s" % (sys.argv[0],m) )
 
 # Parse xml file
 tree = e.parse('modelDescription.xml')
@@ -42,7 +42,7 @@ fmiVersion = root.get('fmiVersion')
 # Get FMU type (co-simulation or model exchange)
 fmuType = "cs"
 
-print fmiVersion
+print (fmiVersion)
 
 # Get model identifier.
 modelIdentifier = "modelIdentifier"
@@ -89,7 +89,7 @@ TARGET_LINK_LIBRARIES( ${TARGET} %s )""" % (arch, modelIdentifier, " ".join(c_fi
     f.write( cmakestuff )
     f.close()
     print("\nCreated CMakeLists.txt (%s):\n" % (path))
-    print cmakestuff
+    print( cmakestuff)
     print("");
 
     # Run CMake

@@ -135,6 +135,9 @@ std::vector<int> StrongConnector::getShaftAngleValueRefs() const {
 std::vector<int> StrongConnector::getAngularVelocityValueRefs() const {
     std::vector<int> result;
     for(int i=0; m_hasAngularVelocity && i<3; i++)
+#ifdef ENABLE_DEMO_HACKS
+        if (m_vref_angularVelocity[i] >= 0)
+#endif
         result.push_back(m_vref_angularVelocity[i]);
     return result;
 };

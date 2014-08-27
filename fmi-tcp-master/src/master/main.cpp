@@ -105,8 +105,8 @@ static void setupConstraintsAndSolver(vector<strongconnection> strongConnections
             break;
         case 's':
         {
-            if (it->vrs.size() != 7) {
-                fprintf(stderr, "Bad shaft specification: need axis (0 = X, 1 = Y, 2 = Z) and 6 VRs ([shaft angle + angular acceleration + torque] x 2)\n");
+            if (it->vrs.size() != 9) {
+                fprintf(stderr, "Bad shaft specification: need axis (0 = X, 1 = Y, 2 = Z) and 8 VRs ([shaft angle + angular velocity + angular acceleration + torque] x 2)\n");
                 exit(1);
             }
 
@@ -118,12 +118,14 @@ static void setupConstraintsAndSolver(vector<strongconnection> strongConnections
             }
 
             scA->setShaftAngleValueRef(it->vrs[1]);
-            scA->setAngularAccelerationValueRefs(axis == 0 ? it->vrs[2] : -1, axis == 1 ? it->vrs[2] : -1, axis == 2 ? it->vrs[2] : -1);
-            scA->setTorqueValueRefs             (axis == 0 ? it->vrs[3] : -1, axis == 1 ? it->vrs[3] : -1, axis == 2 ? it->vrs[3] : -1);
+            scA->setAngularVelocityValueRefs    (axis == 0 ? it->vrs[2] : -1, axis == 1 ? it->vrs[2] : -1, axis == 2 ? it->vrs[2] : -1);
+            scA->setAngularAccelerationValueRefs(axis == 0 ? it->vrs[3] : -1, axis == 1 ? it->vrs[3] : -1, axis == 2 ? it->vrs[3] : -1);
+            scA->setTorqueValueRefs             (axis == 0 ? it->vrs[4] : -1, axis == 1 ? it->vrs[4] : -1, axis == 2 ? it->vrs[4] : -1);
 
-            scB->setShaftAngleValueRef(it->vrs[4]);
-            scB->setAngularAccelerationValueRefs(axis == 0 ? it->vrs[5] : -1, axis == 1 ? it->vrs[5] : -1, axis == 2 ? it->vrs[5] : -1);
-            scB->setTorqueValueRefs             (axis == 0 ? it->vrs[6] : -1, axis == 1 ? it->vrs[6] : -1, axis == 2 ? it->vrs[6] : -1);
+            scB->setShaftAngleValueRef(it->vrs[5]);
+            scB->setAngularVelocityValueRefs    (axis == 0 ? it->vrs[6] : -1, axis == 1 ? it->vrs[6] : -1, axis == 2 ? it->vrs[6] : -1);
+            scB->setAngularAccelerationValueRefs(axis == 0 ? it->vrs[7] : -1, axis == 1 ? it->vrs[7] : -1, axis == 2 ? it->vrs[7] : -1);
+            scB->setTorqueValueRefs             (axis == 0 ? it->vrs[8] : -1, axis == 1 ? it->vrs[8] : -1, axis == 2 ? it->vrs[8] : -1);
 
             con = new ShaftConstraint(scA, scB, axis);
             break;
@@ -207,8 +209,8 @@ int main(int argc, char *argv[] ) {
     double startTime = 0;
     double endTime = 10;
     double relativeTolerance = 0.0001;
-    double relaxation = 3,
-           compliance = 0.001;
+    double relaxation = 12,
+           compliance = 0.01;
     vector<string> fmuURIs;
     vector<connection> connections;
     map<pair<int,fmi2_base_type_enu_t>, vector<param> > params;

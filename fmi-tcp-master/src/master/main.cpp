@@ -240,6 +240,18 @@ int main(int argc, char *argv[] ) {
         return 1;
     }
 
+    if (loggingOn) {
+        fprintf(stderr, "WARNING: -l not implemented\n");
+    }
+
+    if (quietMode) {
+        fprintf(stderr, "WARNING: -q not implemented\n");
+    }
+
+    if (outFilePath != DEFAULT_OUTFILE) {
+        fprintf(stderr, "WARNING: -o not implemented (output always goes to stdout)\n");
+    }
+
     vector<FMIClient*> slaves = setupSlaves(fmuURIs, &pump);
     vector<WeakConnection*> weakConnections = setupWeakConnections(connections, slaves);
     setupConstraintsAndSolver(scs, slaves, &solver);

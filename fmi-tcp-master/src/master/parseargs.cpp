@@ -10,49 +10,7 @@
 using namespace fmitcp_master;
 
 static void printHelp(){
-    printf("Usage\n\
-\n\
-master [OPTIONS] [FMU_URLS...]\n\
-\n\
-OPTIONS\n\
-\n\
-    --timeStep [NUMBER]\n\
-            Timestep size. Default is 0.1.\n\
-\n\
-    --stopAfter [NUMBER]\n\
-        End simulation time in seconds. Default is 1.0.\n\
-\n\
-    --weakMethod [STRING]\n\
-        Stepping  method for weak coupling connections. Must be \"parallel\" or \"serial\". Default is \"parallel\".\n\
-\n\
-    --weakConnections [STRING]\n\
-        Connection  specification. No connections by default. Quadruples of\n\
-        positive integers, representing which FMU and value reference to connect\n\
-        from and what to connect to. Syntax is\n\
-\n\
-            CONN1:CONN2:CONN3...\n\
-\n\
-        where CONNX is four comma-separated integers FMUFROM,VRFROM,FMUTO,VRTO.\n\
-        An example connection string is\n\
-\n\
-            0,0,1,0:0,1,1,1\n\
-\n\
-        which means: connect FMU0 (value reference 0) to FMU1 (vr 0) and FMU0\n\
-        (vr 1) to FMU1 (vr 1).  Default is no  connections.\n\
-\n\
-    --strongConnections [STRING]\n\
-        TODO\n\
-\n\
-    --help\n\
-        You're looking at it.\n\
-\n\
-FMU_URLS\n\
-\n\
-    Urls to FMU servers, separated by spaces. For example \"tcp://fmiserver.com:1234\".\n\
-\n\
-EXAMPLES\n\
-\n\
-    master --weakConnections 0,0,0,0:0,0,0,0 tcp://localhost:3000\n\n");
+    system("man fmi-tcp-master");
 }
 
 static void printInvalidArg(char option){

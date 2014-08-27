@@ -1,0 +1,157 @@
+.TH FMI-TCP-MASTER 1 local
+.SH NAME
+fmi-tcp-master \- simulate FMUs
+.SH SYNOPSIS
+.ll +8
+.B fmi-tcp-master
+.RB [ " \-xrlvqhtcdsopfmgwC " ]
+[
+.I "files \&..."
+]
+.ll -8
+.br
+.SH DESCRIPTION
+.I fmi-tcp-master
+simulates FMUs using the FMILibrary from JModelica.org
+over TCP/IP, with optional strong coupling between simulation units.
+.SH FLAGS
+.TP
+.B \-h
+Show help and quit.
+.TP
+.B \-l
+Show FMILibrary logs.
+.TP
+.B \-q
+Quiet mode, do not print simulation info to STDOUT. This flag should be used together with -r.
+.TP
+.B \-r
+Real time mode. Will usleep() in between communication steps if the execution was faster than real time.
+.TP
+.B \-v
+Show version and quit.
+.TP
+.B \-x
+Print XML and quit.
+.SH OPTIONS
+.TP
+.B \-c [CONNECTIONS]
+Connection specification. No connections by default. Quadruples of positive integers, representing which FMU and value reference to connect from and what to connect to. Syntax is
+
+    CONN1:CONN2:CONN3...
+
+where CONNX is an optional type character folowed by comma, followed by four comma-separated integers; [TYPE,]FMUFROM,VRFROM,FMUTO,VRTO.
+If TYPE is absent then the connection is assumed to be of type real.
+An example connection string is
+
+    0,0,1,0:0,1,1,1
+
+which means: connect real values FMU0 (value reference 0) to FMU1 (vr 0) and FMU0 (vr 1)
+to FMU1 (vr 1).
+Another example:
+
+    i,0,1,1,2
+
+which means: connect integer value FMU0 VR1 to FMU1 VR2.
+Possible types:
+
+    r - Real
+    i - Integer
+    b - Boolean
+    s - String
+
+Default is no connections.
+.TP
+.B \-w [VISIBILITIES]
+Visibility specification. Syntax is
+
+    VIS0:VIS1:VIS2...
+
+where VISX is 1 or 0 depending on whether FMUX's simulator application window should be visible or not.
+Example:
+
+    0:1:1:0
+
+which means: show simulator windows for FMU1 and FMU2, but not FMU0 or FMU3.
+By default no windows are shown (batch mode).
+.TP
+.B \-d [TIMESTEP]
+Timestep size. Default is 0.1.
+.TP
+.B \-f [OUTFORMAT]
+Output file format. Currently only "csv" is supported, and it is also the default.
+.TP
+.B \-g [STEPPING ORDER SPEC]
+FMU stepping order. Used in serial algorithms. Should be a comma separated list of FMU indices. If the list starts with 0, then the first FMU will be stepped, and its utput values will be transferred through their connections (if any).
+.TP
+.B \-m [METHOD]
+Stepping method. Available methods are "jacobi" (Jacobi, parallel) and "gs" (Gauss-Seidel, serial). Default is "jacobi".
+When strong coupling is used only "jacobi" is possible.
+.TP
+.B \-o [OUTFILE]
+Result output file. Default is STDOUT.
+.TP
+.B \-p [PARAMS]
+Parameter specification.
+Entries are separated by :, each entry consists of an optional type (assumed real if not present) followed by a comma separated triplet of FMU index, value reference and value.
+Example:
+
+    b,0,0,true:r,0,0,0:s,0,0,hello
+
+which means set FMU0 boolean VR0 to true, FMU0 real VR0 to zero and FMU0 string VR0 to "hello".
+Note that despite identical value references these entries refer to different parameters since VRs apply with respect to a base type.
+See -c option for a list of possible types (i, r, s, b).
+Default is no parameters.
+.TP
+.B \-s [SEPARATOR]
+CSV separator character. Default is comma (,).
+.TP
+.B \-t [ENDTIME]
+End simulation time in seconds. Default is 1.0.
+.TP
+.B \-C [STRONG CONNECTIONS]
+Strong coupling specification. Syntax is
+
+    CONN1:CONN2:CONN3...
+
+where CONNX has the following form:
+
+    TYPE,FMU0,FMU1,[PARAMS]
+
+FMU0 and FMU1 are the two sides of the strong coupling.
+PARAMS depend on TYPE, and TYPE is one of the following:
+
+    [ball|lock]:
+        PARAMS=pos0,acc0,force0,quat0,angAcc0,torque0,pos1,acc1,force1,quat1,angAcc1,torque1
+        
+        where posX/accX/forceX/angAccX/torqueX are VR triplets (X,Y,Z) and quatX are VR quadruplets (X,Y,Z,W), giving a total of (3+3+3+4+3+3) x 2 = 38 value references.
+
+        The difference between "ball" and "lock" is that lock tries to lock the orientation of both connectors (ball only cares about position). 
+
+    shaft:
+        PARAMS=axis,shaftAngle0,angularVelocity0,angularAcceleration0,torque0,shaftAngle1,angularVelocity1,angularAcceleration1,torque1
+
+        where axis specifies what cardinal direction the shaft runs along (0 = X, 1 = Y, 2 = Z) and the rest are value references whose meaning should be obvious. The connection tries to keep both shaftAngles equal.
+
+Examples:
+
+        -C\ shaft,0,1,1,20,19,14,17,20,19,14,17
+
+    Meaning: Connect a shaft between FMU0 and FMU1 along the Y axis (1), with VRs shaftAngle=20, angularVelocity=19, angularAcceleration=14 and torque=17 on both sides
+
+        -C\ lock,0,1,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18
+
+    Meaning: Create a lock constraints between FMU0 and FMU1 with VRs pos={0,1,2}, acc={3,4,5}, force={6,7,8}, quat={9,10,11,12}, angAcc={13,14,15} and torque={16,17,18} on both sides
+
+.SH EXAMPLES
+To run an FMU simulation from time 0 to 5 with timestep 0.01:
+    fmi-tcp-master -t 5 -d 0.01 ../myFMU.fmu
+
+To simulate two FMUs connected from the first output of the first FMU to the first input of the second:
+    fmi-tcp-master -c 0,0,1,0 a.fmu b.fmu
+
+To simulate quietly (without output to STDOUT) and save the results to file:
+    fmi-tcp-master -q -o out.csv a.fmu
+
+.SH "ABOUT"
+The app was built by Stefan Hedman at UMIT Research Lab 2013. Large parts were rewritten by Tomas Härdin at UMIT Research Lab 2014.

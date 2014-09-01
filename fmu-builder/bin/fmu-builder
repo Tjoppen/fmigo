@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 
 import sys, platform, tempfile, os, subprocess, zipfile, argparse, shutil, re
 import xml.etree.ElementTree as e

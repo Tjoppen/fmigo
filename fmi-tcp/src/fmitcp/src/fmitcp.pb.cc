@@ -10,2739 +10,113 @@
 #include <google/protobuf/stubs/once.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/wire_format_lite_inl.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/generated_message_reflection.h>
-#include <google/protobuf/reflection_ops.h>
-#include <google/protobuf/wire_format.h>
 // @@protoc_insertion_point(includes)
 
 namespace fmitcp_proto {
 
-namespace {
-
-const ::google::protobuf::Descriptor* fmitcp_message_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmitcp_message_reflection_ = NULL;
-const ::google::protobuf::EnumDescriptor* fmitcp_message_Type_descriptor_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_event_info_t_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_event_info_t_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_instantiate_req_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_instantiate_req_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_instantiate_res_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_instantiate_res_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_initialize_slave_req_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_initialize_slave_req_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_initialize_slave_res_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_initialize_slave_res_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_terminate_slave_req_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_terminate_slave_req_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_terminate_slave_res_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_terminate_slave_res_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_reset_slave_req_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_reset_slave_req_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_reset_slave_res_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_reset_slave_res_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_free_slave_instance_req_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_free_slave_instance_req_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_free_slave_instance_res_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_free_slave_instance_res_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_set_real_input_derivatives_req_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_set_real_input_derivatives_req_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_set_real_input_derivatives_res_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_set_real_input_derivatives_res_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_get_real_output_derivatives_req_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_get_real_output_derivatives_req_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_get_real_output_derivatives_res_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_get_real_output_derivatives_res_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_cancel_step_req_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_cancel_step_req_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_cancel_step_res_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_cancel_step_res_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_do_step_req_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_do_step_req_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_do_step_res_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_do_step_res_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_get_status_req_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_get_status_req_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_get_status_res_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_get_status_res_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_get_real_status_req_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_get_real_status_req_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_get_real_status_res_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_get_real_status_res_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_get_integer_status_req_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_get_integer_status_req_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_get_integer_status_res_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_get_integer_status_res_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_get_boolean_status_req_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_get_boolean_status_req_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_get_boolean_status_res_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_get_boolean_status_res_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_get_string_status_req_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_get_string_status_req_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_get_string_status_res_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_get_string_status_res_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_instantiate_model_req_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_instantiate_model_req_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_instantiate_model_res_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_instantiate_model_res_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_free_model_instance_req_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_free_model_instance_req_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_free_model_instance_res_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_free_model_instance_res_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_set_time_req_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_set_time_req_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_set_time_res_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_set_time_res_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_set_continuous_states_req_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_set_continuous_states_req_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_set_continuous_states_res_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_set_continuous_states_res_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_completed_integrator_step_req_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_completed_integrator_step_req_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_completed_integrator_step_res_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_completed_integrator_step_res_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_initialize_model_req_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_initialize_model_req_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_initialize_model_res_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_initialize_model_res_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_get_derivatives_req_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_get_derivatives_req_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_get_derivatives_res_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_get_derivatives_res_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_get_event_indicators_req_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_get_event_indicators_req_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_get_event_indicators_res_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_get_event_indicators_res_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_eventUpdate_req_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_eventUpdate_req_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_eventUpdate_res_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_eventUpdate_res_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_completed_event_iteration_req_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_completed_event_iteration_req_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_completed_event_iteration_res_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_completed_event_iteration_res_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_get_continuous_states_req_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_get_continuous_states_req_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_get_continuous_states_res_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_get_continuous_states_res_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_get_nominal_continuous_states_req_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_get_nominal_continuous_states_req_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_get_nominal_continuous_states_res_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_get_nominal_continuous_states_res_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_terminate_req_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_terminate_req_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_terminate_res_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_terminate_res_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_get_version_req_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_get_version_req_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_get_version_res_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_get_version_res_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_set_debug_logging_req_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_set_debug_logging_req_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_set_debug_logging_res_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_set_debug_logging_res_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_set_real_req_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_set_real_req_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_set_real_res_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_set_real_res_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_set_integer_req_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_set_integer_req_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_set_integer_res_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_set_integer_res_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_set_boolean_req_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_set_boolean_req_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_set_boolean_res_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_set_boolean_res_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_set_string_req_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_set_string_req_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_set_string_res_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_set_string_res_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_get_real_req_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_get_real_req_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_get_real_res_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_get_real_res_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_get_integer_req_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_get_integer_req_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_get_integer_res_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_get_integer_res_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_get_boolean_req_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_get_boolean_req_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_get_boolean_res_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_get_boolean_res_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_get_string_req_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_get_string_req_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_get_string_res_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_get_string_res_reflection_ = NULL;
-const ::google::protobuf::Descriptor* char_req_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  char_req_reflection_ = NULL;
-const ::google::protobuf::Descriptor* char_res_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  char_res_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_get_fmu_state_req_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_get_fmu_state_req_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_get_fmu_state_res_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_get_fmu_state_res_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_set_fmu_state_req_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_set_fmu_state_req_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_set_fmu_state_res_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_set_fmu_state_res_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_free_fmu_state_req_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_free_fmu_state_req_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_free_fmu_state_res_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_free_fmu_state_res_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_get_directional_derivative_req_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_get_directional_derivative_req_reflection_ = NULL;
-const ::google::protobuf::Descriptor* fmi2_import_get_directional_derivative_res_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  fmi2_import_get_directional_derivative_res_reflection_ = NULL;
-const ::google::protobuf::Descriptor* get_xml_req_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  get_xml_req_reflection_ = NULL;
-const ::google::protobuf::Descriptor* get_xml_res_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  get_xml_res_reflection_ = NULL;
-const ::google::protobuf::EnumDescriptor* jm_log_level_enu_t_descriptor_ = NULL;
-const ::google::protobuf::EnumDescriptor* fmi2_status_t_descriptor_ = NULL;
-const ::google::protobuf::EnumDescriptor* fmi2_status_kind_t_descriptor_ = NULL;
-const ::google::protobuf::EnumDescriptor* jm_status_enu_t_descriptor_ = NULL;
-
-}  // namespace
-
-
-void protobuf_AssignDesc_fmitcp_2eproto() {
-  protobuf_AddDesc_fmitcp_2eproto();
-  const ::google::protobuf::FileDescriptor* file =
-    ::google::protobuf::DescriptorPool::generated_pool()->FindFileByName(
-      "fmitcp.proto");
-  GOOGLE_CHECK(file != NULL);
-  fmitcp_message_descriptor_ = file->message_type(0);
-  static const int fmitcp_message_offsets_[85] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, type_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_instantiate_req_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_instantiate_res_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_initialize_slave_req_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_initialize_slave_res_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_terminate_slave_req_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_terminate_slave_res_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_reset_slave_req_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_reset_slave_res_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_free_slave_instance_req_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_free_slave_instance_res_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_set_real_input_derivatives_req_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_set_real_input_derivatives_res_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_get_real_output_derivatives_req_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_get_real_output_derivatives_res_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_cancel_step_req_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_cancel_step_res_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_do_step_req_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_do_step_res_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_get_status_req_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_get_status_res_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_get_real_status_req_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_get_real_status_res_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_get_integer_status_req_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_get_integer_status_res_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_get_boolean_status_req_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_get_boolean_status_res_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_get_string_status_req_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_get_string_status_res_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_instantiate_model_req_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_instantiate_model_res_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_free_model_instance_req_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_free_model_instance_res_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_set_time_req_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_set_time_res_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_set_continuous_states_req_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_set_continuous_states_res_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_completed_integrator_step_req_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_completed_integrator_step_res_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_initialize_model_req_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_initialize_model_res_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_get_derivatives_req_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_get_derivatives_res_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_get_event_indicators_req_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_get_event_indicators_res_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_eventupdate_req_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_eventupdate_res_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_completed_event_iteration_req_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_completed_event_iteration_res_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_get_continuous_states_req_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_get_continuous_states_res_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_get_nominal_continuous_states_req_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_get_nominal_continuous_states_res_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_terminate_req_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_terminate_res_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_get_version_req_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_get_version_res_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_set_debug_logging_req_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_set_debug_logging_res_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_set_real_req_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_set_real_res_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_set_integer_req_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_set_integer_res_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_set_boolean_req_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_set_boolean_res_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_set_string_req_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_set_string_res_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_get_real_req_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_get_real_res_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_get_integer_req_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_get_integer_res_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_get_boolean_req_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_get_boolean_res_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_get_string_req_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_get_string_res_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_get_fmu_state_req_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_get_fmu_state_res_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_set_fmu_state_req_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_set_fmu_state_res_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_free_fmu_state_req_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_free_fmu_state_res_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_get_directional_derivative_req_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, fmi2_import_get_directional_derivative_res_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, get_xml_req_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, get_xml_res_),
-  };
-  fmitcp_message_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmitcp_message_descriptor_,
-      fmitcp_message::default_instance_,
-      fmitcp_message_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmitcp_message, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmitcp_message));
-  fmitcp_message_Type_descriptor_ = fmitcp_message_descriptor_->enum_type(0);
-  fmi2_event_info_t_descriptor_ = file->message_type(1);
-  static const int fmi2_event_info_t_offsets_[6] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_event_info_t, iterationconverged_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_event_info_t, statevaluereferenceschanged_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_event_info_t, statevalueschanged_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_event_info_t, terminatesimulation_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_event_info_t, upcomingtimeevent_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_event_info_t, nexteventtime_),
-  };
-  fmi2_event_info_t_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_event_info_t_descriptor_,
-      fmi2_event_info_t::default_instance_,
-      fmi2_event_info_t_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_event_info_t, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_event_info_t, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_event_info_t));
-  fmi2_import_instantiate_req_descriptor_ = file->message_type(2);
-  static const int fmi2_import_instantiate_req_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_instantiate_req, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_instantiate_req, visible_),
-  };
-  fmi2_import_instantiate_req_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_instantiate_req_descriptor_,
-      fmi2_import_instantiate_req::default_instance_,
-      fmi2_import_instantiate_req_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_instantiate_req, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_instantiate_req, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_instantiate_req));
-  fmi2_import_instantiate_res_descriptor_ = file->message_type(3);
-  static const int fmi2_import_instantiate_res_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_instantiate_res, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_instantiate_res, status_),
-  };
-  fmi2_import_instantiate_res_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_instantiate_res_descriptor_,
-      fmi2_import_instantiate_res::default_instance_,
-      fmi2_import_instantiate_res_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_instantiate_res, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_instantiate_res, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_instantiate_res));
-  fmi2_import_initialize_slave_req_descriptor_ = file->message_type(4);
-  static const int fmi2_import_initialize_slave_req_offsets_[7] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_initialize_slave_req, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_initialize_slave_req, fmuid_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_initialize_slave_req, tolerancedefined_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_initialize_slave_req, tolerance_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_initialize_slave_req, starttime_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_initialize_slave_req, stoptimedefined_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_initialize_slave_req, stoptime_),
-  };
-  fmi2_import_initialize_slave_req_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_initialize_slave_req_descriptor_,
-      fmi2_import_initialize_slave_req::default_instance_,
-      fmi2_import_initialize_slave_req_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_initialize_slave_req, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_initialize_slave_req, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_initialize_slave_req));
-  fmi2_import_initialize_slave_res_descriptor_ = file->message_type(5);
-  static const int fmi2_import_initialize_slave_res_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_initialize_slave_res, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_initialize_slave_res, status_),
-  };
-  fmi2_import_initialize_slave_res_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_initialize_slave_res_descriptor_,
-      fmi2_import_initialize_slave_res::default_instance_,
-      fmi2_import_initialize_slave_res_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_initialize_slave_res, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_initialize_slave_res, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_initialize_slave_res));
-  fmi2_import_terminate_slave_req_descriptor_ = file->message_type(6);
-  static const int fmi2_import_terminate_slave_req_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_terminate_slave_req, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_terminate_slave_req, fmuid_),
-  };
-  fmi2_import_terminate_slave_req_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_terminate_slave_req_descriptor_,
-      fmi2_import_terminate_slave_req::default_instance_,
-      fmi2_import_terminate_slave_req_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_terminate_slave_req, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_terminate_slave_req, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_terminate_slave_req));
-  fmi2_import_terminate_slave_res_descriptor_ = file->message_type(7);
-  static const int fmi2_import_terminate_slave_res_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_terminate_slave_res, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_terminate_slave_res, status_),
-  };
-  fmi2_import_terminate_slave_res_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_terminate_slave_res_descriptor_,
-      fmi2_import_terminate_slave_res::default_instance_,
-      fmi2_import_terminate_slave_res_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_terminate_slave_res, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_terminate_slave_res, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_terminate_slave_res));
-  fmi2_import_reset_slave_req_descriptor_ = file->message_type(8);
-  static const int fmi2_import_reset_slave_req_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_reset_slave_req, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_reset_slave_req, fmuid_),
-  };
-  fmi2_import_reset_slave_req_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_reset_slave_req_descriptor_,
-      fmi2_import_reset_slave_req::default_instance_,
-      fmi2_import_reset_slave_req_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_reset_slave_req, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_reset_slave_req, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_reset_slave_req));
-  fmi2_import_reset_slave_res_descriptor_ = file->message_type(9);
-  static const int fmi2_import_reset_slave_res_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_reset_slave_res, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_reset_slave_res, status_),
-  };
-  fmi2_import_reset_slave_res_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_reset_slave_res_descriptor_,
-      fmi2_import_reset_slave_res::default_instance_,
-      fmi2_import_reset_slave_res_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_reset_slave_res, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_reset_slave_res, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_reset_slave_res));
-  fmi2_import_free_slave_instance_req_descriptor_ = file->message_type(10);
-  static const int fmi2_import_free_slave_instance_req_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_free_slave_instance_req, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_free_slave_instance_req, fmuid_),
-  };
-  fmi2_import_free_slave_instance_req_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_free_slave_instance_req_descriptor_,
-      fmi2_import_free_slave_instance_req::default_instance_,
-      fmi2_import_free_slave_instance_req_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_free_slave_instance_req, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_free_slave_instance_req, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_free_slave_instance_req));
-  fmi2_import_free_slave_instance_res_descriptor_ = file->message_type(11);
-  static const int fmi2_import_free_slave_instance_res_offsets_[1] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_free_slave_instance_res, message_id_),
-  };
-  fmi2_import_free_slave_instance_res_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_free_slave_instance_res_descriptor_,
-      fmi2_import_free_slave_instance_res::default_instance_,
-      fmi2_import_free_slave_instance_res_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_free_slave_instance_res, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_free_slave_instance_res, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_free_slave_instance_res));
-  fmi2_import_set_real_input_derivatives_req_descriptor_ = file->message_type(12);
-  static const int fmi2_import_set_real_input_derivatives_req_offsets_[5] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_real_input_derivatives_req, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_real_input_derivatives_req, fmuid_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_real_input_derivatives_req, valuereferences_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_real_input_derivatives_req, orders_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_real_input_derivatives_req, values_),
-  };
-  fmi2_import_set_real_input_derivatives_req_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_set_real_input_derivatives_req_descriptor_,
-      fmi2_import_set_real_input_derivatives_req::default_instance_,
-      fmi2_import_set_real_input_derivatives_req_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_real_input_derivatives_req, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_real_input_derivatives_req, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_set_real_input_derivatives_req));
-  fmi2_import_set_real_input_derivatives_res_descriptor_ = file->message_type(13);
-  static const int fmi2_import_set_real_input_derivatives_res_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_real_input_derivatives_res, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_real_input_derivatives_res, status_),
-  };
-  fmi2_import_set_real_input_derivatives_res_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_set_real_input_derivatives_res_descriptor_,
-      fmi2_import_set_real_input_derivatives_res::default_instance_,
-      fmi2_import_set_real_input_derivatives_res_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_real_input_derivatives_res, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_real_input_derivatives_res, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_set_real_input_derivatives_res));
-  fmi2_import_get_real_output_derivatives_req_descriptor_ = file->message_type(14);
-  static const int fmi2_import_get_real_output_derivatives_req_offsets_[4] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_real_output_derivatives_req, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_real_output_derivatives_req, fmuid_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_real_output_derivatives_req, valuereferences_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_real_output_derivatives_req, orders_),
-  };
-  fmi2_import_get_real_output_derivatives_req_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_get_real_output_derivatives_req_descriptor_,
-      fmi2_import_get_real_output_derivatives_req::default_instance_,
-      fmi2_import_get_real_output_derivatives_req_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_real_output_derivatives_req, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_real_output_derivatives_req, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_get_real_output_derivatives_req));
-  fmi2_import_get_real_output_derivatives_res_descriptor_ = file->message_type(15);
-  static const int fmi2_import_get_real_output_derivatives_res_offsets_[3] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_real_output_derivatives_res, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_real_output_derivatives_res, status_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_real_output_derivatives_res, values_),
-  };
-  fmi2_import_get_real_output_derivatives_res_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_get_real_output_derivatives_res_descriptor_,
-      fmi2_import_get_real_output_derivatives_res::default_instance_,
-      fmi2_import_get_real_output_derivatives_res_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_real_output_derivatives_res, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_real_output_derivatives_res, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_get_real_output_derivatives_res));
-  fmi2_import_cancel_step_req_descriptor_ = file->message_type(16);
-  static const int fmi2_import_cancel_step_req_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_cancel_step_req, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_cancel_step_req, fmuid_),
-  };
-  fmi2_import_cancel_step_req_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_cancel_step_req_descriptor_,
-      fmi2_import_cancel_step_req::default_instance_,
-      fmi2_import_cancel_step_req_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_cancel_step_req, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_cancel_step_req, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_cancel_step_req));
-  fmi2_import_cancel_step_res_descriptor_ = file->message_type(17);
-  static const int fmi2_import_cancel_step_res_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_cancel_step_res, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_cancel_step_res, status_),
-  };
-  fmi2_import_cancel_step_res_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_cancel_step_res_descriptor_,
-      fmi2_import_cancel_step_res::default_instance_,
-      fmi2_import_cancel_step_res_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_cancel_step_res, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_cancel_step_res, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_cancel_step_res));
-  fmi2_import_do_step_req_descriptor_ = file->message_type(18);
-  static const int fmi2_import_do_step_req_offsets_[5] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_do_step_req, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_do_step_req, fmuid_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_do_step_req, currentcommunicationpoint_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_do_step_req, communicationstepsize_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_do_step_req, newstep_),
-  };
-  fmi2_import_do_step_req_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_do_step_req_descriptor_,
-      fmi2_import_do_step_req::default_instance_,
-      fmi2_import_do_step_req_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_do_step_req, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_do_step_req, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_do_step_req));
-  fmi2_import_do_step_res_descriptor_ = file->message_type(19);
-  static const int fmi2_import_do_step_res_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_do_step_res, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_do_step_res, status_),
-  };
-  fmi2_import_do_step_res_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_do_step_res_descriptor_,
-      fmi2_import_do_step_res::default_instance_,
-      fmi2_import_do_step_res_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_do_step_res, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_do_step_res, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_do_step_res));
-  fmi2_import_get_status_req_descriptor_ = file->message_type(20);
-  static const int fmi2_import_get_status_req_offsets_[3] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_status_req, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_status_req, fmuid_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_status_req, status_),
-  };
-  fmi2_import_get_status_req_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_get_status_req_descriptor_,
-      fmi2_import_get_status_req::default_instance_,
-      fmi2_import_get_status_req_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_status_req, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_status_req, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_get_status_req));
-  fmi2_import_get_status_res_descriptor_ = file->message_type(21);
-  static const int fmi2_import_get_status_res_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_status_res, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_status_res, value_),
-  };
-  fmi2_import_get_status_res_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_get_status_res_descriptor_,
-      fmi2_import_get_status_res::default_instance_,
-      fmi2_import_get_status_res_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_status_res, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_status_res, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_get_status_res));
-  fmi2_import_get_real_status_req_descriptor_ = file->message_type(22);
-  static const int fmi2_import_get_real_status_req_offsets_[3] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_real_status_req, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_real_status_req, fmuid_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_real_status_req, kind_),
-  };
-  fmi2_import_get_real_status_req_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_get_real_status_req_descriptor_,
-      fmi2_import_get_real_status_req::default_instance_,
-      fmi2_import_get_real_status_req_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_real_status_req, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_real_status_req, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_get_real_status_req));
-  fmi2_import_get_real_status_res_descriptor_ = file->message_type(23);
-  static const int fmi2_import_get_real_status_res_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_real_status_res, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_real_status_res, value_),
-  };
-  fmi2_import_get_real_status_res_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_get_real_status_res_descriptor_,
-      fmi2_import_get_real_status_res::default_instance_,
-      fmi2_import_get_real_status_res_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_real_status_res, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_real_status_res, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_get_real_status_res));
-  fmi2_import_get_integer_status_req_descriptor_ = file->message_type(24);
-  static const int fmi2_import_get_integer_status_req_offsets_[3] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_integer_status_req, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_integer_status_req, fmuid_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_integer_status_req, kind_),
-  };
-  fmi2_import_get_integer_status_req_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_get_integer_status_req_descriptor_,
-      fmi2_import_get_integer_status_req::default_instance_,
-      fmi2_import_get_integer_status_req_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_integer_status_req, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_integer_status_req, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_get_integer_status_req));
-  fmi2_import_get_integer_status_res_descriptor_ = file->message_type(25);
-  static const int fmi2_import_get_integer_status_res_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_integer_status_res, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_integer_status_res, value_),
-  };
-  fmi2_import_get_integer_status_res_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_get_integer_status_res_descriptor_,
-      fmi2_import_get_integer_status_res::default_instance_,
-      fmi2_import_get_integer_status_res_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_integer_status_res, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_integer_status_res, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_get_integer_status_res));
-  fmi2_import_get_boolean_status_req_descriptor_ = file->message_type(26);
-  static const int fmi2_import_get_boolean_status_req_offsets_[3] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_boolean_status_req, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_boolean_status_req, fmuid_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_boolean_status_req, kind_),
-  };
-  fmi2_import_get_boolean_status_req_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_get_boolean_status_req_descriptor_,
-      fmi2_import_get_boolean_status_req::default_instance_,
-      fmi2_import_get_boolean_status_req_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_boolean_status_req, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_boolean_status_req, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_get_boolean_status_req));
-  fmi2_import_get_boolean_status_res_descriptor_ = file->message_type(27);
-  static const int fmi2_import_get_boolean_status_res_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_boolean_status_res, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_boolean_status_res, value_),
-  };
-  fmi2_import_get_boolean_status_res_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_get_boolean_status_res_descriptor_,
-      fmi2_import_get_boolean_status_res::default_instance_,
-      fmi2_import_get_boolean_status_res_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_boolean_status_res, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_boolean_status_res, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_get_boolean_status_res));
-  fmi2_import_get_string_status_req_descriptor_ = file->message_type(28);
-  static const int fmi2_import_get_string_status_req_offsets_[3] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_string_status_req, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_string_status_req, fmuid_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_string_status_req, kind_),
-  };
-  fmi2_import_get_string_status_req_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_get_string_status_req_descriptor_,
-      fmi2_import_get_string_status_req::default_instance_,
-      fmi2_import_get_string_status_req_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_string_status_req, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_string_status_req, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_get_string_status_req));
-  fmi2_import_get_string_status_res_descriptor_ = file->message_type(29);
-  static const int fmi2_import_get_string_status_res_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_string_status_res, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_string_status_res, value_),
-  };
-  fmi2_import_get_string_status_res_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_get_string_status_res_descriptor_,
-      fmi2_import_get_string_status_res::default_instance_,
-      fmi2_import_get_string_status_res_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_string_status_res, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_string_status_res, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_get_string_status_res));
-  fmi2_import_instantiate_model_req_descriptor_ = file->message_type(30);
-  static const int fmi2_import_instantiate_model_req_offsets_[5] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_instantiate_model_req, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_instantiate_model_req, fmuid_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_instantiate_model_req, instancename_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_instantiate_model_req, resourcelocation_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_instantiate_model_req, visible_),
-  };
-  fmi2_import_instantiate_model_req_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_instantiate_model_req_descriptor_,
-      fmi2_import_instantiate_model_req::default_instance_,
-      fmi2_import_instantiate_model_req_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_instantiate_model_req, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_instantiate_model_req, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_instantiate_model_req));
-  fmi2_import_instantiate_model_res_descriptor_ = file->message_type(31);
-  static const int fmi2_import_instantiate_model_res_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_instantiate_model_res, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_instantiate_model_res, status_),
-  };
-  fmi2_import_instantiate_model_res_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_instantiate_model_res_descriptor_,
-      fmi2_import_instantiate_model_res::default_instance_,
-      fmi2_import_instantiate_model_res_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_instantiate_model_res, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_instantiate_model_res, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_instantiate_model_res));
-  fmi2_import_free_model_instance_req_descriptor_ = file->message_type(32);
-  static const int fmi2_import_free_model_instance_req_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_free_model_instance_req, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_free_model_instance_req, fmuid_),
-  };
-  fmi2_import_free_model_instance_req_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_free_model_instance_req_descriptor_,
-      fmi2_import_free_model_instance_req::default_instance_,
-      fmi2_import_free_model_instance_req_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_free_model_instance_req, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_free_model_instance_req, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_free_model_instance_req));
-  fmi2_import_free_model_instance_res_descriptor_ = file->message_type(33);
-  static const int fmi2_import_free_model_instance_res_offsets_[1] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_free_model_instance_res, message_id_),
-  };
-  fmi2_import_free_model_instance_res_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_free_model_instance_res_descriptor_,
-      fmi2_import_free_model_instance_res::default_instance_,
-      fmi2_import_free_model_instance_res_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_free_model_instance_res, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_free_model_instance_res, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_free_model_instance_res));
-  fmi2_import_set_time_req_descriptor_ = file->message_type(34);
-  static const int fmi2_import_set_time_req_offsets_[3] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_time_req, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_time_req, fmuid_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_time_req, time_),
-  };
-  fmi2_import_set_time_req_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_set_time_req_descriptor_,
-      fmi2_import_set_time_req::default_instance_,
-      fmi2_import_set_time_req_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_time_req, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_time_req, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_set_time_req));
-  fmi2_import_set_time_res_descriptor_ = file->message_type(35);
-  static const int fmi2_import_set_time_res_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_time_res, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_time_res, status_),
-  };
-  fmi2_import_set_time_res_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_set_time_res_descriptor_,
-      fmi2_import_set_time_res::default_instance_,
-      fmi2_import_set_time_res_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_time_res, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_time_res, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_set_time_res));
-  fmi2_import_set_continuous_states_req_descriptor_ = file->message_type(36);
-  static const int fmi2_import_set_continuous_states_req_offsets_[3] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_continuous_states_req, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_continuous_states_req, fmuid_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_continuous_states_req, x_),
-  };
-  fmi2_import_set_continuous_states_req_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_set_continuous_states_req_descriptor_,
-      fmi2_import_set_continuous_states_req::default_instance_,
-      fmi2_import_set_continuous_states_req_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_continuous_states_req, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_continuous_states_req, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_set_continuous_states_req));
-  fmi2_import_set_continuous_states_res_descriptor_ = file->message_type(37);
-  static const int fmi2_import_set_continuous_states_res_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_continuous_states_res, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_continuous_states_res, status_),
-  };
-  fmi2_import_set_continuous_states_res_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_set_continuous_states_res_descriptor_,
-      fmi2_import_set_continuous_states_res::default_instance_,
-      fmi2_import_set_continuous_states_res_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_continuous_states_res, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_continuous_states_res, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_set_continuous_states_res));
-  fmi2_import_completed_integrator_step_req_descriptor_ = file->message_type(38);
-  static const int fmi2_import_completed_integrator_step_req_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_completed_integrator_step_req, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_completed_integrator_step_req, fmuid_),
-  };
-  fmi2_import_completed_integrator_step_req_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_completed_integrator_step_req_descriptor_,
-      fmi2_import_completed_integrator_step_req::default_instance_,
-      fmi2_import_completed_integrator_step_req_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_completed_integrator_step_req, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_completed_integrator_step_req, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_completed_integrator_step_req));
-  fmi2_import_completed_integrator_step_res_descriptor_ = file->message_type(39);
-  static const int fmi2_import_completed_integrator_step_res_offsets_[3] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_completed_integrator_step_res, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_completed_integrator_step_res, calleventupdate_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_completed_integrator_step_res, status_),
-  };
-  fmi2_import_completed_integrator_step_res_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_completed_integrator_step_res_descriptor_,
-      fmi2_import_completed_integrator_step_res::default_instance_,
-      fmi2_import_completed_integrator_step_res_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_completed_integrator_step_res, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_completed_integrator_step_res, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_completed_integrator_step_res));
-  fmi2_import_initialize_model_req_descriptor_ = file->message_type(40);
-  static const int fmi2_import_initialize_model_req_offsets_[4] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_initialize_model_req, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_initialize_model_req, fmuid_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_initialize_model_req, tolerancecontrolled_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_initialize_model_req, relativetolerance_),
-  };
-  fmi2_import_initialize_model_req_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_initialize_model_req_descriptor_,
-      fmi2_import_initialize_model_req::default_instance_,
-      fmi2_import_initialize_model_req_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_initialize_model_req, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_initialize_model_req, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_initialize_model_req));
-  fmi2_import_initialize_model_res_descriptor_ = file->message_type(41);
-  static const int fmi2_import_initialize_model_res_offsets_[3] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_initialize_model_res, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_initialize_model_res, eventinfo_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_initialize_model_res, status_),
-  };
-  fmi2_import_initialize_model_res_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_initialize_model_res_descriptor_,
-      fmi2_import_initialize_model_res::default_instance_,
-      fmi2_import_initialize_model_res_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_initialize_model_res, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_initialize_model_res, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_initialize_model_res));
-  fmi2_import_get_derivatives_req_descriptor_ = file->message_type(42);
-  static const int fmi2_import_get_derivatives_req_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_derivatives_req, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_derivatives_req, fmuid_),
-  };
-  fmi2_import_get_derivatives_req_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_get_derivatives_req_descriptor_,
-      fmi2_import_get_derivatives_req::default_instance_,
-      fmi2_import_get_derivatives_req_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_derivatives_req, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_derivatives_req, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_get_derivatives_req));
-  fmi2_import_get_derivatives_res_descriptor_ = file->message_type(43);
-  static const int fmi2_import_get_derivatives_res_offsets_[3] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_derivatives_res, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_derivatives_res, derivatives_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_derivatives_res, status_),
-  };
-  fmi2_import_get_derivatives_res_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_get_derivatives_res_descriptor_,
-      fmi2_import_get_derivatives_res::default_instance_,
-      fmi2_import_get_derivatives_res_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_derivatives_res, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_derivatives_res, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_get_derivatives_res));
-  fmi2_import_get_event_indicators_req_descriptor_ = file->message_type(44);
-  static const int fmi2_import_get_event_indicators_req_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_event_indicators_req, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_event_indicators_req, fmuid_),
-  };
-  fmi2_import_get_event_indicators_req_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_get_event_indicators_req_descriptor_,
-      fmi2_import_get_event_indicators_req::default_instance_,
-      fmi2_import_get_event_indicators_req_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_event_indicators_req, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_event_indicators_req, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_get_event_indicators_req));
-  fmi2_import_get_event_indicators_res_descriptor_ = file->message_type(45);
-  static const int fmi2_import_get_event_indicators_res_offsets_[3] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_event_indicators_res, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_event_indicators_res, eventindicators_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_event_indicators_res, status_),
-  };
-  fmi2_import_get_event_indicators_res_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_get_event_indicators_res_descriptor_,
-      fmi2_import_get_event_indicators_res::default_instance_,
-      fmi2_import_get_event_indicators_res_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_event_indicators_res, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_event_indicators_res, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_get_event_indicators_res));
-  fmi2_import_eventUpdate_req_descriptor_ = file->message_type(46);
-  static const int fmi2_import_eventUpdate_req_offsets_[3] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_eventUpdate_req, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_eventUpdate_req, fmuid_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_eventUpdate_req, intermediateresults_),
-  };
-  fmi2_import_eventUpdate_req_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_eventUpdate_req_descriptor_,
-      fmi2_import_eventUpdate_req::default_instance_,
-      fmi2_import_eventUpdate_req_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_eventUpdate_req, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_eventUpdate_req, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_eventUpdate_req));
-  fmi2_import_eventUpdate_res_descriptor_ = file->message_type(47);
-  static const int fmi2_import_eventUpdate_res_offsets_[3] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_eventUpdate_res, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_eventUpdate_res, eventinfo_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_eventUpdate_res, status_),
-  };
-  fmi2_import_eventUpdate_res_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_eventUpdate_res_descriptor_,
-      fmi2_import_eventUpdate_res::default_instance_,
-      fmi2_import_eventUpdate_res_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_eventUpdate_res, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_eventUpdate_res, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_eventUpdate_res));
-  fmi2_import_completed_event_iteration_req_descriptor_ = file->message_type(48);
-  static const int fmi2_import_completed_event_iteration_req_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_completed_event_iteration_req, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_completed_event_iteration_req, fmuid_),
-  };
-  fmi2_import_completed_event_iteration_req_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_completed_event_iteration_req_descriptor_,
-      fmi2_import_completed_event_iteration_req::default_instance_,
-      fmi2_import_completed_event_iteration_req_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_completed_event_iteration_req, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_completed_event_iteration_req, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_completed_event_iteration_req));
-  fmi2_import_completed_event_iteration_res_descriptor_ = file->message_type(49);
-  static const int fmi2_import_completed_event_iteration_res_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_completed_event_iteration_res, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_completed_event_iteration_res, status_),
-  };
-  fmi2_import_completed_event_iteration_res_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_completed_event_iteration_res_descriptor_,
-      fmi2_import_completed_event_iteration_res::default_instance_,
-      fmi2_import_completed_event_iteration_res_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_completed_event_iteration_res, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_completed_event_iteration_res, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_completed_event_iteration_res));
-  fmi2_import_get_continuous_states_req_descriptor_ = file->message_type(50);
-  static const int fmi2_import_get_continuous_states_req_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_continuous_states_req, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_continuous_states_req, fmuid_),
-  };
-  fmi2_import_get_continuous_states_req_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_get_continuous_states_req_descriptor_,
-      fmi2_import_get_continuous_states_req::default_instance_,
-      fmi2_import_get_continuous_states_req_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_continuous_states_req, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_continuous_states_req, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_get_continuous_states_req));
-  fmi2_import_get_continuous_states_res_descriptor_ = file->message_type(51);
-  static const int fmi2_import_get_continuous_states_res_offsets_[3] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_continuous_states_res, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_continuous_states_res, states_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_continuous_states_res, status_),
-  };
-  fmi2_import_get_continuous_states_res_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_get_continuous_states_res_descriptor_,
-      fmi2_import_get_continuous_states_res::default_instance_,
-      fmi2_import_get_continuous_states_res_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_continuous_states_res, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_continuous_states_res, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_get_continuous_states_res));
-  fmi2_import_get_nominal_continuous_states_req_descriptor_ = file->message_type(52);
-  static const int fmi2_import_get_nominal_continuous_states_req_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_nominal_continuous_states_req, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_nominal_continuous_states_req, fmuid_),
-  };
-  fmi2_import_get_nominal_continuous_states_req_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_get_nominal_continuous_states_req_descriptor_,
-      fmi2_import_get_nominal_continuous_states_req::default_instance_,
-      fmi2_import_get_nominal_continuous_states_req_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_nominal_continuous_states_req, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_nominal_continuous_states_req, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_get_nominal_continuous_states_req));
-  fmi2_import_get_nominal_continuous_states_res_descriptor_ = file->message_type(53);
-  static const int fmi2_import_get_nominal_continuous_states_res_offsets_[3] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_nominal_continuous_states_res, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_nominal_continuous_states_res, nominal_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_nominal_continuous_states_res, status_),
-  };
-  fmi2_import_get_nominal_continuous_states_res_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_get_nominal_continuous_states_res_descriptor_,
-      fmi2_import_get_nominal_continuous_states_res::default_instance_,
-      fmi2_import_get_nominal_continuous_states_res_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_nominal_continuous_states_res, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_nominal_continuous_states_res, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_get_nominal_continuous_states_res));
-  fmi2_import_terminate_req_descriptor_ = file->message_type(54);
-  static const int fmi2_import_terminate_req_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_terminate_req, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_terminate_req, fmuid_),
-  };
-  fmi2_import_terminate_req_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_terminate_req_descriptor_,
-      fmi2_import_terminate_req::default_instance_,
-      fmi2_import_terminate_req_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_terminate_req, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_terminate_req, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_terminate_req));
-  fmi2_import_terminate_res_descriptor_ = file->message_type(55);
-  static const int fmi2_import_terminate_res_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_terminate_res, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_terminate_res, status_),
-  };
-  fmi2_import_terminate_res_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_terminate_res_descriptor_,
-      fmi2_import_terminate_res::default_instance_,
-      fmi2_import_terminate_res_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_terminate_res, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_terminate_res, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_terminate_res));
-  fmi2_import_get_version_req_descriptor_ = file->message_type(56);
-  static const int fmi2_import_get_version_req_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_version_req, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_version_req, fmuid_),
-  };
-  fmi2_import_get_version_req_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_get_version_req_descriptor_,
-      fmi2_import_get_version_req::default_instance_,
-      fmi2_import_get_version_req_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_version_req, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_version_req, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_get_version_req));
-  fmi2_import_get_version_res_descriptor_ = file->message_type(57);
-  static const int fmi2_import_get_version_res_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_version_res, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_version_res, version_),
-  };
-  fmi2_import_get_version_res_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_get_version_res_descriptor_,
-      fmi2_import_get_version_res::default_instance_,
-      fmi2_import_get_version_res_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_version_res, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_version_res, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_get_version_res));
-  fmi2_import_set_debug_logging_req_descriptor_ = file->message_type(58);
-  static const int fmi2_import_set_debug_logging_req_offsets_[4] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_debug_logging_req, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_debug_logging_req, fmuid_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_debug_logging_req, loggingon_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_debug_logging_req, categories_),
-  };
-  fmi2_import_set_debug_logging_req_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_set_debug_logging_req_descriptor_,
-      fmi2_import_set_debug_logging_req::default_instance_,
-      fmi2_import_set_debug_logging_req_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_debug_logging_req, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_debug_logging_req, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_set_debug_logging_req));
-  fmi2_import_set_debug_logging_res_descriptor_ = file->message_type(59);
-  static const int fmi2_import_set_debug_logging_res_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_debug_logging_res, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_debug_logging_res, status_),
-  };
-  fmi2_import_set_debug_logging_res_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_set_debug_logging_res_descriptor_,
-      fmi2_import_set_debug_logging_res::default_instance_,
-      fmi2_import_set_debug_logging_res_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_debug_logging_res, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_debug_logging_res, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_set_debug_logging_res));
-  fmi2_import_set_real_req_descriptor_ = file->message_type(60);
-  static const int fmi2_import_set_real_req_offsets_[4] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_real_req, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_real_req, fmuid_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_real_req, valuereferences_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_real_req, values_),
-  };
-  fmi2_import_set_real_req_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_set_real_req_descriptor_,
-      fmi2_import_set_real_req::default_instance_,
-      fmi2_import_set_real_req_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_real_req, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_real_req, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_set_real_req));
-  fmi2_import_set_real_res_descriptor_ = file->message_type(61);
-  static const int fmi2_import_set_real_res_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_real_res, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_real_res, status_),
-  };
-  fmi2_import_set_real_res_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_set_real_res_descriptor_,
-      fmi2_import_set_real_res::default_instance_,
-      fmi2_import_set_real_res_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_real_res, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_real_res, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_set_real_res));
-  fmi2_import_set_integer_req_descriptor_ = file->message_type(62);
-  static const int fmi2_import_set_integer_req_offsets_[4] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_integer_req, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_integer_req, fmuid_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_integer_req, valuereferences_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_integer_req, values_),
-  };
-  fmi2_import_set_integer_req_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_set_integer_req_descriptor_,
-      fmi2_import_set_integer_req::default_instance_,
-      fmi2_import_set_integer_req_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_integer_req, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_integer_req, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_set_integer_req));
-  fmi2_import_set_integer_res_descriptor_ = file->message_type(63);
-  static const int fmi2_import_set_integer_res_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_integer_res, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_integer_res, status_),
-  };
-  fmi2_import_set_integer_res_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_set_integer_res_descriptor_,
-      fmi2_import_set_integer_res::default_instance_,
-      fmi2_import_set_integer_res_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_integer_res, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_integer_res, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_set_integer_res));
-  fmi2_import_set_boolean_req_descriptor_ = file->message_type(64);
-  static const int fmi2_import_set_boolean_req_offsets_[4] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_boolean_req, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_boolean_req, fmuid_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_boolean_req, valuereferences_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_boolean_req, values_),
-  };
-  fmi2_import_set_boolean_req_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_set_boolean_req_descriptor_,
-      fmi2_import_set_boolean_req::default_instance_,
-      fmi2_import_set_boolean_req_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_boolean_req, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_boolean_req, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_set_boolean_req));
-  fmi2_import_set_boolean_res_descriptor_ = file->message_type(65);
-  static const int fmi2_import_set_boolean_res_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_boolean_res, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_boolean_res, status_),
-  };
-  fmi2_import_set_boolean_res_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_set_boolean_res_descriptor_,
-      fmi2_import_set_boolean_res::default_instance_,
-      fmi2_import_set_boolean_res_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_boolean_res, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_boolean_res, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_set_boolean_res));
-  fmi2_import_set_string_req_descriptor_ = file->message_type(66);
-  static const int fmi2_import_set_string_req_offsets_[4] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_string_req, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_string_req, fmuid_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_string_req, valuereferences_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_string_req, values_),
-  };
-  fmi2_import_set_string_req_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_set_string_req_descriptor_,
-      fmi2_import_set_string_req::default_instance_,
-      fmi2_import_set_string_req_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_string_req, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_string_req, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_set_string_req));
-  fmi2_import_set_string_res_descriptor_ = file->message_type(67);
-  static const int fmi2_import_set_string_res_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_string_res, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_string_res, status_),
-  };
-  fmi2_import_set_string_res_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_set_string_res_descriptor_,
-      fmi2_import_set_string_res::default_instance_,
-      fmi2_import_set_string_res_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_string_res, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_string_res, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_set_string_res));
-  fmi2_import_get_real_req_descriptor_ = file->message_type(68);
-  static const int fmi2_import_get_real_req_offsets_[3] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_real_req, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_real_req, fmuid_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_real_req, valuereferences_),
-  };
-  fmi2_import_get_real_req_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_get_real_req_descriptor_,
-      fmi2_import_get_real_req::default_instance_,
-      fmi2_import_get_real_req_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_real_req, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_real_req, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_get_real_req));
-  fmi2_import_get_real_res_descriptor_ = file->message_type(69);
-  static const int fmi2_import_get_real_res_offsets_[3] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_real_res, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_real_res, values_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_real_res, status_),
-  };
-  fmi2_import_get_real_res_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_get_real_res_descriptor_,
-      fmi2_import_get_real_res::default_instance_,
-      fmi2_import_get_real_res_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_real_res, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_real_res, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_get_real_res));
-  fmi2_import_get_integer_req_descriptor_ = file->message_type(70);
-  static const int fmi2_import_get_integer_req_offsets_[3] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_integer_req, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_integer_req, fmuid_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_integer_req, valuereferences_),
-  };
-  fmi2_import_get_integer_req_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_get_integer_req_descriptor_,
-      fmi2_import_get_integer_req::default_instance_,
-      fmi2_import_get_integer_req_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_integer_req, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_integer_req, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_get_integer_req));
-  fmi2_import_get_integer_res_descriptor_ = file->message_type(71);
-  static const int fmi2_import_get_integer_res_offsets_[3] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_integer_res, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_integer_res, values_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_integer_res, status_),
-  };
-  fmi2_import_get_integer_res_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_get_integer_res_descriptor_,
-      fmi2_import_get_integer_res::default_instance_,
-      fmi2_import_get_integer_res_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_integer_res, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_integer_res, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_get_integer_res));
-  fmi2_import_get_boolean_req_descriptor_ = file->message_type(72);
-  static const int fmi2_import_get_boolean_req_offsets_[3] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_boolean_req, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_boolean_req, fmuid_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_boolean_req, valuereferences_),
-  };
-  fmi2_import_get_boolean_req_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_get_boolean_req_descriptor_,
-      fmi2_import_get_boolean_req::default_instance_,
-      fmi2_import_get_boolean_req_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_boolean_req, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_boolean_req, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_get_boolean_req));
-  fmi2_import_get_boolean_res_descriptor_ = file->message_type(73);
-  static const int fmi2_import_get_boolean_res_offsets_[3] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_boolean_res, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_boolean_res, values_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_boolean_res, status_),
-  };
-  fmi2_import_get_boolean_res_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_get_boolean_res_descriptor_,
-      fmi2_import_get_boolean_res::default_instance_,
-      fmi2_import_get_boolean_res_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_boolean_res, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_boolean_res, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_get_boolean_res));
-  fmi2_import_get_string_req_descriptor_ = file->message_type(74);
-  static const int fmi2_import_get_string_req_offsets_[3] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_string_req, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_string_req, fmuid_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_string_req, valuereferences_),
-  };
-  fmi2_import_get_string_req_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_get_string_req_descriptor_,
-      fmi2_import_get_string_req::default_instance_,
-      fmi2_import_get_string_req_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_string_req, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_string_req, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_get_string_req));
-  fmi2_import_get_string_res_descriptor_ = file->message_type(75);
-  static const int fmi2_import_get_string_res_offsets_[3] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_string_res, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_string_res, values_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_string_res, status_),
-  };
-  fmi2_import_get_string_res_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_get_string_res_descriptor_,
-      fmi2_import_get_string_res::default_instance_,
-      fmi2_import_get_string_res_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_string_res, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_string_res, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_get_string_res));
-  char_req_descriptor_ = file->message_type(76);
-  static const int char_req_offsets_[1] = {
-  };
-  char_req_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      char_req_descriptor_,
-      char_req::default_instance_,
-      char_req_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(char_req, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(char_req, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(char_req));
-  char_res_descriptor_ = file->message_type(77);
-  static const int char_res_offsets_[1] = {
-  };
-  char_res_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      char_res_descriptor_,
-      char_res::default_instance_,
-      char_res_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(char_res, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(char_res, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(char_res));
-  fmi2_import_get_fmu_state_req_descriptor_ = file->message_type(78);
-  static const int fmi2_import_get_fmu_state_req_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_fmu_state_req, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_fmu_state_req, fmuid_),
-  };
-  fmi2_import_get_fmu_state_req_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_get_fmu_state_req_descriptor_,
-      fmi2_import_get_fmu_state_req::default_instance_,
-      fmi2_import_get_fmu_state_req_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_fmu_state_req, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_fmu_state_req, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_get_fmu_state_req));
-  fmi2_import_get_fmu_state_res_descriptor_ = file->message_type(79);
-  static const int fmi2_import_get_fmu_state_res_offsets_[3] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_fmu_state_res, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_fmu_state_res, stateid_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_fmu_state_res, status_),
-  };
-  fmi2_import_get_fmu_state_res_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_get_fmu_state_res_descriptor_,
-      fmi2_import_get_fmu_state_res::default_instance_,
-      fmi2_import_get_fmu_state_res_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_fmu_state_res, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_fmu_state_res, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_get_fmu_state_res));
-  fmi2_import_set_fmu_state_req_descriptor_ = file->message_type(80);
-  static const int fmi2_import_set_fmu_state_req_offsets_[3] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_fmu_state_req, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_fmu_state_req, fmuid_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_fmu_state_req, stateid_),
-  };
-  fmi2_import_set_fmu_state_req_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_set_fmu_state_req_descriptor_,
-      fmi2_import_set_fmu_state_req::default_instance_,
-      fmi2_import_set_fmu_state_req_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_fmu_state_req, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_fmu_state_req, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_set_fmu_state_req));
-  fmi2_import_set_fmu_state_res_descriptor_ = file->message_type(81);
-  static const int fmi2_import_set_fmu_state_res_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_fmu_state_res, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_fmu_state_res, status_),
-  };
-  fmi2_import_set_fmu_state_res_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_set_fmu_state_res_descriptor_,
-      fmi2_import_set_fmu_state_res::default_instance_,
-      fmi2_import_set_fmu_state_res_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_fmu_state_res, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_set_fmu_state_res, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_set_fmu_state_res));
-  fmi2_import_free_fmu_state_req_descriptor_ = file->message_type(82);
-  static const int fmi2_import_free_fmu_state_req_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_free_fmu_state_req, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_free_fmu_state_req, stateid_),
-  };
-  fmi2_import_free_fmu_state_req_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_free_fmu_state_req_descriptor_,
-      fmi2_import_free_fmu_state_req::default_instance_,
-      fmi2_import_free_fmu_state_req_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_free_fmu_state_req, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_free_fmu_state_req, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_free_fmu_state_req));
-  fmi2_import_free_fmu_state_res_descriptor_ = file->message_type(83);
-  static const int fmi2_import_free_fmu_state_res_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_free_fmu_state_res, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_free_fmu_state_res, status_),
-  };
-  fmi2_import_free_fmu_state_res_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_free_fmu_state_res_descriptor_,
-      fmi2_import_free_fmu_state_res::default_instance_,
-      fmi2_import_free_fmu_state_res_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_free_fmu_state_res, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_free_fmu_state_res, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_free_fmu_state_res));
-  fmi2_import_get_directional_derivative_req_descriptor_ = file->message_type(84);
-  static const int fmi2_import_get_directional_derivative_req_offsets_[5] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_directional_derivative_req, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_directional_derivative_req, fmuid_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_directional_derivative_req, v_ref_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_directional_derivative_req, z_ref_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_directional_derivative_req, dv_),
-  };
-  fmi2_import_get_directional_derivative_req_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_get_directional_derivative_req_descriptor_,
-      fmi2_import_get_directional_derivative_req::default_instance_,
-      fmi2_import_get_directional_derivative_req_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_directional_derivative_req, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_directional_derivative_req, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_get_directional_derivative_req));
-  fmi2_import_get_directional_derivative_res_descriptor_ = file->message_type(85);
-  static const int fmi2_import_get_directional_derivative_res_offsets_[3] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_directional_derivative_res, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_directional_derivative_res, dz_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_directional_derivative_res, status_),
-  };
-  fmi2_import_get_directional_derivative_res_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      fmi2_import_get_directional_derivative_res_descriptor_,
-      fmi2_import_get_directional_derivative_res::default_instance_,
-      fmi2_import_get_directional_derivative_res_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_directional_derivative_res, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(fmi2_import_get_directional_derivative_res, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(fmi2_import_get_directional_derivative_res));
-  get_xml_req_descriptor_ = file->message_type(86);
-  static const int get_xml_req_offsets_[2] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(get_xml_req, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(get_xml_req, fmuid_),
-  };
-  get_xml_req_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      get_xml_req_descriptor_,
-      get_xml_req::default_instance_,
-      get_xml_req_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(get_xml_req, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(get_xml_req, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(get_xml_req));
-  get_xml_res_descriptor_ = file->message_type(87);
-  static const int get_xml_res_offsets_[3] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(get_xml_res, message_id_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(get_xml_res, loglevel_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(get_xml_res, xml_),
-  };
-  get_xml_res_reflection_ =
-    new ::google::protobuf::internal::GeneratedMessageReflection(
-      get_xml_res_descriptor_,
-      get_xml_res::default_instance_,
-      get_xml_res_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(get_xml_res, _has_bits_[0]),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(get_xml_res, _unknown_fields_),
-      -1,
-      ::google::protobuf::DescriptorPool::generated_pool(),
-      ::google::protobuf::MessageFactory::generated_factory(),
-      sizeof(get_xml_res));
-  jm_log_level_enu_t_descriptor_ = file->enum_type(0);
-  fmi2_status_t_descriptor_ = file->enum_type(1);
-  fmi2_status_kind_t_descriptor_ = file->enum_type(2);
-  jm_status_enu_t_descriptor_ = file->enum_type(3);
-}
-
-namespace {
-
-GOOGLE_PROTOBUF_DECLARE_ONCE(protobuf_AssignDescriptors_once_);
-inline void protobuf_AssignDescriptorsOnce() {
-  ::google::protobuf::GoogleOnceInit(&protobuf_AssignDescriptors_once_,
-                 &protobuf_AssignDesc_fmitcp_2eproto);
-}
-
-void protobuf_RegisterTypes(const ::std::string&) {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmitcp_message_descriptor_, &fmitcp_message::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_event_info_t_descriptor_, &fmi2_event_info_t::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_instantiate_req_descriptor_, &fmi2_import_instantiate_req::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_instantiate_res_descriptor_, &fmi2_import_instantiate_res::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_initialize_slave_req_descriptor_, &fmi2_import_initialize_slave_req::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_initialize_slave_res_descriptor_, &fmi2_import_initialize_slave_res::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_terminate_slave_req_descriptor_, &fmi2_import_terminate_slave_req::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_terminate_slave_res_descriptor_, &fmi2_import_terminate_slave_res::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_reset_slave_req_descriptor_, &fmi2_import_reset_slave_req::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_reset_slave_res_descriptor_, &fmi2_import_reset_slave_res::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_free_slave_instance_req_descriptor_, &fmi2_import_free_slave_instance_req::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_free_slave_instance_res_descriptor_, &fmi2_import_free_slave_instance_res::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_set_real_input_derivatives_req_descriptor_, &fmi2_import_set_real_input_derivatives_req::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_set_real_input_derivatives_res_descriptor_, &fmi2_import_set_real_input_derivatives_res::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_get_real_output_derivatives_req_descriptor_, &fmi2_import_get_real_output_derivatives_req::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_get_real_output_derivatives_res_descriptor_, &fmi2_import_get_real_output_derivatives_res::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_cancel_step_req_descriptor_, &fmi2_import_cancel_step_req::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_cancel_step_res_descriptor_, &fmi2_import_cancel_step_res::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_do_step_req_descriptor_, &fmi2_import_do_step_req::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_do_step_res_descriptor_, &fmi2_import_do_step_res::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_get_status_req_descriptor_, &fmi2_import_get_status_req::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_get_status_res_descriptor_, &fmi2_import_get_status_res::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_get_real_status_req_descriptor_, &fmi2_import_get_real_status_req::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_get_real_status_res_descriptor_, &fmi2_import_get_real_status_res::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_get_integer_status_req_descriptor_, &fmi2_import_get_integer_status_req::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_get_integer_status_res_descriptor_, &fmi2_import_get_integer_status_res::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_get_boolean_status_req_descriptor_, &fmi2_import_get_boolean_status_req::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_get_boolean_status_res_descriptor_, &fmi2_import_get_boolean_status_res::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_get_string_status_req_descriptor_, &fmi2_import_get_string_status_req::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_get_string_status_res_descriptor_, &fmi2_import_get_string_status_res::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_instantiate_model_req_descriptor_, &fmi2_import_instantiate_model_req::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_instantiate_model_res_descriptor_, &fmi2_import_instantiate_model_res::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_free_model_instance_req_descriptor_, &fmi2_import_free_model_instance_req::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_free_model_instance_res_descriptor_, &fmi2_import_free_model_instance_res::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_set_time_req_descriptor_, &fmi2_import_set_time_req::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_set_time_res_descriptor_, &fmi2_import_set_time_res::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_set_continuous_states_req_descriptor_, &fmi2_import_set_continuous_states_req::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_set_continuous_states_res_descriptor_, &fmi2_import_set_continuous_states_res::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_completed_integrator_step_req_descriptor_, &fmi2_import_completed_integrator_step_req::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_completed_integrator_step_res_descriptor_, &fmi2_import_completed_integrator_step_res::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_initialize_model_req_descriptor_, &fmi2_import_initialize_model_req::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_initialize_model_res_descriptor_, &fmi2_import_initialize_model_res::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_get_derivatives_req_descriptor_, &fmi2_import_get_derivatives_req::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_get_derivatives_res_descriptor_, &fmi2_import_get_derivatives_res::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_get_event_indicators_req_descriptor_, &fmi2_import_get_event_indicators_req::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_get_event_indicators_res_descriptor_, &fmi2_import_get_event_indicators_res::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_eventUpdate_req_descriptor_, &fmi2_import_eventUpdate_req::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_eventUpdate_res_descriptor_, &fmi2_import_eventUpdate_res::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_completed_event_iteration_req_descriptor_, &fmi2_import_completed_event_iteration_req::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_completed_event_iteration_res_descriptor_, &fmi2_import_completed_event_iteration_res::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_get_continuous_states_req_descriptor_, &fmi2_import_get_continuous_states_req::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_get_continuous_states_res_descriptor_, &fmi2_import_get_continuous_states_res::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_get_nominal_continuous_states_req_descriptor_, &fmi2_import_get_nominal_continuous_states_req::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_get_nominal_continuous_states_res_descriptor_, &fmi2_import_get_nominal_continuous_states_res::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_terminate_req_descriptor_, &fmi2_import_terminate_req::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_terminate_res_descriptor_, &fmi2_import_terminate_res::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_get_version_req_descriptor_, &fmi2_import_get_version_req::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_get_version_res_descriptor_, &fmi2_import_get_version_res::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_set_debug_logging_req_descriptor_, &fmi2_import_set_debug_logging_req::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_set_debug_logging_res_descriptor_, &fmi2_import_set_debug_logging_res::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_set_real_req_descriptor_, &fmi2_import_set_real_req::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_set_real_res_descriptor_, &fmi2_import_set_real_res::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_set_integer_req_descriptor_, &fmi2_import_set_integer_req::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_set_integer_res_descriptor_, &fmi2_import_set_integer_res::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_set_boolean_req_descriptor_, &fmi2_import_set_boolean_req::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_set_boolean_res_descriptor_, &fmi2_import_set_boolean_res::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_set_string_req_descriptor_, &fmi2_import_set_string_req::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_set_string_res_descriptor_, &fmi2_import_set_string_res::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_get_real_req_descriptor_, &fmi2_import_get_real_req::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_get_real_res_descriptor_, &fmi2_import_get_real_res::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_get_integer_req_descriptor_, &fmi2_import_get_integer_req::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_get_integer_res_descriptor_, &fmi2_import_get_integer_res::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_get_boolean_req_descriptor_, &fmi2_import_get_boolean_req::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_get_boolean_res_descriptor_, &fmi2_import_get_boolean_res::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_get_string_req_descriptor_, &fmi2_import_get_string_req::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_get_string_res_descriptor_, &fmi2_import_get_string_res::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    char_req_descriptor_, &char_req::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    char_res_descriptor_, &char_res::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_get_fmu_state_req_descriptor_, &fmi2_import_get_fmu_state_req::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_get_fmu_state_res_descriptor_, &fmi2_import_get_fmu_state_res::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_set_fmu_state_req_descriptor_, &fmi2_import_set_fmu_state_req::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_set_fmu_state_res_descriptor_, &fmi2_import_set_fmu_state_res::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_free_fmu_state_req_descriptor_, &fmi2_import_free_fmu_state_req::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_free_fmu_state_res_descriptor_, &fmi2_import_free_fmu_state_res::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_get_directional_derivative_req_descriptor_, &fmi2_import_get_directional_derivative_req::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    fmi2_import_get_directional_derivative_res_descriptor_, &fmi2_import_get_directional_derivative_res::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    get_xml_req_descriptor_, &get_xml_req::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-    get_xml_res_descriptor_, &get_xml_res::default_instance());
-}
-
-}  // namespace
-
 void protobuf_ShutdownFile_fmitcp_2eproto() {
   delete fmitcp_message::default_instance_;
-  delete fmitcp_message_reflection_;
   delete fmi2_event_info_t::default_instance_;
-  delete fmi2_event_info_t_reflection_;
   delete fmi2_import_instantiate_req::default_instance_;
-  delete fmi2_import_instantiate_req_reflection_;
   delete fmi2_import_instantiate_res::default_instance_;
-  delete fmi2_import_instantiate_res_reflection_;
   delete fmi2_import_initialize_slave_req::default_instance_;
-  delete fmi2_import_initialize_slave_req_reflection_;
   delete fmi2_import_initialize_slave_res::default_instance_;
-  delete fmi2_import_initialize_slave_res_reflection_;
   delete fmi2_import_terminate_slave_req::default_instance_;
-  delete fmi2_import_terminate_slave_req_reflection_;
   delete fmi2_import_terminate_slave_res::default_instance_;
-  delete fmi2_import_terminate_slave_res_reflection_;
   delete fmi2_import_reset_slave_req::default_instance_;
-  delete fmi2_import_reset_slave_req_reflection_;
   delete fmi2_import_reset_slave_res::default_instance_;
-  delete fmi2_import_reset_slave_res_reflection_;
   delete fmi2_import_free_slave_instance_req::default_instance_;
-  delete fmi2_import_free_slave_instance_req_reflection_;
   delete fmi2_import_free_slave_instance_res::default_instance_;
-  delete fmi2_import_free_slave_instance_res_reflection_;
   delete fmi2_import_set_real_input_derivatives_req::default_instance_;
-  delete fmi2_import_set_real_input_derivatives_req_reflection_;
   delete fmi2_import_set_real_input_derivatives_res::default_instance_;
-  delete fmi2_import_set_real_input_derivatives_res_reflection_;
   delete fmi2_import_get_real_output_derivatives_req::default_instance_;
-  delete fmi2_import_get_real_output_derivatives_req_reflection_;
   delete fmi2_import_get_real_output_derivatives_res::default_instance_;
-  delete fmi2_import_get_real_output_derivatives_res_reflection_;
   delete fmi2_import_cancel_step_req::default_instance_;
-  delete fmi2_import_cancel_step_req_reflection_;
   delete fmi2_import_cancel_step_res::default_instance_;
-  delete fmi2_import_cancel_step_res_reflection_;
   delete fmi2_import_do_step_req::default_instance_;
-  delete fmi2_import_do_step_req_reflection_;
   delete fmi2_import_do_step_res::default_instance_;
-  delete fmi2_import_do_step_res_reflection_;
   delete fmi2_import_get_status_req::default_instance_;
-  delete fmi2_import_get_status_req_reflection_;
   delete fmi2_import_get_status_res::default_instance_;
-  delete fmi2_import_get_status_res_reflection_;
   delete fmi2_import_get_real_status_req::default_instance_;
-  delete fmi2_import_get_real_status_req_reflection_;
   delete fmi2_import_get_real_status_res::default_instance_;
-  delete fmi2_import_get_real_status_res_reflection_;
   delete fmi2_import_get_integer_status_req::default_instance_;
-  delete fmi2_import_get_integer_status_req_reflection_;
   delete fmi2_import_get_integer_status_res::default_instance_;
-  delete fmi2_import_get_integer_status_res_reflection_;
   delete fmi2_import_get_boolean_status_req::default_instance_;
-  delete fmi2_import_get_boolean_status_req_reflection_;
   delete fmi2_import_get_boolean_status_res::default_instance_;
-  delete fmi2_import_get_boolean_status_res_reflection_;
   delete fmi2_import_get_string_status_req::default_instance_;
-  delete fmi2_import_get_string_status_req_reflection_;
   delete fmi2_import_get_string_status_res::default_instance_;
-  delete fmi2_import_get_string_status_res_reflection_;
   delete fmi2_import_instantiate_model_req::default_instance_;
-  delete fmi2_import_instantiate_model_req_reflection_;
   delete fmi2_import_instantiate_model_res::default_instance_;
-  delete fmi2_import_instantiate_model_res_reflection_;
   delete fmi2_import_free_model_instance_req::default_instance_;
-  delete fmi2_import_free_model_instance_req_reflection_;
   delete fmi2_import_free_model_instance_res::default_instance_;
-  delete fmi2_import_free_model_instance_res_reflection_;
   delete fmi2_import_set_time_req::default_instance_;
-  delete fmi2_import_set_time_req_reflection_;
   delete fmi2_import_set_time_res::default_instance_;
-  delete fmi2_import_set_time_res_reflection_;
   delete fmi2_import_set_continuous_states_req::default_instance_;
-  delete fmi2_import_set_continuous_states_req_reflection_;
   delete fmi2_import_set_continuous_states_res::default_instance_;
-  delete fmi2_import_set_continuous_states_res_reflection_;
   delete fmi2_import_completed_integrator_step_req::default_instance_;
-  delete fmi2_import_completed_integrator_step_req_reflection_;
   delete fmi2_import_completed_integrator_step_res::default_instance_;
-  delete fmi2_import_completed_integrator_step_res_reflection_;
   delete fmi2_import_initialize_model_req::default_instance_;
-  delete fmi2_import_initialize_model_req_reflection_;
   delete fmi2_import_initialize_model_res::default_instance_;
-  delete fmi2_import_initialize_model_res_reflection_;
   delete fmi2_import_get_derivatives_req::default_instance_;
-  delete fmi2_import_get_derivatives_req_reflection_;
   delete fmi2_import_get_derivatives_res::default_instance_;
-  delete fmi2_import_get_derivatives_res_reflection_;
   delete fmi2_import_get_event_indicators_req::default_instance_;
-  delete fmi2_import_get_event_indicators_req_reflection_;
   delete fmi2_import_get_event_indicators_res::default_instance_;
-  delete fmi2_import_get_event_indicators_res_reflection_;
   delete fmi2_import_eventUpdate_req::default_instance_;
-  delete fmi2_import_eventUpdate_req_reflection_;
   delete fmi2_import_eventUpdate_res::default_instance_;
-  delete fmi2_import_eventUpdate_res_reflection_;
   delete fmi2_import_completed_event_iteration_req::default_instance_;
-  delete fmi2_import_completed_event_iteration_req_reflection_;
   delete fmi2_import_completed_event_iteration_res::default_instance_;
-  delete fmi2_import_completed_event_iteration_res_reflection_;
   delete fmi2_import_get_continuous_states_req::default_instance_;
-  delete fmi2_import_get_continuous_states_req_reflection_;
   delete fmi2_import_get_continuous_states_res::default_instance_;
-  delete fmi2_import_get_continuous_states_res_reflection_;
   delete fmi2_import_get_nominal_continuous_states_req::default_instance_;
-  delete fmi2_import_get_nominal_continuous_states_req_reflection_;
   delete fmi2_import_get_nominal_continuous_states_res::default_instance_;
-  delete fmi2_import_get_nominal_continuous_states_res_reflection_;
   delete fmi2_import_terminate_req::default_instance_;
-  delete fmi2_import_terminate_req_reflection_;
   delete fmi2_import_terminate_res::default_instance_;
-  delete fmi2_import_terminate_res_reflection_;
   delete fmi2_import_get_version_req::default_instance_;
-  delete fmi2_import_get_version_req_reflection_;
   delete fmi2_import_get_version_res::default_instance_;
-  delete fmi2_import_get_version_res_reflection_;
   delete fmi2_import_set_debug_logging_req::default_instance_;
-  delete fmi2_import_set_debug_logging_req_reflection_;
   delete fmi2_import_set_debug_logging_res::default_instance_;
-  delete fmi2_import_set_debug_logging_res_reflection_;
   delete fmi2_import_set_real_req::default_instance_;
-  delete fmi2_import_set_real_req_reflection_;
   delete fmi2_import_set_real_res::default_instance_;
-  delete fmi2_import_set_real_res_reflection_;
   delete fmi2_import_set_integer_req::default_instance_;
-  delete fmi2_import_set_integer_req_reflection_;
   delete fmi2_import_set_integer_res::default_instance_;
-  delete fmi2_import_set_integer_res_reflection_;
   delete fmi2_import_set_boolean_req::default_instance_;
-  delete fmi2_import_set_boolean_req_reflection_;
   delete fmi2_import_set_boolean_res::default_instance_;
-  delete fmi2_import_set_boolean_res_reflection_;
   delete fmi2_import_set_string_req::default_instance_;
-  delete fmi2_import_set_string_req_reflection_;
   delete fmi2_import_set_string_res::default_instance_;
-  delete fmi2_import_set_string_res_reflection_;
   delete fmi2_import_get_real_req::default_instance_;
-  delete fmi2_import_get_real_req_reflection_;
   delete fmi2_import_get_real_res::default_instance_;
-  delete fmi2_import_get_real_res_reflection_;
   delete fmi2_import_get_integer_req::default_instance_;
-  delete fmi2_import_get_integer_req_reflection_;
   delete fmi2_import_get_integer_res::default_instance_;
-  delete fmi2_import_get_integer_res_reflection_;
   delete fmi2_import_get_boolean_req::default_instance_;
-  delete fmi2_import_get_boolean_req_reflection_;
   delete fmi2_import_get_boolean_res::default_instance_;
-  delete fmi2_import_get_boolean_res_reflection_;
   delete fmi2_import_get_string_req::default_instance_;
-  delete fmi2_import_get_string_req_reflection_;
   delete fmi2_import_get_string_res::default_instance_;
-  delete fmi2_import_get_string_res_reflection_;
   delete char_req::default_instance_;
-  delete char_req_reflection_;
   delete char_res::default_instance_;
-  delete char_res_reflection_;
   delete fmi2_import_get_fmu_state_req::default_instance_;
-  delete fmi2_import_get_fmu_state_req_reflection_;
   delete fmi2_import_get_fmu_state_res::default_instance_;
-  delete fmi2_import_get_fmu_state_res_reflection_;
   delete fmi2_import_set_fmu_state_req::default_instance_;
-  delete fmi2_import_set_fmu_state_req_reflection_;
   delete fmi2_import_set_fmu_state_res::default_instance_;
-  delete fmi2_import_set_fmu_state_res_reflection_;
   delete fmi2_import_free_fmu_state_req::default_instance_;
-  delete fmi2_import_free_fmu_state_req_reflection_;
   delete fmi2_import_free_fmu_state_res::default_instance_;
-  delete fmi2_import_free_fmu_state_res_reflection_;
   delete fmi2_import_get_directional_derivative_req::default_instance_;
-  delete fmi2_import_get_directional_derivative_req_reflection_;
   delete fmi2_import_get_directional_derivative_res::default_instance_;
-  delete fmi2_import_get_directional_derivative_res_reflection_;
   delete get_xml_req::default_instance_;
-  delete get_xml_req_reflection_;
   delete get_xml_res::default_instance_;
-  delete get_xml_res_reflection_;
 }
 
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+void protobuf_AddDesc_fmitcp_2eproto_impl() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+#else
 void protobuf_AddDesc_fmitcp_2eproto() {
   static bool already_here = false;
   if (already_here) return;
   already_here = true;
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
-  ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-    "\n\014fmitcp.proto\022\014fmitcp_proto\"\200X\n\016fmitcp_"
-    "message\022/\n\004type\030\001 \002(\0162!.fmitcp_proto.fmi"
-    "tcp_message.Type\022N\n\033fmi2_import_instanti"
-    "ate_req\030\002 \001(\0132).fmitcp_proto.fmi2_import"
-    "_instantiate_req\022N\n\033fmi2_import_instanti"
-    "ate_res\030\003 \001(\0132).fmitcp_proto.fmi2_import"
-    "_instantiate_res\022X\n fmi2_import_initiali"
-    "ze_slave_req\030\004 \001(\0132..fmitcp_proto.fmi2_i"
-    "mport_initialize_slave_req\022X\n fmi2_impor"
-    "t_initialize_slave_res\030\005 \001(\0132..fmitcp_pr"
-    "oto.fmi2_import_initialize_slave_res\022V\n\037"
-    "fmi2_import_terminate_slave_req\030\006 \001(\0132-."
-    "fmitcp_proto.fmi2_import_terminate_slave"
-    "_req\022V\n\037fmi2_import_terminate_slave_res\030"
-    "\007 \001(\0132-.fmitcp_proto.fmi2_import_termina"
-    "te_slave_res\022N\n\033fmi2_import_reset_slave_"
-    "req\030\010 \001(\0132).fmitcp_proto.fmi2_import_res"
-    "et_slave_req\022N\n\033fmi2_import_reset_slave_"
-    "res\030\t \001(\0132).fmitcp_proto.fmi2_import_res"
-    "et_slave_res\022^\n#fmi2_import_free_slave_i"
-    "nstance_req\030\n \001(\01321.fmitcp_proto.fmi2_im"
-    "port_free_slave_instance_req\022^\n#fmi2_imp"
-    "ort_free_slave_instance_res\030\013 \001(\01321.fmit"
-    "cp_proto.fmi2_import_free_slave_instance"
-    "_res\022l\n*fmi2_import_set_real_input_deriv"
-    "atives_req\030\014 \001(\01328.fmitcp_proto.fmi2_imp"
-    "ort_set_real_input_derivatives_req\022l\n*fm"
-    "i2_import_set_real_input_derivatives_res"
-    "\030\r \001(\01328.fmitcp_proto.fmi2_import_set_re"
-    "al_input_derivatives_res\022n\n+fmi2_import_"
-    "get_real_output_derivatives_req\030\016 \001(\01329."
-    "fmitcp_proto.fmi2_import_get_real_output"
-    "_derivatives_req\022n\n+fmi2_import_get_real"
-    "_output_derivatives_res\030\017 \001(\01329.fmitcp_p"
-    "roto.fmi2_import_get_real_output_derivat"
-    "ives_res\022N\n\033fmi2_import_cancel_step_req\030"
-    "\020 \001(\0132).fmitcp_proto.fmi2_import_cancel_"
-    "step_req\022N\n\033fmi2_import_cancel_step_res\030"
-    "\021 \001(\0132).fmitcp_proto.fmi2_import_cancel_"
-    "step_res\022F\n\027fmi2_import_do_step_req\030\022 \001("
-    "\0132%.fmitcp_proto.fmi2_import_do_step_req"
-    "\022F\n\027fmi2_import_do_step_res\030\023 \001(\0132%.fmit"
-    "cp_proto.fmi2_import_do_step_res\022L\n\032fmi2"
-    "_import_get_status_req\030\024 \001(\0132(.fmitcp_pr"
-    "oto.fmi2_import_get_status_req\022L\n\032fmi2_i"
-    "mport_get_status_res\030\025 \001(\0132(.fmitcp_prot"
-    "o.fmi2_import_get_status_res\022V\n\037fmi2_imp"
-    "ort_get_real_status_req\030\026 \001(\0132-.fmitcp_p"
-    "roto.fmi2_import_get_real_status_req\022V\n\037"
-    "fmi2_import_get_real_status_res\030\027 \001(\0132-."
-    "fmitcp_proto.fmi2_import_get_real_status"
-    "_res\022\\\n\"fmi2_import_get_integer_status_r"
-    "eq\030\030 \001(\01320.fmitcp_proto.fmi2_import_get_"
-    "integer_status_req\022\\\n\"fmi2_import_get_in"
-    "teger_status_res\030\031 \001(\01320.fmitcp_proto.fm"
-    "i2_import_get_integer_status_res\022\\\n\"fmi2"
-    "_import_get_boolean_status_req\030\032 \001(\01320.f"
-    "mitcp_proto.fmi2_import_get_boolean_stat"
-    "us_req\022\\\n\"fmi2_import_get_boolean_status"
-    "_res\030\033 \001(\01320.fmitcp_proto.fmi2_import_ge"
-    "t_boolean_status_res\022Z\n!fmi2_import_get_"
-    "string_status_req\030\034 \001(\0132/.fmitcp_proto.f"
-    "mi2_import_get_string_status_req\022Z\n!fmi2"
-    "_import_get_string_status_res\030\035 \001(\0132/.fm"
-    "itcp_proto.fmi2_import_get_string_status"
-    "_res\022Z\n!fmi2_import_instantiate_model_re"
-    "q\030\036 \001(\0132/.fmitcp_proto.fmi2_import_insta"
-    "ntiate_model_req\022Z\n!fmi2_import_instanti"
-    "ate_model_res\030\037 \001(\0132/.fmitcp_proto.fmi2_"
-    "import_instantiate_model_res\022^\n#fmi2_imp"
-    "ort_free_model_instance_req\030  \001(\01321.fmit"
-    "cp_proto.fmi2_import_free_model_instance"
-    "_req\022^\n#fmi2_import_free_model_instance_"
-    "res\030! \001(\01321.fmitcp_proto.fmi2_import_fre"
-    "e_model_instance_res\022H\n\030fmi2_import_set_"
-    "time_req\030\" \001(\0132&.fmitcp_proto.fmi2_impor"
-    "t_set_time_req\022H\n\030fmi2_import_set_time_r"
-    "es\030# \001(\0132&.fmitcp_proto.fmi2_import_set_"
-    "time_res\022b\n%fmi2_import_set_continuous_s"
-    "tates_req\030$ \001(\01323.fmitcp_proto.fmi2_impo"
-    "rt_set_continuous_states_req\022b\n%fmi2_imp"
-    "ort_set_continuous_states_res\030% \001(\01323.fm"
-    "itcp_proto.fmi2_import_set_continuous_st"
-    "ates_res\022j\n)fmi2_import_completed_integr"
-    "ator_step_req\030& \001(\01327.fmitcp_proto.fmi2_"
-    "import_completed_integrator_step_req\022j\n)"
-    "fmi2_import_completed_integrator_step_re"
-    "s\030\' \001(\01327.fmitcp_proto.fmi2_import_compl"
-    "eted_integrator_step_res\022X\n fmi2_import_"
-    "initialize_model_req\030( \001(\0132..fmitcp_prot"
-    "o.fmi2_import_initialize_model_req\022X\n fm"
-    "i2_import_initialize_model_res\030) \001(\0132..f"
-    "mitcp_proto.fmi2_import_initialize_model"
-    "_res\022V\n\037fmi2_import_get_derivatives_req\030"
-    "* \001(\0132-.fmitcp_proto.fmi2_import_get_der"
-    "ivatives_req\022V\n\037fmi2_import_get_derivati"
-    "ves_res\030+ \001(\0132-.fmitcp_proto.fmi2_import"
-    "_get_derivatives_res\022`\n$fmi2_import_get_"
-    "event_indicators_req\030, \001(\01322.fmitcp_prot"
-    "o.fmi2_import_get_event_indicators_req\022`"
-    "\n$fmi2_import_get_event_indicators_res\030-"
-    " \001(\01322.fmitcp_proto.fmi2_import_get_even"
-    "t_indicators_res\022N\n\033fmi2_import_eventUpd"
-    "ate_req\030. \001(\0132).fmitcp_proto.fmi2_import"
-    "_eventUpdate_req\022N\n\033fmi2_import_eventUpd"
-    "ate_res\030/ \001(\0132).fmitcp_proto.fmi2_import"
-    "_eventUpdate_res\022j\n)fmi2_import_complete"
-    "d_event_iteration_req\0300 \001(\01327.fmitcp_pro"
-    "to.fmi2_import_completed_event_iteration"
-    "_req\022j\n)fmi2_import_completed_event_iter"
-    "ation_res\0301 \001(\01327.fmitcp_proto.fmi2_impo"
-    "rt_completed_event_iteration_res\022b\n%fmi2"
-    "_import_get_continuous_states_req\0302 \001(\0132"
-    "3.fmitcp_proto.fmi2_import_get_continuou"
-    "s_states_req\022b\n%fmi2_import_get_continuo"
-    "us_states_res\0303 \001(\01323.fmitcp_proto.fmi2_"
-    "import_get_continuous_states_res\022r\n-fmi2"
-    "_import_get_nominal_continuous_states_re"
-    "q\0304 \001(\0132;.fmitcp_proto.fmi2_import_get_n"
-    "ominal_continuous_states_req\022r\n-fmi2_imp"
-    "ort_get_nominal_continuous_states_res\0305 "
-    "\001(\0132;.fmitcp_proto.fmi2_import_get_nomin"
-    "al_continuous_states_res\022J\n\031fmi2_import_"
-    "terminate_req\0306 \001(\0132\'.fmitcp_proto.fmi2_"
-    "import_terminate_req\022J\n\031fmi2_import_term"
-    "inate_res\0307 \001(\0132\'.fmitcp_proto.fmi2_impo"
-    "rt_terminate_res\022N\n\033fmi2_import_get_vers"
-    "ion_req\0308 \001(\0132).fmitcp_proto.fmi2_import"
-    "_get_version_req\022N\n\033fmi2_import_get_vers"
-    "ion_res\0309 \001(\0132).fmitcp_proto.fmi2_import"
-    "_get_version_res\022Z\n!fmi2_import_set_debu"
-    "g_logging_req\030: \001(\0132/.fmitcp_proto.fmi2_"
-    "import_set_debug_logging_req\022Z\n!fmi2_imp"
-    "ort_set_debug_logging_res\030; \001(\0132/.fmitcp"
-    "_proto.fmi2_import_set_debug_logging_res"
-    "\022H\n\030fmi2_import_set_real_req\030< \001(\0132&.fmi"
-    "tcp_proto.fmi2_import_set_real_req\022H\n\030fm"
-    "i2_import_set_real_res\030= \001(\0132&.fmitcp_pr"
-    "oto.fmi2_import_set_real_res\022N\n\033fmi2_imp"
-    "ort_set_integer_req\030> \001(\0132).fmitcp_proto"
-    ".fmi2_import_set_integer_req\022N\n\033fmi2_imp"
-    "ort_set_integer_res\030\? \001(\0132).fmitcp_proto"
-    ".fmi2_import_set_integer_res\022N\n\033fmi2_imp"
-    "ort_set_boolean_req\030@ \001(\0132).fmitcp_proto"
-    ".fmi2_import_set_boolean_req\022N\n\033fmi2_imp"
-    "ort_set_boolean_res\030A \001(\0132).fmitcp_proto"
-    ".fmi2_import_set_boolean_res\022L\n\032fmi2_imp"
-    "ort_set_string_req\030B \001(\0132(.fmitcp_proto."
-    "fmi2_import_set_string_req\022L\n\032fmi2_impor"
-    "t_set_string_res\030C \001(\0132(.fmitcp_proto.fm"
-    "i2_import_set_string_res\022H\n\030fmi2_import_"
-    "get_real_req\030D \001(\0132&.fmitcp_proto.fmi2_i"
-    "mport_get_real_req\022H\n\030fmi2_import_get_re"
-    "al_res\030E \001(\0132&.fmitcp_proto.fmi2_import_"
-    "get_real_res\022N\n\033fmi2_import_get_integer_"
-    "req\030F \001(\0132).fmitcp_proto.fmi2_import_get"
-    "_integer_req\022N\n\033fmi2_import_get_integer_"
-    "res\030G \001(\0132).fmitcp_proto.fmi2_import_get"
-    "_integer_res\022N\n\033fmi2_import_get_boolean_"
-    "req\030H \001(\0132).fmitcp_proto.fmi2_import_get"
-    "_boolean_req\022N\n\033fmi2_import_get_boolean_"
-    "res\030I \001(\0132).fmitcp_proto.fmi2_import_get"
-    "_boolean_res\022L\n\032fmi2_import_get_string_r"
-    "eq\030J \001(\0132(.fmitcp_proto.fmi2_import_get_"
-    "string_req\022L\n\032fmi2_import_get_string_res"
-    "\030K \001(\0132(.fmitcp_proto.fmi2_import_get_st"
-    "ring_res\022R\n\035fmi2_import_get_fmu_state_re"
-    "q\030L \001(\0132+.fmitcp_proto.fmi2_import_get_f"
-    "mu_state_req\022R\n\035fmi2_import_get_fmu_stat"
-    "e_res\030M \001(\0132+.fmitcp_proto.fmi2_import_g"
-    "et_fmu_state_res\022R\n\035fmi2_import_set_fmu_"
-    "state_req\030N \001(\0132+.fmitcp_proto.fmi2_impo"
-    "rt_set_fmu_state_req\022R\n\035fmi2_import_set_"
-    "fmu_state_res\030O \001(\0132+.fmitcp_proto.fmi2_"
-    "import_set_fmu_state_res\022T\n\036fmi2_import_"
-    "free_fmu_state_req\030P \001(\0132,.fmitcp_proto."
-    "fmi2_import_free_fmu_state_req\022T\n\036fmi2_i"
-    "mport_free_fmu_state_res\030Q \001(\0132,.fmitcp_"
-    "proto.fmi2_import_free_fmu_state_res\022l\n*"
-    "fmi2_import_get_directional_derivative_r"
-    "eq\030X \001(\01328.fmitcp_proto.fmi2_import_get_"
-    "directional_derivative_req\022l\n*fmi2_impor"
-    "t_get_directional_derivative_res\030Y \001(\01328"
-    ".fmitcp_proto.fmi2_import_get_directiona"
-    "l_derivative_res\022.\n\013get_xml_req\030Z \001(\0132\031."
-    "fmitcp_proto.get_xml_req\022.\n\013get_xml_res\030"
-    "[ \001(\0132\031.fmitcp_proto.get_xml_res\"\354\035\n\004Typ"
-    "e\022$\n type_fmi2_import_instantiate_req\020\001\022"
-    "$\n type_fmi2_import_instantiate_res\020\002\022)\n"
-    "%type_fmi2_import_initialize_slave_req\020\003"
-    "\022)\n%type_fmi2_import_initialize_slave_re"
-    "s\020\004\022(\n$type_fmi2_import_terminate_slave_"
-    "req\020\005\022(\n$type_fmi2_import_terminate_slav"
-    "e_res\020\006\022$\n type_fmi2_import_reset_slave_"
-    "req\020\007\022$\n type_fmi2_import_reset_slave_re"
-    "s\020\010\022,\n(type_fmi2_import_free_slave_insta"
-    "nce_req\020\t\022,\n(type_fmi2_import_free_slave"
-    "_instance_res\020\n\0223\n/type_fmi2_import_set_"
-    "real_input_derivatives_req\020\013\0223\n/type_fmi"
-    "2_import_set_real_input_derivatives_res\020"
-    "\014\0224\n0type_fmi2_import_get_real_output_de"
-    "rivatives_req\020\r\0224\n0type_fmi2_import_get_"
-    "real_output_derivatives_res\020\016\022$\n type_fm"
-    "i2_import_cancel_step_req\020\017\022$\n type_fmi2"
-    "_import_cancel_step_res\020\020\022 \n\034type_fmi2_i"
-    "mport_do_step_req\020\021\022 \n\034type_fmi2_import_"
-    "do_step_res\020\022\022#\n\037type_fmi2_import_get_st"
-    "atus_req\020\023\022#\n\037type_fmi2_import_get_statu"
-    "s_res\020\024\022(\n$type_fmi2_import_get_real_sta"
-    "tus_req\020\025\022(\n$type_fmi2_import_get_real_s"
-    "tatus_res\020\026\022+\n\'type_fmi2_import_get_inte"
-    "ger_status_req\020\027\022+\n\'type_fmi2_import_get"
-    "_integer_status_res\020\030\022+\n\'type_fmi2_impor"
-    "t_get_boolean_status_req\020\031\022+\n\'type_fmi2_"
-    "import_get_boolean_status_res\020\032\022*\n&type_"
-    "fmi2_import_get_string_status_req\020\033\022*\n&t"
-    "ype_fmi2_import_get_string_status_res\020\034\022"
-    "*\n&type_fmi2_import_instantiate_model_re"
-    "q\020\035\022*\n&type_fmi2_import_instantiate_mode"
-    "l_res\020\036\022,\n(type_fmi2_import_free_model_i"
-    "nstance_req\020\037\022,\n(type_fmi2_import_free_m"
-    "odel_instance_res\020 \022!\n\035type_fmi2_import_"
-    "set_time_req\020!\022!\n\035type_fmi2_import_set_t"
-    "ime_res\020\"\022.\n*type_fmi2_import_set_contin"
-    "uous_states_req\020#\022.\n*type_fmi2_import_se"
-    "t_continuous_states_res\020$\0222\n.type_fmi2_i"
-    "mport_completed_integrator_step_req\020%\0222\n"
-    ".type_fmi2_import_completed_integrator_s"
-    "tep_res\020&\022)\n%type_fmi2_import_initialize"
-    "_model_req\020\'\022)\n%type_fmi2_import_initial"
-    "ize_model_res\020(\022(\n$type_fmi2_import_get_"
-    "derivatives_req\020)\022(\n$type_fmi2_import_ge"
-    "t_derivatives_res\020*\022-\n)type_fmi2_import_"
-    "get_event_indicators_req\020+\022-\n)type_fmi2_"
-    "import_get_event_indicators_res\020,\022$\n typ"
-    "e_fmi2_import_eventUpdate_req\020-\022$\n type_"
-    "fmi2_import_eventUpdate_res\020.\0222\n.type_fm"
-    "i2_import_completed_event_iteration_req\020"
-    "/\0222\n.type_fmi2_import_completed_event_it"
-    "eration_res\0200\022.\n*type_fmi2_import_get_co"
-    "ntinuous_states_req\0201\022.\n*type_fmi2_impor"
-    "t_get_continuous_states_res\0202\0226\n2type_fm"
-    "i2_import_get_nominal_continuous_states_"
-    "req\0203\0226\n2type_fmi2_import_get_nominal_co"
-    "ntinuous_states_res\0204\022\"\n\036type_fmi2_impor"
-    "t_terminate_req\0205\022\"\n\036type_fmi2_import_te"
-    "rminate_res\0206\022$\n type_fmi2_import_get_ve"
-    "rsion_req\0207\022$\n type_fmi2_import_get_vers"
-    "ion_res\0208\022*\n&type_fmi2_import_set_debug_"
-    "logging_req\0209\022*\n&type_fmi2_import_set_de"
-    "bug_logging_res\020:\022!\n\035type_fmi2_import_se"
-    "t_real_req\020;\022!\n\035type_fmi2_import_set_rea"
-    "l_res\020<\022$\n type_fmi2_import_set_integer_"
-    "req\020=\022$\n type_fmi2_import_set_integer_re"
-    "s\020>\022$\n type_fmi2_import_set_boolean_req\020"
-    "\?\022$\n type_fmi2_import_set_boolean_res\020@\022"
-    "#\n\037type_fmi2_import_set_string_req\020A\022#\n\037"
-    "type_fmi2_import_set_string_res\020B\022!\n\035typ"
-    "e_fmi2_import_get_real_req\020C\022!\n\035type_fmi"
-    "2_import_get_real_res\020D\022$\n type_fmi2_imp"
-    "ort_get_integer_req\020E\022$\n type_fmi2_impor"
-    "t_get_integer_res\020F\022$\n type_fmi2_import_"
-    "get_boolean_req\020G\022$\n type_fmi2_import_ge"
-    "t_boolean_res\020H\022#\n\037type_fmi2_import_get_"
-    "string_req\020I\022#\n\037type_fmi2_import_get_str"
-    "ing_res\020J\022&\n\"type_fmi2_import_get_fmu_st"
-    "ate_req\020K\022&\n\"type_fmi2_import_get_fmu_st"
-    "ate_res\020L\022&\n\"type_fmi2_import_set_fmu_st"
-    "ate_req\020M\022&\n\"type_fmi2_import_set_fmu_st"
-    "ate_res\020N\022\'\n#type_fmi2_import_free_fmu_s"
-    "tate_req\020O\022\'\n#type_fmi2_import_free_fmu_"
-    "state_res\020P\0222\n.type_fmi2_import_serializ"
-    "ed_fmu_state_size_req\020Q\0222\n.type_fmi2_imp"
-    "ort_serialized_fmu_state_size_res\020R\022,\n(t"
-    "ype_fmi2_import_serialize_fmu_state_req\020"
-    "S\022,\n(type_fmi2_import_serialize_fmu_stat"
-    "e_res\020T\022/\n+type_fmi2_import_de_serialize"
-    "_fmu_state_req\020U\022/\n+type_fmi2_import_de_"
-    "serialize_fmu_state_res\020V\0223\n/type_fmi2_i"
-    "mport_get_directional_derivative_req\020W\0223"
-    "\n/type_fmi2_import_get_directional_deriv"
-    "ative_res\020X\022\024\n\020type_get_xml_req\020Y\022\024\n\020typ"
-    "e_get_xml_res\020Z\"\277\001\n\021fmi2_event_info_t\022\032\n"
-    "\022iterationConverged\030\001 \002(\010\022#\n\033stateValueR"
-    "eferencesChanged\030\002 \002(\010\022\032\n\022stateValuesCha"
-    "nged\030\003 \002(\010\022\033\n\023terminateSimulation\030\004 \002(\010\022"
-    "\031\n\021upcomingTimeEvent\030\005 \002(\010\022\025\n\rnextEventT"
-    "ime\030\006 \002(\001\"B\n\033fmi2_import_instantiate_req"
-    "\022\022\n\nmessage_id\030\001 \002(\005\022\017\n\007visible\030\002 \001(\010\"`\n"
-    "\033fmi2_import_instantiate_res\022\022\n\nmessage_"
-    "id\030\001 \002(\005\022-\n\006status\030\002 \002(\0162\035.fmitcp_proto."
-    "jm_status_enu_t\"\260\001\n fmi2_import_initiali"
-    "ze_slave_req\022\022\n\nmessage_id\030\001 \002(\005\022\r\n\005fmuI"
-    "d\030\002 \002(\005\022\030\n\020toleranceDefined\030\003 \002(\010\022\021\n\ttol"
-    "erance\030\004 \002(\001\022\021\n\tstartTime\030\005 \002(\001\022\027\n\017stopT"
-    "imeDefined\030\006 \002(\010\022\020\n\010stopTime\030\007 \002(\001\"c\n fm"
-    "i2_import_initialize_slave_res\022\022\n\nmessag"
-    "e_id\030\001 \002(\005\022+\n\006status\030\002 \002(\0162\033.fmitcp_prot"
-    "o.fmi2_status_t\"D\n\037fmi2_import_terminate"
-    "_slave_req\022\022\n\nmessage_id\030\001 \002(\005\022\r\n\005fmuId\030"
-    "\002 \002(\005\"b\n\037fmi2_import_terminate_slave_res"
-    "\022\022\n\nmessage_id\030\001 \002(\005\022+\n\006status\030\002 \002(\0162\033.f"
-    "mitcp_proto.fmi2_status_t\"@\n\033fmi2_import"
-    "_reset_slave_req\022\022\n\nmessage_id\030\001 \002(\005\022\r\n\005"
-    "fmuId\030\002 \002(\005\"^\n\033fmi2_import_reset_slave_r"
-    "es\022\022\n\nmessage_id\030\001 \002(\005\022+\n\006status\030\002 \002(\0162\033"
-    ".fmitcp_proto.fmi2_status_t\"H\n#fmi2_impo"
-    "rt_free_slave_instance_req\022\022\n\nmessage_id"
-    "\030\001 \002(\005\022\r\n\005fmuId\030\002 \002(\005\"9\n#fmi2_import_fre"
-    "e_slave_instance_res\022\022\n\nmessage_id\030\001 \002(\005"
-    "\"\210\001\n*fmi2_import_set_real_input_derivati"
-    "ves_req\022\022\n\nmessage_id\030\001 \002(\005\022\r\n\005fmuId\030\002 \002"
-    "(\005\022\027\n\017valueReferences\030\003 \003(\005\022\016\n\006orders\030\004 "
-    "\003(\005\022\016\n\006values\030\005 \003(\001\"m\n*fmi2_import_set_r"
-    "eal_input_derivatives_res\022\022\n\nmessage_id\030"
-    "\001 \002(\005\022+\n\006status\030\002 \002(\0162\033.fmitcp_proto.fmi"
-    "2_status_t\"y\n+fmi2_import_get_real_outpu"
-    "t_derivatives_req\022\022\n\nmessage_id\030\001 \002(\005\022\r\n"
-    "\005fmuId\030\002 \002(\005\022\027\n\017valueReferences\030\003 \003(\005\022\016\n"
-    "\006orders\030\004 \003(\005\"~\n+fmi2_import_get_real_ou"
-    "tput_derivatives_res\022\022\n\nmessage_id\030\001 \002(\005"
-    "\022+\n\006status\030\002 \002(\0162\033.fmitcp_proto.fmi2_sta"
-    "tus_t\022\016\n\006values\030\003 \003(\001\"@\n\033fmi2_import_can"
-    "cel_step_req\022\022\n\nmessage_id\030\001 \002(\005\022\r\n\005fmuI"
-    "d\030\002 \002(\005\"^\n\033fmi2_import_cancel_step_res\022\022"
-    "\n\nmessage_id\030\001 \002(\005\022+\n\006status\030\002 \002(\0162\033.fmi"
-    "tcp_proto.fmi2_status_t\"\217\001\n\027fmi2_import_"
-    "do_step_req\022\022\n\nmessage_id\030\001 \002(\005\022\r\n\005fmuId"
-    "\030\002 \002(\005\022!\n\031currentCommunicationPoint\030\003 \002("
-    "\001\022\035\n\025communicationStepSize\030\004 \002(\001\022\017\n\007newS"
-    "tep\030\005 \002(\010\"Z\n\027fmi2_import_do_step_res\022\022\n\n"
-    "message_id\030\001 \002(\005\022+\n\006status\030\002 \002(\0162\033.fmitc"
-    "p_proto.fmi2_status_t\"q\n\032fmi2_import_get"
-    "_status_req\022\022\n\nmessage_id\030\001 \002(\005\022\r\n\005fmuId"
-    "\030\002 \002(\005\0220\n\006status\030\003 \002(\0162 .fmitcp_proto.fm"
-    "i2_status_kind_t\"\\\n\032fmi2_import_get_stat"
-    "us_res\022\022\n\nmessage_id\030\001 \002(\005\022*\n\005value\030\002 \002("
-    "\0162\033.fmitcp_proto.fmi2_status_t\"t\n\037fmi2_i"
-    "mport_get_real_status_req\022\022\n\nmessage_id\030"
-    "\001 \002(\005\022\r\n\005fmuId\030\002 \002(\005\022.\n\004kind\030\003 \002(\0162 .fmi"
-    "tcp_proto.fmi2_status_kind_t\"D\n\037fmi2_imp"
-    "ort_get_real_status_res\022\022\n\nmessage_id\030\001 "
-    "\002(\005\022\r\n\005value\030\002 \002(\001\"w\n\"fmi2_import_get_in"
-    "teger_status_req\022\022\n\nmessage_id\030\001 \002(\005\022\r\n\005"
-    "fmuId\030\002 \002(\005\022.\n\004kind\030\003 \002(\0162 .fmitcp_proto"
-    ".fmi2_status_kind_t\"G\n\"fmi2_import_get_i"
-    "nteger_status_res\022\022\n\nmessage_id\030\001 \002(\005\022\r\n"
-    "\005value\030\002 \002(\005\"w\n\"fmi2_import_get_boolean_"
-    "status_req\022\022\n\nmessage_id\030\001 \002(\005\022\r\n\005fmuId\030"
-    "\002 \002(\005\022.\n\004kind\030\003 \002(\0162 .fmitcp_proto.fmi2_"
-    "status_kind_t\"G\n\"fmi2_import_get_boolean"
-    "_status_res\022\022\n\nmessage_id\030\001 \002(\005\022\r\n\005value"
-    "\030\002 \002(\010\"v\n!fmi2_import_get_string_status_"
-    "req\022\022\n\nmessage_id\030\001 \002(\005\022\r\n\005fmuId\030\002 \002(\005\022."
-    "\n\004kind\030\003 \002(\0162 .fmitcp_proto.fmi2_status_"
-    "kind_t\"F\n!fmi2_import_get_string_status_"
-    "res\022\022\n\nmessage_id\030\001 \002(\005\022\r\n\005value\030\002 \002(\t\"\207"
-    "\001\n!fmi2_import_instantiate_model_req\022\022\n\n"
-    "message_id\030\001 \002(\005\022\r\n\005fmuId\030\002 \002(\005\022\024\n\014insta"
-    "nceName\030\003 \002(\t\022\030\n\020resourceLocation\030\004 \002(\t\022"
-    "\017\n\007visible\030\005 \001(\010\"f\n!fmi2_import_instanti"
-    "ate_model_res\022\022\n\nmessage_id\030\001 \002(\005\022-\n\006sta"
-    "tus\030\002 \002(\0162\035.fmitcp_proto.jm_status_enu_t"
-    "\"H\n#fmi2_import_free_model_instance_req\022"
-    "\022\n\nmessage_id\030\001 \002(\005\022\r\n\005fmuId\030\002 \002(\005\"9\n#fm"
-    "i2_import_free_model_instance_res\022\022\n\nmes"
-    "sage_id\030\001 \002(\005\"K\n\030fmi2_import_set_time_re"
-    "q\022\022\n\nmessage_id\030\001 \002(\005\022\r\n\005fmuId\030\002 \002(\005\022\014\n\004"
-    "time\030\003 \002(\001\"[\n\030fmi2_import_set_time_res\022\022"
-    "\n\nmessage_id\030\001 \002(\005\022+\n\006status\030\002 \002(\0162\033.fmi"
-    "tcp_proto.fmi2_status_t\"U\n%fmi2_import_s"
-    "et_continuous_states_req\022\022\n\nmessage_id\030\001"
-    " \002(\005\022\r\n\005fmuId\030\002 \002(\005\022\t\n\001x\030\003 \003(\001\"h\n%fmi2_i"
-    "mport_set_continuous_states_res\022\022\n\nmessa"
-    "ge_id\030\001 \002(\005\022+\n\006status\030\002 \002(\0162\033.fmitcp_pro"
-    "to.fmi2_status_t\"N\n)fmi2_import_complete"
-    "d_integrator_step_req\022\022\n\nmessage_id\030\001 \002("
-    "\005\022\r\n\005fmuId\030\002 \002(\005\"\205\001\n)fmi2_import_complet"
-    "ed_integrator_step_res\022\022\n\nmessage_id\030\001 \002"
-    "(\005\022\027\n\017callEventUpdate\030\002 \002(\010\022+\n\006status\030\003 "
-    "\002(\0162\033.fmitcp_proto.fmi2_status_t\"}\n fmi2"
-    "_import_initialize_model_req\022\022\n\nmessage_"
-    "id\030\001 \002(\005\022\r\n\005fmuId\030\002 \002(\005\022\033\n\023toleranceCont"
-    "rolled\030\003 \002(\010\022\031\n\021relativeTolerance\030\004 \002(\001\""
-    "\227\001\n fmi2_import_initialize_model_res\022\022\n\n"
-    "message_id\030\001 \002(\005\0222\n\teventInfo\030\002 \002(\0132\037.fm"
-    "itcp_proto.fmi2_event_info_t\022+\n\006status\030\003"
-    " \002(\0162\033.fmitcp_proto.fmi2_status_t\"D\n\037fmi"
-    "2_import_get_derivatives_req\022\022\n\nmessage_"
-    "id\030\001 \002(\005\022\r\n\005fmuId\030\002 \002(\005\"w\n\037fmi2_import_g"
-    "et_derivatives_res\022\022\n\nmessage_id\030\001 \002(\005\022\023"
-    "\n\013derivatives\030\002 \003(\001\022+\n\006status\030\003 \002(\0162\033.fm"
-    "itcp_proto.fmi2_status_t\"I\n$fmi2_import_"
-    "get_event_indicators_req\022\022\n\nmessage_id\030\001"
-    " \002(\005\022\r\n\005fmuId\030\002 \002(\005\"\200\001\n$fmi2_import_get_"
-    "event_indicators_res\022\022\n\nmessage_id\030\001 \002(\005"
-    "\022\027\n\017eventIndicators\030\002 \003(\001\022+\n\006status\030\003 \002("
-    "\0162\033.fmitcp_proto.fmi2_status_t\"]\n\033fmi2_i"
-    "mport_eventUpdate_req\022\022\n\nmessage_id\030\001 \002("
-    "\005\022\r\n\005fmuId\030\002 \002(\005\022\033\n\023intermediateResults\030"
-    "\003 \002(\010\"\222\001\n\033fmi2_import_eventUpdate_res\022\022\n"
-    "\nmessage_id\030\001 \002(\005\0222\n\teventInfo\030\002 \002(\0132\037.f"
-    "mitcp_proto.fmi2_event_info_t\022+\n\006status\030"
-    "\003 \002(\0162\033.fmitcp_proto.fmi2_status_t\"N\n)fm"
-    "i2_import_completed_event_iteration_req\022"
-    "\022\n\nmessage_id\030\001 \002(\005\022\r\n\005fmuId\030\002 \002(\005\"l\n)fm"
-    "i2_import_completed_event_iteration_res\022"
-    "\022\n\nmessage_id\030\001 \002(\005\022+\n\006status\030\002 \002(\0162\033.fm"
-    "itcp_proto.fmi2_status_t\"J\n%fmi2_import_"
-    "get_continuous_states_req\022\022\n\nmessage_id\030"
-    "\001 \002(\005\022\r\n\005fmuId\030\002 \002(\005\"x\n%fmi2_import_get_"
-    "continuous_states_res\022\022\n\nmessage_id\030\001 \002("
-    "\005\022\016\n\006states\030\002 \003(\001\022+\n\006status\030\003 \002(\0162\033.fmit"
-    "cp_proto.fmi2_status_t\"R\n-fmi2_import_ge"
-    "t_nominal_continuous_states_req\022\022\n\nmessa"
-    "ge_id\030\001 \002(\005\022\r\n\005fmuId\030\002 \002(\005\"\201\001\n-fmi2_impo"
-    "rt_get_nominal_continuous_states_res\022\022\n\n"
-    "message_id\030\001 \002(\005\022\017\n\007nominal\030\002 \003(\001\022+\n\006sta"
-    "tus\030\003 \002(\0162\033.fmitcp_proto.fmi2_status_t\">"
-    "\n\031fmi2_import_terminate_req\022\022\n\nmessage_i"
-    "d\030\001 \002(\005\022\r\n\005fmuId\030\002 \002(\005\"\\\n\031fmi2_import_te"
-    "rminate_res\022\022\n\nmessage_id\030\001 \002(\005\022+\n\006statu"
-    "s\030\002 \002(\0162\033.fmitcp_proto.fmi2_status_t\"@\n\033"
-    "fmi2_import_get_version_req\022\022\n\nmessage_i"
-    "d\030\001 \002(\005\022\r\n\005fmuId\030\002 \002(\005\"B\n\033fmi2_import_ge"
-    "t_version_res\022\022\n\nmessage_id\030\001 \002(\005\022\017\n\007ver"
-    "sion\030\002 \002(\t\"m\n!fmi2_import_set_debug_logg"
-    "ing_req\022\022\n\nmessage_id\030\001 \002(\005\022\r\n\005fmuId\030\002 \002"
-    "(\005\022\021\n\tloggingOn\030\003 \002(\010\022\022\n\ncategories\030\004 \003("
-    "\t\"d\n!fmi2_import_set_debug_logging_res\022\022"
-    "\n\nmessage_id\030\001 \002(\005\022+\n\006status\030\002 \002(\0162\033.fmi"
-    "tcp_proto.fmi2_status_t\"f\n\030fmi2_import_s"
-    "et_real_req\022\022\n\nmessage_id\030\001 \002(\005\022\r\n\005fmuId"
-    "\030\002 \002(\005\022\027\n\017valueReferences\030\003 \003(\005\022\016\n\006value"
-    "s\030\004 \003(\001\"[\n\030fmi2_import_set_real_res\022\022\n\nm"
-    "essage_id\030\001 \002(\005\022+\n\006status\030\002 \002(\0162\033.fmitcp"
-    "_proto.fmi2_status_t\"i\n\033fmi2_import_set_"
-    "integer_req\022\022\n\nmessage_id\030\001 \002(\005\022\r\n\005fmuId"
-    "\030\002 \002(\005\022\027\n\017valueReferences\030\003 \003(\005\022\016\n\006value"
-    "s\030\004 \003(\005\"^\n\033fmi2_import_set_integer_res\022\022"
-    "\n\nmessage_id\030\001 \002(\005\022+\n\006status\030\002 \002(\0162\033.fmi"
-    "tcp_proto.fmi2_status_t\"i\n\033fmi2_import_s"
-    "et_boolean_req\022\022\n\nmessage_id\030\001 \002(\005\022\r\n\005fm"
-    "uId\030\002 \002(\005\022\027\n\017valueReferences\030\003 \003(\005\022\016\n\006va"
-    "lues\030\004 \003(\010\"^\n\033fmi2_import_set_boolean_re"
-    "s\022\022\n\nmessage_id\030\001 \002(\005\022+\n\006status\030\002 \002(\0162\033."
-    "fmitcp_proto.fmi2_status_t\"h\n\032fmi2_impor"
-    "t_set_string_req\022\022\n\nmessage_id\030\001 \002(\005\022\r\n\005"
-    "fmuId\030\002 \002(\005\022\027\n\017valueReferences\030\003 \003(\005\022\016\n\006"
-    "values\030\004 \003(\t\"]\n\032fmi2_import_set_string_r"
-    "es\022\022\n\nmessage_id\030\001 \002(\005\022+\n\006status\030\002 \002(\0162\033"
-    ".fmitcp_proto.fmi2_status_t\"V\n\030fmi2_impo"
-    "rt_get_real_req\022\022\n\nmessage_id\030\001 \002(\005\022\r\n\005f"
-    "muId\030\002 \002(\005\022\027\n\017valueReferences\030\003 \003(\005\"k\n\030f"
-    "mi2_import_get_real_res\022\022\n\nmessage_id\030\001 "
-    "\002(\005\022\016\n\006values\030\002 \003(\001\022+\n\006status\030\003 \002(\0162\033.fm"
-    "itcp_proto.fmi2_status_t\"Y\n\033fmi2_import_"
-    "get_integer_req\022\022\n\nmessage_id\030\001 \002(\005\022\r\n\005f"
-    "muId\030\002 \002(\005\022\027\n\017valueReferences\030\003 \003(\005\"n\n\033f"
-    "mi2_import_get_integer_res\022\022\n\nmessage_id"
-    "\030\001 \002(\005\022\016\n\006values\030\002 \003(\005\022+\n\006status\030\003 \002(\0162\033"
-    ".fmitcp_proto.fmi2_status_t\"Y\n\033fmi2_impo"
-    "rt_get_boolean_req\022\022\n\nmessage_id\030\001 \002(\005\022\r"
-    "\n\005fmuId\030\002 \002(\005\022\027\n\017valueReferences\030\003 \003(\005\"n"
-    "\n\033fmi2_import_get_boolean_res\022\022\n\nmessage"
-    "_id\030\001 \002(\005\022\016\n\006values\030\002 \003(\010\022+\n\006status\030\003 \002("
-    "\0162\033.fmitcp_proto.fmi2_status_t\"X\n\032fmi2_i"
-    "mport_get_string_req\022\022\n\nmessage_id\030\001 \002(\005"
-    "\022\r\n\005fmuId\030\002 \002(\005\022\027\n\017valueReferences\030\003 \003(\005"
-    "\"m\n\032fmi2_import_get_string_res\022\022\n\nmessag"
-    "e_id\030\001 \002(\005\022\016\n\006values\030\002 \003(\t\022+\n\006status\030\003 \002"
-    "(\0162\033.fmitcp_proto.fmi2_status_t\"\n\n\010char_"
-    "req\"\n\n\010char_res\"B\n\035fmi2_import_get_fmu_s"
-    "tate_req\022\022\n\nmessage_id\030\001 \002(\005\022\r\n\005fmuId\030\002 "
-    "\002(\005\"q\n\035fmi2_import_get_fmu_state_res\022\022\n\n"
-    "message_id\030\001 \002(\005\022\017\n\007stateId\030\002 \002(\005\022+\n\006sta"
-    "tus\030\003 \002(\0162\033.fmitcp_proto.fmi2_status_t\"S"
-    "\n\035fmi2_import_set_fmu_state_req\022\022\n\nmessa"
-    "ge_id\030\001 \002(\005\022\r\n\005fmuId\030\002 \002(\005\022\017\n\007stateId\030\003 "
-    "\002(\005\"`\n\035fmi2_import_set_fmu_state_res\022\022\n\n"
-    "message_id\030\001 \002(\005\022+\n\006status\030\002 \002(\0162\033.fmitc"
-    "p_proto.fmi2_status_t\"E\n\036fmi2_import_fre"
-    "e_fmu_state_req\022\022\n\nmessage_id\030\001 \002(\005\022\017\n\007s"
-    "tateId\030\002 \002(\005\"a\n\036fmi2_import_free_fmu_sta"
-    "te_res\022\022\n\nmessage_id\030\001 \002(\005\022+\n\006status\030\002 \002"
-    "(\0162\033.fmitcp_proto.fmi2_status_t\"y\n*fmi2_"
-    "import_get_directional_derivative_req\022\022\n"
-    "\nmessage_id\030\001 \002(\005\022\r\n\005fmuId\030\002 \002(\005\022\r\n\005v_re"
-    "f\030\003 \003(\005\022\r\n\005z_ref\030\004 \003(\005\022\n\n\002dv\030\005 \003(\001\"y\n*fm"
-    "i2_import_get_directional_derivative_res"
-    "\022\022\n\nmessage_id\030\001 \002(\005\022\n\n\002dz\030\002 \003(\001\022+\n\006stat"
-    "us\030\003 \002(\0162\033.fmitcp_proto.fmi2_status_t\"0\n"
-    "\013get_xml_req\022\022\n\nmessage_id\030\001 \002(\005\022\r\n\005fmuI"
-    "d\030\002 \002(\005\"b\n\013get_xml_res\022\022\n\nmessage_id\030\001 \002"
-    "(\005\0222\n\010logLevel\030\002 \002(\0162 .fmitcp_proto.jm_l"
-    "og_level_enu_t\022\013\n\003xml\030\003 \002(\t*\327\001\n\022jm_log_l"
-    "evel_enu_t\022\030\n\024jm_log_level_nothing\020\000\022\026\n\022"
-    "jm_log_level_fatal\020\001\022\026\n\022jm_log_level_err"
-    "or\020\002\022\030\n\024jm_log_level_warning\020\003\022\025\n\021jm_log"
-    "_level_info\020\004\022\030\n\024jm_log_level_verbose\020\005\022"
-    "\026\n\022jm_log_level_debug\020\006\022\024\n\020jm_log_level_"
-    "all\020\007*\234\001\n\rfmi2_status_t\022\022\n\016fmi2_status_o"
-    "k\020\000\022\027\n\023fmi2_status_warning\020\001\022\027\n\023fmi2_sta"
-    "tus_discard\020\002\022\025\n\021fmi2_status_error\020\003\022\025\n\021"
-    "fmi2_status_fatal\020\004\022\027\n\023fmi2_status_pendi"
-    "ng\020\005*z\n\022fmi2_status_kind_t\022\027\n\023fmi2_do_st"
-    "ep_status\020\000\022\027\n\023fmi2_pending_status\020\001\022\035\n\031"
-    "fmi2_last_successful_time\020\002\022\023\n\017fmi2_term"
-    "inated\020\003*T\n\017jm_status_enu_t\022\023\n\017jm_status"
-    "_error\020\000\022\025\n\021jm_status_success\020\001\022\025\n\021jm_st"
-    "atus_warning\020\002", 20414);
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
-    "fmitcp.proto", &protobuf_RegisterTypes);
+#endif
   fmitcp_message::default_instance_ = new fmitcp_message();
   fmi2_event_info_t::default_instance_ = new fmi2_event_info_t();
   fmi2_import_instantiate_req::default_instance_ = new fmi2_import_instantiate_req();
@@ -2922,16 +296,20 @@ void protobuf_AddDesc_fmitcp_2eproto() {
   ::google::protobuf::internal::OnShutdown(&protobuf_ShutdownFile_fmitcp_2eproto);
 }
 
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+GOOGLE_PROTOBUF_DECLARE_ONCE(protobuf_AddDesc_fmitcp_2eproto_once_);
+void protobuf_AddDesc_fmitcp_2eproto() {
+  ::google::protobuf::::google::protobuf::GoogleOnceInit(&protobuf_AddDesc_fmitcp_2eproto_once_,
+                 &protobuf_AddDesc_fmitcp_2eproto_impl);
+}
+#else
 // Force AddDescriptors() to be called at static initialization time.
 struct StaticDescriptorInitializer_fmitcp_2eproto {
   StaticDescriptorInitializer_fmitcp_2eproto() {
     protobuf_AddDesc_fmitcp_2eproto();
   }
 } static_descriptor_initializer_fmitcp_2eproto_;
-const ::google::protobuf::EnumDescriptor* jm_log_level_enu_t_descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return jm_log_level_enu_t_descriptor_;
-}
+#endif
 bool jm_log_level_enu_t_IsValid(int value) {
   switch(value) {
     case 0:
@@ -2948,10 +326,6 @@ bool jm_log_level_enu_t_IsValid(int value) {
   }
 }
 
-const ::google::protobuf::EnumDescriptor* fmi2_status_t_descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_status_t_descriptor_;
-}
 bool fmi2_status_t_IsValid(int value) {
   switch(value) {
     case 0:
@@ -2966,10 +340,6 @@ bool fmi2_status_t_IsValid(int value) {
   }
 }
 
-const ::google::protobuf::EnumDescriptor* fmi2_status_kind_t_descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_status_kind_t_descriptor_;
-}
 bool fmi2_status_kind_t_IsValid(int value) {
   switch(value) {
     case 0:
@@ -2982,10 +352,6 @@ bool fmi2_status_kind_t_IsValid(int value) {
   }
 }
 
-const ::google::protobuf::EnumDescriptor* jm_status_enu_t_descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return jm_status_enu_t_descriptor_;
-}
 bool jm_status_enu_t_IsValid(int value) {
   switch(value) {
     case 0:
@@ -3000,10 +366,6 @@ bool jm_status_enu_t_IsValid(int value) {
 
 // ===================================================================
 
-const ::google::protobuf::EnumDescriptor* fmitcp_message_Type_descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmitcp_message_Type_descriptor_;
-}
 bool fmitcp_message_Type_IsValid(int value) {
   switch(value) {
     case 1:
@@ -3286,99 +648,519 @@ const int fmitcp_message::kGetXmlResFieldNumber;
 #endif  // !_MSC_VER
 
 fmitcp_message::fmitcp_message()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
 void fmitcp_message::InitAsDefaultInstance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_instantiate_req_ = const_cast< ::fmitcp_proto::fmi2_import_instantiate_req*>(
+      ::fmitcp_proto::fmi2_import_instantiate_req::internal_default_instance());
+#else
   fmi2_import_instantiate_req_ = const_cast< ::fmitcp_proto::fmi2_import_instantiate_req*>(&::fmitcp_proto::fmi2_import_instantiate_req::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_instantiate_res_ = const_cast< ::fmitcp_proto::fmi2_import_instantiate_res*>(
+      ::fmitcp_proto::fmi2_import_instantiate_res::internal_default_instance());
+#else
   fmi2_import_instantiate_res_ = const_cast< ::fmitcp_proto::fmi2_import_instantiate_res*>(&::fmitcp_proto::fmi2_import_instantiate_res::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_initialize_slave_req_ = const_cast< ::fmitcp_proto::fmi2_import_initialize_slave_req*>(
+      ::fmitcp_proto::fmi2_import_initialize_slave_req::internal_default_instance());
+#else
   fmi2_import_initialize_slave_req_ = const_cast< ::fmitcp_proto::fmi2_import_initialize_slave_req*>(&::fmitcp_proto::fmi2_import_initialize_slave_req::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_initialize_slave_res_ = const_cast< ::fmitcp_proto::fmi2_import_initialize_slave_res*>(
+      ::fmitcp_proto::fmi2_import_initialize_slave_res::internal_default_instance());
+#else
   fmi2_import_initialize_slave_res_ = const_cast< ::fmitcp_proto::fmi2_import_initialize_slave_res*>(&::fmitcp_proto::fmi2_import_initialize_slave_res::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_terminate_slave_req_ = const_cast< ::fmitcp_proto::fmi2_import_terminate_slave_req*>(
+      ::fmitcp_proto::fmi2_import_terminate_slave_req::internal_default_instance());
+#else
   fmi2_import_terminate_slave_req_ = const_cast< ::fmitcp_proto::fmi2_import_terminate_slave_req*>(&::fmitcp_proto::fmi2_import_terminate_slave_req::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_terminate_slave_res_ = const_cast< ::fmitcp_proto::fmi2_import_terminate_slave_res*>(
+      ::fmitcp_proto::fmi2_import_terminate_slave_res::internal_default_instance());
+#else
   fmi2_import_terminate_slave_res_ = const_cast< ::fmitcp_proto::fmi2_import_terminate_slave_res*>(&::fmitcp_proto::fmi2_import_terminate_slave_res::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_reset_slave_req_ = const_cast< ::fmitcp_proto::fmi2_import_reset_slave_req*>(
+      ::fmitcp_proto::fmi2_import_reset_slave_req::internal_default_instance());
+#else
   fmi2_import_reset_slave_req_ = const_cast< ::fmitcp_proto::fmi2_import_reset_slave_req*>(&::fmitcp_proto::fmi2_import_reset_slave_req::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_reset_slave_res_ = const_cast< ::fmitcp_proto::fmi2_import_reset_slave_res*>(
+      ::fmitcp_proto::fmi2_import_reset_slave_res::internal_default_instance());
+#else
   fmi2_import_reset_slave_res_ = const_cast< ::fmitcp_proto::fmi2_import_reset_slave_res*>(&::fmitcp_proto::fmi2_import_reset_slave_res::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_free_slave_instance_req_ = const_cast< ::fmitcp_proto::fmi2_import_free_slave_instance_req*>(
+      ::fmitcp_proto::fmi2_import_free_slave_instance_req::internal_default_instance());
+#else
   fmi2_import_free_slave_instance_req_ = const_cast< ::fmitcp_proto::fmi2_import_free_slave_instance_req*>(&::fmitcp_proto::fmi2_import_free_slave_instance_req::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_free_slave_instance_res_ = const_cast< ::fmitcp_proto::fmi2_import_free_slave_instance_res*>(
+      ::fmitcp_proto::fmi2_import_free_slave_instance_res::internal_default_instance());
+#else
   fmi2_import_free_slave_instance_res_ = const_cast< ::fmitcp_proto::fmi2_import_free_slave_instance_res*>(&::fmitcp_proto::fmi2_import_free_slave_instance_res::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_set_real_input_derivatives_req_ = const_cast< ::fmitcp_proto::fmi2_import_set_real_input_derivatives_req*>(
+      ::fmitcp_proto::fmi2_import_set_real_input_derivatives_req::internal_default_instance());
+#else
   fmi2_import_set_real_input_derivatives_req_ = const_cast< ::fmitcp_proto::fmi2_import_set_real_input_derivatives_req*>(&::fmitcp_proto::fmi2_import_set_real_input_derivatives_req::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_set_real_input_derivatives_res_ = const_cast< ::fmitcp_proto::fmi2_import_set_real_input_derivatives_res*>(
+      ::fmitcp_proto::fmi2_import_set_real_input_derivatives_res::internal_default_instance());
+#else
   fmi2_import_set_real_input_derivatives_res_ = const_cast< ::fmitcp_proto::fmi2_import_set_real_input_derivatives_res*>(&::fmitcp_proto::fmi2_import_set_real_input_derivatives_res::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_get_real_output_derivatives_req_ = const_cast< ::fmitcp_proto::fmi2_import_get_real_output_derivatives_req*>(
+      ::fmitcp_proto::fmi2_import_get_real_output_derivatives_req::internal_default_instance());
+#else
   fmi2_import_get_real_output_derivatives_req_ = const_cast< ::fmitcp_proto::fmi2_import_get_real_output_derivatives_req*>(&::fmitcp_proto::fmi2_import_get_real_output_derivatives_req::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_get_real_output_derivatives_res_ = const_cast< ::fmitcp_proto::fmi2_import_get_real_output_derivatives_res*>(
+      ::fmitcp_proto::fmi2_import_get_real_output_derivatives_res::internal_default_instance());
+#else
   fmi2_import_get_real_output_derivatives_res_ = const_cast< ::fmitcp_proto::fmi2_import_get_real_output_derivatives_res*>(&::fmitcp_proto::fmi2_import_get_real_output_derivatives_res::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_cancel_step_req_ = const_cast< ::fmitcp_proto::fmi2_import_cancel_step_req*>(
+      ::fmitcp_proto::fmi2_import_cancel_step_req::internal_default_instance());
+#else
   fmi2_import_cancel_step_req_ = const_cast< ::fmitcp_proto::fmi2_import_cancel_step_req*>(&::fmitcp_proto::fmi2_import_cancel_step_req::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_cancel_step_res_ = const_cast< ::fmitcp_proto::fmi2_import_cancel_step_res*>(
+      ::fmitcp_proto::fmi2_import_cancel_step_res::internal_default_instance());
+#else
   fmi2_import_cancel_step_res_ = const_cast< ::fmitcp_proto::fmi2_import_cancel_step_res*>(&::fmitcp_proto::fmi2_import_cancel_step_res::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_do_step_req_ = const_cast< ::fmitcp_proto::fmi2_import_do_step_req*>(
+      ::fmitcp_proto::fmi2_import_do_step_req::internal_default_instance());
+#else
   fmi2_import_do_step_req_ = const_cast< ::fmitcp_proto::fmi2_import_do_step_req*>(&::fmitcp_proto::fmi2_import_do_step_req::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_do_step_res_ = const_cast< ::fmitcp_proto::fmi2_import_do_step_res*>(
+      ::fmitcp_proto::fmi2_import_do_step_res::internal_default_instance());
+#else
   fmi2_import_do_step_res_ = const_cast< ::fmitcp_proto::fmi2_import_do_step_res*>(&::fmitcp_proto::fmi2_import_do_step_res::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_get_status_req_ = const_cast< ::fmitcp_proto::fmi2_import_get_status_req*>(
+      ::fmitcp_proto::fmi2_import_get_status_req::internal_default_instance());
+#else
   fmi2_import_get_status_req_ = const_cast< ::fmitcp_proto::fmi2_import_get_status_req*>(&::fmitcp_proto::fmi2_import_get_status_req::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_get_status_res_ = const_cast< ::fmitcp_proto::fmi2_import_get_status_res*>(
+      ::fmitcp_proto::fmi2_import_get_status_res::internal_default_instance());
+#else
   fmi2_import_get_status_res_ = const_cast< ::fmitcp_proto::fmi2_import_get_status_res*>(&::fmitcp_proto::fmi2_import_get_status_res::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_get_real_status_req_ = const_cast< ::fmitcp_proto::fmi2_import_get_real_status_req*>(
+      ::fmitcp_proto::fmi2_import_get_real_status_req::internal_default_instance());
+#else
   fmi2_import_get_real_status_req_ = const_cast< ::fmitcp_proto::fmi2_import_get_real_status_req*>(&::fmitcp_proto::fmi2_import_get_real_status_req::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_get_real_status_res_ = const_cast< ::fmitcp_proto::fmi2_import_get_real_status_res*>(
+      ::fmitcp_proto::fmi2_import_get_real_status_res::internal_default_instance());
+#else
   fmi2_import_get_real_status_res_ = const_cast< ::fmitcp_proto::fmi2_import_get_real_status_res*>(&::fmitcp_proto::fmi2_import_get_real_status_res::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_get_integer_status_req_ = const_cast< ::fmitcp_proto::fmi2_import_get_integer_status_req*>(
+      ::fmitcp_proto::fmi2_import_get_integer_status_req::internal_default_instance());
+#else
   fmi2_import_get_integer_status_req_ = const_cast< ::fmitcp_proto::fmi2_import_get_integer_status_req*>(&::fmitcp_proto::fmi2_import_get_integer_status_req::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_get_integer_status_res_ = const_cast< ::fmitcp_proto::fmi2_import_get_integer_status_res*>(
+      ::fmitcp_proto::fmi2_import_get_integer_status_res::internal_default_instance());
+#else
   fmi2_import_get_integer_status_res_ = const_cast< ::fmitcp_proto::fmi2_import_get_integer_status_res*>(&::fmitcp_proto::fmi2_import_get_integer_status_res::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_get_boolean_status_req_ = const_cast< ::fmitcp_proto::fmi2_import_get_boolean_status_req*>(
+      ::fmitcp_proto::fmi2_import_get_boolean_status_req::internal_default_instance());
+#else
   fmi2_import_get_boolean_status_req_ = const_cast< ::fmitcp_proto::fmi2_import_get_boolean_status_req*>(&::fmitcp_proto::fmi2_import_get_boolean_status_req::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_get_boolean_status_res_ = const_cast< ::fmitcp_proto::fmi2_import_get_boolean_status_res*>(
+      ::fmitcp_proto::fmi2_import_get_boolean_status_res::internal_default_instance());
+#else
   fmi2_import_get_boolean_status_res_ = const_cast< ::fmitcp_proto::fmi2_import_get_boolean_status_res*>(&::fmitcp_proto::fmi2_import_get_boolean_status_res::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_get_string_status_req_ = const_cast< ::fmitcp_proto::fmi2_import_get_string_status_req*>(
+      ::fmitcp_proto::fmi2_import_get_string_status_req::internal_default_instance());
+#else
   fmi2_import_get_string_status_req_ = const_cast< ::fmitcp_proto::fmi2_import_get_string_status_req*>(&::fmitcp_proto::fmi2_import_get_string_status_req::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_get_string_status_res_ = const_cast< ::fmitcp_proto::fmi2_import_get_string_status_res*>(
+      ::fmitcp_proto::fmi2_import_get_string_status_res::internal_default_instance());
+#else
   fmi2_import_get_string_status_res_ = const_cast< ::fmitcp_proto::fmi2_import_get_string_status_res*>(&::fmitcp_proto::fmi2_import_get_string_status_res::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_instantiate_model_req_ = const_cast< ::fmitcp_proto::fmi2_import_instantiate_model_req*>(
+      ::fmitcp_proto::fmi2_import_instantiate_model_req::internal_default_instance());
+#else
   fmi2_import_instantiate_model_req_ = const_cast< ::fmitcp_proto::fmi2_import_instantiate_model_req*>(&::fmitcp_proto::fmi2_import_instantiate_model_req::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_instantiate_model_res_ = const_cast< ::fmitcp_proto::fmi2_import_instantiate_model_res*>(
+      ::fmitcp_proto::fmi2_import_instantiate_model_res::internal_default_instance());
+#else
   fmi2_import_instantiate_model_res_ = const_cast< ::fmitcp_proto::fmi2_import_instantiate_model_res*>(&::fmitcp_proto::fmi2_import_instantiate_model_res::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_free_model_instance_req_ = const_cast< ::fmitcp_proto::fmi2_import_free_model_instance_req*>(
+      ::fmitcp_proto::fmi2_import_free_model_instance_req::internal_default_instance());
+#else
   fmi2_import_free_model_instance_req_ = const_cast< ::fmitcp_proto::fmi2_import_free_model_instance_req*>(&::fmitcp_proto::fmi2_import_free_model_instance_req::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_free_model_instance_res_ = const_cast< ::fmitcp_proto::fmi2_import_free_model_instance_res*>(
+      ::fmitcp_proto::fmi2_import_free_model_instance_res::internal_default_instance());
+#else
   fmi2_import_free_model_instance_res_ = const_cast< ::fmitcp_proto::fmi2_import_free_model_instance_res*>(&::fmitcp_proto::fmi2_import_free_model_instance_res::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_set_time_req_ = const_cast< ::fmitcp_proto::fmi2_import_set_time_req*>(
+      ::fmitcp_proto::fmi2_import_set_time_req::internal_default_instance());
+#else
   fmi2_import_set_time_req_ = const_cast< ::fmitcp_proto::fmi2_import_set_time_req*>(&::fmitcp_proto::fmi2_import_set_time_req::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_set_time_res_ = const_cast< ::fmitcp_proto::fmi2_import_set_time_res*>(
+      ::fmitcp_proto::fmi2_import_set_time_res::internal_default_instance());
+#else
   fmi2_import_set_time_res_ = const_cast< ::fmitcp_proto::fmi2_import_set_time_res*>(&::fmitcp_proto::fmi2_import_set_time_res::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_set_continuous_states_req_ = const_cast< ::fmitcp_proto::fmi2_import_set_continuous_states_req*>(
+      ::fmitcp_proto::fmi2_import_set_continuous_states_req::internal_default_instance());
+#else
   fmi2_import_set_continuous_states_req_ = const_cast< ::fmitcp_proto::fmi2_import_set_continuous_states_req*>(&::fmitcp_proto::fmi2_import_set_continuous_states_req::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_set_continuous_states_res_ = const_cast< ::fmitcp_proto::fmi2_import_set_continuous_states_res*>(
+      ::fmitcp_proto::fmi2_import_set_continuous_states_res::internal_default_instance());
+#else
   fmi2_import_set_continuous_states_res_ = const_cast< ::fmitcp_proto::fmi2_import_set_continuous_states_res*>(&::fmitcp_proto::fmi2_import_set_continuous_states_res::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_completed_integrator_step_req_ = const_cast< ::fmitcp_proto::fmi2_import_completed_integrator_step_req*>(
+      ::fmitcp_proto::fmi2_import_completed_integrator_step_req::internal_default_instance());
+#else
   fmi2_import_completed_integrator_step_req_ = const_cast< ::fmitcp_proto::fmi2_import_completed_integrator_step_req*>(&::fmitcp_proto::fmi2_import_completed_integrator_step_req::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_completed_integrator_step_res_ = const_cast< ::fmitcp_proto::fmi2_import_completed_integrator_step_res*>(
+      ::fmitcp_proto::fmi2_import_completed_integrator_step_res::internal_default_instance());
+#else
   fmi2_import_completed_integrator_step_res_ = const_cast< ::fmitcp_proto::fmi2_import_completed_integrator_step_res*>(&::fmitcp_proto::fmi2_import_completed_integrator_step_res::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_initialize_model_req_ = const_cast< ::fmitcp_proto::fmi2_import_initialize_model_req*>(
+      ::fmitcp_proto::fmi2_import_initialize_model_req::internal_default_instance());
+#else
   fmi2_import_initialize_model_req_ = const_cast< ::fmitcp_proto::fmi2_import_initialize_model_req*>(&::fmitcp_proto::fmi2_import_initialize_model_req::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_initialize_model_res_ = const_cast< ::fmitcp_proto::fmi2_import_initialize_model_res*>(
+      ::fmitcp_proto::fmi2_import_initialize_model_res::internal_default_instance());
+#else
   fmi2_import_initialize_model_res_ = const_cast< ::fmitcp_proto::fmi2_import_initialize_model_res*>(&::fmitcp_proto::fmi2_import_initialize_model_res::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_get_derivatives_req_ = const_cast< ::fmitcp_proto::fmi2_import_get_derivatives_req*>(
+      ::fmitcp_proto::fmi2_import_get_derivatives_req::internal_default_instance());
+#else
   fmi2_import_get_derivatives_req_ = const_cast< ::fmitcp_proto::fmi2_import_get_derivatives_req*>(&::fmitcp_proto::fmi2_import_get_derivatives_req::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_get_derivatives_res_ = const_cast< ::fmitcp_proto::fmi2_import_get_derivatives_res*>(
+      ::fmitcp_proto::fmi2_import_get_derivatives_res::internal_default_instance());
+#else
   fmi2_import_get_derivatives_res_ = const_cast< ::fmitcp_proto::fmi2_import_get_derivatives_res*>(&::fmitcp_proto::fmi2_import_get_derivatives_res::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_get_event_indicators_req_ = const_cast< ::fmitcp_proto::fmi2_import_get_event_indicators_req*>(
+      ::fmitcp_proto::fmi2_import_get_event_indicators_req::internal_default_instance());
+#else
   fmi2_import_get_event_indicators_req_ = const_cast< ::fmitcp_proto::fmi2_import_get_event_indicators_req*>(&::fmitcp_proto::fmi2_import_get_event_indicators_req::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_get_event_indicators_res_ = const_cast< ::fmitcp_proto::fmi2_import_get_event_indicators_res*>(
+      ::fmitcp_proto::fmi2_import_get_event_indicators_res::internal_default_instance());
+#else
   fmi2_import_get_event_indicators_res_ = const_cast< ::fmitcp_proto::fmi2_import_get_event_indicators_res*>(&::fmitcp_proto::fmi2_import_get_event_indicators_res::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_eventupdate_req_ = const_cast< ::fmitcp_proto::fmi2_import_eventUpdate_req*>(
+      ::fmitcp_proto::fmi2_import_eventUpdate_req::internal_default_instance());
+#else
   fmi2_import_eventupdate_req_ = const_cast< ::fmitcp_proto::fmi2_import_eventUpdate_req*>(&::fmitcp_proto::fmi2_import_eventUpdate_req::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_eventupdate_res_ = const_cast< ::fmitcp_proto::fmi2_import_eventUpdate_res*>(
+      ::fmitcp_proto::fmi2_import_eventUpdate_res::internal_default_instance());
+#else
   fmi2_import_eventupdate_res_ = const_cast< ::fmitcp_proto::fmi2_import_eventUpdate_res*>(&::fmitcp_proto::fmi2_import_eventUpdate_res::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_completed_event_iteration_req_ = const_cast< ::fmitcp_proto::fmi2_import_completed_event_iteration_req*>(
+      ::fmitcp_proto::fmi2_import_completed_event_iteration_req::internal_default_instance());
+#else
   fmi2_import_completed_event_iteration_req_ = const_cast< ::fmitcp_proto::fmi2_import_completed_event_iteration_req*>(&::fmitcp_proto::fmi2_import_completed_event_iteration_req::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_completed_event_iteration_res_ = const_cast< ::fmitcp_proto::fmi2_import_completed_event_iteration_res*>(
+      ::fmitcp_proto::fmi2_import_completed_event_iteration_res::internal_default_instance());
+#else
   fmi2_import_completed_event_iteration_res_ = const_cast< ::fmitcp_proto::fmi2_import_completed_event_iteration_res*>(&::fmitcp_proto::fmi2_import_completed_event_iteration_res::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_get_continuous_states_req_ = const_cast< ::fmitcp_proto::fmi2_import_get_continuous_states_req*>(
+      ::fmitcp_proto::fmi2_import_get_continuous_states_req::internal_default_instance());
+#else
   fmi2_import_get_continuous_states_req_ = const_cast< ::fmitcp_proto::fmi2_import_get_continuous_states_req*>(&::fmitcp_proto::fmi2_import_get_continuous_states_req::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_get_continuous_states_res_ = const_cast< ::fmitcp_proto::fmi2_import_get_continuous_states_res*>(
+      ::fmitcp_proto::fmi2_import_get_continuous_states_res::internal_default_instance());
+#else
   fmi2_import_get_continuous_states_res_ = const_cast< ::fmitcp_proto::fmi2_import_get_continuous_states_res*>(&::fmitcp_proto::fmi2_import_get_continuous_states_res::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_get_nominal_continuous_states_req_ = const_cast< ::fmitcp_proto::fmi2_import_get_nominal_continuous_states_req*>(
+      ::fmitcp_proto::fmi2_import_get_nominal_continuous_states_req::internal_default_instance());
+#else
   fmi2_import_get_nominal_continuous_states_req_ = const_cast< ::fmitcp_proto::fmi2_import_get_nominal_continuous_states_req*>(&::fmitcp_proto::fmi2_import_get_nominal_continuous_states_req::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_get_nominal_continuous_states_res_ = const_cast< ::fmitcp_proto::fmi2_import_get_nominal_continuous_states_res*>(
+      ::fmitcp_proto::fmi2_import_get_nominal_continuous_states_res::internal_default_instance());
+#else
   fmi2_import_get_nominal_continuous_states_res_ = const_cast< ::fmitcp_proto::fmi2_import_get_nominal_continuous_states_res*>(&::fmitcp_proto::fmi2_import_get_nominal_continuous_states_res::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_terminate_req_ = const_cast< ::fmitcp_proto::fmi2_import_terminate_req*>(
+      ::fmitcp_proto::fmi2_import_terminate_req::internal_default_instance());
+#else
   fmi2_import_terminate_req_ = const_cast< ::fmitcp_proto::fmi2_import_terminate_req*>(&::fmitcp_proto::fmi2_import_terminate_req::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_terminate_res_ = const_cast< ::fmitcp_proto::fmi2_import_terminate_res*>(
+      ::fmitcp_proto::fmi2_import_terminate_res::internal_default_instance());
+#else
   fmi2_import_terminate_res_ = const_cast< ::fmitcp_proto::fmi2_import_terminate_res*>(&::fmitcp_proto::fmi2_import_terminate_res::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_get_version_req_ = const_cast< ::fmitcp_proto::fmi2_import_get_version_req*>(
+      ::fmitcp_proto::fmi2_import_get_version_req::internal_default_instance());
+#else
   fmi2_import_get_version_req_ = const_cast< ::fmitcp_proto::fmi2_import_get_version_req*>(&::fmitcp_proto::fmi2_import_get_version_req::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_get_version_res_ = const_cast< ::fmitcp_proto::fmi2_import_get_version_res*>(
+      ::fmitcp_proto::fmi2_import_get_version_res::internal_default_instance());
+#else
   fmi2_import_get_version_res_ = const_cast< ::fmitcp_proto::fmi2_import_get_version_res*>(&::fmitcp_proto::fmi2_import_get_version_res::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_set_debug_logging_req_ = const_cast< ::fmitcp_proto::fmi2_import_set_debug_logging_req*>(
+      ::fmitcp_proto::fmi2_import_set_debug_logging_req::internal_default_instance());
+#else
   fmi2_import_set_debug_logging_req_ = const_cast< ::fmitcp_proto::fmi2_import_set_debug_logging_req*>(&::fmitcp_proto::fmi2_import_set_debug_logging_req::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_set_debug_logging_res_ = const_cast< ::fmitcp_proto::fmi2_import_set_debug_logging_res*>(
+      ::fmitcp_proto::fmi2_import_set_debug_logging_res::internal_default_instance());
+#else
   fmi2_import_set_debug_logging_res_ = const_cast< ::fmitcp_proto::fmi2_import_set_debug_logging_res*>(&::fmitcp_proto::fmi2_import_set_debug_logging_res::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_set_real_req_ = const_cast< ::fmitcp_proto::fmi2_import_set_real_req*>(
+      ::fmitcp_proto::fmi2_import_set_real_req::internal_default_instance());
+#else
   fmi2_import_set_real_req_ = const_cast< ::fmitcp_proto::fmi2_import_set_real_req*>(&::fmitcp_proto::fmi2_import_set_real_req::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_set_real_res_ = const_cast< ::fmitcp_proto::fmi2_import_set_real_res*>(
+      ::fmitcp_proto::fmi2_import_set_real_res::internal_default_instance());
+#else
   fmi2_import_set_real_res_ = const_cast< ::fmitcp_proto::fmi2_import_set_real_res*>(&::fmitcp_proto::fmi2_import_set_real_res::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_set_integer_req_ = const_cast< ::fmitcp_proto::fmi2_import_set_integer_req*>(
+      ::fmitcp_proto::fmi2_import_set_integer_req::internal_default_instance());
+#else
   fmi2_import_set_integer_req_ = const_cast< ::fmitcp_proto::fmi2_import_set_integer_req*>(&::fmitcp_proto::fmi2_import_set_integer_req::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_set_integer_res_ = const_cast< ::fmitcp_proto::fmi2_import_set_integer_res*>(
+      ::fmitcp_proto::fmi2_import_set_integer_res::internal_default_instance());
+#else
   fmi2_import_set_integer_res_ = const_cast< ::fmitcp_proto::fmi2_import_set_integer_res*>(&::fmitcp_proto::fmi2_import_set_integer_res::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_set_boolean_req_ = const_cast< ::fmitcp_proto::fmi2_import_set_boolean_req*>(
+      ::fmitcp_proto::fmi2_import_set_boolean_req::internal_default_instance());
+#else
   fmi2_import_set_boolean_req_ = const_cast< ::fmitcp_proto::fmi2_import_set_boolean_req*>(&::fmitcp_proto::fmi2_import_set_boolean_req::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_set_boolean_res_ = const_cast< ::fmitcp_proto::fmi2_import_set_boolean_res*>(
+      ::fmitcp_proto::fmi2_import_set_boolean_res::internal_default_instance());
+#else
   fmi2_import_set_boolean_res_ = const_cast< ::fmitcp_proto::fmi2_import_set_boolean_res*>(&::fmitcp_proto::fmi2_import_set_boolean_res::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_set_string_req_ = const_cast< ::fmitcp_proto::fmi2_import_set_string_req*>(
+      ::fmitcp_proto::fmi2_import_set_string_req::internal_default_instance());
+#else
   fmi2_import_set_string_req_ = const_cast< ::fmitcp_proto::fmi2_import_set_string_req*>(&::fmitcp_proto::fmi2_import_set_string_req::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_set_string_res_ = const_cast< ::fmitcp_proto::fmi2_import_set_string_res*>(
+      ::fmitcp_proto::fmi2_import_set_string_res::internal_default_instance());
+#else
   fmi2_import_set_string_res_ = const_cast< ::fmitcp_proto::fmi2_import_set_string_res*>(&::fmitcp_proto::fmi2_import_set_string_res::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_get_real_req_ = const_cast< ::fmitcp_proto::fmi2_import_get_real_req*>(
+      ::fmitcp_proto::fmi2_import_get_real_req::internal_default_instance());
+#else
   fmi2_import_get_real_req_ = const_cast< ::fmitcp_proto::fmi2_import_get_real_req*>(&::fmitcp_proto::fmi2_import_get_real_req::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_get_real_res_ = const_cast< ::fmitcp_proto::fmi2_import_get_real_res*>(
+      ::fmitcp_proto::fmi2_import_get_real_res::internal_default_instance());
+#else
   fmi2_import_get_real_res_ = const_cast< ::fmitcp_proto::fmi2_import_get_real_res*>(&::fmitcp_proto::fmi2_import_get_real_res::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_get_integer_req_ = const_cast< ::fmitcp_proto::fmi2_import_get_integer_req*>(
+      ::fmitcp_proto::fmi2_import_get_integer_req::internal_default_instance());
+#else
   fmi2_import_get_integer_req_ = const_cast< ::fmitcp_proto::fmi2_import_get_integer_req*>(&::fmitcp_proto::fmi2_import_get_integer_req::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_get_integer_res_ = const_cast< ::fmitcp_proto::fmi2_import_get_integer_res*>(
+      ::fmitcp_proto::fmi2_import_get_integer_res::internal_default_instance());
+#else
   fmi2_import_get_integer_res_ = const_cast< ::fmitcp_proto::fmi2_import_get_integer_res*>(&::fmitcp_proto::fmi2_import_get_integer_res::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_get_boolean_req_ = const_cast< ::fmitcp_proto::fmi2_import_get_boolean_req*>(
+      ::fmitcp_proto::fmi2_import_get_boolean_req::internal_default_instance());
+#else
   fmi2_import_get_boolean_req_ = const_cast< ::fmitcp_proto::fmi2_import_get_boolean_req*>(&::fmitcp_proto::fmi2_import_get_boolean_req::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_get_boolean_res_ = const_cast< ::fmitcp_proto::fmi2_import_get_boolean_res*>(
+      ::fmitcp_proto::fmi2_import_get_boolean_res::internal_default_instance());
+#else
   fmi2_import_get_boolean_res_ = const_cast< ::fmitcp_proto::fmi2_import_get_boolean_res*>(&::fmitcp_proto::fmi2_import_get_boolean_res::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_get_string_req_ = const_cast< ::fmitcp_proto::fmi2_import_get_string_req*>(
+      ::fmitcp_proto::fmi2_import_get_string_req::internal_default_instance());
+#else
   fmi2_import_get_string_req_ = const_cast< ::fmitcp_proto::fmi2_import_get_string_req*>(&::fmitcp_proto::fmi2_import_get_string_req::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_get_string_res_ = const_cast< ::fmitcp_proto::fmi2_import_get_string_res*>(
+      ::fmitcp_proto::fmi2_import_get_string_res::internal_default_instance());
+#else
   fmi2_import_get_string_res_ = const_cast< ::fmitcp_proto::fmi2_import_get_string_res*>(&::fmitcp_proto::fmi2_import_get_string_res::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_get_fmu_state_req_ = const_cast< ::fmitcp_proto::fmi2_import_get_fmu_state_req*>(
+      ::fmitcp_proto::fmi2_import_get_fmu_state_req::internal_default_instance());
+#else
   fmi2_import_get_fmu_state_req_ = const_cast< ::fmitcp_proto::fmi2_import_get_fmu_state_req*>(&::fmitcp_proto::fmi2_import_get_fmu_state_req::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_get_fmu_state_res_ = const_cast< ::fmitcp_proto::fmi2_import_get_fmu_state_res*>(
+      ::fmitcp_proto::fmi2_import_get_fmu_state_res::internal_default_instance());
+#else
   fmi2_import_get_fmu_state_res_ = const_cast< ::fmitcp_proto::fmi2_import_get_fmu_state_res*>(&::fmitcp_proto::fmi2_import_get_fmu_state_res::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_set_fmu_state_req_ = const_cast< ::fmitcp_proto::fmi2_import_set_fmu_state_req*>(
+      ::fmitcp_proto::fmi2_import_set_fmu_state_req::internal_default_instance());
+#else
   fmi2_import_set_fmu_state_req_ = const_cast< ::fmitcp_proto::fmi2_import_set_fmu_state_req*>(&::fmitcp_proto::fmi2_import_set_fmu_state_req::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_set_fmu_state_res_ = const_cast< ::fmitcp_proto::fmi2_import_set_fmu_state_res*>(
+      ::fmitcp_proto::fmi2_import_set_fmu_state_res::internal_default_instance());
+#else
   fmi2_import_set_fmu_state_res_ = const_cast< ::fmitcp_proto::fmi2_import_set_fmu_state_res*>(&::fmitcp_proto::fmi2_import_set_fmu_state_res::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_free_fmu_state_req_ = const_cast< ::fmitcp_proto::fmi2_import_free_fmu_state_req*>(
+      ::fmitcp_proto::fmi2_import_free_fmu_state_req::internal_default_instance());
+#else
   fmi2_import_free_fmu_state_req_ = const_cast< ::fmitcp_proto::fmi2_import_free_fmu_state_req*>(&::fmitcp_proto::fmi2_import_free_fmu_state_req::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_free_fmu_state_res_ = const_cast< ::fmitcp_proto::fmi2_import_free_fmu_state_res*>(
+      ::fmitcp_proto::fmi2_import_free_fmu_state_res::internal_default_instance());
+#else
   fmi2_import_free_fmu_state_res_ = const_cast< ::fmitcp_proto::fmi2_import_free_fmu_state_res*>(&::fmitcp_proto::fmi2_import_free_fmu_state_res::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_get_directional_derivative_req_ = const_cast< ::fmitcp_proto::fmi2_import_get_directional_derivative_req*>(
+      ::fmitcp_proto::fmi2_import_get_directional_derivative_req::internal_default_instance());
+#else
   fmi2_import_get_directional_derivative_req_ = const_cast< ::fmitcp_proto::fmi2_import_get_directional_derivative_req*>(&::fmitcp_proto::fmi2_import_get_directional_derivative_req::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  fmi2_import_get_directional_derivative_res_ = const_cast< ::fmitcp_proto::fmi2_import_get_directional_derivative_res*>(
+      ::fmitcp_proto::fmi2_import_get_directional_derivative_res::internal_default_instance());
+#else
   fmi2_import_get_directional_derivative_res_ = const_cast< ::fmitcp_proto::fmi2_import_get_directional_derivative_res*>(&::fmitcp_proto::fmi2_import_get_directional_derivative_res::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  get_xml_req_ = const_cast< ::fmitcp_proto::get_xml_req*>(
+      ::fmitcp_proto::get_xml_req::internal_default_instance());
+#else
   get_xml_req_ = const_cast< ::fmitcp_proto::get_xml_req*>(&::fmitcp_proto::get_xml_req::default_instance());
+#endif
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  get_xml_res_ = const_cast< ::fmitcp_proto::get_xml_res*>(
+      ::fmitcp_proto::get_xml_res::internal_default_instance());
+#else
   get_xml_res_ = const_cast< ::fmitcp_proto::get_xml_res*>(&::fmitcp_proto::get_xml_res::default_instance());
+#endif
 }
 
 fmitcp_message::fmitcp_message(const fmitcp_message& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -3478,7 +1260,11 @@ fmitcp_message::~fmitcp_message() {
 }
 
 void fmitcp_message::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
     delete fmi2_import_instantiate_req_;
     delete fmi2_import_instantiate_res_;
     delete fmi2_import_initialize_slave_req_;
@@ -3571,13 +1357,12 @@ void fmitcp_message::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmitcp_message::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmitcp_message_descriptor_;
-}
-
 const fmitcp_message& fmitcp_message::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -3864,7 +1649,6 @@ void fmitcp_message::Clear() {
     }
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmitcp_message::MergePartialFromCodedStream(
@@ -3883,8 +1667,6 @@ bool fmitcp_message::MergePartialFromCodedStream(
                  input, &value)));
           if (::fmitcp_proto::fmitcp_message_Type_IsValid(value)) {
             set_type(static_cast< ::fmitcp_proto::fmitcp_message_Type >(value));
-          } else {
-            mutable_unknown_fields()->AddVarint(1, value);
           }
         } else {
           goto handle_uninterpreted;
@@ -5075,8 +2857,7 @@ bool fmitcp_message::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -5095,1115 +2876,508 @@ void fmitcp_message::SerializeWithCachedSizes(
 
   // optional .fmitcp_proto.fmi2_import_instantiate_req fmi2_import_instantiate_req = 2;
   if (has_fmi2_import_instantiate_req()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       2, this->fmi2_import_instantiate_req(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_instantiate_res fmi2_import_instantiate_res = 3;
   if (has_fmi2_import_instantiate_res()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       3, this->fmi2_import_instantiate_res(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_initialize_slave_req fmi2_import_initialize_slave_req = 4;
   if (has_fmi2_import_initialize_slave_req()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       4, this->fmi2_import_initialize_slave_req(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_initialize_slave_res fmi2_import_initialize_slave_res = 5;
   if (has_fmi2_import_initialize_slave_res()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       5, this->fmi2_import_initialize_slave_res(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_terminate_slave_req fmi2_import_terminate_slave_req = 6;
   if (has_fmi2_import_terminate_slave_req()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       6, this->fmi2_import_terminate_slave_req(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_terminate_slave_res fmi2_import_terminate_slave_res = 7;
   if (has_fmi2_import_terminate_slave_res()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       7, this->fmi2_import_terminate_slave_res(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_reset_slave_req fmi2_import_reset_slave_req = 8;
   if (has_fmi2_import_reset_slave_req()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       8, this->fmi2_import_reset_slave_req(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_reset_slave_res fmi2_import_reset_slave_res = 9;
   if (has_fmi2_import_reset_slave_res()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       9, this->fmi2_import_reset_slave_res(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_free_slave_instance_req fmi2_import_free_slave_instance_req = 10;
   if (has_fmi2_import_free_slave_instance_req()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       10, this->fmi2_import_free_slave_instance_req(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_free_slave_instance_res fmi2_import_free_slave_instance_res = 11;
   if (has_fmi2_import_free_slave_instance_res()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       11, this->fmi2_import_free_slave_instance_res(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_set_real_input_derivatives_req fmi2_import_set_real_input_derivatives_req = 12;
   if (has_fmi2_import_set_real_input_derivatives_req()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       12, this->fmi2_import_set_real_input_derivatives_req(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_set_real_input_derivatives_res fmi2_import_set_real_input_derivatives_res = 13;
   if (has_fmi2_import_set_real_input_derivatives_res()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       13, this->fmi2_import_set_real_input_derivatives_res(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_get_real_output_derivatives_req fmi2_import_get_real_output_derivatives_req = 14;
   if (has_fmi2_import_get_real_output_derivatives_req()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       14, this->fmi2_import_get_real_output_derivatives_req(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_get_real_output_derivatives_res fmi2_import_get_real_output_derivatives_res = 15;
   if (has_fmi2_import_get_real_output_derivatives_res()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       15, this->fmi2_import_get_real_output_derivatives_res(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_cancel_step_req fmi2_import_cancel_step_req = 16;
   if (has_fmi2_import_cancel_step_req()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       16, this->fmi2_import_cancel_step_req(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_cancel_step_res fmi2_import_cancel_step_res = 17;
   if (has_fmi2_import_cancel_step_res()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       17, this->fmi2_import_cancel_step_res(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_do_step_req fmi2_import_do_step_req = 18;
   if (has_fmi2_import_do_step_req()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       18, this->fmi2_import_do_step_req(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_do_step_res fmi2_import_do_step_res = 19;
   if (has_fmi2_import_do_step_res()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       19, this->fmi2_import_do_step_res(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_get_status_req fmi2_import_get_status_req = 20;
   if (has_fmi2_import_get_status_req()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       20, this->fmi2_import_get_status_req(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_get_status_res fmi2_import_get_status_res = 21;
   if (has_fmi2_import_get_status_res()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       21, this->fmi2_import_get_status_res(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_get_real_status_req fmi2_import_get_real_status_req = 22;
   if (has_fmi2_import_get_real_status_req()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       22, this->fmi2_import_get_real_status_req(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_get_real_status_res fmi2_import_get_real_status_res = 23;
   if (has_fmi2_import_get_real_status_res()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       23, this->fmi2_import_get_real_status_res(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_get_integer_status_req fmi2_import_get_integer_status_req = 24;
   if (has_fmi2_import_get_integer_status_req()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       24, this->fmi2_import_get_integer_status_req(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_get_integer_status_res fmi2_import_get_integer_status_res = 25;
   if (has_fmi2_import_get_integer_status_res()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       25, this->fmi2_import_get_integer_status_res(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_get_boolean_status_req fmi2_import_get_boolean_status_req = 26;
   if (has_fmi2_import_get_boolean_status_req()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       26, this->fmi2_import_get_boolean_status_req(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_get_boolean_status_res fmi2_import_get_boolean_status_res = 27;
   if (has_fmi2_import_get_boolean_status_res()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       27, this->fmi2_import_get_boolean_status_res(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_get_string_status_req fmi2_import_get_string_status_req = 28;
   if (has_fmi2_import_get_string_status_req()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       28, this->fmi2_import_get_string_status_req(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_get_string_status_res fmi2_import_get_string_status_res = 29;
   if (has_fmi2_import_get_string_status_res()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       29, this->fmi2_import_get_string_status_res(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_instantiate_model_req fmi2_import_instantiate_model_req = 30;
   if (has_fmi2_import_instantiate_model_req()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       30, this->fmi2_import_instantiate_model_req(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_instantiate_model_res fmi2_import_instantiate_model_res = 31;
   if (has_fmi2_import_instantiate_model_res()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       31, this->fmi2_import_instantiate_model_res(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_free_model_instance_req fmi2_import_free_model_instance_req = 32;
   if (has_fmi2_import_free_model_instance_req()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       32, this->fmi2_import_free_model_instance_req(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_free_model_instance_res fmi2_import_free_model_instance_res = 33;
   if (has_fmi2_import_free_model_instance_res()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       33, this->fmi2_import_free_model_instance_res(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_set_time_req fmi2_import_set_time_req = 34;
   if (has_fmi2_import_set_time_req()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       34, this->fmi2_import_set_time_req(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_set_time_res fmi2_import_set_time_res = 35;
   if (has_fmi2_import_set_time_res()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       35, this->fmi2_import_set_time_res(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_set_continuous_states_req fmi2_import_set_continuous_states_req = 36;
   if (has_fmi2_import_set_continuous_states_req()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       36, this->fmi2_import_set_continuous_states_req(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_set_continuous_states_res fmi2_import_set_continuous_states_res = 37;
   if (has_fmi2_import_set_continuous_states_res()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       37, this->fmi2_import_set_continuous_states_res(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_completed_integrator_step_req fmi2_import_completed_integrator_step_req = 38;
   if (has_fmi2_import_completed_integrator_step_req()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       38, this->fmi2_import_completed_integrator_step_req(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_completed_integrator_step_res fmi2_import_completed_integrator_step_res = 39;
   if (has_fmi2_import_completed_integrator_step_res()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       39, this->fmi2_import_completed_integrator_step_res(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_initialize_model_req fmi2_import_initialize_model_req = 40;
   if (has_fmi2_import_initialize_model_req()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       40, this->fmi2_import_initialize_model_req(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_initialize_model_res fmi2_import_initialize_model_res = 41;
   if (has_fmi2_import_initialize_model_res()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       41, this->fmi2_import_initialize_model_res(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_get_derivatives_req fmi2_import_get_derivatives_req = 42;
   if (has_fmi2_import_get_derivatives_req()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       42, this->fmi2_import_get_derivatives_req(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_get_derivatives_res fmi2_import_get_derivatives_res = 43;
   if (has_fmi2_import_get_derivatives_res()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       43, this->fmi2_import_get_derivatives_res(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_get_event_indicators_req fmi2_import_get_event_indicators_req = 44;
   if (has_fmi2_import_get_event_indicators_req()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       44, this->fmi2_import_get_event_indicators_req(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_get_event_indicators_res fmi2_import_get_event_indicators_res = 45;
   if (has_fmi2_import_get_event_indicators_res()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       45, this->fmi2_import_get_event_indicators_res(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_eventUpdate_req fmi2_import_eventUpdate_req = 46;
   if (has_fmi2_import_eventupdate_req()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       46, this->fmi2_import_eventupdate_req(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_eventUpdate_res fmi2_import_eventUpdate_res = 47;
   if (has_fmi2_import_eventupdate_res()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       47, this->fmi2_import_eventupdate_res(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_completed_event_iteration_req fmi2_import_completed_event_iteration_req = 48;
   if (has_fmi2_import_completed_event_iteration_req()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       48, this->fmi2_import_completed_event_iteration_req(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_completed_event_iteration_res fmi2_import_completed_event_iteration_res = 49;
   if (has_fmi2_import_completed_event_iteration_res()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       49, this->fmi2_import_completed_event_iteration_res(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_get_continuous_states_req fmi2_import_get_continuous_states_req = 50;
   if (has_fmi2_import_get_continuous_states_req()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       50, this->fmi2_import_get_continuous_states_req(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_get_continuous_states_res fmi2_import_get_continuous_states_res = 51;
   if (has_fmi2_import_get_continuous_states_res()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       51, this->fmi2_import_get_continuous_states_res(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_get_nominal_continuous_states_req fmi2_import_get_nominal_continuous_states_req = 52;
   if (has_fmi2_import_get_nominal_continuous_states_req()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       52, this->fmi2_import_get_nominal_continuous_states_req(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_get_nominal_continuous_states_res fmi2_import_get_nominal_continuous_states_res = 53;
   if (has_fmi2_import_get_nominal_continuous_states_res()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       53, this->fmi2_import_get_nominal_continuous_states_res(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_terminate_req fmi2_import_terminate_req = 54;
   if (has_fmi2_import_terminate_req()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       54, this->fmi2_import_terminate_req(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_terminate_res fmi2_import_terminate_res = 55;
   if (has_fmi2_import_terminate_res()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       55, this->fmi2_import_terminate_res(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_get_version_req fmi2_import_get_version_req = 56;
   if (has_fmi2_import_get_version_req()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       56, this->fmi2_import_get_version_req(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_get_version_res fmi2_import_get_version_res = 57;
   if (has_fmi2_import_get_version_res()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       57, this->fmi2_import_get_version_res(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_set_debug_logging_req fmi2_import_set_debug_logging_req = 58;
   if (has_fmi2_import_set_debug_logging_req()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       58, this->fmi2_import_set_debug_logging_req(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_set_debug_logging_res fmi2_import_set_debug_logging_res = 59;
   if (has_fmi2_import_set_debug_logging_res()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       59, this->fmi2_import_set_debug_logging_res(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_set_real_req fmi2_import_set_real_req = 60;
   if (has_fmi2_import_set_real_req()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       60, this->fmi2_import_set_real_req(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_set_real_res fmi2_import_set_real_res = 61;
   if (has_fmi2_import_set_real_res()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       61, this->fmi2_import_set_real_res(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_set_integer_req fmi2_import_set_integer_req = 62;
   if (has_fmi2_import_set_integer_req()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       62, this->fmi2_import_set_integer_req(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_set_integer_res fmi2_import_set_integer_res = 63;
   if (has_fmi2_import_set_integer_res()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       63, this->fmi2_import_set_integer_res(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_set_boolean_req fmi2_import_set_boolean_req = 64;
   if (has_fmi2_import_set_boolean_req()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       64, this->fmi2_import_set_boolean_req(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_set_boolean_res fmi2_import_set_boolean_res = 65;
   if (has_fmi2_import_set_boolean_res()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       65, this->fmi2_import_set_boolean_res(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_set_string_req fmi2_import_set_string_req = 66;
   if (has_fmi2_import_set_string_req()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       66, this->fmi2_import_set_string_req(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_set_string_res fmi2_import_set_string_res = 67;
   if (has_fmi2_import_set_string_res()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       67, this->fmi2_import_set_string_res(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_get_real_req fmi2_import_get_real_req = 68;
   if (has_fmi2_import_get_real_req()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       68, this->fmi2_import_get_real_req(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_get_real_res fmi2_import_get_real_res = 69;
   if (has_fmi2_import_get_real_res()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       69, this->fmi2_import_get_real_res(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_get_integer_req fmi2_import_get_integer_req = 70;
   if (has_fmi2_import_get_integer_req()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       70, this->fmi2_import_get_integer_req(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_get_integer_res fmi2_import_get_integer_res = 71;
   if (has_fmi2_import_get_integer_res()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       71, this->fmi2_import_get_integer_res(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_get_boolean_req fmi2_import_get_boolean_req = 72;
   if (has_fmi2_import_get_boolean_req()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       72, this->fmi2_import_get_boolean_req(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_get_boolean_res fmi2_import_get_boolean_res = 73;
   if (has_fmi2_import_get_boolean_res()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       73, this->fmi2_import_get_boolean_res(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_get_string_req fmi2_import_get_string_req = 74;
   if (has_fmi2_import_get_string_req()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       74, this->fmi2_import_get_string_req(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_get_string_res fmi2_import_get_string_res = 75;
   if (has_fmi2_import_get_string_res()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       75, this->fmi2_import_get_string_res(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_get_fmu_state_req fmi2_import_get_fmu_state_req = 76;
   if (has_fmi2_import_get_fmu_state_req()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       76, this->fmi2_import_get_fmu_state_req(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_get_fmu_state_res fmi2_import_get_fmu_state_res = 77;
   if (has_fmi2_import_get_fmu_state_res()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       77, this->fmi2_import_get_fmu_state_res(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_set_fmu_state_req fmi2_import_set_fmu_state_req = 78;
   if (has_fmi2_import_set_fmu_state_req()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       78, this->fmi2_import_set_fmu_state_req(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_set_fmu_state_res fmi2_import_set_fmu_state_res = 79;
   if (has_fmi2_import_set_fmu_state_res()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       79, this->fmi2_import_set_fmu_state_res(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_free_fmu_state_req fmi2_import_free_fmu_state_req = 80;
   if (has_fmi2_import_free_fmu_state_req()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       80, this->fmi2_import_free_fmu_state_req(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_free_fmu_state_res fmi2_import_free_fmu_state_res = 81;
   if (has_fmi2_import_free_fmu_state_res()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       81, this->fmi2_import_free_fmu_state_res(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_get_directional_derivative_req fmi2_import_get_directional_derivative_req = 88;
   if (has_fmi2_import_get_directional_derivative_req()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       88, this->fmi2_import_get_directional_derivative_req(), output);
   }
 
   // optional .fmitcp_proto.fmi2_import_get_directional_derivative_res fmi2_import_get_directional_derivative_res = 89;
   if (has_fmi2_import_get_directional_derivative_res()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       89, this->fmi2_import_get_directional_derivative_res(), output);
   }
 
   // optional .fmitcp_proto.get_xml_req get_xml_req = 90;
   if (has_get_xml_req()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       90, this->get_xml_req(), output);
   }
 
   // optional .fmitcp_proto.get_xml_res get_xml_res = 91;
   if (has_get_xml_res()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       91, this->get_xml_res(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmitcp_message::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required .fmitcp_proto.fmitcp_message.Type type = 1;
-  if (has_type()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      1, this->type(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_instantiate_req fmi2_import_instantiate_req = 2;
-  if (has_fmi2_import_instantiate_req()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        2, this->fmi2_import_instantiate_req(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_instantiate_res fmi2_import_instantiate_res = 3;
-  if (has_fmi2_import_instantiate_res()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        3, this->fmi2_import_instantiate_res(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_initialize_slave_req fmi2_import_initialize_slave_req = 4;
-  if (has_fmi2_import_initialize_slave_req()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        4, this->fmi2_import_initialize_slave_req(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_initialize_slave_res fmi2_import_initialize_slave_res = 5;
-  if (has_fmi2_import_initialize_slave_res()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        5, this->fmi2_import_initialize_slave_res(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_terminate_slave_req fmi2_import_terminate_slave_req = 6;
-  if (has_fmi2_import_terminate_slave_req()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        6, this->fmi2_import_terminate_slave_req(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_terminate_slave_res fmi2_import_terminate_slave_res = 7;
-  if (has_fmi2_import_terminate_slave_res()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        7, this->fmi2_import_terminate_slave_res(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_reset_slave_req fmi2_import_reset_slave_req = 8;
-  if (has_fmi2_import_reset_slave_req()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        8, this->fmi2_import_reset_slave_req(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_reset_slave_res fmi2_import_reset_slave_res = 9;
-  if (has_fmi2_import_reset_slave_res()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        9, this->fmi2_import_reset_slave_res(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_free_slave_instance_req fmi2_import_free_slave_instance_req = 10;
-  if (has_fmi2_import_free_slave_instance_req()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        10, this->fmi2_import_free_slave_instance_req(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_free_slave_instance_res fmi2_import_free_slave_instance_res = 11;
-  if (has_fmi2_import_free_slave_instance_res()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        11, this->fmi2_import_free_slave_instance_res(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_set_real_input_derivatives_req fmi2_import_set_real_input_derivatives_req = 12;
-  if (has_fmi2_import_set_real_input_derivatives_req()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        12, this->fmi2_import_set_real_input_derivatives_req(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_set_real_input_derivatives_res fmi2_import_set_real_input_derivatives_res = 13;
-  if (has_fmi2_import_set_real_input_derivatives_res()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        13, this->fmi2_import_set_real_input_derivatives_res(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_get_real_output_derivatives_req fmi2_import_get_real_output_derivatives_req = 14;
-  if (has_fmi2_import_get_real_output_derivatives_req()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        14, this->fmi2_import_get_real_output_derivatives_req(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_get_real_output_derivatives_res fmi2_import_get_real_output_derivatives_res = 15;
-  if (has_fmi2_import_get_real_output_derivatives_res()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        15, this->fmi2_import_get_real_output_derivatives_res(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_cancel_step_req fmi2_import_cancel_step_req = 16;
-  if (has_fmi2_import_cancel_step_req()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        16, this->fmi2_import_cancel_step_req(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_cancel_step_res fmi2_import_cancel_step_res = 17;
-  if (has_fmi2_import_cancel_step_res()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        17, this->fmi2_import_cancel_step_res(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_do_step_req fmi2_import_do_step_req = 18;
-  if (has_fmi2_import_do_step_req()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        18, this->fmi2_import_do_step_req(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_do_step_res fmi2_import_do_step_res = 19;
-  if (has_fmi2_import_do_step_res()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        19, this->fmi2_import_do_step_res(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_get_status_req fmi2_import_get_status_req = 20;
-  if (has_fmi2_import_get_status_req()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        20, this->fmi2_import_get_status_req(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_get_status_res fmi2_import_get_status_res = 21;
-  if (has_fmi2_import_get_status_res()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        21, this->fmi2_import_get_status_res(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_get_real_status_req fmi2_import_get_real_status_req = 22;
-  if (has_fmi2_import_get_real_status_req()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        22, this->fmi2_import_get_real_status_req(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_get_real_status_res fmi2_import_get_real_status_res = 23;
-  if (has_fmi2_import_get_real_status_res()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        23, this->fmi2_import_get_real_status_res(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_get_integer_status_req fmi2_import_get_integer_status_req = 24;
-  if (has_fmi2_import_get_integer_status_req()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        24, this->fmi2_import_get_integer_status_req(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_get_integer_status_res fmi2_import_get_integer_status_res = 25;
-  if (has_fmi2_import_get_integer_status_res()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        25, this->fmi2_import_get_integer_status_res(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_get_boolean_status_req fmi2_import_get_boolean_status_req = 26;
-  if (has_fmi2_import_get_boolean_status_req()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        26, this->fmi2_import_get_boolean_status_req(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_get_boolean_status_res fmi2_import_get_boolean_status_res = 27;
-  if (has_fmi2_import_get_boolean_status_res()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        27, this->fmi2_import_get_boolean_status_res(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_get_string_status_req fmi2_import_get_string_status_req = 28;
-  if (has_fmi2_import_get_string_status_req()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        28, this->fmi2_import_get_string_status_req(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_get_string_status_res fmi2_import_get_string_status_res = 29;
-  if (has_fmi2_import_get_string_status_res()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        29, this->fmi2_import_get_string_status_res(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_instantiate_model_req fmi2_import_instantiate_model_req = 30;
-  if (has_fmi2_import_instantiate_model_req()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        30, this->fmi2_import_instantiate_model_req(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_instantiate_model_res fmi2_import_instantiate_model_res = 31;
-  if (has_fmi2_import_instantiate_model_res()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        31, this->fmi2_import_instantiate_model_res(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_free_model_instance_req fmi2_import_free_model_instance_req = 32;
-  if (has_fmi2_import_free_model_instance_req()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        32, this->fmi2_import_free_model_instance_req(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_free_model_instance_res fmi2_import_free_model_instance_res = 33;
-  if (has_fmi2_import_free_model_instance_res()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        33, this->fmi2_import_free_model_instance_res(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_set_time_req fmi2_import_set_time_req = 34;
-  if (has_fmi2_import_set_time_req()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        34, this->fmi2_import_set_time_req(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_set_time_res fmi2_import_set_time_res = 35;
-  if (has_fmi2_import_set_time_res()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        35, this->fmi2_import_set_time_res(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_set_continuous_states_req fmi2_import_set_continuous_states_req = 36;
-  if (has_fmi2_import_set_continuous_states_req()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        36, this->fmi2_import_set_continuous_states_req(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_set_continuous_states_res fmi2_import_set_continuous_states_res = 37;
-  if (has_fmi2_import_set_continuous_states_res()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        37, this->fmi2_import_set_continuous_states_res(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_completed_integrator_step_req fmi2_import_completed_integrator_step_req = 38;
-  if (has_fmi2_import_completed_integrator_step_req()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        38, this->fmi2_import_completed_integrator_step_req(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_completed_integrator_step_res fmi2_import_completed_integrator_step_res = 39;
-  if (has_fmi2_import_completed_integrator_step_res()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        39, this->fmi2_import_completed_integrator_step_res(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_initialize_model_req fmi2_import_initialize_model_req = 40;
-  if (has_fmi2_import_initialize_model_req()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        40, this->fmi2_import_initialize_model_req(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_initialize_model_res fmi2_import_initialize_model_res = 41;
-  if (has_fmi2_import_initialize_model_res()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        41, this->fmi2_import_initialize_model_res(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_get_derivatives_req fmi2_import_get_derivatives_req = 42;
-  if (has_fmi2_import_get_derivatives_req()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        42, this->fmi2_import_get_derivatives_req(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_get_derivatives_res fmi2_import_get_derivatives_res = 43;
-  if (has_fmi2_import_get_derivatives_res()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        43, this->fmi2_import_get_derivatives_res(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_get_event_indicators_req fmi2_import_get_event_indicators_req = 44;
-  if (has_fmi2_import_get_event_indicators_req()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        44, this->fmi2_import_get_event_indicators_req(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_get_event_indicators_res fmi2_import_get_event_indicators_res = 45;
-  if (has_fmi2_import_get_event_indicators_res()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        45, this->fmi2_import_get_event_indicators_res(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_eventUpdate_req fmi2_import_eventUpdate_req = 46;
-  if (has_fmi2_import_eventupdate_req()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        46, this->fmi2_import_eventupdate_req(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_eventUpdate_res fmi2_import_eventUpdate_res = 47;
-  if (has_fmi2_import_eventupdate_res()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        47, this->fmi2_import_eventupdate_res(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_completed_event_iteration_req fmi2_import_completed_event_iteration_req = 48;
-  if (has_fmi2_import_completed_event_iteration_req()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        48, this->fmi2_import_completed_event_iteration_req(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_completed_event_iteration_res fmi2_import_completed_event_iteration_res = 49;
-  if (has_fmi2_import_completed_event_iteration_res()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        49, this->fmi2_import_completed_event_iteration_res(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_get_continuous_states_req fmi2_import_get_continuous_states_req = 50;
-  if (has_fmi2_import_get_continuous_states_req()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        50, this->fmi2_import_get_continuous_states_req(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_get_continuous_states_res fmi2_import_get_continuous_states_res = 51;
-  if (has_fmi2_import_get_continuous_states_res()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        51, this->fmi2_import_get_continuous_states_res(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_get_nominal_continuous_states_req fmi2_import_get_nominal_continuous_states_req = 52;
-  if (has_fmi2_import_get_nominal_continuous_states_req()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        52, this->fmi2_import_get_nominal_continuous_states_req(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_get_nominal_continuous_states_res fmi2_import_get_nominal_continuous_states_res = 53;
-  if (has_fmi2_import_get_nominal_continuous_states_res()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        53, this->fmi2_import_get_nominal_continuous_states_res(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_terminate_req fmi2_import_terminate_req = 54;
-  if (has_fmi2_import_terminate_req()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        54, this->fmi2_import_terminate_req(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_terminate_res fmi2_import_terminate_res = 55;
-  if (has_fmi2_import_terminate_res()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        55, this->fmi2_import_terminate_res(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_get_version_req fmi2_import_get_version_req = 56;
-  if (has_fmi2_import_get_version_req()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        56, this->fmi2_import_get_version_req(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_get_version_res fmi2_import_get_version_res = 57;
-  if (has_fmi2_import_get_version_res()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        57, this->fmi2_import_get_version_res(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_set_debug_logging_req fmi2_import_set_debug_logging_req = 58;
-  if (has_fmi2_import_set_debug_logging_req()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        58, this->fmi2_import_set_debug_logging_req(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_set_debug_logging_res fmi2_import_set_debug_logging_res = 59;
-  if (has_fmi2_import_set_debug_logging_res()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        59, this->fmi2_import_set_debug_logging_res(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_set_real_req fmi2_import_set_real_req = 60;
-  if (has_fmi2_import_set_real_req()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        60, this->fmi2_import_set_real_req(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_set_real_res fmi2_import_set_real_res = 61;
-  if (has_fmi2_import_set_real_res()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        61, this->fmi2_import_set_real_res(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_set_integer_req fmi2_import_set_integer_req = 62;
-  if (has_fmi2_import_set_integer_req()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        62, this->fmi2_import_set_integer_req(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_set_integer_res fmi2_import_set_integer_res = 63;
-  if (has_fmi2_import_set_integer_res()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        63, this->fmi2_import_set_integer_res(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_set_boolean_req fmi2_import_set_boolean_req = 64;
-  if (has_fmi2_import_set_boolean_req()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        64, this->fmi2_import_set_boolean_req(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_set_boolean_res fmi2_import_set_boolean_res = 65;
-  if (has_fmi2_import_set_boolean_res()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        65, this->fmi2_import_set_boolean_res(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_set_string_req fmi2_import_set_string_req = 66;
-  if (has_fmi2_import_set_string_req()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        66, this->fmi2_import_set_string_req(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_set_string_res fmi2_import_set_string_res = 67;
-  if (has_fmi2_import_set_string_res()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        67, this->fmi2_import_set_string_res(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_get_real_req fmi2_import_get_real_req = 68;
-  if (has_fmi2_import_get_real_req()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        68, this->fmi2_import_get_real_req(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_get_real_res fmi2_import_get_real_res = 69;
-  if (has_fmi2_import_get_real_res()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        69, this->fmi2_import_get_real_res(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_get_integer_req fmi2_import_get_integer_req = 70;
-  if (has_fmi2_import_get_integer_req()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        70, this->fmi2_import_get_integer_req(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_get_integer_res fmi2_import_get_integer_res = 71;
-  if (has_fmi2_import_get_integer_res()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        71, this->fmi2_import_get_integer_res(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_get_boolean_req fmi2_import_get_boolean_req = 72;
-  if (has_fmi2_import_get_boolean_req()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        72, this->fmi2_import_get_boolean_req(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_get_boolean_res fmi2_import_get_boolean_res = 73;
-  if (has_fmi2_import_get_boolean_res()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        73, this->fmi2_import_get_boolean_res(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_get_string_req fmi2_import_get_string_req = 74;
-  if (has_fmi2_import_get_string_req()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        74, this->fmi2_import_get_string_req(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_get_string_res fmi2_import_get_string_res = 75;
-  if (has_fmi2_import_get_string_res()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        75, this->fmi2_import_get_string_res(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_get_fmu_state_req fmi2_import_get_fmu_state_req = 76;
-  if (has_fmi2_import_get_fmu_state_req()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        76, this->fmi2_import_get_fmu_state_req(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_get_fmu_state_res fmi2_import_get_fmu_state_res = 77;
-  if (has_fmi2_import_get_fmu_state_res()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        77, this->fmi2_import_get_fmu_state_res(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_set_fmu_state_req fmi2_import_set_fmu_state_req = 78;
-  if (has_fmi2_import_set_fmu_state_req()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        78, this->fmi2_import_set_fmu_state_req(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_set_fmu_state_res fmi2_import_set_fmu_state_res = 79;
-  if (has_fmi2_import_set_fmu_state_res()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        79, this->fmi2_import_set_fmu_state_res(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_free_fmu_state_req fmi2_import_free_fmu_state_req = 80;
-  if (has_fmi2_import_free_fmu_state_req()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        80, this->fmi2_import_free_fmu_state_req(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_free_fmu_state_res fmi2_import_free_fmu_state_res = 81;
-  if (has_fmi2_import_free_fmu_state_res()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        81, this->fmi2_import_free_fmu_state_res(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_get_directional_derivative_req fmi2_import_get_directional_derivative_req = 88;
-  if (has_fmi2_import_get_directional_derivative_req()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        88, this->fmi2_import_get_directional_derivative_req(), target);
-  }
-
-  // optional .fmitcp_proto.fmi2_import_get_directional_derivative_res fmi2_import_get_directional_derivative_res = 89;
-  if (has_fmi2_import_get_directional_derivative_res()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        89, this->fmi2_import_get_directional_derivative_res(), target);
-  }
-
-  // optional .fmitcp_proto.get_xml_req get_xml_req = 90;
-  if (has_get_xml_req()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        90, this->get_xml_req(), target);
-  }
-
-  // optional .fmitcp_proto.get_xml_res get_xml_res = 91;
-  if (has_get_xml_res()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        91, this->get_xml_res(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmitcp_message::ByteSize() const {
@@ -6825,27 +3999,15 @@ int fmitcp_message::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmitcp_message::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmitcp_message* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmitcp_message*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmitcp_message::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmitcp_message*>(&from));
 }
 
 void fmitcp_message::MergeFrom(const fmitcp_message& from) {
@@ -7127,13 +4289,6 @@ void fmitcp_message::MergeFrom(const fmitcp_message& from) {
       mutable_get_xml_res()->::fmitcp_proto::get_xml_res::MergeFrom(from.get_xml_res());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmitcp_message::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmitcp_message::CopyFrom(const fmitcp_message& from) {
@@ -7490,17 +4645,12 @@ void fmitcp_message::Swap(fmitcp_message* other) {
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     std::swap(_has_bits_[1], other->_has_bits_[1]);
     std::swap(_has_bits_[2], other->_has_bits_[2]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmitcp_message::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmitcp_message_descriptor_;
-  metadata.reflection = fmitcp_message_reflection_;
-  return metadata;
+::std::string fmitcp_message::GetTypeName() const {
+  return "fmitcp_proto.fmitcp_message";
 }
 
 
@@ -7516,7 +4666,7 @@ const int fmi2_event_info_t::kNextEventTimeFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_event_info_t::fmi2_event_info_t()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -7524,7 +4674,7 @@ void fmi2_event_info_t::InitAsDefaultInstance() {
 }
 
 fmi2_event_info_t::fmi2_event_info_t(const fmi2_event_info_t& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -7545,7 +4695,11 @@ fmi2_event_info_t::~fmi2_event_info_t() {
 }
 
 void fmi2_event_info_t::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -7554,13 +4708,12 @@ void fmi2_event_info_t::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_event_info_t::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_event_info_t_descriptor_;
-}
-
 const fmi2_event_info_t& fmi2_event_info_t::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -7580,7 +4733,6 @@ void fmi2_event_info_t::Clear() {
     nexteventtime_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_event_info_t::MergePartialFromCodedStream(
@@ -7690,8 +4842,7 @@ bool fmi2_event_info_t::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -7732,49 +4883,6 @@ void fmi2_event_info_t::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteDouble(6, this->nexteventtime(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_event_info_t::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required bool iterationConverged = 1;
-  if (has_iterationconverged()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(1, this->iterationconverged(), target);
-  }
-
-  // required bool stateValueReferencesChanged = 2;
-  if (has_statevaluereferenceschanged()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(2, this->statevaluereferenceschanged(), target);
-  }
-
-  // required bool stateValuesChanged = 3;
-  if (has_statevalueschanged()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(3, this->statevalueschanged(), target);
-  }
-
-  // required bool terminateSimulation = 4;
-  if (has_terminatesimulation()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(4, this->terminatesimulation(), target);
-  }
-
-  // required bool upcomingTimeEvent = 5;
-  if (has_upcomingtimeevent()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(5, this->upcomingtimeevent(), target);
-  }
-
-  // required double nextEventTime = 6;
-  if (has_nexteventtime()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(6, this->nexteventtime(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_event_info_t::ByteSize() const {
@@ -7812,27 +4920,15 @@ int fmi2_event_info_t::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_event_info_t::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_event_info_t* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_event_info_t*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_event_info_t::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_event_info_t*>(&from));
 }
 
 void fmi2_event_info_t::MergeFrom(const fmi2_event_info_t& from) {
@@ -7857,13 +4953,6 @@ void fmi2_event_info_t::MergeFrom(const fmi2_event_info_t& from) {
       set_nexteventtime(from.nexteventtime());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_event_info_t::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_event_info_t::CopyFrom(const fmi2_event_info_t& from) {
@@ -7887,17 +4976,12 @@ void fmi2_event_info_t::Swap(fmi2_event_info_t* other) {
     std::swap(upcomingtimeevent_, other->upcomingtimeevent_);
     std::swap(nexteventtime_, other->nexteventtime_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_event_info_t::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_event_info_t_descriptor_;
-  metadata.reflection = fmi2_event_info_t_reflection_;
-  return metadata;
+::std::string fmi2_event_info_t::GetTypeName() const {
+  return "fmitcp_proto.fmi2_event_info_t";
 }
 
 
@@ -7909,7 +4993,7 @@ const int fmi2_import_instantiate_req::kVisibleFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_instantiate_req::fmi2_import_instantiate_req()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -7917,7 +5001,7 @@ void fmi2_import_instantiate_req::InitAsDefaultInstance() {
 }
 
 fmi2_import_instantiate_req::fmi2_import_instantiate_req(const fmi2_import_instantiate_req& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -7934,7 +5018,11 @@ fmi2_import_instantiate_req::~fmi2_import_instantiate_req() {
 }
 
 void fmi2_import_instantiate_req::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -7943,13 +5031,12 @@ void fmi2_import_instantiate_req::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_instantiate_req::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_instantiate_req_descriptor_;
-}
-
 const fmi2_import_instantiate_req& fmi2_import_instantiate_req::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -7965,7 +5052,6 @@ void fmi2_import_instantiate_req::Clear() {
     visible_ = false;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_instantiate_req::MergePartialFromCodedStream(
@@ -8011,8 +5097,7 @@ bool fmi2_import_instantiate_req::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -8033,29 +5118,6 @@ void fmi2_import_instantiate_req::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteBool(2, this->visible(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_instantiate_req::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // optional bool visible = 2;
-  if (has_visible()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(2, this->visible(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_instantiate_req::ByteSize() const {
@@ -8075,27 +5137,15 @@ int fmi2_import_instantiate_req::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_instantiate_req::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_instantiate_req* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_instantiate_req*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_instantiate_req::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_instantiate_req*>(&from));
 }
 
 void fmi2_import_instantiate_req::MergeFrom(const fmi2_import_instantiate_req& from) {
@@ -8108,13 +5158,6 @@ void fmi2_import_instantiate_req::MergeFrom(const fmi2_import_instantiate_req& f
       set_visible(from.visible());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_instantiate_req::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_instantiate_req::CopyFrom(const fmi2_import_instantiate_req& from) {
@@ -8134,17 +5177,12 @@ void fmi2_import_instantiate_req::Swap(fmi2_import_instantiate_req* other) {
     std::swap(message_id_, other->message_id_);
     std::swap(visible_, other->visible_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_instantiate_req::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_instantiate_req_descriptor_;
-  metadata.reflection = fmi2_import_instantiate_req_reflection_;
-  return metadata;
+::std::string fmi2_import_instantiate_req::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_instantiate_req";
 }
 
 
@@ -8156,7 +5194,7 @@ const int fmi2_import_instantiate_res::kStatusFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_instantiate_res::fmi2_import_instantiate_res()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -8164,7 +5202,7 @@ void fmi2_import_instantiate_res::InitAsDefaultInstance() {
 }
 
 fmi2_import_instantiate_res::fmi2_import_instantiate_res(const fmi2_import_instantiate_res& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -8181,7 +5219,11 @@ fmi2_import_instantiate_res::~fmi2_import_instantiate_res() {
 }
 
 void fmi2_import_instantiate_res::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -8190,13 +5232,12 @@ void fmi2_import_instantiate_res::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_instantiate_res::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_instantiate_res_descriptor_;
-}
-
 const fmi2_import_instantiate_res& fmi2_import_instantiate_res::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -8212,7 +5253,6 @@ void fmi2_import_instantiate_res::Clear() {
     status_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_instantiate_res::MergePartialFromCodedStream(
@@ -8247,8 +5287,6 @@ bool fmi2_import_instantiate_res::MergePartialFromCodedStream(
                  input, &value)));
           if (::fmitcp_proto::jm_status_enu_t_IsValid(value)) {
             set_status(static_cast< ::fmitcp_proto::jm_status_enu_t >(value));
-          } else {
-            mutable_unknown_fields()->AddVarint(2, value);
           }
         } else {
           goto handle_uninterpreted;
@@ -8263,8 +5301,7 @@ bool fmi2_import_instantiate_res::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -8286,30 +5323,6 @@ void fmi2_import_instantiate_res::SerializeWithCachedSizes(
       2, this->status(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_instantiate_res::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required .fmitcp_proto.jm_status_enu_t status = 2;
-  if (has_status()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      2, this->status(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_instantiate_res::ByteSize() const {
@@ -8330,27 +5343,15 @@ int fmi2_import_instantiate_res::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_instantiate_res::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_instantiate_res* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_instantiate_res*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_instantiate_res::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_instantiate_res*>(&from));
 }
 
 void fmi2_import_instantiate_res::MergeFrom(const fmi2_import_instantiate_res& from) {
@@ -8363,13 +5364,6 @@ void fmi2_import_instantiate_res::MergeFrom(const fmi2_import_instantiate_res& f
       set_status(from.status());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_instantiate_res::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_instantiate_res::CopyFrom(const fmi2_import_instantiate_res& from) {
@@ -8389,17 +5383,12 @@ void fmi2_import_instantiate_res::Swap(fmi2_import_instantiate_res* other) {
     std::swap(message_id_, other->message_id_);
     std::swap(status_, other->status_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_instantiate_res::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_instantiate_res_descriptor_;
-  metadata.reflection = fmi2_import_instantiate_res_reflection_;
-  return metadata;
+::std::string fmi2_import_instantiate_res::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_instantiate_res";
 }
 
 
@@ -8416,7 +5405,7 @@ const int fmi2_import_initialize_slave_req::kStopTimeFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_initialize_slave_req::fmi2_import_initialize_slave_req()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -8424,7 +5413,7 @@ void fmi2_import_initialize_slave_req::InitAsDefaultInstance() {
 }
 
 fmi2_import_initialize_slave_req::fmi2_import_initialize_slave_req(const fmi2_import_initialize_slave_req& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -8446,7 +5435,11 @@ fmi2_import_initialize_slave_req::~fmi2_import_initialize_slave_req() {
 }
 
 void fmi2_import_initialize_slave_req::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -8455,13 +5448,12 @@ void fmi2_import_initialize_slave_req::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_initialize_slave_req::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_initialize_slave_req_descriptor_;
-}
-
 const fmi2_import_initialize_slave_req& fmi2_import_initialize_slave_req::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -8482,7 +5474,6 @@ void fmi2_import_initialize_slave_req::Clear() {
     stoptime_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_initialize_slave_req::MergePartialFromCodedStream(
@@ -8608,8 +5599,7 @@ bool fmi2_import_initialize_slave_req::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -8655,54 +5645,6 @@ void fmi2_import_initialize_slave_req::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteDouble(7, this->stoptime(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_initialize_slave_req::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required int32 fmuId = 2;
-  if (has_fmuid()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->fmuid(), target);
-  }
-
-  // required bool toleranceDefined = 3;
-  if (has_tolerancedefined()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(3, this->tolerancedefined(), target);
-  }
-
-  // required double tolerance = 4;
-  if (has_tolerance()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(4, this->tolerance(), target);
-  }
-
-  // required double startTime = 5;
-  if (has_starttime()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(5, this->starttime(), target);
-  }
-
-  // required bool stopTimeDefined = 6;
-  if (has_stoptimedefined()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(6, this->stoptimedefined(), target);
-  }
-
-  // required double stopTime = 7;
-  if (has_stoptime()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(7, this->stoptime(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_initialize_slave_req::ByteSize() const {
@@ -8749,27 +5691,15 @@ int fmi2_import_initialize_slave_req::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_initialize_slave_req::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_initialize_slave_req* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_initialize_slave_req*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_initialize_slave_req::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_initialize_slave_req*>(&from));
 }
 
 void fmi2_import_initialize_slave_req::MergeFrom(const fmi2_import_initialize_slave_req& from) {
@@ -8797,13 +5727,6 @@ void fmi2_import_initialize_slave_req::MergeFrom(const fmi2_import_initialize_sl
       set_stoptime(from.stoptime());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_initialize_slave_req::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_initialize_slave_req::CopyFrom(const fmi2_import_initialize_slave_req& from) {
@@ -8828,17 +5751,12 @@ void fmi2_import_initialize_slave_req::Swap(fmi2_import_initialize_slave_req* ot
     std::swap(stoptimedefined_, other->stoptimedefined_);
     std::swap(stoptime_, other->stoptime_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_initialize_slave_req::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_initialize_slave_req_descriptor_;
-  metadata.reflection = fmi2_import_initialize_slave_req_reflection_;
-  return metadata;
+::std::string fmi2_import_initialize_slave_req::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_initialize_slave_req";
 }
 
 
@@ -8850,7 +5768,7 @@ const int fmi2_import_initialize_slave_res::kStatusFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_initialize_slave_res::fmi2_import_initialize_slave_res()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -8858,7 +5776,7 @@ void fmi2_import_initialize_slave_res::InitAsDefaultInstance() {
 }
 
 fmi2_import_initialize_slave_res::fmi2_import_initialize_slave_res(const fmi2_import_initialize_slave_res& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -8875,7 +5793,11 @@ fmi2_import_initialize_slave_res::~fmi2_import_initialize_slave_res() {
 }
 
 void fmi2_import_initialize_slave_res::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -8884,13 +5806,12 @@ void fmi2_import_initialize_slave_res::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_initialize_slave_res::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_initialize_slave_res_descriptor_;
-}
-
 const fmi2_import_initialize_slave_res& fmi2_import_initialize_slave_res::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -8906,7 +5827,6 @@ void fmi2_import_initialize_slave_res::Clear() {
     status_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_initialize_slave_res::MergePartialFromCodedStream(
@@ -8941,8 +5861,6 @@ bool fmi2_import_initialize_slave_res::MergePartialFromCodedStream(
                  input, &value)));
           if (::fmitcp_proto::fmi2_status_t_IsValid(value)) {
             set_status(static_cast< ::fmitcp_proto::fmi2_status_t >(value));
-          } else {
-            mutable_unknown_fields()->AddVarint(2, value);
           }
         } else {
           goto handle_uninterpreted;
@@ -8957,8 +5875,7 @@ bool fmi2_import_initialize_slave_res::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -8980,30 +5897,6 @@ void fmi2_import_initialize_slave_res::SerializeWithCachedSizes(
       2, this->status(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_initialize_slave_res::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required .fmitcp_proto.fmi2_status_t status = 2;
-  if (has_status()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      2, this->status(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_initialize_slave_res::ByteSize() const {
@@ -9024,27 +5917,15 @@ int fmi2_import_initialize_slave_res::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_initialize_slave_res::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_initialize_slave_res* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_initialize_slave_res*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_initialize_slave_res::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_initialize_slave_res*>(&from));
 }
 
 void fmi2_import_initialize_slave_res::MergeFrom(const fmi2_import_initialize_slave_res& from) {
@@ -9057,13 +5938,6 @@ void fmi2_import_initialize_slave_res::MergeFrom(const fmi2_import_initialize_sl
       set_status(from.status());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_initialize_slave_res::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_initialize_slave_res::CopyFrom(const fmi2_import_initialize_slave_res& from) {
@@ -9083,17 +5957,12 @@ void fmi2_import_initialize_slave_res::Swap(fmi2_import_initialize_slave_res* ot
     std::swap(message_id_, other->message_id_);
     std::swap(status_, other->status_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_initialize_slave_res::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_initialize_slave_res_descriptor_;
-  metadata.reflection = fmi2_import_initialize_slave_res_reflection_;
-  return metadata;
+::std::string fmi2_import_initialize_slave_res::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_initialize_slave_res";
 }
 
 
@@ -9105,7 +5974,7 @@ const int fmi2_import_terminate_slave_req::kFmuIdFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_terminate_slave_req::fmi2_import_terminate_slave_req()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -9113,7 +5982,7 @@ void fmi2_import_terminate_slave_req::InitAsDefaultInstance() {
 }
 
 fmi2_import_terminate_slave_req::fmi2_import_terminate_slave_req(const fmi2_import_terminate_slave_req& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -9130,7 +5999,11 @@ fmi2_import_terminate_slave_req::~fmi2_import_terminate_slave_req() {
 }
 
 void fmi2_import_terminate_slave_req::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -9139,13 +6012,12 @@ void fmi2_import_terminate_slave_req::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_terminate_slave_req::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_terminate_slave_req_descriptor_;
-}
-
 const fmi2_import_terminate_slave_req& fmi2_import_terminate_slave_req::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -9161,7 +6033,6 @@ void fmi2_import_terminate_slave_req::Clear() {
     fmuid_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_terminate_slave_req::MergePartialFromCodedStream(
@@ -9207,8 +6078,7 @@ bool fmi2_import_terminate_slave_req::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -9229,29 +6099,6 @@ void fmi2_import_terminate_slave_req::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->fmuid(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_terminate_slave_req::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required int32 fmuId = 2;
-  if (has_fmuid()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->fmuid(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_terminate_slave_req::ByteSize() const {
@@ -9273,27 +6120,15 @@ int fmi2_import_terminate_slave_req::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_terminate_slave_req::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_terminate_slave_req* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_terminate_slave_req*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_terminate_slave_req::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_terminate_slave_req*>(&from));
 }
 
 void fmi2_import_terminate_slave_req::MergeFrom(const fmi2_import_terminate_slave_req& from) {
@@ -9306,13 +6141,6 @@ void fmi2_import_terminate_slave_req::MergeFrom(const fmi2_import_terminate_slav
       set_fmuid(from.fmuid());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_terminate_slave_req::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_terminate_slave_req::CopyFrom(const fmi2_import_terminate_slave_req& from) {
@@ -9332,17 +6160,12 @@ void fmi2_import_terminate_slave_req::Swap(fmi2_import_terminate_slave_req* othe
     std::swap(message_id_, other->message_id_);
     std::swap(fmuid_, other->fmuid_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_terminate_slave_req::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_terminate_slave_req_descriptor_;
-  metadata.reflection = fmi2_import_terminate_slave_req_reflection_;
-  return metadata;
+::std::string fmi2_import_terminate_slave_req::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_terminate_slave_req";
 }
 
 
@@ -9354,7 +6177,7 @@ const int fmi2_import_terminate_slave_res::kStatusFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_terminate_slave_res::fmi2_import_terminate_slave_res()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -9362,7 +6185,7 @@ void fmi2_import_terminate_slave_res::InitAsDefaultInstance() {
 }
 
 fmi2_import_terminate_slave_res::fmi2_import_terminate_slave_res(const fmi2_import_terminate_slave_res& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -9379,7 +6202,11 @@ fmi2_import_terminate_slave_res::~fmi2_import_terminate_slave_res() {
 }
 
 void fmi2_import_terminate_slave_res::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -9388,13 +6215,12 @@ void fmi2_import_terminate_slave_res::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_terminate_slave_res::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_terminate_slave_res_descriptor_;
-}
-
 const fmi2_import_terminate_slave_res& fmi2_import_terminate_slave_res::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -9410,7 +6236,6 @@ void fmi2_import_terminate_slave_res::Clear() {
     status_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_terminate_slave_res::MergePartialFromCodedStream(
@@ -9445,8 +6270,6 @@ bool fmi2_import_terminate_slave_res::MergePartialFromCodedStream(
                  input, &value)));
           if (::fmitcp_proto::fmi2_status_t_IsValid(value)) {
             set_status(static_cast< ::fmitcp_proto::fmi2_status_t >(value));
-          } else {
-            mutable_unknown_fields()->AddVarint(2, value);
           }
         } else {
           goto handle_uninterpreted;
@@ -9461,8 +6284,7 @@ bool fmi2_import_terminate_slave_res::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -9484,30 +6306,6 @@ void fmi2_import_terminate_slave_res::SerializeWithCachedSizes(
       2, this->status(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_terminate_slave_res::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required .fmitcp_proto.fmi2_status_t status = 2;
-  if (has_status()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      2, this->status(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_terminate_slave_res::ByteSize() const {
@@ -9528,27 +6326,15 @@ int fmi2_import_terminate_slave_res::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_terminate_slave_res::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_terminate_slave_res* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_terminate_slave_res*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_terminate_slave_res::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_terminate_slave_res*>(&from));
 }
 
 void fmi2_import_terminate_slave_res::MergeFrom(const fmi2_import_terminate_slave_res& from) {
@@ -9561,13 +6347,6 @@ void fmi2_import_terminate_slave_res::MergeFrom(const fmi2_import_terminate_slav
       set_status(from.status());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_terminate_slave_res::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_terminate_slave_res::CopyFrom(const fmi2_import_terminate_slave_res& from) {
@@ -9587,17 +6366,12 @@ void fmi2_import_terminate_slave_res::Swap(fmi2_import_terminate_slave_res* othe
     std::swap(message_id_, other->message_id_);
     std::swap(status_, other->status_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_terminate_slave_res::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_terminate_slave_res_descriptor_;
-  metadata.reflection = fmi2_import_terminate_slave_res_reflection_;
-  return metadata;
+::std::string fmi2_import_terminate_slave_res::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_terminate_slave_res";
 }
 
 
@@ -9609,7 +6383,7 @@ const int fmi2_import_reset_slave_req::kFmuIdFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_reset_slave_req::fmi2_import_reset_slave_req()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -9617,7 +6391,7 @@ void fmi2_import_reset_slave_req::InitAsDefaultInstance() {
 }
 
 fmi2_import_reset_slave_req::fmi2_import_reset_slave_req(const fmi2_import_reset_slave_req& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -9634,7 +6408,11 @@ fmi2_import_reset_slave_req::~fmi2_import_reset_slave_req() {
 }
 
 void fmi2_import_reset_slave_req::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -9643,13 +6421,12 @@ void fmi2_import_reset_slave_req::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_reset_slave_req::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_reset_slave_req_descriptor_;
-}
-
 const fmi2_import_reset_slave_req& fmi2_import_reset_slave_req::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -9665,7 +6442,6 @@ void fmi2_import_reset_slave_req::Clear() {
     fmuid_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_reset_slave_req::MergePartialFromCodedStream(
@@ -9711,8 +6487,7 @@ bool fmi2_import_reset_slave_req::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -9733,29 +6508,6 @@ void fmi2_import_reset_slave_req::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->fmuid(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_reset_slave_req::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required int32 fmuId = 2;
-  if (has_fmuid()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->fmuid(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_reset_slave_req::ByteSize() const {
@@ -9777,27 +6529,15 @@ int fmi2_import_reset_slave_req::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_reset_slave_req::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_reset_slave_req* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_reset_slave_req*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_reset_slave_req::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_reset_slave_req*>(&from));
 }
 
 void fmi2_import_reset_slave_req::MergeFrom(const fmi2_import_reset_slave_req& from) {
@@ -9810,13 +6550,6 @@ void fmi2_import_reset_slave_req::MergeFrom(const fmi2_import_reset_slave_req& f
       set_fmuid(from.fmuid());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_reset_slave_req::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_reset_slave_req::CopyFrom(const fmi2_import_reset_slave_req& from) {
@@ -9836,17 +6569,12 @@ void fmi2_import_reset_slave_req::Swap(fmi2_import_reset_slave_req* other) {
     std::swap(message_id_, other->message_id_);
     std::swap(fmuid_, other->fmuid_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_reset_slave_req::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_reset_slave_req_descriptor_;
-  metadata.reflection = fmi2_import_reset_slave_req_reflection_;
-  return metadata;
+::std::string fmi2_import_reset_slave_req::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_reset_slave_req";
 }
 
 
@@ -9858,7 +6586,7 @@ const int fmi2_import_reset_slave_res::kStatusFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_reset_slave_res::fmi2_import_reset_slave_res()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -9866,7 +6594,7 @@ void fmi2_import_reset_slave_res::InitAsDefaultInstance() {
 }
 
 fmi2_import_reset_slave_res::fmi2_import_reset_slave_res(const fmi2_import_reset_slave_res& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -9883,7 +6611,11 @@ fmi2_import_reset_slave_res::~fmi2_import_reset_slave_res() {
 }
 
 void fmi2_import_reset_slave_res::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -9892,13 +6624,12 @@ void fmi2_import_reset_slave_res::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_reset_slave_res::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_reset_slave_res_descriptor_;
-}
-
 const fmi2_import_reset_slave_res& fmi2_import_reset_slave_res::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -9914,7 +6645,6 @@ void fmi2_import_reset_slave_res::Clear() {
     status_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_reset_slave_res::MergePartialFromCodedStream(
@@ -9949,8 +6679,6 @@ bool fmi2_import_reset_slave_res::MergePartialFromCodedStream(
                  input, &value)));
           if (::fmitcp_proto::fmi2_status_t_IsValid(value)) {
             set_status(static_cast< ::fmitcp_proto::fmi2_status_t >(value));
-          } else {
-            mutable_unknown_fields()->AddVarint(2, value);
           }
         } else {
           goto handle_uninterpreted;
@@ -9965,8 +6693,7 @@ bool fmi2_import_reset_slave_res::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -9988,30 +6715,6 @@ void fmi2_import_reset_slave_res::SerializeWithCachedSizes(
       2, this->status(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_reset_slave_res::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required .fmitcp_proto.fmi2_status_t status = 2;
-  if (has_status()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      2, this->status(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_reset_slave_res::ByteSize() const {
@@ -10032,27 +6735,15 @@ int fmi2_import_reset_slave_res::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_reset_slave_res::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_reset_slave_res* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_reset_slave_res*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_reset_slave_res::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_reset_slave_res*>(&from));
 }
 
 void fmi2_import_reset_slave_res::MergeFrom(const fmi2_import_reset_slave_res& from) {
@@ -10065,13 +6756,6 @@ void fmi2_import_reset_slave_res::MergeFrom(const fmi2_import_reset_slave_res& f
       set_status(from.status());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_reset_slave_res::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_reset_slave_res::CopyFrom(const fmi2_import_reset_slave_res& from) {
@@ -10091,17 +6775,12 @@ void fmi2_import_reset_slave_res::Swap(fmi2_import_reset_slave_res* other) {
     std::swap(message_id_, other->message_id_);
     std::swap(status_, other->status_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_reset_slave_res::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_reset_slave_res_descriptor_;
-  metadata.reflection = fmi2_import_reset_slave_res_reflection_;
-  return metadata;
+::std::string fmi2_import_reset_slave_res::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_reset_slave_res";
 }
 
 
@@ -10113,7 +6792,7 @@ const int fmi2_import_free_slave_instance_req::kFmuIdFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_free_slave_instance_req::fmi2_import_free_slave_instance_req()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -10121,7 +6800,7 @@ void fmi2_import_free_slave_instance_req::InitAsDefaultInstance() {
 }
 
 fmi2_import_free_slave_instance_req::fmi2_import_free_slave_instance_req(const fmi2_import_free_slave_instance_req& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -10138,7 +6817,11 @@ fmi2_import_free_slave_instance_req::~fmi2_import_free_slave_instance_req() {
 }
 
 void fmi2_import_free_slave_instance_req::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -10147,13 +6830,12 @@ void fmi2_import_free_slave_instance_req::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_free_slave_instance_req::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_free_slave_instance_req_descriptor_;
-}
-
 const fmi2_import_free_slave_instance_req& fmi2_import_free_slave_instance_req::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -10169,7 +6851,6 @@ void fmi2_import_free_slave_instance_req::Clear() {
     fmuid_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_free_slave_instance_req::MergePartialFromCodedStream(
@@ -10215,8 +6896,7 @@ bool fmi2_import_free_slave_instance_req::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -10237,29 +6917,6 @@ void fmi2_import_free_slave_instance_req::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->fmuid(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_free_slave_instance_req::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required int32 fmuId = 2;
-  if (has_fmuid()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->fmuid(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_free_slave_instance_req::ByteSize() const {
@@ -10281,27 +6938,15 @@ int fmi2_import_free_slave_instance_req::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_free_slave_instance_req::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_free_slave_instance_req* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_free_slave_instance_req*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_free_slave_instance_req::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_free_slave_instance_req*>(&from));
 }
 
 void fmi2_import_free_slave_instance_req::MergeFrom(const fmi2_import_free_slave_instance_req& from) {
@@ -10314,13 +6959,6 @@ void fmi2_import_free_slave_instance_req::MergeFrom(const fmi2_import_free_slave
       set_fmuid(from.fmuid());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_free_slave_instance_req::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_free_slave_instance_req::CopyFrom(const fmi2_import_free_slave_instance_req& from) {
@@ -10340,17 +6978,12 @@ void fmi2_import_free_slave_instance_req::Swap(fmi2_import_free_slave_instance_r
     std::swap(message_id_, other->message_id_);
     std::swap(fmuid_, other->fmuid_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_free_slave_instance_req::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_free_slave_instance_req_descriptor_;
-  metadata.reflection = fmi2_import_free_slave_instance_req_reflection_;
-  return metadata;
+::std::string fmi2_import_free_slave_instance_req::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_free_slave_instance_req";
 }
 
 
@@ -10361,7 +6994,7 @@ const int fmi2_import_free_slave_instance_res::kMessageIdFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_free_slave_instance_res::fmi2_import_free_slave_instance_res()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -10369,7 +7002,7 @@ void fmi2_import_free_slave_instance_res::InitAsDefaultInstance() {
 }
 
 fmi2_import_free_slave_instance_res::fmi2_import_free_slave_instance_res(const fmi2_import_free_slave_instance_res& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -10385,7 +7018,11 @@ fmi2_import_free_slave_instance_res::~fmi2_import_free_slave_instance_res() {
 }
 
 void fmi2_import_free_slave_instance_res::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -10394,13 +7031,12 @@ void fmi2_import_free_slave_instance_res::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_free_slave_instance_res::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_free_slave_instance_res_descriptor_;
-}
-
 const fmi2_import_free_slave_instance_res& fmi2_import_free_slave_instance_res::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -10415,7 +7051,6 @@ void fmi2_import_free_slave_instance_res::Clear() {
     message_id_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_free_slave_instance_res::MergePartialFromCodedStream(
@@ -10445,8 +7080,7 @@ bool fmi2_import_free_slave_instance_res::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -10462,24 +7096,6 @@ void fmi2_import_free_slave_instance_res::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(1, this->message_id(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_free_slave_instance_res::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_free_slave_instance_res::ByteSize() const {
@@ -10494,27 +7110,15 @@ int fmi2_import_free_slave_instance_res::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_free_slave_instance_res::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_free_slave_instance_res* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_free_slave_instance_res*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_free_slave_instance_res::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_free_slave_instance_res*>(&from));
 }
 
 void fmi2_import_free_slave_instance_res::MergeFrom(const fmi2_import_free_slave_instance_res& from) {
@@ -10524,13 +7128,6 @@ void fmi2_import_free_slave_instance_res::MergeFrom(const fmi2_import_free_slave
       set_message_id(from.message_id());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_free_slave_instance_res::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_free_slave_instance_res::CopyFrom(const fmi2_import_free_slave_instance_res& from) {
@@ -10549,17 +7146,12 @@ void fmi2_import_free_slave_instance_res::Swap(fmi2_import_free_slave_instance_r
   if (other != this) {
     std::swap(message_id_, other->message_id_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_free_slave_instance_res::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_free_slave_instance_res_descriptor_;
-  metadata.reflection = fmi2_import_free_slave_instance_res_reflection_;
-  return metadata;
+::std::string fmi2_import_free_slave_instance_res::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_free_slave_instance_res";
 }
 
 
@@ -10574,7 +7166,7 @@ const int fmi2_import_set_real_input_derivatives_req::kValuesFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_set_real_input_derivatives_req::fmi2_import_set_real_input_derivatives_req()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -10582,7 +7174,7 @@ void fmi2_import_set_real_input_derivatives_req::InitAsDefaultInstance() {
 }
 
 fmi2_import_set_real_input_derivatives_req::fmi2_import_set_real_input_derivatives_req(const fmi2_import_set_real_input_derivatives_req& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -10599,7 +7191,11 @@ fmi2_import_set_real_input_derivatives_req::~fmi2_import_set_real_input_derivati
 }
 
 void fmi2_import_set_real_input_derivatives_req::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -10608,13 +7204,12 @@ void fmi2_import_set_real_input_derivatives_req::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_set_real_input_derivatives_req::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_set_real_input_derivatives_req_descriptor_;
-}
-
 const fmi2_import_set_real_input_derivatives_req& fmi2_import_set_real_input_derivatives_req::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -10633,7 +7228,6 @@ void fmi2_import_set_real_input_derivatives_req::Clear() {
   orders_.Clear();
   values_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_set_real_input_derivatives_req::MergePartialFromCodedStream(
@@ -10745,8 +7339,7 @@ bool fmi2_import_set_real_input_derivatives_req::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -10785,47 +7378,6 @@ void fmi2_import_set_real_input_derivatives_req::SerializeWithCachedSizes(
       5, this->values(i), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_set_real_input_derivatives_req::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required int32 fmuId = 2;
-  if (has_fmuid()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->fmuid(), target);
-  }
-
-  // repeated int32 valueReferences = 3;
-  for (int i = 0; i < this->valuereferences_size(); i++) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteInt32ToArray(3, this->valuereferences(i), target);
-  }
-
-  // repeated int32 orders = 4;
-  for (int i = 0; i < this->orders_size(); i++) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteInt32ToArray(4, this->orders(i), target);
-  }
-
-  // repeated double values = 5;
-  for (int i = 0; i < this->values_size(); i++) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteDoubleToArray(5, this->values(i), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_set_real_input_derivatives_req::ByteSize() const {
@@ -10874,27 +7426,15 @@ int fmi2_import_set_real_input_derivatives_req::ByteSize() const {
     total_size += 1 * this->values_size() + data_size;
   }
 
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_set_real_input_derivatives_req::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_set_real_input_derivatives_req* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_set_real_input_derivatives_req*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_set_real_input_derivatives_req::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_set_real_input_derivatives_req*>(&from));
 }
 
 void fmi2_import_set_real_input_derivatives_req::MergeFrom(const fmi2_import_set_real_input_derivatives_req& from) {
@@ -10910,13 +7450,6 @@ void fmi2_import_set_real_input_derivatives_req::MergeFrom(const fmi2_import_set
       set_fmuid(from.fmuid());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_set_real_input_derivatives_req::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_set_real_input_derivatives_req::CopyFrom(const fmi2_import_set_real_input_derivatives_req& from) {
@@ -10939,17 +7472,12 @@ void fmi2_import_set_real_input_derivatives_req::Swap(fmi2_import_set_real_input
     orders_.Swap(&other->orders_);
     values_.Swap(&other->values_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_set_real_input_derivatives_req::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_set_real_input_derivatives_req_descriptor_;
-  metadata.reflection = fmi2_import_set_real_input_derivatives_req_reflection_;
-  return metadata;
+::std::string fmi2_import_set_real_input_derivatives_req::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_set_real_input_derivatives_req";
 }
 
 
@@ -10961,7 +7489,7 @@ const int fmi2_import_set_real_input_derivatives_res::kStatusFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_set_real_input_derivatives_res::fmi2_import_set_real_input_derivatives_res()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -10969,7 +7497,7 @@ void fmi2_import_set_real_input_derivatives_res::InitAsDefaultInstance() {
 }
 
 fmi2_import_set_real_input_derivatives_res::fmi2_import_set_real_input_derivatives_res(const fmi2_import_set_real_input_derivatives_res& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -10986,7 +7514,11 @@ fmi2_import_set_real_input_derivatives_res::~fmi2_import_set_real_input_derivati
 }
 
 void fmi2_import_set_real_input_derivatives_res::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -10995,13 +7527,12 @@ void fmi2_import_set_real_input_derivatives_res::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_set_real_input_derivatives_res::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_set_real_input_derivatives_res_descriptor_;
-}
-
 const fmi2_import_set_real_input_derivatives_res& fmi2_import_set_real_input_derivatives_res::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -11017,7 +7548,6 @@ void fmi2_import_set_real_input_derivatives_res::Clear() {
     status_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_set_real_input_derivatives_res::MergePartialFromCodedStream(
@@ -11052,8 +7582,6 @@ bool fmi2_import_set_real_input_derivatives_res::MergePartialFromCodedStream(
                  input, &value)));
           if (::fmitcp_proto::fmi2_status_t_IsValid(value)) {
             set_status(static_cast< ::fmitcp_proto::fmi2_status_t >(value));
-          } else {
-            mutable_unknown_fields()->AddVarint(2, value);
           }
         } else {
           goto handle_uninterpreted;
@@ -11068,8 +7596,7 @@ bool fmi2_import_set_real_input_derivatives_res::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -11091,30 +7618,6 @@ void fmi2_import_set_real_input_derivatives_res::SerializeWithCachedSizes(
       2, this->status(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_set_real_input_derivatives_res::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required .fmitcp_proto.fmi2_status_t status = 2;
-  if (has_status()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      2, this->status(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_set_real_input_derivatives_res::ByteSize() const {
@@ -11135,27 +7638,15 @@ int fmi2_import_set_real_input_derivatives_res::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_set_real_input_derivatives_res::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_set_real_input_derivatives_res* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_set_real_input_derivatives_res*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_set_real_input_derivatives_res::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_set_real_input_derivatives_res*>(&from));
 }
 
 void fmi2_import_set_real_input_derivatives_res::MergeFrom(const fmi2_import_set_real_input_derivatives_res& from) {
@@ -11168,13 +7659,6 @@ void fmi2_import_set_real_input_derivatives_res::MergeFrom(const fmi2_import_set
       set_status(from.status());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_set_real_input_derivatives_res::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_set_real_input_derivatives_res::CopyFrom(const fmi2_import_set_real_input_derivatives_res& from) {
@@ -11194,17 +7678,12 @@ void fmi2_import_set_real_input_derivatives_res::Swap(fmi2_import_set_real_input
     std::swap(message_id_, other->message_id_);
     std::swap(status_, other->status_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_set_real_input_derivatives_res::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_set_real_input_derivatives_res_descriptor_;
-  metadata.reflection = fmi2_import_set_real_input_derivatives_res_reflection_;
-  return metadata;
+::std::string fmi2_import_set_real_input_derivatives_res::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_set_real_input_derivatives_res";
 }
 
 
@@ -11218,7 +7697,7 @@ const int fmi2_import_get_real_output_derivatives_req::kOrdersFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_get_real_output_derivatives_req::fmi2_import_get_real_output_derivatives_req()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -11226,7 +7705,7 @@ void fmi2_import_get_real_output_derivatives_req::InitAsDefaultInstance() {
 }
 
 fmi2_import_get_real_output_derivatives_req::fmi2_import_get_real_output_derivatives_req(const fmi2_import_get_real_output_derivatives_req& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -11243,7 +7722,11 @@ fmi2_import_get_real_output_derivatives_req::~fmi2_import_get_real_output_deriva
 }
 
 void fmi2_import_get_real_output_derivatives_req::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -11252,13 +7735,12 @@ void fmi2_import_get_real_output_derivatives_req::SetCachedSize(int size) const 
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_get_real_output_derivatives_req::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_get_real_output_derivatives_req_descriptor_;
-}
-
 const fmi2_import_get_real_output_derivatives_req& fmi2_import_get_real_output_derivatives_req::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -11276,7 +7758,6 @@ void fmi2_import_get_real_output_derivatives_req::Clear() {
   valuereferences_.Clear();
   orders_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_get_real_output_derivatives_req::MergePartialFromCodedStream(
@@ -11366,8 +7847,7 @@ bool fmi2_import_get_real_output_derivatives_req::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -11400,41 +7880,6 @@ void fmi2_import_get_real_output_derivatives_req::SerializeWithCachedSizes(
       4, this->orders(i), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_get_real_output_derivatives_req::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required int32 fmuId = 2;
-  if (has_fmuid()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->fmuid(), target);
-  }
-
-  // repeated int32 valueReferences = 3;
-  for (int i = 0; i < this->valuereferences_size(); i++) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteInt32ToArray(3, this->valuereferences(i), target);
-  }
-
-  // repeated int32 orders = 4;
-  for (int i = 0; i < this->orders_size(); i++) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteInt32ToArray(4, this->orders(i), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_get_real_output_derivatives_req::ByteSize() const {
@@ -11476,27 +7921,15 @@ int fmi2_import_get_real_output_derivatives_req::ByteSize() const {
     total_size += 1 * this->orders_size() + data_size;
   }
 
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_get_real_output_derivatives_req::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_get_real_output_derivatives_req* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_get_real_output_derivatives_req*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_get_real_output_derivatives_req::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_get_real_output_derivatives_req*>(&from));
 }
 
 void fmi2_import_get_real_output_derivatives_req::MergeFrom(const fmi2_import_get_real_output_derivatives_req& from) {
@@ -11511,13 +7944,6 @@ void fmi2_import_get_real_output_derivatives_req::MergeFrom(const fmi2_import_ge
       set_fmuid(from.fmuid());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_get_real_output_derivatives_req::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_get_real_output_derivatives_req::CopyFrom(const fmi2_import_get_real_output_derivatives_req& from) {
@@ -11539,17 +7965,12 @@ void fmi2_import_get_real_output_derivatives_req::Swap(fmi2_import_get_real_outp
     valuereferences_.Swap(&other->valuereferences_);
     orders_.Swap(&other->orders_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_get_real_output_derivatives_req::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_get_real_output_derivatives_req_descriptor_;
-  metadata.reflection = fmi2_import_get_real_output_derivatives_req_reflection_;
-  return metadata;
+::std::string fmi2_import_get_real_output_derivatives_req::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_get_real_output_derivatives_req";
 }
 
 
@@ -11562,7 +7983,7 @@ const int fmi2_import_get_real_output_derivatives_res::kValuesFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_get_real_output_derivatives_res::fmi2_import_get_real_output_derivatives_res()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -11570,7 +7991,7 @@ void fmi2_import_get_real_output_derivatives_res::InitAsDefaultInstance() {
 }
 
 fmi2_import_get_real_output_derivatives_res::fmi2_import_get_real_output_derivatives_res(const fmi2_import_get_real_output_derivatives_res& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -11587,7 +8008,11 @@ fmi2_import_get_real_output_derivatives_res::~fmi2_import_get_real_output_deriva
 }
 
 void fmi2_import_get_real_output_derivatives_res::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -11596,13 +8021,12 @@ void fmi2_import_get_real_output_derivatives_res::SetCachedSize(int size) const 
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_get_real_output_derivatives_res::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_get_real_output_derivatives_res_descriptor_;
-}
-
 const fmi2_import_get_real_output_derivatives_res& fmi2_import_get_real_output_derivatives_res::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -11619,7 +8043,6 @@ void fmi2_import_get_real_output_derivatives_res::Clear() {
   }
   values_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_get_real_output_derivatives_res::MergePartialFromCodedStream(
@@ -11654,8 +8077,6 @@ bool fmi2_import_get_real_output_derivatives_res::MergePartialFromCodedStream(
                  input, &value)));
           if (::fmitcp_proto::fmi2_status_t_IsValid(value)) {
             set_status(static_cast< ::fmitcp_proto::fmi2_status_t >(value));
-          } else {
-            mutable_unknown_fields()->AddVarint(2, value);
           }
         } else {
           goto handle_uninterpreted;
@@ -11692,8 +8113,7 @@ bool fmi2_import_get_real_output_derivatives_res::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -11721,36 +8141,6 @@ void fmi2_import_get_real_output_derivatives_res::SerializeWithCachedSizes(
       3, this->values(i), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_get_real_output_derivatives_res::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required .fmitcp_proto.fmi2_status_t status = 2;
-  if (has_status()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      2, this->status(), target);
-  }
-
-  // repeated double values = 3;
-  for (int i = 0; i < this->values_size(); i++) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteDoubleToArray(3, this->values(i), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_get_real_output_derivatives_res::ByteSize() const {
@@ -11778,27 +8168,15 @@ int fmi2_import_get_real_output_derivatives_res::ByteSize() const {
     total_size += 1 * this->values_size() + data_size;
   }
 
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_get_real_output_derivatives_res::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_get_real_output_derivatives_res* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_get_real_output_derivatives_res*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_get_real_output_derivatives_res::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_get_real_output_derivatives_res*>(&from));
 }
 
 void fmi2_import_get_real_output_derivatives_res::MergeFrom(const fmi2_import_get_real_output_derivatives_res& from) {
@@ -11812,13 +8190,6 @@ void fmi2_import_get_real_output_derivatives_res::MergeFrom(const fmi2_import_ge
       set_status(from.status());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_get_real_output_derivatives_res::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_get_real_output_derivatives_res::CopyFrom(const fmi2_import_get_real_output_derivatives_res& from) {
@@ -11839,17 +8210,12 @@ void fmi2_import_get_real_output_derivatives_res::Swap(fmi2_import_get_real_outp
     std::swap(status_, other->status_);
     values_.Swap(&other->values_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_get_real_output_derivatives_res::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_get_real_output_derivatives_res_descriptor_;
-  metadata.reflection = fmi2_import_get_real_output_derivatives_res_reflection_;
-  return metadata;
+::std::string fmi2_import_get_real_output_derivatives_res::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_get_real_output_derivatives_res";
 }
 
 
@@ -11861,7 +8227,7 @@ const int fmi2_import_cancel_step_req::kFmuIdFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_cancel_step_req::fmi2_import_cancel_step_req()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -11869,7 +8235,7 @@ void fmi2_import_cancel_step_req::InitAsDefaultInstance() {
 }
 
 fmi2_import_cancel_step_req::fmi2_import_cancel_step_req(const fmi2_import_cancel_step_req& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -11886,7 +8252,11 @@ fmi2_import_cancel_step_req::~fmi2_import_cancel_step_req() {
 }
 
 void fmi2_import_cancel_step_req::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -11895,13 +8265,12 @@ void fmi2_import_cancel_step_req::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_cancel_step_req::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_cancel_step_req_descriptor_;
-}
-
 const fmi2_import_cancel_step_req& fmi2_import_cancel_step_req::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -11917,7 +8286,6 @@ void fmi2_import_cancel_step_req::Clear() {
     fmuid_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_cancel_step_req::MergePartialFromCodedStream(
@@ -11963,8 +8331,7 @@ bool fmi2_import_cancel_step_req::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -11985,29 +8352,6 @@ void fmi2_import_cancel_step_req::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->fmuid(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_cancel_step_req::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required int32 fmuId = 2;
-  if (has_fmuid()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->fmuid(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_cancel_step_req::ByteSize() const {
@@ -12029,27 +8373,15 @@ int fmi2_import_cancel_step_req::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_cancel_step_req::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_cancel_step_req* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_cancel_step_req*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_cancel_step_req::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_cancel_step_req*>(&from));
 }
 
 void fmi2_import_cancel_step_req::MergeFrom(const fmi2_import_cancel_step_req& from) {
@@ -12062,13 +8394,6 @@ void fmi2_import_cancel_step_req::MergeFrom(const fmi2_import_cancel_step_req& f
       set_fmuid(from.fmuid());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_cancel_step_req::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_cancel_step_req::CopyFrom(const fmi2_import_cancel_step_req& from) {
@@ -12088,17 +8413,12 @@ void fmi2_import_cancel_step_req::Swap(fmi2_import_cancel_step_req* other) {
     std::swap(message_id_, other->message_id_);
     std::swap(fmuid_, other->fmuid_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_cancel_step_req::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_cancel_step_req_descriptor_;
-  metadata.reflection = fmi2_import_cancel_step_req_reflection_;
-  return metadata;
+::std::string fmi2_import_cancel_step_req::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_cancel_step_req";
 }
 
 
@@ -12110,7 +8430,7 @@ const int fmi2_import_cancel_step_res::kStatusFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_cancel_step_res::fmi2_import_cancel_step_res()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -12118,7 +8438,7 @@ void fmi2_import_cancel_step_res::InitAsDefaultInstance() {
 }
 
 fmi2_import_cancel_step_res::fmi2_import_cancel_step_res(const fmi2_import_cancel_step_res& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -12135,7 +8455,11 @@ fmi2_import_cancel_step_res::~fmi2_import_cancel_step_res() {
 }
 
 void fmi2_import_cancel_step_res::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -12144,13 +8468,12 @@ void fmi2_import_cancel_step_res::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_cancel_step_res::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_cancel_step_res_descriptor_;
-}
-
 const fmi2_import_cancel_step_res& fmi2_import_cancel_step_res::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -12166,7 +8489,6 @@ void fmi2_import_cancel_step_res::Clear() {
     status_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_cancel_step_res::MergePartialFromCodedStream(
@@ -12201,8 +8523,6 @@ bool fmi2_import_cancel_step_res::MergePartialFromCodedStream(
                  input, &value)));
           if (::fmitcp_proto::fmi2_status_t_IsValid(value)) {
             set_status(static_cast< ::fmitcp_proto::fmi2_status_t >(value));
-          } else {
-            mutable_unknown_fields()->AddVarint(2, value);
           }
         } else {
           goto handle_uninterpreted;
@@ -12217,8 +8537,7 @@ bool fmi2_import_cancel_step_res::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -12240,30 +8559,6 @@ void fmi2_import_cancel_step_res::SerializeWithCachedSizes(
       2, this->status(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_cancel_step_res::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required .fmitcp_proto.fmi2_status_t status = 2;
-  if (has_status()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      2, this->status(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_cancel_step_res::ByteSize() const {
@@ -12284,27 +8579,15 @@ int fmi2_import_cancel_step_res::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_cancel_step_res::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_cancel_step_res* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_cancel_step_res*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_cancel_step_res::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_cancel_step_res*>(&from));
 }
 
 void fmi2_import_cancel_step_res::MergeFrom(const fmi2_import_cancel_step_res& from) {
@@ -12317,13 +8600,6 @@ void fmi2_import_cancel_step_res::MergeFrom(const fmi2_import_cancel_step_res& f
       set_status(from.status());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_cancel_step_res::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_cancel_step_res::CopyFrom(const fmi2_import_cancel_step_res& from) {
@@ -12343,17 +8619,12 @@ void fmi2_import_cancel_step_res::Swap(fmi2_import_cancel_step_res* other) {
     std::swap(message_id_, other->message_id_);
     std::swap(status_, other->status_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_cancel_step_res::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_cancel_step_res_descriptor_;
-  metadata.reflection = fmi2_import_cancel_step_res_reflection_;
-  return metadata;
+::std::string fmi2_import_cancel_step_res::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_cancel_step_res";
 }
 
 
@@ -12368,7 +8639,7 @@ const int fmi2_import_do_step_req::kNewStepFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_do_step_req::fmi2_import_do_step_req()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -12376,7 +8647,7 @@ void fmi2_import_do_step_req::InitAsDefaultInstance() {
 }
 
 fmi2_import_do_step_req::fmi2_import_do_step_req(const fmi2_import_do_step_req& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -12396,7 +8667,11 @@ fmi2_import_do_step_req::~fmi2_import_do_step_req() {
 }
 
 void fmi2_import_do_step_req::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -12405,13 +8680,12 @@ void fmi2_import_do_step_req::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_do_step_req::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_do_step_req_descriptor_;
-}
-
 const fmi2_import_do_step_req& fmi2_import_do_step_req::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -12430,7 +8704,6 @@ void fmi2_import_do_step_req::Clear() {
     newstep_ = false;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_do_step_req::MergePartialFromCodedStream(
@@ -12524,8 +8797,7 @@ bool fmi2_import_do_step_req::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -12561,44 +8833,6 @@ void fmi2_import_do_step_req::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteBool(5, this->newstep(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_do_step_req::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required int32 fmuId = 2;
-  if (has_fmuid()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->fmuid(), target);
-  }
-
-  // required double currentCommunicationPoint = 3;
-  if (has_currentcommunicationpoint()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(3, this->currentcommunicationpoint(), target);
-  }
-
-  // required double communicationStepSize = 4;
-  if (has_communicationstepsize()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(4, this->communicationstepsize(), target);
-  }
-
-  // required bool newStep = 5;
-  if (has_newstep()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(5, this->newstep(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_do_step_req::ByteSize() const {
@@ -12635,27 +8869,15 @@ int fmi2_import_do_step_req::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_do_step_req::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_do_step_req* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_do_step_req*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_do_step_req::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_do_step_req*>(&from));
 }
 
 void fmi2_import_do_step_req::MergeFrom(const fmi2_import_do_step_req& from) {
@@ -12677,13 +8899,6 @@ void fmi2_import_do_step_req::MergeFrom(const fmi2_import_do_step_req& from) {
       set_newstep(from.newstep());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_do_step_req::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_do_step_req::CopyFrom(const fmi2_import_do_step_req& from) {
@@ -12706,17 +8921,12 @@ void fmi2_import_do_step_req::Swap(fmi2_import_do_step_req* other) {
     std::swap(communicationstepsize_, other->communicationstepsize_);
     std::swap(newstep_, other->newstep_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_do_step_req::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_do_step_req_descriptor_;
-  metadata.reflection = fmi2_import_do_step_req_reflection_;
-  return metadata;
+::std::string fmi2_import_do_step_req::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_do_step_req";
 }
 
 
@@ -12728,7 +8938,7 @@ const int fmi2_import_do_step_res::kStatusFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_do_step_res::fmi2_import_do_step_res()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -12736,7 +8946,7 @@ void fmi2_import_do_step_res::InitAsDefaultInstance() {
 }
 
 fmi2_import_do_step_res::fmi2_import_do_step_res(const fmi2_import_do_step_res& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -12753,7 +8963,11 @@ fmi2_import_do_step_res::~fmi2_import_do_step_res() {
 }
 
 void fmi2_import_do_step_res::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -12762,13 +8976,12 @@ void fmi2_import_do_step_res::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_do_step_res::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_do_step_res_descriptor_;
-}
-
 const fmi2_import_do_step_res& fmi2_import_do_step_res::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -12784,7 +8997,6 @@ void fmi2_import_do_step_res::Clear() {
     status_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_do_step_res::MergePartialFromCodedStream(
@@ -12819,8 +9031,6 @@ bool fmi2_import_do_step_res::MergePartialFromCodedStream(
                  input, &value)));
           if (::fmitcp_proto::fmi2_status_t_IsValid(value)) {
             set_status(static_cast< ::fmitcp_proto::fmi2_status_t >(value));
-          } else {
-            mutable_unknown_fields()->AddVarint(2, value);
           }
         } else {
           goto handle_uninterpreted;
@@ -12835,8 +9045,7 @@ bool fmi2_import_do_step_res::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -12858,30 +9067,6 @@ void fmi2_import_do_step_res::SerializeWithCachedSizes(
       2, this->status(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_do_step_res::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required .fmitcp_proto.fmi2_status_t status = 2;
-  if (has_status()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      2, this->status(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_do_step_res::ByteSize() const {
@@ -12902,27 +9087,15 @@ int fmi2_import_do_step_res::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_do_step_res::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_do_step_res* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_do_step_res*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_do_step_res::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_do_step_res*>(&from));
 }
 
 void fmi2_import_do_step_res::MergeFrom(const fmi2_import_do_step_res& from) {
@@ -12935,13 +9108,6 @@ void fmi2_import_do_step_res::MergeFrom(const fmi2_import_do_step_res& from) {
       set_status(from.status());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_do_step_res::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_do_step_res::CopyFrom(const fmi2_import_do_step_res& from) {
@@ -12961,17 +9127,12 @@ void fmi2_import_do_step_res::Swap(fmi2_import_do_step_res* other) {
     std::swap(message_id_, other->message_id_);
     std::swap(status_, other->status_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_do_step_res::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_do_step_res_descriptor_;
-  metadata.reflection = fmi2_import_do_step_res_reflection_;
-  return metadata;
+::std::string fmi2_import_do_step_res::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_do_step_res";
 }
 
 
@@ -12984,7 +9145,7 @@ const int fmi2_import_get_status_req::kStatusFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_get_status_req::fmi2_import_get_status_req()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -12992,7 +9153,7 @@ void fmi2_import_get_status_req::InitAsDefaultInstance() {
 }
 
 fmi2_import_get_status_req::fmi2_import_get_status_req(const fmi2_import_get_status_req& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -13010,7 +9171,11 @@ fmi2_import_get_status_req::~fmi2_import_get_status_req() {
 }
 
 void fmi2_import_get_status_req::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -13019,13 +9184,12 @@ void fmi2_import_get_status_req::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_get_status_req::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_get_status_req_descriptor_;
-}
-
 const fmi2_import_get_status_req& fmi2_import_get_status_req::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -13042,7 +9206,6 @@ void fmi2_import_get_status_req::Clear() {
     status_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_get_status_req::MergePartialFromCodedStream(
@@ -13093,8 +9256,6 @@ bool fmi2_import_get_status_req::MergePartialFromCodedStream(
                  input, &value)));
           if (::fmitcp_proto::fmi2_status_kind_t_IsValid(value)) {
             set_status(static_cast< ::fmitcp_proto::fmi2_status_kind_t >(value));
-          } else {
-            mutable_unknown_fields()->AddVarint(3, value);
           }
         } else {
           goto handle_uninterpreted;
@@ -13109,8 +9270,7 @@ bool fmi2_import_get_status_req::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -13137,35 +9297,6 @@ void fmi2_import_get_status_req::SerializeWithCachedSizes(
       3, this->status(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_get_status_req::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required int32 fmuId = 2;
-  if (has_fmuid()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->fmuid(), target);
-  }
-
-  // required .fmitcp_proto.fmi2_status_kind_t status = 3;
-  if (has_status()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      3, this->status(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_get_status_req::ByteSize() const {
@@ -13193,27 +9324,15 @@ int fmi2_import_get_status_req::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_get_status_req::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_get_status_req* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_get_status_req*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_get_status_req::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_get_status_req*>(&from));
 }
 
 void fmi2_import_get_status_req::MergeFrom(const fmi2_import_get_status_req& from) {
@@ -13229,13 +9348,6 @@ void fmi2_import_get_status_req::MergeFrom(const fmi2_import_get_status_req& fro
       set_status(from.status());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_get_status_req::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_get_status_req::CopyFrom(const fmi2_import_get_status_req& from) {
@@ -13256,17 +9368,12 @@ void fmi2_import_get_status_req::Swap(fmi2_import_get_status_req* other) {
     std::swap(fmuid_, other->fmuid_);
     std::swap(status_, other->status_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_get_status_req::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_get_status_req_descriptor_;
-  metadata.reflection = fmi2_import_get_status_req_reflection_;
-  return metadata;
+::std::string fmi2_import_get_status_req::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_get_status_req";
 }
 
 
@@ -13278,7 +9385,7 @@ const int fmi2_import_get_status_res::kValueFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_get_status_res::fmi2_import_get_status_res()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -13286,7 +9393,7 @@ void fmi2_import_get_status_res::InitAsDefaultInstance() {
 }
 
 fmi2_import_get_status_res::fmi2_import_get_status_res(const fmi2_import_get_status_res& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -13303,7 +9410,11 @@ fmi2_import_get_status_res::~fmi2_import_get_status_res() {
 }
 
 void fmi2_import_get_status_res::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -13312,13 +9423,12 @@ void fmi2_import_get_status_res::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_get_status_res::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_get_status_res_descriptor_;
-}
-
 const fmi2_import_get_status_res& fmi2_import_get_status_res::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -13334,7 +9444,6 @@ void fmi2_import_get_status_res::Clear() {
     value_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_get_status_res::MergePartialFromCodedStream(
@@ -13369,8 +9478,6 @@ bool fmi2_import_get_status_res::MergePartialFromCodedStream(
                  input, &value)));
           if (::fmitcp_proto::fmi2_status_t_IsValid(value)) {
             set_value(static_cast< ::fmitcp_proto::fmi2_status_t >(value));
-          } else {
-            mutable_unknown_fields()->AddVarint(2, value);
           }
         } else {
           goto handle_uninterpreted;
@@ -13385,8 +9492,7 @@ bool fmi2_import_get_status_res::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -13408,30 +9514,6 @@ void fmi2_import_get_status_res::SerializeWithCachedSizes(
       2, this->value(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_get_status_res::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required .fmitcp_proto.fmi2_status_t value = 2;
-  if (has_value()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      2, this->value(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_get_status_res::ByteSize() const {
@@ -13452,27 +9534,15 @@ int fmi2_import_get_status_res::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_get_status_res::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_get_status_res* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_get_status_res*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_get_status_res::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_get_status_res*>(&from));
 }
 
 void fmi2_import_get_status_res::MergeFrom(const fmi2_import_get_status_res& from) {
@@ -13485,13 +9555,6 @@ void fmi2_import_get_status_res::MergeFrom(const fmi2_import_get_status_res& fro
       set_value(from.value());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_get_status_res::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_get_status_res::CopyFrom(const fmi2_import_get_status_res& from) {
@@ -13511,17 +9574,12 @@ void fmi2_import_get_status_res::Swap(fmi2_import_get_status_res* other) {
     std::swap(message_id_, other->message_id_);
     std::swap(value_, other->value_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_get_status_res::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_get_status_res_descriptor_;
-  metadata.reflection = fmi2_import_get_status_res_reflection_;
-  return metadata;
+::std::string fmi2_import_get_status_res::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_get_status_res";
 }
 
 
@@ -13534,7 +9592,7 @@ const int fmi2_import_get_real_status_req::kKindFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_get_real_status_req::fmi2_import_get_real_status_req()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -13542,7 +9600,7 @@ void fmi2_import_get_real_status_req::InitAsDefaultInstance() {
 }
 
 fmi2_import_get_real_status_req::fmi2_import_get_real_status_req(const fmi2_import_get_real_status_req& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -13560,7 +9618,11 @@ fmi2_import_get_real_status_req::~fmi2_import_get_real_status_req() {
 }
 
 void fmi2_import_get_real_status_req::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -13569,13 +9631,12 @@ void fmi2_import_get_real_status_req::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_get_real_status_req::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_get_real_status_req_descriptor_;
-}
-
 const fmi2_import_get_real_status_req& fmi2_import_get_real_status_req::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -13592,7 +9653,6 @@ void fmi2_import_get_real_status_req::Clear() {
     kind_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_get_real_status_req::MergePartialFromCodedStream(
@@ -13643,8 +9703,6 @@ bool fmi2_import_get_real_status_req::MergePartialFromCodedStream(
                  input, &value)));
           if (::fmitcp_proto::fmi2_status_kind_t_IsValid(value)) {
             set_kind(static_cast< ::fmitcp_proto::fmi2_status_kind_t >(value));
-          } else {
-            mutable_unknown_fields()->AddVarint(3, value);
           }
         } else {
           goto handle_uninterpreted;
@@ -13659,8 +9717,7 @@ bool fmi2_import_get_real_status_req::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -13687,35 +9744,6 @@ void fmi2_import_get_real_status_req::SerializeWithCachedSizes(
       3, this->kind(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_get_real_status_req::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required int32 fmuId = 2;
-  if (has_fmuid()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->fmuid(), target);
-  }
-
-  // required .fmitcp_proto.fmi2_status_kind_t kind = 3;
-  if (has_kind()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      3, this->kind(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_get_real_status_req::ByteSize() const {
@@ -13743,27 +9771,15 @@ int fmi2_import_get_real_status_req::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_get_real_status_req::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_get_real_status_req* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_get_real_status_req*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_get_real_status_req::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_get_real_status_req*>(&from));
 }
 
 void fmi2_import_get_real_status_req::MergeFrom(const fmi2_import_get_real_status_req& from) {
@@ -13779,13 +9795,6 @@ void fmi2_import_get_real_status_req::MergeFrom(const fmi2_import_get_real_statu
       set_kind(from.kind());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_get_real_status_req::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_get_real_status_req::CopyFrom(const fmi2_import_get_real_status_req& from) {
@@ -13806,17 +9815,12 @@ void fmi2_import_get_real_status_req::Swap(fmi2_import_get_real_status_req* othe
     std::swap(fmuid_, other->fmuid_);
     std::swap(kind_, other->kind_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_get_real_status_req::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_get_real_status_req_descriptor_;
-  metadata.reflection = fmi2_import_get_real_status_req_reflection_;
-  return metadata;
+::std::string fmi2_import_get_real_status_req::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_get_real_status_req";
 }
 
 
@@ -13828,7 +9832,7 @@ const int fmi2_import_get_real_status_res::kValueFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_get_real_status_res::fmi2_import_get_real_status_res()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -13836,7 +9840,7 @@ void fmi2_import_get_real_status_res::InitAsDefaultInstance() {
 }
 
 fmi2_import_get_real_status_res::fmi2_import_get_real_status_res(const fmi2_import_get_real_status_res& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -13853,7 +9857,11 @@ fmi2_import_get_real_status_res::~fmi2_import_get_real_status_res() {
 }
 
 void fmi2_import_get_real_status_res::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -13862,13 +9870,12 @@ void fmi2_import_get_real_status_res::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_get_real_status_res::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_get_real_status_res_descriptor_;
-}
-
 const fmi2_import_get_real_status_res& fmi2_import_get_real_status_res::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -13884,7 +9891,6 @@ void fmi2_import_get_real_status_res::Clear() {
     value_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_get_real_status_res::MergePartialFromCodedStream(
@@ -13930,8 +9936,7 @@ bool fmi2_import_get_real_status_res::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -13952,29 +9957,6 @@ void fmi2_import_get_real_status_res::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteDouble(2, this->value(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_get_real_status_res::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required double value = 2;
-  if (has_value()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(2, this->value(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_get_real_status_res::ByteSize() const {
@@ -13994,27 +9976,15 @@ int fmi2_import_get_real_status_res::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_get_real_status_res::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_get_real_status_res* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_get_real_status_res*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_get_real_status_res::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_get_real_status_res*>(&from));
 }
 
 void fmi2_import_get_real_status_res::MergeFrom(const fmi2_import_get_real_status_res& from) {
@@ -14027,13 +9997,6 @@ void fmi2_import_get_real_status_res::MergeFrom(const fmi2_import_get_real_statu
       set_value(from.value());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_get_real_status_res::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_get_real_status_res::CopyFrom(const fmi2_import_get_real_status_res& from) {
@@ -14053,17 +10016,12 @@ void fmi2_import_get_real_status_res::Swap(fmi2_import_get_real_status_res* othe
     std::swap(message_id_, other->message_id_);
     std::swap(value_, other->value_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_get_real_status_res::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_get_real_status_res_descriptor_;
-  metadata.reflection = fmi2_import_get_real_status_res_reflection_;
-  return metadata;
+::std::string fmi2_import_get_real_status_res::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_get_real_status_res";
 }
 
 
@@ -14076,7 +10034,7 @@ const int fmi2_import_get_integer_status_req::kKindFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_get_integer_status_req::fmi2_import_get_integer_status_req()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -14084,7 +10042,7 @@ void fmi2_import_get_integer_status_req::InitAsDefaultInstance() {
 }
 
 fmi2_import_get_integer_status_req::fmi2_import_get_integer_status_req(const fmi2_import_get_integer_status_req& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -14102,7 +10060,11 @@ fmi2_import_get_integer_status_req::~fmi2_import_get_integer_status_req() {
 }
 
 void fmi2_import_get_integer_status_req::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -14111,13 +10073,12 @@ void fmi2_import_get_integer_status_req::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_get_integer_status_req::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_get_integer_status_req_descriptor_;
-}
-
 const fmi2_import_get_integer_status_req& fmi2_import_get_integer_status_req::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -14134,7 +10095,6 @@ void fmi2_import_get_integer_status_req::Clear() {
     kind_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_get_integer_status_req::MergePartialFromCodedStream(
@@ -14185,8 +10145,6 @@ bool fmi2_import_get_integer_status_req::MergePartialFromCodedStream(
                  input, &value)));
           if (::fmitcp_proto::fmi2_status_kind_t_IsValid(value)) {
             set_kind(static_cast< ::fmitcp_proto::fmi2_status_kind_t >(value));
-          } else {
-            mutable_unknown_fields()->AddVarint(3, value);
           }
         } else {
           goto handle_uninterpreted;
@@ -14201,8 +10159,7 @@ bool fmi2_import_get_integer_status_req::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -14229,35 +10186,6 @@ void fmi2_import_get_integer_status_req::SerializeWithCachedSizes(
       3, this->kind(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_get_integer_status_req::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required int32 fmuId = 2;
-  if (has_fmuid()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->fmuid(), target);
-  }
-
-  // required .fmitcp_proto.fmi2_status_kind_t kind = 3;
-  if (has_kind()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      3, this->kind(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_get_integer_status_req::ByteSize() const {
@@ -14285,27 +10213,15 @@ int fmi2_import_get_integer_status_req::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_get_integer_status_req::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_get_integer_status_req* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_get_integer_status_req*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_get_integer_status_req::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_get_integer_status_req*>(&from));
 }
 
 void fmi2_import_get_integer_status_req::MergeFrom(const fmi2_import_get_integer_status_req& from) {
@@ -14321,13 +10237,6 @@ void fmi2_import_get_integer_status_req::MergeFrom(const fmi2_import_get_integer
       set_kind(from.kind());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_get_integer_status_req::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_get_integer_status_req::CopyFrom(const fmi2_import_get_integer_status_req& from) {
@@ -14348,17 +10257,12 @@ void fmi2_import_get_integer_status_req::Swap(fmi2_import_get_integer_status_req
     std::swap(fmuid_, other->fmuid_);
     std::swap(kind_, other->kind_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_get_integer_status_req::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_get_integer_status_req_descriptor_;
-  metadata.reflection = fmi2_import_get_integer_status_req_reflection_;
-  return metadata;
+::std::string fmi2_import_get_integer_status_req::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_get_integer_status_req";
 }
 
 
@@ -14370,7 +10274,7 @@ const int fmi2_import_get_integer_status_res::kValueFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_get_integer_status_res::fmi2_import_get_integer_status_res()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -14378,7 +10282,7 @@ void fmi2_import_get_integer_status_res::InitAsDefaultInstance() {
 }
 
 fmi2_import_get_integer_status_res::fmi2_import_get_integer_status_res(const fmi2_import_get_integer_status_res& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -14395,7 +10299,11 @@ fmi2_import_get_integer_status_res::~fmi2_import_get_integer_status_res() {
 }
 
 void fmi2_import_get_integer_status_res::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -14404,13 +10312,12 @@ void fmi2_import_get_integer_status_res::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_get_integer_status_res::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_get_integer_status_res_descriptor_;
-}
-
 const fmi2_import_get_integer_status_res& fmi2_import_get_integer_status_res::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -14426,7 +10333,6 @@ void fmi2_import_get_integer_status_res::Clear() {
     value_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_get_integer_status_res::MergePartialFromCodedStream(
@@ -14472,8 +10378,7 @@ bool fmi2_import_get_integer_status_res::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -14494,29 +10399,6 @@ void fmi2_import_get_integer_status_res::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->value(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_get_integer_status_res::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required int32 value = 2;
-  if (has_value()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->value(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_get_integer_status_res::ByteSize() const {
@@ -14538,27 +10420,15 @@ int fmi2_import_get_integer_status_res::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_get_integer_status_res::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_get_integer_status_res* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_get_integer_status_res*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_get_integer_status_res::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_get_integer_status_res*>(&from));
 }
 
 void fmi2_import_get_integer_status_res::MergeFrom(const fmi2_import_get_integer_status_res& from) {
@@ -14571,13 +10441,6 @@ void fmi2_import_get_integer_status_res::MergeFrom(const fmi2_import_get_integer
       set_value(from.value());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_get_integer_status_res::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_get_integer_status_res::CopyFrom(const fmi2_import_get_integer_status_res& from) {
@@ -14597,17 +10460,12 @@ void fmi2_import_get_integer_status_res::Swap(fmi2_import_get_integer_status_res
     std::swap(message_id_, other->message_id_);
     std::swap(value_, other->value_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_get_integer_status_res::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_get_integer_status_res_descriptor_;
-  metadata.reflection = fmi2_import_get_integer_status_res_reflection_;
-  return metadata;
+::std::string fmi2_import_get_integer_status_res::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_get_integer_status_res";
 }
 
 
@@ -14620,7 +10478,7 @@ const int fmi2_import_get_boolean_status_req::kKindFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_get_boolean_status_req::fmi2_import_get_boolean_status_req()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -14628,7 +10486,7 @@ void fmi2_import_get_boolean_status_req::InitAsDefaultInstance() {
 }
 
 fmi2_import_get_boolean_status_req::fmi2_import_get_boolean_status_req(const fmi2_import_get_boolean_status_req& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -14646,7 +10504,11 @@ fmi2_import_get_boolean_status_req::~fmi2_import_get_boolean_status_req() {
 }
 
 void fmi2_import_get_boolean_status_req::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -14655,13 +10517,12 @@ void fmi2_import_get_boolean_status_req::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_get_boolean_status_req::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_get_boolean_status_req_descriptor_;
-}
-
 const fmi2_import_get_boolean_status_req& fmi2_import_get_boolean_status_req::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -14678,7 +10539,6 @@ void fmi2_import_get_boolean_status_req::Clear() {
     kind_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_get_boolean_status_req::MergePartialFromCodedStream(
@@ -14729,8 +10589,6 @@ bool fmi2_import_get_boolean_status_req::MergePartialFromCodedStream(
                  input, &value)));
           if (::fmitcp_proto::fmi2_status_kind_t_IsValid(value)) {
             set_kind(static_cast< ::fmitcp_proto::fmi2_status_kind_t >(value));
-          } else {
-            mutable_unknown_fields()->AddVarint(3, value);
           }
         } else {
           goto handle_uninterpreted;
@@ -14745,8 +10603,7 @@ bool fmi2_import_get_boolean_status_req::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -14773,35 +10630,6 @@ void fmi2_import_get_boolean_status_req::SerializeWithCachedSizes(
       3, this->kind(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_get_boolean_status_req::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required int32 fmuId = 2;
-  if (has_fmuid()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->fmuid(), target);
-  }
-
-  // required .fmitcp_proto.fmi2_status_kind_t kind = 3;
-  if (has_kind()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      3, this->kind(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_get_boolean_status_req::ByteSize() const {
@@ -14829,27 +10657,15 @@ int fmi2_import_get_boolean_status_req::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_get_boolean_status_req::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_get_boolean_status_req* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_get_boolean_status_req*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_get_boolean_status_req::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_get_boolean_status_req*>(&from));
 }
 
 void fmi2_import_get_boolean_status_req::MergeFrom(const fmi2_import_get_boolean_status_req& from) {
@@ -14865,13 +10681,6 @@ void fmi2_import_get_boolean_status_req::MergeFrom(const fmi2_import_get_boolean
       set_kind(from.kind());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_get_boolean_status_req::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_get_boolean_status_req::CopyFrom(const fmi2_import_get_boolean_status_req& from) {
@@ -14892,17 +10701,12 @@ void fmi2_import_get_boolean_status_req::Swap(fmi2_import_get_boolean_status_req
     std::swap(fmuid_, other->fmuid_);
     std::swap(kind_, other->kind_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_get_boolean_status_req::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_get_boolean_status_req_descriptor_;
-  metadata.reflection = fmi2_import_get_boolean_status_req_reflection_;
-  return metadata;
+::std::string fmi2_import_get_boolean_status_req::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_get_boolean_status_req";
 }
 
 
@@ -14914,7 +10718,7 @@ const int fmi2_import_get_boolean_status_res::kValueFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_get_boolean_status_res::fmi2_import_get_boolean_status_res()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -14922,7 +10726,7 @@ void fmi2_import_get_boolean_status_res::InitAsDefaultInstance() {
 }
 
 fmi2_import_get_boolean_status_res::fmi2_import_get_boolean_status_res(const fmi2_import_get_boolean_status_res& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -14939,7 +10743,11 @@ fmi2_import_get_boolean_status_res::~fmi2_import_get_boolean_status_res() {
 }
 
 void fmi2_import_get_boolean_status_res::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -14948,13 +10756,12 @@ void fmi2_import_get_boolean_status_res::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_get_boolean_status_res::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_get_boolean_status_res_descriptor_;
-}
-
 const fmi2_import_get_boolean_status_res& fmi2_import_get_boolean_status_res::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -14970,7 +10777,6 @@ void fmi2_import_get_boolean_status_res::Clear() {
     value_ = false;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_get_boolean_status_res::MergePartialFromCodedStream(
@@ -15016,8 +10822,7 @@ bool fmi2_import_get_boolean_status_res::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -15038,29 +10843,6 @@ void fmi2_import_get_boolean_status_res::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteBool(2, this->value(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_get_boolean_status_res::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required bool value = 2;
-  if (has_value()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(2, this->value(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_get_boolean_status_res::ByteSize() const {
@@ -15080,27 +10862,15 @@ int fmi2_import_get_boolean_status_res::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_get_boolean_status_res::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_get_boolean_status_res* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_get_boolean_status_res*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_get_boolean_status_res::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_get_boolean_status_res*>(&from));
 }
 
 void fmi2_import_get_boolean_status_res::MergeFrom(const fmi2_import_get_boolean_status_res& from) {
@@ -15113,13 +10883,6 @@ void fmi2_import_get_boolean_status_res::MergeFrom(const fmi2_import_get_boolean
       set_value(from.value());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_get_boolean_status_res::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_get_boolean_status_res::CopyFrom(const fmi2_import_get_boolean_status_res& from) {
@@ -15139,17 +10902,12 @@ void fmi2_import_get_boolean_status_res::Swap(fmi2_import_get_boolean_status_res
     std::swap(message_id_, other->message_id_);
     std::swap(value_, other->value_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_get_boolean_status_res::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_get_boolean_status_res_descriptor_;
-  metadata.reflection = fmi2_import_get_boolean_status_res_reflection_;
-  return metadata;
+::std::string fmi2_import_get_boolean_status_res::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_get_boolean_status_res";
 }
 
 
@@ -15162,7 +10920,7 @@ const int fmi2_import_get_string_status_req::kKindFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_get_string_status_req::fmi2_import_get_string_status_req()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -15170,7 +10928,7 @@ void fmi2_import_get_string_status_req::InitAsDefaultInstance() {
 }
 
 fmi2_import_get_string_status_req::fmi2_import_get_string_status_req(const fmi2_import_get_string_status_req& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -15188,7 +10946,11 @@ fmi2_import_get_string_status_req::~fmi2_import_get_string_status_req() {
 }
 
 void fmi2_import_get_string_status_req::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -15197,13 +10959,12 @@ void fmi2_import_get_string_status_req::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_get_string_status_req::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_get_string_status_req_descriptor_;
-}
-
 const fmi2_import_get_string_status_req& fmi2_import_get_string_status_req::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -15220,7 +10981,6 @@ void fmi2_import_get_string_status_req::Clear() {
     kind_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_get_string_status_req::MergePartialFromCodedStream(
@@ -15271,8 +11031,6 @@ bool fmi2_import_get_string_status_req::MergePartialFromCodedStream(
                  input, &value)));
           if (::fmitcp_proto::fmi2_status_kind_t_IsValid(value)) {
             set_kind(static_cast< ::fmitcp_proto::fmi2_status_kind_t >(value));
-          } else {
-            mutable_unknown_fields()->AddVarint(3, value);
           }
         } else {
           goto handle_uninterpreted;
@@ -15287,8 +11045,7 @@ bool fmi2_import_get_string_status_req::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -15315,35 +11072,6 @@ void fmi2_import_get_string_status_req::SerializeWithCachedSizes(
       3, this->kind(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_get_string_status_req::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required int32 fmuId = 2;
-  if (has_fmuid()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->fmuid(), target);
-  }
-
-  // required .fmitcp_proto.fmi2_status_kind_t kind = 3;
-  if (has_kind()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      3, this->kind(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_get_string_status_req::ByteSize() const {
@@ -15371,27 +11099,15 @@ int fmi2_import_get_string_status_req::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_get_string_status_req::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_get_string_status_req* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_get_string_status_req*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_get_string_status_req::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_get_string_status_req*>(&from));
 }
 
 void fmi2_import_get_string_status_req::MergeFrom(const fmi2_import_get_string_status_req& from) {
@@ -15407,13 +11123,6 @@ void fmi2_import_get_string_status_req::MergeFrom(const fmi2_import_get_string_s
       set_kind(from.kind());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_get_string_status_req::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_get_string_status_req::CopyFrom(const fmi2_import_get_string_status_req& from) {
@@ -15434,17 +11143,12 @@ void fmi2_import_get_string_status_req::Swap(fmi2_import_get_string_status_req* 
     std::swap(fmuid_, other->fmuid_);
     std::swap(kind_, other->kind_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_get_string_status_req::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_get_string_status_req_descriptor_;
-  metadata.reflection = fmi2_import_get_string_status_req_reflection_;
-  return metadata;
+::std::string fmi2_import_get_string_status_req::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_get_string_status_req";
 }
 
 
@@ -15456,7 +11160,7 @@ const int fmi2_import_get_string_status_res::kValueFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_get_string_status_res::fmi2_import_get_string_status_res()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -15464,7 +11168,7 @@ void fmi2_import_get_string_status_res::InitAsDefaultInstance() {
 }
 
 fmi2_import_get_string_status_res::fmi2_import_get_string_status_res(const fmi2_import_get_string_status_res& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -15484,7 +11188,11 @@ void fmi2_import_get_string_status_res::SharedDtor() {
   if (value_ != &::google::protobuf::internal::kEmptyString) {
     delete value_;
   }
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -15493,13 +11201,12 @@ void fmi2_import_get_string_status_res::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_get_string_status_res::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_get_string_status_res_descriptor_;
-}
-
 const fmi2_import_get_string_status_res& fmi2_import_get_string_status_res::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -15519,7 +11226,6 @@ void fmi2_import_get_string_status_res::Clear() {
     }
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_get_string_status_res::MergePartialFromCodedStream(
@@ -15550,9 +11256,6 @@ bool fmi2_import_get_string_status_res::MergePartialFromCodedStream(
          parse_value:
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_value()));
-          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-            this->value().data(), this->value().length(),
-            ::google::protobuf::internal::WireFormat::PARSE);
         } else {
           goto handle_uninterpreted;
         }
@@ -15566,8 +11269,7 @@ bool fmi2_import_get_string_status_res::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -15585,41 +11287,10 @@ void fmi2_import_get_string_status_res::SerializeWithCachedSizes(
 
   // required string value = 2;
   if (has_value()) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->value().data(), this->value().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE);
     ::google::protobuf::internal::WireFormatLite::WriteString(
       2, this->value(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_get_string_status_res::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required string value = 2;
-  if (has_value()) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->value().data(), this->value().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE);
-    target =
-      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        2, this->value(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_get_string_status_res::ByteSize() const {
@@ -15641,27 +11312,15 @@ int fmi2_import_get_string_status_res::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_get_string_status_res::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_get_string_status_res* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_get_string_status_res*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_get_string_status_res::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_get_string_status_res*>(&from));
 }
 
 void fmi2_import_get_string_status_res::MergeFrom(const fmi2_import_get_string_status_res& from) {
@@ -15674,13 +11333,6 @@ void fmi2_import_get_string_status_res::MergeFrom(const fmi2_import_get_string_s
       set_value(from.value());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_get_string_status_res::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_get_string_status_res::CopyFrom(const fmi2_import_get_string_status_res& from) {
@@ -15700,17 +11352,12 @@ void fmi2_import_get_string_status_res::Swap(fmi2_import_get_string_status_res* 
     std::swap(message_id_, other->message_id_);
     std::swap(value_, other->value_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_get_string_status_res::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_get_string_status_res_descriptor_;
-  metadata.reflection = fmi2_import_get_string_status_res_reflection_;
-  return metadata;
+::std::string fmi2_import_get_string_status_res::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_get_string_status_res";
 }
 
 
@@ -15725,7 +11372,7 @@ const int fmi2_import_instantiate_model_req::kVisibleFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_instantiate_model_req::fmi2_import_instantiate_model_req()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -15733,7 +11380,7 @@ void fmi2_import_instantiate_model_req::InitAsDefaultInstance() {
 }
 
 fmi2_import_instantiate_model_req::fmi2_import_instantiate_model_req(const fmi2_import_instantiate_model_req& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -15759,7 +11406,11 @@ void fmi2_import_instantiate_model_req::SharedDtor() {
   if (resourcelocation_ != &::google::protobuf::internal::kEmptyString) {
     delete resourcelocation_;
   }
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -15768,13 +11419,12 @@ void fmi2_import_instantiate_model_req::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_instantiate_model_req::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_instantiate_model_req_descriptor_;
-}
-
 const fmi2_import_instantiate_model_req& fmi2_import_instantiate_model_req::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -15801,7 +11451,6 @@ void fmi2_import_instantiate_model_req::Clear() {
     visible_ = false;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_instantiate_model_req::MergePartialFromCodedStream(
@@ -15848,9 +11497,6 @@ bool fmi2_import_instantiate_model_req::MergePartialFromCodedStream(
          parse_instanceName:
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_instancename()));
-          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-            this->instancename().data(), this->instancename().length(),
-            ::google::protobuf::internal::WireFormat::PARSE);
         } else {
           goto handle_uninterpreted;
         }
@@ -15865,9 +11511,6 @@ bool fmi2_import_instantiate_model_req::MergePartialFromCodedStream(
          parse_resourceLocation:
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_resourcelocation()));
-          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-            this->resourcelocation().data(), this->resourcelocation().length(),
-            ::google::protobuf::internal::WireFormat::PARSE);
         } else {
           goto handle_uninterpreted;
         }
@@ -15897,8 +11540,7 @@ bool fmi2_import_instantiate_model_req::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -15921,18 +11563,12 @@ void fmi2_import_instantiate_model_req::SerializeWithCachedSizes(
 
   // required string instanceName = 3;
   if (has_instancename()) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->instancename().data(), this->instancename().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE);
     ::google::protobuf::internal::WireFormatLite::WriteString(
       3, this->instancename(), output);
   }
 
   // required string resourceLocation = 4;
   if (has_resourcelocation()) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->resourcelocation().data(), this->resourcelocation().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE);
     ::google::protobuf::internal::WireFormatLite::WriteString(
       4, this->resourcelocation(), output);
   }
@@ -15942,54 +11578,6 @@ void fmi2_import_instantiate_model_req::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteBool(5, this->visible(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_instantiate_model_req::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required int32 fmuId = 2;
-  if (has_fmuid()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->fmuid(), target);
-  }
-
-  // required string instanceName = 3;
-  if (has_instancename()) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->instancename().data(), this->instancename().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE);
-    target =
-      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        3, this->instancename(), target);
-  }
-
-  // required string resourceLocation = 4;
-  if (has_resourcelocation()) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->resourcelocation().data(), this->resourcelocation().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE);
-    target =
-      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        4, this->resourcelocation(), target);
-  }
-
-  // optional bool visible = 5;
-  if (has_visible()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(5, this->visible(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_instantiate_model_req::ByteSize() const {
@@ -16030,27 +11618,15 @@ int fmi2_import_instantiate_model_req::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_instantiate_model_req::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_instantiate_model_req* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_instantiate_model_req*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_instantiate_model_req::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_instantiate_model_req*>(&from));
 }
 
 void fmi2_import_instantiate_model_req::MergeFrom(const fmi2_import_instantiate_model_req& from) {
@@ -16072,13 +11648,6 @@ void fmi2_import_instantiate_model_req::MergeFrom(const fmi2_import_instantiate_
       set_visible(from.visible());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_instantiate_model_req::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_instantiate_model_req::CopyFrom(const fmi2_import_instantiate_model_req& from) {
@@ -16101,17 +11670,12 @@ void fmi2_import_instantiate_model_req::Swap(fmi2_import_instantiate_model_req* 
     std::swap(resourcelocation_, other->resourcelocation_);
     std::swap(visible_, other->visible_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_instantiate_model_req::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_instantiate_model_req_descriptor_;
-  metadata.reflection = fmi2_import_instantiate_model_req_reflection_;
-  return metadata;
+::std::string fmi2_import_instantiate_model_req::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_instantiate_model_req";
 }
 
 
@@ -16123,7 +11687,7 @@ const int fmi2_import_instantiate_model_res::kStatusFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_instantiate_model_res::fmi2_import_instantiate_model_res()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -16131,7 +11695,7 @@ void fmi2_import_instantiate_model_res::InitAsDefaultInstance() {
 }
 
 fmi2_import_instantiate_model_res::fmi2_import_instantiate_model_res(const fmi2_import_instantiate_model_res& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -16148,7 +11712,11 @@ fmi2_import_instantiate_model_res::~fmi2_import_instantiate_model_res() {
 }
 
 void fmi2_import_instantiate_model_res::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -16157,13 +11725,12 @@ void fmi2_import_instantiate_model_res::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_instantiate_model_res::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_instantiate_model_res_descriptor_;
-}
-
 const fmi2_import_instantiate_model_res& fmi2_import_instantiate_model_res::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -16179,7 +11746,6 @@ void fmi2_import_instantiate_model_res::Clear() {
     status_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_instantiate_model_res::MergePartialFromCodedStream(
@@ -16214,8 +11780,6 @@ bool fmi2_import_instantiate_model_res::MergePartialFromCodedStream(
                  input, &value)));
           if (::fmitcp_proto::jm_status_enu_t_IsValid(value)) {
             set_status(static_cast< ::fmitcp_proto::jm_status_enu_t >(value));
-          } else {
-            mutable_unknown_fields()->AddVarint(2, value);
           }
         } else {
           goto handle_uninterpreted;
@@ -16230,8 +11794,7 @@ bool fmi2_import_instantiate_model_res::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -16253,30 +11816,6 @@ void fmi2_import_instantiate_model_res::SerializeWithCachedSizes(
       2, this->status(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_instantiate_model_res::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required .fmitcp_proto.jm_status_enu_t status = 2;
-  if (has_status()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      2, this->status(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_instantiate_model_res::ByteSize() const {
@@ -16297,27 +11836,15 @@ int fmi2_import_instantiate_model_res::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_instantiate_model_res::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_instantiate_model_res* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_instantiate_model_res*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_instantiate_model_res::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_instantiate_model_res*>(&from));
 }
 
 void fmi2_import_instantiate_model_res::MergeFrom(const fmi2_import_instantiate_model_res& from) {
@@ -16330,13 +11857,6 @@ void fmi2_import_instantiate_model_res::MergeFrom(const fmi2_import_instantiate_
       set_status(from.status());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_instantiate_model_res::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_instantiate_model_res::CopyFrom(const fmi2_import_instantiate_model_res& from) {
@@ -16356,17 +11876,12 @@ void fmi2_import_instantiate_model_res::Swap(fmi2_import_instantiate_model_res* 
     std::swap(message_id_, other->message_id_);
     std::swap(status_, other->status_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_instantiate_model_res::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_instantiate_model_res_descriptor_;
-  metadata.reflection = fmi2_import_instantiate_model_res_reflection_;
-  return metadata;
+::std::string fmi2_import_instantiate_model_res::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_instantiate_model_res";
 }
 
 
@@ -16378,7 +11893,7 @@ const int fmi2_import_free_model_instance_req::kFmuIdFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_free_model_instance_req::fmi2_import_free_model_instance_req()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -16386,7 +11901,7 @@ void fmi2_import_free_model_instance_req::InitAsDefaultInstance() {
 }
 
 fmi2_import_free_model_instance_req::fmi2_import_free_model_instance_req(const fmi2_import_free_model_instance_req& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -16403,7 +11918,11 @@ fmi2_import_free_model_instance_req::~fmi2_import_free_model_instance_req() {
 }
 
 void fmi2_import_free_model_instance_req::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -16412,13 +11931,12 @@ void fmi2_import_free_model_instance_req::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_free_model_instance_req::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_free_model_instance_req_descriptor_;
-}
-
 const fmi2_import_free_model_instance_req& fmi2_import_free_model_instance_req::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -16434,7 +11952,6 @@ void fmi2_import_free_model_instance_req::Clear() {
     fmuid_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_free_model_instance_req::MergePartialFromCodedStream(
@@ -16480,8 +11997,7 @@ bool fmi2_import_free_model_instance_req::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -16502,29 +12018,6 @@ void fmi2_import_free_model_instance_req::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->fmuid(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_free_model_instance_req::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required int32 fmuId = 2;
-  if (has_fmuid()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->fmuid(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_free_model_instance_req::ByteSize() const {
@@ -16546,27 +12039,15 @@ int fmi2_import_free_model_instance_req::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_free_model_instance_req::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_free_model_instance_req* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_free_model_instance_req*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_free_model_instance_req::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_free_model_instance_req*>(&from));
 }
 
 void fmi2_import_free_model_instance_req::MergeFrom(const fmi2_import_free_model_instance_req& from) {
@@ -16579,13 +12060,6 @@ void fmi2_import_free_model_instance_req::MergeFrom(const fmi2_import_free_model
       set_fmuid(from.fmuid());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_free_model_instance_req::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_free_model_instance_req::CopyFrom(const fmi2_import_free_model_instance_req& from) {
@@ -16605,17 +12079,12 @@ void fmi2_import_free_model_instance_req::Swap(fmi2_import_free_model_instance_r
     std::swap(message_id_, other->message_id_);
     std::swap(fmuid_, other->fmuid_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_free_model_instance_req::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_free_model_instance_req_descriptor_;
-  metadata.reflection = fmi2_import_free_model_instance_req_reflection_;
-  return metadata;
+::std::string fmi2_import_free_model_instance_req::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_free_model_instance_req";
 }
 
 
@@ -16626,7 +12095,7 @@ const int fmi2_import_free_model_instance_res::kMessageIdFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_free_model_instance_res::fmi2_import_free_model_instance_res()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -16634,7 +12103,7 @@ void fmi2_import_free_model_instance_res::InitAsDefaultInstance() {
 }
 
 fmi2_import_free_model_instance_res::fmi2_import_free_model_instance_res(const fmi2_import_free_model_instance_res& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -16650,7 +12119,11 @@ fmi2_import_free_model_instance_res::~fmi2_import_free_model_instance_res() {
 }
 
 void fmi2_import_free_model_instance_res::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -16659,13 +12132,12 @@ void fmi2_import_free_model_instance_res::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_free_model_instance_res::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_free_model_instance_res_descriptor_;
-}
-
 const fmi2_import_free_model_instance_res& fmi2_import_free_model_instance_res::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -16680,7 +12152,6 @@ void fmi2_import_free_model_instance_res::Clear() {
     message_id_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_free_model_instance_res::MergePartialFromCodedStream(
@@ -16710,8 +12181,7 @@ bool fmi2_import_free_model_instance_res::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -16727,24 +12197,6 @@ void fmi2_import_free_model_instance_res::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(1, this->message_id(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_free_model_instance_res::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_free_model_instance_res::ByteSize() const {
@@ -16759,27 +12211,15 @@ int fmi2_import_free_model_instance_res::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_free_model_instance_res::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_free_model_instance_res* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_free_model_instance_res*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_free_model_instance_res::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_free_model_instance_res*>(&from));
 }
 
 void fmi2_import_free_model_instance_res::MergeFrom(const fmi2_import_free_model_instance_res& from) {
@@ -16789,13 +12229,6 @@ void fmi2_import_free_model_instance_res::MergeFrom(const fmi2_import_free_model
       set_message_id(from.message_id());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_free_model_instance_res::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_free_model_instance_res::CopyFrom(const fmi2_import_free_model_instance_res& from) {
@@ -16814,17 +12247,12 @@ void fmi2_import_free_model_instance_res::Swap(fmi2_import_free_model_instance_r
   if (other != this) {
     std::swap(message_id_, other->message_id_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_free_model_instance_res::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_free_model_instance_res_descriptor_;
-  metadata.reflection = fmi2_import_free_model_instance_res_reflection_;
-  return metadata;
+::std::string fmi2_import_free_model_instance_res::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_free_model_instance_res";
 }
 
 
@@ -16837,7 +12265,7 @@ const int fmi2_import_set_time_req::kTimeFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_set_time_req::fmi2_import_set_time_req()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -16845,7 +12273,7 @@ void fmi2_import_set_time_req::InitAsDefaultInstance() {
 }
 
 fmi2_import_set_time_req::fmi2_import_set_time_req(const fmi2_import_set_time_req& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -16863,7 +12291,11 @@ fmi2_import_set_time_req::~fmi2_import_set_time_req() {
 }
 
 void fmi2_import_set_time_req::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -16872,13 +12304,12 @@ void fmi2_import_set_time_req::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_set_time_req::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_set_time_req_descriptor_;
-}
-
 const fmi2_import_set_time_req& fmi2_import_set_time_req::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -16895,7 +12326,6 @@ void fmi2_import_set_time_req::Clear() {
     time_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_set_time_req::MergePartialFromCodedStream(
@@ -16957,8 +12387,7 @@ bool fmi2_import_set_time_req::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -16984,34 +12413,6 @@ void fmi2_import_set_time_req::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteDouble(3, this->time(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_set_time_req::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required int32 fmuId = 2;
-  if (has_fmuid()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->fmuid(), target);
-  }
-
-  // required double time = 3;
-  if (has_time()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(3, this->time(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_set_time_req::ByteSize() const {
@@ -17038,27 +12439,15 @@ int fmi2_import_set_time_req::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_set_time_req::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_set_time_req* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_set_time_req*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_set_time_req::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_set_time_req*>(&from));
 }
 
 void fmi2_import_set_time_req::MergeFrom(const fmi2_import_set_time_req& from) {
@@ -17074,13 +12463,6 @@ void fmi2_import_set_time_req::MergeFrom(const fmi2_import_set_time_req& from) {
       set_time(from.time());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_set_time_req::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_set_time_req::CopyFrom(const fmi2_import_set_time_req& from) {
@@ -17101,17 +12483,12 @@ void fmi2_import_set_time_req::Swap(fmi2_import_set_time_req* other) {
     std::swap(fmuid_, other->fmuid_);
     std::swap(time_, other->time_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_set_time_req::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_set_time_req_descriptor_;
-  metadata.reflection = fmi2_import_set_time_req_reflection_;
-  return metadata;
+::std::string fmi2_import_set_time_req::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_set_time_req";
 }
 
 
@@ -17123,7 +12500,7 @@ const int fmi2_import_set_time_res::kStatusFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_set_time_res::fmi2_import_set_time_res()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -17131,7 +12508,7 @@ void fmi2_import_set_time_res::InitAsDefaultInstance() {
 }
 
 fmi2_import_set_time_res::fmi2_import_set_time_res(const fmi2_import_set_time_res& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -17148,7 +12525,11 @@ fmi2_import_set_time_res::~fmi2_import_set_time_res() {
 }
 
 void fmi2_import_set_time_res::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -17157,13 +12538,12 @@ void fmi2_import_set_time_res::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_set_time_res::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_set_time_res_descriptor_;
-}
-
 const fmi2_import_set_time_res& fmi2_import_set_time_res::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -17179,7 +12559,6 @@ void fmi2_import_set_time_res::Clear() {
     status_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_set_time_res::MergePartialFromCodedStream(
@@ -17214,8 +12593,6 @@ bool fmi2_import_set_time_res::MergePartialFromCodedStream(
                  input, &value)));
           if (::fmitcp_proto::fmi2_status_t_IsValid(value)) {
             set_status(static_cast< ::fmitcp_proto::fmi2_status_t >(value));
-          } else {
-            mutable_unknown_fields()->AddVarint(2, value);
           }
         } else {
           goto handle_uninterpreted;
@@ -17230,8 +12607,7 @@ bool fmi2_import_set_time_res::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -17253,30 +12629,6 @@ void fmi2_import_set_time_res::SerializeWithCachedSizes(
       2, this->status(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_set_time_res::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required .fmitcp_proto.fmi2_status_t status = 2;
-  if (has_status()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      2, this->status(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_set_time_res::ByteSize() const {
@@ -17297,27 +12649,15 @@ int fmi2_import_set_time_res::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_set_time_res::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_set_time_res* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_set_time_res*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_set_time_res::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_set_time_res*>(&from));
 }
 
 void fmi2_import_set_time_res::MergeFrom(const fmi2_import_set_time_res& from) {
@@ -17330,13 +12670,6 @@ void fmi2_import_set_time_res::MergeFrom(const fmi2_import_set_time_res& from) {
       set_status(from.status());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_set_time_res::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_set_time_res::CopyFrom(const fmi2_import_set_time_res& from) {
@@ -17356,17 +12689,12 @@ void fmi2_import_set_time_res::Swap(fmi2_import_set_time_res* other) {
     std::swap(message_id_, other->message_id_);
     std::swap(status_, other->status_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_set_time_res::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_set_time_res_descriptor_;
-  metadata.reflection = fmi2_import_set_time_res_reflection_;
-  return metadata;
+::std::string fmi2_import_set_time_res::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_set_time_res";
 }
 
 
@@ -17379,7 +12707,7 @@ const int fmi2_import_set_continuous_states_req::kXFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_set_continuous_states_req::fmi2_import_set_continuous_states_req()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -17387,7 +12715,7 @@ void fmi2_import_set_continuous_states_req::InitAsDefaultInstance() {
 }
 
 fmi2_import_set_continuous_states_req::fmi2_import_set_continuous_states_req(const fmi2_import_set_continuous_states_req& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -17404,7 +12732,11 @@ fmi2_import_set_continuous_states_req::~fmi2_import_set_continuous_states_req() 
 }
 
 void fmi2_import_set_continuous_states_req::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -17413,13 +12745,12 @@ void fmi2_import_set_continuous_states_req::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_set_continuous_states_req::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_set_continuous_states_req_descriptor_;
-}
-
 const fmi2_import_set_continuous_states_req& fmi2_import_set_continuous_states_req::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -17436,7 +12767,6 @@ void fmi2_import_set_continuous_states_req::Clear() {
   }
   x_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_set_continuous_states_req::MergePartialFromCodedStream(
@@ -17504,8 +12834,7 @@ bool fmi2_import_set_continuous_states_req::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -17532,35 +12861,6 @@ void fmi2_import_set_continuous_states_req::SerializeWithCachedSizes(
       3, this->x(i), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_set_continuous_states_req::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required int32 fmuId = 2;
-  if (has_fmuid()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->fmuid(), target);
-  }
-
-  // repeated double x = 3;
-  for (int i = 0; i < this->x_size(); i++) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteDoubleToArray(3, this->x(i), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_set_continuous_states_req::ByteSize() const {
@@ -17589,27 +12889,15 @@ int fmi2_import_set_continuous_states_req::ByteSize() const {
     total_size += 1 * this->x_size() + data_size;
   }
 
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_set_continuous_states_req::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_set_continuous_states_req* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_set_continuous_states_req*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_set_continuous_states_req::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_set_continuous_states_req*>(&from));
 }
 
 void fmi2_import_set_continuous_states_req::MergeFrom(const fmi2_import_set_continuous_states_req& from) {
@@ -17623,13 +12911,6 @@ void fmi2_import_set_continuous_states_req::MergeFrom(const fmi2_import_set_cont
       set_fmuid(from.fmuid());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_set_continuous_states_req::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_set_continuous_states_req::CopyFrom(const fmi2_import_set_continuous_states_req& from) {
@@ -17650,17 +12931,12 @@ void fmi2_import_set_continuous_states_req::Swap(fmi2_import_set_continuous_stat
     std::swap(fmuid_, other->fmuid_);
     x_.Swap(&other->x_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_set_continuous_states_req::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_set_continuous_states_req_descriptor_;
-  metadata.reflection = fmi2_import_set_continuous_states_req_reflection_;
-  return metadata;
+::std::string fmi2_import_set_continuous_states_req::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_set_continuous_states_req";
 }
 
 
@@ -17672,7 +12948,7 @@ const int fmi2_import_set_continuous_states_res::kStatusFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_set_continuous_states_res::fmi2_import_set_continuous_states_res()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -17680,7 +12956,7 @@ void fmi2_import_set_continuous_states_res::InitAsDefaultInstance() {
 }
 
 fmi2_import_set_continuous_states_res::fmi2_import_set_continuous_states_res(const fmi2_import_set_continuous_states_res& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -17697,7 +12973,11 @@ fmi2_import_set_continuous_states_res::~fmi2_import_set_continuous_states_res() 
 }
 
 void fmi2_import_set_continuous_states_res::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -17706,13 +12986,12 @@ void fmi2_import_set_continuous_states_res::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_set_continuous_states_res::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_set_continuous_states_res_descriptor_;
-}
-
 const fmi2_import_set_continuous_states_res& fmi2_import_set_continuous_states_res::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -17728,7 +13007,6 @@ void fmi2_import_set_continuous_states_res::Clear() {
     status_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_set_continuous_states_res::MergePartialFromCodedStream(
@@ -17763,8 +13041,6 @@ bool fmi2_import_set_continuous_states_res::MergePartialFromCodedStream(
                  input, &value)));
           if (::fmitcp_proto::fmi2_status_t_IsValid(value)) {
             set_status(static_cast< ::fmitcp_proto::fmi2_status_t >(value));
-          } else {
-            mutable_unknown_fields()->AddVarint(2, value);
           }
         } else {
           goto handle_uninterpreted;
@@ -17779,8 +13055,7 @@ bool fmi2_import_set_continuous_states_res::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -17802,30 +13077,6 @@ void fmi2_import_set_continuous_states_res::SerializeWithCachedSizes(
       2, this->status(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_set_continuous_states_res::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required .fmitcp_proto.fmi2_status_t status = 2;
-  if (has_status()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      2, this->status(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_set_continuous_states_res::ByteSize() const {
@@ -17846,27 +13097,15 @@ int fmi2_import_set_continuous_states_res::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_set_continuous_states_res::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_set_continuous_states_res* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_set_continuous_states_res*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_set_continuous_states_res::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_set_continuous_states_res*>(&from));
 }
 
 void fmi2_import_set_continuous_states_res::MergeFrom(const fmi2_import_set_continuous_states_res& from) {
@@ -17879,13 +13118,6 @@ void fmi2_import_set_continuous_states_res::MergeFrom(const fmi2_import_set_cont
       set_status(from.status());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_set_continuous_states_res::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_set_continuous_states_res::CopyFrom(const fmi2_import_set_continuous_states_res& from) {
@@ -17905,17 +13137,12 @@ void fmi2_import_set_continuous_states_res::Swap(fmi2_import_set_continuous_stat
     std::swap(message_id_, other->message_id_);
     std::swap(status_, other->status_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_set_continuous_states_res::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_set_continuous_states_res_descriptor_;
-  metadata.reflection = fmi2_import_set_continuous_states_res_reflection_;
-  return metadata;
+::std::string fmi2_import_set_continuous_states_res::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_set_continuous_states_res";
 }
 
 
@@ -17927,7 +13154,7 @@ const int fmi2_import_completed_integrator_step_req::kFmuIdFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_completed_integrator_step_req::fmi2_import_completed_integrator_step_req()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -17935,7 +13162,7 @@ void fmi2_import_completed_integrator_step_req::InitAsDefaultInstance() {
 }
 
 fmi2_import_completed_integrator_step_req::fmi2_import_completed_integrator_step_req(const fmi2_import_completed_integrator_step_req& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -17952,7 +13179,11 @@ fmi2_import_completed_integrator_step_req::~fmi2_import_completed_integrator_ste
 }
 
 void fmi2_import_completed_integrator_step_req::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -17961,13 +13192,12 @@ void fmi2_import_completed_integrator_step_req::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_completed_integrator_step_req::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_completed_integrator_step_req_descriptor_;
-}
-
 const fmi2_import_completed_integrator_step_req& fmi2_import_completed_integrator_step_req::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -17983,7 +13213,6 @@ void fmi2_import_completed_integrator_step_req::Clear() {
     fmuid_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_completed_integrator_step_req::MergePartialFromCodedStream(
@@ -18029,8 +13258,7 @@ bool fmi2_import_completed_integrator_step_req::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -18051,29 +13279,6 @@ void fmi2_import_completed_integrator_step_req::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->fmuid(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_completed_integrator_step_req::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required int32 fmuId = 2;
-  if (has_fmuid()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->fmuid(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_completed_integrator_step_req::ByteSize() const {
@@ -18095,27 +13300,15 @@ int fmi2_import_completed_integrator_step_req::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_completed_integrator_step_req::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_completed_integrator_step_req* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_completed_integrator_step_req*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_completed_integrator_step_req::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_completed_integrator_step_req*>(&from));
 }
 
 void fmi2_import_completed_integrator_step_req::MergeFrom(const fmi2_import_completed_integrator_step_req& from) {
@@ -18128,13 +13321,6 @@ void fmi2_import_completed_integrator_step_req::MergeFrom(const fmi2_import_comp
       set_fmuid(from.fmuid());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_completed_integrator_step_req::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_completed_integrator_step_req::CopyFrom(const fmi2_import_completed_integrator_step_req& from) {
@@ -18154,17 +13340,12 @@ void fmi2_import_completed_integrator_step_req::Swap(fmi2_import_completed_integ
     std::swap(message_id_, other->message_id_);
     std::swap(fmuid_, other->fmuid_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_completed_integrator_step_req::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_completed_integrator_step_req_descriptor_;
-  metadata.reflection = fmi2_import_completed_integrator_step_req_reflection_;
-  return metadata;
+::std::string fmi2_import_completed_integrator_step_req::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_completed_integrator_step_req";
 }
 
 
@@ -18177,7 +13358,7 @@ const int fmi2_import_completed_integrator_step_res::kStatusFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_completed_integrator_step_res::fmi2_import_completed_integrator_step_res()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -18185,7 +13366,7 @@ void fmi2_import_completed_integrator_step_res::InitAsDefaultInstance() {
 }
 
 fmi2_import_completed_integrator_step_res::fmi2_import_completed_integrator_step_res(const fmi2_import_completed_integrator_step_res& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -18203,7 +13384,11 @@ fmi2_import_completed_integrator_step_res::~fmi2_import_completed_integrator_ste
 }
 
 void fmi2_import_completed_integrator_step_res::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -18212,13 +13397,12 @@ void fmi2_import_completed_integrator_step_res::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_completed_integrator_step_res::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_completed_integrator_step_res_descriptor_;
-}
-
 const fmi2_import_completed_integrator_step_res& fmi2_import_completed_integrator_step_res::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -18235,7 +13419,6 @@ void fmi2_import_completed_integrator_step_res::Clear() {
     status_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_completed_integrator_step_res::MergePartialFromCodedStream(
@@ -18286,8 +13469,6 @@ bool fmi2_import_completed_integrator_step_res::MergePartialFromCodedStream(
                  input, &value)));
           if (::fmitcp_proto::fmi2_status_t_IsValid(value)) {
             set_status(static_cast< ::fmitcp_proto::fmi2_status_t >(value));
-          } else {
-            mutable_unknown_fields()->AddVarint(3, value);
           }
         } else {
           goto handle_uninterpreted;
@@ -18302,8 +13483,7 @@ bool fmi2_import_completed_integrator_step_res::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -18330,35 +13510,6 @@ void fmi2_import_completed_integrator_step_res::SerializeWithCachedSizes(
       3, this->status(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_completed_integrator_step_res::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required bool callEventUpdate = 2;
-  if (has_calleventupdate()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(2, this->calleventupdate(), target);
-  }
-
-  // required .fmitcp_proto.fmi2_status_t status = 3;
-  if (has_status()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      3, this->status(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_completed_integrator_step_res::ByteSize() const {
@@ -18384,27 +13535,15 @@ int fmi2_import_completed_integrator_step_res::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_completed_integrator_step_res::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_completed_integrator_step_res* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_completed_integrator_step_res*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_completed_integrator_step_res::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_completed_integrator_step_res*>(&from));
 }
 
 void fmi2_import_completed_integrator_step_res::MergeFrom(const fmi2_import_completed_integrator_step_res& from) {
@@ -18420,13 +13559,6 @@ void fmi2_import_completed_integrator_step_res::MergeFrom(const fmi2_import_comp
       set_status(from.status());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_completed_integrator_step_res::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_completed_integrator_step_res::CopyFrom(const fmi2_import_completed_integrator_step_res& from) {
@@ -18447,17 +13579,12 @@ void fmi2_import_completed_integrator_step_res::Swap(fmi2_import_completed_integ
     std::swap(calleventupdate_, other->calleventupdate_);
     std::swap(status_, other->status_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_completed_integrator_step_res::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_completed_integrator_step_res_descriptor_;
-  metadata.reflection = fmi2_import_completed_integrator_step_res_reflection_;
-  return metadata;
+::std::string fmi2_import_completed_integrator_step_res::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_completed_integrator_step_res";
 }
 
 
@@ -18471,7 +13598,7 @@ const int fmi2_import_initialize_model_req::kRelativeToleranceFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_initialize_model_req::fmi2_import_initialize_model_req()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -18479,7 +13606,7 @@ void fmi2_import_initialize_model_req::InitAsDefaultInstance() {
 }
 
 fmi2_import_initialize_model_req::fmi2_import_initialize_model_req(const fmi2_import_initialize_model_req& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -18498,7 +13625,11 @@ fmi2_import_initialize_model_req::~fmi2_import_initialize_model_req() {
 }
 
 void fmi2_import_initialize_model_req::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -18507,13 +13638,12 @@ void fmi2_import_initialize_model_req::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_initialize_model_req::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_initialize_model_req_descriptor_;
-}
-
 const fmi2_import_initialize_model_req& fmi2_import_initialize_model_req::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -18531,7 +13661,6 @@ void fmi2_import_initialize_model_req::Clear() {
     relativetolerance_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_initialize_model_req::MergePartialFromCodedStream(
@@ -18609,8 +13738,7 @@ bool fmi2_import_initialize_model_req::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -18641,39 +13769,6 @@ void fmi2_import_initialize_model_req::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteDouble(4, this->relativetolerance(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_initialize_model_req::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required int32 fmuId = 2;
-  if (has_fmuid()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->fmuid(), target);
-  }
-
-  // required bool toleranceControlled = 3;
-  if (has_tolerancecontrolled()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(3, this->tolerancecontrolled(), target);
-  }
-
-  // required double relativeTolerance = 4;
-  if (has_relativetolerance()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteDoubleToArray(4, this->relativetolerance(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_initialize_model_req::ByteSize() const {
@@ -18705,27 +13800,15 @@ int fmi2_import_initialize_model_req::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_initialize_model_req::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_initialize_model_req* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_initialize_model_req*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_initialize_model_req::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_initialize_model_req*>(&from));
 }
 
 void fmi2_import_initialize_model_req::MergeFrom(const fmi2_import_initialize_model_req& from) {
@@ -18744,13 +13827,6 @@ void fmi2_import_initialize_model_req::MergeFrom(const fmi2_import_initialize_mo
       set_relativetolerance(from.relativetolerance());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_initialize_model_req::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_initialize_model_req::CopyFrom(const fmi2_import_initialize_model_req& from) {
@@ -18772,17 +13848,12 @@ void fmi2_import_initialize_model_req::Swap(fmi2_import_initialize_model_req* ot
     std::swap(tolerancecontrolled_, other->tolerancecontrolled_);
     std::swap(relativetolerance_, other->relativetolerance_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_initialize_model_req::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_initialize_model_req_descriptor_;
-  metadata.reflection = fmi2_import_initialize_model_req_reflection_;
-  return metadata;
+::std::string fmi2_import_initialize_model_req::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_initialize_model_req";
 }
 
 
@@ -18795,16 +13866,21 @@ const int fmi2_import_initialize_model_res::kStatusFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_initialize_model_res::fmi2_import_initialize_model_res()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
 void fmi2_import_initialize_model_res::InitAsDefaultInstance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  eventinfo_ = const_cast< ::fmitcp_proto::fmi2_event_info_t*>(
+      ::fmitcp_proto::fmi2_event_info_t::internal_default_instance());
+#else
   eventinfo_ = const_cast< ::fmitcp_proto::fmi2_event_info_t*>(&::fmitcp_proto::fmi2_event_info_t::default_instance());
+#endif
 }
 
 fmi2_import_initialize_model_res::fmi2_import_initialize_model_res(const fmi2_import_initialize_model_res& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -18822,7 +13898,11 @@ fmi2_import_initialize_model_res::~fmi2_import_initialize_model_res() {
 }
 
 void fmi2_import_initialize_model_res::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
     delete eventinfo_;
   }
 }
@@ -18832,13 +13912,12 @@ void fmi2_import_initialize_model_res::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_initialize_model_res::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_initialize_model_res_descriptor_;
-}
-
 const fmi2_import_initialize_model_res& fmi2_import_initialize_model_res::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -18857,7 +13936,6 @@ void fmi2_import_initialize_model_res::Clear() {
     status_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_initialize_model_res::MergePartialFromCodedStream(
@@ -18906,8 +13984,6 @@ bool fmi2_import_initialize_model_res::MergePartialFromCodedStream(
                  input, &value)));
           if (::fmitcp_proto::fmi2_status_t_IsValid(value)) {
             set_status(static_cast< ::fmitcp_proto::fmi2_status_t >(value));
-          } else {
-            mutable_unknown_fields()->AddVarint(3, value);
           }
         } else {
           goto handle_uninterpreted;
@@ -18922,8 +13998,7 @@ bool fmi2_import_initialize_model_res::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -18941,7 +14016,7 @@ void fmi2_import_initialize_model_res::SerializeWithCachedSizes(
 
   // required .fmitcp_proto.fmi2_event_info_t eventInfo = 2;
   if (has_eventinfo()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       2, this->eventinfo(), output);
   }
 
@@ -18951,37 +14026,6 @@ void fmi2_import_initialize_model_res::SerializeWithCachedSizes(
       3, this->status(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_initialize_model_res::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required .fmitcp_proto.fmi2_event_info_t eventInfo = 2;
-  if (has_eventinfo()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        2, this->eventinfo(), target);
-  }
-
-  // required .fmitcp_proto.fmi2_status_t status = 3;
-  if (has_status()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      3, this->status(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_initialize_model_res::ByteSize() const {
@@ -19009,27 +14053,15 @@ int fmi2_import_initialize_model_res::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_initialize_model_res::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_initialize_model_res* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_initialize_model_res*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_initialize_model_res::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_initialize_model_res*>(&from));
 }
 
 void fmi2_import_initialize_model_res::MergeFrom(const fmi2_import_initialize_model_res& from) {
@@ -19045,13 +14077,6 @@ void fmi2_import_initialize_model_res::MergeFrom(const fmi2_import_initialize_mo
       set_status(from.status());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_initialize_model_res::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_initialize_model_res::CopyFrom(const fmi2_import_initialize_model_res& from) {
@@ -19075,17 +14100,12 @@ void fmi2_import_initialize_model_res::Swap(fmi2_import_initialize_model_res* ot
     std::swap(eventinfo_, other->eventinfo_);
     std::swap(status_, other->status_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_initialize_model_res::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_initialize_model_res_descriptor_;
-  metadata.reflection = fmi2_import_initialize_model_res_reflection_;
-  return metadata;
+::std::string fmi2_import_initialize_model_res::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_initialize_model_res";
 }
 
 
@@ -19097,7 +14117,7 @@ const int fmi2_import_get_derivatives_req::kFmuIdFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_get_derivatives_req::fmi2_import_get_derivatives_req()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -19105,7 +14125,7 @@ void fmi2_import_get_derivatives_req::InitAsDefaultInstance() {
 }
 
 fmi2_import_get_derivatives_req::fmi2_import_get_derivatives_req(const fmi2_import_get_derivatives_req& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -19122,7 +14142,11 @@ fmi2_import_get_derivatives_req::~fmi2_import_get_derivatives_req() {
 }
 
 void fmi2_import_get_derivatives_req::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -19131,13 +14155,12 @@ void fmi2_import_get_derivatives_req::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_get_derivatives_req::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_get_derivatives_req_descriptor_;
-}
-
 const fmi2_import_get_derivatives_req& fmi2_import_get_derivatives_req::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -19153,7 +14176,6 @@ void fmi2_import_get_derivatives_req::Clear() {
     fmuid_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_get_derivatives_req::MergePartialFromCodedStream(
@@ -19199,8 +14221,7 @@ bool fmi2_import_get_derivatives_req::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -19221,29 +14242,6 @@ void fmi2_import_get_derivatives_req::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->fmuid(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_get_derivatives_req::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required int32 fmuId = 2;
-  if (has_fmuid()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->fmuid(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_get_derivatives_req::ByteSize() const {
@@ -19265,27 +14263,15 @@ int fmi2_import_get_derivatives_req::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_get_derivatives_req::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_get_derivatives_req* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_get_derivatives_req*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_get_derivatives_req::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_get_derivatives_req*>(&from));
 }
 
 void fmi2_import_get_derivatives_req::MergeFrom(const fmi2_import_get_derivatives_req& from) {
@@ -19298,13 +14284,6 @@ void fmi2_import_get_derivatives_req::MergeFrom(const fmi2_import_get_derivative
       set_fmuid(from.fmuid());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_get_derivatives_req::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_get_derivatives_req::CopyFrom(const fmi2_import_get_derivatives_req& from) {
@@ -19324,17 +14303,12 @@ void fmi2_import_get_derivatives_req::Swap(fmi2_import_get_derivatives_req* othe
     std::swap(message_id_, other->message_id_);
     std::swap(fmuid_, other->fmuid_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_get_derivatives_req::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_get_derivatives_req_descriptor_;
-  metadata.reflection = fmi2_import_get_derivatives_req_reflection_;
-  return metadata;
+::std::string fmi2_import_get_derivatives_req::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_get_derivatives_req";
 }
 
 
@@ -19347,7 +14321,7 @@ const int fmi2_import_get_derivatives_res::kStatusFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_get_derivatives_res::fmi2_import_get_derivatives_res()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -19355,7 +14329,7 @@ void fmi2_import_get_derivatives_res::InitAsDefaultInstance() {
 }
 
 fmi2_import_get_derivatives_res::fmi2_import_get_derivatives_res(const fmi2_import_get_derivatives_res& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -19372,7 +14346,11 @@ fmi2_import_get_derivatives_res::~fmi2_import_get_derivatives_res() {
 }
 
 void fmi2_import_get_derivatives_res::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -19381,13 +14359,12 @@ void fmi2_import_get_derivatives_res::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_get_derivatives_res::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_get_derivatives_res_descriptor_;
-}
-
 const fmi2_import_get_derivatives_res& fmi2_import_get_derivatives_res::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -19404,7 +14381,6 @@ void fmi2_import_get_derivatives_res::Clear() {
   }
   derivatives_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_get_derivatives_res::MergePartialFromCodedStream(
@@ -19461,8 +14437,6 @@ bool fmi2_import_get_derivatives_res::MergePartialFromCodedStream(
                  input, &value)));
           if (::fmitcp_proto::fmi2_status_t_IsValid(value)) {
             set_status(static_cast< ::fmitcp_proto::fmi2_status_t >(value));
-          } else {
-            mutable_unknown_fields()->AddVarint(3, value);
           }
         } else {
           goto handle_uninterpreted;
@@ -19477,8 +14451,7 @@ bool fmi2_import_get_derivatives_res::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -19506,36 +14479,6 @@ void fmi2_import_get_derivatives_res::SerializeWithCachedSizes(
       3, this->status(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_get_derivatives_res::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // repeated double derivatives = 2;
-  for (int i = 0; i < this->derivatives_size(); i++) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteDoubleToArray(2, this->derivatives(i), target);
-  }
-
-  // required .fmitcp_proto.fmi2_status_t status = 3;
-  if (has_status()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      3, this->status(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_get_derivatives_res::ByteSize() const {
@@ -19563,27 +14506,15 @@ int fmi2_import_get_derivatives_res::ByteSize() const {
     total_size += 1 * this->derivatives_size() + data_size;
   }
 
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_get_derivatives_res::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_get_derivatives_res* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_get_derivatives_res*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_get_derivatives_res::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_get_derivatives_res*>(&from));
 }
 
 void fmi2_import_get_derivatives_res::MergeFrom(const fmi2_import_get_derivatives_res& from) {
@@ -19597,13 +14528,6 @@ void fmi2_import_get_derivatives_res::MergeFrom(const fmi2_import_get_derivative
       set_status(from.status());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_get_derivatives_res::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_get_derivatives_res::CopyFrom(const fmi2_import_get_derivatives_res& from) {
@@ -19624,17 +14548,12 @@ void fmi2_import_get_derivatives_res::Swap(fmi2_import_get_derivatives_res* othe
     derivatives_.Swap(&other->derivatives_);
     std::swap(status_, other->status_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_get_derivatives_res::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_get_derivatives_res_descriptor_;
-  metadata.reflection = fmi2_import_get_derivatives_res_reflection_;
-  return metadata;
+::std::string fmi2_import_get_derivatives_res::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_get_derivatives_res";
 }
 
 
@@ -19646,7 +14565,7 @@ const int fmi2_import_get_event_indicators_req::kFmuIdFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_get_event_indicators_req::fmi2_import_get_event_indicators_req()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -19654,7 +14573,7 @@ void fmi2_import_get_event_indicators_req::InitAsDefaultInstance() {
 }
 
 fmi2_import_get_event_indicators_req::fmi2_import_get_event_indicators_req(const fmi2_import_get_event_indicators_req& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -19671,7 +14590,11 @@ fmi2_import_get_event_indicators_req::~fmi2_import_get_event_indicators_req() {
 }
 
 void fmi2_import_get_event_indicators_req::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -19680,13 +14603,12 @@ void fmi2_import_get_event_indicators_req::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_get_event_indicators_req::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_get_event_indicators_req_descriptor_;
-}
-
 const fmi2_import_get_event_indicators_req& fmi2_import_get_event_indicators_req::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -19702,7 +14624,6 @@ void fmi2_import_get_event_indicators_req::Clear() {
     fmuid_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_get_event_indicators_req::MergePartialFromCodedStream(
@@ -19748,8 +14669,7 @@ bool fmi2_import_get_event_indicators_req::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -19770,29 +14690,6 @@ void fmi2_import_get_event_indicators_req::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->fmuid(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_get_event_indicators_req::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required int32 fmuId = 2;
-  if (has_fmuid()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->fmuid(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_get_event_indicators_req::ByteSize() const {
@@ -19814,27 +14711,15 @@ int fmi2_import_get_event_indicators_req::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_get_event_indicators_req::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_get_event_indicators_req* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_get_event_indicators_req*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_get_event_indicators_req::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_get_event_indicators_req*>(&from));
 }
 
 void fmi2_import_get_event_indicators_req::MergeFrom(const fmi2_import_get_event_indicators_req& from) {
@@ -19847,13 +14732,6 @@ void fmi2_import_get_event_indicators_req::MergeFrom(const fmi2_import_get_event
       set_fmuid(from.fmuid());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_get_event_indicators_req::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_get_event_indicators_req::CopyFrom(const fmi2_import_get_event_indicators_req& from) {
@@ -19873,17 +14751,12 @@ void fmi2_import_get_event_indicators_req::Swap(fmi2_import_get_event_indicators
     std::swap(message_id_, other->message_id_);
     std::swap(fmuid_, other->fmuid_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_get_event_indicators_req::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_get_event_indicators_req_descriptor_;
-  metadata.reflection = fmi2_import_get_event_indicators_req_reflection_;
-  return metadata;
+::std::string fmi2_import_get_event_indicators_req::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_get_event_indicators_req";
 }
 
 
@@ -19896,7 +14769,7 @@ const int fmi2_import_get_event_indicators_res::kStatusFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_get_event_indicators_res::fmi2_import_get_event_indicators_res()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -19904,7 +14777,7 @@ void fmi2_import_get_event_indicators_res::InitAsDefaultInstance() {
 }
 
 fmi2_import_get_event_indicators_res::fmi2_import_get_event_indicators_res(const fmi2_import_get_event_indicators_res& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -19921,7 +14794,11 @@ fmi2_import_get_event_indicators_res::~fmi2_import_get_event_indicators_res() {
 }
 
 void fmi2_import_get_event_indicators_res::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -19930,13 +14807,12 @@ void fmi2_import_get_event_indicators_res::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_get_event_indicators_res::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_get_event_indicators_res_descriptor_;
-}
-
 const fmi2_import_get_event_indicators_res& fmi2_import_get_event_indicators_res::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -19953,7 +14829,6 @@ void fmi2_import_get_event_indicators_res::Clear() {
   }
   eventindicators_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_get_event_indicators_res::MergePartialFromCodedStream(
@@ -20010,8 +14885,6 @@ bool fmi2_import_get_event_indicators_res::MergePartialFromCodedStream(
                  input, &value)));
           if (::fmitcp_proto::fmi2_status_t_IsValid(value)) {
             set_status(static_cast< ::fmitcp_proto::fmi2_status_t >(value));
-          } else {
-            mutable_unknown_fields()->AddVarint(3, value);
           }
         } else {
           goto handle_uninterpreted;
@@ -20026,8 +14899,7 @@ bool fmi2_import_get_event_indicators_res::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -20055,36 +14927,6 @@ void fmi2_import_get_event_indicators_res::SerializeWithCachedSizes(
       3, this->status(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_get_event_indicators_res::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // repeated double eventIndicators = 2;
-  for (int i = 0; i < this->eventindicators_size(); i++) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteDoubleToArray(2, this->eventindicators(i), target);
-  }
-
-  // required .fmitcp_proto.fmi2_status_t status = 3;
-  if (has_status()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      3, this->status(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_get_event_indicators_res::ByteSize() const {
@@ -20112,27 +14954,15 @@ int fmi2_import_get_event_indicators_res::ByteSize() const {
     total_size += 1 * this->eventindicators_size() + data_size;
   }
 
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_get_event_indicators_res::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_get_event_indicators_res* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_get_event_indicators_res*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_get_event_indicators_res::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_get_event_indicators_res*>(&from));
 }
 
 void fmi2_import_get_event_indicators_res::MergeFrom(const fmi2_import_get_event_indicators_res& from) {
@@ -20146,13 +14976,6 @@ void fmi2_import_get_event_indicators_res::MergeFrom(const fmi2_import_get_event
       set_status(from.status());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_get_event_indicators_res::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_get_event_indicators_res::CopyFrom(const fmi2_import_get_event_indicators_res& from) {
@@ -20173,17 +14996,12 @@ void fmi2_import_get_event_indicators_res::Swap(fmi2_import_get_event_indicators
     eventindicators_.Swap(&other->eventindicators_);
     std::swap(status_, other->status_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_get_event_indicators_res::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_get_event_indicators_res_descriptor_;
-  metadata.reflection = fmi2_import_get_event_indicators_res_reflection_;
-  return metadata;
+::std::string fmi2_import_get_event_indicators_res::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_get_event_indicators_res";
 }
 
 
@@ -20196,7 +15014,7 @@ const int fmi2_import_eventUpdate_req::kIntermediateResultsFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_eventUpdate_req::fmi2_import_eventUpdate_req()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -20204,7 +15022,7 @@ void fmi2_import_eventUpdate_req::InitAsDefaultInstance() {
 }
 
 fmi2_import_eventUpdate_req::fmi2_import_eventUpdate_req(const fmi2_import_eventUpdate_req& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -20222,7 +15040,11 @@ fmi2_import_eventUpdate_req::~fmi2_import_eventUpdate_req() {
 }
 
 void fmi2_import_eventUpdate_req::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -20231,13 +15053,12 @@ void fmi2_import_eventUpdate_req::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_eventUpdate_req::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_eventUpdate_req_descriptor_;
-}
-
 const fmi2_import_eventUpdate_req& fmi2_import_eventUpdate_req::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -20254,7 +15075,6 @@ void fmi2_import_eventUpdate_req::Clear() {
     intermediateresults_ = false;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_eventUpdate_req::MergePartialFromCodedStream(
@@ -20316,8 +15136,7 @@ bool fmi2_import_eventUpdate_req::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -20343,34 +15162,6 @@ void fmi2_import_eventUpdate_req::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteBool(3, this->intermediateresults(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_eventUpdate_req::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required int32 fmuId = 2;
-  if (has_fmuid()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->fmuid(), target);
-  }
-
-  // required bool intermediateResults = 3;
-  if (has_intermediateresults()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(3, this->intermediateresults(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_eventUpdate_req::ByteSize() const {
@@ -20397,27 +15188,15 @@ int fmi2_import_eventUpdate_req::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_eventUpdate_req::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_eventUpdate_req* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_eventUpdate_req*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_eventUpdate_req::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_eventUpdate_req*>(&from));
 }
 
 void fmi2_import_eventUpdate_req::MergeFrom(const fmi2_import_eventUpdate_req& from) {
@@ -20433,13 +15212,6 @@ void fmi2_import_eventUpdate_req::MergeFrom(const fmi2_import_eventUpdate_req& f
       set_intermediateresults(from.intermediateresults());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_eventUpdate_req::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_eventUpdate_req::CopyFrom(const fmi2_import_eventUpdate_req& from) {
@@ -20460,17 +15232,12 @@ void fmi2_import_eventUpdate_req::Swap(fmi2_import_eventUpdate_req* other) {
     std::swap(fmuid_, other->fmuid_);
     std::swap(intermediateresults_, other->intermediateresults_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_eventUpdate_req::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_eventUpdate_req_descriptor_;
-  metadata.reflection = fmi2_import_eventUpdate_req_reflection_;
-  return metadata;
+::std::string fmi2_import_eventUpdate_req::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_eventUpdate_req";
 }
 
 
@@ -20483,16 +15250,21 @@ const int fmi2_import_eventUpdate_res::kStatusFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_eventUpdate_res::fmi2_import_eventUpdate_res()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
 void fmi2_import_eventUpdate_res::InitAsDefaultInstance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  eventinfo_ = const_cast< ::fmitcp_proto::fmi2_event_info_t*>(
+      ::fmitcp_proto::fmi2_event_info_t::internal_default_instance());
+#else
   eventinfo_ = const_cast< ::fmitcp_proto::fmi2_event_info_t*>(&::fmitcp_proto::fmi2_event_info_t::default_instance());
+#endif
 }
 
 fmi2_import_eventUpdate_res::fmi2_import_eventUpdate_res(const fmi2_import_eventUpdate_res& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -20510,7 +15282,11 @@ fmi2_import_eventUpdate_res::~fmi2_import_eventUpdate_res() {
 }
 
 void fmi2_import_eventUpdate_res::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
     delete eventinfo_;
   }
 }
@@ -20520,13 +15296,12 @@ void fmi2_import_eventUpdate_res::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_eventUpdate_res::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_eventUpdate_res_descriptor_;
-}
-
 const fmi2_import_eventUpdate_res& fmi2_import_eventUpdate_res::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -20545,7 +15320,6 @@ void fmi2_import_eventUpdate_res::Clear() {
     status_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_eventUpdate_res::MergePartialFromCodedStream(
@@ -20594,8 +15368,6 @@ bool fmi2_import_eventUpdate_res::MergePartialFromCodedStream(
                  input, &value)));
           if (::fmitcp_proto::fmi2_status_t_IsValid(value)) {
             set_status(static_cast< ::fmitcp_proto::fmi2_status_t >(value));
-          } else {
-            mutable_unknown_fields()->AddVarint(3, value);
           }
         } else {
           goto handle_uninterpreted;
@@ -20610,8 +15382,7 @@ bool fmi2_import_eventUpdate_res::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -20629,7 +15400,7 @@ void fmi2_import_eventUpdate_res::SerializeWithCachedSizes(
 
   // required .fmitcp_proto.fmi2_event_info_t eventInfo = 2;
   if (has_eventinfo()) {
-    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+    ::google::protobuf::internal::WireFormatLite::WriteMessage(
       2, this->eventinfo(), output);
   }
 
@@ -20639,37 +15410,6 @@ void fmi2_import_eventUpdate_res::SerializeWithCachedSizes(
       3, this->status(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_eventUpdate_res::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required .fmitcp_proto.fmi2_event_info_t eventInfo = 2;
-  if (has_eventinfo()) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        2, this->eventinfo(), target);
-  }
-
-  // required .fmitcp_proto.fmi2_status_t status = 3;
-  if (has_status()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      3, this->status(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_eventUpdate_res::ByteSize() const {
@@ -20697,27 +15437,15 @@ int fmi2_import_eventUpdate_res::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_eventUpdate_res::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_eventUpdate_res* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_eventUpdate_res*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_eventUpdate_res::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_eventUpdate_res*>(&from));
 }
 
 void fmi2_import_eventUpdate_res::MergeFrom(const fmi2_import_eventUpdate_res& from) {
@@ -20733,13 +15461,6 @@ void fmi2_import_eventUpdate_res::MergeFrom(const fmi2_import_eventUpdate_res& f
       set_status(from.status());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_eventUpdate_res::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_eventUpdate_res::CopyFrom(const fmi2_import_eventUpdate_res& from) {
@@ -20763,17 +15484,12 @@ void fmi2_import_eventUpdate_res::Swap(fmi2_import_eventUpdate_res* other) {
     std::swap(eventinfo_, other->eventinfo_);
     std::swap(status_, other->status_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_eventUpdate_res::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_eventUpdate_res_descriptor_;
-  metadata.reflection = fmi2_import_eventUpdate_res_reflection_;
-  return metadata;
+::std::string fmi2_import_eventUpdate_res::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_eventUpdate_res";
 }
 
 
@@ -20785,7 +15501,7 @@ const int fmi2_import_completed_event_iteration_req::kFmuIdFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_completed_event_iteration_req::fmi2_import_completed_event_iteration_req()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -20793,7 +15509,7 @@ void fmi2_import_completed_event_iteration_req::InitAsDefaultInstance() {
 }
 
 fmi2_import_completed_event_iteration_req::fmi2_import_completed_event_iteration_req(const fmi2_import_completed_event_iteration_req& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -20810,7 +15526,11 @@ fmi2_import_completed_event_iteration_req::~fmi2_import_completed_event_iteratio
 }
 
 void fmi2_import_completed_event_iteration_req::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -20819,13 +15539,12 @@ void fmi2_import_completed_event_iteration_req::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_completed_event_iteration_req::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_completed_event_iteration_req_descriptor_;
-}
-
 const fmi2_import_completed_event_iteration_req& fmi2_import_completed_event_iteration_req::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -20841,7 +15560,6 @@ void fmi2_import_completed_event_iteration_req::Clear() {
     fmuid_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_completed_event_iteration_req::MergePartialFromCodedStream(
@@ -20887,8 +15605,7 @@ bool fmi2_import_completed_event_iteration_req::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -20909,29 +15626,6 @@ void fmi2_import_completed_event_iteration_req::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->fmuid(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_completed_event_iteration_req::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required int32 fmuId = 2;
-  if (has_fmuid()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->fmuid(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_completed_event_iteration_req::ByteSize() const {
@@ -20953,27 +15647,15 @@ int fmi2_import_completed_event_iteration_req::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_completed_event_iteration_req::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_completed_event_iteration_req* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_completed_event_iteration_req*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_completed_event_iteration_req::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_completed_event_iteration_req*>(&from));
 }
 
 void fmi2_import_completed_event_iteration_req::MergeFrom(const fmi2_import_completed_event_iteration_req& from) {
@@ -20986,13 +15668,6 @@ void fmi2_import_completed_event_iteration_req::MergeFrom(const fmi2_import_comp
       set_fmuid(from.fmuid());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_completed_event_iteration_req::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_completed_event_iteration_req::CopyFrom(const fmi2_import_completed_event_iteration_req& from) {
@@ -21012,17 +15687,12 @@ void fmi2_import_completed_event_iteration_req::Swap(fmi2_import_completed_event
     std::swap(message_id_, other->message_id_);
     std::swap(fmuid_, other->fmuid_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_completed_event_iteration_req::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_completed_event_iteration_req_descriptor_;
-  metadata.reflection = fmi2_import_completed_event_iteration_req_reflection_;
-  return metadata;
+::std::string fmi2_import_completed_event_iteration_req::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_completed_event_iteration_req";
 }
 
 
@@ -21034,7 +15704,7 @@ const int fmi2_import_completed_event_iteration_res::kStatusFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_completed_event_iteration_res::fmi2_import_completed_event_iteration_res()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -21042,7 +15712,7 @@ void fmi2_import_completed_event_iteration_res::InitAsDefaultInstance() {
 }
 
 fmi2_import_completed_event_iteration_res::fmi2_import_completed_event_iteration_res(const fmi2_import_completed_event_iteration_res& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -21059,7 +15729,11 @@ fmi2_import_completed_event_iteration_res::~fmi2_import_completed_event_iteratio
 }
 
 void fmi2_import_completed_event_iteration_res::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -21068,13 +15742,12 @@ void fmi2_import_completed_event_iteration_res::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_completed_event_iteration_res::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_completed_event_iteration_res_descriptor_;
-}
-
 const fmi2_import_completed_event_iteration_res& fmi2_import_completed_event_iteration_res::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -21090,7 +15763,6 @@ void fmi2_import_completed_event_iteration_res::Clear() {
     status_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_completed_event_iteration_res::MergePartialFromCodedStream(
@@ -21125,8 +15797,6 @@ bool fmi2_import_completed_event_iteration_res::MergePartialFromCodedStream(
                  input, &value)));
           if (::fmitcp_proto::fmi2_status_t_IsValid(value)) {
             set_status(static_cast< ::fmitcp_proto::fmi2_status_t >(value));
-          } else {
-            mutable_unknown_fields()->AddVarint(2, value);
           }
         } else {
           goto handle_uninterpreted;
@@ -21141,8 +15811,7 @@ bool fmi2_import_completed_event_iteration_res::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -21164,30 +15833,6 @@ void fmi2_import_completed_event_iteration_res::SerializeWithCachedSizes(
       2, this->status(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_completed_event_iteration_res::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required .fmitcp_proto.fmi2_status_t status = 2;
-  if (has_status()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      2, this->status(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_completed_event_iteration_res::ByteSize() const {
@@ -21208,27 +15853,15 @@ int fmi2_import_completed_event_iteration_res::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_completed_event_iteration_res::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_completed_event_iteration_res* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_completed_event_iteration_res*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_completed_event_iteration_res::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_completed_event_iteration_res*>(&from));
 }
 
 void fmi2_import_completed_event_iteration_res::MergeFrom(const fmi2_import_completed_event_iteration_res& from) {
@@ -21241,13 +15874,6 @@ void fmi2_import_completed_event_iteration_res::MergeFrom(const fmi2_import_comp
       set_status(from.status());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_completed_event_iteration_res::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_completed_event_iteration_res::CopyFrom(const fmi2_import_completed_event_iteration_res& from) {
@@ -21267,17 +15893,12 @@ void fmi2_import_completed_event_iteration_res::Swap(fmi2_import_completed_event
     std::swap(message_id_, other->message_id_);
     std::swap(status_, other->status_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_completed_event_iteration_res::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_completed_event_iteration_res_descriptor_;
-  metadata.reflection = fmi2_import_completed_event_iteration_res_reflection_;
-  return metadata;
+::std::string fmi2_import_completed_event_iteration_res::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_completed_event_iteration_res";
 }
 
 
@@ -21289,7 +15910,7 @@ const int fmi2_import_get_continuous_states_req::kFmuIdFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_get_continuous_states_req::fmi2_import_get_continuous_states_req()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -21297,7 +15918,7 @@ void fmi2_import_get_continuous_states_req::InitAsDefaultInstance() {
 }
 
 fmi2_import_get_continuous_states_req::fmi2_import_get_continuous_states_req(const fmi2_import_get_continuous_states_req& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -21314,7 +15935,11 @@ fmi2_import_get_continuous_states_req::~fmi2_import_get_continuous_states_req() 
 }
 
 void fmi2_import_get_continuous_states_req::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -21323,13 +15948,12 @@ void fmi2_import_get_continuous_states_req::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_get_continuous_states_req::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_get_continuous_states_req_descriptor_;
-}
-
 const fmi2_import_get_continuous_states_req& fmi2_import_get_continuous_states_req::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -21345,7 +15969,6 @@ void fmi2_import_get_continuous_states_req::Clear() {
     fmuid_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_get_continuous_states_req::MergePartialFromCodedStream(
@@ -21391,8 +16014,7 @@ bool fmi2_import_get_continuous_states_req::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -21413,29 +16035,6 @@ void fmi2_import_get_continuous_states_req::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->fmuid(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_get_continuous_states_req::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required int32 fmuId = 2;
-  if (has_fmuid()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->fmuid(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_get_continuous_states_req::ByteSize() const {
@@ -21457,27 +16056,15 @@ int fmi2_import_get_continuous_states_req::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_get_continuous_states_req::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_get_continuous_states_req* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_get_continuous_states_req*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_get_continuous_states_req::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_get_continuous_states_req*>(&from));
 }
 
 void fmi2_import_get_continuous_states_req::MergeFrom(const fmi2_import_get_continuous_states_req& from) {
@@ -21490,13 +16077,6 @@ void fmi2_import_get_continuous_states_req::MergeFrom(const fmi2_import_get_cont
       set_fmuid(from.fmuid());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_get_continuous_states_req::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_get_continuous_states_req::CopyFrom(const fmi2_import_get_continuous_states_req& from) {
@@ -21516,17 +16096,12 @@ void fmi2_import_get_continuous_states_req::Swap(fmi2_import_get_continuous_stat
     std::swap(message_id_, other->message_id_);
     std::swap(fmuid_, other->fmuid_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_get_continuous_states_req::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_get_continuous_states_req_descriptor_;
-  metadata.reflection = fmi2_import_get_continuous_states_req_reflection_;
-  return metadata;
+::std::string fmi2_import_get_continuous_states_req::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_get_continuous_states_req";
 }
 
 
@@ -21539,7 +16114,7 @@ const int fmi2_import_get_continuous_states_res::kStatusFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_get_continuous_states_res::fmi2_import_get_continuous_states_res()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -21547,7 +16122,7 @@ void fmi2_import_get_continuous_states_res::InitAsDefaultInstance() {
 }
 
 fmi2_import_get_continuous_states_res::fmi2_import_get_continuous_states_res(const fmi2_import_get_continuous_states_res& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -21564,7 +16139,11 @@ fmi2_import_get_continuous_states_res::~fmi2_import_get_continuous_states_res() 
 }
 
 void fmi2_import_get_continuous_states_res::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -21573,13 +16152,12 @@ void fmi2_import_get_continuous_states_res::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_get_continuous_states_res::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_get_continuous_states_res_descriptor_;
-}
-
 const fmi2_import_get_continuous_states_res& fmi2_import_get_continuous_states_res::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -21596,7 +16174,6 @@ void fmi2_import_get_continuous_states_res::Clear() {
   }
   states_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_get_continuous_states_res::MergePartialFromCodedStream(
@@ -21653,8 +16230,6 @@ bool fmi2_import_get_continuous_states_res::MergePartialFromCodedStream(
                  input, &value)));
           if (::fmitcp_proto::fmi2_status_t_IsValid(value)) {
             set_status(static_cast< ::fmitcp_proto::fmi2_status_t >(value));
-          } else {
-            mutable_unknown_fields()->AddVarint(3, value);
           }
         } else {
           goto handle_uninterpreted;
@@ -21669,8 +16244,7 @@ bool fmi2_import_get_continuous_states_res::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -21698,36 +16272,6 @@ void fmi2_import_get_continuous_states_res::SerializeWithCachedSizes(
       3, this->status(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_get_continuous_states_res::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // repeated double states = 2;
-  for (int i = 0; i < this->states_size(); i++) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteDoubleToArray(2, this->states(i), target);
-  }
-
-  // required .fmitcp_proto.fmi2_status_t status = 3;
-  if (has_status()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      3, this->status(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_get_continuous_states_res::ByteSize() const {
@@ -21755,27 +16299,15 @@ int fmi2_import_get_continuous_states_res::ByteSize() const {
     total_size += 1 * this->states_size() + data_size;
   }
 
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_get_continuous_states_res::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_get_continuous_states_res* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_get_continuous_states_res*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_get_continuous_states_res::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_get_continuous_states_res*>(&from));
 }
 
 void fmi2_import_get_continuous_states_res::MergeFrom(const fmi2_import_get_continuous_states_res& from) {
@@ -21789,13 +16321,6 @@ void fmi2_import_get_continuous_states_res::MergeFrom(const fmi2_import_get_cont
       set_status(from.status());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_get_continuous_states_res::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_get_continuous_states_res::CopyFrom(const fmi2_import_get_continuous_states_res& from) {
@@ -21816,17 +16341,12 @@ void fmi2_import_get_continuous_states_res::Swap(fmi2_import_get_continuous_stat
     states_.Swap(&other->states_);
     std::swap(status_, other->status_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_get_continuous_states_res::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_get_continuous_states_res_descriptor_;
-  metadata.reflection = fmi2_import_get_continuous_states_res_reflection_;
-  return metadata;
+::std::string fmi2_import_get_continuous_states_res::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_get_continuous_states_res";
 }
 
 
@@ -21838,7 +16358,7 @@ const int fmi2_import_get_nominal_continuous_states_req::kFmuIdFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_get_nominal_continuous_states_req::fmi2_import_get_nominal_continuous_states_req()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -21846,7 +16366,7 @@ void fmi2_import_get_nominal_continuous_states_req::InitAsDefaultInstance() {
 }
 
 fmi2_import_get_nominal_continuous_states_req::fmi2_import_get_nominal_continuous_states_req(const fmi2_import_get_nominal_continuous_states_req& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -21863,7 +16383,11 @@ fmi2_import_get_nominal_continuous_states_req::~fmi2_import_get_nominal_continuo
 }
 
 void fmi2_import_get_nominal_continuous_states_req::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -21872,13 +16396,12 @@ void fmi2_import_get_nominal_continuous_states_req::SetCachedSize(int size) cons
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_get_nominal_continuous_states_req::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_get_nominal_continuous_states_req_descriptor_;
-}
-
 const fmi2_import_get_nominal_continuous_states_req& fmi2_import_get_nominal_continuous_states_req::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -21894,7 +16417,6 @@ void fmi2_import_get_nominal_continuous_states_req::Clear() {
     fmuid_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_get_nominal_continuous_states_req::MergePartialFromCodedStream(
@@ -21940,8 +16462,7 @@ bool fmi2_import_get_nominal_continuous_states_req::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -21962,29 +16483,6 @@ void fmi2_import_get_nominal_continuous_states_req::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->fmuid(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_get_nominal_continuous_states_req::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required int32 fmuId = 2;
-  if (has_fmuid()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->fmuid(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_get_nominal_continuous_states_req::ByteSize() const {
@@ -22006,27 +16504,15 @@ int fmi2_import_get_nominal_continuous_states_req::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_get_nominal_continuous_states_req::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_get_nominal_continuous_states_req* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_get_nominal_continuous_states_req*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_get_nominal_continuous_states_req::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_get_nominal_continuous_states_req*>(&from));
 }
 
 void fmi2_import_get_nominal_continuous_states_req::MergeFrom(const fmi2_import_get_nominal_continuous_states_req& from) {
@@ -22039,13 +16525,6 @@ void fmi2_import_get_nominal_continuous_states_req::MergeFrom(const fmi2_import_
       set_fmuid(from.fmuid());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_get_nominal_continuous_states_req::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_get_nominal_continuous_states_req::CopyFrom(const fmi2_import_get_nominal_continuous_states_req& from) {
@@ -22065,17 +16544,12 @@ void fmi2_import_get_nominal_continuous_states_req::Swap(fmi2_import_get_nominal
     std::swap(message_id_, other->message_id_);
     std::swap(fmuid_, other->fmuid_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_get_nominal_continuous_states_req::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_get_nominal_continuous_states_req_descriptor_;
-  metadata.reflection = fmi2_import_get_nominal_continuous_states_req_reflection_;
-  return metadata;
+::std::string fmi2_import_get_nominal_continuous_states_req::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_get_nominal_continuous_states_req";
 }
 
 
@@ -22088,7 +16562,7 @@ const int fmi2_import_get_nominal_continuous_states_res::kStatusFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_get_nominal_continuous_states_res::fmi2_import_get_nominal_continuous_states_res()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -22096,7 +16570,7 @@ void fmi2_import_get_nominal_continuous_states_res::InitAsDefaultInstance() {
 }
 
 fmi2_import_get_nominal_continuous_states_res::fmi2_import_get_nominal_continuous_states_res(const fmi2_import_get_nominal_continuous_states_res& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -22113,7 +16587,11 @@ fmi2_import_get_nominal_continuous_states_res::~fmi2_import_get_nominal_continuo
 }
 
 void fmi2_import_get_nominal_continuous_states_res::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -22122,13 +16600,12 @@ void fmi2_import_get_nominal_continuous_states_res::SetCachedSize(int size) cons
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_get_nominal_continuous_states_res::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_get_nominal_continuous_states_res_descriptor_;
-}
-
 const fmi2_import_get_nominal_continuous_states_res& fmi2_import_get_nominal_continuous_states_res::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -22145,7 +16622,6 @@ void fmi2_import_get_nominal_continuous_states_res::Clear() {
   }
   nominal_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_get_nominal_continuous_states_res::MergePartialFromCodedStream(
@@ -22202,8 +16678,6 @@ bool fmi2_import_get_nominal_continuous_states_res::MergePartialFromCodedStream(
                  input, &value)));
           if (::fmitcp_proto::fmi2_status_t_IsValid(value)) {
             set_status(static_cast< ::fmitcp_proto::fmi2_status_t >(value));
-          } else {
-            mutable_unknown_fields()->AddVarint(3, value);
           }
         } else {
           goto handle_uninterpreted;
@@ -22218,8 +16692,7 @@ bool fmi2_import_get_nominal_continuous_states_res::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -22247,36 +16720,6 @@ void fmi2_import_get_nominal_continuous_states_res::SerializeWithCachedSizes(
       3, this->status(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_get_nominal_continuous_states_res::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // repeated double nominal = 2;
-  for (int i = 0; i < this->nominal_size(); i++) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteDoubleToArray(2, this->nominal(i), target);
-  }
-
-  // required .fmitcp_proto.fmi2_status_t status = 3;
-  if (has_status()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      3, this->status(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_get_nominal_continuous_states_res::ByteSize() const {
@@ -22304,27 +16747,15 @@ int fmi2_import_get_nominal_continuous_states_res::ByteSize() const {
     total_size += 1 * this->nominal_size() + data_size;
   }
 
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_get_nominal_continuous_states_res::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_get_nominal_continuous_states_res* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_get_nominal_continuous_states_res*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_get_nominal_continuous_states_res::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_get_nominal_continuous_states_res*>(&from));
 }
 
 void fmi2_import_get_nominal_continuous_states_res::MergeFrom(const fmi2_import_get_nominal_continuous_states_res& from) {
@@ -22338,13 +16769,6 @@ void fmi2_import_get_nominal_continuous_states_res::MergeFrom(const fmi2_import_
       set_status(from.status());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_get_nominal_continuous_states_res::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_get_nominal_continuous_states_res::CopyFrom(const fmi2_import_get_nominal_continuous_states_res& from) {
@@ -22365,17 +16789,12 @@ void fmi2_import_get_nominal_continuous_states_res::Swap(fmi2_import_get_nominal
     nominal_.Swap(&other->nominal_);
     std::swap(status_, other->status_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_get_nominal_continuous_states_res::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_get_nominal_continuous_states_res_descriptor_;
-  metadata.reflection = fmi2_import_get_nominal_continuous_states_res_reflection_;
-  return metadata;
+::std::string fmi2_import_get_nominal_continuous_states_res::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_get_nominal_continuous_states_res";
 }
 
 
@@ -22387,7 +16806,7 @@ const int fmi2_import_terminate_req::kFmuIdFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_terminate_req::fmi2_import_terminate_req()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -22395,7 +16814,7 @@ void fmi2_import_terminate_req::InitAsDefaultInstance() {
 }
 
 fmi2_import_terminate_req::fmi2_import_terminate_req(const fmi2_import_terminate_req& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -22412,7 +16831,11 @@ fmi2_import_terminate_req::~fmi2_import_terminate_req() {
 }
 
 void fmi2_import_terminate_req::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -22421,13 +16844,12 @@ void fmi2_import_terminate_req::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_terminate_req::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_terminate_req_descriptor_;
-}
-
 const fmi2_import_terminate_req& fmi2_import_terminate_req::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -22443,7 +16865,6 @@ void fmi2_import_terminate_req::Clear() {
     fmuid_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_terminate_req::MergePartialFromCodedStream(
@@ -22489,8 +16910,7 @@ bool fmi2_import_terminate_req::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -22511,29 +16931,6 @@ void fmi2_import_terminate_req::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->fmuid(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_terminate_req::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required int32 fmuId = 2;
-  if (has_fmuid()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->fmuid(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_terminate_req::ByteSize() const {
@@ -22555,27 +16952,15 @@ int fmi2_import_terminate_req::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_terminate_req::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_terminate_req* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_terminate_req*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_terminate_req::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_terminate_req*>(&from));
 }
 
 void fmi2_import_terminate_req::MergeFrom(const fmi2_import_terminate_req& from) {
@@ -22588,13 +16973,6 @@ void fmi2_import_terminate_req::MergeFrom(const fmi2_import_terminate_req& from)
       set_fmuid(from.fmuid());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_terminate_req::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_terminate_req::CopyFrom(const fmi2_import_terminate_req& from) {
@@ -22614,17 +16992,12 @@ void fmi2_import_terminate_req::Swap(fmi2_import_terminate_req* other) {
     std::swap(message_id_, other->message_id_);
     std::swap(fmuid_, other->fmuid_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_terminate_req::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_terminate_req_descriptor_;
-  metadata.reflection = fmi2_import_terminate_req_reflection_;
-  return metadata;
+::std::string fmi2_import_terminate_req::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_terminate_req";
 }
 
 
@@ -22636,7 +17009,7 @@ const int fmi2_import_terminate_res::kStatusFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_terminate_res::fmi2_import_terminate_res()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -22644,7 +17017,7 @@ void fmi2_import_terminate_res::InitAsDefaultInstance() {
 }
 
 fmi2_import_terminate_res::fmi2_import_terminate_res(const fmi2_import_terminate_res& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -22661,7 +17034,11 @@ fmi2_import_terminate_res::~fmi2_import_terminate_res() {
 }
 
 void fmi2_import_terminate_res::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -22670,13 +17047,12 @@ void fmi2_import_terminate_res::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_terminate_res::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_terminate_res_descriptor_;
-}
-
 const fmi2_import_terminate_res& fmi2_import_terminate_res::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -22692,7 +17068,6 @@ void fmi2_import_terminate_res::Clear() {
     status_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_terminate_res::MergePartialFromCodedStream(
@@ -22727,8 +17102,6 @@ bool fmi2_import_terminate_res::MergePartialFromCodedStream(
                  input, &value)));
           if (::fmitcp_proto::fmi2_status_t_IsValid(value)) {
             set_status(static_cast< ::fmitcp_proto::fmi2_status_t >(value));
-          } else {
-            mutable_unknown_fields()->AddVarint(2, value);
           }
         } else {
           goto handle_uninterpreted;
@@ -22743,8 +17116,7 @@ bool fmi2_import_terminate_res::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -22766,30 +17138,6 @@ void fmi2_import_terminate_res::SerializeWithCachedSizes(
       2, this->status(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_terminate_res::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required .fmitcp_proto.fmi2_status_t status = 2;
-  if (has_status()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      2, this->status(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_terminate_res::ByteSize() const {
@@ -22810,27 +17158,15 @@ int fmi2_import_terminate_res::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_terminate_res::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_terminate_res* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_terminate_res*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_terminate_res::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_terminate_res*>(&from));
 }
 
 void fmi2_import_terminate_res::MergeFrom(const fmi2_import_terminate_res& from) {
@@ -22843,13 +17179,6 @@ void fmi2_import_terminate_res::MergeFrom(const fmi2_import_terminate_res& from)
       set_status(from.status());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_terminate_res::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_terminate_res::CopyFrom(const fmi2_import_terminate_res& from) {
@@ -22869,17 +17198,12 @@ void fmi2_import_terminate_res::Swap(fmi2_import_terminate_res* other) {
     std::swap(message_id_, other->message_id_);
     std::swap(status_, other->status_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_terminate_res::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_terminate_res_descriptor_;
-  metadata.reflection = fmi2_import_terminate_res_reflection_;
-  return metadata;
+::std::string fmi2_import_terminate_res::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_terminate_res";
 }
 
 
@@ -22891,7 +17215,7 @@ const int fmi2_import_get_version_req::kFmuIdFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_get_version_req::fmi2_import_get_version_req()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -22899,7 +17223,7 @@ void fmi2_import_get_version_req::InitAsDefaultInstance() {
 }
 
 fmi2_import_get_version_req::fmi2_import_get_version_req(const fmi2_import_get_version_req& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -22916,7 +17240,11 @@ fmi2_import_get_version_req::~fmi2_import_get_version_req() {
 }
 
 void fmi2_import_get_version_req::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -22925,13 +17253,12 @@ void fmi2_import_get_version_req::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_get_version_req::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_get_version_req_descriptor_;
-}
-
 const fmi2_import_get_version_req& fmi2_import_get_version_req::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -22947,7 +17274,6 @@ void fmi2_import_get_version_req::Clear() {
     fmuid_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_get_version_req::MergePartialFromCodedStream(
@@ -22993,8 +17319,7 @@ bool fmi2_import_get_version_req::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -23015,29 +17340,6 @@ void fmi2_import_get_version_req::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->fmuid(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_get_version_req::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required int32 fmuId = 2;
-  if (has_fmuid()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->fmuid(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_get_version_req::ByteSize() const {
@@ -23059,27 +17361,15 @@ int fmi2_import_get_version_req::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_get_version_req::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_get_version_req* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_get_version_req*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_get_version_req::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_get_version_req*>(&from));
 }
 
 void fmi2_import_get_version_req::MergeFrom(const fmi2_import_get_version_req& from) {
@@ -23092,13 +17382,6 @@ void fmi2_import_get_version_req::MergeFrom(const fmi2_import_get_version_req& f
       set_fmuid(from.fmuid());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_get_version_req::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_get_version_req::CopyFrom(const fmi2_import_get_version_req& from) {
@@ -23118,17 +17401,12 @@ void fmi2_import_get_version_req::Swap(fmi2_import_get_version_req* other) {
     std::swap(message_id_, other->message_id_);
     std::swap(fmuid_, other->fmuid_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_get_version_req::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_get_version_req_descriptor_;
-  metadata.reflection = fmi2_import_get_version_req_reflection_;
-  return metadata;
+::std::string fmi2_import_get_version_req::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_get_version_req";
 }
 
 
@@ -23140,7 +17418,7 @@ const int fmi2_import_get_version_res::kVersionFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_get_version_res::fmi2_import_get_version_res()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -23148,7 +17426,7 @@ void fmi2_import_get_version_res::InitAsDefaultInstance() {
 }
 
 fmi2_import_get_version_res::fmi2_import_get_version_res(const fmi2_import_get_version_res& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -23168,7 +17446,11 @@ void fmi2_import_get_version_res::SharedDtor() {
   if (version_ != &::google::protobuf::internal::kEmptyString) {
     delete version_;
   }
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -23177,13 +17459,12 @@ void fmi2_import_get_version_res::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_get_version_res::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_get_version_res_descriptor_;
-}
-
 const fmi2_import_get_version_res& fmi2_import_get_version_res::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -23203,7 +17484,6 @@ void fmi2_import_get_version_res::Clear() {
     }
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_get_version_res::MergePartialFromCodedStream(
@@ -23234,9 +17514,6 @@ bool fmi2_import_get_version_res::MergePartialFromCodedStream(
          parse_version:
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_version()));
-          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-            this->version().data(), this->version().length(),
-            ::google::protobuf::internal::WireFormat::PARSE);
         } else {
           goto handle_uninterpreted;
         }
@@ -23250,8 +17527,7 @@ bool fmi2_import_get_version_res::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -23269,41 +17545,10 @@ void fmi2_import_get_version_res::SerializeWithCachedSizes(
 
   // required string version = 2;
   if (has_version()) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->version().data(), this->version().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE);
     ::google::protobuf::internal::WireFormatLite::WriteString(
       2, this->version(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_get_version_res::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required string version = 2;
-  if (has_version()) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->version().data(), this->version().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE);
-    target =
-      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        2, this->version(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_get_version_res::ByteSize() const {
@@ -23325,27 +17570,15 @@ int fmi2_import_get_version_res::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_get_version_res::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_get_version_res* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_get_version_res*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_get_version_res::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_get_version_res*>(&from));
 }
 
 void fmi2_import_get_version_res::MergeFrom(const fmi2_import_get_version_res& from) {
@@ -23358,13 +17591,6 @@ void fmi2_import_get_version_res::MergeFrom(const fmi2_import_get_version_res& f
       set_version(from.version());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_get_version_res::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_get_version_res::CopyFrom(const fmi2_import_get_version_res& from) {
@@ -23384,17 +17610,12 @@ void fmi2_import_get_version_res::Swap(fmi2_import_get_version_res* other) {
     std::swap(message_id_, other->message_id_);
     std::swap(version_, other->version_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_get_version_res::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_get_version_res_descriptor_;
-  metadata.reflection = fmi2_import_get_version_res_reflection_;
-  return metadata;
+::std::string fmi2_import_get_version_res::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_get_version_res";
 }
 
 
@@ -23408,7 +17629,7 @@ const int fmi2_import_set_debug_logging_req::kCategoriesFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_set_debug_logging_req::fmi2_import_set_debug_logging_req()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -23416,7 +17637,7 @@ void fmi2_import_set_debug_logging_req::InitAsDefaultInstance() {
 }
 
 fmi2_import_set_debug_logging_req::fmi2_import_set_debug_logging_req(const fmi2_import_set_debug_logging_req& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -23434,7 +17655,11 @@ fmi2_import_set_debug_logging_req::~fmi2_import_set_debug_logging_req() {
 }
 
 void fmi2_import_set_debug_logging_req::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -23443,13 +17668,12 @@ void fmi2_import_set_debug_logging_req::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_set_debug_logging_req::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_set_debug_logging_req_descriptor_;
-}
-
 const fmi2_import_set_debug_logging_req& fmi2_import_set_debug_logging_req::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -23467,7 +17691,6 @@ void fmi2_import_set_debug_logging_req::Clear() {
   }
   categories_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_set_debug_logging_req::MergePartialFromCodedStream(
@@ -23530,10 +17753,6 @@ bool fmi2_import_set_debug_logging_req::MergePartialFromCodedStream(
          parse_categories:
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->add_categories()));
-          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-            this->categories(this->categories_size() - 1).data(),
-            this->categories(this->categories_size() - 1).length(),
-            ::google::protobuf::internal::WireFormat::PARSE);
         } else {
           goto handle_uninterpreted;
         }
@@ -23548,8 +17767,7 @@ bool fmi2_import_set_debug_logging_req::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -23577,50 +17795,10 @@ void fmi2_import_set_debug_logging_req::SerializeWithCachedSizes(
 
   // repeated string categories = 4;
   for (int i = 0; i < this->categories_size(); i++) {
-  ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-    this->categories(i).data(), this->categories(i).length(),
-    ::google::protobuf::internal::WireFormat::SERIALIZE);
     ::google::protobuf::internal::WireFormatLite::WriteString(
       4, this->categories(i), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_set_debug_logging_req::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required int32 fmuId = 2;
-  if (has_fmuid()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->fmuid(), target);
-  }
-
-  // required bool loggingOn = 3;
-  if (has_loggingon()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(3, this->loggingon(), target);
-  }
-
-  // repeated string categories = 4;
-  for (int i = 0; i < this->categories_size(); i++) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->categories(i).data(), this->categories(i).length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE);
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteStringToArray(4, this->categories(i), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_set_debug_logging_req::ByteSize() const {
@@ -23654,27 +17832,15 @@ int fmi2_import_set_debug_logging_req::ByteSize() const {
       this->categories(i));
   }
 
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_set_debug_logging_req::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_set_debug_logging_req* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_set_debug_logging_req*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_set_debug_logging_req::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_set_debug_logging_req*>(&from));
 }
 
 void fmi2_import_set_debug_logging_req::MergeFrom(const fmi2_import_set_debug_logging_req& from) {
@@ -23691,13 +17857,6 @@ void fmi2_import_set_debug_logging_req::MergeFrom(const fmi2_import_set_debug_lo
       set_loggingon(from.loggingon());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_set_debug_logging_req::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_set_debug_logging_req::CopyFrom(const fmi2_import_set_debug_logging_req& from) {
@@ -23719,17 +17878,12 @@ void fmi2_import_set_debug_logging_req::Swap(fmi2_import_set_debug_logging_req* 
     std::swap(loggingon_, other->loggingon_);
     categories_.Swap(&other->categories_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_set_debug_logging_req::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_set_debug_logging_req_descriptor_;
-  metadata.reflection = fmi2_import_set_debug_logging_req_reflection_;
-  return metadata;
+::std::string fmi2_import_set_debug_logging_req::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_set_debug_logging_req";
 }
 
 
@@ -23741,7 +17895,7 @@ const int fmi2_import_set_debug_logging_res::kStatusFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_set_debug_logging_res::fmi2_import_set_debug_logging_res()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -23749,7 +17903,7 @@ void fmi2_import_set_debug_logging_res::InitAsDefaultInstance() {
 }
 
 fmi2_import_set_debug_logging_res::fmi2_import_set_debug_logging_res(const fmi2_import_set_debug_logging_res& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -23766,7 +17920,11 @@ fmi2_import_set_debug_logging_res::~fmi2_import_set_debug_logging_res() {
 }
 
 void fmi2_import_set_debug_logging_res::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -23775,13 +17933,12 @@ void fmi2_import_set_debug_logging_res::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_set_debug_logging_res::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_set_debug_logging_res_descriptor_;
-}
-
 const fmi2_import_set_debug_logging_res& fmi2_import_set_debug_logging_res::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -23797,7 +17954,6 @@ void fmi2_import_set_debug_logging_res::Clear() {
     status_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_set_debug_logging_res::MergePartialFromCodedStream(
@@ -23832,8 +17988,6 @@ bool fmi2_import_set_debug_logging_res::MergePartialFromCodedStream(
                  input, &value)));
           if (::fmitcp_proto::fmi2_status_t_IsValid(value)) {
             set_status(static_cast< ::fmitcp_proto::fmi2_status_t >(value));
-          } else {
-            mutable_unknown_fields()->AddVarint(2, value);
           }
         } else {
           goto handle_uninterpreted;
@@ -23848,8 +18002,7 @@ bool fmi2_import_set_debug_logging_res::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -23871,30 +18024,6 @@ void fmi2_import_set_debug_logging_res::SerializeWithCachedSizes(
       2, this->status(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_set_debug_logging_res::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required .fmitcp_proto.fmi2_status_t status = 2;
-  if (has_status()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      2, this->status(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_set_debug_logging_res::ByteSize() const {
@@ -23915,27 +18044,15 @@ int fmi2_import_set_debug_logging_res::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_set_debug_logging_res::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_set_debug_logging_res* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_set_debug_logging_res*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_set_debug_logging_res::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_set_debug_logging_res*>(&from));
 }
 
 void fmi2_import_set_debug_logging_res::MergeFrom(const fmi2_import_set_debug_logging_res& from) {
@@ -23948,13 +18065,6 @@ void fmi2_import_set_debug_logging_res::MergeFrom(const fmi2_import_set_debug_lo
       set_status(from.status());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_set_debug_logging_res::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_set_debug_logging_res::CopyFrom(const fmi2_import_set_debug_logging_res& from) {
@@ -23974,17 +18084,12 @@ void fmi2_import_set_debug_logging_res::Swap(fmi2_import_set_debug_logging_res* 
     std::swap(message_id_, other->message_id_);
     std::swap(status_, other->status_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_set_debug_logging_res::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_set_debug_logging_res_descriptor_;
-  metadata.reflection = fmi2_import_set_debug_logging_res_reflection_;
-  return metadata;
+::std::string fmi2_import_set_debug_logging_res::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_set_debug_logging_res";
 }
 
 
@@ -23998,7 +18103,7 @@ const int fmi2_import_set_real_req::kValuesFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_set_real_req::fmi2_import_set_real_req()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -24006,7 +18111,7 @@ void fmi2_import_set_real_req::InitAsDefaultInstance() {
 }
 
 fmi2_import_set_real_req::fmi2_import_set_real_req(const fmi2_import_set_real_req& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -24023,7 +18128,11 @@ fmi2_import_set_real_req::~fmi2_import_set_real_req() {
 }
 
 void fmi2_import_set_real_req::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -24032,13 +18141,12 @@ void fmi2_import_set_real_req::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_set_real_req::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_set_real_req_descriptor_;
-}
-
 const fmi2_import_set_real_req& fmi2_import_set_real_req::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -24056,7 +18164,6 @@ void fmi2_import_set_real_req::Clear() {
   valuereferences_.Clear();
   values_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_set_real_req::MergePartialFromCodedStream(
@@ -24146,8 +18253,7 @@ bool fmi2_import_set_real_req::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -24180,41 +18286,6 @@ void fmi2_import_set_real_req::SerializeWithCachedSizes(
       4, this->values(i), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_set_real_req::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required int32 fmuId = 2;
-  if (has_fmuid()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->fmuid(), target);
-  }
-
-  // repeated int32 valueReferences = 3;
-  for (int i = 0; i < this->valuereferences_size(); i++) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteInt32ToArray(3, this->valuereferences(i), target);
-  }
-
-  // repeated double values = 4;
-  for (int i = 0; i < this->values_size(); i++) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteDoubleToArray(4, this->values(i), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_set_real_req::ByteSize() const {
@@ -24253,27 +18324,15 @@ int fmi2_import_set_real_req::ByteSize() const {
     total_size += 1 * this->values_size() + data_size;
   }
 
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_set_real_req::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_set_real_req* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_set_real_req*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_set_real_req::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_set_real_req*>(&from));
 }
 
 void fmi2_import_set_real_req::MergeFrom(const fmi2_import_set_real_req& from) {
@@ -24288,13 +18347,6 @@ void fmi2_import_set_real_req::MergeFrom(const fmi2_import_set_real_req& from) {
       set_fmuid(from.fmuid());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_set_real_req::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_set_real_req::CopyFrom(const fmi2_import_set_real_req& from) {
@@ -24316,17 +18368,12 @@ void fmi2_import_set_real_req::Swap(fmi2_import_set_real_req* other) {
     valuereferences_.Swap(&other->valuereferences_);
     values_.Swap(&other->values_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_set_real_req::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_set_real_req_descriptor_;
-  metadata.reflection = fmi2_import_set_real_req_reflection_;
-  return metadata;
+::std::string fmi2_import_set_real_req::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_set_real_req";
 }
 
 
@@ -24338,7 +18385,7 @@ const int fmi2_import_set_real_res::kStatusFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_set_real_res::fmi2_import_set_real_res()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -24346,7 +18393,7 @@ void fmi2_import_set_real_res::InitAsDefaultInstance() {
 }
 
 fmi2_import_set_real_res::fmi2_import_set_real_res(const fmi2_import_set_real_res& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -24363,7 +18410,11 @@ fmi2_import_set_real_res::~fmi2_import_set_real_res() {
 }
 
 void fmi2_import_set_real_res::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -24372,13 +18423,12 @@ void fmi2_import_set_real_res::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_set_real_res::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_set_real_res_descriptor_;
-}
-
 const fmi2_import_set_real_res& fmi2_import_set_real_res::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -24394,7 +18444,6 @@ void fmi2_import_set_real_res::Clear() {
     status_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_set_real_res::MergePartialFromCodedStream(
@@ -24429,8 +18478,6 @@ bool fmi2_import_set_real_res::MergePartialFromCodedStream(
                  input, &value)));
           if (::fmitcp_proto::fmi2_status_t_IsValid(value)) {
             set_status(static_cast< ::fmitcp_proto::fmi2_status_t >(value));
-          } else {
-            mutable_unknown_fields()->AddVarint(2, value);
           }
         } else {
           goto handle_uninterpreted;
@@ -24445,8 +18492,7 @@ bool fmi2_import_set_real_res::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -24468,30 +18514,6 @@ void fmi2_import_set_real_res::SerializeWithCachedSizes(
       2, this->status(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_set_real_res::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required .fmitcp_proto.fmi2_status_t status = 2;
-  if (has_status()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      2, this->status(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_set_real_res::ByteSize() const {
@@ -24512,27 +18534,15 @@ int fmi2_import_set_real_res::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_set_real_res::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_set_real_res* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_set_real_res*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_set_real_res::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_set_real_res*>(&from));
 }
 
 void fmi2_import_set_real_res::MergeFrom(const fmi2_import_set_real_res& from) {
@@ -24545,13 +18555,6 @@ void fmi2_import_set_real_res::MergeFrom(const fmi2_import_set_real_res& from) {
       set_status(from.status());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_set_real_res::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_set_real_res::CopyFrom(const fmi2_import_set_real_res& from) {
@@ -24571,17 +18574,12 @@ void fmi2_import_set_real_res::Swap(fmi2_import_set_real_res* other) {
     std::swap(message_id_, other->message_id_);
     std::swap(status_, other->status_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_set_real_res::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_set_real_res_descriptor_;
-  metadata.reflection = fmi2_import_set_real_res_reflection_;
-  return metadata;
+::std::string fmi2_import_set_real_res::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_set_real_res";
 }
 
 
@@ -24595,7 +18593,7 @@ const int fmi2_import_set_integer_req::kValuesFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_set_integer_req::fmi2_import_set_integer_req()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -24603,7 +18601,7 @@ void fmi2_import_set_integer_req::InitAsDefaultInstance() {
 }
 
 fmi2_import_set_integer_req::fmi2_import_set_integer_req(const fmi2_import_set_integer_req& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -24620,7 +18618,11 @@ fmi2_import_set_integer_req::~fmi2_import_set_integer_req() {
 }
 
 void fmi2_import_set_integer_req::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -24629,13 +18631,12 @@ void fmi2_import_set_integer_req::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_set_integer_req::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_set_integer_req_descriptor_;
-}
-
 const fmi2_import_set_integer_req& fmi2_import_set_integer_req::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -24653,7 +18654,6 @@ void fmi2_import_set_integer_req::Clear() {
   valuereferences_.Clear();
   values_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_set_integer_req::MergePartialFromCodedStream(
@@ -24743,8 +18743,7 @@ bool fmi2_import_set_integer_req::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -24777,41 +18776,6 @@ void fmi2_import_set_integer_req::SerializeWithCachedSizes(
       4, this->values(i), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_set_integer_req::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required int32 fmuId = 2;
-  if (has_fmuid()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->fmuid(), target);
-  }
-
-  // repeated int32 valueReferences = 3;
-  for (int i = 0; i < this->valuereferences_size(); i++) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteInt32ToArray(3, this->valuereferences(i), target);
-  }
-
-  // repeated int32 values = 4;
-  for (int i = 0; i < this->values_size(); i++) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteInt32ToArray(4, this->values(i), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_set_integer_req::ByteSize() const {
@@ -24853,27 +18817,15 @@ int fmi2_import_set_integer_req::ByteSize() const {
     total_size += 1 * this->values_size() + data_size;
   }
 
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_set_integer_req::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_set_integer_req* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_set_integer_req*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_set_integer_req::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_set_integer_req*>(&from));
 }
 
 void fmi2_import_set_integer_req::MergeFrom(const fmi2_import_set_integer_req& from) {
@@ -24888,13 +18840,6 @@ void fmi2_import_set_integer_req::MergeFrom(const fmi2_import_set_integer_req& f
       set_fmuid(from.fmuid());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_set_integer_req::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_set_integer_req::CopyFrom(const fmi2_import_set_integer_req& from) {
@@ -24916,17 +18861,12 @@ void fmi2_import_set_integer_req::Swap(fmi2_import_set_integer_req* other) {
     valuereferences_.Swap(&other->valuereferences_);
     values_.Swap(&other->values_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_set_integer_req::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_set_integer_req_descriptor_;
-  metadata.reflection = fmi2_import_set_integer_req_reflection_;
-  return metadata;
+::std::string fmi2_import_set_integer_req::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_set_integer_req";
 }
 
 
@@ -24938,7 +18878,7 @@ const int fmi2_import_set_integer_res::kStatusFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_set_integer_res::fmi2_import_set_integer_res()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -24946,7 +18886,7 @@ void fmi2_import_set_integer_res::InitAsDefaultInstance() {
 }
 
 fmi2_import_set_integer_res::fmi2_import_set_integer_res(const fmi2_import_set_integer_res& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -24963,7 +18903,11 @@ fmi2_import_set_integer_res::~fmi2_import_set_integer_res() {
 }
 
 void fmi2_import_set_integer_res::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -24972,13 +18916,12 @@ void fmi2_import_set_integer_res::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_set_integer_res::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_set_integer_res_descriptor_;
-}
-
 const fmi2_import_set_integer_res& fmi2_import_set_integer_res::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -24994,7 +18937,6 @@ void fmi2_import_set_integer_res::Clear() {
     status_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_set_integer_res::MergePartialFromCodedStream(
@@ -25029,8 +18971,6 @@ bool fmi2_import_set_integer_res::MergePartialFromCodedStream(
                  input, &value)));
           if (::fmitcp_proto::fmi2_status_t_IsValid(value)) {
             set_status(static_cast< ::fmitcp_proto::fmi2_status_t >(value));
-          } else {
-            mutable_unknown_fields()->AddVarint(2, value);
           }
         } else {
           goto handle_uninterpreted;
@@ -25045,8 +18985,7 @@ bool fmi2_import_set_integer_res::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -25068,30 +19007,6 @@ void fmi2_import_set_integer_res::SerializeWithCachedSizes(
       2, this->status(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_set_integer_res::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required .fmitcp_proto.fmi2_status_t status = 2;
-  if (has_status()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      2, this->status(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_set_integer_res::ByteSize() const {
@@ -25112,27 +19027,15 @@ int fmi2_import_set_integer_res::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_set_integer_res::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_set_integer_res* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_set_integer_res*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_set_integer_res::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_set_integer_res*>(&from));
 }
 
 void fmi2_import_set_integer_res::MergeFrom(const fmi2_import_set_integer_res& from) {
@@ -25145,13 +19048,6 @@ void fmi2_import_set_integer_res::MergeFrom(const fmi2_import_set_integer_res& f
       set_status(from.status());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_set_integer_res::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_set_integer_res::CopyFrom(const fmi2_import_set_integer_res& from) {
@@ -25171,17 +19067,12 @@ void fmi2_import_set_integer_res::Swap(fmi2_import_set_integer_res* other) {
     std::swap(message_id_, other->message_id_);
     std::swap(status_, other->status_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_set_integer_res::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_set_integer_res_descriptor_;
-  metadata.reflection = fmi2_import_set_integer_res_reflection_;
-  return metadata;
+::std::string fmi2_import_set_integer_res::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_set_integer_res";
 }
 
 
@@ -25195,7 +19086,7 @@ const int fmi2_import_set_boolean_req::kValuesFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_set_boolean_req::fmi2_import_set_boolean_req()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -25203,7 +19094,7 @@ void fmi2_import_set_boolean_req::InitAsDefaultInstance() {
 }
 
 fmi2_import_set_boolean_req::fmi2_import_set_boolean_req(const fmi2_import_set_boolean_req& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -25220,7 +19111,11 @@ fmi2_import_set_boolean_req::~fmi2_import_set_boolean_req() {
 }
 
 void fmi2_import_set_boolean_req::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -25229,13 +19124,12 @@ void fmi2_import_set_boolean_req::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_set_boolean_req::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_set_boolean_req_descriptor_;
-}
-
 const fmi2_import_set_boolean_req& fmi2_import_set_boolean_req::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -25253,7 +19147,6 @@ void fmi2_import_set_boolean_req::Clear() {
   valuereferences_.Clear();
   values_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_set_boolean_req::MergePartialFromCodedStream(
@@ -25343,8 +19236,7 @@ bool fmi2_import_set_boolean_req::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -25377,41 +19269,6 @@ void fmi2_import_set_boolean_req::SerializeWithCachedSizes(
       4, this->values(i), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_set_boolean_req::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required int32 fmuId = 2;
-  if (has_fmuid()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->fmuid(), target);
-  }
-
-  // repeated int32 valueReferences = 3;
-  for (int i = 0; i < this->valuereferences_size(); i++) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteInt32ToArray(3, this->valuereferences(i), target);
-  }
-
-  // repeated bool values = 4;
-  for (int i = 0; i < this->values_size(); i++) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteBoolToArray(4, this->values(i), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_set_boolean_req::ByteSize() const {
@@ -25450,27 +19307,15 @@ int fmi2_import_set_boolean_req::ByteSize() const {
     total_size += 1 * this->values_size() + data_size;
   }
 
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_set_boolean_req::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_set_boolean_req* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_set_boolean_req*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_set_boolean_req::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_set_boolean_req*>(&from));
 }
 
 void fmi2_import_set_boolean_req::MergeFrom(const fmi2_import_set_boolean_req& from) {
@@ -25485,13 +19330,6 @@ void fmi2_import_set_boolean_req::MergeFrom(const fmi2_import_set_boolean_req& f
       set_fmuid(from.fmuid());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_set_boolean_req::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_set_boolean_req::CopyFrom(const fmi2_import_set_boolean_req& from) {
@@ -25513,17 +19351,12 @@ void fmi2_import_set_boolean_req::Swap(fmi2_import_set_boolean_req* other) {
     valuereferences_.Swap(&other->valuereferences_);
     values_.Swap(&other->values_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_set_boolean_req::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_set_boolean_req_descriptor_;
-  metadata.reflection = fmi2_import_set_boolean_req_reflection_;
-  return metadata;
+::std::string fmi2_import_set_boolean_req::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_set_boolean_req";
 }
 
 
@@ -25535,7 +19368,7 @@ const int fmi2_import_set_boolean_res::kStatusFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_set_boolean_res::fmi2_import_set_boolean_res()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -25543,7 +19376,7 @@ void fmi2_import_set_boolean_res::InitAsDefaultInstance() {
 }
 
 fmi2_import_set_boolean_res::fmi2_import_set_boolean_res(const fmi2_import_set_boolean_res& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -25560,7 +19393,11 @@ fmi2_import_set_boolean_res::~fmi2_import_set_boolean_res() {
 }
 
 void fmi2_import_set_boolean_res::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -25569,13 +19406,12 @@ void fmi2_import_set_boolean_res::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_set_boolean_res::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_set_boolean_res_descriptor_;
-}
-
 const fmi2_import_set_boolean_res& fmi2_import_set_boolean_res::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -25591,7 +19427,6 @@ void fmi2_import_set_boolean_res::Clear() {
     status_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_set_boolean_res::MergePartialFromCodedStream(
@@ -25626,8 +19461,6 @@ bool fmi2_import_set_boolean_res::MergePartialFromCodedStream(
                  input, &value)));
           if (::fmitcp_proto::fmi2_status_t_IsValid(value)) {
             set_status(static_cast< ::fmitcp_proto::fmi2_status_t >(value));
-          } else {
-            mutable_unknown_fields()->AddVarint(2, value);
           }
         } else {
           goto handle_uninterpreted;
@@ -25642,8 +19475,7 @@ bool fmi2_import_set_boolean_res::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -25665,30 +19497,6 @@ void fmi2_import_set_boolean_res::SerializeWithCachedSizes(
       2, this->status(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_set_boolean_res::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required .fmitcp_proto.fmi2_status_t status = 2;
-  if (has_status()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      2, this->status(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_set_boolean_res::ByteSize() const {
@@ -25709,27 +19517,15 @@ int fmi2_import_set_boolean_res::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_set_boolean_res::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_set_boolean_res* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_set_boolean_res*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_set_boolean_res::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_set_boolean_res*>(&from));
 }
 
 void fmi2_import_set_boolean_res::MergeFrom(const fmi2_import_set_boolean_res& from) {
@@ -25742,13 +19538,6 @@ void fmi2_import_set_boolean_res::MergeFrom(const fmi2_import_set_boolean_res& f
       set_status(from.status());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_set_boolean_res::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_set_boolean_res::CopyFrom(const fmi2_import_set_boolean_res& from) {
@@ -25768,17 +19557,12 @@ void fmi2_import_set_boolean_res::Swap(fmi2_import_set_boolean_res* other) {
     std::swap(message_id_, other->message_id_);
     std::swap(status_, other->status_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_set_boolean_res::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_set_boolean_res_descriptor_;
-  metadata.reflection = fmi2_import_set_boolean_res_reflection_;
-  return metadata;
+::std::string fmi2_import_set_boolean_res::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_set_boolean_res";
 }
 
 
@@ -25792,7 +19576,7 @@ const int fmi2_import_set_string_req::kValuesFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_set_string_req::fmi2_import_set_string_req()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -25800,7 +19584,7 @@ void fmi2_import_set_string_req::InitAsDefaultInstance() {
 }
 
 fmi2_import_set_string_req::fmi2_import_set_string_req(const fmi2_import_set_string_req& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -25817,7 +19601,11 @@ fmi2_import_set_string_req::~fmi2_import_set_string_req() {
 }
 
 void fmi2_import_set_string_req::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -25826,13 +19614,12 @@ void fmi2_import_set_string_req::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_set_string_req::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_set_string_req_descriptor_;
-}
-
 const fmi2_import_set_string_req& fmi2_import_set_string_req::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -25850,7 +19637,6 @@ void fmi2_import_set_string_req::Clear() {
   valuereferences_.Clear();
   values_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_set_string_req::MergePartialFromCodedStream(
@@ -25919,10 +19705,6 @@ bool fmi2_import_set_string_req::MergePartialFromCodedStream(
          parse_values:
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->add_values()));
-          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-            this->values(this->values_size() - 1).data(),
-            this->values(this->values_size() - 1).length(),
-            ::google::protobuf::internal::WireFormat::PARSE);
         } else {
           goto handle_uninterpreted;
         }
@@ -25937,8 +19719,7 @@ bool fmi2_import_set_string_req::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -25967,51 +19748,10 @@ void fmi2_import_set_string_req::SerializeWithCachedSizes(
 
   // repeated string values = 4;
   for (int i = 0; i < this->values_size(); i++) {
-  ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-    this->values(i).data(), this->values(i).length(),
-    ::google::protobuf::internal::WireFormat::SERIALIZE);
     ::google::protobuf::internal::WireFormatLite::WriteString(
       4, this->values(i), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_set_string_req::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required int32 fmuId = 2;
-  if (has_fmuid()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->fmuid(), target);
-  }
-
-  // repeated int32 valueReferences = 3;
-  for (int i = 0; i < this->valuereferences_size(); i++) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteInt32ToArray(3, this->valuereferences(i), target);
-  }
-
-  // repeated string values = 4;
-  for (int i = 0; i < this->values_size(); i++) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->values(i).data(), this->values(i).length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE);
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteStringToArray(4, this->values(i), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_set_string_req::ByteSize() const {
@@ -26050,27 +19790,15 @@ int fmi2_import_set_string_req::ByteSize() const {
       this->values(i));
   }
 
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_set_string_req::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_set_string_req* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_set_string_req*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_set_string_req::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_set_string_req*>(&from));
 }
 
 void fmi2_import_set_string_req::MergeFrom(const fmi2_import_set_string_req& from) {
@@ -26085,13 +19813,6 @@ void fmi2_import_set_string_req::MergeFrom(const fmi2_import_set_string_req& fro
       set_fmuid(from.fmuid());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_set_string_req::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_set_string_req::CopyFrom(const fmi2_import_set_string_req& from) {
@@ -26113,17 +19834,12 @@ void fmi2_import_set_string_req::Swap(fmi2_import_set_string_req* other) {
     valuereferences_.Swap(&other->valuereferences_);
     values_.Swap(&other->values_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_set_string_req::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_set_string_req_descriptor_;
-  metadata.reflection = fmi2_import_set_string_req_reflection_;
-  return metadata;
+::std::string fmi2_import_set_string_req::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_set_string_req";
 }
 
 
@@ -26135,7 +19851,7 @@ const int fmi2_import_set_string_res::kStatusFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_set_string_res::fmi2_import_set_string_res()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -26143,7 +19859,7 @@ void fmi2_import_set_string_res::InitAsDefaultInstance() {
 }
 
 fmi2_import_set_string_res::fmi2_import_set_string_res(const fmi2_import_set_string_res& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -26160,7 +19876,11 @@ fmi2_import_set_string_res::~fmi2_import_set_string_res() {
 }
 
 void fmi2_import_set_string_res::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -26169,13 +19889,12 @@ void fmi2_import_set_string_res::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_set_string_res::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_set_string_res_descriptor_;
-}
-
 const fmi2_import_set_string_res& fmi2_import_set_string_res::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -26191,7 +19910,6 @@ void fmi2_import_set_string_res::Clear() {
     status_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_set_string_res::MergePartialFromCodedStream(
@@ -26226,8 +19944,6 @@ bool fmi2_import_set_string_res::MergePartialFromCodedStream(
                  input, &value)));
           if (::fmitcp_proto::fmi2_status_t_IsValid(value)) {
             set_status(static_cast< ::fmitcp_proto::fmi2_status_t >(value));
-          } else {
-            mutable_unknown_fields()->AddVarint(2, value);
           }
         } else {
           goto handle_uninterpreted;
@@ -26242,8 +19958,7 @@ bool fmi2_import_set_string_res::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -26265,30 +19980,6 @@ void fmi2_import_set_string_res::SerializeWithCachedSizes(
       2, this->status(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_set_string_res::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required .fmitcp_proto.fmi2_status_t status = 2;
-  if (has_status()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      2, this->status(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_set_string_res::ByteSize() const {
@@ -26309,27 +20000,15 @@ int fmi2_import_set_string_res::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_set_string_res::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_set_string_res* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_set_string_res*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_set_string_res::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_set_string_res*>(&from));
 }
 
 void fmi2_import_set_string_res::MergeFrom(const fmi2_import_set_string_res& from) {
@@ -26342,13 +20021,6 @@ void fmi2_import_set_string_res::MergeFrom(const fmi2_import_set_string_res& fro
       set_status(from.status());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_set_string_res::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_set_string_res::CopyFrom(const fmi2_import_set_string_res& from) {
@@ -26368,17 +20040,12 @@ void fmi2_import_set_string_res::Swap(fmi2_import_set_string_res* other) {
     std::swap(message_id_, other->message_id_);
     std::swap(status_, other->status_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_set_string_res::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_set_string_res_descriptor_;
-  metadata.reflection = fmi2_import_set_string_res_reflection_;
-  return metadata;
+::std::string fmi2_import_set_string_res::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_set_string_res";
 }
 
 
@@ -26391,7 +20058,7 @@ const int fmi2_import_get_real_req::kValueReferencesFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_get_real_req::fmi2_import_get_real_req()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -26399,7 +20066,7 @@ void fmi2_import_get_real_req::InitAsDefaultInstance() {
 }
 
 fmi2_import_get_real_req::fmi2_import_get_real_req(const fmi2_import_get_real_req& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -26416,7 +20083,11 @@ fmi2_import_get_real_req::~fmi2_import_get_real_req() {
 }
 
 void fmi2_import_get_real_req::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -26425,13 +20096,12 @@ void fmi2_import_get_real_req::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_get_real_req::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_get_real_req_descriptor_;
-}
-
 const fmi2_import_get_real_req& fmi2_import_get_real_req::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -26448,7 +20118,6 @@ void fmi2_import_get_real_req::Clear() {
   }
   valuereferences_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_get_real_req::MergePartialFromCodedStream(
@@ -26516,8 +20185,7 @@ bool fmi2_import_get_real_req::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -26544,35 +20212,6 @@ void fmi2_import_get_real_req::SerializeWithCachedSizes(
       3, this->valuereferences(i), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_get_real_req::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required int32 fmuId = 2;
-  if (has_fmuid()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->fmuid(), target);
-  }
-
-  // repeated int32 valueReferences = 3;
-  for (int i = 0; i < this->valuereferences_size(); i++) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteInt32ToArray(3, this->valuereferences(i), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_get_real_req::ByteSize() const {
@@ -26604,27 +20243,15 @@ int fmi2_import_get_real_req::ByteSize() const {
     total_size += 1 * this->valuereferences_size() + data_size;
   }
 
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_get_real_req::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_get_real_req* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_get_real_req*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_get_real_req::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_get_real_req*>(&from));
 }
 
 void fmi2_import_get_real_req::MergeFrom(const fmi2_import_get_real_req& from) {
@@ -26638,13 +20265,6 @@ void fmi2_import_get_real_req::MergeFrom(const fmi2_import_get_real_req& from) {
       set_fmuid(from.fmuid());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_get_real_req::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_get_real_req::CopyFrom(const fmi2_import_get_real_req& from) {
@@ -26665,17 +20285,12 @@ void fmi2_import_get_real_req::Swap(fmi2_import_get_real_req* other) {
     std::swap(fmuid_, other->fmuid_);
     valuereferences_.Swap(&other->valuereferences_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_get_real_req::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_get_real_req_descriptor_;
-  metadata.reflection = fmi2_import_get_real_req_reflection_;
-  return metadata;
+::std::string fmi2_import_get_real_req::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_get_real_req";
 }
 
 
@@ -26688,7 +20303,7 @@ const int fmi2_import_get_real_res::kStatusFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_get_real_res::fmi2_import_get_real_res()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -26696,7 +20311,7 @@ void fmi2_import_get_real_res::InitAsDefaultInstance() {
 }
 
 fmi2_import_get_real_res::fmi2_import_get_real_res(const fmi2_import_get_real_res& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -26713,7 +20328,11 @@ fmi2_import_get_real_res::~fmi2_import_get_real_res() {
 }
 
 void fmi2_import_get_real_res::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -26722,13 +20341,12 @@ void fmi2_import_get_real_res::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_get_real_res::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_get_real_res_descriptor_;
-}
-
 const fmi2_import_get_real_res& fmi2_import_get_real_res::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -26745,7 +20363,6 @@ void fmi2_import_get_real_res::Clear() {
   }
   values_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_get_real_res::MergePartialFromCodedStream(
@@ -26802,8 +20419,6 @@ bool fmi2_import_get_real_res::MergePartialFromCodedStream(
                  input, &value)));
           if (::fmitcp_proto::fmi2_status_t_IsValid(value)) {
             set_status(static_cast< ::fmitcp_proto::fmi2_status_t >(value));
-          } else {
-            mutable_unknown_fields()->AddVarint(3, value);
           }
         } else {
           goto handle_uninterpreted;
@@ -26818,8 +20433,7 @@ bool fmi2_import_get_real_res::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -26847,36 +20461,6 @@ void fmi2_import_get_real_res::SerializeWithCachedSizes(
       3, this->status(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_get_real_res::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // repeated double values = 2;
-  for (int i = 0; i < this->values_size(); i++) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteDoubleToArray(2, this->values(i), target);
-  }
-
-  // required .fmitcp_proto.fmi2_status_t status = 3;
-  if (has_status()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      3, this->status(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_get_real_res::ByteSize() const {
@@ -26904,27 +20488,15 @@ int fmi2_import_get_real_res::ByteSize() const {
     total_size += 1 * this->values_size() + data_size;
   }
 
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_get_real_res::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_get_real_res* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_get_real_res*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_get_real_res::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_get_real_res*>(&from));
 }
 
 void fmi2_import_get_real_res::MergeFrom(const fmi2_import_get_real_res& from) {
@@ -26938,13 +20510,6 @@ void fmi2_import_get_real_res::MergeFrom(const fmi2_import_get_real_res& from) {
       set_status(from.status());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_get_real_res::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_get_real_res::CopyFrom(const fmi2_import_get_real_res& from) {
@@ -26965,17 +20530,12 @@ void fmi2_import_get_real_res::Swap(fmi2_import_get_real_res* other) {
     values_.Swap(&other->values_);
     std::swap(status_, other->status_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_get_real_res::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_get_real_res_descriptor_;
-  metadata.reflection = fmi2_import_get_real_res_reflection_;
-  return metadata;
+::std::string fmi2_import_get_real_res::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_get_real_res";
 }
 
 
@@ -26988,7 +20548,7 @@ const int fmi2_import_get_integer_req::kValueReferencesFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_get_integer_req::fmi2_import_get_integer_req()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -26996,7 +20556,7 @@ void fmi2_import_get_integer_req::InitAsDefaultInstance() {
 }
 
 fmi2_import_get_integer_req::fmi2_import_get_integer_req(const fmi2_import_get_integer_req& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -27013,7 +20573,11 @@ fmi2_import_get_integer_req::~fmi2_import_get_integer_req() {
 }
 
 void fmi2_import_get_integer_req::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -27022,13 +20586,12 @@ void fmi2_import_get_integer_req::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_get_integer_req::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_get_integer_req_descriptor_;
-}
-
 const fmi2_import_get_integer_req& fmi2_import_get_integer_req::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -27045,7 +20608,6 @@ void fmi2_import_get_integer_req::Clear() {
   }
   valuereferences_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_get_integer_req::MergePartialFromCodedStream(
@@ -27113,8 +20675,7 @@ bool fmi2_import_get_integer_req::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -27141,35 +20702,6 @@ void fmi2_import_get_integer_req::SerializeWithCachedSizes(
       3, this->valuereferences(i), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_get_integer_req::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required int32 fmuId = 2;
-  if (has_fmuid()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->fmuid(), target);
-  }
-
-  // repeated int32 valueReferences = 3;
-  for (int i = 0; i < this->valuereferences_size(); i++) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteInt32ToArray(3, this->valuereferences(i), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_get_integer_req::ByteSize() const {
@@ -27201,27 +20733,15 @@ int fmi2_import_get_integer_req::ByteSize() const {
     total_size += 1 * this->valuereferences_size() + data_size;
   }
 
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_get_integer_req::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_get_integer_req* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_get_integer_req*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_get_integer_req::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_get_integer_req*>(&from));
 }
 
 void fmi2_import_get_integer_req::MergeFrom(const fmi2_import_get_integer_req& from) {
@@ -27235,13 +20755,6 @@ void fmi2_import_get_integer_req::MergeFrom(const fmi2_import_get_integer_req& f
       set_fmuid(from.fmuid());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_get_integer_req::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_get_integer_req::CopyFrom(const fmi2_import_get_integer_req& from) {
@@ -27262,17 +20775,12 @@ void fmi2_import_get_integer_req::Swap(fmi2_import_get_integer_req* other) {
     std::swap(fmuid_, other->fmuid_);
     valuereferences_.Swap(&other->valuereferences_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_get_integer_req::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_get_integer_req_descriptor_;
-  metadata.reflection = fmi2_import_get_integer_req_reflection_;
-  return metadata;
+::std::string fmi2_import_get_integer_req::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_get_integer_req";
 }
 
 
@@ -27285,7 +20793,7 @@ const int fmi2_import_get_integer_res::kStatusFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_get_integer_res::fmi2_import_get_integer_res()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -27293,7 +20801,7 @@ void fmi2_import_get_integer_res::InitAsDefaultInstance() {
 }
 
 fmi2_import_get_integer_res::fmi2_import_get_integer_res(const fmi2_import_get_integer_res& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -27310,7 +20818,11 @@ fmi2_import_get_integer_res::~fmi2_import_get_integer_res() {
 }
 
 void fmi2_import_get_integer_res::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -27319,13 +20831,12 @@ void fmi2_import_get_integer_res::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_get_integer_res::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_get_integer_res_descriptor_;
-}
-
 const fmi2_import_get_integer_res& fmi2_import_get_integer_res::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -27342,7 +20853,6 @@ void fmi2_import_get_integer_res::Clear() {
   }
   values_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_get_integer_res::MergePartialFromCodedStream(
@@ -27399,8 +20909,6 @@ bool fmi2_import_get_integer_res::MergePartialFromCodedStream(
                  input, &value)));
           if (::fmitcp_proto::fmi2_status_t_IsValid(value)) {
             set_status(static_cast< ::fmitcp_proto::fmi2_status_t >(value));
-          } else {
-            mutable_unknown_fields()->AddVarint(3, value);
           }
         } else {
           goto handle_uninterpreted;
@@ -27415,8 +20923,7 @@ bool fmi2_import_get_integer_res::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -27444,36 +20951,6 @@ void fmi2_import_get_integer_res::SerializeWithCachedSizes(
       3, this->status(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_get_integer_res::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // repeated int32 values = 2;
-  for (int i = 0; i < this->values_size(); i++) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteInt32ToArray(2, this->values(i), target);
-  }
-
-  // required .fmitcp_proto.fmi2_status_t status = 3;
-  if (has_status()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      3, this->status(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_get_integer_res::ByteSize() const {
@@ -27504,27 +20981,15 @@ int fmi2_import_get_integer_res::ByteSize() const {
     total_size += 1 * this->values_size() + data_size;
   }
 
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_get_integer_res::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_get_integer_res* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_get_integer_res*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_get_integer_res::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_get_integer_res*>(&from));
 }
 
 void fmi2_import_get_integer_res::MergeFrom(const fmi2_import_get_integer_res& from) {
@@ -27538,13 +21003,6 @@ void fmi2_import_get_integer_res::MergeFrom(const fmi2_import_get_integer_res& f
       set_status(from.status());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_get_integer_res::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_get_integer_res::CopyFrom(const fmi2_import_get_integer_res& from) {
@@ -27565,17 +21023,12 @@ void fmi2_import_get_integer_res::Swap(fmi2_import_get_integer_res* other) {
     values_.Swap(&other->values_);
     std::swap(status_, other->status_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_get_integer_res::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_get_integer_res_descriptor_;
-  metadata.reflection = fmi2_import_get_integer_res_reflection_;
-  return metadata;
+::std::string fmi2_import_get_integer_res::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_get_integer_res";
 }
 
 
@@ -27588,7 +21041,7 @@ const int fmi2_import_get_boolean_req::kValueReferencesFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_get_boolean_req::fmi2_import_get_boolean_req()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -27596,7 +21049,7 @@ void fmi2_import_get_boolean_req::InitAsDefaultInstance() {
 }
 
 fmi2_import_get_boolean_req::fmi2_import_get_boolean_req(const fmi2_import_get_boolean_req& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -27613,7 +21066,11 @@ fmi2_import_get_boolean_req::~fmi2_import_get_boolean_req() {
 }
 
 void fmi2_import_get_boolean_req::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -27622,13 +21079,12 @@ void fmi2_import_get_boolean_req::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_get_boolean_req::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_get_boolean_req_descriptor_;
-}
-
 const fmi2_import_get_boolean_req& fmi2_import_get_boolean_req::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -27645,7 +21101,6 @@ void fmi2_import_get_boolean_req::Clear() {
   }
   valuereferences_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_get_boolean_req::MergePartialFromCodedStream(
@@ -27713,8 +21168,7 @@ bool fmi2_import_get_boolean_req::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -27741,35 +21195,6 @@ void fmi2_import_get_boolean_req::SerializeWithCachedSizes(
       3, this->valuereferences(i), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_get_boolean_req::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required int32 fmuId = 2;
-  if (has_fmuid()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->fmuid(), target);
-  }
-
-  // repeated int32 valueReferences = 3;
-  for (int i = 0; i < this->valuereferences_size(); i++) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteInt32ToArray(3, this->valuereferences(i), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_get_boolean_req::ByteSize() const {
@@ -27801,27 +21226,15 @@ int fmi2_import_get_boolean_req::ByteSize() const {
     total_size += 1 * this->valuereferences_size() + data_size;
   }
 
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_get_boolean_req::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_get_boolean_req* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_get_boolean_req*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_get_boolean_req::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_get_boolean_req*>(&from));
 }
 
 void fmi2_import_get_boolean_req::MergeFrom(const fmi2_import_get_boolean_req& from) {
@@ -27835,13 +21248,6 @@ void fmi2_import_get_boolean_req::MergeFrom(const fmi2_import_get_boolean_req& f
       set_fmuid(from.fmuid());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_get_boolean_req::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_get_boolean_req::CopyFrom(const fmi2_import_get_boolean_req& from) {
@@ -27862,17 +21268,12 @@ void fmi2_import_get_boolean_req::Swap(fmi2_import_get_boolean_req* other) {
     std::swap(fmuid_, other->fmuid_);
     valuereferences_.Swap(&other->valuereferences_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_get_boolean_req::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_get_boolean_req_descriptor_;
-  metadata.reflection = fmi2_import_get_boolean_req_reflection_;
-  return metadata;
+::std::string fmi2_import_get_boolean_req::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_get_boolean_req";
 }
 
 
@@ -27885,7 +21286,7 @@ const int fmi2_import_get_boolean_res::kStatusFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_get_boolean_res::fmi2_import_get_boolean_res()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -27893,7 +21294,7 @@ void fmi2_import_get_boolean_res::InitAsDefaultInstance() {
 }
 
 fmi2_import_get_boolean_res::fmi2_import_get_boolean_res(const fmi2_import_get_boolean_res& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -27910,7 +21311,11 @@ fmi2_import_get_boolean_res::~fmi2_import_get_boolean_res() {
 }
 
 void fmi2_import_get_boolean_res::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -27919,13 +21324,12 @@ void fmi2_import_get_boolean_res::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_get_boolean_res::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_get_boolean_res_descriptor_;
-}
-
 const fmi2_import_get_boolean_res& fmi2_import_get_boolean_res::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -27942,7 +21346,6 @@ void fmi2_import_get_boolean_res::Clear() {
   }
   values_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_get_boolean_res::MergePartialFromCodedStream(
@@ -27999,8 +21402,6 @@ bool fmi2_import_get_boolean_res::MergePartialFromCodedStream(
                  input, &value)));
           if (::fmitcp_proto::fmi2_status_t_IsValid(value)) {
             set_status(static_cast< ::fmitcp_proto::fmi2_status_t >(value));
-          } else {
-            mutable_unknown_fields()->AddVarint(3, value);
           }
         } else {
           goto handle_uninterpreted;
@@ -28015,8 +21416,7 @@ bool fmi2_import_get_boolean_res::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -28044,36 +21444,6 @@ void fmi2_import_get_boolean_res::SerializeWithCachedSizes(
       3, this->status(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_get_boolean_res::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // repeated bool values = 2;
-  for (int i = 0; i < this->values_size(); i++) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteBoolToArray(2, this->values(i), target);
-  }
-
-  // required .fmitcp_proto.fmi2_status_t status = 3;
-  if (has_status()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      3, this->status(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_get_boolean_res::ByteSize() const {
@@ -28101,27 +21471,15 @@ int fmi2_import_get_boolean_res::ByteSize() const {
     total_size += 1 * this->values_size() + data_size;
   }
 
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_get_boolean_res::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_get_boolean_res* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_get_boolean_res*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_get_boolean_res::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_get_boolean_res*>(&from));
 }
 
 void fmi2_import_get_boolean_res::MergeFrom(const fmi2_import_get_boolean_res& from) {
@@ -28135,13 +21493,6 @@ void fmi2_import_get_boolean_res::MergeFrom(const fmi2_import_get_boolean_res& f
       set_status(from.status());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_get_boolean_res::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_get_boolean_res::CopyFrom(const fmi2_import_get_boolean_res& from) {
@@ -28162,17 +21513,12 @@ void fmi2_import_get_boolean_res::Swap(fmi2_import_get_boolean_res* other) {
     values_.Swap(&other->values_);
     std::swap(status_, other->status_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_get_boolean_res::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_get_boolean_res_descriptor_;
-  metadata.reflection = fmi2_import_get_boolean_res_reflection_;
-  return metadata;
+::std::string fmi2_import_get_boolean_res::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_get_boolean_res";
 }
 
 
@@ -28185,7 +21531,7 @@ const int fmi2_import_get_string_req::kValueReferencesFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_get_string_req::fmi2_import_get_string_req()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -28193,7 +21539,7 @@ void fmi2_import_get_string_req::InitAsDefaultInstance() {
 }
 
 fmi2_import_get_string_req::fmi2_import_get_string_req(const fmi2_import_get_string_req& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -28210,7 +21556,11 @@ fmi2_import_get_string_req::~fmi2_import_get_string_req() {
 }
 
 void fmi2_import_get_string_req::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -28219,13 +21569,12 @@ void fmi2_import_get_string_req::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_get_string_req::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_get_string_req_descriptor_;
-}
-
 const fmi2_import_get_string_req& fmi2_import_get_string_req::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -28242,7 +21591,6 @@ void fmi2_import_get_string_req::Clear() {
   }
   valuereferences_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_get_string_req::MergePartialFromCodedStream(
@@ -28310,8 +21658,7 @@ bool fmi2_import_get_string_req::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -28338,35 +21685,6 @@ void fmi2_import_get_string_req::SerializeWithCachedSizes(
       3, this->valuereferences(i), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_get_string_req::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required int32 fmuId = 2;
-  if (has_fmuid()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->fmuid(), target);
-  }
-
-  // repeated int32 valueReferences = 3;
-  for (int i = 0; i < this->valuereferences_size(); i++) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteInt32ToArray(3, this->valuereferences(i), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_get_string_req::ByteSize() const {
@@ -28398,27 +21716,15 @@ int fmi2_import_get_string_req::ByteSize() const {
     total_size += 1 * this->valuereferences_size() + data_size;
   }
 
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_get_string_req::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_get_string_req* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_get_string_req*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_get_string_req::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_get_string_req*>(&from));
 }
 
 void fmi2_import_get_string_req::MergeFrom(const fmi2_import_get_string_req& from) {
@@ -28432,13 +21738,6 @@ void fmi2_import_get_string_req::MergeFrom(const fmi2_import_get_string_req& fro
       set_fmuid(from.fmuid());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_get_string_req::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_get_string_req::CopyFrom(const fmi2_import_get_string_req& from) {
@@ -28459,17 +21758,12 @@ void fmi2_import_get_string_req::Swap(fmi2_import_get_string_req* other) {
     std::swap(fmuid_, other->fmuid_);
     valuereferences_.Swap(&other->valuereferences_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_get_string_req::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_get_string_req_descriptor_;
-  metadata.reflection = fmi2_import_get_string_req_reflection_;
-  return metadata;
+::std::string fmi2_import_get_string_req::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_get_string_req";
 }
 
 
@@ -28482,7 +21776,7 @@ const int fmi2_import_get_string_res::kStatusFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_get_string_res::fmi2_import_get_string_res()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -28490,7 +21784,7 @@ void fmi2_import_get_string_res::InitAsDefaultInstance() {
 }
 
 fmi2_import_get_string_res::fmi2_import_get_string_res(const fmi2_import_get_string_res& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -28507,7 +21801,11 @@ fmi2_import_get_string_res::~fmi2_import_get_string_res() {
 }
 
 void fmi2_import_get_string_res::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -28516,13 +21814,12 @@ void fmi2_import_get_string_res::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_get_string_res::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_get_string_res_descriptor_;
-}
-
 const fmi2_import_get_string_res& fmi2_import_get_string_res::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -28539,7 +21836,6 @@ void fmi2_import_get_string_res::Clear() {
   }
   values_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_get_string_res::MergePartialFromCodedStream(
@@ -28570,10 +21866,6 @@ bool fmi2_import_get_string_res::MergePartialFromCodedStream(
          parse_values:
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->add_values()));
-          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-            this->values(this->values_size() - 1).data(),
-            this->values(this->values_size() - 1).length(),
-            ::google::protobuf::internal::WireFormat::PARSE);
         } else {
           goto handle_uninterpreted;
         }
@@ -28593,8 +21885,6 @@ bool fmi2_import_get_string_res::MergePartialFromCodedStream(
                  input, &value)));
           if (::fmitcp_proto::fmi2_status_t_IsValid(value)) {
             set_status(static_cast< ::fmitcp_proto::fmi2_status_t >(value));
-          } else {
-            mutable_unknown_fields()->AddVarint(3, value);
           }
         } else {
           goto handle_uninterpreted;
@@ -28609,8 +21899,7 @@ bool fmi2_import_get_string_res::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -28628,9 +21917,6 @@ void fmi2_import_get_string_res::SerializeWithCachedSizes(
 
   // repeated string values = 2;
   for (int i = 0; i < this->values_size(); i++) {
-  ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-    this->values(i).data(), this->values(i).length(),
-    ::google::protobuf::internal::WireFormat::SERIALIZE);
     ::google::protobuf::internal::WireFormatLite::WriteString(
       2, this->values(i), output);
   }
@@ -28641,39 +21927,6 @@ void fmi2_import_get_string_res::SerializeWithCachedSizes(
       3, this->status(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_get_string_res::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // repeated string values = 2;
-  for (int i = 0; i < this->values_size(); i++) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->values(i).data(), this->values(i).length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE);
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteStringToArray(2, this->values(i), target);
-  }
-
-  // required .fmitcp_proto.fmi2_status_t status = 3;
-  if (has_status()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      3, this->status(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_get_string_res::ByteSize() const {
@@ -28701,27 +21954,15 @@ int fmi2_import_get_string_res::ByteSize() const {
       this->values(i));
   }
 
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_get_string_res::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_get_string_res* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_get_string_res*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_get_string_res::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_get_string_res*>(&from));
 }
 
 void fmi2_import_get_string_res::MergeFrom(const fmi2_import_get_string_res& from) {
@@ -28735,13 +21976,6 @@ void fmi2_import_get_string_res::MergeFrom(const fmi2_import_get_string_res& fro
       set_status(from.status());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_get_string_res::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_get_string_res::CopyFrom(const fmi2_import_get_string_res& from) {
@@ -28762,17 +21996,12 @@ void fmi2_import_get_string_res::Swap(fmi2_import_get_string_res* other) {
     values_.Swap(&other->values_);
     std::swap(status_, other->status_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_get_string_res::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_get_string_res_descriptor_;
-  metadata.reflection = fmi2_import_get_string_res_reflection_;
-  return metadata;
+::std::string fmi2_import_get_string_res::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_get_string_res";
 }
 
 
@@ -28782,7 +22011,7 @@ void fmi2_import_get_string_res::Swap(fmi2_import_get_string_res* other) {
 #endif  // !_MSC_VER
 
 char_req::char_req()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -28790,7 +22019,7 @@ void char_req::InitAsDefaultInstance() {
 }
 
 char_req::char_req(const char_req& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -28805,7 +22034,11 @@ char_req::~char_req() {
 }
 
 void char_req::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -28814,13 +22047,12 @@ void char_req::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* char_req::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return char_req_descriptor_;
-}
-
 const char_req& char_req::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -28832,7 +22064,6 @@ char_req* char_req::New() const {
 
 void char_req::Clear() {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool char_req::MergePartialFromCodedStream(
@@ -28844,8 +22075,7 @@ bool char_req::MergePartialFromCodedStream(
         ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
       return true;
     }
-    DO_(::google::protobuf::internal::WireFormat::SkipField(
-          input, tag, mutable_unknown_fields()));
+    DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
   }
   return true;
 #undef DO_
@@ -28853,56 +22083,24 @@ bool char_req::MergePartialFromCodedStream(
 
 void char_req::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* char_req::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int char_req::ByteSize() const {
   int total_size = 0;
 
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void char_req::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const char_req* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const char_req*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void char_req::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const char_req*>(&from));
 }
 
 void char_req::MergeFrom(const char_req& from) {
   GOOGLE_CHECK_NE(&from, this);
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void char_req::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void char_req::CopyFrom(const char_req& from) {
@@ -28918,17 +22116,12 @@ bool char_req::IsInitialized() const {
 
 void char_req::Swap(char_req* other) {
   if (other != this) {
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata char_req::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = char_req_descriptor_;
-  metadata.reflection = char_req_reflection_;
-  return metadata;
+::std::string char_req::GetTypeName() const {
+  return "fmitcp_proto.char_req";
 }
 
 
@@ -28938,7 +22131,7 @@ void char_req::Swap(char_req* other) {
 #endif  // !_MSC_VER
 
 char_res::char_res()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -28946,7 +22139,7 @@ void char_res::InitAsDefaultInstance() {
 }
 
 char_res::char_res(const char_res& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -28961,7 +22154,11 @@ char_res::~char_res() {
 }
 
 void char_res::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -28970,13 +22167,12 @@ void char_res::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* char_res::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return char_res_descriptor_;
-}
-
 const char_res& char_res::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -28988,7 +22184,6 @@ char_res* char_res::New() const {
 
 void char_res::Clear() {
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool char_res::MergePartialFromCodedStream(
@@ -29000,8 +22195,7 @@ bool char_res::MergePartialFromCodedStream(
         ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
       return true;
     }
-    DO_(::google::protobuf::internal::WireFormat::SkipField(
-          input, tag, mutable_unknown_fields()));
+    DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
   }
   return true;
 #undef DO_
@@ -29009,56 +22203,24 @@ bool char_res::MergePartialFromCodedStream(
 
 void char_res::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* char_res::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int char_res::ByteSize() const {
   int total_size = 0;
 
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void char_res::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const char_res* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const char_res*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void char_res::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const char_res*>(&from));
 }
 
 void char_res::MergeFrom(const char_res& from) {
   GOOGLE_CHECK_NE(&from, this);
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void char_res::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void char_res::CopyFrom(const char_res& from) {
@@ -29074,17 +22236,12 @@ bool char_res::IsInitialized() const {
 
 void char_res::Swap(char_res* other) {
   if (other != this) {
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata char_res::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = char_res_descriptor_;
-  metadata.reflection = char_res_reflection_;
-  return metadata;
+::std::string char_res::GetTypeName() const {
+  return "fmitcp_proto.char_res";
 }
 
 
@@ -29096,7 +22253,7 @@ const int fmi2_import_get_fmu_state_req::kFmuIdFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_get_fmu_state_req::fmi2_import_get_fmu_state_req()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -29104,7 +22261,7 @@ void fmi2_import_get_fmu_state_req::InitAsDefaultInstance() {
 }
 
 fmi2_import_get_fmu_state_req::fmi2_import_get_fmu_state_req(const fmi2_import_get_fmu_state_req& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -29121,7 +22278,11 @@ fmi2_import_get_fmu_state_req::~fmi2_import_get_fmu_state_req() {
 }
 
 void fmi2_import_get_fmu_state_req::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -29130,13 +22291,12 @@ void fmi2_import_get_fmu_state_req::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_get_fmu_state_req::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_get_fmu_state_req_descriptor_;
-}
-
 const fmi2_import_get_fmu_state_req& fmi2_import_get_fmu_state_req::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -29152,7 +22312,6 @@ void fmi2_import_get_fmu_state_req::Clear() {
     fmuid_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_get_fmu_state_req::MergePartialFromCodedStream(
@@ -29198,8 +22357,7 @@ bool fmi2_import_get_fmu_state_req::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -29220,29 +22378,6 @@ void fmi2_import_get_fmu_state_req::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->fmuid(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_get_fmu_state_req::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required int32 fmuId = 2;
-  if (has_fmuid()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->fmuid(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_get_fmu_state_req::ByteSize() const {
@@ -29264,27 +22399,15 @@ int fmi2_import_get_fmu_state_req::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_get_fmu_state_req::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_get_fmu_state_req* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_get_fmu_state_req*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_get_fmu_state_req::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_get_fmu_state_req*>(&from));
 }
 
 void fmi2_import_get_fmu_state_req::MergeFrom(const fmi2_import_get_fmu_state_req& from) {
@@ -29297,13 +22420,6 @@ void fmi2_import_get_fmu_state_req::MergeFrom(const fmi2_import_get_fmu_state_re
       set_fmuid(from.fmuid());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_get_fmu_state_req::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_get_fmu_state_req::CopyFrom(const fmi2_import_get_fmu_state_req& from) {
@@ -29323,17 +22439,12 @@ void fmi2_import_get_fmu_state_req::Swap(fmi2_import_get_fmu_state_req* other) {
     std::swap(message_id_, other->message_id_);
     std::swap(fmuid_, other->fmuid_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_get_fmu_state_req::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_get_fmu_state_req_descriptor_;
-  metadata.reflection = fmi2_import_get_fmu_state_req_reflection_;
-  return metadata;
+::std::string fmi2_import_get_fmu_state_req::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_get_fmu_state_req";
 }
 
 
@@ -29346,7 +22457,7 @@ const int fmi2_import_get_fmu_state_res::kStatusFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_get_fmu_state_res::fmi2_import_get_fmu_state_res()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -29354,7 +22465,7 @@ void fmi2_import_get_fmu_state_res::InitAsDefaultInstance() {
 }
 
 fmi2_import_get_fmu_state_res::fmi2_import_get_fmu_state_res(const fmi2_import_get_fmu_state_res& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -29372,7 +22483,11 @@ fmi2_import_get_fmu_state_res::~fmi2_import_get_fmu_state_res() {
 }
 
 void fmi2_import_get_fmu_state_res::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -29381,13 +22496,12 @@ void fmi2_import_get_fmu_state_res::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_get_fmu_state_res::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_get_fmu_state_res_descriptor_;
-}
-
 const fmi2_import_get_fmu_state_res& fmi2_import_get_fmu_state_res::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -29404,7 +22518,6 @@ void fmi2_import_get_fmu_state_res::Clear() {
     status_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_get_fmu_state_res::MergePartialFromCodedStream(
@@ -29455,8 +22568,6 @@ bool fmi2_import_get_fmu_state_res::MergePartialFromCodedStream(
                  input, &value)));
           if (::fmitcp_proto::fmi2_status_t_IsValid(value)) {
             set_status(static_cast< ::fmitcp_proto::fmi2_status_t >(value));
-          } else {
-            mutable_unknown_fields()->AddVarint(3, value);
           }
         } else {
           goto handle_uninterpreted;
@@ -29471,8 +22582,7 @@ bool fmi2_import_get_fmu_state_res::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -29499,35 +22609,6 @@ void fmi2_import_get_fmu_state_res::SerializeWithCachedSizes(
       3, this->status(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_get_fmu_state_res::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required int32 stateId = 2;
-  if (has_stateid()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->stateid(), target);
-  }
-
-  // required .fmitcp_proto.fmi2_status_t status = 3;
-  if (has_status()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      3, this->status(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_get_fmu_state_res::ByteSize() const {
@@ -29555,27 +22636,15 @@ int fmi2_import_get_fmu_state_res::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_get_fmu_state_res::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_get_fmu_state_res* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_get_fmu_state_res*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_get_fmu_state_res::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_get_fmu_state_res*>(&from));
 }
 
 void fmi2_import_get_fmu_state_res::MergeFrom(const fmi2_import_get_fmu_state_res& from) {
@@ -29591,13 +22660,6 @@ void fmi2_import_get_fmu_state_res::MergeFrom(const fmi2_import_get_fmu_state_re
       set_status(from.status());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_get_fmu_state_res::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_get_fmu_state_res::CopyFrom(const fmi2_import_get_fmu_state_res& from) {
@@ -29618,17 +22680,12 @@ void fmi2_import_get_fmu_state_res::Swap(fmi2_import_get_fmu_state_res* other) {
     std::swap(stateid_, other->stateid_);
     std::swap(status_, other->status_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_get_fmu_state_res::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_get_fmu_state_res_descriptor_;
-  metadata.reflection = fmi2_import_get_fmu_state_res_reflection_;
-  return metadata;
+::std::string fmi2_import_get_fmu_state_res::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_get_fmu_state_res";
 }
 
 
@@ -29641,7 +22698,7 @@ const int fmi2_import_set_fmu_state_req::kStateIdFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_set_fmu_state_req::fmi2_import_set_fmu_state_req()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -29649,7 +22706,7 @@ void fmi2_import_set_fmu_state_req::InitAsDefaultInstance() {
 }
 
 fmi2_import_set_fmu_state_req::fmi2_import_set_fmu_state_req(const fmi2_import_set_fmu_state_req& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -29667,7 +22724,11 @@ fmi2_import_set_fmu_state_req::~fmi2_import_set_fmu_state_req() {
 }
 
 void fmi2_import_set_fmu_state_req::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -29676,13 +22737,12 @@ void fmi2_import_set_fmu_state_req::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_set_fmu_state_req::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_set_fmu_state_req_descriptor_;
-}
-
 const fmi2_import_set_fmu_state_req& fmi2_import_set_fmu_state_req::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -29699,7 +22759,6 @@ void fmi2_import_set_fmu_state_req::Clear() {
     stateid_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_set_fmu_state_req::MergePartialFromCodedStream(
@@ -29761,8 +22820,7 @@ bool fmi2_import_set_fmu_state_req::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -29788,34 +22846,6 @@ void fmi2_import_set_fmu_state_req::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(3, this->stateid(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_set_fmu_state_req::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required int32 fmuId = 2;
-  if (has_fmuid()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->fmuid(), target);
-  }
-
-  // required int32 stateId = 3;
-  if (has_stateid()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(3, this->stateid(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_set_fmu_state_req::ByteSize() const {
@@ -29844,27 +22874,15 @@ int fmi2_import_set_fmu_state_req::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_set_fmu_state_req::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_set_fmu_state_req* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_set_fmu_state_req*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_set_fmu_state_req::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_set_fmu_state_req*>(&from));
 }
 
 void fmi2_import_set_fmu_state_req::MergeFrom(const fmi2_import_set_fmu_state_req& from) {
@@ -29880,13 +22898,6 @@ void fmi2_import_set_fmu_state_req::MergeFrom(const fmi2_import_set_fmu_state_re
       set_stateid(from.stateid());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_set_fmu_state_req::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_set_fmu_state_req::CopyFrom(const fmi2_import_set_fmu_state_req& from) {
@@ -29907,17 +22918,12 @@ void fmi2_import_set_fmu_state_req::Swap(fmi2_import_set_fmu_state_req* other) {
     std::swap(fmuid_, other->fmuid_);
     std::swap(stateid_, other->stateid_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_set_fmu_state_req::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_set_fmu_state_req_descriptor_;
-  metadata.reflection = fmi2_import_set_fmu_state_req_reflection_;
-  return metadata;
+::std::string fmi2_import_set_fmu_state_req::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_set_fmu_state_req";
 }
 
 
@@ -29929,7 +22935,7 @@ const int fmi2_import_set_fmu_state_res::kStatusFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_set_fmu_state_res::fmi2_import_set_fmu_state_res()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -29937,7 +22943,7 @@ void fmi2_import_set_fmu_state_res::InitAsDefaultInstance() {
 }
 
 fmi2_import_set_fmu_state_res::fmi2_import_set_fmu_state_res(const fmi2_import_set_fmu_state_res& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -29954,7 +22960,11 @@ fmi2_import_set_fmu_state_res::~fmi2_import_set_fmu_state_res() {
 }
 
 void fmi2_import_set_fmu_state_res::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -29963,13 +22973,12 @@ void fmi2_import_set_fmu_state_res::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_set_fmu_state_res::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_set_fmu_state_res_descriptor_;
-}
-
 const fmi2_import_set_fmu_state_res& fmi2_import_set_fmu_state_res::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -29985,7 +22994,6 @@ void fmi2_import_set_fmu_state_res::Clear() {
     status_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_set_fmu_state_res::MergePartialFromCodedStream(
@@ -30020,8 +23028,6 @@ bool fmi2_import_set_fmu_state_res::MergePartialFromCodedStream(
                  input, &value)));
           if (::fmitcp_proto::fmi2_status_t_IsValid(value)) {
             set_status(static_cast< ::fmitcp_proto::fmi2_status_t >(value));
-          } else {
-            mutable_unknown_fields()->AddVarint(2, value);
           }
         } else {
           goto handle_uninterpreted;
@@ -30036,8 +23042,7 @@ bool fmi2_import_set_fmu_state_res::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -30059,30 +23064,6 @@ void fmi2_import_set_fmu_state_res::SerializeWithCachedSizes(
       2, this->status(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_set_fmu_state_res::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required .fmitcp_proto.fmi2_status_t status = 2;
-  if (has_status()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      2, this->status(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_set_fmu_state_res::ByteSize() const {
@@ -30103,27 +23084,15 @@ int fmi2_import_set_fmu_state_res::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_set_fmu_state_res::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_set_fmu_state_res* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_set_fmu_state_res*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_set_fmu_state_res::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_set_fmu_state_res*>(&from));
 }
 
 void fmi2_import_set_fmu_state_res::MergeFrom(const fmi2_import_set_fmu_state_res& from) {
@@ -30136,13 +23105,6 @@ void fmi2_import_set_fmu_state_res::MergeFrom(const fmi2_import_set_fmu_state_re
       set_status(from.status());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_set_fmu_state_res::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_set_fmu_state_res::CopyFrom(const fmi2_import_set_fmu_state_res& from) {
@@ -30162,17 +23124,12 @@ void fmi2_import_set_fmu_state_res::Swap(fmi2_import_set_fmu_state_res* other) {
     std::swap(message_id_, other->message_id_);
     std::swap(status_, other->status_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_set_fmu_state_res::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_set_fmu_state_res_descriptor_;
-  metadata.reflection = fmi2_import_set_fmu_state_res_reflection_;
-  return metadata;
+::std::string fmi2_import_set_fmu_state_res::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_set_fmu_state_res";
 }
 
 
@@ -30184,7 +23141,7 @@ const int fmi2_import_free_fmu_state_req::kStateIdFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_free_fmu_state_req::fmi2_import_free_fmu_state_req()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -30192,7 +23149,7 @@ void fmi2_import_free_fmu_state_req::InitAsDefaultInstance() {
 }
 
 fmi2_import_free_fmu_state_req::fmi2_import_free_fmu_state_req(const fmi2_import_free_fmu_state_req& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -30209,7 +23166,11 @@ fmi2_import_free_fmu_state_req::~fmi2_import_free_fmu_state_req() {
 }
 
 void fmi2_import_free_fmu_state_req::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -30218,13 +23179,12 @@ void fmi2_import_free_fmu_state_req::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_free_fmu_state_req::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_free_fmu_state_req_descriptor_;
-}
-
 const fmi2_import_free_fmu_state_req& fmi2_import_free_fmu_state_req::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -30240,7 +23200,6 @@ void fmi2_import_free_fmu_state_req::Clear() {
     stateid_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_free_fmu_state_req::MergePartialFromCodedStream(
@@ -30286,8 +23245,7 @@ bool fmi2_import_free_fmu_state_req::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -30308,29 +23266,6 @@ void fmi2_import_free_fmu_state_req::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->stateid(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_free_fmu_state_req::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required int32 stateId = 2;
-  if (has_stateid()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->stateid(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_free_fmu_state_req::ByteSize() const {
@@ -30352,27 +23287,15 @@ int fmi2_import_free_fmu_state_req::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_free_fmu_state_req::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_free_fmu_state_req* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_free_fmu_state_req*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_free_fmu_state_req::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_free_fmu_state_req*>(&from));
 }
 
 void fmi2_import_free_fmu_state_req::MergeFrom(const fmi2_import_free_fmu_state_req& from) {
@@ -30385,13 +23308,6 @@ void fmi2_import_free_fmu_state_req::MergeFrom(const fmi2_import_free_fmu_state_
       set_stateid(from.stateid());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_free_fmu_state_req::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_free_fmu_state_req::CopyFrom(const fmi2_import_free_fmu_state_req& from) {
@@ -30411,17 +23327,12 @@ void fmi2_import_free_fmu_state_req::Swap(fmi2_import_free_fmu_state_req* other)
     std::swap(message_id_, other->message_id_);
     std::swap(stateid_, other->stateid_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_free_fmu_state_req::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_free_fmu_state_req_descriptor_;
-  metadata.reflection = fmi2_import_free_fmu_state_req_reflection_;
-  return metadata;
+::std::string fmi2_import_free_fmu_state_req::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_free_fmu_state_req";
 }
 
 
@@ -30433,7 +23344,7 @@ const int fmi2_import_free_fmu_state_res::kStatusFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_free_fmu_state_res::fmi2_import_free_fmu_state_res()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -30441,7 +23352,7 @@ void fmi2_import_free_fmu_state_res::InitAsDefaultInstance() {
 }
 
 fmi2_import_free_fmu_state_res::fmi2_import_free_fmu_state_res(const fmi2_import_free_fmu_state_res& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -30458,7 +23369,11 @@ fmi2_import_free_fmu_state_res::~fmi2_import_free_fmu_state_res() {
 }
 
 void fmi2_import_free_fmu_state_res::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -30467,13 +23382,12 @@ void fmi2_import_free_fmu_state_res::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_free_fmu_state_res::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_free_fmu_state_res_descriptor_;
-}
-
 const fmi2_import_free_fmu_state_res& fmi2_import_free_fmu_state_res::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -30489,7 +23403,6 @@ void fmi2_import_free_fmu_state_res::Clear() {
     status_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_free_fmu_state_res::MergePartialFromCodedStream(
@@ -30524,8 +23437,6 @@ bool fmi2_import_free_fmu_state_res::MergePartialFromCodedStream(
                  input, &value)));
           if (::fmitcp_proto::fmi2_status_t_IsValid(value)) {
             set_status(static_cast< ::fmitcp_proto::fmi2_status_t >(value));
-          } else {
-            mutable_unknown_fields()->AddVarint(2, value);
           }
         } else {
           goto handle_uninterpreted;
@@ -30540,8 +23451,7 @@ bool fmi2_import_free_fmu_state_res::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -30563,30 +23473,6 @@ void fmi2_import_free_fmu_state_res::SerializeWithCachedSizes(
       2, this->status(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_free_fmu_state_res::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required .fmitcp_proto.fmi2_status_t status = 2;
-  if (has_status()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      2, this->status(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_free_fmu_state_res::ByteSize() const {
@@ -30607,27 +23493,15 @@ int fmi2_import_free_fmu_state_res::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_free_fmu_state_res::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_free_fmu_state_res* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_free_fmu_state_res*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_free_fmu_state_res::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_free_fmu_state_res*>(&from));
 }
 
 void fmi2_import_free_fmu_state_res::MergeFrom(const fmi2_import_free_fmu_state_res& from) {
@@ -30640,13 +23514,6 @@ void fmi2_import_free_fmu_state_res::MergeFrom(const fmi2_import_free_fmu_state_
       set_status(from.status());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_free_fmu_state_res::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_free_fmu_state_res::CopyFrom(const fmi2_import_free_fmu_state_res& from) {
@@ -30666,17 +23533,12 @@ void fmi2_import_free_fmu_state_res::Swap(fmi2_import_free_fmu_state_res* other)
     std::swap(message_id_, other->message_id_);
     std::swap(status_, other->status_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_free_fmu_state_res::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_free_fmu_state_res_descriptor_;
-  metadata.reflection = fmi2_import_free_fmu_state_res_reflection_;
-  return metadata;
+::std::string fmi2_import_free_fmu_state_res::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_free_fmu_state_res";
 }
 
 
@@ -30691,7 +23553,7 @@ const int fmi2_import_get_directional_derivative_req::kDvFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_get_directional_derivative_req::fmi2_import_get_directional_derivative_req()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -30699,7 +23561,7 @@ void fmi2_import_get_directional_derivative_req::InitAsDefaultInstance() {
 }
 
 fmi2_import_get_directional_derivative_req::fmi2_import_get_directional_derivative_req(const fmi2_import_get_directional_derivative_req& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -30716,7 +23578,11 @@ fmi2_import_get_directional_derivative_req::~fmi2_import_get_directional_derivat
 }
 
 void fmi2_import_get_directional_derivative_req::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -30725,13 +23591,12 @@ void fmi2_import_get_directional_derivative_req::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_get_directional_derivative_req::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_get_directional_derivative_req_descriptor_;
-}
-
 const fmi2_import_get_directional_derivative_req& fmi2_import_get_directional_derivative_req::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -30750,7 +23615,6 @@ void fmi2_import_get_directional_derivative_req::Clear() {
   z_ref_.Clear();
   dv_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_get_directional_derivative_req::MergePartialFromCodedStream(
@@ -30862,8 +23726,7 @@ bool fmi2_import_get_directional_derivative_req::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -30902,47 +23765,6 @@ void fmi2_import_get_directional_derivative_req::SerializeWithCachedSizes(
       5, this->dv(i), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_get_directional_derivative_req::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required int32 fmuId = 2;
-  if (has_fmuid()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->fmuid(), target);
-  }
-
-  // repeated int32 v_ref = 3;
-  for (int i = 0; i < this->v_ref_size(); i++) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteInt32ToArray(3, this->v_ref(i), target);
-  }
-
-  // repeated int32 z_ref = 4;
-  for (int i = 0; i < this->z_ref_size(); i++) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteInt32ToArray(4, this->z_ref(i), target);
-  }
-
-  // repeated double dv = 5;
-  for (int i = 0; i < this->dv_size(); i++) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteDoubleToArray(5, this->dv(i), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_get_directional_derivative_req::ByteSize() const {
@@ -30991,27 +23813,15 @@ int fmi2_import_get_directional_derivative_req::ByteSize() const {
     total_size += 1 * this->dv_size() + data_size;
   }
 
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_get_directional_derivative_req::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_get_directional_derivative_req* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_get_directional_derivative_req*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_get_directional_derivative_req::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_get_directional_derivative_req*>(&from));
 }
 
 void fmi2_import_get_directional_derivative_req::MergeFrom(const fmi2_import_get_directional_derivative_req& from) {
@@ -31027,13 +23837,6 @@ void fmi2_import_get_directional_derivative_req::MergeFrom(const fmi2_import_get
       set_fmuid(from.fmuid());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_get_directional_derivative_req::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_get_directional_derivative_req::CopyFrom(const fmi2_import_get_directional_derivative_req& from) {
@@ -31056,17 +23859,12 @@ void fmi2_import_get_directional_derivative_req::Swap(fmi2_import_get_directiona
     z_ref_.Swap(&other->z_ref_);
     dv_.Swap(&other->dv_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_get_directional_derivative_req::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_get_directional_derivative_req_descriptor_;
-  metadata.reflection = fmi2_import_get_directional_derivative_req_reflection_;
-  return metadata;
+::std::string fmi2_import_get_directional_derivative_req::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_get_directional_derivative_req";
 }
 
 
@@ -31079,7 +23877,7 @@ const int fmi2_import_get_directional_derivative_res::kStatusFieldNumber;
 #endif  // !_MSC_VER
 
 fmi2_import_get_directional_derivative_res::fmi2_import_get_directional_derivative_res()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -31087,7 +23885,7 @@ void fmi2_import_get_directional_derivative_res::InitAsDefaultInstance() {
 }
 
 fmi2_import_get_directional_derivative_res::fmi2_import_get_directional_derivative_res(const fmi2_import_get_directional_derivative_res& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -31104,7 +23902,11 @@ fmi2_import_get_directional_derivative_res::~fmi2_import_get_directional_derivat
 }
 
 void fmi2_import_get_directional_derivative_res::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -31113,13 +23915,12 @@ void fmi2_import_get_directional_derivative_res::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* fmi2_import_get_directional_derivative_res::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return fmi2_import_get_directional_derivative_res_descriptor_;
-}
-
 const fmi2_import_get_directional_derivative_res& fmi2_import_get_directional_derivative_res::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -31136,7 +23937,6 @@ void fmi2_import_get_directional_derivative_res::Clear() {
   }
   dz_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool fmi2_import_get_directional_derivative_res::MergePartialFromCodedStream(
@@ -31193,8 +23993,6 @@ bool fmi2_import_get_directional_derivative_res::MergePartialFromCodedStream(
                  input, &value)));
           if (::fmitcp_proto::fmi2_status_t_IsValid(value)) {
             set_status(static_cast< ::fmitcp_proto::fmi2_status_t >(value));
-          } else {
-            mutable_unknown_fields()->AddVarint(3, value);
           }
         } else {
           goto handle_uninterpreted;
@@ -31209,8 +24007,7 @@ bool fmi2_import_get_directional_derivative_res::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -31238,36 +24035,6 @@ void fmi2_import_get_directional_derivative_res::SerializeWithCachedSizes(
       3, this->status(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* fmi2_import_get_directional_derivative_res::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // repeated double dz = 2;
-  for (int i = 0; i < this->dz_size(); i++) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteDoubleToArray(2, this->dz(i), target);
-  }
-
-  // required .fmitcp_proto.fmi2_status_t status = 3;
-  if (has_status()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      3, this->status(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int fmi2_import_get_directional_derivative_res::ByteSize() const {
@@ -31295,27 +24062,15 @@ int fmi2_import_get_directional_derivative_res::ByteSize() const {
     total_size += 1 * this->dz_size() + data_size;
   }
 
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void fmi2_import_get_directional_derivative_res::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const fmi2_import_get_directional_derivative_res* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const fmi2_import_get_directional_derivative_res*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void fmi2_import_get_directional_derivative_res::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const fmi2_import_get_directional_derivative_res*>(&from));
 }
 
 void fmi2_import_get_directional_derivative_res::MergeFrom(const fmi2_import_get_directional_derivative_res& from) {
@@ -31329,13 +24084,6 @@ void fmi2_import_get_directional_derivative_res::MergeFrom(const fmi2_import_get
       set_status(from.status());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void fmi2_import_get_directional_derivative_res::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void fmi2_import_get_directional_derivative_res::CopyFrom(const fmi2_import_get_directional_derivative_res& from) {
@@ -31356,17 +24104,12 @@ void fmi2_import_get_directional_derivative_res::Swap(fmi2_import_get_directiona
     dz_.Swap(&other->dz_);
     std::swap(status_, other->status_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata fmi2_import_get_directional_derivative_res::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = fmi2_import_get_directional_derivative_res_descriptor_;
-  metadata.reflection = fmi2_import_get_directional_derivative_res_reflection_;
-  return metadata;
+::std::string fmi2_import_get_directional_derivative_res::GetTypeName() const {
+  return "fmitcp_proto.fmi2_import_get_directional_derivative_res";
 }
 
 
@@ -31378,7 +24121,7 @@ const int get_xml_req::kFmuIdFieldNumber;
 #endif  // !_MSC_VER
 
 get_xml_req::get_xml_req()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -31386,7 +24129,7 @@ void get_xml_req::InitAsDefaultInstance() {
 }
 
 get_xml_req::get_xml_req(const get_xml_req& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -31403,7 +24146,11 @@ get_xml_req::~get_xml_req() {
 }
 
 void get_xml_req::SharedDtor() {
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -31412,13 +24159,12 @@ void get_xml_req::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* get_xml_req::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return get_xml_req_descriptor_;
-}
-
 const get_xml_req& get_xml_req::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -31434,7 +24180,6 @@ void get_xml_req::Clear() {
     fmuid_ = 0;
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool get_xml_req::MergePartialFromCodedStream(
@@ -31480,8 +24225,7 @@ bool get_xml_req::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -31502,29 +24246,6 @@ void get_xml_req::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->fmuid(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* get_xml_req::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required int32 fmuId = 2;
-  if (has_fmuid()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->fmuid(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int get_xml_req::ByteSize() const {
@@ -31546,27 +24267,15 @@ int get_xml_req::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void get_xml_req::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const get_xml_req* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const get_xml_req*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void get_xml_req::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const get_xml_req*>(&from));
 }
 
 void get_xml_req::MergeFrom(const get_xml_req& from) {
@@ -31579,13 +24288,6 @@ void get_xml_req::MergeFrom(const get_xml_req& from) {
       set_fmuid(from.fmuid());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void get_xml_req::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void get_xml_req::CopyFrom(const get_xml_req& from) {
@@ -31605,17 +24307,12 @@ void get_xml_req::Swap(get_xml_req* other) {
     std::swap(message_id_, other->message_id_);
     std::swap(fmuid_, other->fmuid_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata get_xml_req::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = get_xml_req_descriptor_;
-  metadata.reflection = get_xml_req_reflection_;
-  return metadata;
+::std::string get_xml_req::GetTypeName() const {
+  return "fmitcp_proto.get_xml_req";
 }
 
 
@@ -31628,7 +24325,7 @@ const int get_xml_res::kXmlFieldNumber;
 #endif  // !_MSC_VER
 
 get_xml_res::get_xml_res()
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
 }
 
@@ -31636,7 +24333,7 @@ void get_xml_res::InitAsDefaultInstance() {
 }
 
 get_xml_res::get_xml_res(const get_xml_res& from)
-  : ::google::protobuf::Message() {
+  : ::google::protobuf::MessageLite() {
   SharedCtor();
   MergeFrom(from);
 }
@@ -31657,7 +24354,11 @@ void get_xml_res::SharedDtor() {
   if (xml_ != &::google::protobuf::internal::kEmptyString) {
     delete xml_;
   }
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  if (this != &default_instance()) {
+  #else
   if (this != default_instance_) {
+  #endif
   }
 }
 
@@ -31666,13 +24367,12 @@ void get_xml_res::SetCachedSize(int size) const {
   _cached_size_ = size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
-const ::google::protobuf::Descriptor* get_xml_res::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return get_xml_res_descriptor_;
-}
-
 const get_xml_res& get_xml_res::default_instance() {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  protobuf_AddDesc_fmitcp_2eproto();
+#else
   if (default_instance_ == NULL) protobuf_AddDesc_fmitcp_2eproto();
+#endif
   return *default_instance_;
 }
 
@@ -31693,7 +24393,6 @@ void get_xml_res::Clear() {
     }
   }
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
-  mutable_unknown_fields()->Clear();
 }
 
 bool get_xml_res::MergePartialFromCodedStream(
@@ -31728,8 +24427,6 @@ bool get_xml_res::MergePartialFromCodedStream(
                  input, &value)));
           if (::fmitcp_proto::jm_log_level_enu_t_IsValid(value)) {
             set_loglevel(static_cast< ::fmitcp_proto::jm_log_level_enu_t >(value));
-          } else {
-            mutable_unknown_fields()->AddVarint(2, value);
           }
         } else {
           goto handle_uninterpreted;
@@ -31745,9 +24442,6 @@ bool get_xml_res::MergePartialFromCodedStream(
          parse_xml:
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_xml()));
-          ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-            this->xml().data(), this->xml().length(),
-            ::google::protobuf::internal::WireFormat::PARSE);
         } else {
           goto handle_uninterpreted;
         }
@@ -31761,8 +24455,7 @@ bool get_xml_res::MergePartialFromCodedStream(
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           return true;
         }
-        DO_(::google::protobuf::internal::WireFormat::SkipField(
-              input, tag, mutable_unknown_fields()));
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
         break;
       }
     }
@@ -31786,47 +24479,10 @@ void get_xml_res::SerializeWithCachedSizes(
 
   // required string xml = 3;
   if (has_xml()) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->xml().data(), this->xml().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE);
     ::google::protobuf::internal::WireFormatLite::WriteString(
       3, this->xml(), output);
   }
 
-  if (!unknown_fields().empty()) {
-    ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
-        unknown_fields(), output);
-  }
-}
-
-::google::protobuf::uint8* get_xml_res::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
-  // required int32 message_id = 1;
-  if (has_message_id()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->message_id(), target);
-  }
-
-  // required .fmitcp_proto.jm_log_level_enu_t logLevel = 2;
-  if (has_loglevel()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
-      2, this->loglevel(), target);
-  }
-
-  // required string xml = 3;
-  if (has_xml()) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8String(
-      this->xml().data(), this->xml().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE);
-    target =
-      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        3, this->xml(), target);
-  }
-
-  if (!unknown_fields().empty()) {
-    target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-        unknown_fields(), target);
-  }
-  return target;
 }
 
 int get_xml_res::ByteSize() const {
@@ -31854,27 +24510,15 @@ int get_xml_res::ByteSize() const {
     }
 
   }
-  if (!unknown_fields().empty()) {
-    total_size +=
-      ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
-        unknown_fields());
-  }
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
-void get_xml_res::MergeFrom(const ::google::protobuf::Message& from) {
-  GOOGLE_CHECK_NE(&from, this);
-  const get_xml_res* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const get_xml_res*>(
-      &from);
-  if (source == NULL) {
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-    MergeFrom(*source);
-  }
+void get_xml_res::CheckTypeAndMergeFrom(
+    const ::google::protobuf::MessageLite& from) {
+  MergeFrom(*::google::protobuf::down_cast<const get_xml_res*>(&from));
 }
 
 void get_xml_res::MergeFrom(const get_xml_res& from) {
@@ -31890,13 +24534,6 @@ void get_xml_res::MergeFrom(const get_xml_res& from) {
       set_xml(from.xml());
     }
   }
-  mutable_unknown_fields()->MergeFrom(from.unknown_fields());
-}
-
-void get_xml_res::CopyFrom(const ::google::protobuf::Message& from) {
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 void get_xml_res::CopyFrom(const get_xml_res& from) {
@@ -31917,17 +24554,12 @@ void get_xml_res::Swap(get_xml_res* other) {
     std::swap(loglevel_, other->loglevel_);
     std::swap(xml_, other->xml_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
-    _unknown_fields_.Swap(&other->_unknown_fields_);
     std::swap(_cached_size_, other->_cached_size_);
   }
 }
 
-::google::protobuf::Metadata get_xml_res::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = get_xml_res_descriptor_;
-  metadata.reflection = get_xml_res_reflection_;
-  return metadata;
+::std::string get_xml_res::GetTypeName() const {
+  return "fmitcp_proto.get_xml_res";
 }
 
 

@@ -20,11 +20,9 @@
 #endif
 
 #include <google/protobuf/generated_message_util.h>
-#include <google/protobuf/message.h>
+#include <google/protobuf/message_lite.h>
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/extension_set.h>
-#include <google/protobuf/generated_enum_reflection.h>
-#include <google/protobuf/unknown_field_set.h>
 // @@protoc_insertion_point(includes)
 
 namespace fmitcp_proto {
@@ -220,16 +218,6 @@ const fmitcp_message_Type fmitcp_message_Type_Type_MIN = fmitcp_message_Type_typ
 const fmitcp_message_Type fmitcp_message_Type_Type_MAX = fmitcp_message_Type_type_get_xml_res;
 const int fmitcp_message_Type_Type_ARRAYSIZE = fmitcp_message_Type_Type_MAX + 1;
 
-const ::google::protobuf::EnumDescriptor* fmitcp_message_Type_descriptor();
-inline const ::std::string& fmitcp_message_Type_Name(fmitcp_message_Type value) {
-  return ::google::protobuf::internal::NameOfEnum(
-    fmitcp_message_Type_descriptor(), value);
-}
-inline bool fmitcp_message_Type_Parse(
-    const ::std::string& name, fmitcp_message_Type* value) {
-  return ::google::protobuf::internal::ParseNamedEnum<fmitcp_message_Type>(
-    fmitcp_message_Type_descriptor(), name, value);
-}
 enum jm_log_level_enu_t {
   jm_log_level_nothing = 0,
   jm_log_level_fatal = 1,
@@ -245,16 +233,6 @@ const jm_log_level_enu_t jm_log_level_enu_t_MIN = jm_log_level_nothing;
 const jm_log_level_enu_t jm_log_level_enu_t_MAX = jm_log_level_all;
 const int jm_log_level_enu_t_ARRAYSIZE = jm_log_level_enu_t_MAX + 1;
 
-const ::google::protobuf::EnumDescriptor* jm_log_level_enu_t_descriptor();
-inline const ::std::string& jm_log_level_enu_t_Name(jm_log_level_enu_t value) {
-  return ::google::protobuf::internal::NameOfEnum(
-    jm_log_level_enu_t_descriptor(), value);
-}
-inline bool jm_log_level_enu_t_Parse(
-    const ::std::string& name, jm_log_level_enu_t* value) {
-  return ::google::protobuf::internal::ParseNamedEnum<jm_log_level_enu_t>(
-    jm_log_level_enu_t_descriptor(), name, value);
-}
 enum fmi2_status_t {
   fmi2_status_ok = 0,
   fmi2_status_warning = 1,
@@ -268,16 +246,6 @@ const fmi2_status_t fmi2_status_t_MIN = fmi2_status_ok;
 const fmi2_status_t fmi2_status_t_MAX = fmi2_status_pending;
 const int fmi2_status_t_ARRAYSIZE = fmi2_status_t_MAX + 1;
 
-const ::google::protobuf::EnumDescriptor* fmi2_status_t_descriptor();
-inline const ::std::string& fmi2_status_t_Name(fmi2_status_t value) {
-  return ::google::protobuf::internal::NameOfEnum(
-    fmi2_status_t_descriptor(), value);
-}
-inline bool fmi2_status_t_Parse(
-    const ::std::string& name, fmi2_status_t* value) {
-  return ::google::protobuf::internal::ParseNamedEnum<fmi2_status_t>(
-    fmi2_status_t_descriptor(), name, value);
-}
 enum fmi2_status_kind_t {
   fmi2_do_step_status = 0,
   fmi2_pending_status = 1,
@@ -289,16 +257,6 @@ const fmi2_status_kind_t fmi2_status_kind_t_MIN = fmi2_do_step_status;
 const fmi2_status_kind_t fmi2_status_kind_t_MAX = fmi2_terminated;
 const int fmi2_status_kind_t_ARRAYSIZE = fmi2_status_kind_t_MAX + 1;
 
-const ::google::protobuf::EnumDescriptor* fmi2_status_kind_t_descriptor();
-inline const ::std::string& fmi2_status_kind_t_Name(fmi2_status_kind_t value) {
-  return ::google::protobuf::internal::NameOfEnum(
-    fmi2_status_kind_t_descriptor(), value);
-}
-inline bool fmi2_status_kind_t_Parse(
-    const ::std::string& name, fmi2_status_kind_t* value) {
-  return ::google::protobuf::internal::ParseNamedEnum<fmi2_status_kind_t>(
-    fmi2_status_kind_t_descriptor(), name, value);
-}
 enum jm_status_enu_t {
   jm_status_error = 0,
   jm_status_success = 1,
@@ -309,19 +267,9 @@ const jm_status_enu_t jm_status_enu_t_MIN = jm_status_error;
 const jm_status_enu_t jm_status_enu_t_MAX = jm_status_warning;
 const int jm_status_enu_t_ARRAYSIZE = jm_status_enu_t_MAX + 1;
 
-const ::google::protobuf::EnumDescriptor* jm_status_enu_t_descriptor();
-inline const ::std::string& jm_status_enu_t_Name(jm_status_enu_t value) {
-  return ::google::protobuf::internal::NameOfEnum(
-    jm_status_enu_t_descriptor(), value);
-}
-inline bool jm_status_enu_t_Parse(
-    const ::std::string& name, jm_status_enu_t* value) {
-  return ::google::protobuf::internal::ParseNamedEnum<jm_status_enu_t>(
-    jm_status_enu_t_descriptor(), name, value);
-}
 // ===================================================================
 
-class fmitcp_message : public ::google::protobuf::Message {
+class fmitcp_message : public ::google::protobuf::MessageLite {
  public:
   fmitcp_message();
   virtual ~fmitcp_message();
@@ -333,24 +281,24 @@ class fmitcp_message : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmitcp_message& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmitcp_message* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmitcp_message* other);
 
   // implements Message ----------------------------------------------
 
   fmitcp_message* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmitcp_message& from);
   void MergeFrom(const fmitcp_message& from);
   void Clear();
@@ -361,7 +309,6 @@ class fmitcp_message : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -369,7 +316,7 @@ class fmitcp_message : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -473,17 +420,6 @@ class fmitcp_message : public ::google::protobuf::Message {
     fmitcp_message_Type_Type_MAX;
   static const int Type_ARRAYSIZE =
     fmitcp_message_Type_Type_ARRAYSIZE;
-  static inline const ::google::protobuf::EnumDescriptor*
-  Type_descriptor() {
-    return fmitcp_message_Type_descriptor();
-  }
-  static inline const ::std::string& Type_Name(Type value) {
-    return fmitcp_message_Type_Name(value);
-  }
-  static inline bool Type_Parse(const ::std::string& name,
-      Type* value) {
-    return fmitcp_message_Type_Parse(name, value);
-  }
 
   // accessors -------------------------------------------------------
 
@@ -1423,8 +1359,6 @@ class fmitcp_message : public ::google::protobuf::Message {
   inline void set_has_get_xml_res();
   inline void clear_has_get_xml_res();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::fmitcp_proto::fmi2_import_instantiate_req* fmi2_import_instantiate_req_;
   ::fmitcp_proto::fmi2_import_instantiate_res* fmi2_import_instantiate_res_;
   ::fmitcp_proto::fmi2_import_initialize_slave_req* fmi2_import_initialize_slave_req_;
@@ -1514,7 +1448,11 @@ class fmitcp_message : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(85 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -1523,7 +1461,7 @@ class fmitcp_message : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_event_info_t : public ::google::protobuf::Message {
+class fmi2_event_info_t : public ::google::protobuf::MessageLite {
  public:
   fmi2_event_info_t();
   virtual ~fmi2_event_info_t();
@@ -1535,24 +1473,24 @@ class fmi2_event_info_t : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_event_info_t& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_event_info_t* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_event_info_t* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_event_info_t* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_event_info_t& from);
   void MergeFrom(const fmi2_event_info_t& from);
   void Clear();
@@ -1563,7 +1501,6 @@ class fmi2_event_info_t : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -1571,7 +1508,7 @@ class fmi2_event_info_t : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -1634,8 +1571,6 @@ class fmi2_event_info_t : public ::google::protobuf::Message {
   inline void set_has_nexteventtime();
   inline void clear_has_nexteventtime();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   bool iterationconverged_;
   bool statevaluereferenceschanged_;
   bool statevalueschanged_;
@@ -1646,7 +1581,11 @@ class fmi2_event_info_t : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(6 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -1655,7 +1594,7 @@ class fmi2_event_info_t : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_instantiate_req : public ::google::protobuf::Message {
+class fmi2_import_instantiate_req : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_instantiate_req();
   virtual ~fmi2_import_instantiate_req();
@@ -1667,24 +1606,24 @@ class fmi2_import_instantiate_req : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_instantiate_req& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_instantiate_req* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_instantiate_req* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_instantiate_req* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_instantiate_req& from);
   void MergeFrom(const fmi2_import_instantiate_req& from);
   void Clear();
@@ -1695,7 +1634,6 @@ class fmi2_import_instantiate_req : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -1703,7 +1641,7 @@ class fmi2_import_instantiate_req : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -1730,15 +1668,17 @@ class fmi2_import_instantiate_req : public ::google::protobuf::Message {
   inline void set_has_visible();
   inline void clear_has_visible();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   bool visible_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -1747,7 +1687,7 @@ class fmi2_import_instantiate_req : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_instantiate_res : public ::google::protobuf::Message {
+class fmi2_import_instantiate_res : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_instantiate_res();
   virtual ~fmi2_import_instantiate_res();
@@ -1759,24 +1699,24 @@ class fmi2_import_instantiate_res : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_instantiate_res& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_instantiate_res* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_instantiate_res* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_instantiate_res* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_instantiate_res& from);
   void MergeFrom(const fmi2_import_instantiate_res& from);
   void Clear();
@@ -1787,7 +1727,6 @@ class fmi2_import_instantiate_res : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -1795,7 +1734,7 @@ class fmi2_import_instantiate_res : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -1822,15 +1761,17 @@ class fmi2_import_instantiate_res : public ::google::protobuf::Message {
   inline void set_has_status();
   inline void clear_has_status();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   int status_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -1839,7 +1780,7 @@ class fmi2_import_instantiate_res : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_initialize_slave_req : public ::google::protobuf::Message {
+class fmi2_import_initialize_slave_req : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_initialize_slave_req();
   virtual ~fmi2_import_initialize_slave_req();
@@ -1851,24 +1792,24 @@ class fmi2_import_initialize_slave_req : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_initialize_slave_req& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_initialize_slave_req* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_initialize_slave_req* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_initialize_slave_req* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_initialize_slave_req& from);
   void MergeFrom(const fmi2_import_initialize_slave_req& from);
   void Clear();
@@ -1879,7 +1820,6 @@ class fmi2_import_initialize_slave_req : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -1887,7 +1827,7 @@ class fmi2_import_initialize_slave_req : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -1959,8 +1899,6 @@ class fmi2_import_initialize_slave_req : public ::google::protobuf::Message {
   inline void set_has_stoptime();
   inline void clear_has_stoptime();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 fmuid_;
   double tolerance_;
@@ -1972,7 +1910,11 @@ class fmi2_import_initialize_slave_req : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -1981,7 +1923,7 @@ class fmi2_import_initialize_slave_req : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_initialize_slave_res : public ::google::protobuf::Message {
+class fmi2_import_initialize_slave_res : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_initialize_slave_res();
   virtual ~fmi2_import_initialize_slave_res();
@@ -1993,24 +1935,24 @@ class fmi2_import_initialize_slave_res : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_initialize_slave_res& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_initialize_slave_res* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_initialize_slave_res* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_initialize_slave_res* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_initialize_slave_res& from);
   void MergeFrom(const fmi2_import_initialize_slave_res& from);
   void Clear();
@@ -2021,7 +1963,6 @@ class fmi2_import_initialize_slave_res : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -2029,7 +1970,7 @@ class fmi2_import_initialize_slave_res : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -2056,15 +1997,17 @@ class fmi2_import_initialize_slave_res : public ::google::protobuf::Message {
   inline void set_has_status();
   inline void clear_has_status();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   int status_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -2073,7 +2016,7 @@ class fmi2_import_initialize_slave_res : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_terminate_slave_req : public ::google::protobuf::Message {
+class fmi2_import_terminate_slave_req : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_terminate_slave_req();
   virtual ~fmi2_import_terminate_slave_req();
@@ -2085,24 +2028,24 @@ class fmi2_import_terminate_slave_req : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_terminate_slave_req& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_terminate_slave_req* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_terminate_slave_req* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_terminate_slave_req* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_terminate_slave_req& from);
   void MergeFrom(const fmi2_import_terminate_slave_req& from);
   void Clear();
@@ -2113,7 +2056,6 @@ class fmi2_import_terminate_slave_req : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -2121,7 +2063,7 @@ class fmi2_import_terminate_slave_req : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -2148,15 +2090,17 @@ class fmi2_import_terminate_slave_req : public ::google::protobuf::Message {
   inline void set_has_fmuid();
   inline void clear_has_fmuid();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 fmuid_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -2165,7 +2109,7 @@ class fmi2_import_terminate_slave_req : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_terminate_slave_res : public ::google::protobuf::Message {
+class fmi2_import_terminate_slave_res : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_terminate_slave_res();
   virtual ~fmi2_import_terminate_slave_res();
@@ -2177,24 +2121,24 @@ class fmi2_import_terminate_slave_res : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_terminate_slave_res& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_terminate_slave_res* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_terminate_slave_res* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_terminate_slave_res* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_terminate_slave_res& from);
   void MergeFrom(const fmi2_import_terminate_slave_res& from);
   void Clear();
@@ -2205,7 +2149,6 @@ class fmi2_import_terminate_slave_res : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -2213,7 +2156,7 @@ class fmi2_import_terminate_slave_res : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -2240,15 +2183,17 @@ class fmi2_import_terminate_slave_res : public ::google::protobuf::Message {
   inline void set_has_status();
   inline void clear_has_status();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   int status_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -2257,7 +2202,7 @@ class fmi2_import_terminate_slave_res : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_reset_slave_req : public ::google::protobuf::Message {
+class fmi2_import_reset_slave_req : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_reset_slave_req();
   virtual ~fmi2_import_reset_slave_req();
@@ -2269,24 +2214,24 @@ class fmi2_import_reset_slave_req : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_reset_slave_req& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_reset_slave_req* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_reset_slave_req* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_reset_slave_req* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_reset_slave_req& from);
   void MergeFrom(const fmi2_import_reset_slave_req& from);
   void Clear();
@@ -2297,7 +2242,6 @@ class fmi2_import_reset_slave_req : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -2305,7 +2249,7 @@ class fmi2_import_reset_slave_req : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -2332,15 +2276,17 @@ class fmi2_import_reset_slave_req : public ::google::protobuf::Message {
   inline void set_has_fmuid();
   inline void clear_has_fmuid();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 fmuid_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -2349,7 +2295,7 @@ class fmi2_import_reset_slave_req : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_reset_slave_res : public ::google::protobuf::Message {
+class fmi2_import_reset_slave_res : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_reset_slave_res();
   virtual ~fmi2_import_reset_slave_res();
@@ -2361,24 +2307,24 @@ class fmi2_import_reset_slave_res : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_reset_slave_res& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_reset_slave_res* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_reset_slave_res* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_reset_slave_res* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_reset_slave_res& from);
   void MergeFrom(const fmi2_import_reset_slave_res& from);
   void Clear();
@@ -2389,7 +2335,6 @@ class fmi2_import_reset_slave_res : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -2397,7 +2342,7 @@ class fmi2_import_reset_slave_res : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -2424,15 +2369,17 @@ class fmi2_import_reset_slave_res : public ::google::protobuf::Message {
   inline void set_has_status();
   inline void clear_has_status();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   int status_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -2441,7 +2388,7 @@ class fmi2_import_reset_slave_res : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_free_slave_instance_req : public ::google::protobuf::Message {
+class fmi2_import_free_slave_instance_req : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_free_slave_instance_req();
   virtual ~fmi2_import_free_slave_instance_req();
@@ -2453,24 +2400,24 @@ class fmi2_import_free_slave_instance_req : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_free_slave_instance_req& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_free_slave_instance_req* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_free_slave_instance_req* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_free_slave_instance_req* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_free_slave_instance_req& from);
   void MergeFrom(const fmi2_import_free_slave_instance_req& from);
   void Clear();
@@ -2481,7 +2428,6 @@ class fmi2_import_free_slave_instance_req : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -2489,7 +2435,7 @@ class fmi2_import_free_slave_instance_req : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -2516,15 +2462,17 @@ class fmi2_import_free_slave_instance_req : public ::google::protobuf::Message {
   inline void set_has_fmuid();
   inline void clear_has_fmuid();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 fmuid_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -2533,7 +2481,7 @@ class fmi2_import_free_slave_instance_req : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_free_slave_instance_res : public ::google::protobuf::Message {
+class fmi2_import_free_slave_instance_res : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_free_slave_instance_res();
   virtual ~fmi2_import_free_slave_instance_res();
@@ -2545,24 +2493,24 @@ class fmi2_import_free_slave_instance_res : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_free_slave_instance_res& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_free_slave_instance_res* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_free_slave_instance_res* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_free_slave_instance_res* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_free_slave_instance_res& from);
   void MergeFrom(const fmi2_import_free_slave_instance_res& from);
   void Clear();
@@ -2573,7 +2521,6 @@ class fmi2_import_free_slave_instance_res : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -2581,7 +2528,7 @@ class fmi2_import_free_slave_instance_res : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -2599,14 +2546,16 @@ class fmi2_import_free_slave_instance_res : public ::google::protobuf::Message {
   inline void set_has_message_id();
   inline void clear_has_message_id();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -2615,7 +2564,7 @@ class fmi2_import_free_slave_instance_res : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_set_real_input_derivatives_req : public ::google::protobuf::Message {
+class fmi2_import_set_real_input_derivatives_req : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_set_real_input_derivatives_req();
   virtual ~fmi2_import_set_real_input_derivatives_req();
@@ -2627,24 +2576,24 @@ class fmi2_import_set_real_input_derivatives_req : public ::google::protobuf::Me
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_set_real_input_derivatives_req& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_set_real_input_derivatives_req* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_set_real_input_derivatives_req* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_set_real_input_derivatives_req* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_set_real_input_derivatives_req& from);
   void MergeFrom(const fmi2_import_set_real_input_derivatives_req& from);
   void Clear();
@@ -2655,7 +2604,6 @@ class fmi2_import_set_real_input_derivatives_req : public ::google::protobuf::Me
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -2663,7 +2611,7 @@ class fmi2_import_set_real_input_derivatives_req : public ::google::protobuf::Me
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -2726,8 +2674,6 @@ class fmi2_import_set_real_input_derivatives_req : public ::google::protobuf::Me
   inline void set_has_fmuid();
   inline void clear_has_fmuid();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 fmuid_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > valuereferences_;
@@ -2737,7 +2683,11 @@ class fmi2_import_set_real_input_derivatives_req : public ::google::protobuf::Me
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(5 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -2746,7 +2696,7 @@ class fmi2_import_set_real_input_derivatives_req : public ::google::protobuf::Me
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_set_real_input_derivatives_res : public ::google::protobuf::Message {
+class fmi2_import_set_real_input_derivatives_res : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_set_real_input_derivatives_res();
   virtual ~fmi2_import_set_real_input_derivatives_res();
@@ -2758,24 +2708,24 @@ class fmi2_import_set_real_input_derivatives_res : public ::google::protobuf::Me
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_set_real_input_derivatives_res& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_set_real_input_derivatives_res* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_set_real_input_derivatives_res* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_set_real_input_derivatives_res* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_set_real_input_derivatives_res& from);
   void MergeFrom(const fmi2_import_set_real_input_derivatives_res& from);
   void Clear();
@@ -2786,7 +2736,6 @@ class fmi2_import_set_real_input_derivatives_res : public ::google::protobuf::Me
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -2794,7 +2743,7 @@ class fmi2_import_set_real_input_derivatives_res : public ::google::protobuf::Me
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -2821,15 +2770,17 @@ class fmi2_import_set_real_input_derivatives_res : public ::google::protobuf::Me
   inline void set_has_status();
   inline void clear_has_status();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   int status_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -2838,7 +2789,7 @@ class fmi2_import_set_real_input_derivatives_res : public ::google::protobuf::Me
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_get_real_output_derivatives_req : public ::google::protobuf::Message {
+class fmi2_import_get_real_output_derivatives_req : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_get_real_output_derivatives_req();
   virtual ~fmi2_import_get_real_output_derivatives_req();
@@ -2850,24 +2801,24 @@ class fmi2_import_get_real_output_derivatives_req : public ::google::protobuf::M
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_get_real_output_derivatives_req& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_get_real_output_derivatives_req* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_get_real_output_derivatives_req* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_get_real_output_derivatives_req* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_get_real_output_derivatives_req& from);
   void MergeFrom(const fmi2_import_get_real_output_derivatives_req& from);
   void Clear();
@@ -2878,7 +2829,6 @@ class fmi2_import_get_real_output_derivatives_req : public ::google::protobuf::M
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -2886,7 +2836,7 @@ class fmi2_import_get_real_output_derivatives_req : public ::google::protobuf::M
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -2937,8 +2887,6 @@ class fmi2_import_get_real_output_derivatives_req : public ::google::protobuf::M
   inline void set_has_fmuid();
   inline void clear_has_fmuid();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 fmuid_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > valuereferences_;
@@ -2947,7 +2895,11 @@ class fmi2_import_get_real_output_derivatives_req : public ::google::protobuf::M
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -2956,7 +2908,7 @@ class fmi2_import_get_real_output_derivatives_req : public ::google::protobuf::M
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_get_real_output_derivatives_res : public ::google::protobuf::Message {
+class fmi2_import_get_real_output_derivatives_res : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_get_real_output_derivatives_res();
   virtual ~fmi2_import_get_real_output_derivatives_res();
@@ -2968,24 +2920,24 @@ class fmi2_import_get_real_output_derivatives_res : public ::google::protobuf::M
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_get_real_output_derivatives_res& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_get_real_output_derivatives_res* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_get_real_output_derivatives_res* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_get_real_output_derivatives_res* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_get_real_output_derivatives_res& from);
   void MergeFrom(const fmi2_import_get_real_output_derivatives_res& from);
   void Clear();
@@ -2996,7 +2948,6 @@ class fmi2_import_get_real_output_derivatives_res : public ::google::protobuf::M
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -3004,7 +2955,7 @@ class fmi2_import_get_real_output_derivatives_res : public ::google::protobuf::M
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -3043,8 +2994,6 @@ class fmi2_import_get_real_output_derivatives_res : public ::google::protobuf::M
   inline void set_has_status();
   inline void clear_has_status();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   int status_;
   ::google::protobuf::RepeatedField< double > values_;
@@ -3052,7 +3001,11 @@ class fmi2_import_get_real_output_derivatives_res : public ::google::protobuf::M
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -3061,7 +3014,7 @@ class fmi2_import_get_real_output_derivatives_res : public ::google::protobuf::M
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_cancel_step_req : public ::google::protobuf::Message {
+class fmi2_import_cancel_step_req : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_cancel_step_req();
   virtual ~fmi2_import_cancel_step_req();
@@ -3073,24 +3026,24 @@ class fmi2_import_cancel_step_req : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_cancel_step_req& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_cancel_step_req* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_cancel_step_req* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_cancel_step_req* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_cancel_step_req& from);
   void MergeFrom(const fmi2_import_cancel_step_req& from);
   void Clear();
@@ -3101,7 +3054,6 @@ class fmi2_import_cancel_step_req : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -3109,7 +3061,7 @@ class fmi2_import_cancel_step_req : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -3136,15 +3088,17 @@ class fmi2_import_cancel_step_req : public ::google::protobuf::Message {
   inline void set_has_fmuid();
   inline void clear_has_fmuid();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 fmuid_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -3153,7 +3107,7 @@ class fmi2_import_cancel_step_req : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_cancel_step_res : public ::google::protobuf::Message {
+class fmi2_import_cancel_step_res : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_cancel_step_res();
   virtual ~fmi2_import_cancel_step_res();
@@ -3165,24 +3119,24 @@ class fmi2_import_cancel_step_res : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_cancel_step_res& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_cancel_step_res* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_cancel_step_res* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_cancel_step_res* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_cancel_step_res& from);
   void MergeFrom(const fmi2_import_cancel_step_res& from);
   void Clear();
@@ -3193,7 +3147,6 @@ class fmi2_import_cancel_step_res : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -3201,7 +3154,7 @@ class fmi2_import_cancel_step_res : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -3228,15 +3181,17 @@ class fmi2_import_cancel_step_res : public ::google::protobuf::Message {
   inline void set_has_status();
   inline void clear_has_status();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   int status_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -3245,7 +3200,7 @@ class fmi2_import_cancel_step_res : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_do_step_req : public ::google::protobuf::Message {
+class fmi2_import_do_step_req : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_do_step_req();
   virtual ~fmi2_import_do_step_req();
@@ -3257,24 +3212,24 @@ class fmi2_import_do_step_req : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_do_step_req& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_do_step_req* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_do_step_req* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_do_step_req* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_do_step_req& from);
   void MergeFrom(const fmi2_import_do_step_req& from);
   void Clear();
@@ -3285,7 +3240,6 @@ class fmi2_import_do_step_req : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -3293,7 +3247,7 @@ class fmi2_import_do_step_req : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -3347,8 +3301,6 @@ class fmi2_import_do_step_req : public ::google::protobuf::Message {
   inline void set_has_newstep();
   inline void clear_has_newstep();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 fmuid_;
   double currentcommunicationpoint_;
@@ -3358,7 +3310,11 @@ class fmi2_import_do_step_req : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(5 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -3367,7 +3323,7 @@ class fmi2_import_do_step_req : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_do_step_res : public ::google::protobuf::Message {
+class fmi2_import_do_step_res : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_do_step_res();
   virtual ~fmi2_import_do_step_res();
@@ -3379,24 +3335,24 @@ class fmi2_import_do_step_res : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_do_step_res& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_do_step_res* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_do_step_res* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_do_step_res* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_do_step_res& from);
   void MergeFrom(const fmi2_import_do_step_res& from);
   void Clear();
@@ -3407,7 +3363,6 @@ class fmi2_import_do_step_res : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -3415,7 +3370,7 @@ class fmi2_import_do_step_res : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -3442,15 +3397,17 @@ class fmi2_import_do_step_res : public ::google::protobuf::Message {
   inline void set_has_status();
   inline void clear_has_status();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   int status_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -3459,7 +3416,7 @@ class fmi2_import_do_step_res : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_get_status_req : public ::google::protobuf::Message {
+class fmi2_import_get_status_req : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_get_status_req();
   virtual ~fmi2_import_get_status_req();
@@ -3471,24 +3428,24 @@ class fmi2_import_get_status_req : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_get_status_req& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_get_status_req* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_get_status_req* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_get_status_req* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_get_status_req& from);
   void MergeFrom(const fmi2_import_get_status_req& from);
   void Clear();
@@ -3499,7 +3456,6 @@ class fmi2_import_get_status_req : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -3507,7 +3463,7 @@ class fmi2_import_get_status_req : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -3543,8 +3499,6 @@ class fmi2_import_get_status_req : public ::google::protobuf::Message {
   inline void set_has_status();
   inline void clear_has_status();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 fmuid_;
   int status_;
@@ -3552,7 +3506,11 @@ class fmi2_import_get_status_req : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -3561,7 +3519,7 @@ class fmi2_import_get_status_req : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_get_status_res : public ::google::protobuf::Message {
+class fmi2_import_get_status_res : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_get_status_res();
   virtual ~fmi2_import_get_status_res();
@@ -3573,24 +3531,24 @@ class fmi2_import_get_status_res : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_get_status_res& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_get_status_res* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_get_status_res* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_get_status_res* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_get_status_res& from);
   void MergeFrom(const fmi2_import_get_status_res& from);
   void Clear();
@@ -3601,7 +3559,6 @@ class fmi2_import_get_status_res : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -3609,7 +3566,7 @@ class fmi2_import_get_status_res : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -3636,15 +3593,17 @@ class fmi2_import_get_status_res : public ::google::protobuf::Message {
   inline void set_has_value();
   inline void clear_has_value();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   int value_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -3653,7 +3612,7 @@ class fmi2_import_get_status_res : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_get_real_status_req : public ::google::protobuf::Message {
+class fmi2_import_get_real_status_req : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_get_real_status_req();
   virtual ~fmi2_import_get_real_status_req();
@@ -3665,24 +3624,24 @@ class fmi2_import_get_real_status_req : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_get_real_status_req& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_get_real_status_req* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_get_real_status_req* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_get_real_status_req* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_get_real_status_req& from);
   void MergeFrom(const fmi2_import_get_real_status_req& from);
   void Clear();
@@ -3693,7 +3652,6 @@ class fmi2_import_get_real_status_req : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -3701,7 +3659,7 @@ class fmi2_import_get_real_status_req : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -3737,8 +3695,6 @@ class fmi2_import_get_real_status_req : public ::google::protobuf::Message {
   inline void set_has_kind();
   inline void clear_has_kind();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 fmuid_;
   int kind_;
@@ -3746,7 +3702,11 @@ class fmi2_import_get_real_status_req : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -3755,7 +3715,7 @@ class fmi2_import_get_real_status_req : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_get_real_status_res : public ::google::protobuf::Message {
+class fmi2_import_get_real_status_res : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_get_real_status_res();
   virtual ~fmi2_import_get_real_status_res();
@@ -3767,24 +3727,24 @@ class fmi2_import_get_real_status_res : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_get_real_status_res& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_get_real_status_res* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_get_real_status_res* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_get_real_status_res* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_get_real_status_res& from);
   void MergeFrom(const fmi2_import_get_real_status_res& from);
   void Clear();
@@ -3795,7 +3755,6 @@ class fmi2_import_get_real_status_res : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -3803,7 +3762,7 @@ class fmi2_import_get_real_status_res : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -3830,15 +3789,17 @@ class fmi2_import_get_real_status_res : public ::google::protobuf::Message {
   inline void set_has_value();
   inline void clear_has_value();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   double value_;
   ::google::protobuf::int32 message_id_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -3847,7 +3808,7 @@ class fmi2_import_get_real_status_res : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_get_integer_status_req : public ::google::protobuf::Message {
+class fmi2_import_get_integer_status_req : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_get_integer_status_req();
   virtual ~fmi2_import_get_integer_status_req();
@@ -3859,24 +3820,24 @@ class fmi2_import_get_integer_status_req : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_get_integer_status_req& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_get_integer_status_req* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_get_integer_status_req* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_get_integer_status_req* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_get_integer_status_req& from);
   void MergeFrom(const fmi2_import_get_integer_status_req& from);
   void Clear();
@@ -3887,7 +3848,6 @@ class fmi2_import_get_integer_status_req : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -3895,7 +3855,7 @@ class fmi2_import_get_integer_status_req : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -3931,8 +3891,6 @@ class fmi2_import_get_integer_status_req : public ::google::protobuf::Message {
   inline void set_has_kind();
   inline void clear_has_kind();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 fmuid_;
   int kind_;
@@ -3940,7 +3898,11 @@ class fmi2_import_get_integer_status_req : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -3949,7 +3911,7 @@ class fmi2_import_get_integer_status_req : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_get_integer_status_res : public ::google::protobuf::Message {
+class fmi2_import_get_integer_status_res : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_get_integer_status_res();
   virtual ~fmi2_import_get_integer_status_res();
@@ -3961,24 +3923,24 @@ class fmi2_import_get_integer_status_res : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_get_integer_status_res& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_get_integer_status_res* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_get_integer_status_res* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_get_integer_status_res* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_get_integer_status_res& from);
   void MergeFrom(const fmi2_import_get_integer_status_res& from);
   void Clear();
@@ -3989,7 +3951,6 @@ class fmi2_import_get_integer_status_res : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -3997,7 +3958,7 @@ class fmi2_import_get_integer_status_res : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -4024,15 +3985,17 @@ class fmi2_import_get_integer_status_res : public ::google::protobuf::Message {
   inline void set_has_value();
   inline void clear_has_value();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 value_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -4041,7 +4004,7 @@ class fmi2_import_get_integer_status_res : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_get_boolean_status_req : public ::google::protobuf::Message {
+class fmi2_import_get_boolean_status_req : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_get_boolean_status_req();
   virtual ~fmi2_import_get_boolean_status_req();
@@ -4053,24 +4016,24 @@ class fmi2_import_get_boolean_status_req : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_get_boolean_status_req& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_get_boolean_status_req* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_get_boolean_status_req* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_get_boolean_status_req* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_get_boolean_status_req& from);
   void MergeFrom(const fmi2_import_get_boolean_status_req& from);
   void Clear();
@@ -4081,7 +4044,6 @@ class fmi2_import_get_boolean_status_req : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -4089,7 +4051,7 @@ class fmi2_import_get_boolean_status_req : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -4125,8 +4087,6 @@ class fmi2_import_get_boolean_status_req : public ::google::protobuf::Message {
   inline void set_has_kind();
   inline void clear_has_kind();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 fmuid_;
   int kind_;
@@ -4134,7 +4094,11 @@ class fmi2_import_get_boolean_status_req : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -4143,7 +4107,7 @@ class fmi2_import_get_boolean_status_req : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_get_boolean_status_res : public ::google::protobuf::Message {
+class fmi2_import_get_boolean_status_res : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_get_boolean_status_res();
   virtual ~fmi2_import_get_boolean_status_res();
@@ -4155,24 +4119,24 @@ class fmi2_import_get_boolean_status_res : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_get_boolean_status_res& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_get_boolean_status_res* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_get_boolean_status_res* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_get_boolean_status_res* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_get_boolean_status_res& from);
   void MergeFrom(const fmi2_import_get_boolean_status_res& from);
   void Clear();
@@ -4183,7 +4147,6 @@ class fmi2_import_get_boolean_status_res : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -4191,7 +4154,7 @@ class fmi2_import_get_boolean_status_res : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -4218,15 +4181,17 @@ class fmi2_import_get_boolean_status_res : public ::google::protobuf::Message {
   inline void set_has_value();
   inline void clear_has_value();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   bool value_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -4235,7 +4200,7 @@ class fmi2_import_get_boolean_status_res : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_get_string_status_req : public ::google::protobuf::Message {
+class fmi2_import_get_string_status_req : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_get_string_status_req();
   virtual ~fmi2_import_get_string_status_req();
@@ -4247,24 +4212,24 @@ class fmi2_import_get_string_status_req : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_get_string_status_req& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_get_string_status_req* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_get_string_status_req* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_get_string_status_req* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_get_string_status_req& from);
   void MergeFrom(const fmi2_import_get_string_status_req& from);
   void Clear();
@@ -4275,7 +4240,6 @@ class fmi2_import_get_string_status_req : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -4283,7 +4247,7 @@ class fmi2_import_get_string_status_req : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -4319,8 +4283,6 @@ class fmi2_import_get_string_status_req : public ::google::protobuf::Message {
   inline void set_has_kind();
   inline void clear_has_kind();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 fmuid_;
   int kind_;
@@ -4328,7 +4290,11 @@ class fmi2_import_get_string_status_req : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -4337,7 +4303,7 @@ class fmi2_import_get_string_status_req : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_get_string_status_res : public ::google::protobuf::Message {
+class fmi2_import_get_string_status_res : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_get_string_status_res();
   virtual ~fmi2_import_get_string_status_res();
@@ -4349,24 +4315,24 @@ class fmi2_import_get_string_status_res : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_get_string_status_res& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_get_string_status_res* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_get_string_status_res* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_get_string_status_res* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_get_string_status_res& from);
   void MergeFrom(const fmi2_import_get_string_status_res& from);
   void Clear();
@@ -4377,7 +4343,6 @@ class fmi2_import_get_string_status_res : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -4385,7 +4350,7 @@ class fmi2_import_get_string_status_res : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -4417,15 +4382,17 @@ class fmi2_import_get_string_status_res : public ::google::protobuf::Message {
   inline void set_has_value();
   inline void clear_has_value();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::std::string* value_;
   ::google::protobuf::int32 message_id_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -4434,7 +4401,7 @@ class fmi2_import_get_string_status_res : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_instantiate_model_req : public ::google::protobuf::Message {
+class fmi2_import_instantiate_model_req : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_instantiate_model_req();
   virtual ~fmi2_import_instantiate_model_req();
@@ -4446,24 +4413,24 @@ class fmi2_import_instantiate_model_req : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_instantiate_model_req& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_instantiate_model_req* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_instantiate_model_req* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_instantiate_model_req* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_instantiate_model_req& from);
   void MergeFrom(const fmi2_import_instantiate_model_req& from);
   void Clear();
@@ -4474,7 +4441,6 @@ class fmi2_import_instantiate_model_req : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -4482,7 +4448,7 @@ class fmi2_import_instantiate_model_req : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -4546,8 +4512,6 @@ class fmi2_import_instantiate_model_req : public ::google::protobuf::Message {
   inline void set_has_visible();
   inline void clear_has_visible();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 fmuid_;
   ::std::string* instancename_;
@@ -4557,7 +4521,11 @@ class fmi2_import_instantiate_model_req : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(5 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -4566,7 +4534,7 @@ class fmi2_import_instantiate_model_req : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_instantiate_model_res : public ::google::protobuf::Message {
+class fmi2_import_instantiate_model_res : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_instantiate_model_res();
   virtual ~fmi2_import_instantiate_model_res();
@@ -4578,24 +4546,24 @@ class fmi2_import_instantiate_model_res : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_instantiate_model_res& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_instantiate_model_res* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_instantiate_model_res* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_instantiate_model_res* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_instantiate_model_res& from);
   void MergeFrom(const fmi2_import_instantiate_model_res& from);
   void Clear();
@@ -4606,7 +4574,6 @@ class fmi2_import_instantiate_model_res : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -4614,7 +4581,7 @@ class fmi2_import_instantiate_model_res : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -4641,15 +4608,17 @@ class fmi2_import_instantiate_model_res : public ::google::protobuf::Message {
   inline void set_has_status();
   inline void clear_has_status();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   int status_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -4658,7 +4627,7 @@ class fmi2_import_instantiate_model_res : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_free_model_instance_req : public ::google::protobuf::Message {
+class fmi2_import_free_model_instance_req : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_free_model_instance_req();
   virtual ~fmi2_import_free_model_instance_req();
@@ -4670,24 +4639,24 @@ class fmi2_import_free_model_instance_req : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_free_model_instance_req& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_free_model_instance_req* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_free_model_instance_req* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_free_model_instance_req* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_free_model_instance_req& from);
   void MergeFrom(const fmi2_import_free_model_instance_req& from);
   void Clear();
@@ -4698,7 +4667,6 @@ class fmi2_import_free_model_instance_req : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -4706,7 +4674,7 @@ class fmi2_import_free_model_instance_req : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -4733,15 +4701,17 @@ class fmi2_import_free_model_instance_req : public ::google::protobuf::Message {
   inline void set_has_fmuid();
   inline void clear_has_fmuid();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 fmuid_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -4750,7 +4720,7 @@ class fmi2_import_free_model_instance_req : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_free_model_instance_res : public ::google::protobuf::Message {
+class fmi2_import_free_model_instance_res : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_free_model_instance_res();
   virtual ~fmi2_import_free_model_instance_res();
@@ -4762,24 +4732,24 @@ class fmi2_import_free_model_instance_res : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_free_model_instance_res& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_free_model_instance_res* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_free_model_instance_res* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_free_model_instance_res* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_free_model_instance_res& from);
   void MergeFrom(const fmi2_import_free_model_instance_res& from);
   void Clear();
@@ -4790,7 +4760,6 @@ class fmi2_import_free_model_instance_res : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -4798,7 +4767,7 @@ class fmi2_import_free_model_instance_res : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -4816,14 +4785,16 @@ class fmi2_import_free_model_instance_res : public ::google::protobuf::Message {
   inline void set_has_message_id();
   inline void clear_has_message_id();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -4832,7 +4803,7 @@ class fmi2_import_free_model_instance_res : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_set_time_req : public ::google::protobuf::Message {
+class fmi2_import_set_time_req : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_set_time_req();
   virtual ~fmi2_import_set_time_req();
@@ -4844,24 +4815,24 @@ class fmi2_import_set_time_req : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_set_time_req& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_set_time_req* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_set_time_req* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_set_time_req* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_set_time_req& from);
   void MergeFrom(const fmi2_import_set_time_req& from);
   void Clear();
@@ -4872,7 +4843,6 @@ class fmi2_import_set_time_req : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -4880,7 +4850,7 @@ class fmi2_import_set_time_req : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -4916,8 +4886,6 @@ class fmi2_import_set_time_req : public ::google::protobuf::Message {
   inline void set_has_time();
   inline void clear_has_time();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 fmuid_;
   double time_;
@@ -4925,7 +4893,11 @@ class fmi2_import_set_time_req : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -4934,7 +4906,7 @@ class fmi2_import_set_time_req : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_set_time_res : public ::google::protobuf::Message {
+class fmi2_import_set_time_res : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_set_time_res();
   virtual ~fmi2_import_set_time_res();
@@ -4946,24 +4918,24 @@ class fmi2_import_set_time_res : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_set_time_res& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_set_time_res* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_set_time_res* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_set_time_res* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_set_time_res& from);
   void MergeFrom(const fmi2_import_set_time_res& from);
   void Clear();
@@ -4974,7 +4946,6 @@ class fmi2_import_set_time_res : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -4982,7 +4953,7 @@ class fmi2_import_set_time_res : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -5009,15 +4980,17 @@ class fmi2_import_set_time_res : public ::google::protobuf::Message {
   inline void set_has_status();
   inline void clear_has_status();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   int status_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -5026,7 +4999,7 @@ class fmi2_import_set_time_res : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_set_continuous_states_req : public ::google::protobuf::Message {
+class fmi2_import_set_continuous_states_req : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_set_continuous_states_req();
   virtual ~fmi2_import_set_continuous_states_req();
@@ -5038,24 +5011,24 @@ class fmi2_import_set_continuous_states_req : public ::google::protobuf::Message
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_set_continuous_states_req& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_set_continuous_states_req* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_set_continuous_states_req* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_set_continuous_states_req* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_set_continuous_states_req& from);
   void MergeFrom(const fmi2_import_set_continuous_states_req& from);
   void Clear();
@@ -5066,7 +5039,6 @@ class fmi2_import_set_continuous_states_req : public ::google::protobuf::Message
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -5074,7 +5046,7 @@ class fmi2_import_set_continuous_states_req : public ::google::protobuf::Message
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -5113,8 +5085,6 @@ class fmi2_import_set_continuous_states_req : public ::google::protobuf::Message
   inline void set_has_fmuid();
   inline void clear_has_fmuid();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 fmuid_;
   ::google::protobuf::RepeatedField< double > x_;
@@ -5122,7 +5092,11 @@ class fmi2_import_set_continuous_states_req : public ::google::protobuf::Message
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -5131,7 +5105,7 @@ class fmi2_import_set_continuous_states_req : public ::google::protobuf::Message
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_set_continuous_states_res : public ::google::protobuf::Message {
+class fmi2_import_set_continuous_states_res : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_set_continuous_states_res();
   virtual ~fmi2_import_set_continuous_states_res();
@@ -5143,24 +5117,24 @@ class fmi2_import_set_continuous_states_res : public ::google::protobuf::Message
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_set_continuous_states_res& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_set_continuous_states_res* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_set_continuous_states_res* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_set_continuous_states_res* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_set_continuous_states_res& from);
   void MergeFrom(const fmi2_import_set_continuous_states_res& from);
   void Clear();
@@ -5171,7 +5145,6 @@ class fmi2_import_set_continuous_states_res : public ::google::protobuf::Message
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -5179,7 +5152,7 @@ class fmi2_import_set_continuous_states_res : public ::google::protobuf::Message
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -5206,15 +5179,17 @@ class fmi2_import_set_continuous_states_res : public ::google::protobuf::Message
   inline void set_has_status();
   inline void clear_has_status();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   int status_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -5223,7 +5198,7 @@ class fmi2_import_set_continuous_states_res : public ::google::protobuf::Message
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_completed_integrator_step_req : public ::google::protobuf::Message {
+class fmi2_import_completed_integrator_step_req : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_completed_integrator_step_req();
   virtual ~fmi2_import_completed_integrator_step_req();
@@ -5235,24 +5210,24 @@ class fmi2_import_completed_integrator_step_req : public ::google::protobuf::Mes
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_completed_integrator_step_req& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_completed_integrator_step_req* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_completed_integrator_step_req* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_completed_integrator_step_req* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_completed_integrator_step_req& from);
   void MergeFrom(const fmi2_import_completed_integrator_step_req& from);
   void Clear();
@@ -5263,7 +5238,6 @@ class fmi2_import_completed_integrator_step_req : public ::google::protobuf::Mes
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -5271,7 +5245,7 @@ class fmi2_import_completed_integrator_step_req : public ::google::protobuf::Mes
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -5298,15 +5272,17 @@ class fmi2_import_completed_integrator_step_req : public ::google::protobuf::Mes
   inline void set_has_fmuid();
   inline void clear_has_fmuid();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 fmuid_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -5315,7 +5291,7 @@ class fmi2_import_completed_integrator_step_req : public ::google::protobuf::Mes
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_completed_integrator_step_res : public ::google::protobuf::Message {
+class fmi2_import_completed_integrator_step_res : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_completed_integrator_step_res();
   virtual ~fmi2_import_completed_integrator_step_res();
@@ -5327,24 +5303,24 @@ class fmi2_import_completed_integrator_step_res : public ::google::protobuf::Mes
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_completed_integrator_step_res& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_completed_integrator_step_res* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_completed_integrator_step_res* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_completed_integrator_step_res* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_completed_integrator_step_res& from);
   void MergeFrom(const fmi2_import_completed_integrator_step_res& from);
   void Clear();
@@ -5355,7 +5331,6 @@ class fmi2_import_completed_integrator_step_res : public ::google::protobuf::Mes
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -5363,7 +5338,7 @@ class fmi2_import_completed_integrator_step_res : public ::google::protobuf::Mes
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -5399,8 +5374,6 @@ class fmi2_import_completed_integrator_step_res : public ::google::protobuf::Mes
   inline void set_has_status();
   inline void clear_has_status();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   bool calleventupdate_;
   int status_;
@@ -5408,7 +5381,11 @@ class fmi2_import_completed_integrator_step_res : public ::google::protobuf::Mes
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -5417,7 +5394,7 @@ class fmi2_import_completed_integrator_step_res : public ::google::protobuf::Mes
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_initialize_model_req : public ::google::protobuf::Message {
+class fmi2_import_initialize_model_req : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_initialize_model_req();
   virtual ~fmi2_import_initialize_model_req();
@@ -5429,24 +5406,24 @@ class fmi2_import_initialize_model_req : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_initialize_model_req& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_initialize_model_req* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_initialize_model_req* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_initialize_model_req* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_initialize_model_req& from);
   void MergeFrom(const fmi2_import_initialize_model_req& from);
   void Clear();
@@ -5457,7 +5434,6 @@ class fmi2_import_initialize_model_req : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -5465,7 +5441,7 @@ class fmi2_import_initialize_model_req : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -5510,8 +5486,6 @@ class fmi2_import_initialize_model_req : public ::google::protobuf::Message {
   inline void set_has_relativetolerance();
   inline void clear_has_relativetolerance();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 fmuid_;
   double relativetolerance_;
@@ -5520,7 +5494,11 @@ class fmi2_import_initialize_model_req : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -5529,7 +5507,7 @@ class fmi2_import_initialize_model_req : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_initialize_model_res : public ::google::protobuf::Message {
+class fmi2_import_initialize_model_res : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_initialize_model_res();
   virtual ~fmi2_import_initialize_model_res();
@@ -5541,24 +5519,24 @@ class fmi2_import_initialize_model_res : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_initialize_model_res& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_initialize_model_res* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_initialize_model_res* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_initialize_model_res* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_initialize_model_res& from);
   void MergeFrom(const fmi2_import_initialize_model_res& from);
   void Clear();
@@ -5569,7 +5547,6 @@ class fmi2_import_initialize_model_res : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -5577,7 +5554,7 @@ class fmi2_import_initialize_model_res : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -5615,8 +5592,6 @@ class fmi2_import_initialize_model_res : public ::google::protobuf::Message {
   inline void set_has_status();
   inline void clear_has_status();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::fmitcp_proto::fmi2_event_info_t* eventinfo_;
   ::google::protobuf::int32 message_id_;
   int status_;
@@ -5624,7 +5599,11 @@ class fmi2_import_initialize_model_res : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -5633,7 +5612,7 @@ class fmi2_import_initialize_model_res : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_get_derivatives_req : public ::google::protobuf::Message {
+class fmi2_import_get_derivatives_req : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_get_derivatives_req();
   virtual ~fmi2_import_get_derivatives_req();
@@ -5645,24 +5624,24 @@ class fmi2_import_get_derivatives_req : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_get_derivatives_req& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_get_derivatives_req* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_get_derivatives_req* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_get_derivatives_req* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_get_derivatives_req& from);
   void MergeFrom(const fmi2_import_get_derivatives_req& from);
   void Clear();
@@ -5673,7 +5652,6 @@ class fmi2_import_get_derivatives_req : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -5681,7 +5659,7 @@ class fmi2_import_get_derivatives_req : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -5708,15 +5686,17 @@ class fmi2_import_get_derivatives_req : public ::google::protobuf::Message {
   inline void set_has_fmuid();
   inline void clear_has_fmuid();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 fmuid_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -5725,7 +5705,7 @@ class fmi2_import_get_derivatives_req : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_get_derivatives_res : public ::google::protobuf::Message {
+class fmi2_import_get_derivatives_res : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_get_derivatives_res();
   virtual ~fmi2_import_get_derivatives_res();
@@ -5737,24 +5717,24 @@ class fmi2_import_get_derivatives_res : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_get_derivatives_res& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_get_derivatives_res* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_get_derivatives_res* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_get_derivatives_res* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_get_derivatives_res& from);
   void MergeFrom(const fmi2_import_get_derivatives_res& from);
   void Clear();
@@ -5765,7 +5745,6 @@ class fmi2_import_get_derivatives_res : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -5773,7 +5752,7 @@ class fmi2_import_get_derivatives_res : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -5812,8 +5791,6 @@ class fmi2_import_get_derivatives_res : public ::google::protobuf::Message {
   inline void set_has_status();
   inline void clear_has_status();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::RepeatedField< double > derivatives_;
   ::google::protobuf::int32 message_id_;
   int status_;
@@ -5821,7 +5798,11 @@ class fmi2_import_get_derivatives_res : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -5830,7 +5811,7 @@ class fmi2_import_get_derivatives_res : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_get_event_indicators_req : public ::google::protobuf::Message {
+class fmi2_import_get_event_indicators_req : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_get_event_indicators_req();
   virtual ~fmi2_import_get_event_indicators_req();
@@ -5842,24 +5823,24 @@ class fmi2_import_get_event_indicators_req : public ::google::protobuf::Message 
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_get_event_indicators_req& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_get_event_indicators_req* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_get_event_indicators_req* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_get_event_indicators_req* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_get_event_indicators_req& from);
   void MergeFrom(const fmi2_import_get_event_indicators_req& from);
   void Clear();
@@ -5870,7 +5851,6 @@ class fmi2_import_get_event_indicators_req : public ::google::protobuf::Message 
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -5878,7 +5858,7 @@ class fmi2_import_get_event_indicators_req : public ::google::protobuf::Message 
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -5905,15 +5885,17 @@ class fmi2_import_get_event_indicators_req : public ::google::protobuf::Message 
   inline void set_has_fmuid();
   inline void clear_has_fmuid();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 fmuid_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -5922,7 +5904,7 @@ class fmi2_import_get_event_indicators_req : public ::google::protobuf::Message 
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_get_event_indicators_res : public ::google::protobuf::Message {
+class fmi2_import_get_event_indicators_res : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_get_event_indicators_res();
   virtual ~fmi2_import_get_event_indicators_res();
@@ -5934,24 +5916,24 @@ class fmi2_import_get_event_indicators_res : public ::google::protobuf::Message 
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_get_event_indicators_res& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_get_event_indicators_res* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_get_event_indicators_res* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_get_event_indicators_res* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_get_event_indicators_res& from);
   void MergeFrom(const fmi2_import_get_event_indicators_res& from);
   void Clear();
@@ -5962,7 +5944,6 @@ class fmi2_import_get_event_indicators_res : public ::google::protobuf::Message 
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -5970,7 +5951,7 @@ class fmi2_import_get_event_indicators_res : public ::google::protobuf::Message 
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -6009,8 +5990,6 @@ class fmi2_import_get_event_indicators_res : public ::google::protobuf::Message 
   inline void set_has_status();
   inline void clear_has_status();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::RepeatedField< double > eventindicators_;
   ::google::protobuf::int32 message_id_;
   int status_;
@@ -6018,7 +5997,11 @@ class fmi2_import_get_event_indicators_res : public ::google::protobuf::Message 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -6027,7 +6010,7 @@ class fmi2_import_get_event_indicators_res : public ::google::protobuf::Message 
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_eventUpdate_req : public ::google::protobuf::Message {
+class fmi2_import_eventUpdate_req : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_eventUpdate_req();
   virtual ~fmi2_import_eventUpdate_req();
@@ -6039,24 +6022,24 @@ class fmi2_import_eventUpdate_req : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_eventUpdate_req& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_eventUpdate_req* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_eventUpdate_req* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_eventUpdate_req* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_eventUpdate_req& from);
   void MergeFrom(const fmi2_import_eventUpdate_req& from);
   void Clear();
@@ -6067,7 +6050,6 @@ class fmi2_import_eventUpdate_req : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -6075,7 +6057,7 @@ class fmi2_import_eventUpdate_req : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -6111,8 +6093,6 @@ class fmi2_import_eventUpdate_req : public ::google::protobuf::Message {
   inline void set_has_intermediateresults();
   inline void clear_has_intermediateresults();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 fmuid_;
   bool intermediateresults_;
@@ -6120,7 +6100,11 @@ class fmi2_import_eventUpdate_req : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -6129,7 +6113,7 @@ class fmi2_import_eventUpdate_req : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_eventUpdate_res : public ::google::protobuf::Message {
+class fmi2_import_eventUpdate_res : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_eventUpdate_res();
   virtual ~fmi2_import_eventUpdate_res();
@@ -6141,24 +6125,24 @@ class fmi2_import_eventUpdate_res : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_eventUpdate_res& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_eventUpdate_res* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_eventUpdate_res* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_eventUpdate_res* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_eventUpdate_res& from);
   void MergeFrom(const fmi2_import_eventUpdate_res& from);
   void Clear();
@@ -6169,7 +6153,6 @@ class fmi2_import_eventUpdate_res : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -6177,7 +6160,7 @@ class fmi2_import_eventUpdate_res : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -6215,8 +6198,6 @@ class fmi2_import_eventUpdate_res : public ::google::protobuf::Message {
   inline void set_has_status();
   inline void clear_has_status();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::fmitcp_proto::fmi2_event_info_t* eventinfo_;
   ::google::protobuf::int32 message_id_;
   int status_;
@@ -6224,7 +6205,11 @@ class fmi2_import_eventUpdate_res : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -6233,7 +6218,7 @@ class fmi2_import_eventUpdate_res : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_completed_event_iteration_req : public ::google::protobuf::Message {
+class fmi2_import_completed_event_iteration_req : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_completed_event_iteration_req();
   virtual ~fmi2_import_completed_event_iteration_req();
@@ -6245,24 +6230,24 @@ class fmi2_import_completed_event_iteration_req : public ::google::protobuf::Mes
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_completed_event_iteration_req& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_completed_event_iteration_req* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_completed_event_iteration_req* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_completed_event_iteration_req* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_completed_event_iteration_req& from);
   void MergeFrom(const fmi2_import_completed_event_iteration_req& from);
   void Clear();
@@ -6273,7 +6258,6 @@ class fmi2_import_completed_event_iteration_req : public ::google::protobuf::Mes
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -6281,7 +6265,7 @@ class fmi2_import_completed_event_iteration_req : public ::google::protobuf::Mes
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -6308,15 +6292,17 @@ class fmi2_import_completed_event_iteration_req : public ::google::protobuf::Mes
   inline void set_has_fmuid();
   inline void clear_has_fmuid();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 fmuid_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -6325,7 +6311,7 @@ class fmi2_import_completed_event_iteration_req : public ::google::protobuf::Mes
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_completed_event_iteration_res : public ::google::protobuf::Message {
+class fmi2_import_completed_event_iteration_res : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_completed_event_iteration_res();
   virtual ~fmi2_import_completed_event_iteration_res();
@@ -6337,24 +6323,24 @@ class fmi2_import_completed_event_iteration_res : public ::google::protobuf::Mes
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_completed_event_iteration_res& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_completed_event_iteration_res* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_completed_event_iteration_res* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_completed_event_iteration_res* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_completed_event_iteration_res& from);
   void MergeFrom(const fmi2_import_completed_event_iteration_res& from);
   void Clear();
@@ -6365,7 +6351,6 @@ class fmi2_import_completed_event_iteration_res : public ::google::protobuf::Mes
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -6373,7 +6358,7 @@ class fmi2_import_completed_event_iteration_res : public ::google::protobuf::Mes
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -6400,15 +6385,17 @@ class fmi2_import_completed_event_iteration_res : public ::google::protobuf::Mes
   inline void set_has_status();
   inline void clear_has_status();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   int status_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -6417,7 +6404,7 @@ class fmi2_import_completed_event_iteration_res : public ::google::protobuf::Mes
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_get_continuous_states_req : public ::google::protobuf::Message {
+class fmi2_import_get_continuous_states_req : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_get_continuous_states_req();
   virtual ~fmi2_import_get_continuous_states_req();
@@ -6429,24 +6416,24 @@ class fmi2_import_get_continuous_states_req : public ::google::protobuf::Message
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_get_continuous_states_req& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_get_continuous_states_req* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_get_continuous_states_req* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_get_continuous_states_req* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_get_continuous_states_req& from);
   void MergeFrom(const fmi2_import_get_continuous_states_req& from);
   void Clear();
@@ -6457,7 +6444,6 @@ class fmi2_import_get_continuous_states_req : public ::google::protobuf::Message
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -6465,7 +6451,7 @@ class fmi2_import_get_continuous_states_req : public ::google::protobuf::Message
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -6492,15 +6478,17 @@ class fmi2_import_get_continuous_states_req : public ::google::protobuf::Message
   inline void set_has_fmuid();
   inline void clear_has_fmuid();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 fmuid_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -6509,7 +6497,7 @@ class fmi2_import_get_continuous_states_req : public ::google::protobuf::Message
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_get_continuous_states_res : public ::google::protobuf::Message {
+class fmi2_import_get_continuous_states_res : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_get_continuous_states_res();
   virtual ~fmi2_import_get_continuous_states_res();
@@ -6521,24 +6509,24 @@ class fmi2_import_get_continuous_states_res : public ::google::protobuf::Message
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_get_continuous_states_res& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_get_continuous_states_res* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_get_continuous_states_res* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_get_continuous_states_res* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_get_continuous_states_res& from);
   void MergeFrom(const fmi2_import_get_continuous_states_res& from);
   void Clear();
@@ -6549,7 +6537,6 @@ class fmi2_import_get_continuous_states_res : public ::google::protobuf::Message
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -6557,7 +6544,7 @@ class fmi2_import_get_continuous_states_res : public ::google::protobuf::Message
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -6596,8 +6583,6 @@ class fmi2_import_get_continuous_states_res : public ::google::protobuf::Message
   inline void set_has_status();
   inline void clear_has_status();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::RepeatedField< double > states_;
   ::google::protobuf::int32 message_id_;
   int status_;
@@ -6605,7 +6590,11 @@ class fmi2_import_get_continuous_states_res : public ::google::protobuf::Message
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -6614,7 +6603,7 @@ class fmi2_import_get_continuous_states_res : public ::google::protobuf::Message
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_get_nominal_continuous_states_req : public ::google::protobuf::Message {
+class fmi2_import_get_nominal_continuous_states_req : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_get_nominal_continuous_states_req();
   virtual ~fmi2_import_get_nominal_continuous_states_req();
@@ -6626,24 +6615,24 @@ class fmi2_import_get_nominal_continuous_states_req : public ::google::protobuf:
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_get_nominal_continuous_states_req& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_get_nominal_continuous_states_req* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_get_nominal_continuous_states_req* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_get_nominal_continuous_states_req* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_get_nominal_continuous_states_req& from);
   void MergeFrom(const fmi2_import_get_nominal_continuous_states_req& from);
   void Clear();
@@ -6654,7 +6643,6 @@ class fmi2_import_get_nominal_continuous_states_req : public ::google::protobuf:
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -6662,7 +6650,7 @@ class fmi2_import_get_nominal_continuous_states_req : public ::google::protobuf:
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -6689,15 +6677,17 @@ class fmi2_import_get_nominal_continuous_states_req : public ::google::protobuf:
   inline void set_has_fmuid();
   inline void clear_has_fmuid();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 fmuid_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -6706,7 +6696,7 @@ class fmi2_import_get_nominal_continuous_states_req : public ::google::protobuf:
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_get_nominal_continuous_states_res : public ::google::protobuf::Message {
+class fmi2_import_get_nominal_continuous_states_res : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_get_nominal_continuous_states_res();
   virtual ~fmi2_import_get_nominal_continuous_states_res();
@@ -6718,24 +6708,24 @@ class fmi2_import_get_nominal_continuous_states_res : public ::google::protobuf:
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_get_nominal_continuous_states_res& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_get_nominal_continuous_states_res* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_get_nominal_continuous_states_res* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_get_nominal_continuous_states_res* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_get_nominal_continuous_states_res& from);
   void MergeFrom(const fmi2_import_get_nominal_continuous_states_res& from);
   void Clear();
@@ -6746,7 +6736,6 @@ class fmi2_import_get_nominal_continuous_states_res : public ::google::protobuf:
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -6754,7 +6743,7 @@ class fmi2_import_get_nominal_continuous_states_res : public ::google::protobuf:
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -6793,8 +6782,6 @@ class fmi2_import_get_nominal_continuous_states_res : public ::google::protobuf:
   inline void set_has_status();
   inline void clear_has_status();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::RepeatedField< double > nominal_;
   ::google::protobuf::int32 message_id_;
   int status_;
@@ -6802,7 +6789,11 @@ class fmi2_import_get_nominal_continuous_states_res : public ::google::protobuf:
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -6811,7 +6802,7 @@ class fmi2_import_get_nominal_continuous_states_res : public ::google::protobuf:
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_terminate_req : public ::google::protobuf::Message {
+class fmi2_import_terminate_req : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_terminate_req();
   virtual ~fmi2_import_terminate_req();
@@ -6823,24 +6814,24 @@ class fmi2_import_terminate_req : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_terminate_req& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_terminate_req* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_terminate_req* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_terminate_req* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_terminate_req& from);
   void MergeFrom(const fmi2_import_terminate_req& from);
   void Clear();
@@ -6851,7 +6842,6 @@ class fmi2_import_terminate_req : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -6859,7 +6849,7 @@ class fmi2_import_terminate_req : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -6886,15 +6876,17 @@ class fmi2_import_terminate_req : public ::google::protobuf::Message {
   inline void set_has_fmuid();
   inline void clear_has_fmuid();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 fmuid_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -6903,7 +6895,7 @@ class fmi2_import_terminate_req : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_terminate_res : public ::google::protobuf::Message {
+class fmi2_import_terminate_res : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_terminate_res();
   virtual ~fmi2_import_terminate_res();
@@ -6915,24 +6907,24 @@ class fmi2_import_terminate_res : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_terminate_res& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_terminate_res* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_terminate_res* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_terminate_res* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_terminate_res& from);
   void MergeFrom(const fmi2_import_terminate_res& from);
   void Clear();
@@ -6943,7 +6935,6 @@ class fmi2_import_terminate_res : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -6951,7 +6942,7 @@ class fmi2_import_terminate_res : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -6978,15 +6969,17 @@ class fmi2_import_terminate_res : public ::google::protobuf::Message {
   inline void set_has_status();
   inline void clear_has_status();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   int status_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -6995,7 +6988,7 @@ class fmi2_import_terminate_res : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_get_version_req : public ::google::protobuf::Message {
+class fmi2_import_get_version_req : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_get_version_req();
   virtual ~fmi2_import_get_version_req();
@@ -7007,24 +7000,24 @@ class fmi2_import_get_version_req : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_get_version_req& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_get_version_req* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_get_version_req* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_get_version_req* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_get_version_req& from);
   void MergeFrom(const fmi2_import_get_version_req& from);
   void Clear();
@@ -7035,7 +7028,6 @@ class fmi2_import_get_version_req : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -7043,7 +7035,7 @@ class fmi2_import_get_version_req : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -7070,15 +7062,17 @@ class fmi2_import_get_version_req : public ::google::protobuf::Message {
   inline void set_has_fmuid();
   inline void clear_has_fmuid();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 fmuid_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -7087,7 +7081,7 @@ class fmi2_import_get_version_req : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_get_version_res : public ::google::protobuf::Message {
+class fmi2_import_get_version_res : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_get_version_res();
   virtual ~fmi2_import_get_version_res();
@@ -7099,24 +7093,24 @@ class fmi2_import_get_version_res : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_get_version_res& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_get_version_res* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_get_version_res* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_get_version_res* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_get_version_res& from);
   void MergeFrom(const fmi2_import_get_version_res& from);
   void Clear();
@@ -7127,7 +7121,6 @@ class fmi2_import_get_version_res : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -7135,7 +7128,7 @@ class fmi2_import_get_version_res : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -7167,15 +7160,17 @@ class fmi2_import_get_version_res : public ::google::protobuf::Message {
   inline void set_has_version();
   inline void clear_has_version();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::std::string* version_;
   ::google::protobuf::int32 message_id_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -7184,7 +7179,7 @@ class fmi2_import_get_version_res : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_set_debug_logging_req : public ::google::protobuf::Message {
+class fmi2_import_set_debug_logging_req : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_set_debug_logging_req();
   virtual ~fmi2_import_set_debug_logging_req();
@@ -7196,24 +7191,24 @@ class fmi2_import_set_debug_logging_req : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_set_debug_logging_req& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_set_debug_logging_req* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_set_debug_logging_req* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_set_debug_logging_req* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_set_debug_logging_req& from);
   void MergeFrom(const fmi2_import_set_debug_logging_req& from);
   void Clear();
@@ -7224,7 +7219,6 @@ class fmi2_import_set_debug_logging_req : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -7232,7 +7226,7 @@ class fmi2_import_set_debug_logging_req : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -7284,8 +7278,6 @@ class fmi2_import_set_debug_logging_req : public ::google::protobuf::Message {
   inline void set_has_loggingon();
   inline void clear_has_loggingon();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 fmuid_;
   ::google::protobuf::RepeatedPtrField< ::std::string> categories_;
@@ -7294,7 +7286,11 @@ class fmi2_import_set_debug_logging_req : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -7303,7 +7299,7 @@ class fmi2_import_set_debug_logging_req : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_set_debug_logging_res : public ::google::protobuf::Message {
+class fmi2_import_set_debug_logging_res : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_set_debug_logging_res();
   virtual ~fmi2_import_set_debug_logging_res();
@@ -7315,24 +7311,24 @@ class fmi2_import_set_debug_logging_res : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_set_debug_logging_res& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_set_debug_logging_res* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_set_debug_logging_res* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_set_debug_logging_res* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_set_debug_logging_res& from);
   void MergeFrom(const fmi2_import_set_debug_logging_res& from);
   void Clear();
@@ -7343,7 +7339,6 @@ class fmi2_import_set_debug_logging_res : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -7351,7 +7346,7 @@ class fmi2_import_set_debug_logging_res : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -7378,15 +7373,17 @@ class fmi2_import_set_debug_logging_res : public ::google::protobuf::Message {
   inline void set_has_status();
   inline void clear_has_status();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   int status_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -7395,7 +7392,7 @@ class fmi2_import_set_debug_logging_res : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_set_real_req : public ::google::protobuf::Message {
+class fmi2_import_set_real_req : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_set_real_req();
   virtual ~fmi2_import_set_real_req();
@@ -7407,24 +7404,24 @@ class fmi2_import_set_real_req : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_set_real_req& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_set_real_req* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_set_real_req* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_set_real_req* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_set_real_req& from);
   void MergeFrom(const fmi2_import_set_real_req& from);
   void Clear();
@@ -7435,7 +7432,6 @@ class fmi2_import_set_real_req : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -7443,7 +7439,7 @@ class fmi2_import_set_real_req : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -7494,8 +7490,6 @@ class fmi2_import_set_real_req : public ::google::protobuf::Message {
   inline void set_has_fmuid();
   inline void clear_has_fmuid();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 fmuid_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > valuereferences_;
@@ -7504,7 +7498,11 @@ class fmi2_import_set_real_req : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -7513,7 +7511,7 @@ class fmi2_import_set_real_req : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_set_real_res : public ::google::protobuf::Message {
+class fmi2_import_set_real_res : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_set_real_res();
   virtual ~fmi2_import_set_real_res();
@@ -7525,24 +7523,24 @@ class fmi2_import_set_real_res : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_set_real_res& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_set_real_res* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_set_real_res* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_set_real_res* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_set_real_res& from);
   void MergeFrom(const fmi2_import_set_real_res& from);
   void Clear();
@@ -7553,7 +7551,6 @@ class fmi2_import_set_real_res : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -7561,7 +7558,7 @@ class fmi2_import_set_real_res : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -7588,15 +7585,17 @@ class fmi2_import_set_real_res : public ::google::protobuf::Message {
   inline void set_has_status();
   inline void clear_has_status();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   int status_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -7605,7 +7604,7 @@ class fmi2_import_set_real_res : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_set_integer_req : public ::google::protobuf::Message {
+class fmi2_import_set_integer_req : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_set_integer_req();
   virtual ~fmi2_import_set_integer_req();
@@ -7617,24 +7616,24 @@ class fmi2_import_set_integer_req : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_set_integer_req& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_set_integer_req* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_set_integer_req* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_set_integer_req* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_set_integer_req& from);
   void MergeFrom(const fmi2_import_set_integer_req& from);
   void Clear();
@@ -7645,7 +7644,6 @@ class fmi2_import_set_integer_req : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -7653,7 +7651,7 @@ class fmi2_import_set_integer_req : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -7704,8 +7702,6 @@ class fmi2_import_set_integer_req : public ::google::protobuf::Message {
   inline void set_has_fmuid();
   inline void clear_has_fmuid();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 fmuid_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > valuereferences_;
@@ -7714,7 +7710,11 @@ class fmi2_import_set_integer_req : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -7723,7 +7723,7 @@ class fmi2_import_set_integer_req : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_set_integer_res : public ::google::protobuf::Message {
+class fmi2_import_set_integer_res : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_set_integer_res();
   virtual ~fmi2_import_set_integer_res();
@@ -7735,24 +7735,24 @@ class fmi2_import_set_integer_res : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_set_integer_res& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_set_integer_res* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_set_integer_res* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_set_integer_res* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_set_integer_res& from);
   void MergeFrom(const fmi2_import_set_integer_res& from);
   void Clear();
@@ -7763,7 +7763,6 @@ class fmi2_import_set_integer_res : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -7771,7 +7770,7 @@ class fmi2_import_set_integer_res : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -7798,15 +7797,17 @@ class fmi2_import_set_integer_res : public ::google::protobuf::Message {
   inline void set_has_status();
   inline void clear_has_status();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   int status_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -7815,7 +7816,7 @@ class fmi2_import_set_integer_res : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_set_boolean_req : public ::google::protobuf::Message {
+class fmi2_import_set_boolean_req : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_set_boolean_req();
   virtual ~fmi2_import_set_boolean_req();
@@ -7827,24 +7828,24 @@ class fmi2_import_set_boolean_req : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_set_boolean_req& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_set_boolean_req* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_set_boolean_req* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_set_boolean_req* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_set_boolean_req& from);
   void MergeFrom(const fmi2_import_set_boolean_req& from);
   void Clear();
@@ -7855,7 +7856,6 @@ class fmi2_import_set_boolean_req : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -7863,7 +7863,7 @@ class fmi2_import_set_boolean_req : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -7914,8 +7914,6 @@ class fmi2_import_set_boolean_req : public ::google::protobuf::Message {
   inline void set_has_fmuid();
   inline void clear_has_fmuid();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 fmuid_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > valuereferences_;
@@ -7924,7 +7922,11 @@ class fmi2_import_set_boolean_req : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -7933,7 +7935,7 @@ class fmi2_import_set_boolean_req : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_set_boolean_res : public ::google::protobuf::Message {
+class fmi2_import_set_boolean_res : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_set_boolean_res();
   virtual ~fmi2_import_set_boolean_res();
@@ -7945,24 +7947,24 @@ class fmi2_import_set_boolean_res : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_set_boolean_res& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_set_boolean_res* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_set_boolean_res* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_set_boolean_res* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_set_boolean_res& from);
   void MergeFrom(const fmi2_import_set_boolean_res& from);
   void Clear();
@@ -7973,7 +7975,6 @@ class fmi2_import_set_boolean_res : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -7981,7 +7982,7 @@ class fmi2_import_set_boolean_res : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -8008,15 +8009,17 @@ class fmi2_import_set_boolean_res : public ::google::protobuf::Message {
   inline void set_has_status();
   inline void clear_has_status();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   int status_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -8025,7 +8028,7 @@ class fmi2_import_set_boolean_res : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_set_string_req : public ::google::protobuf::Message {
+class fmi2_import_set_string_req : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_set_string_req();
   virtual ~fmi2_import_set_string_req();
@@ -8037,24 +8040,24 @@ class fmi2_import_set_string_req : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_set_string_req& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_set_string_req* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_set_string_req* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_set_string_req* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_set_string_req& from);
   void MergeFrom(const fmi2_import_set_string_req& from);
   void Clear();
@@ -8065,7 +8068,6 @@ class fmi2_import_set_string_req : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -8073,7 +8075,7 @@ class fmi2_import_set_string_req : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -8128,8 +8130,6 @@ class fmi2_import_set_string_req : public ::google::protobuf::Message {
   inline void set_has_fmuid();
   inline void clear_has_fmuid();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 fmuid_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > valuereferences_;
@@ -8138,7 +8138,11 @@ class fmi2_import_set_string_req : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -8147,7 +8151,7 @@ class fmi2_import_set_string_req : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_set_string_res : public ::google::protobuf::Message {
+class fmi2_import_set_string_res : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_set_string_res();
   virtual ~fmi2_import_set_string_res();
@@ -8159,24 +8163,24 @@ class fmi2_import_set_string_res : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_set_string_res& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_set_string_res* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_set_string_res* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_set_string_res* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_set_string_res& from);
   void MergeFrom(const fmi2_import_set_string_res& from);
   void Clear();
@@ -8187,7 +8191,6 @@ class fmi2_import_set_string_res : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -8195,7 +8198,7 @@ class fmi2_import_set_string_res : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -8222,15 +8225,17 @@ class fmi2_import_set_string_res : public ::google::protobuf::Message {
   inline void set_has_status();
   inline void clear_has_status();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   int status_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -8239,7 +8244,7 @@ class fmi2_import_set_string_res : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_get_real_req : public ::google::protobuf::Message {
+class fmi2_import_get_real_req : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_get_real_req();
   virtual ~fmi2_import_get_real_req();
@@ -8251,24 +8256,24 @@ class fmi2_import_get_real_req : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_get_real_req& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_get_real_req* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_get_real_req* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_get_real_req* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_get_real_req& from);
   void MergeFrom(const fmi2_import_get_real_req& from);
   void Clear();
@@ -8279,7 +8284,6 @@ class fmi2_import_get_real_req : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -8287,7 +8291,7 @@ class fmi2_import_get_real_req : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -8326,8 +8330,6 @@ class fmi2_import_get_real_req : public ::google::protobuf::Message {
   inline void set_has_fmuid();
   inline void clear_has_fmuid();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 fmuid_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > valuereferences_;
@@ -8335,7 +8337,11 @@ class fmi2_import_get_real_req : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -8344,7 +8350,7 @@ class fmi2_import_get_real_req : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_get_real_res : public ::google::protobuf::Message {
+class fmi2_import_get_real_res : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_get_real_res();
   virtual ~fmi2_import_get_real_res();
@@ -8356,24 +8362,24 @@ class fmi2_import_get_real_res : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_get_real_res& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_get_real_res* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_get_real_res* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_get_real_res* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_get_real_res& from);
   void MergeFrom(const fmi2_import_get_real_res& from);
   void Clear();
@@ -8384,7 +8390,6 @@ class fmi2_import_get_real_res : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -8392,7 +8397,7 @@ class fmi2_import_get_real_res : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -8431,8 +8436,6 @@ class fmi2_import_get_real_res : public ::google::protobuf::Message {
   inline void set_has_status();
   inline void clear_has_status();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::RepeatedField< double > values_;
   ::google::protobuf::int32 message_id_;
   int status_;
@@ -8440,7 +8443,11 @@ class fmi2_import_get_real_res : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -8449,7 +8456,7 @@ class fmi2_import_get_real_res : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_get_integer_req : public ::google::protobuf::Message {
+class fmi2_import_get_integer_req : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_get_integer_req();
   virtual ~fmi2_import_get_integer_req();
@@ -8461,24 +8468,24 @@ class fmi2_import_get_integer_req : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_get_integer_req& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_get_integer_req* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_get_integer_req* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_get_integer_req* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_get_integer_req& from);
   void MergeFrom(const fmi2_import_get_integer_req& from);
   void Clear();
@@ -8489,7 +8496,6 @@ class fmi2_import_get_integer_req : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -8497,7 +8503,7 @@ class fmi2_import_get_integer_req : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -8536,8 +8542,6 @@ class fmi2_import_get_integer_req : public ::google::protobuf::Message {
   inline void set_has_fmuid();
   inline void clear_has_fmuid();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 fmuid_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > valuereferences_;
@@ -8545,7 +8549,11 @@ class fmi2_import_get_integer_req : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -8554,7 +8562,7 @@ class fmi2_import_get_integer_req : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_get_integer_res : public ::google::protobuf::Message {
+class fmi2_import_get_integer_res : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_get_integer_res();
   virtual ~fmi2_import_get_integer_res();
@@ -8566,24 +8574,24 @@ class fmi2_import_get_integer_res : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_get_integer_res& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_get_integer_res* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_get_integer_res* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_get_integer_res* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_get_integer_res& from);
   void MergeFrom(const fmi2_import_get_integer_res& from);
   void Clear();
@@ -8594,7 +8602,6 @@ class fmi2_import_get_integer_res : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -8602,7 +8609,7 @@ class fmi2_import_get_integer_res : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -8641,8 +8648,6 @@ class fmi2_import_get_integer_res : public ::google::protobuf::Message {
   inline void set_has_status();
   inline void clear_has_status();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > values_;
   ::google::protobuf::int32 message_id_;
   int status_;
@@ -8650,7 +8655,11 @@ class fmi2_import_get_integer_res : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -8659,7 +8668,7 @@ class fmi2_import_get_integer_res : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_get_boolean_req : public ::google::protobuf::Message {
+class fmi2_import_get_boolean_req : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_get_boolean_req();
   virtual ~fmi2_import_get_boolean_req();
@@ -8671,24 +8680,24 @@ class fmi2_import_get_boolean_req : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_get_boolean_req& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_get_boolean_req* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_get_boolean_req* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_get_boolean_req* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_get_boolean_req& from);
   void MergeFrom(const fmi2_import_get_boolean_req& from);
   void Clear();
@@ -8699,7 +8708,6 @@ class fmi2_import_get_boolean_req : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -8707,7 +8715,7 @@ class fmi2_import_get_boolean_req : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -8746,8 +8754,6 @@ class fmi2_import_get_boolean_req : public ::google::protobuf::Message {
   inline void set_has_fmuid();
   inline void clear_has_fmuid();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 fmuid_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > valuereferences_;
@@ -8755,7 +8761,11 @@ class fmi2_import_get_boolean_req : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -8764,7 +8774,7 @@ class fmi2_import_get_boolean_req : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_get_boolean_res : public ::google::protobuf::Message {
+class fmi2_import_get_boolean_res : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_get_boolean_res();
   virtual ~fmi2_import_get_boolean_res();
@@ -8776,24 +8786,24 @@ class fmi2_import_get_boolean_res : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_get_boolean_res& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_get_boolean_res* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_get_boolean_res* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_get_boolean_res* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_get_boolean_res& from);
   void MergeFrom(const fmi2_import_get_boolean_res& from);
   void Clear();
@@ -8804,7 +8814,6 @@ class fmi2_import_get_boolean_res : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -8812,7 +8821,7 @@ class fmi2_import_get_boolean_res : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -8851,8 +8860,6 @@ class fmi2_import_get_boolean_res : public ::google::protobuf::Message {
   inline void set_has_status();
   inline void clear_has_status();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::RepeatedField< bool > values_;
   ::google::protobuf::int32 message_id_;
   int status_;
@@ -8860,7 +8867,11 @@ class fmi2_import_get_boolean_res : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -8869,7 +8880,7 @@ class fmi2_import_get_boolean_res : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_get_string_req : public ::google::protobuf::Message {
+class fmi2_import_get_string_req : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_get_string_req();
   virtual ~fmi2_import_get_string_req();
@@ -8881,24 +8892,24 @@ class fmi2_import_get_string_req : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_get_string_req& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_get_string_req* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_get_string_req* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_get_string_req* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_get_string_req& from);
   void MergeFrom(const fmi2_import_get_string_req& from);
   void Clear();
@@ -8909,7 +8920,6 @@ class fmi2_import_get_string_req : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -8917,7 +8927,7 @@ class fmi2_import_get_string_req : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -8956,8 +8966,6 @@ class fmi2_import_get_string_req : public ::google::protobuf::Message {
   inline void set_has_fmuid();
   inline void clear_has_fmuid();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 fmuid_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > valuereferences_;
@@ -8965,7 +8973,11 @@ class fmi2_import_get_string_req : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -8974,7 +8986,7 @@ class fmi2_import_get_string_req : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_get_string_res : public ::google::protobuf::Message {
+class fmi2_import_get_string_res : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_get_string_res();
   virtual ~fmi2_import_get_string_res();
@@ -8986,24 +8998,24 @@ class fmi2_import_get_string_res : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_get_string_res& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_get_string_res* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_get_string_res* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_get_string_res* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_get_string_res& from);
   void MergeFrom(const fmi2_import_get_string_res& from);
   void Clear();
@@ -9014,7 +9026,6 @@ class fmi2_import_get_string_res : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -9022,7 +9033,7 @@ class fmi2_import_get_string_res : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -9065,8 +9076,6 @@ class fmi2_import_get_string_res : public ::google::protobuf::Message {
   inline void set_has_status();
   inline void clear_has_status();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::RepeatedPtrField< ::std::string> values_;
   ::google::protobuf::int32 message_id_;
   int status_;
@@ -9074,7 +9083,11 @@ class fmi2_import_get_string_res : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -9083,7 +9096,7 @@ class fmi2_import_get_string_res : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class char_req : public ::google::protobuf::Message {
+class char_req : public ::google::protobuf::MessageLite {
  public:
   char_req();
   virtual ~char_req();
@@ -9095,24 +9108,24 @@ class char_req : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const char_req& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const char_req* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(char_req* other);
 
   // implements Message ----------------------------------------------
 
   char_req* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const char_req& from);
   void MergeFrom(const char_req& from);
   void Clear();
@@ -9123,7 +9136,6 @@ class char_req : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -9131,7 +9143,7 @@ class char_req : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -9140,13 +9152,15 @@ class char_req : public ::google::protobuf::Message {
   // @@protoc_insertion_point(class_scope:fmitcp_proto.char_req)
  private:
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[1];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -9155,7 +9169,7 @@ class char_req : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class char_res : public ::google::protobuf::Message {
+class char_res : public ::google::protobuf::MessageLite {
  public:
   char_res();
   virtual ~char_res();
@@ -9167,24 +9181,24 @@ class char_res : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const char_res& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const char_res* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(char_res* other);
 
   // implements Message ----------------------------------------------
 
   char_res* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const char_res& from);
   void MergeFrom(const char_res& from);
   void Clear();
@@ -9195,7 +9209,6 @@ class char_res : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -9203,7 +9216,7 @@ class char_res : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -9212,13 +9225,15 @@ class char_res : public ::google::protobuf::Message {
   // @@protoc_insertion_point(class_scope:fmitcp_proto.char_res)
  private:
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[1];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -9227,7 +9242,7 @@ class char_res : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_get_fmu_state_req : public ::google::protobuf::Message {
+class fmi2_import_get_fmu_state_req : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_get_fmu_state_req();
   virtual ~fmi2_import_get_fmu_state_req();
@@ -9239,24 +9254,24 @@ class fmi2_import_get_fmu_state_req : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_get_fmu_state_req& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_get_fmu_state_req* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_get_fmu_state_req* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_get_fmu_state_req* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_get_fmu_state_req& from);
   void MergeFrom(const fmi2_import_get_fmu_state_req& from);
   void Clear();
@@ -9267,7 +9282,6 @@ class fmi2_import_get_fmu_state_req : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -9275,7 +9289,7 @@ class fmi2_import_get_fmu_state_req : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -9302,15 +9316,17 @@ class fmi2_import_get_fmu_state_req : public ::google::protobuf::Message {
   inline void set_has_fmuid();
   inline void clear_has_fmuid();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 fmuid_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -9319,7 +9335,7 @@ class fmi2_import_get_fmu_state_req : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_get_fmu_state_res : public ::google::protobuf::Message {
+class fmi2_import_get_fmu_state_res : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_get_fmu_state_res();
   virtual ~fmi2_import_get_fmu_state_res();
@@ -9331,24 +9347,24 @@ class fmi2_import_get_fmu_state_res : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_get_fmu_state_res& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_get_fmu_state_res* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_get_fmu_state_res* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_get_fmu_state_res* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_get_fmu_state_res& from);
   void MergeFrom(const fmi2_import_get_fmu_state_res& from);
   void Clear();
@@ -9359,7 +9375,6 @@ class fmi2_import_get_fmu_state_res : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -9367,7 +9382,7 @@ class fmi2_import_get_fmu_state_res : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -9403,8 +9418,6 @@ class fmi2_import_get_fmu_state_res : public ::google::protobuf::Message {
   inline void set_has_status();
   inline void clear_has_status();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 stateid_;
   int status_;
@@ -9412,7 +9425,11 @@ class fmi2_import_get_fmu_state_res : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -9421,7 +9438,7 @@ class fmi2_import_get_fmu_state_res : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_set_fmu_state_req : public ::google::protobuf::Message {
+class fmi2_import_set_fmu_state_req : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_set_fmu_state_req();
   virtual ~fmi2_import_set_fmu_state_req();
@@ -9433,24 +9450,24 @@ class fmi2_import_set_fmu_state_req : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_set_fmu_state_req& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_set_fmu_state_req* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_set_fmu_state_req* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_set_fmu_state_req* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_set_fmu_state_req& from);
   void MergeFrom(const fmi2_import_set_fmu_state_req& from);
   void Clear();
@@ -9461,7 +9478,6 @@ class fmi2_import_set_fmu_state_req : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -9469,7 +9485,7 @@ class fmi2_import_set_fmu_state_req : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -9505,8 +9521,6 @@ class fmi2_import_set_fmu_state_req : public ::google::protobuf::Message {
   inline void set_has_stateid();
   inline void clear_has_stateid();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 fmuid_;
   ::google::protobuf::int32 stateid_;
@@ -9514,7 +9528,11 @@ class fmi2_import_set_fmu_state_req : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -9523,7 +9541,7 @@ class fmi2_import_set_fmu_state_req : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_set_fmu_state_res : public ::google::protobuf::Message {
+class fmi2_import_set_fmu_state_res : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_set_fmu_state_res();
   virtual ~fmi2_import_set_fmu_state_res();
@@ -9535,24 +9553,24 @@ class fmi2_import_set_fmu_state_res : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_set_fmu_state_res& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_set_fmu_state_res* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_set_fmu_state_res* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_set_fmu_state_res* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_set_fmu_state_res& from);
   void MergeFrom(const fmi2_import_set_fmu_state_res& from);
   void Clear();
@@ -9563,7 +9581,6 @@ class fmi2_import_set_fmu_state_res : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -9571,7 +9588,7 @@ class fmi2_import_set_fmu_state_res : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -9598,15 +9615,17 @@ class fmi2_import_set_fmu_state_res : public ::google::protobuf::Message {
   inline void set_has_status();
   inline void clear_has_status();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   int status_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -9615,7 +9634,7 @@ class fmi2_import_set_fmu_state_res : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_free_fmu_state_req : public ::google::protobuf::Message {
+class fmi2_import_free_fmu_state_req : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_free_fmu_state_req();
   virtual ~fmi2_import_free_fmu_state_req();
@@ -9627,24 +9646,24 @@ class fmi2_import_free_fmu_state_req : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_free_fmu_state_req& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_free_fmu_state_req* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_free_fmu_state_req* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_free_fmu_state_req* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_free_fmu_state_req& from);
   void MergeFrom(const fmi2_import_free_fmu_state_req& from);
   void Clear();
@@ -9655,7 +9674,6 @@ class fmi2_import_free_fmu_state_req : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -9663,7 +9681,7 @@ class fmi2_import_free_fmu_state_req : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -9690,15 +9708,17 @@ class fmi2_import_free_fmu_state_req : public ::google::protobuf::Message {
   inline void set_has_stateid();
   inline void clear_has_stateid();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 stateid_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -9707,7 +9727,7 @@ class fmi2_import_free_fmu_state_req : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_free_fmu_state_res : public ::google::protobuf::Message {
+class fmi2_import_free_fmu_state_res : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_free_fmu_state_res();
   virtual ~fmi2_import_free_fmu_state_res();
@@ -9719,24 +9739,24 @@ class fmi2_import_free_fmu_state_res : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_free_fmu_state_res& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_free_fmu_state_res* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_free_fmu_state_res* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_free_fmu_state_res* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_free_fmu_state_res& from);
   void MergeFrom(const fmi2_import_free_fmu_state_res& from);
   void Clear();
@@ -9747,7 +9767,6 @@ class fmi2_import_free_fmu_state_res : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -9755,7 +9774,7 @@ class fmi2_import_free_fmu_state_res : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -9782,15 +9801,17 @@ class fmi2_import_free_fmu_state_res : public ::google::protobuf::Message {
   inline void set_has_status();
   inline void clear_has_status();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   int status_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -9799,7 +9820,7 @@ class fmi2_import_free_fmu_state_res : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_get_directional_derivative_req : public ::google::protobuf::Message {
+class fmi2_import_get_directional_derivative_req : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_get_directional_derivative_req();
   virtual ~fmi2_import_get_directional_derivative_req();
@@ -9811,24 +9832,24 @@ class fmi2_import_get_directional_derivative_req : public ::google::protobuf::Me
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_get_directional_derivative_req& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_get_directional_derivative_req* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_get_directional_derivative_req* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_get_directional_derivative_req* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_get_directional_derivative_req& from);
   void MergeFrom(const fmi2_import_get_directional_derivative_req& from);
   void Clear();
@@ -9839,7 +9860,6 @@ class fmi2_import_get_directional_derivative_req : public ::google::protobuf::Me
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -9847,7 +9867,7 @@ class fmi2_import_get_directional_derivative_req : public ::google::protobuf::Me
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -9910,8 +9930,6 @@ class fmi2_import_get_directional_derivative_req : public ::google::protobuf::Me
   inline void set_has_fmuid();
   inline void clear_has_fmuid();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 fmuid_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > v_ref_;
@@ -9921,7 +9939,11 @@ class fmi2_import_get_directional_derivative_req : public ::google::protobuf::Me
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(5 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -9930,7 +9952,7 @@ class fmi2_import_get_directional_derivative_req : public ::google::protobuf::Me
 };
 // -------------------------------------------------------------------
 
-class fmi2_import_get_directional_derivative_res : public ::google::protobuf::Message {
+class fmi2_import_get_directional_derivative_res : public ::google::protobuf::MessageLite {
  public:
   fmi2_import_get_directional_derivative_res();
   virtual ~fmi2_import_get_directional_derivative_res();
@@ -9942,24 +9964,24 @@ class fmi2_import_get_directional_derivative_res : public ::google::protobuf::Me
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const fmi2_import_get_directional_derivative_res& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const fmi2_import_get_directional_derivative_res* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(fmi2_import_get_directional_derivative_res* other);
 
   // implements Message ----------------------------------------------
 
   fmi2_import_get_directional_derivative_res* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const fmi2_import_get_directional_derivative_res& from);
   void MergeFrom(const fmi2_import_get_directional_derivative_res& from);
   void Clear();
@@ -9970,7 +9992,6 @@ class fmi2_import_get_directional_derivative_res : public ::google::protobuf::Me
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -9978,7 +9999,7 @@ class fmi2_import_get_directional_derivative_res : public ::google::protobuf::Me
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -10017,8 +10038,6 @@ class fmi2_import_get_directional_derivative_res : public ::google::protobuf::Me
   inline void set_has_status();
   inline void clear_has_status();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::RepeatedField< double > dz_;
   ::google::protobuf::int32 message_id_;
   int status_;
@@ -10026,7 +10045,11 @@ class fmi2_import_get_directional_derivative_res : public ::google::protobuf::Me
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -10035,7 +10058,7 @@ class fmi2_import_get_directional_derivative_res : public ::google::protobuf::Me
 };
 // -------------------------------------------------------------------
 
-class get_xml_req : public ::google::protobuf::Message {
+class get_xml_req : public ::google::protobuf::MessageLite {
  public:
   get_xml_req();
   virtual ~get_xml_req();
@@ -10047,24 +10070,24 @@ class get_xml_req : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const get_xml_req& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const get_xml_req* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(get_xml_req* other);
 
   // implements Message ----------------------------------------------
 
   get_xml_req* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const get_xml_req& from);
   void MergeFrom(const get_xml_req& from);
   void Clear();
@@ -10075,7 +10098,6 @@ class get_xml_req : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -10083,7 +10105,7 @@ class get_xml_req : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -10110,15 +10132,17 @@ class get_xml_req : public ::google::protobuf::Message {
   inline void set_has_fmuid();
   inline void clear_has_fmuid();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 fmuid_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -10127,7 +10151,7 @@ class get_xml_req : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class get_xml_res : public ::google::protobuf::Message {
+class get_xml_res : public ::google::protobuf::MessageLite {
  public:
   get_xml_res();
   virtual ~get_xml_res();
@@ -10139,24 +10163,24 @@ class get_xml_res : public ::google::protobuf::Message {
     return *this;
   }
 
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
   static const get_xml_res& default_instance();
+
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  // Returns the internal default instance pointer. This function can
+  // return NULL thus should not be used by the user. This is intended
+  // for Protobuf internal code. Please use default_instance() declared
+  // above instead.
+  static inline const get_xml_res* internal_default_instance() {
+    return default_instance_;
+  }
+  #endif
 
   void Swap(get_xml_res* other);
 
   // implements Message ----------------------------------------------
 
   get_xml_res* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  void CheckTypeAndMergeFrom(const ::google::protobuf::MessageLite& from);
   void CopyFrom(const get_xml_res& from);
   void MergeFrom(const get_xml_res& from);
   void Clear();
@@ -10167,7 +10191,6 @@ class get_xml_res : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -10175,7 +10198,7 @@ class get_xml_res : public ::google::protobuf::Message {
   void SetCachedSize(int size) const;
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::std::string GetTypeName() const;
 
   // nested types ----------------------------------------------------
 
@@ -10216,8 +10239,6 @@ class get_xml_res : public ::google::protobuf::Message {
   inline void set_has_xml();
   inline void clear_has_xml();
 
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
   ::google::protobuf::int32 message_id_;
   int loglevel_;
   ::std::string* xml_;
@@ -10225,7 +10246,11 @@ class get_xml_res : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
 
+  #ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  friend void  protobuf_AddDesc_fmitcp_2eproto_impl();
+  #else
   friend void  protobuf_AddDesc_fmitcp_2eproto();
+  #endif
   friend void protobuf_AssignDesc_fmitcp_2eproto();
   friend void protobuf_ShutdownFile_fmitcp_2eproto();
 
@@ -10277,7 +10302,11 @@ inline void fmitcp_message::clear_fmi2_import_instantiate_req() {
   clear_has_fmi2_import_instantiate_req();
 }
 inline const ::fmitcp_proto::fmi2_import_instantiate_req& fmitcp_message::fmi2_import_instantiate_req() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_instantiate_req_ != NULL ? *fmi2_import_instantiate_req_ : *default_instance().fmi2_import_instantiate_req_;
+#else
   return fmi2_import_instantiate_req_ != NULL ? *fmi2_import_instantiate_req_ : *default_instance_->fmi2_import_instantiate_req_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_instantiate_req* fmitcp_message::mutable_fmi2_import_instantiate_req() {
   set_has_fmi2_import_instantiate_req();
@@ -10315,7 +10344,11 @@ inline void fmitcp_message::clear_fmi2_import_instantiate_res() {
   clear_has_fmi2_import_instantiate_res();
 }
 inline const ::fmitcp_proto::fmi2_import_instantiate_res& fmitcp_message::fmi2_import_instantiate_res() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_instantiate_res_ != NULL ? *fmi2_import_instantiate_res_ : *default_instance().fmi2_import_instantiate_res_;
+#else
   return fmi2_import_instantiate_res_ != NULL ? *fmi2_import_instantiate_res_ : *default_instance_->fmi2_import_instantiate_res_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_instantiate_res* fmitcp_message::mutable_fmi2_import_instantiate_res() {
   set_has_fmi2_import_instantiate_res();
@@ -10353,7 +10386,11 @@ inline void fmitcp_message::clear_fmi2_import_initialize_slave_req() {
   clear_has_fmi2_import_initialize_slave_req();
 }
 inline const ::fmitcp_proto::fmi2_import_initialize_slave_req& fmitcp_message::fmi2_import_initialize_slave_req() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_initialize_slave_req_ != NULL ? *fmi2_import_initialize_slave_req_ : *default_instance().fmi2_import_initialize_slave_req_;
+#else
   return fmi2_import_initialize_slave_req_ != NULL ? *fmi2_import_initialize_slave_req_ : *default_instance_->fmi2_import_initialize_slave_req_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_initialize_slave_req* fmitcp_message::mutable_fmi2_import_initialize_slave_req() {
   set_has_fmi2_import_initialize_slave_req();
@@ -10391,7 +10428,11 @@ inline void fmitcp_message::clear_fmi2_import_initialize_slave_res() {
   clear_has_fmi2_import_initialize_slave_res();
 }
 inline const ::fmitcp_proto::fmi2_import_initialize_slave_res& fmitcp_message::fmi2_import_initialize_slave_res() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_initialize_slave_res_ != NULL ? *fmi2_import_initialize_slave_res_ : *default_instance().fmi2_import_initialize_slave_res_;
+#else
   return fmi2_import_initialize_slave_res_ != NULL ? *fmi2_import_initialize_slave_res_ : *default_instance_->fmi2_import_initialize_slave_res_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_initialize_slave_res* fmitcp_message::mutable_fmi2_import_initialize_slave_res() {
   set_has_fmi2_import_initialize_slave_res();
@@ -10429,7 +10470,11 @@ inline void fmitcp_message::clear_fmi2_import_terminate_slave_req() {
   clear_has_fmi2_import_terminate_slave_req();
 }
 inline const ::fmitcp_proto::fmi2_import_terminate_slave_req& fmitcp_message::fmi2_import_terminate_slave_req() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_terminate_slave_req_ != NULL ? *fmi2_import_terminate_slave_req_ : *default_instance().fmi2_import_terminate_slave_req_;
+#else
   return fmi2_import_terminate_slave_req_ != NULL ? *fmi2_import_terminate_slave_req_ : *default_instance_->fmi2_import_terminate_slave_req_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_terminate_slave_req* fmitcp_message::mutable_fmi2_import_terminate_slave_req() {
   set_has_fmi2_import_terminate_slave_req();
@@ -10467,7 +10512,11 @@ inline void fmitcp_message::clear_fmi2_import_terminate_slave_res() {
   clear_has_fmi2_import_terminate_slave_res();
 }
 inline const ::fmitcp_proto::fmi2_import_terminate_slave_res& fmitcp_message::fmi2_import_terminate_slave_res() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_terminate_slave_res_ != NULL ? *fmi2_import_terminate_slave_res_ : *default_instance().fmi2_import_terminate_slave_res_;
+#else
   return fmi2_import_terminate_slave_res_ != NULL ? *fmi2_import_terminate_slave_res_ : *default_instance_->fmi2_import_terminate_slave_res_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_terminate_slave_res* fmitcp_message::mutable_fmi2_import_terminate_slave_res() {
   set_has_fmi2_import_terminate_slave_res();
@@ -10505,7 +10554,11 @@ inline void fmitcp_message::clear_fmi2_import_reset_slave_req() {
   clear_has_fmi2_import_reset_slave_req();
 }
 inline const ::fmitcp_proto::fmi2_import_reset_slave_req& fmitcp_message::fmi2_import_reset_slave_req() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_reset_slave_req_ != NULL ? *fmi2_import_reset_slave_req_ : *default_instance().fmi2_import_reset_slave_req_;
+#else
   return fmi2_import_reset_slave_req_ != NULL ? *fmi2_import_reset_slave_req_ : *default_instance_->fmi2_import_reset_slave_req_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_reset_slave_req* fmitcp_message::mutable_fmi2_import_reset_slave_req() {
   set_has_fmi2_import_reset_slave_req();
@@ -10543,7 +10596,11 @@ inline void fmitcp_message::clear_fmi2_import_reset_slave_res() {
   clear_has_fmi2_import_reset_slave_res();
 }
 inline const ::fmitcp_proto::fmi2_import_reset_slave_res& fmitcp_message::fmi2_import_reset_slave_res() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_reset_slave_res_ != NULL ? *fmi2_import_reset_slave_res_ : *default_instance().fmi2_import_reset_slave_res_;
+#else
   return fmi2_import_reset_slave_res_ != NULL ? *fmi2_import_reset_slave_res_ : *default_instance_->fmi2_import_reset_slave_res_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_reset_slave_res* fmitcp_message::mutable_fmi2_import_reset_slave_res() {
   set_has_fmi2_import_reset_slave_res();
@@ -10581,7 +10638,11 @@ inline void fmitcp_message::clear_fmi2_import_free_slave_instance_req() {
   clear_has_fmi2_import_free_slave_instance_req();
 }
 inline const ::fmitcp_proto::fmi2_import_free_slave_instance_req& fmitcp_message::fmi2_import_free_slave_instance_req() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_free_slave_instance_req_ != NULL ? *fmi2_import_free_slave_instance_req_ : *default_instance().fmi2_import_free_slave_instance_req_;
+#else
   return fmi2_import_free_slave_instance_req_ != NULL ? *fmi2_import_free_slave_instance_req_ : *default_instance_->fmi2_import_free_slave_instance_req_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_free_slave_instance_req* fmitcp_message::mutable_fmi2_import_free_slave_instance_req() {
   set_has_fmi2_import_free_slave_instance_req();
@@ -10619,7 +10680,11 @@ inline void fmitcp_message::clear_fmi2_import_free_slave_instance_res() {
   clear_has_fmi2_import_free_slave_instance_res();
 }
 inline const ::fmitcp_proto::fmi2_import_free_slave_instance_res& fmitcp_message::fmi2_import_free_slave_instance_res() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_free_slave_instance_res_ != NULL ? *fmi2_import_free_slave_instance_res_ : *default_instance().fmi2_import_free_slave_instance_res_;
+#else
   return fmi2_import_free_slave_instance_res_ != NULL ? *fmi2_import_free_slave_instance_res_ : *default_instance_->fmi2_import_free_slave_instance_res_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_free_slave_instance_res* fmitcp_message::mutable_fmi2_import_free_slave_instance_res() {
   set_has_fmi2_import_free_slave_instance_res();
@@ -10657,7 +10722,11 @@ inline void fmitcp_message::clear_fmi2_import_set_real_input_derivatives_req() {
   clear_has_fmi2_import_set_real_input_derivatives_req();
 }
 inline const ::fmitcp_proto::fmi2_import_set_real_input_derivatives_req& fmitcp_message::fmi2_import_set_real_input_derivatives_req() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_set_real_input_derivatives_req_ != NULL ? *fmi2_import_set_real_input_derivatives_req_ : *default_instance().fmi2_import_set_real_input_derivatives_req_;
+#else
   return fmi2_import_set_real_input_derivatives_req_ != NULL ? *fmi2_import_set_real_input_derivatives_req_ : *default_instance_->fmi2_import_set_real_input_derivatives_req_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_set_real_input_derivatives_req* fmitcp_message::mutable_fmi2_import_set_real_input_derivatives_req() {
   set_has_fmi2_import_set_real_input_derivatives_req();
@@ -10695,7 +10764,11 @@ inline void fmitcp_message::clear_fmi2_import_set_real_input_derivatives_res() {
   clear_has_fmi2_import_set_real_input_derivatives_res();
 }
 inline const ::fmitcp_proto::fmi2_import_set_real_input_derivatives_res& fmitcp_message::fmi2_import_set_real_input_derivatives_res() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_set_real_input_derivatives_res_ != NULL ? *fmi2_import_set_real_input_derivatives_res_ : *default_instance().fmi2_import_set_real_input_derivatives_res_;
+#else
   return fmi2_import_set_real_input_derivatives_res_ != NULL ? *fmi2_import_set_real_input_derivatives_res_ : *default_instance_->fmi2_import_set_real_input_derivatives_res_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_set_real_input_derivatives_res* fmitcp_message::mutable_fmi2_import_set_real_input_derivatives_res() {
   set_has_fmi2_import_set_real_input_derivatives_res();
@@ -10733,7 +10806,11 @@ inline void fmitcp_message::clear_fmi2_import_get_real_output_derivatives_req() 
   clear_has_fmi2_import_get_real_output_derivatives_req();
 }
 inline const ::fmitcp_proto::fmi2_import_get_real_output_derivatives_req& fmitcp_message::fmi2_import_get_real_output_derivatives_req() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_get_real_output_derivatives_req_ != NULL ? *fmi2_import_get_real_output_derivatives_req_ : *default_instance().fmi2_import_get_real_output_derivatives_req_;
+#else
   return fmi2_import_get_real_output_derivatives_req_ != NULL ? *fmi2_import_get_real_output_derivatives_req_ : *default_instance_->fmi2_import_get_real_output_derivatives_req_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_get_real_output_derivatives_req* fmitcp_message::mutable_fmi2_import_get_real_output_derivatives_req() {
   set_has_fmi2_import_get_real_output_derivatives_req();
@@ -10771,7 +10848,11 @@ inline void fmitcp_message::clear_fmi2_import_get_real_output_derivatives_res() 
   clear_has_fmi2_import_get_real_output_derivatives_res();
 }
 inline const ::fmitcp_proto::fmi2_import_get_real_output_derivatives_res& fmitcp_message::fmi2_import_get_real_output_derivatives_res() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_get_real_output_derivatives_res_ != NULL ? *fmi2_import_get_real_output_derivatives_res_ : *default_instance().fmi2_import_get_real_output_derivatives_res_;
+#else
   return fmi2_import_get_real_output_derivatives_res_ != NULL ? *fmi2_import_get_real_output_derivatives_res_ : *default_instance_->fmi2_import_get_real_output_derivatives_res_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_get_real_output_derivatives_res* fmitcp_message::mutable_fmi2_import_get_real_output_derivatives_res() {
   set_has_fmi2_import_get_real_output_derivatives_res();
@@ -10809,7 +10890,11 @@ inline void fmitcp_message::clear_fmi2_import_cancel_step_req() {
   clear_has_fmi2_import_cancel_step_req();
 }
 inline const ::fmitcp_proto::fmi2_import_cancel_step_req& fmitcp_message::fmi2_import_cancel_step_req() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_cancel_step_req_ != NULL ? *fmi2_import_cancel_step_req_ : *default_instance().fmi2_import_cancel_step_req_;
+#else
   return fmi2_import_cancel_step_req_ != NULL ? *fmi2_import_cancel_step_req_ : *default_instance_->fmi2_import_cancel_step_req_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_cancel_step_req* fmitcp_message::mutable_fmi2_import_cancel_step_req() {
   set_has_fmi2_import_cancel_step_req();
@@ -10847,7 +10932,11 @@ inline void fmitcp_message::clear_fmi2_import_cancel_step_res() {
   clear_has_fmi2_import_cancel_step_res();
 }
 inline const ::fmitcp_proto::fmi2_import_cancel_step_res& fmitcp_message::fmi2_import_cancel_step_res() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_cancel_step_res_ != NULL ? *fmi2_import_cancel_step_res_ : *default_instance().fmi2_import_cancel_step_res_;
+#else
   return fmi2_import_cancel_step_res_ != NULL ? *fmi2_import_cancel_step_res_ : *default_instance_->fmi2_import_cancel_step_res_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_cancel_step_res* fmitcp_message::mutable_fmi2_import_cancel_step_res() {
   set_has_fmi2_import_cancel_step_res();
@@ -10885,7 +10974,11 @@ inline void fmitcp_message::clear_fmi2_import_do_step_req() {
   clear_has_fmi2_import_do_step_req();
 }
 inline const ::fmitcp_proto::fmi2_import_do_step_req& fmitcp_message::fmi2_import_do_step_req() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_do_step_req_ != NULL ? *fmi2_import_do_step_req_ : *default_instance().fmi2_import_do_step_req_;
+#else
   return fmi2_import_do_step_req_ != NULL ? *fmi2_import_do_step_req_ : *default_instance_->fmi2_import_do_step_req_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_do_step_req* fmitcp_message::mutable_fmi2_import_do_step_req() {
   set_has_fmi2_import_do_step_req();
@@ -10923,7 +11016,11 @@ inline void fmitcp_message::clear_fmi2_import_do_step_res() {
   clear_has_fmi2_import_do_step_res();
 }
 inline const ::fmitcp_proto::fmi2_import_do_step_res& fmitcp_message::fmi2_import_do_step_res() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_do_step_res_ != NULL ? *fmi2_import_do_step_res_ : *default_instance().fmi2_import_do_step_res_;
+#else
   return fmi2_import_do_step_res_ != NULL ? *fmi2_import_do_step_res_ : *default_instance_->fmi2_import_do_step_res_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_do_step_res* fmitcp_message::mutable_fmi2_import_do_step_res() {
   set_has_fmi2_import_do_step_res();
@@ -10961,7 +11058,11 @@ inline void fmitcp_message::clear_fmi2_import_get_status_req() {
   clear_has_fmi2_import_get_status_req();
 }
 inline const ::fmitcp_proto::fmi2_import_get_status_req& fmitcp_message::fmi2_import_get_status_req() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_get_status_req_ != NULL ? *fmi2_import_get_status_req_ : *default_instance().fmi2_import_get_status_req_;
+#else
   return fmi2_import_get_status_req_ != NULL ? *fmi2_import_get_status_req_ : *default_instance_->fmi2_import_get_status_req_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_get_status_req* fmitcp_message::mutable_fmi2_import_get_status_req() {
   set_has_fmi2_import_get_status_req();
@@ -10999,7 +11100,11 @@ inline void fmitcp_message::clear_fmi2_import_get_status_res() {
   clear_has_fmi2_import_get_status_res();
 }
 inline const ::fmitcp_proto::fmi2_import_get_status_res& fmitcp_message::fmi2_import_get_status_res() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_get_status_res_ != NULL ? *fmi2_import_get_status_res_ : *default_instance().fmi2_import_get_status_res_;
+#else
   return fmi2_import_get_status_res_ != NULL ? *fmi2_import_get_status_res_ : *default_instance_->fmi2_import_get_status_res_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_get_status_res* fmitcp_message::mutable_fmi2_import_get_status_res() {
   set_has_fmi2_import_get_status_res();
@@ -11037,7 +11142,11 @@ inline void fmitcp_message::clear_fmi2_import_get_real_status_req() {
   clear_has_fmi2_import_get_real_status_req();
 }
 inline const ::fmitcp_proto::fmi2_import_get_real_status_req& fmitcp_message::fmi2_import_get_real_status_req() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_get_real_status_req_ != NULL ? *fmi2_import_get_real_status_req_ : *default_instance().fmi2_import_get_real_status_req_;
+#else
   return fmi2_import_get_real_status_req_ != NULL ? *fmi2_import_get_real_status_req_ : *default_instance_->fmi2_import_get_real_status_req_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_get_real_status_req* fmitcp_message::mutable_fmi2_import_get_real_status_req() {
   set_has_fmi2_import_get_real_status_req();
@@ -11075,7 +11184,11 @@ inline void fmitcp_message::clear_fmi2_import_get_real_status_res() {
   clear_has_fmi2_import_get_real_status_res();
 }
 inline const ::fmitcp_proto::fmi2_import_get_real_status_res& fmitcp_message::fmi2_import_get_real_status_res() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_get_real_status_res_ != NULL ? *fmi2_import_get_real_status_res_ : *default_instance().fmi2_import_get_real_status_res_;
+#else
   return fmi2_import_get_real_status_res_ != NULL ? *fmi2_import_get_real_status_res_ : *default_instance_->fmi2_import_get_real_status_res_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_get_real_status_res* fmitcp_message::mutable_fmi2_import_get_real_status_res() {
   set_has_fmi2_import_get_real_status_res();
@@ -11113,7 +11226,11 @@ inline void fmitcp_message::clear_fmi2_import_get_integer_status_req() {
   clear_has_fmi2_import_get_integer_status_req();
 }
 inline const ::fmitcp_proto::fmi2_import_get_integer_status_req& fmitcp_message::fmi2_import_get_integer_status_req() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_get_integer_status_req_ != NULL ? *fmi2_import_get_integer_status_req_ : *default_instance().fmi2_import_get_integer_status_req_;
+#else
   return fmi2_import_get_integer_status_req_ != NULL ? *fmi2_import_get_integer_status_req_ : *default_instance_->fmi2_import_get_integer_status_req_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_get_integer_status_req* fmitcp_message::mutable_fmi2_import_get_integer_status_req() {
   set_has_fmi2_import_get_integer_status_req();
@@ -11151,7 +11268,11 @@ inline void fmitcp_message::clear_fmi2_import_get_integer_status_res() {
   clear_has_fmi2_import_get_integer_status_res();
 }
 inline const ::fmitcp_proto::fmi2_import_get_integer_status_res& fmitcp_message::fmi2_import_get_integer_status_res() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_get_integer_status_res_ != NULL ? *fmi2_import_get_integer_status_res_ : *default_instance().fmi2_import_get_integer_status_res_;
+#else
   return fmi2_import_get_integer_status_res_ != NULL ? *fmi2_import_get_integer_status_res_ : *default_instance_->fmi2_import_get_integer_status_res_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_get_integer_status_res* fmitcp_message::mutable_fmi2_import_get_integer_status_res() {
   set_has_fmi2_import_get_integer_status_res();
@@ -11189,7 +11310,11 @@ inline void fmitcp_message::clear_fmi2_import_get_boolean_status_req() {
   clear_has_fmi2_import_get_boolean_status_req();
 }
 inline const ::fmitcp_proto::fmi2_import_get_boolean_status_req& fmitcp_message::fmi2_import_get_boolean_status_req() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_get_boolean_status_req_ != NULL ? *fmi2_import_get_boolean_status_req_ : *default_instance().fmi2_import_get_boolean_status_req_;
+#else
   return fmi2_import_get_boolean_status_req_ != NULL ? *fmi2_import_get_boolean_status_req_ : *default_instance_->fmi2_import_get_boolean_status_req_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_get_boolean_status_req* fmitcp_message::mutable_fmi2_import_get_boolean_status_req() {
   set_has_fmi2_import_get_boolean_status_req();
@@ -11227,7 +11352,11 @@ inline void fmitcp_message::clear_fmi2_import_get_boolean_status_res() {
   clear_has_fmi2_import_get_boolean_status_res();
 }
 inline const ::fmitcp_proto::fmi2_import_get_boolean_status_res& fmitcp_message::fmi2_import_get_boolean_status_res() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_get_boolean_status_res_ != NULL ? *fmi2_import_get_boolean_status_res_ : *default_instance().fmi2_import_get_boolean_status_res_;
+#else
   return fmi2_import_get_boolean_status_res_ != NULL ? *fmi2_import_get_boolean_status_res_ : *default_instance_->fmi2_import_get_boolean_status_res_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_get_boolean_status_res* fmitcp_message::mutable_fmi2_import_get_boolean_status_res() {
   set_has_fmi2_import_get_boolean_status_res();
@@ -11265,7 +11394,11 @@ inline void fmitcp_message::clear_fmi2_import_get_string_status_req() {
   clear_has_fmi2_import_get_string_status_req();
 }
 inline const ::fmitcp_proto::fmi2_import_get_string_status_req& fmitcp_message::fmi2_import_get_string_status_req() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_get_string_status_req_ != NULL ? *fmi2_import_get_string_status_req_ : *default_instance().fmi2_import_get_string_status_req_;
+#else
   return fmi2_import_get_string_status_req_ != NULL ? *fmi2_import_get_string_status_req_ : *default_instance_->fmi2_import_get_string_status_req_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_get_string_status_req* fmitcp_message::mutable_fmi2_import_get_string_status_req() {
   set_has_fmi2_import_get_string_status_req();
@@ -11303,7 +11436,11 @@ inline void fmitcp_message::clear_fmi2_import_get_string_status_res() {
   clear_has_fmi2_import_get_string_status_res();
 }
 inline const ::fmitcp_proto::fmi2_import_get_string_status_res& fmitcp_message::fmi2_import_get_string_status_res() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_get_string_status_res_ != NULL ? *fmi2_import_get_string_status_res_ : *default_instance().fmi2_import_get_string_status_res_;
+#else
   return fmi2_import_get_string_status_res_ != NULL ? *fmi2_import_get_string_status_res_ : *default_instance_->fmi2_import_get_string_status_res_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_get_string_status_res* fmitcp_message::mutable_fmi2_import_get_string_status_res() {
   set_has_fmi2_import_get_string_status_res();
@@ -11341,7 +11478,11 @@ inline void fmitcp_message::clear_fmi2_import_instantiate_model_req() {
   clear_has_fmi2_import_instantiate_model_req();
 }
 inline const ::fmitcp_proto::fmi2_import_instantiate_model_req& fmitcp_message::fmi2_import_instantiate_model_req() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_instantiate_model_req_ != NULL ? *fmi2_import_instantiate_model_req_ : *default_instance().fmi2_import_instantiate_model_req_;
+#else
   return fmi2_import_instantiate_model_req_ != NULL ? *fmi2_import_instantiate_model_req_ : *default_instance_->fmi2_import_instantiate_model_req_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_instantiate_model_req* fmitcp_message::mutable_fmi2_import_instantiate_model_req() {
   set_has_fmi2_import_instantiate_model_req();
@@ -11379,7 +11520,11 @@ inline void fmitcp_message::clear_fmi2_import_instantiate_model_res() {
   clear_has_fmi2_import_instantiate_model_res();
 }
 inline const ::fmitcp_proto::fmi2_import_instantiate_model_res& fmitcp_message::fmi2_import_instantiate_model_res() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_instantiate_model_res_ != NULL ? *fmi2_import_instantiate_model_res_ : *default_instance().fmi2_import_instantiate_model_res_;
+#else
   return fmi2_import_instantiate_model_res_ != NULL ? *fmi2_import_instantiate_model_res_ : *default_instance_->fmi2_import_instantiate_model_res_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_instantiate_model_res* fmitcp_message::mutable_fmi2_import_instantiate_model_res() {
   set_has_fmi2_import_instantiate_model_res();
@@ -11417,7 +11562,11 @@ inline void fmitcp_message::clear_fmi2_import_free_model_instance_req() {
   clear_has_fmi2_import_free_model_instance_req();
 }
 inline const ::fmitcp_proto::fmi2_import_free_model_instance_req& fmitcp_message::fmi2_import_free_model_instance_req() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_free_model_instance_req_ != NULL ? *fmi2_import_free_model_instance_req_ : *default_instance().fmi2_import_free_model_instance_req_;
+#else
   return fmi2_import_free_model_instance_req_ != NULL ? *fmi2_import_free_model_instance_req_ : *default_instance_->fmi2_import_free_model_instance_req_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_free_model_instance_req* fmitcp_message::mutable_fmi2_import_free_model_instance_req() {
   set_has_fmi2_import_free_model_instance_req();
@@ -11455,7 +11604,11 @@ inline void fmitcp_message::clear_fmi2_import_free_model_instance_res() {
   clear_has_fmi2_import_free_model_instance_res();
 }
 inline const ::fmitcp_proto::fmi2_import_free_model_instance_res& fmitcp_message::fmi2_import_free_model_instance_res() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_free_model_instance_res_ != NULL ? *fmi2_import_free_model_instance_res_ : *default_instance().fmi2_import_free_model_instance_res_;
+#else
   return fmi2_import_free_model_instance_res_ != NULL ? *fmi2_import_free_model_instance_res_ : *default_instance_->fmi2_import_free_model_instance_res_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_free_model_instance_res* fmitcp_message::mutable_fmi2_import_free_model_instance_res() {
   set_has_fmi2_import_free_model_instance_res();
@@ -11493,7 +11646,11 @@ inline void fmitcp_message::clear_fmi2_import_set_time_req() {
   clear_has_fmi2_import_set_time_req();
 }
 inline const ::fmitcp_proto::fmi2_import_set_time_req& fmitcp_message::fmi2_import_set_time_req() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_set_time_req_ != NULL ? *fmi2_import_set_time_req_ : *default_instance().fmi2_import_set_time_req_;
+#else
   return fmi2_import_set_time_req_ != NULL ? *fmi2_import_set_time_req_ : *default_instance_->fmi2_import_set_time_req_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_set_time_req* fmitcp_message::mutable_fmi2_import_set_time_req() {
   set_has_fmi2_import_set_time_req();
@@ -11531,7 +11688,11 @@ inline void fmitcp_message::clear_fmi2_import_set_time_res() {
   clear_has_fmi2_import_set_time_res();
 }
 inline const ::fmitcp_proto::fmi2_import_set_time_res& fmitcp_message::fmi2_import_set_time_res() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_set_time_res_ != NULL ? *fmi2_import_set_time_res_ : *default_instance().fmi2_import_set_time_res_;
+#else
   return fmi2_import_set_time_res_ != NULL ? *fmi2_import_set_time_res_ : *default_instance_->fmi2_import_set_time_res_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_set_time_res* fmitcp_message::mutable_fmi2_import_set_time_res() {
   set_has_fmi2_import_set_time_res();
@@ -11569,7 +11730,11 @@ inline void fmitcp_message::clear_fmi2_import_set_continuous_states_req() {
   clear_has_fmi2_import_set_continuous_states_req();
 }
 inline const ::fmitcp_proto::fmi2_import_set_continuous_states_req& fmitcp_message::fmi2_import_set_continuous_states_req() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_set_continuous_states_req_ != NULL ? *fmi2_import_set_continuous_states_req_ : *default_instance().fmi2_import_set_continuous_states_req_;
+#else
   return fmi2_import_set_continuous_states_req_ != NULL ? *fmi2_import_set_continuous_states_req_ : *default_instance_->fmi2_import_set_continuous_states_req_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_set_continuous_states_req* fmitcp_message::mutable_fmi2_import_set_continuous_states_req() {
   set_has_fmi2_import_set_continuous_states_req();
@@ -11607,7 +11772,11 @@ inline void fmitcp_message::clear_fmi2_import_set_continuous_states_res() {
   clear_has_fmi2_import_set_continuous_states_res();
 }
 inline const ::fmitcp_proto::fmi2_import_set_continuous_states_res& fmitcp_message::fmi2_import_set_continuous_states_res() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_set_continuous_states_res_ != NULL ? *fmi2_import_set_continuous_states_res_ : *default_instance().fmi2_import_set_continuous_states_res_;
+#else
   return fmi2_import_set_continuous_states_res_ != NULL ? *fmi2_import_set_continuous_states_res_ : *default_instance_->fmi2_import_set_continuous_states_res_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_set_continuous_states_res* fmitcp_message::mutable_fmi2_import_set_continuous_states_res() {
   set_has_fmi2_import_set_continuous_states_res();
@@ -11645,7 +11814,11 @@ inline void fmitcp_message::clear_fmi2_import_completed_integrator_step_req() {
   clear_has_fmi2_import_completed_integrator_step_req();
 }
 inline const ::fmitcp_proto::fmi2_import_completed_integrator_step_req& fmitcp_message::fmi2_import_completed_integrator_step_req() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_completed_integrator_step_req_ != NULL ? *fmi2_import_completed_integrator_step_req_ : *default_instance().fmi2_import_completed_integrator_step_req_;
+#else
   return fmi2_import_completed_integrator_step_req_ != NULL ? *fmi2_import_completed_integrator_step_req_ : *default_instance_->fmi2_import_completed_integrator_step_req_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_completed_integrator_step_req* fmitcp_message::mutable_fmi2_import_completed_integrator_step_req() {
   set_has_fmi2_import_completed_integrator_step_req();
@@ -11683,7 +11856,11 @@ inline void fmitcp_message::clear_fmi2_import_completed_integrator_step_res() {
   clear_has_fmi2_import_completed_integrator_step_res();
 }
 inline const ::fmitcp_proto::fmi2_import_completed_integrator_step_res& fmitcp_message::fmi2_import_completed_integrator_step_res() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_completed_integrator_step_res_ != NULL ? *fmi2_import_completed_integrator_step_res_ : *default_instance().fmi2_import_completed_integrator_step_res_;
+#else
   return fmi2_import_completed_integrator_step_res_ != NULL ? *fmi2_import_completed_integrator_step_res_ : *default_instance_->fmi2_import_completed_integrator_step_res_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_completed_integrator_step_res* fmitcp_message::mutable_fmi2_import_completed_integrator_step_res() {
   set_has_fmi2_import_completed_integrator_step_res();
@@ -11721,7 +11898,11 @@ inline void fmitcp_message::clear_fmi2_import_initialize_model_req() {
   clear_has_fmi2_import_initialize_model_req();
 }
 inline const ::fmitcp_proto::fmi2_import_initialize_model_req& fmitcp_message::fmi2_import_initialize_model_req() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_initialize_model_req_ != NULL ? *fmi2_import_initialize_model_req_ : *default_instance().fmi2_import_initialize_model_req_;
+#else
   return fmi2_import_initialize_model_req_ != NULL ? *fmi2_import_initialize_model_req_ : *default_instance_->fmi2_import_initialize_model_req_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_initialize_model_req* fmitcp_message::mutable_fmi2_import_initialize_model_req() {
   set_has_fmi2_import_initialize_model_req();
@@ -11759,7 +11940,11 @@ inline void fmitcp_message::clear_fmi2_import_initialize_model_res() {
   clear_has_fmi2_import_initialize_model_res();
 }
 inline const ::fmitcp_proto::fmi2_import_initialize_model_res& fmitcp_message::fmi2_import_initialize_model_res() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_initialize_model_res_ != NULL ? *fmi2_import_initialize_model_res_ : *default_instance().fmi2_import_initialize_model_res_;
+#else
   return fmi2_import_initialize_model_res_ != NULL ? *fmi2_import_initialize_model_res_ : *default_instance_->fmi2_import_initialize_model_res_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_initialize_model_res* fmitcp_message::mutable_fmi2_import_initialize_model_res() {
   set_has_fmi2_import_initialize_model_res();
@@ -11797,7 +11982,11 @@ inline void fmitcp_message::clear_fmi2_import_get_derivatives_req() {
   clear_has_fmi2_import_get_derivatives_req();
 }
 inline const ::fmitcp_proto::fmi2_import_get_derivatives_req& fmitcp_message::fmi2_import_get_derivatives_req() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_get_derivatives_req_ != NULL ? *fmi2_import_get_derivatives_req_ : *default_instance().fmi2_import_get_derivatives_req_;
+#else
   return fmi2_import_get_derivatives_req_ != NULL ? *fmi2_import_get_derivatives_req_ : *default_instance_->fmi2_import_get_derivatives_req_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_get_derivatives_req* fmitcp_message::mutable_fmi2_import_get_derivatives_req() {
   set_has_fmi2_import_get_derivatives_req();
@@ -11835,7 +12024,11 @@ inline void fmitcp_message::clear_fmi2_import_get_derivatives_res() {
   clear_has_fmi2_import_get_derivatives_res();
 }
 inline const ::fmitcp_proto::fmi2_import_get_derivatives_res& fmitcp_message::fmi2_import_get_derivatives_res() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_get_derivatives_res_ != NULL ? *fmi2_import_get_derivatives_res_ : *default_instance().fmi2_import_get_derivatives_res_;
+#else
   return fmi2_import_get_derivatives_res_ != NULL ? *fmi2_import_get_derivatives_res_ : *default_instance_->fmi2_import_get_derivatives_res_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_get_derivatives_res* fmitcp_message::mutable_fmi2_import_get_derivatives_res() {
   set_has_fmi2_import_get_derivatives_res();
@@ -11873,7 +12066,11 @@ inline void fmitcp_message::clear_fmi2_import_get_event_indicators_req() {
   clear_has_fmi2_import_get_event_indicators_req();
 }
 inline const ::fmitcp_proto::fmi2_import_get_event_indicators_req& fmitcp_message::fmi2_import_get_event_indicators_req() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_get_event_indicators_req_ != NULL ? *fmi2_import_get_event_indicators_req_ : *default_instance().fmi2_import_get_event_indicators_req_;
+#else
   return fmi2_import_get_event_indicators_req_ != NULL ? *fmi2_import_get_event_indicators_req_ : *default_instance_->fmi2_import_get_event_indicators_req_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_get_event_indicators_req* fmitcp_message::mutable_fmi2_import_get_event_indicators_req() {
   set_has_fmi2_import_get_event_indicators_req();
@@ -11911,7 +12108,11 @@ inline void fmitcp_message::clear_fmi2_import_get_event_indicators_res() {
   clear_has_fmi2_import_get_event_indicators_res();
 }
 inline const ::fmitcp_proto::fmi2_import_get_event_indicators_res& fmitcp_message::fmi2_import_get_event_indicators_res() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_get_event_indicators_res_ != NULL ? *fmi2_import_get_event_indicators_res_ : *default_instance().fmi2_import_get_event_indicators_res_;
+#else
   return fmi2_import_get_event_indicators_res_ != NULL ? *fmi2_import_get_event_indicators_res_ : *default_instance_->fmi2_import_get_event_indicators_res_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_get_event_indicators_res* fmitcp_message::mutable_fmi2_import_get_event_indicators_res() {
   set_has_fmi2_import_get_event_indicators_res();
@@ -11949,7 +12150,11 @@ inline void fmitcp_message::clear_fmi2_import_eventupdate_req() {
   clear_has_fmi2_import_eventupdate_req();
 }
 inline const ::fmitcp_proto::fmi2_import_eventUpdate_req& fmitcp_message::fmi2_import_eventupdate_req() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_eventupdate_req_ != NULL ? *fmi2_import_eventupdate_req_ : *default_instance().fmi2_import_eventupdate_req_;
+#else
   return fmi2_import_eventupdate_req_ != NULL ? *fmi2_import_eventupdate_req_ : *default_instance_->fmi2_import_eventupdate_req_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_eventUpdate_req* fmitcp_message::mutable_fmi2_import_eventupdate_req() {
   set_has_fmi2_import_eventupdate_req();
@@ -11987,7 +12192,11 @@ inline void fmitcp_message::clear_fmi2_import_eventupdate_res() {
   clear_has_fmi2_import_eventupdate_res();
 }
 inline const ::fmitcp_proto::fmi2_import_eventUpdate_res& fmitcp_message::fmi2_import_eventupdate_res() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_eventupdate_res_ != NULL ? *fmi2_import_eventupdate_res_ : *default_instance().fmi2_import_eventupdate_res_;
+#else
   return fmi2_import_eventupdate_res_ != NULL ? *fmi2_import_eventupdate_res_ : *default_instance_->fmi2_import_eventupdate_res_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_eventUpdate_res* fmitcp_message::mutable_fmi2_import_eventupdate_res() {
   set_has_fmi2_import_eventupdate_res();
@@ -12025,7 +12234,11 @@ inline void fmitcp_message::clear_fmi2_import_completed_event_iteration_req() {
   clear_has_fmi2_import_completed_event_iteration_req();
 }
 inline const ::fmitcp_proto::fmi2_import_completed_event_iteration_req& fmitcp_message::fmi2_import_completed_event_iteration_req() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_completed_event_iteration_req_ != NULL ? *fmi2_import_completed_event_iteration_req_ : *default_instance().fmi2_import_completed_event_iteration_req_;
+#else
   return fmi2_import_completed_event_iteration_req_ != NULL ? *fmi2_import_completed_event_iteration_req_ : *default_instance_->fmi2_import_completed_event_iteration_req_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_completed_event_iteration_req* fmitcp_message::mutable_fmi2_import_completed_event_iteration_req() {
   set_has_fmi2_import_completed_event_iteration_req();
@@ -12063,7 +12276,11 @@ inline void fmitcp_message::clear_fmi2_import_completed_event_iteration_res() {
   clear_has_fmi2_import_completed_event_iteration_res();
 }
 inline const ::fmitcp_proto::fmi2_import_completed_event_iteration_res& fmitcp_message::fmi2_import_completed_event_iteration_res() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_completed_event_iteration_res_ != NULL ? *fmi2_import_completed_event_iteration_res_ : *default_instance().fmi2_import_completed_event_iteration_res_;
+#else
   return fmi2_import_completed_event_iteration_res_ != NULL ? *fmi2_import_completed_event_iteration_res_ : *default_instance_->fmi2_import_completed_event_iteration_res_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_completed_event_iteration_res* fmitcp_message::mutable_fmi2_import_completed_event_iteration_res() {
   set_has_fmi2_import_completed_event_iteration_res();
@@ -12101,7 +12318,11 @@ inline void fmitcp_message::clear_fmi2_import_get_continuous_states_req() {
   clear_has_fmi2_import_get_continuous_states_req();
 }
 inline const ::fmitcp_proto::fmi2_import_get_continuous_states_req& fmitcp_message::fmi2_import_get_continuous_states_req() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_get_continuous_states_req_ != NULL ? *fmi2_import_get_continuous_states_req_ : *default_instance().fmi2_import_get_continuous_states_req_;
+#else
   return fmi2_import_get_continuous_states_req_ != NULL ? *fmi2_import_get_continuous_states_req_ : *default_instance_->fmi2_import_get_continuous_states_req_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_get_continuous_states_req* fmitcp_message::mutable_fmi2_import_get_continuous_states_req() {
   set_has_fmi2_import_get_continuous_states_req();
@@ -12139,7 +12360,11 @@ inline void fmitcp_message::clear_fmi2_import_get_continuous_states_res() {
   clear_has_fmi2_import_get_continuous_states_res();
 }
 inline const ::fmitcp_proto::fmi2_import_get_continuous_states_res& fmitcp_message::fmi2_import_get_continuous_states_res() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_get_continuous_states_res_ != NULL ? *fmi2_import_get_continuous_states_res_ : *default_instance().fmi2_import_get_continuous_states_res_;
+#else
   return fmi2_import_get_continuous_states_res_ != NULL ? *fmi2_import_get_continuous_states_res_ : *default_instance_->fmi2_import_get_continuous_states_res_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_get_continuous_states_res* fmitcp_message::mutable_fmi2_import_get_continuous_states_res() {
   set_has_fmi2_import_get_continuous_states_res();
@@ -12177,7 +12402,11 @@ inline void fmitcp_message::clear_fmi2_import_get_nominal_continuous_states_req(
   clear_has_fmi2_import_get_nominal_continuous_states_req();
 }
 inline const ::fmitcp_proto::fmi2_import_get_nominal_continuous_states_req& fmitcp_message::fmi2_import_get_nominal_continuous_states_req() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_get_nominal_continuous_states_req_ != NULL ? *fmi2_import_get_nominal_continuous_states_req_ : *default_instance().fmi2_import_get_nominal_continuous_states_req_;
+#else
   return fmi2_import_get_nominal_continuous_states_req_ != NULL ? *fmi2_import_get_nominal_continuous_states_req_ : *default_instance_->fmi2_import_get_nominal_continuous_states_req_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_get_nominal_continuous_states_req* fmitcp_message::mutable_fmi2_import_get_nominal_continuous_states_req() {
   set_has_fmi2_import_get_nominal_continuous_states_req();
@@ -12215,7 +12444,11 @@ inline void fmitcp_message::clear_fmi2_import_get_nominal_continuous_states_res(
   clear_has_fmi2_import_get_nominal_continuous_states_res();
 }
 inline const ::fmitcp_proto::fmi2_import_get_nominal_continuous_states_res& fmitcp_message::fmi2_import_get_nominal_continuous_states_res() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_get_nominal_continuous_states_res_ != NULL ? *fmi2_import_get_nominal_continuous_states_res_ : *default_instance().fmi2_import_get_nominal_continuous_states_res_;
+#else
   return fmi2_import_get_nominal_continuous_states_res_ != NULL ? *fmi2_import_get_nominal_continuous_states_res_ : *default_instance_->fmi2_import_get_nominal_continuous_states_res_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_get_nominal_continuous_states_res* fmitcp_message::mutable_fmi2_import_get_nominal_continuous_states_res() {
   set_has_fmi2_import_get_nominal_continuous_states_res();
@@ -12253,7 +12486,11 @@ inline void fmitcp_message::clear_fmi2_import_terminate_req() {
   clear_has_fmi2_import_terminate_req();
 }
 inline const ::fmitcp_proto::fmi2_import_terminate_req& fmitcp_message::fmi2_import_terminate_req() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_terminate_req_ != NULL ? *fmi2_import_terminate_req_ : *default_instance().fmi2_import_terminate_req_;
+#else
   return fmi2_import_terminate_req_ != NULL ? *fmi2_import_terminate_req_ : *default_instance_->fmi2_import_terminate_req_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_terminate_req* fmitcp_message::mutable_fmi2_import_terminate_req() {
   set_has_fmi2_import_terminate_req();
@@ -12291,7 +12528,11 @@ inline void fmitcp_message::clear_fmi2_import_terminate_res() {
   clear_has_fmi2_import_terminate_res();
 }
 inline const ::fmitcp_proto::fmi2_import_terminate_res& fmitcp_message::fmi2_import_terminate_res() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_terminate_res_ != NULL ? *fmi2_import_terminate_res_ : *default_instance().fmi2_import_terminate_res_;
+#else
   return fmi2_import_terminate_res_ != NULL ? *fmi2_import_terminate_res_ : *default_instance_->fmi2_import_terminate_res_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_terminate_res* fmitcp_message::mutable_fmi2_import_terminate_res() {
   set_has_fmi2_import_terminate_res();
@@ -12329,7 +12570,11 @@ inline void fmitcp_message::clear_fmi2_import_get_version_req() {
   clear_has_fmi2_import_get_version_req();
 }
 inline const ::fmitcp_proto::fmi2_import_get_version_req& fmitcp_message::fmi2_import_get_version_req() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_get_version_req_ != NULL ? *fmi2_import_get_version_req_ : *default_instance().fmi2_import_get_version_req_;
+#else
   return fmi2_import_get_version_req_ != NULL ? *fmi2_import_get_version_req_ : *default_instance_->fmi2_import_get_version_req_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_get_version_req* fmitcp_message::mutable_fmi2_import_get_version_req() {
   set_has_fmi2_import_get_version_req();
@@ -12367,7 +12612,11 @@ inline void fmitcp_message::clear_fmi2_import_get_version_res() {
   clear_has_fmi2_import_get_version_res();
 }
 inline const ::fmitcp_proto::fmi2_import_get_version_res& fmitcp_message::fmi2_import_get_version_res() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_get_version_res_ != NULL ? *fmi2_import_get_version_res_ : *default_instance().fmi2_import_get_version_res_;
+#else
   return fmi2_import_get_version_res_ != NULL ? *fmi2_import_get_version_res_ : *default_instance_->fmi2_import_get_version_res_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_get_version_res* fmitcp_message::mutable_fmi2_import_get_version_res() {
   set_has_fmi2_import_get_version_res();
@@ -12405,7 +12654,11 @@ inline void fmitcp_message::clear_fmi2_import_set_debug_logging_req() {
   clear_has_fmi2_import_set_debug_logging_req();
 }
 inline const ::fmitcp_proto::fmi2_import_set_debug_logging_req& fmitcp_message::fmi2_import_set_debug_logging_req() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_set_debug_logging_req_ != NULL ? *fmi2_import_set_debug_logging_req_ : *default_instance().fmi2_import_set_debug_logging_req_;
+#else
   return fmi2_import_set_debug_logging_req_ != NULL ? *fmi2_import_set_debug_logging_req_ : *default_instance_->fmi2_import_set_debug_logging_req_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_set_debug_logging_req* fmitcp_message::mutable_fmi2_import_set_debug_logging_req() {
   set_has_fmi2_import_set_debug_logging_req();
@@ -12443,7 +12696,11 @@ inline void fmitcp_message::clear_fmi2_import_set_debug_logging_res() {
   clear_has_fmi2_import_set_debug_logging_res();
 }
 inline const ::fmitcp_proto::fmi2_import_set_debug_logging_res& fmitcp_message::fmi2_import_set_debug_logging_res() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_set_debug_logging_res_ != NULL ? *fmi2_import_set_debug_logging_res_ : *default_instance().fmi2_import_set_debug_logging_res_;
+#else
   return fmi2_import_set_debug_logging_res_ != NULL ? *fmi2_import_set_debug_logging_res_ : *default_instance_->fmi2_import_set_debug_logging_res_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_set_debug_logging_res* fmitcp_message::mutable_fmi2_import_set_debug_logging_res() {
   set_has_fmi2_import_set_debug_logging_res();
@@ -12481,7 +12738,11 @@ inline void fmitcp_message::clear_fmi2_import_set_real_req() {
   clear_has_fmi2_import_set_real_req();
 }
 inline const ::fmitcp_proto::fmi2_import_set_real_req& fmitcp_message::fmi2_import_set_real_req() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_set_real_req_ != NULL ? *fmi2_import_set_real_req_ : *default_instance().fmi2_import_set_real_req_;
+#else
   return fmi2_import_set_real_req_ != NULL ? *fmi2_import_set_real_req_ : *default_instance_->fmi2_import_set_real_req_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_set_real_req* fmitcp_message::mutable_fmi2_import_set_real_req() {
   set_has_fmi2_import_set_real_req();
@@ -12519,7 +12780,11 @@ inline void fmitcp_message::clear_fmi2_import_set_real_res() {
   clear_has_fmi2_import_set_real_res();
 }
 inline const ::fmitcp_proto::fmi2_import_set_real_res& fmitcp_message::fmi2_import_set_real_res() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_set_real_res_ != NULL ? *fmi2_import_set_real_res_ : *default_instance().fmi2_import_set_real_res_;
+#else
   return fmi2_import_set_real_res_ != NULL ? *fmi2_import_set_real_res_ : *default_instance_->fmi2_import_set_real_res_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_set_real_res* fmitcp_message::mutable_fmi2_import_set_real_res() {
   set_has_fmi2_import_set_real_res();
@@ -12557,7 +12822,11 @@ inline void fmitcp_message::clear_fmi2_import_set_integer_req() {
   clear_has_fmi2_import_set_integer_req();
 }
 inline const ::fmitcp_proto::fmi2_import_set_integer_req& fmitcp_message::fmi2_import_set_integer_req() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_set_integer_req_ != NULL ? *fmi2_import_set_integer_req_ : *default_instance().fmi2_import_set_integer_req_;
+#else
   return fmi2_import_set_integer_req_ != NULL ? *fmi2_import_set_integer_req_ : *default_instance_->fmi2_import_set_integer_req_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_set_integer_req* fmitcp_message::mutable_fmi2_import_set_integer_req() {
   set_has_fmi2_import_set_integer_req();
@@ -12595,7 +12864,11 @@ inline void fmitcp_message::clear_fmi2_import_set_integer_res() {
   clear_has_fmi2_import_set_integer_res();
 }
 inline const ::fmitcp_proto::fmi2_import_set_integer_res& fmitcp_message::fmi2_import_set_integer_res() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_set_integer_res_ != NULL ? *fmi2_import_set_integer_res_ : *default_instance().fmi2_import_set_integer_res_;
+#else
   return fmi2_import_set_integer_res_ != NULL ? *fmi2_import_set_integer_res_ : *default_instance_->fmi2_import_set_integer_res_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_set_integer_res* fmitcp_message::mutable_fmi2_import_set_integer_res() {
   set_has_fmi2_import_set_integer_res();
@@ -12633,7 +12906,11 @@ inline void fmitcp_message::clear_fmi2_import_set_boolean_req() {
   clear_has_fmi2_import_set_boolean_req();
 }
 inline const ::fmitcp_proto::fmi2_import_set_boolean_req& fmitcp_message::fmi2_import_set_boolean_req() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_set_boolean_req_ != NULL ? *fmi2_import_set_boolean_req_ : *default_instance().fmi2_import_set_boolean_req_;
+#else
   return fmi2_import_set_boolean_req_ != NULL ? *fmi2_import_set_boolean_req_ : *default_instance_->fmi2_import_set_boolean_req_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_set_boolean_req* fmitcp_message::mutable_fmi2_import_set_boolean_req() {
   set_has_fmi2_import_set_boolean_req();
@@ -12671,7 +12948,11 @@ inline void fmitcp_message::clear_fmi2_import_set_boolean_res() {
   clear_has_fmi2_import_set_boolean_res();
 }
 inline const ::fmitcp_proto::fmi2_import_set_boolean_res& fmitcp_message::fmi2_import_set_boolean_res() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_set_boolean_res_ != NULL ? *fmi2_import_set_boolean_res_ : *default_instance().fmi2_import_set_boolean_res_;
+#else
   return fmi2_import_set_boolean_res_ != NULL ? *fmi2_import_set_boolean_res_ : *default_instance_->fmi2_import_set_boolean_res_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_set_boolean_res* fmitcp_message::mutable_fmi2_import_set_boolean_res() {
   set_has_fmi2_import_set_boolean_res();
@@ -12709,7 +12990,11 @@ inline void fmitcp_message::clear_fmi2_import_set_string_req() {
   clear_has_fmi2_import_set_string_req();
 }
 inline const ::fmitcp_proto::fmi2_import_set_string_req& fmitcp_message::fmi2_import_set_string_req() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_set_string_req_ != NULL ? *fmi2_import_set_string_req_ : *default_instance().fmi2_import_set_string_req_;
+#else
   return fmi2_import_set_string_req_ != NULL ? *fmi2_import_set_string_req_ : *default_instance_->fmi2_import_set_string_req_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_set_string_req* fmitcp_message::mutable_fmi2_import_set_string_req() {
   set_has_fmi2_import_set_string_req();
@@ -12747,7 +13032,11 @@ inline void fmitcp_message::clear_fmi2_import_set_string_res() {
   clear_has_fmi2_import_set_string_res();
 }
 inline const ::fmitcp_proto::fmi2_import_set_string_res& fmitcp_message::fmi2_import_set_string_res() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_set_string_res_ != NULL ? *fmi2_import_set_string_res_ : *default_instance().fmi2_import_set_string_res_;
+#else
   return fmi2_import_set_string_res_ != NULL ? *fmi2_import_set_string_res_ : *default_instance_->fmi2_import_set_string_res_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_set_string_res* fmitcp_message::mutable_fmi2_import_set_string_res() {
   set_has_fmi2_import_set_string_res();
@@ -12785,7 +13074,11 @@ inline void fmitcp_message::clear_fmi2_import_get_real_req() {
   clear_has_fmi2_import_get_real_req();
 }
 inline const ::fmitcp_proto::fmi2_import_get_real_req& fmitcp_message::fmi2_import_get_real_req() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_get_real_req_ != NULL ? *fmi2_import_get_real_req_ : *default_instance().fmi2_import_get_real_req_;
+#else
   return fmi2_import_get_real_req_ != NULL ? *fmi2_import_get_real_req_ : *default_instance_->fmi2_import_get_real_req_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_get_real_req* fmitcp_message::mutable_fmi2_import_get_real_req() {
   set_has_fmi2_import_get_real_req();
@@ -12823,7 +13116,11 @@ inline void fmitcp_message::clear_fmi2_import_get_real_res() {
   clear_has_fmi2_import_get_real_res();
 }
 inline const ::fmitcp_proto::fmi2_import_get_real_res& fmitcp_message::fmi2_import_get_real_res() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_get_real_res_ != NULL ? *fmi2_import_get_real_res_ : *default_instance().fmi2_import_get_real_res_;
+#else
   return fmi2_import_get_real_res_ != NULL ? *fmi2_import_get_real_res_ : *default_instance_->fmi2_import_get_real_res_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_get_real_res* fmitcp_message::mutable_fmi2_import_get_real_res() {
   set_has_fmi2_import_get_real_res();
@@ -12861,7 +13158,11 @@ inline void fmitcp_message::clear_fmi2_import_get_integer_req() {
   clear_has_fmi2_import_get_integer_req();
 }
 inline const ::fmitcp_proto::fmi2_import_get_integer_req& fmitcp_message::fmi2_import_get_integer_req() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_get_integer_req_ != NULL ? *fmi2_import_get_integer_req_ : *default_instance().fmi2_import_get_integer_req_;
+#else
   return fmi2_import_get_integer_req_ != NULL ? *fmi2_import_get_integer_req_ : *default_instance_->fmi2_import_get_integer_req_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_get_integer_req* fmitcp_message::mutable_fmi2_import_get_integer_req() {
   set_has_fmi2_import_get_integer_req();
@@ -12899,7 +13200,11 @@ inline void fmitcp_message::clear_fmi2_import_get_integer_res() {
   clear_has_fmi2_import_get_integer_res();
 }
 inline const ::fmitcp_proto::fmi2_import_get_integer_res& fmitcp_message::fmi2_import_get_integer_res() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_get_integer_res_ != NULL ? *fmi2_import_get_integer_res_ : *default_instance().fmi2_import_get_integer_res_;
+#else
   return fmi2_import_get_integer_res_ != NULL ? *fmi2_import_get_integer_res_ : *default_instance_->fmi2_import_get_integer_res_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_get_integer_res* fmitcp_message::mutable_fmi2_import_get_integer_res() {
   set_has_fmi2_import_get_integer_res();
@@ -12937,7 +13242,11 @@ inline void fmitcp_message::clear_fmi2_import_get_boolean_req() {
   clear_has_fmi2_import_get_boolean_req();
 }
 inline const ::fmitcp_proto::fmi2_import_get_boolean_req& fmitcp_message::fmi2_import_get_boolean_req() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_get_boolean_req_ != NULL ? *fmi2_import_get_boolean_req_ : *default_instance().fmi2_import_get_boolean_req_;
+#else
   return fmi2_import_get_boolean_req_ != NULL ? *fmi2_import_get_boolean_req_ : *default_instance_->fmi2_import_get_boolean_req_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_get_boolean_req* fmitcp_message::mutable_fmi2_import_get_boolean_req() {
   set_has_fmi2_import_get_boolean_req();
@@ -12975,7 +13284,11 @@ inline void fmitcp_message::clear_fmi2_import_get_boolean_res() {
   clear_has_fmi2_import_get_boolean_res();
 }
 inline const ::fmitcp_proto::fmi2_import_get_boolean_res& fmitcp_message::fmi2_import_get_boolean_res() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_get_boolean_res_ != NULL ? *fmi2_import_get_boolean_res_ : *default_instance().fmi2_import_get_boolean_res_;
+#else
   return fmi2_import_get_boolean_res_ != NULL ? *fmi2_import_get_boolean_res_ : *default_instance_->fmi2_import_get_boolean_res_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_get_boolean_res* fmitcp_message::mutable_fmi2_import_get_boolean_res() {
   set_has_fmi2_import_get_boolean_res();
@@ -13013,7 +13326,11 @@ inline void fmitcp_message::clear_fmi2_import_get_string_req() {
   clear_has_fmi2_import_get_string_req();
 }
 inline const ::fmitcp_proto::fmi2_import_get_string_req& fmitcp_message::fmi2_import_get_string_req() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_get_string_req_ != NULL ? *fmi2_import_get_string_req_ : *default_instance().fmi2_import_get_string_req_;
+#else
   return fmi2_import_get_string_req_ != NULL ? *fmi2_import_get_string_req_ : *default_instance_->fmi2_import_get_string_req_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_get_string_req* fmitcp_message::mutable_fmi2_import_get_string_req() {
   set_has_fmi2_import_get_string_req();
@@ -13051,7 +13368,11 @@ inline void fmitcp_message::clear_fmi2_import_get_string_res() {
   clear_has_fmi2_import_get_string_res();
 }
 inline const ::fmitcp_proto::fmi2_import_get_string_res& fmitcp_message::fmi2_import_get_string_res() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_get_string_res_ != NULL ? *fmi2_import_get_string_res_ : *default_instance().fmi2_import_get_string_res_;
+#else
   return fmi2_import_get_string_res_ != NULL ? *fmi2_import_get_string_res_ : *default_instance_->fmi2_import_get_string_res_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_get_string_res* fmitcp_message::mutable_fmi2_import_get_string_res() {
   set_has_fmi2_import_get_string_res();
@@ -13089,7 +13410,11 @@ inline void fmitcp_message::clear_fmi2_import_get_fmu_state_req() {
   clear_has_fmi2_import_get_fmu_state_req();
 }
 inline const ::fmitcp_proto::fmi2_import_get_fmu_state_req& fmitcp_message::fmi2_import_get_fmu_state_req() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_get_fmu_state_req_ != NULL ? *fmi2_import_get_fmu_state_req_ : *default_instance().fmi2_import_get_fmu_state_req_;
+#else
   return fmi2_import_get_fmu_state_req_ != NULL ? *fmi2_import_get_fmu_state_req_ : *default_instance_->fmi2_import_get_fmu_state_req_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_get_fmu_state_req* fmitcp_message::mutable_fmi2_import_get_fmu_state_req() {
   set_has_fmi2_import_get_fmu_state_req();
@@ -13127,7 +13452,11 @@ inline void fmitcp_message::clear_fmi2_import_get_fmu_state_res() {
   clear_has_fmi2_import_get_fmu_state_res();
 }
 inline const ::fmitcp_proto::fmi2_import_get_fmu_state_res& fmitcp_message::fmi2_import_get_fmu_state_res() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_get_fmu_state_res_ != NULL ? *fmi2_import_get_fmu_state_res_ : *default_instance().fmi2_import_get_fmu_state_res_;
+#else
   return fmi2_import_get_fmu_state_res_ != NULL ? *fmi2_import_get_fmu_state_res_ : *default_instance_->fmi2_import_get_fmu_state_res_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_get_fmu_state_res* fmitcp_message::mutable_fmi2_import_get_fmu_state_res() {
   set_has_fmi2_import_get_fmu_state_res();
@@ -13165,7 +13494,11 @@ inline void fmitcp_message::clear_fmi2_import_set_fmu_state_req() {
   clear_has_fmi2_import_set_fmu_state_req();
 }
 inline const ::fmitcp_proto::fmi2_import_set_fmu_state_req& fmitcp_message::fmi2_import_set_fmu_state_req() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_set_fmu_state_req_ != NULL ? *fmi2_import_set_fmu_state_req_ : *default_instance().fmi2_import_set_fmu_state_req_;
+#else
   return fmi2_import_set_fmu_state_req_ != NULL ? *fmi2_import_set_fmu_state_req_ : *default_instance_->fmi2_import_set_fmu_state_req_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_set_fmu_state_req* fmitcp_message::mutable_fmi2_import_set_fmu_state_req() {
   set_has_fmi2_import_set_fmu_state_req();
@@ -13203,7 +13536,11 @@ inline void fmitcp_message::clear_fmi2_import_set_fmu_state_res() {
   clear_has_fmi2_import_set_fmu_state_res();
 }
 inline const ::fmitcp_proto::fmi2_import_set_fmu_state_res& fmitcp_message::fmi2_import_set_fmu_state_res() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_set_fmu_state_res_ != NULL ? *fmi2_import_set_fmu_state_res_ : *default_instance().fmi2_import_set_fmu_state_res_;
+#else
   return fmi2_import_set_fmu_state_res_ != NULL ? *fmi2_import_set_fmu_state_res_ : *default_instance_->fmi2_import_set_fmu_state_res_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_set_fmu_state_res* fmitcp_message::mutable_fmi2_import_set_fmu_state_res() {
   set_has_fmi2_import_set_fmu_state_res();
@@ -13241,7 +13578,11 @@ inline void fmitcp_message::clear_fmi2_import_free_fmu_state_req() {
   clear_has_fmi2_import_free_fmu_state_req();
 }
 inline const ::fmitcp_proto::fmi2_import_free_fmu_state_req& fmitcp_message::fmi2_import_free_fmu_state_req() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_free_fmu_state_req_ != NULL ? *fmi2_import_free_fmu_state_req_ : *default_instance().fmi2_import_free_fmu_state_req_;
+#else
   return fmi2_import_free_fmu_state_req_ != NULL ? *fmi2_import_free_fmu_state_req_ : *default_instance_->fmi2_import_free_fmu_state_req_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_free_fmu_state_req* fmitcp_message::mutable_fmi2_import_free_fmu_state_req() {
   set_has_fmi2_import_free_fmu_state_req();
@@ -13279,7 +13620,11 @@ inline void fmitcp_message::clear_fmi2_import_free_fmu_state_res() {
   clear_has_fmi2_import_free_fmu_state_res();
 }
 inline const ::fmitcp_proto::fmi2_import_free_fmu_state_res& fmitcp_message::fmi2_import_free_fmu_state_res() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_free_fmu_state_res_ != NULL ? *fmi2_import_free_fmu_state_res_ : *default_instance().fmi2_import_free_fmu_state_res_;
+#else
   return fmi2_import_free_fmu_state_res_ != NULL ? *fmi2_import_free_fmu_state_res_ : *default_instance_->fmi2_import_free_fmu_state_res_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_free_fmu_state_res* fmitcp_message::mutable_fmi2_import_free_fmu_state_res() {
   set_has_fmi2_import_free_fmu_state_res();
@@ -13317,7 +13662,11 @@ inline void fmitcp_message::clear_fmi2_import_get_directional_derivative_req() {
   clear_has_fmi2_import_get_directional_derivative_req();
 }
 inline const ::fmitcp_proto::fmi2_import_get_directional_derivative_req& fmitcp_message::fmi2_import_get_directional_derivative_req() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_get_directional_derivative_req_ != NULL ? *fmi2_import_get_directional_derivative_req_ : *default_instance().fmi2_import_get_directional_derivative_req_;
+#else
   return fmi2_import_get_directional_derivative_req_ != NULL ? *fmi2_import_get_directional_derivative_req_ : *default_instance_->fmi2_import_get_directional_derivative_req_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_get_directional_derivative_req* fmitcp_message::mutable_fmi2_import_get_directional_derivative_req() {
   set_has_fmi2_import_get_directional_derivative_req();
@@ -13355,7 +13704,11 @@ inline void fmitcp_message::clear_fmi2_import_get_directional_derivative_res() {
   clear_has_fmi2_import_get_directional_derivative_res();
 }
 inline const ::fmitcp_proto::fmi2_import_get_directional_derivative_res& fmitcp_message::fmi2_import_get_directional_derivative_res() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return fmi2_import_get_directional_derivative_res_ != NULL ? *fmi2_import_get_directional_derivative_res_ : *default_instance().fmi2_import_get_directional_derivative_res_;
+#else
   return fmi2_import_get_directional_derivative_res_ != NULL ? *fmi2_import_get_directional_derivative_res_ : *default_instance_->fmi2_import_get_directional_derivative_res_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_import_get_directional_derivative_res* fmitcp_message::mutable_fmi2_import_get_directional_derivative_res() {
   set_has_fmi2_import_get_directional_derivative_res();
@@ -13393,7 +13746,11 @@ inline void fmitcp_message::clear_get_xml_req() {
   clear_has_get_xml_req();
 }
 inline const ::fmitcp_proto::get_xml_req& fmitcp_message::get_xml_req() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return get_xml_req_ != NULL ? *get_xml_req_ : *default_instance().get_xml_req_;
+#else
   return get_xml_req_ != NULL ? *get_xml_req_ : *default_instance_->get_xml_req_;
+#endif
 }
 inline ::fmitcp_proto::get_xml_req* fmitcp_message::mutable_get_xml_req() {
   set_has_get_xml_req();
@@ -13431,7 +13788,11 @@ inline void fmitcp_message::clear_get_xml_res() {
   clear_has_get_xml_res();
 }
 inline const ::fmitcp_proto::get_xml_res& fmitcp_message::get_xml_res() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return get_xml_res_ != NULL ? *get_xml_res_ : *default_instance().get_xml_res_;
+#else
   return get_xml_res_ != NULL ? *get_xml_res_ : *default_instance_->get_xml_res_;
+#endif
 }
 inline ::fmitcp_proto::get_xml_res* fmitcp_message::mutable_get_xml_res() {
   set_has_get_xml_res();
@@ -16236,7 +16597,11 @@ inline void fmi2_import_initialize_model_res::clear_eventinfo() {
   clear_has_eventinfo();
 }
 inline const ::fmitcp_proto::fmi2_event_info_t& fmi2_import_initialize_model_res::eventinfo() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return eventinfo_ != NULL ? *eventinfo_ : *default_instance().eventinfo_;
+#else
   return eventinfo_ != NULL ? *eventinfo_ : *default_instance_->eventinfo_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_event_info_t* fmi2_import_initialize_model_res::mutable_eventinfo() {
   set_has_eventinfo();
@@ -16637,7 +17002,11 @@ inline void fmi2_import_eventUpdate_res::clear_eventinfo() {
   clear_has_eventinfo();
 }
 inline const ::fmitcp_proto::fmi2_event_info_t& fmi2_import_eventUpdate_res::eventinfo() const {
+#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
+  return eventinfo_ != NULL ? *eventinfo_ : *default_instance().eventinfo_;
+#else
   return eventinfo_ != NULL ? *eventinfo_ : *default_instance_->eventinfo_;
+#endif
 }
 inline ::fmitcp_proto::fmi2_event_info_t* fmi2_import_eventUpdate_res::mutable_eventinfo() {
   set_has_eventinfo();
@@ -19353,35 +19722,6 @@ inline void get_xml_res::set_allocated_xml(::std::string* xml) {
 // @@protoc_insertion_point(namespace_scope)
 
 }  // namespace fmitcp_proto
-
-#ifndef SWIG
-namespace google {
-namespace protobuf {
-
-template <>
-inline const EnumDescriptor* GetEnumDescriptor< ::fmitcp_proto::fmitcp_message_Type>() {
-  return ::fmitcp_proto::fmitcp_message_Type_descriptor();
-}
-template <>
-inline const EnumDescriptor* GetEnumDescriptor< ::fmitcp_proto::jm_log_level_enu_t>() {
-  return ::fmitcp_proto::jm_log_level_enu_t_descriptor();
-}
-template <>
-inline const EnumDescriptor* GetEnumDescriptor< ::fmitcp_proto::fmi2_status_t>() {
-  return ::fmitcp_proto::fmi2_status_t_descriptor();
-}
-template <>
-inline const EnumDescriptor* GetEnumDescriptor< ::fmitcp_proto::fmi2_status_kind_t>() {
-  return ::fmitcp_proto::fmi2_status_kind_t_descriptor();
-}
-template <>
-inline const EnumDescriptor* GetEnumDescriptor< ::fmitcp_proto::jm_status_enu_t>() {
-  return ::fmitcp_proto::jm_status_enu_t_descriptor();
-}
-
-}  // namespace google
-}  // namespace protobuf
-#endif  // SWIG
 
 // @@protoc_insertion_point(global_scope)
 

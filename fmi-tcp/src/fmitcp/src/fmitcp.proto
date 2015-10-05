@@ -1,5 +1,8 @@
 package fmitcp_proto;
 
+// Allow using the "lite" version of the wire implementation
+option optimize_for = LITE_RUNTIME;
+
 // Wrapper for all possible messages
 message fmitcp_message {
     enum Type {

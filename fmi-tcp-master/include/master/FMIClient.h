@@ -13,33 +13,6 @@ namespace fmitcp_master {
 
     class BaseMaster;
 
-    /// Current state of the FMI Client
-    enum FMIClientState {
-        FMICLIENT_STATE_START,
-        FMICLIENT_STATE_WAITING_GET_XML,
-        FMICLIENT_STATE_DONE_GET_XML,
-        FMICLIENT_STATE_WAITING_INSTANTIATE_SLAVE,
-        FMICLIENT_STATE_DONE_INSTANTIATE_SLAVE,
-        FMICLIENT_STATE_WAITING_INITIALIZE_SLAVE,
-        FMICLIENT_STATE_DONE_INITIALIZE_SLAVE,
-        FMICLIENT_STATE_WAITING_DIRECTIONALDERIVATIVES,
-        FMICLIENT_STATE_DONE_DIRECTIONALDERIVATIVES,
-        FMICLIENT_STATE_WAITING_DOSTEP,
-        FMICLIENT_STATE_DONE_DOSTEP,
-        FMICLIENT_STATE_WAITING_SET_REAL,
-        FMICLIENT_STATE_DONE_SET_REAL,
-        FMICLIENT_STATE_WAITING_GET_REAL,
-        FMICLIENT_STATE_DONE_GET_REAL,
-        FMICLIENT_STATE_WAITING_SET_STATE,
-        FMICLIENT_STATE_DONE_SET_STATE,
-        FMICLIENT_STATE_WAITING_GET_STATE,
-        FMICLIENT_STATE_DONE_GET_STATE,
-        FMICLIENT_STATE_WAITING_FREE_STATE,
-        FMICLIENT_STATE_DONE_FREE_STATE,
-        FMICLIENT_STATE_WAITING_TERMINATE_SLAVE,
-        FMICLIENT_STATE_DONE_TERMINATE_SLAVE,
-    };
-
     /// Adds high-level FMI methods to the Client, similar to FMILibrary functions.
     class FMIClient : public fmitcp::Client, public sc::Slave {
 
@@ -66,11 +39,6 @@ namespace fmitcp_master {
     public:
         BaseMaster * m_master;
 
-        /// Current state of the client
-        FMIClientState m_state;
-
-        bool m_isInstantiated;
-
         /// How many more directional derivatives to wait for
         int m_numDirectionalDerivativesLeft;
 
@@ -88,7 +56,6 @@ namespace fmitcp_master {
 
         void connect(void);
 
-        FMIClientState getState();
         bool isInitialized();
 
         /// Create a strong coupling connector for this client

@@ -21,8 +21,6 @@ FMIClient::FMIClient(fmitcp::EventPump* pump, int id, string host, long port) : 
     m_port = port;
     m_master = NULL;
     m_initialized = false;
-    m_state = FMICLIENT_STATE_START;
-    m_isInstantiated = false;
     m_numDirectionalDerivativesLeft = 0;
     m_fmi2Instance = NULL;
     m_context = NULL;
@@ -81,10 +79,6 @@ void FMIClient::onError(string err){
 
 int FMIClient::getId(){
     return m_id;
-};
-
-FMIClientState FMIClient::getState(){
-    return m_state;
 };
 
 bool FMIClient::isInitialized(){

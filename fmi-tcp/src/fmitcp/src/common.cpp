@@ -54,11 +54,6 @@ vector<string> fmitcp::unpackBuffer(const char* indata, long insize, string *tai
     return messages;
 }
 
-string fmitcp::dataToString(const char* data, long size) {
-  std::string data2(data, size);
-  return data2;
-}
-
 fmitcp_proto::jm_status_enu_t fmitcp::fmiJMStatusToProtoJMStatus(jm_status_enu_t status) {
   switch (status) {
   case jm_status_error:

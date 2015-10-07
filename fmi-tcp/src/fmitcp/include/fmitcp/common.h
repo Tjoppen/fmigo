@@ -43,9 +43,6 @@ namespace fmitcp {
   void sendProtoBuffer(lw_client c, fmitcp_proto::fmitcp_message * message);
   std::vector<std::string> unpackBuffer(const char* data, long size, std::string *tail);
 
-  /// Convert incoming data to a C++ string
-  string dataToString(const char* data, long size);
-
   fmitcp_proto::jm_status_enu_t fmiJMStatusToProtoJMStatus(jm_status_enu_t status);
   fmitcp_proto::fmi2_status_t fmi2StatusToProtofmi2Status(fmi2_status_t status);
   fmitcp_proto::jm_log_level_enu_t fmiJMLogLevelToProtoJMLogLevel(jm_log_level_enu_t logLevel);

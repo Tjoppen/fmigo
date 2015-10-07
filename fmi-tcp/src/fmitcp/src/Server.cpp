@@ -177,7 +177,6 @@ void Server::clientData(lw_client c, const char *data, size_t size) {
 
   // Construct message
   fmitcp_proto::fmitcp_message req;
-  //string data2 = fmitcp::dataToString(data,size);
   bool parseStatus = req.ParseFromString(data2);
   fmitcp_proto::fmitcp_message_Type type = req.type();
 

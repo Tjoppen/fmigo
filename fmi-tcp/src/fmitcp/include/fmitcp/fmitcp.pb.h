@@ -2631,7 +2631,7 @@ class fmi2_import_set_real_input_derivatives_req : public ::google::protobuf::Me
   inline ::google::protobuf::int32 fmuid() const;
   inline void set_fmuid(::google::protobuf::int32 value);
 
-  // repeated int32 valueReferences = 3;
+  // repeated int32 valueReferences = 3 [packed = true];
   inline int valuereferences_size() const;
   inline void clear_valuereferences();
   static const int kValueReferencesFieldNumber = 3;
@@ -2643,7 +2643,7 @@ class fmi2_import_set_real_input_derivatives_req : public ::google::protobuf::Me
   inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
       mutable_valuereferences();
 
-  // repeated int32 orders = 4;
+  // repeated int32 orders = 4 [packed = true];
   inline int orders_size() const;
   inline void clear_orders();
   static const int kOrdersFieldNumber = 4;
@@ -2655,7 +2655,7 @@ class fmi2_import_set_real_input_derivatives_req : public ::google::protobuf::Me
   inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
       mutable_orders();
 
-  // repeated double values = 5;
+  // repeated double values = 5 [packed = true];
   inline int values_size() const;
   inline void clear_values();
   static const int kValuesFieldNumber = 5;
@@ -2677,8 +2677,11 @@ class fmi2_import_set_real_input_derivatives_req : public ::google::protobuf::Me
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 fmuid_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > valuereferences_;
+  mutable int _valuereferences_cached_byte_size_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > orders_;
+  mutable int _orders_cached_byte_size_;
   ::google::protobuf::RepeatedField< double > values_;
+  mutable int _values_cached_byte_size_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(5 + 31) / 32];
@@ -2856,7 +2859,7 @@ class fmi2_import_get_real_output_derivatives_req : public ::google::protobuf::M
   inline ::google::protobuf::int32 fmuid() const;
   inline void set_fmuid(::google::protobuf::int32 value);
 
-  // repeated int32 valueReferences = 3;
+  // repeated int32 valueReferences = 3 [packed = true];
   inline int valuereferences_size() const;
   inline void clear_valuereferences();
   static const int kValueReferencesFieldNumber = 3;
@@ -2868,7 +2871,7 @@ class fmi2_import_get_real_output_derivatives_req : public ::google::protobuf::M
   inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
       mutable_valuereferences();
 
-  // repeated int32 orders = 4;
+  // repeated int32 orders = 4 [packed = true];
   inline int orders_size() const;
   inline void clear_orders();
   static const int kOrdersFieldNumber = 4;
@@ -2890,7 +2893,9 @@ class fmi2_import_get_real_output_derivatives_req : public ::google::protobuf::M
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 fmuid_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > valuereferences_;
+  mutable int _valuereferences_cached_byte_size_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > orders_;
+  mutable int _orders_cached_byte_size_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
@@ -2975,7 +2980,7 @@ class fmi2_import_get_real_output_derivatives_res : public ::google::protobuf::M
   inline ::fmitcp_proto::fmi2_status_t status() const;
   inline void set_status(::fmitcp_proto::fmi2_status_t value);
 
-  // repeated double values = 3;
+  // repeated double values = 3 [packed = true];
   inline int values_size() const;
   inline void clear_values();
   static const int kValuesFieldNumber = 3;
@@ -2997,6 +3002,7 @@ class fmi2_import_get_real_output_derivatives_res : public ::google::protobuf::M
   ::google::protobuf::int32 message_id_;
   int status_;
   ::google::protobuf::RepeatedField< double > values_;
+  mutable int _values_cached_byte_size_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
@@ -5066,7 +5072,7 @@ class fmi2_import_set_continuous_states_req : public ::google::protobuf::Message
   inline ::google::protobuf::int32 fmuid() const;
   inline void set_fmuid(::google::protobuf::int32 value);
 
-  // repeated double x = 3;
+  // repeated double x = 3 [packed = true];
   inline int x_size() const;
   inline void clear_x();
   static const int kXFieldNumber = 3;
@@ -5088,6 +5094,7 @@ class fmi2_import_set_continuous_states_req : public ::google::protobuf::Message
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 fmuid_;
   ::google::protobuf::RepeatedField< double > x_;
+  mutable int _x_cached_byte_size_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
@@ -5765,7 +5772,7 @@ class fmi2_import_get_derivatives_res : public ::google::protobuf::MessageLite {
   inline ::google::protobuf::int32 message_id() const;
   inline void set_message_id(::google::protobuf::int32 value);
 
-  // repeated double derivatives = 2;
+  // repeated double derivatives = 2 [packed = true];
   inline int derivatives_size() const;
   inline void clear_derivatives();
   static const int kDerivativesFieldNumber = 2;
@@ -5792,6 +5799,7 @@ class fmi2_import_get_derivatives_res : public ::google::protobuf::MessageLite {
   inline void clear_has_status();
 
   ::google::protobuf::RepeatedField< double > derivatives_;
+  mutable int _derivatives_cached_byte_size_;
   ::google::protobuf::int32 message_id_;
   int status_;
 
@@ -5964,7 +5972,7 @@ class fmi2_import_get_event_indicators_res : public ::google::protobuf::MessageL
   inline ::google::protobuf::int32 message_id() const;
   inline void set_message_id(::google::protobuf::int32 value);
 
-  // repeated double eventIndicators = 2;
+  // repeated double eventIndicators = 2 [packed = true];
   inline int eventindicators_size() const;
   inline void clear_eventindicators();
   static const int kEventIndicatorsFieldNumber = 2;
@@ -5991,6 +5999,7 @@ class fmi2_import_get_event_indicators_res : public ::google::protobuf::MessageL
   inline void clear_has_status();
 
   ::google::protobuf::RepeatedField< double > eventindicators_;
+  mutable int _eventindicators_cached_byte_size_;
   ::google::protobuf::int32 message_id_;
   int status_;
 
@@ -6557,7 +6566,7 @@ class fmi2_import_get_continuous_states_res : public ::google::protobuf::Message
   inline ::google::protobuf::int32 message_id() const;
   inline void set_message_id(::google::protobuf::int32 value);
 
-  // repeated double states = 2;
+  // repeated double states = 2 [packed = true];
   inline int states_size() const;
   inline void clear_states();
   static const int kStatesFieldNumber = 2;
@@ -6584,6 +6593,7 @@ class fmi2_import_get_continuous_states_res : public ::google::protobuf::Message
   inline void clear_has_status();
 
   ::google::protobuf::RepeatedField< double > states_;
+  mutable int _states_cached_byte_size_;
   ::google::protobuf::int32 message_id_;
   int status_;
 
@@ -6756,7 +6766,7 @@ class fmi2_import_get_nominal_continuous_states_res : public ::google::protobuf:
   inline ::google::protobuf::int32 message_id() const;
   inline void set_message_id(::google::protobuf::int32 value);
 
-  // repeated double nominal = 2;
+  // repeated double nominal = 2 [packed = true];
   inline int nominal_size() const;
   inline void clear_nominal();
   static const int kNominalFieldNumber = 2;
@@ -6783,6 +6793,7 @@ class fmi2_import_get_nominal_continuous_states_res : public ::google::protobuf:
   inline void clear_has_status();
 
   ::google::protobuf::RepeatedField< double > nominal_;
+  mutable int _nominal_cached_byte_size_;
   ::google::protobuf::int32 message_id_;
   int status_;
 
@@ -7459,7 +7470,7 @@ class fmi2_import_set_real_req : public ::google::protobuf::MessageLite {
   inline ::google::protobuf::int32 fmuid() const;
   inline void set_fmuid(::google::protobuf::int32 value);
 
-  // repeated int32 valueReferences = 3;
+  // repeated int32 valueReferences = 3 [packed = true];
   inline int valuereferences_size() const;
   inline void clear_valuereferences();
   static const int kValueReferencesFieldNumber = 3;
@@ -7471,7 +7482,7 @@ class fmi2_import_set_real_req : public ::google::protobuf::MessageLite {
   inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
       mutable_valuereferences();
 
-  // repeated double values = 4;
+  // repeated double values = 4 [packed = true];
   inline int values_size() const;
   inline void clear_values();
   static const int kValuesFieldNumber = 4;
@@ -7493,7 +7504,9 @@ class fmi2_import_set_real_req : public ::google::protobuf::MessageLite {
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 fmuid_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > valuereferences_;
+  mutable int _valuereferences_cached_byte_size_;
   ::google::protobuf::RepeatedField< double > values_;
+  mutable int _values_cached_byte_size_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
@@ -7671,7 +7684,7 @@ class fmi2_import_set_integer_req : public ::google::protobuf::MessageLite {
   inline ::google::protobuf::int32 fmuid() const;
   inline void set_fmuid(::google::protobuf::int32 value);
 
-  // repeated int32 valueReferences = 3;
+  // repeated int32 valueReferences = 3 [packed = true];
   inline int valuereferences_size() const;
   inline void clear_valuereferences();
   static const int kValueReferencesFieldNumber = 3;
@@ -7683,7 +7696,7 @@ class fmi2_import_set_integer_req : public ::google::protobuf::MessageLite {
   inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
       mutable_valuereferences();
 
-  // repeated int32 values = 4;
+  // repeated int32 values = 4 [packed = true];
   inline int values_size() const;
   inline void clear_values();
   static const int kValuesFieldNumber = 4;
@@ -7705,7 +7718,9 @@ class fmi2_import_set_integer_req : public ::google::protobuf::MessageLite {
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 fmuid_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > valuereferences_;
+  mutable int _valuereferences_cached_byte_size_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > values_;
+  mutable int _values_cached_byte_size_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
@@ -7883,7 +7898,7 @@ class fmi2_import_set_boolean_req : public ::google::protobuf::MessageLite {
   inline ::google::protobuf::int32 fmuid() const;
   inline void set_fmuid(::google::protobuf::int32 value);
 
-  // repeated int32 valueReferences = 3;
+  // repeated int32 valueReferences = 3 [packed = true];
   inline int valuereferences_size() const;
   inline void clear_valuereferences();
   static const int kValueReferencesFieldNumber = 3;
@@ -7895,7 +7910,7 @@ class fmi2_import_set_boolean_req : public ::google::protobuf::MessageLite {
   inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
       mutable_valuereferences();
 
-  // repeated bool values = 4;
+  // repeated bool values = 4 [packed = true];
   inline int values_size() const;
   inline void clear_values();
   static const int kValuesFieldNumber = 4;
@@ -7917,7 +7932,9 @@ class fmi2_import_set_boolean_req : public ::google::protobuf::MessageLite {
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 fmuid_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > valuereferences_;
+  mutable int _valuereferences_cached_byte_size_;
   ::google::protobuf::RepeatedField< bool > values_;
+  mutable int _values_cached_byte_size_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
@@ -8095,7 +8112,7 @@ class fmi2_import_set_string_req : public ::google::protobuf::MessageLite {
   inline ::google::protobuf::int32 fmuid() const;
   inline void set_fmuid(::google::protobuf::int32 value);
 
-  // repeated int32 valueReferences = 3;
+  // repeated int32 valueReferences = 3 [packed = true];
   inline int valuereferences_size() const;
   inline void clear_valuereferences();
   static const int kValueReferencesFieldNumber = 3;
@@ -8133,6 +8150,7 @@ class fmi2_import_set_string_req : public ::google::protobuf::MessageLite {
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 fmuid_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > valuereferences_;
+  mutable int _valuereferences_cached_byte_size_;
   ::google::protobuf::RepeatedPtrField< ::std::string> values_;
 
   mutable int _cached_size_;
@@ -8311,7 +8329,7 @@ class fmi2_import_get_real_req : public ::google::protobuf::MessageLite {
   inline ::google::protobuf::int32 fmuid() const;
   inline void set_fmuid(::google::protobuf::int32 value);
 
-  // repeated int32 valueReferences = 3;
+  // repeated int32 valueReferences = 3 [packed = true];
   inline int valuereferences_size() const;
   inline void clear_valuereferences();
   static const int kValueReferencesFieldNumber = 3;
@@ -8333,6 +8351,7 @@ class fmi2_import_get_real_req : public ::google::protobuf::MessageLite {
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 fmuid_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > valuereferences_;
+  mutable int _valuereferences_cached_byte_size_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
@@ -8410,7 +8429,7 @@ class fmi2_import_get_real_res : public ::google::protobuf::MessageLite {
   inline ::google::protobuf::int32 message_id() const;
   inline void set_message_id(::google::protobuf::int32 value);
 
-  // repeated double values = 2;
+  // repeated double values = 2 [packed = true];
   inline int values_size() const;
   inline void clear_values();
   static const int kValuesFieldNumber = 2;
@@ -8437,6 +8456,7 @@ class fmi2_import_get_real_res : public ::google::protobuf::MessageLite {
   inline void clear_has_status();
 
   ::google::protobuf::RepeatedField< double > values_;
+  mutable int _values_cached_byte_size_;
   ::google::protobuf::int32 message_id_;
   int status_;
 
@@ -8523,7 +8543,7 @@ class fmi2_import_get_integer_req : public ::google::protobuf::MessageLite {
   inline ::google::protobuf::int32 fmuid() const;
   inline void set_fmuid(::google::protobuf::int32 value);
 
-  // repeated int32 valueReferences = 3;
+  // repeated int32 valueReferences = 3 [packed = true];
   inline int valuereferences_size() const;
   inline void clear_valuereferences();
   static const int kValueReferencesFieldNumber = 3;
@@ -8545,6 +8565,7 @@ class fmi2_import_get_integer_req : public ::google::protobuf::MessageLite {
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 fmuid_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > valuereferences_;
+  mutable int _valuereferences_cached_byte_size_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
@@ -8622,7 +8643,7 @@ class fmi2_import_get_integer_res : public ::google::protobuf::MessageLite {
   inline ::google::protobuf::int32 message_id() const;
   inline void set_message_id(::google::protobuf::int32 value);
 
-  // repeated int32 values = 2;
+  // repeated int32 values = 2 [packed = true];
   inline int values_size() const;
   inline void clear_values();
   static const int kValuesFieldNumber = 2;
@@ -8649,6 +8670,7 @@ class fmi2_import_get_integer_res : public ::google::protobuf::MessageLite {
   inline void clear_has_status();
 
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > values_;
+  mutable int _values_cached_byte_size_;
   ::google::protobuf::int32 message_id_;
   int status_;
 
@@ -8735,7 +8757,7 @@ class fmi2_import_get_boolean_req : public ::google::protobuf::MessageLite {
   inline ::google::protobuf::int32 fmuid() const;
   inline void set_fmuid(::google::protobuf::int32 value);
 
-  // repeated int32 valueReferences = 3;
+  // repeated int32 valueReferences = 3 [packed = true];
   inline int valuereferences_size() const;
   inline void clear_valuereferences();
   static const int kValueReferencesFieldNumber = 3;
@@ -8757,6 +8779,7 @@ class fmi2_import_get_boolean_req : public ::google::protobuf::MessageLite {
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 fmuid_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > valuereferences_;
+  mutable int _valuereferences_cached_byte_size_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
@@ -8834,7 +8857,7 @@ class fmi2_import_get_boolean_res : public ::google::protobuf::MessageLite {
   inline ::google::protobuf::int32 message_id() const;
   inline void set_message_id(::google::protobuf::int32 value);
 
-  // repeated bool values = 2;
+  // repeated bool values = 2 [packed = true];
   inline int values_size() const;
   inline void clear_values();
   static const int kValuesFieldNumber = 2;
@@ -8861,6 +8884,7 @@ class fmi2_import_get_boolean_res : public ::google::protobuf::MessageLite {
   inline void clear_has_status();
 
   ::google::protobuf::RepeatedField< bool > values_;
+  mutable int _values_cached_byte_size_;
   ::google::protobuf::int32 message_id_;
   int status_;
 
@@ -8947,7 +8971,7 @@ class fmi2_import_get_string_req : public ::google::protobuf::MessageLite {
   inline ::google::protobuf::int32 fmuid() const;
   inline void set_fmuid(::google::protobuf::int32 value);
 
-  // repeated int32 valueReferences = 3;
+  // repeated int32 valueReferences = 3 [packed = true];
   inline int valuereferences_size() const;
   inline void clear_valuereferences();
   static const int kValueReferencesFieldNumber = 3;
@@ -8969,6 +8993,7 @@ class fmi2_import_get_string_req : public ::google::protobuf::MessageLite {
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 fmuid_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > valuereferences_;
+  mutable int _valuereferences_cached_byte_size_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
@@ -9887,7 +9912,7 @@ class fmi2_import_get_directional_derivative_req : public ::google::protobuf::Me
   inline ::google::protobuf::int32 fmuid() const;
   inline void set_fmuid(::google::protobuf::int32 value);
 
-  // repeated int32 v_ref = 3;
+  // repeated int32 v_ref = 3 [packed = true];
   inline int v_ref_size() const;
   inline void clear_v_ref();
   static const int kVRefFieldNumber = 3;
@@ -9899,7 +9924,7 @@ class fmi2_import_get_directional_derivative_req : public ::google::protobuf::Me
   inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
       mutable_v_ref();
 
-  // repeated int32 z_ref = 4;
+  // repeated int32 z_ref = 4 [packed = true];
   inline int z_ref_size() const;
   inline void clear_z_ref();
   static const int kZRefFieldNumber = 4;
@@ -9911,7 +9936,7 @@ class fmi2_import_get_directional_derivative_req : public ::google::protobuf::Me
   inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
       mutable_z_ref();
 
-  // repeated double dv = 5;
+  // repeated double dv = 5 [packed = true];
   inline int dv_size() const;
   inline void clear_dv();
   static const int kDvFieldNumber = 5;
@@ -9933,8 +9958,11 @@ class fmi2_import_get_directional_derivative_req : public ::google::protobuf::Me
   ::google::protobuf::int32 message_id_;
   ::google::protobuf::int32 fmuid_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > v_ref_;
+  mutable int _v_ref_cached_byte_size_;
   ::google::protobuf::RepeatedField< ::google::protobuf::int32 > z_ref_;
+  mutable int _z_ref_cached_byte_size_;
   ::google::protobuf::RepeatedField< double > dv_;
+  mutable int _dv_cached_byte_size_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(5 + 31) / 32];
@@ -10012,7 +10040,7 @@ class fmi2_import_get_directional_derivative_res : public ::google::protobuf::Me
   inline ::google::protobuf::int32 message_id() const;
   inline void set_message_id(::google::protobuf::int32 value);
 
-  // repeated double dz = 2;
+  // repeated double dz = 2 [packed = true];
   inline int dz_size() const;
   inline void clear_dz();
   static const int kDzFieldNumber = 2;
@@ -10039,6 +10067,7 @@ class fmi2_import_get_directional_derivative_res : public ::google::protobuf::Me
   inline void clear_has_status();
 
   ::google::protobuf::RepeatedField< double > dz_;
+  mutable int _dz_cached_byte_size_;
   ::google::protobuf::int32 message_id_;
   int status_;
 
@@ -14571,7 +14600,7 @@ inline void fmi2_import_set_real_input_derivatives_req::set_fmuid(::google::prot
   fmuid_ = value;
 }
 
-// repeated int32 valueReferences = 3;
+// repeated int32 valueReferences = 3 [packed = true];
 inline int fmi2_import_set_real_input_derivatives_req::valuereferences_size() const {
   return valuereferences_.size();
 }
@@ -14596,7 +14625,7 @@ fmi2_import_set_real_input_derivatives_req::mutable_valuereferences() {
   return &valuereferences_;
 }
 
-// repeated int32 orders = 4;
+// repeated int32 orders = 4 [packed = true];
 inline int fmi2_import_set_real_input_derivatives_req::orders_size() const {
   return orders_.size();
 }
@@ -14621,7 +14650,7 @@ fmi2_import_set_real_input_derivatives_req::mutable_orders() {
   return &orders_;
 }
 
-// repeated double values = 5;
+// repeated double values = 5 [packed = true];
 inline int fmi2_import_set_real_input_derivatives_req::values_size() const {
   return values_.size();
 }
@@ -14743,7 +14772,7 @@ inline void fmi2_import_get_real_output_derivatives_req::set_fmuid(::google::pro
   fmuid_ = value;
 }
 
-// repeated int32 valueReferences = 3;
+// repeated int32 valueReferences = 3 [packed = true];
 inline int fmi2_import_get_real_output_derivatives_req::valuereferences_size() const {
   return valuereferences_.size();
 }
@@ -14768,7 +14797,7 @@ fmi2_import_get_real_output_derivatives_req::mutable_valuereferences() {
   return &valuereferences_;
 }
 
-// repeated int32 orders = 4;
+// repeated int32 orders = 4 [packed = true];
 inline int fmi2_import_get_real_output_derivatives_req::orders_size() const {
   return orders_.size();
 }
@@ -14842,7 +14871,7 @@ inline void fmi2_import_get_real_output_derivatives_res::set_status(::fmitcp_pro
   status_ = value;
 }
 
-// repeated double values = 3;
+// repeated double values = 3 [packed = true];
 inline int fmi2_import_get_real_output_derivatives_res::values_size() const {
   return values_.size();
 }
@@ -16271,7 +16300,7 @@ inline void fmi2_import_set_continuous_states_req::set_fmuid(::google::protobuf:
   fmuid_ = value;
 }
 
-// repeated double x = 3;
+// repeated double x = 3 [packed = true];
 inline int fmi2_import_set_continuous_states_req::x_size() const {
   return x_.size();
 }
@@ -16721,7 +16750,7 @@ inline void fmi2_import_get_derivatives_res::set_message_id(::google::protobuf::
   message_id_ = value;
 }
 
-// repeated double derivatives = 2;
+// repeated double derivatives = 2 [packed = true];
 inline int fmi2_import_get_derivatives_res::derivatives_size() const {
   return derivatives_.size();
 }
@@ -16843,7 +16872,7 @@ inline void fmi2_import_get_event_indicators_res::set_message_id(::google::proto
   message_id_ = value;
 }
 
-// repeated double eventIndicators = 2;
+// repeated double eventIndicators = 2 [packed = true];
 inline int fmi2_import_get_event_indicators_res::eventindicators_size() const {
   return eventindicators_.size();
 }
@@ -17223,7 +17252,7 @@ inline void fmi2_import_get_continuous_states_res::set_message_id(::google::prot
   message_id_ = value;
 }
 
-// repeated double states = 2;
+// repeated double states = 2 [packed = true];
 inline int fmi2_import_get_continuous_states_res::states_size() const {
   return states_.size();
 }
@@ -17345,7 +17374,7 @@ inline void fmi2_import_get_nominal_continuous_states_res::set_message_id(::goog
   message_id_ = value;
 }
 
-// repeated double nominal = 2;
+// repeated double nominal = 2 [packed = true];
 inline int fmi2_import_get_nominal_continuous_states_res::nominal_size() const {
   return nominal_.size();
 }
@@ -17845,7 +17874,7 @@ inline void fmi2_import_set_real_req::set_fmuid(::google::protobuf::int32 value)
   fmuid_ = value;
 }
 
-// repeated int32 valueReferences = 3;
+// repeated int32 valueReferences = 3 [packed = true];
 inline int fmi2_import_set_real_req::valuereferences_size() const {
   return valuereferences_.size();
 }
@@ -17870,7 +17899,7 @@ fmi2_import_set_real_req::mutable_valuereferences() {
   return &valuereferences_;
 }
 
-// repeated double values = 4;
+// repeated double values = 4 [packed = true];
 inline int fmi2_import_set_real_req::values_size() const {
   return values_.size();
 }
@@ -17992,7 +18021,7 @@ inline void fmi2_import_set_integer_req::set_fmuid(::google::protobuf::int32 val
   fmuid_ = value;
 }
 
-// repeated int32 valueReferences = 3;
+// repeated int32 valueReferences = 3 [packed = true];
 inline int fmi2_import_set_integer_req::valuereferences_size() const {
   return valuereferences_.size();
 }
@@ -18017,7 +18046,7 @@ fmi2_import_set_integer_req::mutable_valuereferences() {
   return &valuereferences_;
 }
 
-// repeated int32 values = 4;
+// repeated int32 values = 4 [packed = true];
 inline int fmi2_import_set_integer_req::values_size() const {
   return values_.size();
 }
@@ -18139,7 +18168,7 @@ inline void fmi2_import_set_boolean_req::set_fmuid(::google::protobuf::int32 val
   fmuid_ = value;
 }
 
-// repeated int32 valueReferences = 3;
+// repeated int32 valueReferences = 3 [packed = true];
 inline int fmi2_import_set_boolean_req::valuereferences_size() const {
   return valuereferences_.size();
 }
@@ -18164,7 +18193,7 @@ fmi2_import_set_boolean_req::mutable_valuereferences() {
   return &valuereferences_;
 }
 
-// repeated bool values = 4;
+// repeated bool values = 4 [packed = true];
 inline int fmi2_import_set_boolean_req::values_size() const {
   return values_.size();
 }
@@ -18286,7 +18315,7 @@ inline void fmi2_import_set_string_req::set_fmuid(::google::protobuf::int32 valu
   fmuid_ = value;
 }
 
-// repeated int32 valueReferences = 3;
+// repeated int32 valueReferences = 3 [packed = true];
 inline int fmi2_import_set_string_req::valuereferences_size() const {
   return valuereferences_.size();
 }
@@ -18452,7 +18481,7 @@ inline void fmi2_import_get_real_req::set_fmuid(::google::protobuf::int32 value)
   fmuid_ = value;
 }
 
-// repeated int32 valueReferences = 3;
+// repeated int32 valueReferences = 3 [packed = true];
 inline int fmi2_import_get_real_req::valuereferences_size() const {
   return valuereferences_.size();
 }
@@ -18503,7 +18532,7 @@ inline void fmi2_import_get_real_res::set_message_id(::google::protobuf::int32 v
   message_id_ = value;
 }
 
-// repeated double values = 2;
+// repeated double values = 2 [packed = true];
 inline int fmi2_import_get_real_res::values_size() const {
   return values_.size();
 }
@@ -18599,7 +18628,7 @@ inline void fmi2_import_get_integer_req::set_fmuid(::google::protobuf::int32 val
   fmuid_ = value;
 }
 
-// repeated int32 valueReferences = 3;
+// repeated int32 valueReferences = 3 [packed = true];
 inline int fmi2_import_get_integer_req::valuereferences_size() const {
   return valuereferences_.size();
 }
@@ -18650,7 +18679,7 @@ inline void fmi2_import_get_integer_res::set_message_id(::google::protobuf::int3
   message_id_ = value;
 }
 
-// repeated int32 values = 2;
+// repeated int32 values = 2 [packed = true];
 inline int fmi2_import_get_integer_res::values_size() const {
   return values_.size();
 }
@@ -18746,7 +18775,7 @@ inline void fmi2_import_get_boolean_req::set_fmuid(::google::protobuf::int32 val
   fmuid_ = value;
 }
 
-// repeated int32 valueReferences = 3;
+// repeated int32 valueReferences = 3 [packed = true];
 inline int fmi2_import_get_boolean_req::valuereferences_size() const {
   return valuereferences_.size();
 }
@@ -18797,7 +18826,7 @@ inline void fmi2_import_get_boolean_res::set_message_id(::google::protobuf::int3
   message_id_ = value;
 }
 
-// repeated bool values = 2;
+// repeated bool values = 2 [packed = true];
 inline int fmi2_import_get_boolean_res::values_size() const {
   return values_.size();
 }
@@ -18893,7 +18922,7 @@ inline void fmi2_import_get_string_req::set_fmuid(::google::protobuf::int32 valu
   fmuid_ = value;
 }
 
-// repeated int32 valueReferences = 3;
+// repeated int32 valueReferences = 3 [packed = true];
 inline int fmi2_import_get_string_req::valuereferences_size() const {
   return valuereferences_.size();
 }
@@ -19402,7 +19431,7 @@ inline void fmi2_import_get_directional_derivative_req::set_fmuid(::google::prot
   fmuid_ = value;
 }
 
-// repeated int32 v_ref = 3;
+// repeated int32 v_ref = 3 [packed = true];
 inline int fmi2_import_get_directional_derivative_req::v_ref_size() const {
   return v_ref_.size();
 }
@@ -19427,7 +19456,7 @@ fmi2_import_get_directional_derivative_req::mutable_v_ref() {
   return &v_ref_;
 }
 
-// repeated int32 z_ref = 4;
+// repeated int32 z_ref = 4 [packed = true];
 inline int fmi2_import_get_directional_derivative_req::z_ref_size() const {
   return z_ref_.size();
 }
@@ -19452,7 +19481,7 @@ fmi2_import_get_directional_derivative_req::mutable_z_ref() {
   return &z_ref_;
 }
 
-// repeated double dv = 5;
+// repeated double dv = 5 [packed = true];
 inline int fmi2_import_get_directional_derivative_req::dv_size() const {
   return dv_.size();
 }
@@ -19503,7 +19532,7 @@ inline void fmi2_import_get_directional_derivative_res::set_message_id(::google:
   message_id_ = value;
 }
 
-// repeated double dz = 2;
+// repeated double dz = 2 [packed = true];
 inline int fmi2_import_get_directional_derivative_res::dz_size() const {
   return dz_.size();
 }

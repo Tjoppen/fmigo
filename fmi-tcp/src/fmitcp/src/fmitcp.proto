@@ -318,9 +318,9 @@ message fmi2_import_free_slave_instance_res {
 message fmi2_import_set_real_input_derivatives_req {
     required int32 message_id = 1;
     required int32 fmuId = 2;
-    repeated int32 valueReferences = 3;
-    repeated int32 orders = 4;
-    repeated double values = 5;
+    repeated int32 valueReferences = 3 [packed=true];
+    repeated int32 orders = 4 [packed=true];
+    repeated double values = 5 [packed=true];
 }
 message fmi2_import_set_real_input_derivatives_res {
     required int32 message_id = 1;
@@ -332,13 +332,13 @@ message fmi2_import_set_real_input_derivatives_res {
 message fmi2_import_get_real_output_derivatives_req {
     required int32 message_id = 1;
     required int32 fmuId = 2;
-    repeated int32 valueReferences = 3;
-    repeated int32 orders = 4;
+    repeated int32 valueReferences = 3 [packed=true];
+    repeated int32 orders = 4 [packed=true];
 }
 message fmi2_import_get_real_output_derivatives_res {
     required int32 message_id = 1;
     required fmi2_status_t status = 2;
-    repeated double values = 3;
+    repeated double values = 3 [packed=true];
 }
 
 //fmi2_status_t     fmi2_import_cancel_step (fmi2_import_t *fmu)
@@ -470,7 +470,7 @@ message fmi2_import_set_time_res {
 message fmi2_import_set_continuous_states_req {
     required int32 message_id = 1;
     required int32 fmuId = 2;
-    repeated double x = 3;
+    repeated double x = 3 [packed=true];
 }
 message fmi2_import_set_continuous_states_res {
     required int32 message_id = 1;
@@ -511,7 +511,7 @@ message fmi2_import_get_derivatives_req {
 }
 message fmi2_import_get_derivatives_res {
     required int32 message_id = 1;
-    repeated double derivatives = 2;
+    repeated double derivatives = 2 [packed=true];
     required fmi2_status_t status = 3;
 }
 
@@ -523,7 +523,7 @@ message fmi2_import_get_event_indicators_req {
 }
 message fmi2_import_get_event_indicators_res {
     required int32 message_id = 1;
-    repeated double eventIndicators = 2;
+    repeated double eventIndicators = 2 [packed=true];
     required fmi2_status_t status = 3;
 }
 
@@ -559,7 +559,7 @@ message fmi2_import_get_continuous_states_req {
 }
 message fmi2_import_get_continuous_states_res {
     required int32 message_id = 1;
-    repeated double states = 2;
+    repeated double states = 2 [packed=true];
     required fmi2_status_t status = 3;
 }
 
@@ -571,7 +571,7 @@ message fmi2_import_get_nominal_continuous_states_req {
 }
 message fmi2_import_get_nominal_continuous_states_res {
     required int32 message_id = 1;
-    repeated double nominal = 2;
+    repeated double nominal = 2 [packed=true];
     required fmi2_status_t status = 3;
 }
 
@@ -622,8 +622,8 @@ message fmi2_import_set_debug_logging_res {
 message fmi2_import_set_real_req {
     required int32 message_id = 1;
     required int32  fmuId = 2;
-    repeated int32  valueReferences = 3;
-    repeated double values = 4;
+    repeated int32  valueReferences = 3 [packed=true];
+    repeated double values = 4 [packed=true];
 }
 message fmi2_import_set_real_res {
     required int32 message_id = 1;
@@ -635,8 +635,8 @@ message fmi2_import_set_real_res {
 message fmi2_import_set_integer_req {
     required int32 message_id = 1;
     required int32 fmuId = 2;
-    repeated int32 valueReferences = 3;
-    repeated int32 values = 4;
+    repeated int32 valueReferences = 3 [packed=true];
+    repeated int32 values = 4 [packed=true];
 }
 message fmi2_import_set_integer_res {
     required int32 message_id = 1;
@@ -648,8 +648,8 @@ message fmi2_import_set_integer_res {
 message fmi2_import_set_boolean_req {
     required int32 message_id = 1;
     required int32 fmuId = 2;
-    repeated int32 valueReferences = 3;
-    repeated bool values = 4;
+    repeated int32 valueReferences = 3 [packed=true];
+    repeated bool values = 4 [packed=true];
 }
 message fmi2_import_set_boolean_res {
     required int32 message_id = 1;
@@ -661,7 +661,7 @@ message fmi2_import_set_boolean_res {
 message fmi2_import_set_string_req {
     required int32 message_id = 1;
     required int32  fmuId = 2;
-    repeated int32  valueReferences = 3;
+    repeated int32  valueReferences = 3 [packed=true];
     repeated string values = 4;
 }
 message fmi2_import_set_string_res {
@@ -674,11 +674,11 @@ message fmi2_import_set_string_res {
 message fmi2_import_get_real_req {
     required int32 message_id = 1;
     required int32  fmuId = 2;
-    repeated int32  valueReferences = 3;
+    repeated int32  valueReferences = 3 [packed=true];
 }
 message fmi2_import_get_real_res {
     required int32 message_id = 1;
-    repeated double values = 2;
+    repeated double values = 2 [packed=true];
     required fmi2_status_t status = 3;
 }
 
@@ -687,11 +687,11 @@ message fmi2_import_get_real_res {
 message fmi2_import_get_integer_req {
     required int32 message_id = 1;
     required int32  fmuId = 2;
-    repeated int32  valueReferences = 3;
+    repeated int32  valueReferences = 3 [packed=true];
 }
 message fmi2_import_get_integer_res {
     required int32 message_id = 1;
-    repeated int32 values = 2;
+    repeated int32 values = 2 [packed=true];
     required fmi2_status_t status = 3;
 }
 
@@ -700,11 +700,11 @@ message fmi2_import_get_integer_res {
 message fmi2_import_get_boolean_req {
     required int32 message_id = 1;
     required int32  fmuId = 2;
-    repeated int32  valueReferences = 3;
+    repeated int32  valueReferences = 3 [packed=true];
 }
 message fmi2_import_get_boolean_res {
     required int32 message_id = 1;
-    repeated bool values = 2;
+    repeated bool values = 2 [packed=true];
     required fmi2_status_t status = 3;
 }
 
@@ -713,7 +713,7 @@ message fmi2_import_get_boolean_res {
 message fmi2_import_get_string_req {
     required int32 message_id = 1;
     required int32  fmuId = 2;
-    repeated int32  valueReferences = 3;
+    repeated int32  valueReferences = 3 [packed=true];
 }
 message fmi2_import_get_string_res {
     required int32 message_id = 1;
@@ -783,13 +783,13 @@ message fmi2_import_free_fmu_state_res {
 message fmi2_import_get_directional_derivative_req {
     required int32 message_id = 1;
     required int32 fmuId = 2;
-    repeated int32 v_ref = 3;
-    repeated int32 z_ref = 4;
-    repeated double dv = 5;
+    repeated int32 v_ref = 3 [packed=true];
+    repeated int32 z_ref = 4 [packed=true];
+    repeated double dv = 5 [packed=true];
 }
 message fmi2_import_get_directional_derivative_res {
     required int32 message_id = 1;
-    repeated double dz = 2;
+    repeated double dz = 2 [packed=true];
     required fmi2_status_t status = 3;
 }
 

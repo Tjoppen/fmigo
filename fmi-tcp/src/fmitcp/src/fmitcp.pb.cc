@@ -7263,72 +7263,69 @@ bool fmi2_import_set_real_input_derivatives_req::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(24)) goto parse_valueReferences;
+        if (input->ExpectTag(26)) goto parse_valueReferences;
         break;
       }
 
-      // repeated int32 valueReferences = 3;
+      // repeated int32 valueReferences = 3 [packed = true];
       case 3: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_valueReferences:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
-                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
-                 1, 24, input, this->mutable_valuereferences())));
-        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
-                   == ::google::protobuf::internal::WireFormatLite::
-                      WIRETYPE_LENGTH_DELIMITED) {
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
                  input, this->mutable_valuereferences())));
+        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
+                   == ::google::protobuf::internal::WireFormatLite::
+                      WIRETYPE_VARINT) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 1, 26, input, this->mutable_valuereferences())));
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(24)) goto parse_valueReferences;
-        if (input->ExpectTag(32)) goto parse_orders;
+        if (input->ExpectTag(34)) goto parse_orders;
         break;
       }
 
-      // repeated int32 orders = 4;
+      // repeated int32 orders = 4 [packed = true];
       case 4: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_orders:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
-                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
-                 1, 32, input, this->mutable_orders())));
-        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
-                   == ::google::protobuf::internal::WireFormatLite::
-                      WIRETYPE_LENGTH_DELIMITED) {
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
                  input, this->mutable_orders())));
+        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
+                   == ::google::protobuf::internal::WireFormatLite::
+                      WIRETYPE_VARINT) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 1, 34, input, this->mutable_orders())));
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(32)) goto parse_orders;
-        if (input->ExpectTag(41)) goto parse_values;
+        if (input->ExpectTag(42)) goto parse_values;
         break;
       }
 
-      // repeated double values = 5;
+      // repeated double values = 5 [packed = true];
       case 5: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED64) {
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_values:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
-                   double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
-                 1, 41, input, this->mutable_values())));
-        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
-                   == ::google::protobuf::internal::WireFormatLite::
-                      WIRETYPE_LENGTH_DELIMITED) {
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
                    double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
                  input, this->mutable_values())));
+        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
+                   == ::google::protobuf::internal::WireFormatLite::
+                      WIRETYPE_FIXED64) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
+                   double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
+                 1, 42, input, this->mutable_values())));
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(41)) goto parse_values;
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -7360,22 +7357,34 @@ void fmi2_import_set_real_input_derivatives_req::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->fmuid(), output);
   }
 
-  // repeated int32 valueReferences = 3;
+  // repeated int32 valueReferences = 3 [packed = true];
+  if (this->valuereferences_size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteTag(3, ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
+    output->WriteVarint32(_valuereferences_cached_byte_size_);
+  }
   for (int i = 0; i < this->valuereferences_size(); i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(
-      3, this->valuereferences(i), output);
+    ::google::protobuf::internal::WireFormatLite::WriteInt32NoTag(
+      this->valuereferences(i), output);
   }
 
-  // repeated int32 orders = 4;
+  // repeated int32 orders = 4 [packed = true];
+  if (this->orders_size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteTag(4, ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
+    output->WriteVarint32(_orders_cached_byte_size_);
+  }
   for (int i = 0; i < this->orders_size(); i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(
-      4, this->orders(i), output);
+    ::google::protobuf::internal::WireFormatLite::WriteInt32NoTag(
+      this->orders(i), output);
   }
 
-  // repeated double values = 5;
+  // repeated double values = 5 [packed = true];
+  if (this->values_size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteTag(5, ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
+    output->WriteVarint32(_values_cached_byte_size_);
+  }
   for (int i = 0; i < this->values_size(); i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteDouble(
-      5, this->values(i), output);
+    ::google::protobuf::internal::WireFormatLite::WriteDoubleNoTag(
+      this->values(i), output);
   }
 
 }
@@ -7399,31 +7408,52 @@ int fmi2_import_set_real_input_derivatives_req::ByteSize() const {
     }
 
   }
-  // repeated int32 valueReferences = 3;
+  // repeated int32 valueReferences = 3 [packed = true];
   {
     int data_size = 0;
     for (int i = 0; i < this->valuereferences_size(); i++) {
       data_size += ::google::protobuf::internal::WireFormatLite::
         Int32Size(this->valuereferences(i));
     }
-    total_size += 1 * this->valuereferences_size() + data_size;
+    if (data_size > 0) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(data_size);
+    }
+    GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+    _valuereferences_cached_byte_size_ = data_size;
+    GOOGLE_SAFE_CONCURRENT_WRITES_END();
+    total_size += data_size;
   }
 
-  // repeated int32 orders = 4;
+  // repeated int32 orders = 4 [packed = true];
   {
     int data_size = 0;
     for (int i = 0; i < this->orders_size(); i++) {
       data_size += ::google::protobuf::internal::WireFormatLite::
         Int32Size(this->orders(i));
     }
-    total_size += 1 * this->orders_size() + data_size;
+    if (data_size > 0) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(data_size);
+    }
+    GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+    _orders_cached_byte_size_ = data_size;
+    GOOGLE_SAFE_CONCURRENT_WRITES_END();
+    total_size += data_size;
   }
 
-  // repeated double values = 5;
+  // repeated double values = 5 [packed = true];
   {
     int data_size = 0;
     data_size = 8 * this->values_size();
-    total_size += 1 * this->values_size() + data_size;
+    if (data_size > 0) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(data_size);
+    }
+    GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+    _values_cached_byte_size_ = data_size;
+    GOOGLE_SAFE_CONCURRENT_WRITES_END();
+    total_size += data_size;
   }
 
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -7793,50 +7823,48 @@ bool fmi2_import_get_real_output_derivatives_req::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(24)) goto parse_valueReferences;
+        if (input->ExpectTag(26)) goto parse_valueReferences;
         break;
       }
 
-      // repeated int32 valueReferences = 3;
+      // repeated int32 valueReferences = 3 [packed = true];
       case 3: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_valueReferences:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
-                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
-                 1, 24, input, this->mutable_valuereferences())));
-        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
-                   == ::google::protobuf::internal::WireFormatLite::
-                      WIRETYPE_LENGTH_DELIMITED) {
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
                  input, this->mutable_valuereferences())));
+        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
+                   == ::google::protobuf::internal::WireFormatLite::
+                      WIRETYPE_VARINT) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 1, 26, input, this->mutable_valuereferences())));
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(24)) goto parse_valueReferences;
-        if (input->ExpectTag(32)) goto parse_orders;
+        if (input->ExpectTag(34)) goto parse_orders;
         break;
       }
 
-      // repeated int32 orders = 4;
+      // repeated int32 orders = 4 [packed = true];
       case 4: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_orders:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
-                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
-                 1, 32, input, this->mutable_orders())));
-        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
-                   == ::google::protobuf::internal::WireFormatLite::
-                      WIRETYPE_LENGTH_DELIMITED) {
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
                  input, this->mutable_orders())));
+        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
+                   == ::google::protobuf::internal::WireFormatLite::
+                      WIRETYPE_VARINT) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 1, 34, input, this->mutable_orders())));
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(32)) goto parse_orders;
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -7868,16 +7896,24 @@ void fmi2_import_get_real_output_derivatives_req::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->fmuid(), output);
   }
 
-  // repeated int32 valueReferences = 3;
+  // repeated int32 valueReferences = 3 [packed = true];
+  if (this->valuereferences_size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteTag(3, ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
+    output->WriteVarint32(_valuereferences_cached_byte_size_);
+  }
   for (int i = 0; i < this->valuereferences_size(); i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(
-      3, this->valuereferences(i), output);
+    ::google::protobuf::internal::WireFormatLite::WriteInt32NoTag(
+      this->valuereferences(i), output);
   }
 
-  // repeated int32 orders = 4;
+  // repeated int32 orders = 4 [packed = true];
+  if (this->orders_size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteTag(4, ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
+    output->WriteVarint32(_orders_cached_byte_size_);
+  }
   for (int i = 0; i < this->orders_size(); i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(
-      4, this->orders(i), output);
+    ::google::protobuf::internal::WireFormatLite::WriteInt32NoTag(
+      this->orders(i), output);
   }
 
 }
@@ -7901,24 +7937,38 @@ int fmi2_import_get_real_output_derivatives_req::ByteSize() const {
     }
 
   }
-  // repeated int32 valueReferences = 3;
+  // repeated int32 valueReferences = 3 [packed = true];
   {
     int data_size = 0;
     for (int i = 0; i < this->valuereferences_size(); i++) {
       data_size += ::google::protobuf::internal::WireFormatLite::
         Int32Size(this->valuereferences(i));
     }
-    total_size += 1 * this->valuereferences_size() + data_size;
+    if (data_size > 0) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(data_size);
+    }
+    GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+    _valuereferences_cached_byte_size_ = data_size;
+    GOOGLE_SAFE_CONCURRENT_WRITES_END();
+    total_size += data_size;
   }
 
-  // repeated int32 orders = 4;
+  // repeated int32 orders = 4 [packed = true];
   {
     int data_size = 0;
     for (int i = 0; i < this->orders_size(); i++) {
       data_size += ::google::protobuf::internal::WireFormatLite::
         Int32Size(this->orders(i));
     }
-    total_size += 1 * this->orders_size() + data_size;
+    if (data_size > 0) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(data_size);
+    }
+    GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+    _orders_cached_byte_size_ = data_size;
+    GOOGLE_SAFE_CONCURRENT_WRITES_END();
+    total_size += data_size;
   }
 
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -8081,28 +8131,27 @@ bool fmi2_import_get_real_output_derivatives_res::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(25)) goto parse_values;
+        if (input->ExpectTag(26)) goto parse_values;
         break;
       }
 
-      // repeated double values = 3;
+      // repeated double values = 3 [packed = true];
       case 3: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED64) {
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_values:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
-                   double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
-                 1, 25, input, this->mutable_values())));
-        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
-                   == ::google::protobuf::internal::WireFormatLite::
-                      WIRETYPE_LENGTH_DELIMITED) {
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
                    double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
                  input, this->mutable_values())));
+        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
+                   == ::google::protobuf::internal::WireFormatLite::
+                      WIRETYPE_FIXED64) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
+                   double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
+                 1, 26, input, this->mutable_values())));
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(25)) goto parse_values;
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -8135,10 +8184,14 @@ void fmi2_import_get_real_output_derivatives_res::SerializeWithCachedSizes(
       2, this->status(), output);
   }
 
-  // repeated double values = 3;
+  // repeated double values = 3 [packed = true];
+  if (this->values_size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteTag(3, ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
+    output->WriteVarint32(_values_cached_byte_size_);
+  }
   for (int i = 0; i < this->values_size(); i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteDouble(
-      3, this->values(i), output);
+    ::google::protobuf::internal::WireFormatLite::WriteDoubleNoTag(
+      this->values(i), output);
   }
 
 }
@@ -8161,11 +8214,18 @@ int fmi2_import_get_real_output_derivatives_res::ByteSize() const {
     }
 
   }
-  // repeated double values = 3;
+  // repeated double values = 3 [packed = true];
   {
     int data_size = 0;
     data_size = 8 * this->values_size();
-    total_size += 1 * this->values_size() + data_size;
+    if (data_size > 0) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(data_size);
+    }
+    GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+    _values_cached_byte_size_ = data_size;
+    GOOGLE_SAFE_CONCURRENT_WRITES_END();
+    total_size += data_size;
   }
 
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -12802,28 +12862,27 @@ bool fmi2_import_set_continuous_states_req::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(25)) goto parse_x;
+        if (input->ExpectTag(26)) goto parse_x;
         break;
       }
 
-      // repeated double x = 3;
+      // repeated double x = 3 [packed = true];
       case 3: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED64) {
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_x:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
-                   double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
-                 1, 25, input, this->mutable_x())));
-        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
-                   == ::google::protobuf::internal::WireFormatLite::
-                      WIRETYPE_LENGTH_DELIMITED) {
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
                    double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
                  input, this->mutable_x())));
+        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
+                   == ::google::protobuf::internal::WireFormatLite::
+                      WIRETYPE_FIXED64) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
+                   double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
+                 1, 26, input, this->mutable_x())));
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(25)) goto parse_x;
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -12855,10 +12914,14 @@ void fmi2_import_set_continuous_states_req::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->fmuid(), output);
   }
 
-  // repeated double x = 3;
+  // repeated double x = 3 [packed = true];
+  if (this->x_size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteTag(3, ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
+    output->WriteVarint32(_x_cached_byte_size_);
+  }
   for (int i = 0; i < this->x_size(); i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteDouble(
-      3, this->x(i), output);
+    ::google::protobuf::internal::WireFormatLite::WriteDoubleNoTag(
+      this->x(i), output);
   }
 
 }
@@ -12882,11 +12945,18 @@ int fmi2_import_set_continuous_states_req::ByteSize() const {
     }
 
   }
-  // repeated double x = 3;
+  // repeated double x = 3 [packed = true];
   {
     int data_size = 0;
     data_size = 8 * this->x_size();
-    total_size += 1 * this->x_size() + data_size;
+    if (data_size > 0) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(data_size);
+    }
+    GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+    _x_cached_byte_size_ = data_size;
+    GOOGLE_SAFE_CONCURRENT_WRITES_END();
+    total_size += data_size;
   }
 
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -14400,28 +14470,27 @@ bool fmi2_import_get_derivatives_res::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(17)) goto parse_derivatives;
+        if (input->ExpectTag(18)) goto parse_derivatives;
         break;
       }
 
-      // repeated double derivatives = 2;
+      // repeated double derivatives = 2 [packed = true];
       case 2: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED64) {
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_derivatives:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
-                   double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
-                 1, 17, input, this->mutable_derivatives())));
-        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
-                   == ::google::protobuf::internal::WireFormatLite::
-                      WIRETYPE_LENGTH_DELIMITED) {
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
                    double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
                  input, this->mutable_derivatives())));
+        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
+                   == ::google::protobuf::internal::WireFormatLite::
+                      WIRETYPE_FIXED64) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
+                   double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
+                 1, 18, input, this->mutable_derivatives())));
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(17)) goto parse_derivatives;
         if (input->ExpectTag(24)) goto parse_status;
         break;
       }
@@ -14467,10 +14536,14 @@ void fmi2_import_get_derivatives_res::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(1, this->message_id(), output);
   }
 
-  // repeated double derivatives = 2;
+  // repeated double derivatives = 2 [packed = true];
+  if (this->derivatives_size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteTag(2, ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
+    output->WriteVarint32(_derivatives_cached_byte_size_);
+  }
   for (int i = 0; i < this->derivatives_size(); i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteDouble(
-      2, this->derivatives(i), output);
+    ::google::protobuf::internal::WireFormatLite::WriteDoubleNoTag(
+      this->derivatives(i), output);
   }
 
   // required .fmitcp_proto.fmi2_status_t status = 3;
@@ -14499,11 +14572,18 @@ int fmi2_import_get_derivatives_res::ByteSize() const {
     }
 
   }
-  // repeated double derivatives = 2;
+  // repeated double derivatives = 2 [packed = true];
   {
     int data_size = 0;
     data_size = 8 * this->derivatives_size();
-    total_size += 1 * this->derivatives_size() + data_size;
+    if (data_size > 0) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(data_size);
+    }
+    GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+    _derivatives_cached_byte_size_ = data_size;
+    GOOGLE_SAFE_CONCURRENT_WRITES_END();
+    total_size += data_size;
   }
 
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -14848,28 +14928,27 @@ bool fmi2_import_get_event_indicators_res::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(17)) goto parse_eventIndicators;
+        if (input->ExpectTag(18)) goto parse_eventIndicators;
         break;
       }
 
-      // repeated double eventIndicators = 2;
+      // repeated double eventIndicators = 2 [packed = true];
       case 2: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED64) {
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_eventIndicators:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
-                   double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
-                 1, 17, input, this->mutable_eventindicators())));
-        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
-                   == ::google::protobuf::internal::WireFormatLite::
-                      WIRETYPE_LENGTH_DELIMITED) {
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
                    double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
                  input, this->mutable_eventindicators())));
+        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
+                   == ::google::protobuf::internal::WireFormatLite::
+                      WIRETYPE_FIXED64) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
+                   double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
+                 1, 18, input, this->mutable_eventindicators())));
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(17)) goto parse_eventIndicators;
         if (input->ExpectTag(24)) goto parse_status;
         break;
       }
@@ -14915,10 +14994,14 @@ void fmi2_import_get_event_indicators_res::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(1, this->message_id(), output);
   }
 
-  // repeated double eventIndicators = 2;
+  // repeated double eventIndicators = 2 [packed = true];
+  if (this->eventindicators_size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteTag(2, ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
+    output->WriteVarint32(_eventindicators_cached_byte_size_);
+  }
   for (int i = 0; i < this->eventindicators_size(); i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteDouble(
-      2, this->eventindicators(i), output);
+    ::google::protobuf::internal::WireFormatLite::WriteDoubleNoTag(
+      this->eventindicators(i), output);
   }
 
   // required .fmitcp_proto.fmi2_status_t status = 3;
@@ -14947,11 +15030,18 @@ int fmi2_import_get_event_indicators_res::ByteSize() const {
     }
 
   }
-  // repeated double eventIndicators = 2;
+  // repeated double eventIndicators = 2 [packed = true];
   {
     int data_size = 0;
     data_size = 8 * this->eventindicators_size();
-    total_size += 1 * this->eventindicators_size() + data_size;
+    if (data_size > 0) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(data_size);
+    }
+    GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+    _eventindicators_cached_byte_size_ = data_size;
+    GOOGLE_SAFE_CONCURRENT_WRITES_END();
+    total_size += data_size;
   }
 
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -16193,28 +16283,27 @@ bool fmi2_import_get_continuous_states_res::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(17)) goto parse_states;
+        if (input->ExpectTag(18)) goto parse_states;
         break;
       }
 
-      // repeated double states = 2;
+      // repeated double states = 2 [packed = true];
       case 2: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED64) {
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_states:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
-                   double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
-                 1, 17, input, this->mutable_states())));
-        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
-                   == ::google::protobuf::internal::WireFormatLite::
-                      WIRETYPE_LENGTH_DELIMITED) {
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
                    double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
                  input, this->mutable_states())));
+        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
+                   == ::google::protobuf::internal::WireFormatLite::
+                      WIRETYPE_FIXED64) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
+                   double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
+                 1, 18, input, this->mutable_states())));
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(17)) goto parse_states;
         if (input->ExpectTag(24)) goto parse_status;
         break;
       }
@@ -16260,10 +16349,14 @@ void fmi2_import_get_continuous_states_res::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(1, this->message_id(), output);
   }
 
-  // repeated double states = 2;
+  // repeated double states = 2 [packed = true];
+  if (this->states_size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteTag(2, ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
+    output->WriteVarint32(_states_cached_byte_size_);
+  }
   for (int i = 0; i < this->states_size(); i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteDouble(
-      2, this->states(i), output);
+    ::google::protobuf::internal::WireFormatLite::WriteDoubleNoTag(
+      this->states(i), output);
   }
 
   // required .fmitcp_proto.fmi2_status_t status = 3;
@@ -16292,11 +16385,18 @@ int fmi2_import_get_continuous_states_res::ByteSize() const {
     }
 
   }
-  // repeated double states = 2;
+  // repeated double states = 2 [packed = true];
   {
     int data_size = 0;
     data_size = 8 * this->states_size();
-    total_size += 1 * this->states_size() + data_size;
+    if (data_size > 0) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(data_size);
+    }
+    GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+    _states_cached_byte_size_ = data_size;
+    GOOGLE_SAFE_CONCURRENT_WRITES_END();
+    total_size += data_size;
   }
 
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -16641,28 +16741,27 @@ bool fmi2_import_get_nominal_continuous_states_res::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(17)) goto parse_nominal;
+        if (input->ExpectTag(18)) goto parse_nominal;
         break;
       }
 
-      // repeated double nominal = 2;
+      // repeated double nominal = 2 [packed = true];
       case 2: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED64) {
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_nominal:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
-                   double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
-                 1, 17, input, this->mutable_nominal())));
-        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
-                   == ::google::protobuf::internal::WireFormatLite::
-                      WIRETYPE_LENGTH_DELIMITED) {
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
                    double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
                  input, this->mutable_nominal())));
+        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
+                   == ::google::protobuf::internal::WireFormatLite::
+                      WIRETYPE_FIXED64) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
+                   double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
+                 1, 18, input, this->mutable_nominal())));
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(17)) goto parse_nominal;
         if (input->ExpectTag(24)) goto parse_status;
         break;
       }
@@ -16708,10 +16807,14 @@ void fmi2_import_get_nominal_continuous_states_res::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(1, this->message_id(), output);
   }
 
-  // repeated double nominal = 2;
+  // repeated double nominal = 2 [packed = true];
+  if (this->nominal_size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteTag(2, ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
+    output->WriteVarint32(_nominal_cached_byte_size_);
+  }
   for (int i = 0; i < this->nominal_size(); i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteDouble(
-      2, this->nominal(i), output);
+    ::google::protobuf::internal::WireFormatLite::WriteDoubleNoTag(
+      this->nominal(i), output);
   }
 
   // required .fmitcp_proto.fmi2_status_t status = 3;
@@ -16740,11 +16843,18 @@ int fmi2_import_get_nominal_continuous_states_res::ByteSize() const {
     }
 
   }
-  // repeated double nominal = 2;
+  // repeated double nominal = 2 [packed = true];
   {
     int data_size = 0;
     data_size = 8 * this->nominal_size();
-    total_size += 1 * this->nominal_size() + data_size;
+    if (data_size > 0) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(data_size);
+    }
+    GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+    _nominal_cached_byte_size_ = data_size;
+    GOOGLE_SAFE_CONCURRENT_WRITES_END();
+    total_size += data_size;
   }
 
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -18199,50 +18309,48 @@ bool fmi2_import_set_real_req::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(24)) goto parse_valueReferences;
+        if (input->ExpectTag(26)) goto parse_valueReferences;
         break;
       }
 
-      // repeated int32 valueReferences = 3;
+      // repeated int32 valueReferences = 3 [packed = true];
       case 3: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_valueReferences:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
-                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
-                 1, 24, input, this->mutable_valuereferences())));
-        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
-                   == ::google::protobuf::internal::WireFormatLite::
-                      WIRETYPE_LENGTH_DELIMITED) {
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
                  input, this->mutable_valuereferences())));
+        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
+                   == ::google::protobuf::internal::WireFormatLite::
+                      WIRETYPE_VARINT) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 1, 26, input, this->mutable_valuereferences())));
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(24)) goto parse_valueReferences;
-        if (input->ExpectTag(33)) goto parse_values;
+        if (input->ExpectTag(34)) goto parse_values;
         break;
       }
 
-      // repeated double values = 4;
+      // repeated double values = 4 [packed = true];
       case 4: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED64) {
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_values:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
-                   double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
-                 1, 33, input, this->mutable_values())));
-        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
-                   == ::google::protobuf::internal::WireFormatLite::
-                      WIRETYPE_LENGTH_DELIMITED) {
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
                    double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
                  input, this->mutable_values())));
+        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
+                   == ::google::protobuf::internal::WireFormatLite::
+                      WIRETYPE_FIXED64) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
+                   double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
+                 1, 34, input, this->mutable_values())));
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(33)) goto parse_values;
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -18274,16 +18382,24 @@ void fmi2_import_set_real_req::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->fmuid(), output);
   }
 
-  // repeated int32 valueReferences = 3;
+  // repeated int32 valueReferences = 3 [packed = true];
+  if (this->valuereferences_size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteTag(3, ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
+    output->WriteVarint32(_valuereferences_cached_byte_size_);
+  }
   for (int i = 0; i < this->valuereferences_size(); i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(
-      3, this->valuereferences(i), output);
+    ::google::protobuf::internal::WireFormatLite::WriteInt32NoTag(
+      this->valuereferences(i), output);
   }
 
-  // repeated double values = 4;
+  // repeated double values = 4 [packed = true];
+  if (this->values_size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteTag(4, ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
+    output->WriteVarint32(_values_cached_byte_size_);
+  }
   for (int i = 0; i < this->values_size(); i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteDouble(
-      4, this->values(i), output);
+    ::google::protobuf::internal::WireFormatLite::WriteDoubleNoTag(
+      this->values(i), output);
   }
 
 }
@@ -18307,21 +18423,35 @@ int fmi2_import_set_real_req::ByteSize() const {
     }
 
   }
-  // repeated int32 valueReferences = 3;
+  // repeated int32 valueReferences = 3 [packed = true];
   {
     int data_size = 0;
     for (int i = 0; i < this->valuereferences_size(); i++) {
       data_size += ::google::protobuf::internal::WireFormatLite::
         Int32Size(this->valuereferences(i));
     }
-    total_size += 1 * this->valuereferences_size() + data_size;
+    if (data_size > 0) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(data_size);
+    }
+    GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+    _valuereferences_cached_byte_size_ = data_size;
+    GOOGLE_SAFE_CONCURRENT_WRITES_END();
+    total_size += data_size;
   }
 
-  // repeated double values = 4;
+  // repeated double values = 4 [packed = true];
   {
     int data_size = 0;
     data_size = 8 * this->values_size();
-    total_size += 1 * this->values_size() + data_size;
+    if (data_size > 0) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(data_size);
+    }
+    GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+    _values_cached_byte_size_ = data_size;
+    GOOGLE_SAFE_CONCURRENT_WRITES_END();
+    total_size += data_size;
   }
 
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -18689,50 +18819,48 @@ bool fmi2_import_set_integer_req::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(24)) goto parse_valueReferences;
+        if (input->ExpectTag(26)) goto parse_valueReferences;
         break;
       }
 
-      // repeated int32 valueReferences = 3;
+      // repeated int32 valueReferences = 3 [packed = true];
       case 3: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_valueReferences:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
-                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
-                 1, 24, input, this->mutable_valuereferences())));
-        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
-                   == ::google::protobuf::internal::WireFormatLite::
-                      WIRETYPE_LENGTH_DELIMITED) {
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
                  input, this->mutable_valuereferences())));
+        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
+                   == ::google::protobuf::internal::WireFormatLite::
+                      WIRETYPE_VARINT) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 1, 26, input, this->mutable_valuereferences())));
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(24)) goto parse_valueReferences;
-        if (input->ExpectTag(32)) goto parse_values;
+        if (input->ExpectTag(34)) goto parse_values;
         break;
       }
 
-      // repeated int32 values = 4;
+      // repeated int32 values = 4 [packed = true];
       case 4: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_values:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
-                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
-                 1, 32, input, this->mutable_values())));
-        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
-                   == ::google::protobuf::internal::WireFormatLite::
-                      WIRETYPE_LENGTH_DELIMITED) {
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
                  input, this->mutable_values())));
+        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
+                   == ::google::protobuf::internal::WireFormatLite::
+                      WIRETYPE_VARINT) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 1, 34, input, this->mutable_values())));
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(32)) goto parse_values;
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -18764,16 +18892,24 @@ void fmi2_import_set_integer_req::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->fmuid(), output);
   }
 
-  // repeated int32 valueReferences = 3;
+  // repeated int32 valueReferences = 3 [packed = true];
+  if (this->valuereferences_size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteTag(3, ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
+    output->WriteVarint32(_valuereferences_cached_byte_size_);
+  }
   for (int i = 0; i < this->valuereferences_size(); i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(
-      3, this->valuereferences(i), output);
+    ::google::protobuf::internal::WireFormatLite::WriteInt32NoTag(
+      this->valuereferences(i), output);
   }
 
-  // repeated int32 values = 4;
+  // repeated int32 values = 4 [packed = true];
+  if (this->values_size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteTag(4, ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
+    output->WriteVarint32(_values_cached_byte_size_);
+  }
   for (int i = 0; i < this->values_size(); i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(
-      4, this->values(i), output);
+    ::google::protobuf::internal::WireFormatLite::WriteInt32NoTag(
+      this->values(i), output);
   }
 
 }
@@ -18797,24 +18933,38 @@ int fmi2_import_set_integer_req::ByteSize() const {
     }
 
   }
-  // repeated int32 valueReferences = 3;
+  // repeated int32 valueReferences = 3 [packed = true];
   {
     int data_size = 0;
     for (int i = 0; i < this->valuereferences_size(); i++) {
       data_size += ::google::protobuf::internal::WireFormatLite::
         Int32Size(this->valuereferences(i));
     }
-    total_size += 1 * this->valuereferences_size() + data_size;
+    if (data_size > 0) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(data_size);
+    }
+    GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+    _valuereferences_cached_byte_size_ = data_size;
+    GOOGLE_SAFE_CONCURRENT_WRITES_END();
+    total_size += data_size;
   }
 
-  // repeated int32 values = 4;
+  // repeated int32 values = 4 [packed = true];
   {
     int data_size = 0;
     for (int i = 0; i < this->values_size(); i++) {
       data_size += ::google::protobuf::internal::WireFormatLite::
         Int32Size(this->values(i));
     }
-    total_size += 1 * this->values_size() + data_size;
+    if (data_size > 0) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(data_size);
+    }
+    GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+    _values_cached_byte_size_ = data_size;
+    GOOGLE_SAFE_CONCURRENT_WRITES_END();
+    total_size += data_size;
   }
 
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -19182,50 +19332,48 @@ bool fmi2_import_set_boolean_req::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(24)) goto parse_valueReferences;
+        if (input->ExpectTag(26)) goto parse_valueReferences;
         break;
       }
 
-      // repeated int32 valueReferences = 3;
+      // repeated int32 valueReferences = 3 [packed = true];
       case 3: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_valueReferences:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
-                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
-                 1, 24, input, this->mutable_valuereferences())));
-        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
-                   == ::google::protobuf::internal::WireFormatLite::
-                      WIRETYPE_LENGTH_DELIMITED) {
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
                  input, this->mutable_valuereferences())));
+        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
+                   == ::google::protobuf::internal::WireFormatLite::
+                      WIRETYPE_VARINT) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 1, 26, input, this->mutable_valuereferences())));
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(24)) goto parse_valueReferences;
-        if (input->ExpectTag(32)) goto parse_values;
+        if (input->ExpectTag(34)) goto parse_values;
         break;
       }
 
-      // repeated bool values = 4;
+      // repeated bool values = 4 [packed = true];
       case 4: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_values:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
-                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
-                 1, 32, input, this->mutable_values())));
-        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
-                   == ::google::protobuf::internal::WireFormatLite::
-                      WIRETYPE_LENGTH_DELIMITED) {
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
                    bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
                  input, this->mutable_values())));
+        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
+                   == ::google::protobuf::internal::WireFormatLite::
+                      WIRETYPE_VARINT) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
+                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
+                 1, 34, input, this->mutable_values())));
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(32)) goto parse_values;
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -19257,16 +19405,24 @@ void fmi2_import_set_boolean_req::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->fmuid(), output);
   }
 
-  // repeated int32 valueReferences = 3;
+  // repeated int32 valueReferences = 3 [packed = true];
+  if (this->valuereferences_size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteTag(3, ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
+    output->WriteVarint32(_valuereferences_cached_byte_size_);
+  }
   for (int i = 0; i < this->valuereferences_size(); i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(
-      3, this->valuereferences(i), output);
+    ::google::protobuf::internal::WireFormatLite::WriteInt32NoTag(
+      this->valuereferences(i), output);
   }
 
-  // repeated bool values = 4;
+  // repeated bool values = 4 [packed = true];
+  if (this->values_size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteTag(4, ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
+    output->WriteVarint32(_values_cached_byte_size_);
+  }
   for (int i = 0; i < this->values_size(); i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteBool(
-      4, this->values(i), output);
+    ::google::protobuf::internal::WireFormatLite::WriteBoolNoTag(
+      this->values(i), output);
   }
 
 }
@@ -19290,21 +19446,35 @@ int fmi2_import_set_boolean_req::ByteSize() const {
     }
 
   }
-  // repeated int32 valueReferences = 3;
+  // repeated int32 valueReferences = 3 [packed = true];
   {
     int data_size = 0;
     for (int i = 0; i < this->valuereferences_size(); i++) {
       data_size += ::google::protobuf::internal::WireFormatLite::
         Int32Size(this->valuereferences(i));
     }
-    total_size += 1 * this->valuereferences_size() + data_size;
+    if (data_size > 0) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(data_size);
+    }
+    GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+    _valuereferences_cached_byte_size_ = data_size;
+    GOOGLE_SAFE_CONCURRENT_WRITES_END();
+    total_size += data_size;
   }
 
-  // repeated bool values = 4;
+  // repeated bool values = 4 [packed = true];
   {
     int data_size = 0;
     data_size = 1 * this->values_size();
-    total_size += 1 * this->values_size() + data_size;
+    if (data_size > 0) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(data_size);
+    }
+    GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+    _values_cached_byte_size_ = data_size;
+    GOOGLE_SAFE_CONCURRENT_WRITES_END();
+    total_size += data_size;
   }
 
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -19672,28 +19842,27 @@ bool fmi2_import_set_string_req::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(24)) goto parse_valueReferences;
+        if (input->ExpectTag(26)) goto parse_valueReferences;
         break;
       }
 
-      // repeated int32 valueReferences = 3;
+      // repeated int32 valueReferences = 3 [packed = true];
       case 3: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_valueReferences:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
-                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
-                 1, 24, input, this->mutable_valuereferences())));
-        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
-                   == ::google::protobuf::internal::WireFormatLite::
-                      WIRETYPE_LENGTH_DELIMITED) {
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
                  input, this->mutable_valuereferences())));
+        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
+                   == ::google::protobuf::internal::WireFormatLite::
+                      WIRETYPE_VARINT) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 1, 26, input, this->mutable_valuereferences())));
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(24)) goto parse_valueReferences;
         if (input->ExpectTag(34)) goto parse_values;
         break;
       }
@@ -19740,10 +19909,14 @@ void fmi2_import_set_string_req::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->fmuid(), output);
   }
 
-  // repeated int32 valueReferences = 3;
+  // repeated int32 valueReferences = 3 [packed = true];
+  if (this->valuereferences_size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteTag(3, ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
+    output->WriteVarint32(_valuereferences_cached_byte_size_);
+  }
   for (int i = 0; i < this->valuereferences_size(); i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(
-      3, this->valuereferences(i), output);
+    ::google::protobuf::internal::WireFormatLite::WriteInt32NoTag(
+      this->valuereferences(i), output);
   }
 
   // repeated string values = 4;
@@ -19773,14 +19946,21 @@ int fmi2_import_set_string_req::ByteSize() const {
     }
 
   }
-  // repeated int32 valueReferences = 3;
+  // repeated int32 valueReferences = 3 [packed = true];
   {
     int data_size = 0;
     for (int i = 0; i < this->valuereferences_size(); i++) {
       data_size += ::google::protobuf::internal::WireFormatLite::
         Int32Size(this->valuereferences(i));
     }
-    total_size += 1 * this->valuereferences_size() + data_size;
+    if (data_size > 0) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(data_size);
+    }
+    GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+    _valuereferences_cached_byte_size_ = data_size;
+    GOOGLE_SAFE_CONCURRENT_WRITES_END();
+    total_size += data_size;
   }
 
   // repeated string values = 4;
@@ -20153,28 +20333,27 @@ bool fmi2_import_get_real_req::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(24)) goto parse_valueReferences;
+        if (input->ExpectTag(26)) goto parse_valueReferences;
         break;
       }
 
-      // repeated int32 valueReferences = 3;
+      // repeated int32 valueReferences = 3 [packed = true];
       case 3: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_valueReferences:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
-                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
-                 1, 24, input, this->mutable_valuereferences())));
-        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
-                   == ::google::protobuf::internal::WireFormatLite::
-                      WIRETYPE_LENGTH_DELIMITED) {
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
                  input, this->mutable_valuereferences())));
+        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
+                   == ::google::protobuf::internal::WireFormatLite::
+                      WIRETYPE_VARINT) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 1, 26, input, this->mutable_valuereferences())));
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(24)) goto parse_valueReferences;
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -20206,10 +20385,14 @@ void fmi2_import_get_real_req::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->fmuid(), output);
   }
 
-  // repeated int32 valueReferences = 3;
+  // repeated int32 valueReferences = 3 [packed = true];
+  if (this->valuereferences_size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteTag(3, ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
+    output->WriteVarint32(_valuereferences_cached_byte_size_);
+  }
   for (int i = 0; i < this->valuereferences_size(); i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(
-      3, this->valuereferences(i), output);
+    ::google::protobuf::internal::WireFormatLite::WriteInt32NoTag(
+      this->valuereferences(i), output);
   }
 
 }
@@ -20233,14 +20416,21 @@ int fmi2_import_get_real_req::ByteSize() const {
     }
 
   }
-  // repeated int32 valueReferences = 3;
+  // repeated int32 valueReferences = 3 [packed = true];
   {
     int data_size = 0;
     for (int i = 0; i < this->valuereferences_size(); i++) {
       data_size += ::google::protobuf::internal::WireFormatLite::
         Int32Size(this->valuereferences(i));
     }
-    total_size += 1 * this->valuereferences_size() + data_size;
+    if (data_size > 0) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(data_size);
+    }
+    GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+    _valuereferences_cached_byte_size_ = data_size;
+    GOOGLE_SAFE_CONCURRENT_WRITES_END();
+    total_size += data_size;
   }
 
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -20382,28 +20572,27 @@ bool fmi2_import_get_real_res::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(17)) goto parse_values;
+        if (input->ExpectTag(18)) goto parse_values;
         break;
       }
 
-      // repeated double values = 2;
+      // repeated double values = 2 [packed = true];
       case 2: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED64) {
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_values:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
-                   double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
-                 1, 17, input, this->mutable_values())));
-        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
-                   == ::google::protobuf::internal::WireFormatLite::
-                      WIRETYPE_LENGTH_DELIMITED) {
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
                    double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
                  input, this->mutable_values())));
+        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
+                   == ::google::protobuf::internal::WireFormatLite::
+                      WIRETYPE_FIXED64) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
+                   double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
+                 1, 18, input, this->mutable_values())));
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(17)) goto parse_values;
         if (input->ExpectTag(24)) goto parse_status;
         break;
       }
@@ -20449,10 +20638,14 @@ void fmi2_import_get_real_res::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(1, this->message_id(), output);
   }
 
-  // repeated double values = 2;
+  // repeated double values = 2 [packed = true];
+  if (this->values_size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteTag(2, ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
+    output->WriteVarint32(_values_cached_byte_size_);
+  }
   for (int i = 0; i < this->values_size(); i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteDouble(
-      2, this->values(i), output);
+    ::google::protobuf::internal::WireFormatLite::WriteDoubleNoTag(
+      this->values(i), output);
   }
 
   // required .fmitcp_proto.fmi2_status_t status = 3;
@@ -20481,11 +20674,18 @@ int fmi2_import_get_real_res::ByteSize() const {
     }
 
   }
-  // repeated double values = 2;
+  // repeated double values = 2 [packed = true];
   {
     int data_size = 0;
     data_size = 8 * this->values_size();
-    total_size += 1 * this->values_size() + data_size;
+    if (data_size > 0) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(data_size);
+    }
+    GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+    _values_cached_byte_size_ = data_size;
+    GOOGLE_SAFE_CONCURRENT_WRITES_END();
+    total_size += data_size;
   }
 
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -20643,28 +20843,27 @@ bool fmi2_import_get_integer_req::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(24)) goto parse_valueReferences;
+        if (input->ExpectTag(26)) goto parse_valueReferences;
         break;
       }
 
-      // repeated int32 valueReferences = 3;
+      // repeated int32 valueReferences = 3 [packed = true];
       case 3: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_valueReferences:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
-                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
-                 1, 24, input, this->mutable_valuereferences())));
-        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
-                   == ::google::protobuf::internal::WireFormatLite::
-                      WIRETYPE_LENGTH_DELIMITED) {
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
                  input, this->mutable_valuereferences())));
+        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
+                   == ::google::protobuf::internal::WireFormatLite::
+                      WIRETYPE_VARINT) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 1, 26, input, this->mutable_valuereferences())));
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(24)) goto parse_valueReferences;
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -20696,10 +20895,14 @@ void fmi2_import_get_integer_req::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->fmuid(), output);
   }
 
-  // repeated int32 valueReferences = 3;
+  // repeated int32 valueReferences = 3 [packed = true];
+  if (this->valuereferences_size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteTag(3, ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
+    output->WriteVarint32(_valuereferences_cached_byte_size_);
+  }
   for (int i = 0; i < this->valuereferences_size(); i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(
-      3, this->valuereferences(i), output);
+    ::google::protobuf::internal::WireFormatLite::WriteInt32NoTag(
+      this->valuereferences(i), output);
   }
 
 }
@@ -20723,14 +20926,21 @@ int fmi2_import_get_integer_req::ByteSize() const {
     }
 
   }
-  // repeated int32 valueReferences = 3;
+  // repeated int32 valueReferences = 3 [packed = true];
   {
     int data_size = 0;
     for (int i = 0; i < this->valuereferences_size(); i++) {
       data_size += ::google::protobuf::internal::WireFormatLite::
         Int32Size(this->valuereferences(i));
     }
-    total_size += 1 * this->valuereferences_size() + data_size;
+    if (data_size > 0) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(data_size);
+    }
+    GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+    _valuereferences_cached_byte_size_ = data_size;
+    GOOGLE_SAFE_CONCURRENT_WRITES_END();
+    total_size += data_size;
   }
 
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -20872,28 +21082,27 @@ bool fmi2_import_get_integer_res::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(16)) goto parse_values;
+        if (input->ExpectTag(18)) goto parse_values;
         break;
       }
 
-      // repeated int32 values = 2;
+      // repeated int32 values = 2 [packed = true];
       case 2: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_values:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
-                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
-                 1, 16, input, this->mutable_values())));
-        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
-                   == ::google::protobuf::internal::WireFormatLite::
-                      WIRETYPE_LENGTH_DELIMITED) {
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
                  input, this->mutable_values())));
+        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
+                   == ::google::protobuf::internal::WireFormatLite::
+                      WIRETYPE_VARINT) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 1, 18, input, this->mutable_values())));
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(16)) goto parse_values;
         if (input->ExpectTag(24)) goto parse_status;
         break;
       }
@@ -20939,10 +21148,14 @@ void fmi2_import_get_integer_res::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(1, this->message_id(), output);
   }
 
-  // repeated int32 values = 2;
+  // repeated int32 values = 2 [packed = true];
+  if (this->values_size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteTag(2, ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
+    output->WriteVarint32(_values_cached_byte_size_);
+  }
   for (int i = 0; i < this->values_size(); i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(
-      2, this->values(i), output);
+    ::google::protobuf::internal::WireFormatLite::WriteInt32NoTag(
+      this->values(i), output);
   }
 
   // required .fmitcp_proto.fmi2_status_t status = 3;
@@ -20971,14 +21184,21 @@ int fmi2_import_get_integer_res::ByteSize() const {
     }
 
   }
-  // repeated int32 values = 2;
+  // repeated int32 values = 2 [packed = true];
   {
     int data_size = 0;
     for (int i = 0; i < this->values_size(); i++) {
       data_size += ::google::protobuf::internal::WireFormatLite::
         Int32Size(this->values(i));
     }
-    total_size += 1 * this->values_size() + data_size;
+    if (data_size > 0) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(data_size);
+    }
+    GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+    _values_cached_byte_size_ = data_size;
+    GOOGLE_SAFE_CONCURRENT_WRITES_END();
+    total_size += data_size;
   }
 
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -21136,28 +21356,27 @@ bool fmi2_import_get_boolean_req::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(24)) goto parse_valueReferences;
+        if (input->ExpectTag(26)) goto parse_valueReferences;
         break;
       }
 
-      // repeated int32 valueReferences = 3;
+      // repeated int32 valueReferences = 3 [packed = true];
       case 3: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_valueReferences:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
-                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
-                 1, 24, input, this->mutable_valuereferences())));
-        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
-                   == ::google::protobuf::internal::WireFormatLite::
-                      WIRETYPE_LENGTH_DELIMITED) {
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
                  input, this->mutable_valuereferences())));
+        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
+                   == ::google::protobuf::internal::WireFormatLite::
+                      WIRETYPE_VARINT) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 1, 26, input, this->mutable_valuereferences())));
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(24)) goto parse_valueReferences;
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -21189,10 +21408,14 @@ void fmi2_import_get_boolean_req::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->fmuid(), output);
   }
 
-  // repeated int32 valueReferences = 3;
+  // repeated int32 valueReferences = 3 [packed = true];
+  if (this->valuereferences_size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteTag(3, ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
+    output->WriteVarint32(_valuereferences_cached_byte_size_);
+  }
   for (int i = 0; i < this->valuereferences_size(); i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(
-      3, this->valuereferences(i), output);
+    ::google::protobuf::internal::WireFormatLite::WriteInt32NoTag(
+      this->valuereferences(i), output);
   }
 
 }
@@ -21216,14 +21439,21 @@ int fmi2_import_get_boolean_req::ByteSize() const {
     }
 
   }
-  // repeated int32 valueReferences = 3;
+  // repeated int32 valueReferences = 3 [packed = true];
   {
     int data_size = 0;
     for (int i = 0; i < this->valuereferences_size(); i++) {
       data_size += ::google::protobuf::internal::WireFormatLite::
         Int32Size(this->valuereferences(i));
     }
-    total_size += 1 * this->valuereferences_size() + data_size;
+    if (data_size > 0) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(data_size);
+    }
+    GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+    _valuereferences_cached_byte_size_ = data_size;
+    GOOGLE_SAFE_CONCURRENT_WRITES_END();
+    total_size += data_size;
   }
 
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -21365,28 +21595,27 @@ bool fmi2_import_get_boolean_res::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(16)) goto parse_values;
+        if (input->ExpectTag(18)) goto parse_values;
         break;
       }
 
-      // repeated bool values = 2;
+      // repeated bool values = 2 [packed = true];
       case 2: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_values:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
-                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
-                 1, 16, input, this->mutable_values())));
-        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
-                   == ::google::protobuf::internal::WireFormatLite::
-                      WIRETYPE_LENGTH_DELIMITED) {
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
                    bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
                  input, this->mutable_values())));
+        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
+                   == ::google::protobuf::internal::WireFormatLite::
+                      WIRETYPE_VARINT) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
+                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
+                 1, 18, input, this->mutable_values())));
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(16)) goto parse_values;
         if (input->ExpectTag(24)) goto parse_status;
         break;
       }
@@ -21432,10 +21661,14 @@ void fmi2_import_get_boolean_res::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(1, this->message_id(), output);
   }
 
-  // repeated bool values = 2;
+  // repeated bool values = 2 [packed = true];
+  if (this->values_size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteTag(2, ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
+    output->WriteVarint32(_values_cached_byte_size_);
+  }
   for (int i = 0; i < this->values_size(); i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteBool(
-      2, this->values(i), output);
+    ::google::protobuf::internal::WireFormatLite::WriteBoolNoTag(
+      this->values(i), output);
   }
 
   // required .fmitcp_proto.fmi2_status_t status = 3;
@@ -21464,11 +21697,18 @@ int fmi2_import_get_boolean_res::ByteSize() const {
     }
 
   }
-  // repeated bool values = 2;
+  // repeated bool values = 2 [packed = true];
   {
     int data_size = 0;
     data_size = 1 * this->values_size();
-    total_size += 1 * this->values_size() + data_size;
+    if (data_size > 0) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(data_size);
+    }
+    GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+    _values_cached_byte_size_ = data_size;
+    GOOGLE_SAFE_CONCURRENT_WRITES_END();
+    total_size += data_size;
   }
 
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -21626,28 +21866,27 @@ bool fmi2_import_get_string_req::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(24)) goto parse_valueReferences;
+        if (input->ExpectTag(26)) goto parse_valueReferences;
         break;
       }
 
-      // repeated int32 valueReferences = 3;
+      // repeated int32 valueReferences = 3 [packed = true];
       case 3: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_valueReferences:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
-                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
-                 1, 24, input, this->mutable_valuereferences())));
-        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
-                   == ::google::protobuf::internal::WireFormatLite::
-                      WIRETYPE_LENGTH_DELIMITED) {
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
                  input, this->mutable_valuereferences())));
+        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
+                   == ::google::protobuf::internal::WireFormatLite::
+                      WIRETYPE_VARINT) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 1, 26, input, this->mutable_valuereferences())));
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(24)) goto parse_valueReferences;
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -21679,10 +21918,14 @@ void fmi2_import_get_string_req::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->fmuid(), output);
   }
 
-  // repeated int32 valueReferences = 3;
+  // repeated int32 valueReferences = 3 [packed = true];
+  if (this->valuereferences_size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteTag(3, ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
+    output->WriteVarint32(_valuereferences_cached_byte_size_);
+  }
   for (int i = 0; i < this->valuereferences_size(); i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(
-      3, this->valuereferences(i), output);
+    ::google::protobuf::internal::WireFormatLite::WriteInt32NoTag(
+      this->valuereferences(i), output);
   }
 
 }
@@ -21706,14 +21949,21 @@ int fmi2_import_get_string_req::ByteSize() const {
     }
 
   }
-  // repeated int32 valueReferences = 3;
+  // repeated int32 valueReferences = 3 [packed = true];
   {
     int data_size = 0;
     for (int i = 0; i < this->valuereferences_size(); i++) {
       data_size += ::google::protobuf::internal::WireFormatLite::
         Int32Size(this->valuereferences(i));
     }
-    total_size += 1 * this->valuereferences_size() + data_size;
+    if (data_size > 0) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(data_size);
+    }
+    GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+    _valuereferences_cached_byte_size_ = data_size;
+    GOOGLE_SAFE_CONCURRENT_WRITES_END();
+    total_size += data_size;
   }
 
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -23650,72 +23900,69 @@ bool fmi2_import_get_directional_derivative_req::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(24)) goto parse_v_ref;
+        if (input->ExpectTag(26)) goto parse_v_ref;
         break;
       }
 
-      // repeated int32 v_ref = 3;
+      // repeated int32 v_ref = 3 [packed = true];
       case 3: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_v_ref:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
-                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
-                 1, 24, input, this->mutable_v_ref())));
-        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
-                   == ::google::protobuf::internal::WireFormatLite::
-                      WIRETYPE_LENGTH_DELIMITED) {
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
                  input, this->mutable_v_ref())));
+        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
+                   == ::google::protobuf::internal::WireFormatLite::
+                      WIRETYPE_VARINT) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 1, 26, input, this->mutable_v_ref())));
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(24)) goto parse_v_ref;
-        if (input->ExpectTag(32)) goto parse_z_ref;
+        if (input->ExpectTag(34)) goto parse_z_ref;
         break;
       }
 
-      // repeated int32 z_ref = 4;
+      // repeated int32 z_ref = 4 [packed = true];
       case 4: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_z_ref:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
-                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
-                 1, 32, input, this->mutable_z_ref())));
-        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
-                   == ::google::protobuf::internal::WireFormatLite::
-                      WIRETYPE_LENGTH_DELIMITED) {
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
                  input, this->mutable_z_ref())));
+        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
+                   == ::google::protobuf::internal::WireFormatLite::
+                      WIRETYPE_VARINT) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 1, 34, input, this->mutable_z_ref())));
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(32)) goto parse_z_ref;
-        if (input->ExpectTag(41)) goto parse_dv;
+        if (input->ExpectTag(42)) goto parse_dv;
         break;
       }
 
-      // repeated double dv = 5;
+      // repeated double dv = 5 [packed = true];
       case 5: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED64) {
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_dv:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
-                   double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
-                 1, 41, input, this->mutable_dv())));
-        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
-                   == ::google::protobuf::internal::WireFormatLite::
-                      WIRETYPE_LENGTH_DELIMITED) {
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
                    double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
                  input, this->mutable_dv())));
+        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
+                   == ::google::protobuf::internal::WireFormatLite::
+                      WIRETYPE_FIXED64) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
+                   double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
+                 1, 42, input, this->mutable_dv())));
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(41)) goto parse_dv;
         if (input->ExpectAtEnd()) return true;
         break;
       }
@@ -23747,22 +23994,34 @@ void fmi2_import_get_directional_derivative_req::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->fmuid(), output);
   }
 
-  // repeated int32 v_ref = 3;
+  // repeated int32 v_ref = 3 [packed = true];
+  if (this->v_ref_size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteTag(3, ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
+    output->WriteVarint32(_v_ref_cached_byte_size_);
+  }
   for (int i = 0; i < this->v_ref_size(); i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(
-      3, this->v_ref(i), output);
+    ::google::protobuf::internal::WireFormatLite::WriteInt32NoTag(
+      this->v_ref(i), output);
   }
 
-  // repeated int32 z_ref = 4;
+  // repeated int32 z_ref = 4 [packed = true];
+  if (this->z_ref_size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteTag(4, ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
+    output->WriteVarint32(_z_ref_cached_byte_size_);
+  }
   for (int i = 0; i < this->z_ref_size(); i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(
-      4, this->z_ref(i), output);
+    ::google::protobuf::internal::WireFormatLite::WriteInt32NoTag(
+      this->z_ref(i), output);
   }
 
-  // repeated double dv = 5;
+  // repeated double dv = 5 [packed = true];
+  if (this->dv_size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteTag(5, ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
+    output->WriteVarint32(_dv_cached_byte_size_);
+  }
   for (int i = 0; i < this->dv_size(); i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteDouble(
-      5, this->dv(i), output);
+    ::google::protobuf::internal::WireFormatLite::WriteDoubleNoTag(
+      this->dv(i), output);
   }
 
 }
@@ -23786,31 +24045,52 @@ int fmi2_import_get_directional_derivative_req::ByteSize() const {
     }
 
   }
-  // repeated int32 v_ref = 3;
+  // repeated int32 v_ref = 3 [packed = true];
   {
     int data_size = 0;
     for (int i = 0; i < this->v_ref_size(); i++) {
       data_size += ::google::protobuf::internal::WireFormatLite::
         Int32Size(this->v_ref(i));
     }
-    total_size += 1 * this->v_ref_size() + data_size;
+    if (data_size > 0) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(data_size);
+    }
+    GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+    _v_ref_cached_byte_size_ = data_size;
+    GOOGLE_SAFE_CONCURRENT_WRITES_END();
+    total_size += data_size;
   }
 
-  // repeated int32 z_ref = 4;
+  // repeated int32 z_ref = 4 [packed = true];
   {
     int data_size = 0;
     for (int i = 0; i < this->z_ref_size(); i++) {
       data_size += ::google::protobuf::internal::WireFormatLite::
         Int32Size(this->z_ref(i));
     }
-    total_size += 1 * this->z_ref_size() + data_size;
+    if (data_size > 0) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(data_size);
+    }
+    GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+    _z_ref_cached_byte_size_ = data_size;
+    GOOGLE_SAFE_CONCURRENT_WRITES_END();
+    total_size += data_size;
   }
 
-  // repeated double dv = 5;
+  // repeated double dv = 5 [packed = true];
   {
     int data_size = 0;
     data_size = 8 * this->dv_size();
-    total_size += 1 * this->dv_size() + data_size;
+    if (data_size > 0) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(data_size);
+    }
+    GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+    _dv_cached_byte_size_ = data_size;
+    GOOGLE_SAFE_CONCURRENT_WRITES_END();
+    total_size += data_size;
   }
 
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -23956,28 +24236,27 @@ bool fmi2_import_get_directional_derivative_res::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(17)) goto parse_dz;
+        if (input->ExpectTag(18)) goto parse_dz;
         break;
       }
 
-      // repeated double dz = 2;
+      // repeated double dz = 2 [packed = true];
       case 2: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED64) {
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_dz:
-          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
-                   double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
-                 1, 17, input, this->mutable_dz())));
-        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
-                   == ::google::protobuf::internal::WireFormatLite::
-                      WIRETYPE_LENGTH_DELIMITED) {
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
                    double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
                  input, this->mutable_dz())));
+        } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
+                   == ::google::protobuf::internal::WireFormatLite::
+                      WIRETYPE_FIXED64) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
+                   double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
+                 1, 18, input, this->mutable_dz())));
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(17)) goto parse_dz;
         if (input->ExpectTag(24)) goto parse_status;
         break;
       }
@@ -24023,10 +24302,14 @@ void fmi2_import_get_directional_derivative_res::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(1, this->message_id(), output);
   }
 
-  // repeated double dz = 2;
+  // repeated double dz = 2 [packed = true];
+  if (this->dz_size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteTag(2, ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
+    output->WriteVarint32(_dz_cached_byte_size_);
+  }
   for (int i = 0; i < this->dz_size(); i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteDouble(
-      2, this->dz(i), output);
+    ::google::protobuf::internal::WireFormatLite::WriteDoubleNoTag(
+      this->dz(i), output);
   }
 
   // required .fmitcp_proto.fmi2_status_t status = 3;
@@ -24055,11 +24338,18 @@ int fmi2_import_get_directional_derivative_res::ByteSize() const {
     }
 
   }
-  // repeated double dz = 2;
+  // repeated double dz = 2 [packed = true];
   {
     int data_size = 0;
     data_size = 8 * this->dz_size();
-    total_size += 1 * this->dz_size() + data_size;
+    if (data_size > 0) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(data_size);
+    }
+    GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+    _dz_cached_byte_size_ = data_size;
+    GOOGLE_SAFE_CONCURRENT_WRITES_END();
+    total_size += data_size;
   }
 
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();

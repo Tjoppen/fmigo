@@ -14,7 +14,6 @@ SET(MASTER_SRCS
     src/master/Connection.cpp
     src/master/StrongConnector.cpp
     src/master/main.cpp
-    src/master/Master.cpp
     src/master/FMIClient.cpp
     src/master/WeakConnection.cpp
     src/common/url_parser.c
@@ -25,27 +24,6 @@ SET(MASTER_SRCS
 )
 SET(MASTER_HEADERS
     include/master/Connection.h
-    include/master/Master.h
-    include/master/FMIClient.h
-    include/master/StrongConnector.h
-    include/master/WeakConnection.h
-    include/common/common.h
-    include/common/url_parser.h
-)
-
-SET(TEST_SRCS
-    test/main.cpp
-    src/master/Connection.cpp
-    src/master/Master.cpp
-    src/master/FMIClient.cpp
-    src/master/StrongConnector.cpp
-    src/master/WeakConnection.cpp
-    src/common/url_parser.c
-    src/common/common.cpp
-)
-SET(TEST_HEADERS
-    include/master/Connection.h
-    include/master/Master.h
     include/master/FMIClient.h
     include/master/StrongConnector.h
     include/master/WeakConnection.h
@@ -66,7 +44,6 @@ SET(EXECUTABLE_OUTPUT_PATH "${CMAKE_CURRENT_LIST_DIR}/bin")
 
 ADD_EXECUTABLE(${MASTER_NAME} ${MASTER_HEADERS} ${MASTER_SRCS})
 ADD_EXECUTABLE(${SLAVE_NAME}  ${SLAVE_HEADERS}  ${SLAVE_SRCS})
-ADD_EXECUTABLE(test   ${TEST_HEADERS}   ${TEST_SRCS})
 
 IF(WIN32)
     SET(WINLIBS
@@ -86,7 +63,6 @@ IF(WIN32)
         ${CMAKE_THREAD_LIBS_INIT})
     TARGET_LINK_LIBRARIES(${MASTER_NAME} ${WINLIBS})
     TARGET_LINK_LIBRARIES(${SLAVE_NAME}  ${WINLIBS})
-    TARGET_LINK_LIBRARIES(test   ${WINLIBS})
 ELSE(WIN32)
     SET(LINUXLIBS
         fmitcp
@@ -101,7 +77,6 @@ ELSE(WIN32)
         ${CMAKE_THREAD_LIBS_INIT})
     TARGET_LINK_LIBRARIES(${MASTER_NAME} ${LINUXLIBS})
     TARGET_LINK_LIBRARIES(${SLAVE_NAME}  ${LINUXLIBS})
-    TARGET_LINK_LIBRARIES(test   ${LINUXLIBS})
 ENDIF(WIN32)
 
 # TODO: Slave manpage?

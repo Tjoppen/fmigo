@@ -6,7 +6,6 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <sstream>
-#include "master/Master.h"
 #include "master/FMIClient.h"
 #include "common/common.h"
 #include "master/WeakMasters.h"

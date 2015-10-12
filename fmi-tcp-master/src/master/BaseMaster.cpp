@@ -6,7 +6,9 @@
  */
 
 #include "master/BaseMaster.h"
+#ifndef WIN32
 #include <unistd.h>
+#endif
 
 using namespace fmitcp_master;
 using namespace fmitcp;
@@ -23,6 +25,10 @@ BaseMaster::~BaseMaster() {
 void BaseMaster::wait() {
     while (m_pendingRequests > 0) {
         m_pump->tick();
+#ifdef WIN32
+        Yield();
+#else
         usleep(10);
+#endif
     }
 }

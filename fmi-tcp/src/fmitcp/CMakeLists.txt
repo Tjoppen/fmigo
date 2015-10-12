@@ -17,15 +17,19 @@ SET(SRCS
 
 # Compile proto
 IF(WIN32)
-  EXECUTE_PROCESS(COMMAND ${PROTOBUF_BIN_DIR}/protoc --cpp_out=. fmitcp.proto
-                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src)
+  add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp.pb.h
+    COMMAND ${PROTOBUF_BIN_DIR}/protoc --cpp_out=. fmitcp.proto
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src
+    DEPENDS libprotobuf)
+  add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/include/fmitcp/fmitcp.pb.h
+    COMMAND cmake -E rename ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/include/fmitcp/fmitcp.pb.h
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp.pb.h)
 ELSE(WIN32)
   EXECUTE_PROCESS(COMMAND protoc --cpp_out=. fmitcp.proto
                   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src)
+  FILE(RENAME ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp.pb.h
+              ${CMAKE_CURRENT_SOURCE_DIR}/include/fmitcp/fmitcp.pb.h)
 ENDIF(WIN32)
-
-FILE(RENAME ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp.pb.h
-            ${CMAKE_CURRENT_SOURCE_DIR}/include/fmitcp/fmitcp.pb.h)
 
 INCLUDE_DIRECTORIES(include/fmitcp  ${FMIL_INCLUDE_DIR} ${LACEWING_INCLUDE_DIR} ${PROTOBUF_INCLUDE_DIR})
 LINK_DIRECTORIES(${FMIL_LIBS_DIR} ${LACEWING_LIBS_DIR} ${PROTOBUF_LIBRARY})

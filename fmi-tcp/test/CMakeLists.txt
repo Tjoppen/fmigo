@@ -30,7 +30,7 @@ IF(WIN32)
     mpr
     ${Boost_FILESYSTEM_LIBRARY}
     ${Boost_SYSTEM_LIBRARY}
-    protobuf
+    libprotobuf
     ${CMAKE_THREAD_LIBS_INIT}
 )
 ELSE(WIN32)

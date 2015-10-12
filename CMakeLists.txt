@@ -17,7 +17,7 @@ if(WIN32)
     set(PROTOBUF_BIN_DIR ${CMAKE_CURRENT_BINARY_DIR})
 
     set(PROTOBUF_URL "https://github.com/google/protobuf/releases/download/v2.6.1/protobuf-2.6.1.zip")
-    set(PROTOBUF_MD5 "b057f86ef83835010bb227eb2d82de04")
+    set(PROTOBUF_MD5 "54e31efec42451ed73f99abc39f8c745")
     set(PROTOBUF_DOWNLOAD_PATH "${CMAKE_CURRENT_BINARY_DIR}/protobuf-2.6.1.zip")
 
     if (NOT EXISTS "${PROTOBUF_DOWNLOAD_PATH}")

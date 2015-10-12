@@ -329,9 +329,9 @@ void Server::clientData(lw_client c, const char *data, size_t size) {
     fmitcp_proto::fmi2_import_set_real_input_derivatives_req * r = req.mutable_fmi2_import_set_real_input_derivatives_req();
     int messageId = r->message_id();
     int fmuId = r->fmuid();
-    fmi2_value_reference_t vr[r->valuereferences_size()];
-    fmi2_integer_t order[r->orders_size()];
-    fmi2_real_t value[r->values_size()];
+    vector<fmi2_value_reference_t> vr(r->valuereferences_size());
+    vector<fmi2_integer_t> order(r->orders_size());
+    vector<fmi2_real_t> value(r->values_size());
 
     for (int i = 0 ; i < r->valuereferences_size() ; i++) {
       vr[i] = r->valuereferences(i);
@@ -344,7 +344,7 @@ void Server::clientData(lw_client c, const char *data, size_t size) {
     fmi2_status_t status = fmi2_status_ok;
     if (!m_sendDummyResponses) {
       // interact with FMU
-      status = fmi2_import_set_real_input_derivatives(m_fmi2Instance, vr, r->valuereferences_size(), order, value);
+      status = fmi2_import_set_real_input_derivatives(m_fmi2Instance, vr.data(), r->valuereferences_size(), order.data(), value.data());
     }
 
     // Create response
@@ -360,9 +360,9 @@ void Server::clientData(lw_client c, const char *data, size_t size) {
     fmitcp_proto::fmi2_import_get_real_output_derivatives_req * r = req.mutable_fmi2_import_get_real_output_derivatives_req();
     int messageId = r->message_id();
     int fmuId = r->fmuid();
-    fmi2_value_reference_t vr[r->valuereferences_size()];
-    fmi2_integer_t order[r->orders_size()];
-    fmi2_real_t value[r->valuereferences_size()];
+    vector<fmi2_value_reference_t> vr(r->valuereferences_size());
+    vector<fmi2_integer_t> order(r->orders_size());
+    vector<fmi2_real_t> value(r->valuereferences_size());
 
     for (int i = 0 ; i < r->valuereferences_size() ; i++) {
       vr[i] = r->valuereferences(i);
@@ -374,7 +374,7 @@ void Server::clientData(lw_client c, const char *data, size_t size) {
     fmi2_status_t status = fmi2_status_ok;
     if (!m_sendDummyResponses) {
       // interact with FMU
-      status = fmi2_import_get_real_output_derivatives(m_fmi2Instance, vr, r->valuereferences_size(), order, value);
+      status = fmi2_import_get_real_output_derivatives(m_fmi2Instance, vr.data(), r->valuereferences_size(), order.data(), value.data());
     }
 
     // Create response
@@ -607,13 +607,13 @@ void Server::clientData(lw_client c, const char *data, size_t size) {
       // set the debug logging for FMU
       // fetch the logging categories from the FMU
       size_t nCategories = fmi2_import_get_log_categories_num(m_fmi2Instance);
-      fmi2_string_t categories[nCategories];
+      vector<fmi2_string_t> categories(nCategories);
       int i;
       for (i = 0 ; i < nCategories ; i++) {
         categories[i] = fmi2_import_get_log_category(m_fmi2Instance, i);
       }
       // set debug logging. We don't care about its result.
-      status = fmi2_import_set_debug_logging(m_fmi2Instance, m_debugLogging, nCategories, categories);
+      status = fmi2_import_set_debug_logging(m_fmi2Instance, m_debugLogging, nCategories, categories.data());
     }
 
     // Create response
@@ -629,8 +629,8 @@ void Server::clientData(lw_client c, const char *data, size_t size) {
     fmitcp_proto::fmi2_import_set_real_req * r = req.mutable_fmi2_import_set_real_req();
     int messageId = r->message_id();
     int fmuId = r->fmuid();
-    fmi2_value_reference_t vr[r->valuereferences_size()];
-    fmi2_real_t value[r->values_size()];
+    vector<fmi2_value_reference_t> vr(r->valuereferences_size());
+    vector<fmi2_real_t> value(r->values_size());
 
     for (int i = 0 ; i < r->valuereferences_size() ; i++) {
       vr[i] = r->valuereferences(i);
@@ -643,7 +643,7 @@ void Server::clientData(lw_client c, const char *data, size_t size) {
     fmi2_status_t status = fmi2_status_ok;
     if (!m_sendDummyResponses) {
       // interact with FMU
-       status = fmi2_import_set_real(m_fmi2Instance, vr, r->valuereferences_size(), value);
+       status = fmi2_import_set_real(m_fmi2Instance, vr.data(), r->valuereferences_size(), value.data());
     }
 
     // Create response
@@ -659,8 +659,8 @@ void Server::clientData(lw_client c, const char *data, size_t size) {
     fmitcp_proto::fmi2_import_set_integer_req * r = req.mutable_fmi2_import_set_integer_req();
     int messageId = r->message_id();
     int fmuId = r->fmuid();
-    fmi2_value_reference_t vr[r->valuereferences_size()];
-    fmi2_integer_t value[r->values_size()];
+    vector<fmi2_value_reference_t> vr(r->valuereferences_size());
+    vector<fmi2_integer_t> value(r->values_size());
 
     for (int i = 0 ; i < r->valuereferences_size() ; i++) {
       vr[i] = r->valuereferences(i);
@@ -672,7 +672,7 @@ void Server::clientData(lw_client c, const char *data, size_t size) {
     fmi2_status_t status = fmi2_status_ok;
     if (!m_sendDummyResponses) {
       // interact with FMU
-      status = fmi2_import_set_integer(m_fmi2Instance, vr, r->valuereferences_size(), value);
+      status = fmi2_import_set_integer(m_fmi2Instance, vr.data(), r->valuereferences_size(), value.data());
     }
 
     // Create response
@@ -688,8 +688,8 @@ void Server::clientData(lw_client c, const char *data, size_t size) {
     fmitcp_proto::fmi2_import_set_boolean_req * r = req.mutable_fmi2_import_set_boolean_req();
     int messageId = r->message_id();
     int fmuId = r->fmuid();
-    fmi2_value_reference_t vr[r->valuereferences_size()];
-    fmi2_boolean_t value[r->values_size()];
+    vector<fmi2_value_reference_t> vr(r->valuereferences_size());
+    vector<fmi2_boolean_t> value(r->values_size());
 
     for (int i = 0 ; i < r->valuereferences_size() ; i++) {
       vr[i] = r->valuereferences(i);
@@ -701,7 +701,7 @@ void Server::clientData(lw_client c, const char *data, size_t size) {
     fmi2_status_t status = fmi2_status_ok;
     if (!m_sendDummyResponses) {
       // interact with FMU
-      status = fmi2_import_set_boolean(m_fmi2Instance, vr, r->valuereferences_size(), value);
+      status = fmi2_import_set_boolean(m_fmi2Instance, vr.data(), r->valuereferences_size(), value.data());
     }
 
     // Create response
@@ -717,8 +717,8 @@ void Server::clientData(lw_client c, const char *data, size_t size) {
     fmitcp_proto::fmi2_import_set_string_req * r = req.mutable_fmi2_import_set_string_req();
     int messageId = r->message_id();
     int fmuId = r->fmuid();
-    fmi2_value_reference_t vr[r->valuereferences_size()];
-    fmi2_string_t value[r->values_size()];
+    vector<fmi2_value_reference_t> vr(r->valuereferences_size());
+    vector<fmi2_string_t> value(r->values_size());
 
     for (int i = 0 ; i < r->valuereferences_size() ; i++) {
       vr[i] = r->valuereferences(i);
@@ -730,7 +730,7 @@ void Server::clientData(lw_client c, const char *data, size_t size) {
     fmi2_status_t status = fmi2_status_ok;
     if (!m_sendDummyResponses) {
       // interact with FMU
-      status = fmi2_import_set_string(m_fmi2Instance, vr, r->valuereferences_size(), value);
+      status = fmi2_import_set_string(m_fmi2Instance, vr.data(), r->valuereferences_size(), value.data());
     }
 
     // Create response
@@ -746,8 +746,8 @@ void Server::clientData(lw_client c, const char *data, size_t size) {
     fmitcp_proto::fmi2_import_get_real_req * r = req.mutable_fmi2_import_get_real_req();
     int messageId = r->message_id();
     int fmuId = r->fmuid();
-    fmi2_value_reference_t vr[r->valuereferences_size()];
-    fmi2_real_t value[r->valuereferences_size()];
+    vector<fmi2_value_reference_t> vr(r->valuereferences_size());
+    vector<fmi2_real_t> value(r->valuereferences_size());
 
     for (int i = 0 ; i < r->valuereferences_size() ; i++) {
       vr[i] = r->valuereferences(i);
@@ -762,7 +762,7 @@ void Server::clientData(lw_client c, const char *data, size_t size) {
     fmi2_status_t status = fmi2_status_ok;
     if (!m_sendDummyResponses) {
         // interact with FMU
-        status = fmi2_import_get_real(m_fmi2Instance, vr, r->valuereferences_size(), value);
+        status = fmi2_import_get_real(m_fmi2Instance, vr.data(), r->valuereferences_size(), value.data());
         getRealRes->set_status(fmi2StatusToProtofmi2Status(status));
         for (int i = 0 ; i < r->valuereferences_size() ; i++) {
           getRealRes->add_values(value[i]);
@@ -783,8 +783,8 @@ void Server::clientData(lw_client c, const char *data, size_t size) {
     fmitcp_proto::fmi2_import_get_integer_req * r = req.mutable_fmi2_import_get_integer_req();
     int messageId = r->message_id();
     int fmuId = r->fmuid();
-    fmi2_value_reference_t vr[r->valuereferences_size()];
-    fmi2_integer_t value[r->valuereferences_size()];
+    vector<fmi2_value_reference_t> vr(r->valuereferences_size());
+    vector<fmi2_integer_t> value(r->valuereferences_size());
 
     for (int i = 0 ; i < r->valuereferences_size() ; i++) {
       vr[i] = r->valuereferences(i);
@@ -794,7 +794,7 @@ void Server::clientData(lw_client c, const char *data, size_t size) {
     fmi2_status_t status = fmi2_status_ok;
     if (!m_sendDummyResponses) {
       // interact with FMU
-      status = fmi2_import_get_integer(m_fmi2Instance, vr, r->valuereferences_size(), value);
+      status = fmi2_import_get_integer(m_fmi2Instance, vr.data(), r->valuereferences_size(), value.data());
     }
 
     // Create response
@@ -813,8 +813,8 @@ void Server::clientData(lw_client c, const char *data, size_t size) {
     fmitcp_proto::fmi2_import_get_boolean_req * r = req.mutable_fmi2_import_get_boolean_req();
     int messageId = r->message_id();
     int fmuId = r->fmuid();
-    fmi2_value_reference_t vr[r->valuereferences_size()];
-    fmi2_boolean_t value[r->valuereferences_size()];
+    vector<fmi2_value_reference_t> vr(r->valuereferences_size());
+    vector<fmi2_boolean_t> value(r->valuereferences_size());
 
     for (int i = 0 ; i < r->valuereferences_size() ; i++) {
       vr[i] = r->valuereferences(i);
@@ -824,7 +824,7 @@ void Server::clientData(lw_client c, const char *data, size_t size) {
     fmi2_status_t status = fmi2_status_ok;
     if (!m_sendDummyResponses) {
       // interact with FMU
-      status = fmi2_import_get_boolean(m_fmi2Instance, vr, r->valuereferences_size(), value);
+      status = fmi2_import_get_boolean(m_fmi2Instance, vr.data(), r->valuereferences_size(), value.data());
     }
 
     // Create response
@@ -843,8 +843,8 @@ void Server::clientData(lw_client c, const char *data, size_t size) {
     fmitcp_proto::fmi2_import_get_string_req * r = req.mutable_fmi2_import_get_string_req();
     int messageId = r->message_id();
     int fmuId = r->fmuid();
-    fmi2_value_reference_t vr[r->valuereferences_size()];
-    fmi2_string_t value[r->valuereferences_size()];
+    vector<fmi2_value_reference_t> vr(r->valuereferences_size());
+    vector<fmi2_string_t> value(r->valuereferences_size());
 
     for (int i = 0 ; i < r->valuereferences_size() ; i++) {
       vr[i] = r->valuereferences(i);
@@ -854,7 +854,7 @@ void Server::clientData(lw_client c, const char *data, size_t size) {
     fmi2_status_t status = fmi2_status_ok;
     if (!m_sendDummyResponses) {
       // interact with FMU
-      status = fmi2_import_get_string(m_fmi2Instance, vr, r->valuereferences_size(), value);
+      status = fmi2_import_get_string(m_fmi2Instance, vr.data(), r->valuereferences_size(), value.data());
     }
 
     // Create response
@@ -937,9 +937,9 @@ void Server::clientData(lw_client c, const char *data, size_t size) {
     fmitcp_proto::fmi2_import_get_directional_derivative_req * r = req.mutable_fmi2_import_get_directional_derivative_req();
     int messageId = r->message_id();
     int fmuId = r->fmuid();
-    fmi2_value_reference_t v_ref[r->v_ref_size()];
-    fmi2_value_reference_t z_ref[r->z_ref_size()];
-    fmi2_real_t dv[r->dv_size()], dz[r->z_ref_size()];
+    vector<fmi2_value_reference_t> v_ref(r->v_ref_size());
+    vector<fmi2_value_reference_t> z_ref(r->z_ref_size());
+    vector<fmi2_real_t> dv(r->dv_size()), dz(r->z_ref_size());
 
     for (int i = 0 ; i < r->v_ref_size() ; i++) {
       v_ref[i] = r->v_ref(i);
@@ -956,7 +956,7 @@ void Server::clientData(lw_client c, const char *data, size_t size) {
     fmi2_status_t status = fmi2_status_ok;
     if (!m_sendDummyResponses) {
       // interact with FMU
-      status = fmi2_import_get_directional_derivative(m_fmi2Instance, v_ref, r->v_ref_size(), z_ref, r->z_ref_size(), dv, dz);
+      status = fmi2_import_get_directional_derivative(m_fmi2Instance, v_ref.data(), r->v_ref_size(), z_ref.data(), r->z_ref_size(), dv.data(), dz.data());
     }
 
     // Create response

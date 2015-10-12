@@ -28,7 +28,7 @@ namespace fmitcp {
    * Makes a comma separated string of an array. The array could be if type int, double etc.
    */
   template <typename TArray>
-  string arrayToString(TArray arr[], int size) {
+  string arrayToString(std::vector<TArray> arr, int size) {
     string res;
     res.append("{");
     for (int i = 0 ; i < size ; i++) {

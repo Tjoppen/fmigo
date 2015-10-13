@@ -37,6 +37,8 @@ if(WIN32)
 
     include_directories(${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/include/suitesparse)
     link_directories(${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib)
+    link_directories(${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib/lapack_blas_windows)
+    link_directories(${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib64)
 
     set(LACEWING_COMMIT "93c825a")
     set(LACEWING_URL "https://github.com/udp/lacewing/zipball/0.5.4/udp-lacewing-0.5.4-0-g${LACEWING_COMMIT}.zip")

@@ -31,6 +31,11 @@ SET(MASTER_HEADERS
     include/common/url_parser.h
 )
 
+if(WIN32)
+    set(MASTER_SRCS    ${MASTER_SRCS}    src/master/getopt.cpp)
+    set(MASTER_HEADERS ${MASTER_HEADERS} include/master/getopt.h)
+endif()
+
 SET(SLAVE_SRCS
   src/slave/main.cpp
 )
@@ -56,13 +61,19 @@ IF(WIN32)
         crypt32
         secur32
         mpr
-        sc m umfpack amd cblas suitesparseconfig # For strong coupling
+        sc libumfpackd libamdd libblas libcholmodd libcolamdd libccolamdd libcamdd metisd suitesparseconfigd # For strong coupling
         ${Boost_FILESYSTEM_LIBRARY}
         ${Boost_SYSTEM_LIBRARY}
-        protobuf
+        libprotobuf
         ${CMAKE_THREAD_LIBS_INIT})
     TARGET_LINK_LIBRARIES(${MASTER_NAME} ${WINLIBS})
     TARGET_LINK_LIBRARIES(${SLAVE_NAME}  ${WINLIBS})
+    INSTALL (FILES
+        ${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib/lapack_blas_windows/libblas.dll
+        ${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib/lapack_blas_windows/libgcc_s_dw2-1.dll
+        ${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib/lapack_blas_windows/libgfortran-3.dll
+        ${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib/lapack_blas_windows/libquadmath-0.dll
+        DESTINATION bin)
 ELSE(WIN32)
     SET(LINUXLIBS
         fmitcp
@@ -80,13 +91,15 @@ ELSE(WIN32)
 ENDIF(WIN32)
 
 # TODO: Slave manpage?
-SET(IN_MANPAGE ${CMAKE_CURRENT_LIST_DIR}/doc/${MASTER_NAME}.1)
-SET(OUT_MANPAGE ${CMAKE_CURRENT_BINARY_DIR}/${MASTER_NAME}.1.gz)
-ADD_CUSTOM_TARGET(manpage COMMAND gzip -kc9 ${IN_MANPAGE} > ${OUT_MANPAGE} DEPENDS ${IN_MANPAGE} SOURCES ${IN_MANPAGE})
-ADD_DEPENDENCIES(${MASTER_NAME} manpage)
+if(NOT WIN32)
+    SET(IN_MANPAGE ${CMAKE_CURRENT_LIST_DIR}/doc/${MASTER_NAME}.1)
+    SET(OUT_MANPAGE ${CMAKE_CURRENT_BINARY_DIR}/${MASTER_NAME}.1.gz)
+    ADD_CUSTOM_TARGET(manpage COMMAND gzip -kc9 ${IN_MANPAGE} > ${OUT_MANPAGE} DEPENDS ${IN_MANPAGE} SOURCES ${IN_MANPAGE})
+    ADD_DEPENDENCIES(${MASTER_NAME} manpage)
+    INSTALL (FILES ${OUT_MANPAGE} DESTINATION man/man1)
+endif()
 
 INSTALL(TARGETS ${MASTER_NAME} ${SLAVE_NAME} DESTINATION bin)
-INSTALL (FILES ${OUT_MANPAGE} DESTINATION man/man1)
 
 SET(FMU_SRCS
   fmu/fmu_interface.c

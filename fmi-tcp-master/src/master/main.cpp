@@ -15,8 +15,10 @@
 #include <sc/LockConstraint.h>
 #include <sc/ShaftConstraint.h>
 #include "master/StrongMaster.h"
+#ifndef WIN32
 #include <sys/time.h>
 #include <unistd.h>
+#endif
 
 using namespace fmitcp_master;
 using namespace fmitcp;
@@ -292,8 +294,14 @@ int main(int argc, char *argv[] ) {
     master->block(slaves, &FMIClient::fmi2_import_initialize_slave, 0, 0, true, relativeTolerance, startTime, endTime >= 0, endTime);
 
     double t = startTime;
+#ifdef WIN32
+    LARGE_INTEGER freq, t1;
+    QueryPerformanceFrequency(&freq);
+    QueryPerformanceCounter(&t1);
+#else
     timeval t1;
     gettimeofday(&t1, NULL);
+#endif
 
     //run
     while (endTime < 0 || t < endTime) {
@@ -302,6 +310,16 @@ int main(int argc, char *argv[] ) {
 
             //delay loop
             for (;;) {
+#ifdef WIN32
+                LARGE_INTEGER t2;
+                QueryPerformanceCounter(&t2);
+                t_wall = (t2.QuadPart - t1.QuadPart) / (double)freq.QuadPart;
+
+                if (t_wall >= t)
+                    break;
+
+                Yield();
+#else
                 timeval t2;
                 gettimeofday(&t2, NULL);
 
@@ -312,6 +330,7 @@ int main(int argc, char *argv[] ) {
                     break;
 
                 usleep(us);
+#endif
             }
 
             if (t_wall > t + 1) {

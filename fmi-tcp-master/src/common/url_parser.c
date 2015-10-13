@@ -15,12 +15,12 @@
 /*
  * Prototype declarations
  */
-static __inline__ int _is_scheme_char(int);
+static int _is_scheme_char(int);
 
 /*
  * Check whether the character is permitted in scheme string
  */
-static __inline__ int
+static int
 _is_scheme_char(int c)
 {
     return (!isalpha(c) && '+' != c && '-' != c && '.' != c) ? 0 : 1;

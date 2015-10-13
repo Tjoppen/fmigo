@@ -1,7 +1,11 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
+#ifdef WIN32
+#include "master/getopt.h"
+#else
 #include <getopt.h>
+#endif
 #include <deque>
 #include "common/common.h"
 

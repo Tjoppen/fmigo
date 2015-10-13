@@ -22,11 +22,16 @@ parser.add_argument('-d','--definitions',
                     type=str,
                     help='Adds flags to the compiler. Separate with commas and remove the -. Example: -d DFLAG,DKEY=VALUE,msse3',
                     default='')
+parser.add_argument('-i','--includedir',
+                    type=str,
+                    help='Include directories. Separate with commas.',
+                    default='')
 args = parser.parse_args()
 link_libraries = args.link.split(",")
 definitions = " -".join(args.definitions.split(","))
 if len(definitions):
     definitions = "-"+definitions
+include_directories = args.includedir.split(',')
 
 # For logging errors and messages
 def log(m):
@@ -67,8 +72,8 @@ with open(path,'w') as f:
 
     # Find all .c and .h files in the current FMU folder
     cwd = os.getcwd()
-    c_files = [ pjoin(cwd,"sources",s) for s in os.listdir(pjoin(cwd,"sources")) if os.path.isfile(pjoin(cwd,"sources",s)) and re.match(r"^.*\.cp?p?$",s) ]
-    h_files = [ pjoin(cwd,"sources",s) for s in os.listdir(pjoin(cwd,"sources")) if os.path.isfile(pjoin(cwd,"sources",s)) and ".h" in s ]
+    c_files = [ '"'+pjoin(cwd,"sources",s).replace('\\','/')+'"' for s in os.listdir(pjoin(cwd,"sources")) if os.path.isfile(pjoin(cwd,"sources",s)) and re.match(r"^.*\.cp?p?$",s) ]
+    h_files = [ '"'+pjoin(cwd,"sources",s).replace('\\','/')+'"' for s in os.listdir(pjoin(cwd,"sources")) if os.path.isfile(pjoin(cwd,"sources",s)) and ".h" in s ]
 
     # Check if there were any files
     if not len(c_files):
@@ -83,9 +88,10 @@ SET(SRCS %s)
 SET(HEADERS %s)
 ADD_DEFINITIONS( %s )
 ADD_LIBRARY(${TARGET} SHARED ${SRCS} ${HEADERS})
+INCLUDE_DIRECTORIES(%s)
 SET_TARGET_PROPERTIES(${TARGET} PROPERTIES PREFIX "")
 SET_TARGET_PROPERTIES(${TARGET} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/binaries/${ARCH}")
-TARGET_LINK_LIBRARIES( ${TARGET} %s )""" % (arch, modelIdentifier, " ".join(c_files), " ".join(h_files), definitions, " ".join(link_libraries) )
+TARGET_LINK_LIBRARIES( ${TARGET} %s )""" % (arch, modelIdentifier, " ".join(c_files), " ".join(h_files), definitions, " ".join(include_directories), " ".join(link_libraries) )
     f.write( cmakestuff )
     f.close()
     print("\nCreated CMakeLists.txt (%s):\n" % (path))
@@ -97,12 +103,15 @@ TARGET_LINK_LIBRARIES( ${TARGET} %s )""" % (arch, modelIdentifier, " ".join(c_fi
     os.chdir(d)
     if subprocess.call(["cmake", "."]) == 0:
         print("\nRunning make...\n");
-        if subprocess.call(["make"]) == 0:
+        if subprocess.call(["cmake","--build","."]) == 0:
 
             # Zip everything needed in FMU
             with zipfile.ZipFile("%s.fmu" % (modelIdentifier), 'w', zipfile.ZIP_DEFLATED) as myzip:
                 # TODO: Should look up what library type (.so, .dll... was created)
-                myzip.write(pjoin('binaries',arch,modelIdentifier+".so"))
+                if system == 'Windows':
+                    myzip.write(pjoin('Debug',modelIdentifier+'.dll'),pjoin('binaries',arch,modelIdentifier+'.dll'))
+                else:
+                    myzip.write(pjoin('binaries',arch,modelIdentifier+".so"))
                 os.chdir(cwd)
                 myzip.write('modelDescription.xml')
                 sources = [ pjoin("sources",s) for s in os.listdir(pjoin(cwd,"sources")) if os.path.isfile(pjoin(cwd,"sources",s)) and (".c" in s or ".h" in s) ]

@@ -5,7 +5,7 @@ using namespace fmitcp_proto;
 using namespace std;
 
 std::string fmitcp::serialize::fmi2_import_instantiate(int message_id) {
-    fmi2_import_instantiate2(message_id, false);
+    return fmi2_import_instantiate2(message_id, false);
 }
 
 std::string fmitcp::serialize::fmi2_import_instantiate2(int message_id, bool visible) {

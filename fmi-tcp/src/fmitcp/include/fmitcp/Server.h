@@ -2,8 +2,10 @@
 #define SERVER_H_
 
 #include <string>
+#ifdef USE_LACEWING
 #define lw_import
 #include <lacewing.h>
+#endif
 #define FMILIB_BUILDING_LIBRARY
 #include <fmilib.h>
 #ifdef USE_LACEWING
@@ -82,16 +84,16 @@ namespace fmitcp {
     /// To be implemented in subclass
     virtual void onError(string message){};
 
+#ifdef USE_LACEWING
     void clientConnected(lw_client c);
     void clientDisconnected(lw_client c);
-#ifdef USE_LACEWING
     void clientData(lw_client c, const char *data, size_t size);
+    void error(lw_server s, lw_error err);
 #else
     //returns reply as std::string
     //if the string is empty then there was some kind of problem
     std::string clientData(const char *data, size_t size);
 #endif
-    void error(lw_server s, lw_error err);
 
 #ifdef USE_LACEWING
     /// Start hosting on a port.

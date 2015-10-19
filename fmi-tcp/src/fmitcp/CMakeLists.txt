@@ -12,7 +12,6 @@ SET(SRCS
     src/common.cpp
     src/Logger.cpp
     src/Server.cpp
-    src/EventPump.cpp
     src/serialize.cpp
 )
 

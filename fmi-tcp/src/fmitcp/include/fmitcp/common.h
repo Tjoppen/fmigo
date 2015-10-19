@@ -4,8 +4,10 @@
 #define FMITCP_VERSION "0.0.1"
 
 #include "fmitcp.pb.h"
+#ifdef USE_LACEWING
 #define lw_import
 #include <lacewing.h>
+#endif
 #define FMILIB_BUILDING_LIBRARY
 #include <fmilib.h>
 #include <string>

@@ -174,6 +174,7 @@ void Server::init() {
   }
 }
 
+#ifdef USE_LACEWING
 void Server::clientConnected(lw_client c) {
   m_logger.log(Logger::LOG_NETWORK,"+ Client connected.\n");
   onClientConnect();
@@ -194,6 +195,7 @@ void Server::clientDisconnected(lw_client c) {
   */
   onClientDisconnect();
 }
+#endif
 
 #ifdef USE_LACEWING
 void Server::clientData(lw_client c, const char *data, size_t size) {
@@ -1055,12 +1057,12 @@ string Server::clientData(const char *data, size_t size) {
 #endif
 }
 
+#ifdef USE_LACEWING
 void Server::error(lw_server s, lw_error error) {
   string err = lw_error_tostring(error);
   onError(err);
 }
 
-#ifdef USE_LACEWING
 void Server::host(string hostName, long port) {
   // save this object in the server tag so we can use it later on.
   lw_server_set_tag(m_server, (void*)this);

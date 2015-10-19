@@ -55,18 +55,25 @@ IF(WIN32)
         fmitcp
         fmilib
         shlwapi
-        lacewing
-        zmq
         ws2_32
         mswsock
         crypt32
         secur32
         mpr
-        sc libumfpackd libamdd libblas libcholmodd libcolamdd libccolamdd libcamdd metisd suitesparseconfigd # For strong coupling
         ${Boost_FILESYSTEM_LIBRARY}
         ${Boost_SYSTEM_LIBRARY}
         libprotobuf
         ${CMAKE_THREAD_LIBS_INIT})
+    if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+        set(WINLIBS ${WINLIBS} sc libumfpackd libamdd libblas libcholmodd libcolamdd libccolamdd libcamdd metisd suitesparseconfigd)
+    else()
+        set(WINLIBS ${WINLIBS} sc libumfpack  libamd  libblas libcholmod  libcolamd  libccolamd  libcamd  metis  suitesparseconfig)
+    endif()
+    if (USE_LACEWING)
+        set(WINLIBS ${WINLIBS} lacewing)
+    else()
+        set(WINLIBS ${WINLIBS} libzmq)
+    endif()
     TARGET_LINK_LIBRARIES(${MASTER_NAME} ${WINLIBS})
     TARGET_LINK_LIBRARIES(${SLAVE_NAME}  ${WINLIBS})
     INSTALL (FILES
@@ -75,6 +82,9 @@ IF(WIN32)
         ${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib/lapack_blas_windows/libgfortran-3.dll
         ${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib/lapack_blas_windows/libquadmath-0.dll
         DESTINATION bin)
+    if (NOT USE_LACEWING)
+        INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../3dparty/zeromq/4.2.0-master/cl32-11/libzmq.dll DESTINATION bin)
+    endif()
 ELSE(WIN32)
     SET(LINUXLIBS
         fmitcp

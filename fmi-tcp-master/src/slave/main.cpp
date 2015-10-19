@@ -4,6 +4,7 @@
 #include <string>
 #include <fmitcp/Server.h>
 #include <fmitcp/common.h>
+#include <zmq.hpp>
 
 using namespace std;
 using namespace fmitcp;
@@ -11,8 +12,13 @@ using namespace fmitcp;
 // Define own server
 class FMIServer : public Server {
 public:
+#ifdef USE_LACEWING
   FMIServer(string fmuPath, bool debugLogging, jm_log_level_enu_t logLevel, EventPump* pump)
    : Server(fmuPath, debugLogging, logLevel, pump) {}
+#else
+  FMIServer(string fmuPath, bool debugLogging, jm_log_level_enu_t logLevel)
+   : Server(fmuPath, debugLogging, logLevel) {}
+#endif
   ~FMIServer() {};
   void onClientConnect() {
     printf("MyFMIServer::onConnect\n");
@@ -21,12 +27,16 @@ public:
 
   void onClientDisconnect() {
     printf("MyFMIServer::onDisconnect\n");
+#ifdef USE_LACEWING
     m_pump->exitEventLoop();
+#endif
   };
 
   void onError(string message) {
     printf("MyFMIServer::onError\n");fflush(NULL);
+#ifdef USE_LACEWING
     m_pump->exitEventLoop();
+#endif
   };
 };
 
@@ -142,12 +152,18 @@ int main(int argc, char *argv[]) {
     return EXIT_FAILURE;
   }
 
+#ifdef USE_LACEWING
   EventPump pump;
   FMIServer server(fmuPath, debugLogging, log_level, &pump);
+#else
+  FMIServer server(fmuPath, debugLogging, log_level);
+#endif
   if (!server.isFmuParsed())
     return EXIT_FAILURE;
 
   server.getLogger()->setPrefix("Server: ");
+
+#ifdef USE_LACEWING
   server.host(hostName, port);
 
   // If communication stops without reason, try removing one or both of these. This is due to a bug in the lacewing library?
@@ -155,6 +171,31 @@ int main(int argc, char *argv[]) {
 
   //server.getLogger()->setFilter(Logger::LOG_NETWORK | Logger::LOG_DEBUG | Logger::LOG_ERROR);
   pump.startEventLoop();
+#else
+  zmq::context_t context(1);
+  zmq::socket_t socket(context, ZMQ_PAIR);
+  ostringstream oss;
+  oss << "tcp://*:" << port;
+  socket.bind(oss.str().c_str());
+  
+  for (;;) {
+      zmq::message_t msg;
+      if (!socket.recv(&msg)) {
+          break;
+      }
+      fprintf(stderr, "Got REQuest of size %li\n", msg.size());
+      string str = server.clientData(static_cast<char*>(msg.data()), msg.size());
+      fprintf(stderr, "Reply: %i B\n", str.length());
+      if (str.length() == 0) {
+          fprintf(stderr, "Zero-length reply implies error - quitting\n");
+          exit(1);
+      }
+      zmq::message_t rep(str.length());
+      memcpy(rep.data(), str.data(), str.length());
+      socket.send(rep);
+  }
+
+#endif
 
   return EXIT_SUCCESS;
 }

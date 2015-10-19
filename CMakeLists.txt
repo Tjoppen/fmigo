@@ -1,5 +1,11 @@
 cmake_minimum_required(VERSION 2.8)
 
+option(USE_LACEWING "Use lacewing instead of zeromq?" OFF)
+
+if (USE_LACEWING)
+    add_definitions(-DUSE_LACEWING)
+endif()
+
 # Download/install protobuf, umfpack as needed
 if(WIN32)
     include(ExternalProject)

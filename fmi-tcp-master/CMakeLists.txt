@@ -56,6 +56,7 @@ IF(WIN32)
         fmilib
         shlwapi
         lacewing
+        zmq
         ws2_32
         mswsock
         crypt32
@@ -79,6 +80,7 @@ ELSE(WIN32)
         fmitcp
         fmilib
         lacewing
+        zmq
         dl
         ##sc m umfpack amd blas atlas cholmod colamd suitesparseconfig # For strong coupling
         sc m umfpack amd blas cholmod colamd suitesparseconfig # For strong coupling

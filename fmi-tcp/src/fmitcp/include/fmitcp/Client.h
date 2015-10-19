@@ -1,7 +1,9 @@
 #ifndef CLIENT_H_
 #define CLIENT_H_
 
+#ifdef USE_LACEWING
 #include "EventPump.h"
+#endif
 #include "Logger.h"
 #include "fmitcp.pb.h"
 #include <string>
@@ -19,29 +21,40 @@ namespace fmitcp {
 
     protected:
 
+#ifdef USE_LACEWING
         /// Event pump that will push the communication forward
         EventPump * m_pump;
+#endif
 
         /// For logging
         Logger m_logger;
 
     private:
+#ifdef USE_LACEWING
         lw_client m_client;
+#endif
         std::string tail;
 
     public:
+#ifdef USE_LACEWING
         Client(EventPump * pump);
+#else
+        Client();
+#endif
         virtual ~Client();
 
+        Logger * getLogger();
+
+#ifdef USE_LACEWING
         /// Connect the client to a server
         void connect(string host, long port);
         void disconnect();
-        Logger * getLogger();
 
         /// Send a binary message
-        void sendMessage(fmitcp_proto::fmitcp_message * message);
+        void sendMessage(std::string s);
 
         bool isConnected();
+#endif
 
         /// To be implemented in subclass
         virtual void onConnect(){}
@@ -53,10 +66,19 @@ namespace fmitcp {
         virtual void onError(string message){}
 
         /// Called when a client connects
+#ifdef USE_LACEWING
         void clientConnected(lw_client c);
-        void clientData(lw_client c, const char* data, long size);
         void clientDisconnected(lw_client c);
         void clientError(lw_client c, lw_error error);
+#endif
+
+        /**
+         * clientData
+         * Decode given protobuffer, call appropriate virtual callback function.
+         * @param data Protobuf data buffer
+         * @param size Size of data buffer
+         */
+        void clientData(const char* data, long size);
 
         // Response functions - to be implemented by subclass
         virtual void on_fmi2_import_instantiate_res                     (int mid, fmitcp_proto::jm_status_enu_t status){}
@@ -105,67 +127,6 @@ namespace fmitcp {
         */
         virtual void on_fmi2_import_get_directional_derivative_res(int mid, const vector<double>& dz, fmitcp_proto::fmi2_status_t status){}
         virtual void on_get_xml_res                                     (int mid, fmitcp_proto::jm_log_level_enu_t logLevel, string xml){}
-
-        // FMI functions follow. These should correspond to FMILibrary functions.
-
-        // =========== FMI 2.0 (CS) Co-Simulation functions ===========
-        void fmi2_import_instantiate(int message_id);               //calls fmi2_import_instantiate2() with visible=false (backward compatibility)
-        void fmi2_import_instantiate2(int message_id, bool visible);
-        void fmi2_import_initialize_slave(int message_id, int fmuId, bool toleranceDefined, double tolerance, double startTime,
-            bool stopTimeDefined, double stopTime);
-        void fmi2_import_terminate_slave(int mid, int fmuId);
-        void fmi2_import_reset_slave(int mid, int fmuId);
-        void fmi2_import_free_slave_instance(int mid, int fmuId);
-        void fmi2_import_set_real_input_derivatives(int mid, int fmuId, std::vector<int> valueRefs, std::vector<int> orders, std::vector<double> values);
-        void fmi2_import_get_real_output_derivatives(int mid, int fmuId, std::vector<int> valueRefs, std::vector<int> orders);
-        void fmi2_import_cancel_step(int mid, int fmuId);
-        void fmi2_import_do_step(int message_id,
-                                 int fmuId,
-                                 double currentCommunicationPoint,
-                                 double communicationStepSize,
-                                 bool newStep);
-        void fmi2_import_get_status        (int message_id, int fmuId, fmitcp_proto::fmi2_status_kind_t s);
-        void fmi2_import_get_real_status   (int message_id, int fmuId, fmitcp_proto::fmi2_status_kind_t s);
-        void fmi2_import_get_integer_status(int message_id, int fmuId, fmitcp_proto::fmi2_status_kind_t s);
-        void fmi2_import_get_boolean_status(int message_id, int fmuId, fmitcp_proto::fmi2_status_kind_t s);
-        void fmi2_import_get_string_status (int message_id, int fmuId, fmitcp_proto::fmi2_status_kind_t s);
-
-        // =========== FMI 2.0 (ME) Model Exchange functions ===========
-        void fmi2_import_instantiate_model();
-        void fmi2_import_free_model_instance();
-        void fmi2_import_set_time();
-        void fmi2_import_set_continuous_states();
-        void fmi2_import_completed_integrator_step();
-        void fmi2_import_initialize_model();
-        void fmi2_import_get_derivatives();
-        void fmi2_import_get_event_indicators();
-        void fmi2_import_eventUpdate();
-        void fmi2_import_completed_event_iteration();
-        void fmi2_import_get_continuous_states();
-        void fmi2_import_get_nominal_continuous_states();
-        void fmi2_import_terminate();
-
-        // ========= FMI 2.0 CS & ME COMMON FUNCTIONS ============
-        void fmi2_import_get_version(int message_id, int fmuId);
-        void fmi2_import_set_debug_logging(int message_id, int fmuId, bool loggingOn, std::vector<string> categories);
-        void fmi2_import_set_real   (int message_id, int fmuId, const vector<int>& valueRefs, const vector<double>& values);
-        void fmi2_import_set_integer(int message_id, int fmuId, const vector<int>& valueRefs, const vector<int>& values);
-        void fmi2_import_set_boolean(int message_id, int fmuId, const vector<int>& valueRefs, const vector<bool>& values);
-        void fmi2_import_set_string (int message_id, int fmuId, const vector<int>& valueRefs, const vector<string>& values);
-        void fmi2_import_get_real(int message_id, int fmuId, const vector<int>& valueRefs);
-        void fmi2_import_get_integer(int message_id, int fmuId, const vector<int>& valueRefs);
-        void fmi2_import_get_boolean(int message_id, int fmuId, const vector<int>& valueRefs);
-        void fmi2_import_get_string (int message_id, int fmuId, const vector<int>& valueRefs);
-        void fmi2_import_get_fmu_state(int message_id, int fmuId);
-        void fmi2_import_set_fmu_state(int message_id, int fmuId, int stateId);
-        void fmi2_import_free_fmu_state(int messageId, int stateId);
-        void fmi2_import_serialized_fmu_state_size();
-        void fmi2_import_serialize_fmu_state();
-        void fmi2_import_de_serialize_fmu_state();
-        void fmi2_import_get_directional_derivative(int message_id, int fmuId, const vector<int>& v_ref, const vector<int>& z_ref, const vector<double>& dv);
-
-        // ========= NETWORK SPECIFIC FUNCTIONS ============
-        void get_xml(int message_id, int fmuId);
     };
 
 };

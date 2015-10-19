@@ -7,13 +7,20 @@
 
 #include "master/StrongMaster.h"
 #include "master/FMIClient.h"
+#include <fmitcp/serialize.h>
 
 using namespace fmitcp_master;
 using namespace fmitcp;
+using namespace fmitcp::serialize;
 using namespace sc;
 
+#ifdef USE_LACEWING
 StrongMaster::StrongMaster(EventPump *pump, vector<FMIClient*> slaves, vector<WeakConnection*> weakConnections, Solver strongCouplingSolver) :
         JacobiMaster(pump, slaves, weakConnections),
+#else
+StrongMaster::StrongMaster(vector<FMIClient*> slaves, vector<WeakConnection*> weakConnections, Solver strongCouplingSolver) :
+        JacobiMaster(slaves, weakConnections),
+#endif
         m_strongCouplingSolver(strongCouplingSolver) {
     fprintf(stderr, "StrongMaster\n");
 }
@@ -28,7 +35,7 @@ void StrongMaster::getDirectionalDerivative(FMIClient *client, Equation *eq, voi
     seed.push_back(seedVec.y());
     seed.push_back(seedVec.z());
 
-    send(client, &FMIClient::fmi2_import_get_directional_derivative, 0, 0, accelerationRefs, forceRefs, seed);
+    send(client, fmi2_import_get_directional_derivative(0, 0, accelerationRefs, forceRefs, seed));
 }
 
 void StrongMaster::getSpatialAngularDirectionalDerivatives(FMIClient *client, Equation *eq, StrongConnector *sc, void (Equation::*getSpatialSeed)(Vec3&), void (Equation::*getRotationalSeed)(Vec3&)) {
@@ -63,7 +70,7 @@ void StrongMaster::runIteration(double t, double dt) {
         }
 
         const vector<int> valueRefs = m_slaves[i]->getStrongConnectorValueReferences();
-        send(m_slaves[i], &FMIClient::fmi2_import_get_real, 0, 0, valueRefs);
+        send(m_slaves[i], fmi2_import_get_real(0, 0, valueRefs));
     }
     wait();
 
@@ -221,15 +228,15 @@ void StrongMaster::runIteration(double t, double dt) {
             vector<int> tvrs = sc->getTorqueValueRefs();
             fvrs.insert(fvrs.end(), tvrs.begin(), tvrs.end());
 
-            send(client, &FMIClient::fmi2_import_set_real, 0, 0, fvrs, vec);
+            send(client, fmi2_import_set_real(0, 0, fvrs, vec));
         }
     }
 
     //do actual step
 #ifdef ENABLE_DEMO_HACKS
     //TODO: always do newStep=true? Keep it a demo hack for now
-    block(m_slaves, &FMIClient::fmi2_import_do_step, 0, 0, t, dt, true);
+    block(m_slaves, fmi2_import_do_step(0, 0, t, dt, true));
 #else
-    block(m_slaves, &FMIClient::fmi2_import_do_step, 0, 0, t, dt, false);
+    block(m_slaves, fmi2_import_do_step(0, 0, t, dt, false));
 #endif
 }

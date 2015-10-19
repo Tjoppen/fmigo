@@ -4,7 +4,7 @@ SET(HEADERS
     include/fmitcp/common.h
     include/fmitcp/Logger.h
     include/fmitcp/Server.h
-    include/fmitcp/EventPump.h
+    include/fmitcp/serialize.h
 )
 SET(SRCS
     src/fmitcp.pb.cc
@@ -13,7 +13,13 @@ SET(SRCS
     src/Logger.cpp
     src/Server.cpp
     src/EventPump.cpp
+    src/serialize.cpp
 )
+
+if(USE_LACEWING)
+    set(HEADERS ${HEADERS} include/fmitcp/EventPump.h)
+    set(SRCS    ${SRCS}    src/EventPump.cpp)
+endif()
 
 # Compile proto
 IF(WIN32)

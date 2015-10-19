@@ -19,7 +19,11 @@ class StrongMaster : public JacobiMaster {
     void getDirectionalDerivative(FMIClient *client, sc::Equation *eq, void (sc::Equation::*getSeed)(sc::Vec3&), std::vector<int> accelerationRefs, std::vector<int> forceRefs);
     void getSpatialAngularDirectionalDerivatives(FMIClient *client, sc::Equation *eq, StrongConnector *sc, void (sc::Equation::*getSpatialSeed)(sc::Vec3&), void (sc::Equation::*getRotationalSeed)(sc::Vec3&));
 public:
+#ifdef USE_LACEWING
     StrongMaster(fmitcp::EventPump *pump, std::vector<FMIClient*> slaves, std::vector<WeakConnection*> weakConnections, sc::Solver strongCouplingSolver);
+#else
+    StrongMaster(std::vector<FMIClient*> slaves, std::vector<WeakConnection*> weakConnections, sc::Solver strongCouplingSolver);
+#endif
     void runIteration(double t, double dt);
 };
 }

@@ -1,4 +1,5 @@
 #include <fstream>
+#include <sstream>
 #include <fmitcp/Client.h>
 #include <fmitcp/Logger.h>
 
@@ -15,13 +16,17 @@ void jmCallbacksLoggerClient(jm_callbacks* c, jm_string module, jm_log_level_enu
   printf("[module = %s][log level = %s] %s\n", module, jm_log_level_to_string(log_level), message);fflush(NULL);
 }
 
+#ifdef USE_LACEWING
 FMIClient::FMIClient(fmitcp::EventPump* pump, int id, string host, long port) : fmitcp::Client(pump), sc::Slave() {
+#else
+FMIClient::FMIClient(zmq::context_t &context, int id, string host, long port) : fmitcp::Client(), sc::Slave(),
+    m_socket(context, ZMQ_PAIR) {
+#endif
     m_id = id;
     m_host = host;
     m_port = port;
     m_master = NULL;
     m_initialized = false;
-    m_numDirectionalDerivativesLeft = 0;
     m_fmi2Instance = NULL;
     m_context = NULL;
     m_fmi2Outputs = NULL;
@@ -36,32 +41,17 @@ FMIClient::~FMIClient() {
 };
 
 void FMIClient::connect(void) {
+#ifdef USE_LACEWING
     Client::connect(m_host, m_port);
+#else
+    ostringstream oss;
+    oss << "tcp://" << m_host << ":" << m_port;
+    string str = oss.str();
+    m_logger.log(fmitcp::Logger::LOG_DEBUG,"connecting to %s\n", str.c_str());
+    m_socket.connect(str.c_str());
+    m_logger.log(fmitcp::Logger::LOG_DEBUG,"connected\n");
+#endif
 }
-
-/// Accumulate a get_directional_derivative request
-void FMIClient::pushDirectionalDerivativeRequest(int fmiId, std::vector<int> v_ref, std::vector<int> z_ref, std::vector<double> dv){
-    m_dd_v_refs.push_back(v_ref);
-    m_dd_z_refs.push_back(z_ref);
-    m_dd_dvs.push_back(dv);
-};
-
-/// Execute the next directional derivative request in the queue
-void FMIClient::shiftExecuteDirectionalDerivativeRequest(){
-    std::vector<int> v_ref = m_dd_v_refs.back();
-    std::vector<int> z_ref = m_dd_z_refs.back();
-    std::vector<double> dv = m_dd_dvs.back();
-
-    m_dd_v_refs.pop_back();
-    m_dd_z_refs.pop_back();
-    m_dd_dvs.pop_back();
-    fmi2_import_get_directional_derivative(0, 0, v_ref, z_ref, dv);
-};
-
-/// Get the total number of directional derivative requests queued
-int FMIClient::numDirectionalDerivativeRequests(){
-    return m_dd_v_refs.size();
-};
 
 void FMIClient::onConnect(){
     m_master->slaveConnected(this);

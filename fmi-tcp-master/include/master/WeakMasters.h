@@ -11,13 +11,20 @@
 #include "master/BaseMaster.h"
 #include "master/WeakConnection.h"
 #include "common/common.h"
+#include <fmitcp/serialize.h>
+
+using namespace fmitcp::serialize;
 
 namespace fmitcp_master {
 class WeakMaster : public BaseMaster {
 protected:
     vector<WeakConnection*> m_weakConnections;
 public:
+#ifdef USE_LACEWING
     WeakMaster(fmitcp::EventPump *pump, vector<FMIClient*> slaves, vector<WeakConnection*> weakConnections) : BaseMaster(pump, slaves),
+#else
+    WeakMaster(vector<FMIClient*> slaves, vector<WeakConnection*> weakConnections) : BaseMaster(slaves),
+#endif
             m_weakConnections(weakConnections) {
     }
 };
@@ -25,7 +32,11 @@ public:
 //aka parallel stepper
 class JacobiMaster : public WeakMaster {
 public:
+#ifdef USE_LACEWING
     JacobiMaster(fmitcp::EventPump *pump, vector<FMIClient*> slaves, vector<WeakConnection*> weakConnections) : WeakMaster(pump, slaves, weakConnections) {
+#else
+    JacobiMaster(vector<FMIClient*> slaves, vector<WeakConnection*> weakConnections) : WeakMaster(slaves, weakConnections) {
+#endif
         fprintf(stderr, "JacobiMaster\n");
     }
 
@@ -34,7 +45,7 @@ public:
         const map<FMIClient*, vector<int> > clientWeakRefs = getOutputWeakRefs(m_weakConnections);
 
         for (auto it = clientWeakRefs.begin(); it != clientWeakRefs.end(); it++) {
-            send(it->first, &FMIClient::fmi2_import_get_real, 0, 0, it->second);
+            send(it->first, fmi2_import_get_real(0, 0, it->second));
         }
         wait();
 
@@ -50,7 +61,7 @@ public:
         const map<FMIClient*, pair<vector<int>, vector<double> > > refValues = getInputWeakRefsAndValues(m_weakConnections);
 
         for (auto it = refValues.begin(); it != refValues.end(); it++) {
-            send(it->first, &FMIClient::fmi2_import_set_real, 0, 0, it->second.first, it->second.second);
+            send(it->first, fmi2_import_set_real(0, 0, it->second.first, it->second.second));
         }
     }
 
@@ -59,9 +70,9 @@ public:
 
 #ifdef ENABLE_DEMO_HACKS
         //AgX requires newStep=true
-        block(m_slaves, &FMIClient::fmi2_import_do_step, 0, 0, t, dt, true);
+        block(m_slaves, fmi2_import_do_step(0, 0, t, dt, true));
 #else
-        block(m_slaves, &FMIClient::fmi2_import_do_step, 0, 0, t, dt, false);
+        block(m_slaves, fmi2_import_do_step(0, 0, t, dt, false));
 #endif
     }
 };
@@ -69,7 +80,11 @@ public:
 //aka serial stepper
 class GaussSeidelMaster : public WeakMaster {
 public:
+#ifdef USE_LACEWING
     GaussSeidelMaster(fmitcp::EventPump *pump, vector<FMIClient*> slaves, vector<WeakConnection*> weakConnections) : WeakMaster(pump, slaves, weakConnections) {
+#else
+    GaussSeidelMaster(vector<FMIClient*> slaves, vector<WeakConnection*> weakConnections) : WeakMaster(slaves, weakConnections) {
+#endif
         fprintf(stderr, "GSMaster\n");
     }
 
@@ -79,7 +94,7 @@ public:
         for (auto it = m_slaves.begin(); it != m_slaves.end(); it++) {
             if (clientWeakRefs[*it].size() > 0) {
             //get connection outputs
-            block(*it, &FMIClient::fmi2_import_get_real, 0, 0, clientWeakRefs[*it]);
+            block(*it, fmi2_import_get_real(0, 0, clientWeakRefs[*it]));
 
             //set connection inputs, pipeline with do_step()
             const pair<vector<int>, vector<double> > refValues = getInputWeakRefsAndValues(m_weakConnections)[*it];
@@ -89,14 +104,14 @@ public:
                 fprintf(stderr, "%i real VR %i = %f\n", (*it)->getId(), refValues.first[i], *it2);
             }*/
 
-            send(*it, &FMIClient::fmi2_import_set_real, 0, 0, refValues.first, refValues.second);
+            send(*it, fmi2_import_set_real(0, 0, refValues.first, refValues.second));
             }
 
 #ifdef ENABLE_DEMO_HACKS
             //AgX requires newStep=true
             block(*it, &FMIClient::fmi2_import_do_step, 0, 0, t, dt, true);
 #else
-            block(*it, &FMIClient::fmi2_import_do_step, 0, 0, t, dt, false);
+            block(*it, fmi2_import_do_step(0, 0, t, dt, false));
 #endif
         }
     }

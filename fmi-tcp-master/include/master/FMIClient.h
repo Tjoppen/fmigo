@@ -8,6 +8,9 @@
 #include <string>
 #include "master/StrongConnector.h"
 #include <deque>
+#ifndef USA_LACEWING
+#include <zmq.hpp>
+#endif
 
 namespace fmitcp_master {
 
@@ -31,16 +34,12 @@ namespace fmitcp_master {
         fmi2_import_t* m_fmi2Instance;
         fmi2_import_variable_list_t* m_fmi2Outputs;
 
-        // For accumulating getDirectionalDerivative requests
-        std::vector< std::vector<int> > m_dd_v_refs;
-        std::vector< std::vector<int> > m_dd_z_refs;
-        std::vector< std::vector<double> > m_dd_dvs;
-
     public:
-        BaseMaster * m_master;
+#ifndef USE_LACEWING
+        zmq::socket_t m_socket;
+#endif
 
-        /// How many more directional derivatives to wait for
-        int m_numDirectionalDerivativesLeft;
+        BaseMaster * m_master;
 
         /// Last fetched result from getReal
         std::vector<double> m_getRealValues;
@@ -48,8 +47,12 @@ namespace fmitcp_master {
         /// Values returned from calls to fmiGetDirectionalDerivative()
         std::deque<std::vector<double> > m_getDirectionalDerivativeValues;
 
+#ifdef USE_LACEWING
         /// Create a new client for the Master, driven by the given eventpump.
         FMIClient(fmitcp::EventPump* pump, int id, std::string host, long port);
+#else
+        FMIClient(zmq::context_t &context, int id, string host, long port);
+#endif
         virtual ~FMIClient();
 
         int getId();

@@ -12,7 +12,9 @@
 
 namespace fmitcp_master {
     class BaseMaster {
+#ifdef USE_LACEWING
         fmitcp::EventPump *m_pump;
+#endif
 
     protected:
         std::vector<FMIClient*> m_slaves;
@@ -21,11 +23,16 @@ namespace fmitcp_master {
         //number of pending requests sent to clients
         size_t m_pendingRequests;
 
+#ifdef USE_LACEWING
         explicit BaseMaster(fmitcp::EventPump *pump, std::vector<FMIClient*> slaves);
+#else
+        explicit BaseMaster(std::vector<FMIClient*> slaves);
+#endif
         virtual ~BaseMaster();
         virtual void runIteration(double t, double dt) = 0;
 
         void gotSomething() {
+#ifdef USE_LACEWING
             if (m_pendingRequests == 0) {
                 fprintf(stderr, "Got response while m_pendingRequests = 0\n");
                 exit(1);
@@ -33,10 +40,11 @@ namespace fmitcp_master {
 
             //fprintf(stderr, "m_pendingRequests(%zu)--;\n", m_pendingRequests);
             m_pendingRequests--;
+#endif
         }
 
         // These are callbacks that fire when a slave did something:
-        void slaveConnected                 (FMIClient* slave){fprintf(stderr, "Client %i connected\n", slave->getId()); gotSomething();}
+        void slaveConnected                 (FMIClient* slave){fprintf(stderr, "Client %i connected\n", slave->getId());}
         void slaveDisconnected              (FMIClient* slave){gotSomething();}
         void slaveError                     (FMIClient* slave){exit(1);}
 
@@ -56,28 +64,40 @@ namespace fmitcp_master {
         on(onSlaveDirectionalDerivative)
 
         //T is needed because func maybe of a function in Client (from which FMIClient is derived)
-        template<typename T, typename... Params, typename... FnParams> void send(std::vector<FMIClient*> fmus, void (T::*func)(FnParams...), Params&&... args) {
+        void send(std::vector<FMIClient*> fmus, std::string str) {
             m_pendingRequests += fmus.size();
             for (auto it = fmus.begin(); it != fmus.end(); it++) {
-                ((*it)->*func)(std::forward<Params>(args)...);
+#ifdef USE_LACEWING
+                (*it)->sendMessage(str);
+#else
+                zmq::message_t msg(str.size());
+                memcpy(msg.data(), str.data(), str.size());
+                (*it)->m_socket.send(msg);
+#endif
             }
         }
 
         //like send() but only for one FMU
-        template<typename T, typename... Params, typename... FnParams> void send(FMIClient *fmu, void (T::*func)(FnParams...), Params&&... args) {
+        void send(FMIClient *fmu, std::string str) {
             m_pendingRequests++;
-            (fmu->*func)(std::forward<Params>(args)...);
+#ifdef USE_LACEWING
+            fmu->sendMessage(str);
+#else
+            zmq::message_t msg(str.size());
+            memcpy(msg.data(), str.data(), str.size());
+            fmu->m_socket.send(msg);
+#endif
         }
 
         //like send() except it blocks
-        template<typename T, typename... Params, typename... FnParams> void block(std::vector<FMIClient*> fmus, void (T::*func)(FnParams...), Params&&... args) {
-            send(fmus, func, std::forward<Params>(args)...);
+        void block(std::vector<FMIClient*> fmus, std::string str) {
+            send(fmus, str);
             wait();
         }
 
         //like block() but only for one FMU
-        template<typename T, typename... Params, typename... FnParams> void block(FMIClient *fmu, void (T::*func)(FnParams...), Params&&... args) {
-            send(fmu, func, std::forward<Params>(args)...);
+        void block(FMIClient *fmu, std::string str) {
+            send(fmu, str);
             wait();
         }
 

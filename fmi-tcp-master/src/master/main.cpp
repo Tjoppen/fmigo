@@ -2,7 +2,12 @@
 #include <fmitcp/Client.h>
 #include <fmitcp/common.h>
 #include <fmitcp/Logger.h>
+#ifdef USE_LACEWING
 #include <fmitcp/EventPump.h>
+#else
+#include <zmq.hpp>
+#endif
+#include <fmitcp/serialize.h>
 #include <stdlib.h>
 #include <signal.h>
 #include <sstream>
@@ -22,9 +27,14 @@
 
 using namespace fmitcp_master;
 using namespace fmitcp;
+using namespace fmitcp::serialize;
 using namespace sc;
 
+#ifdef USE_LACEWING
 static FMIClient* connectSlave(std::string uri, fmitcp::EventPump *pump, int slaveId){
+#else
+    static FMIClient* connectSlave(std::string uri, zmq::context_t &context, int slaveId){
+#endif
     struct parsed_url * url = parse_url(uri.c_str());
 
     if (!url || !url->port || !url->host) {
@@ -32,18 +42,30 @@ static FMIClient* connectSlave(std::string uri, fmitcp::EventPump *pump, int sla
         return NULL;
     }
 
+#ifdef USE_LACEWING
     FMIClient* client = new FMIClient(pump, slaveId, url->host, atoi(url->port));
+#else
+    FMIClient* client = new FMIClient(context, slaveId, url->host, atoi(url->port));
+#endif
     parsed_url_free(url);
 
     return client;
 }
 
+#ifdef USE_LACEWING
 static vector<FMIClient*> setupSlaves(vector<string> fmuURIs, EventPump *pump) {
+#else
+static vector<FMIClient*> setupSlaves(vector<string> fmuURIs, zmq::context_t &context) {
+#endif
     vector<FMIClient*> slaves;
     int slaveId = 0;
     for (auto it = fmuURIs.begin(); it != fmuURIs.end(); it++, slaveId++) {
         // Assume URI to slave
+#ifdef USE_LACEWING
         FMIClient *slave = connectSlave(*it, pump, slaveId);
+#else
+        FMIClient *slave = connectSlave(*it, context, slaveId);
+#endif
 
         if (!slave) {
             fprintf(stderr, "Failed to connect slave with URI %s\n", it->c_str());
@@ -171,7 +193,7 @@ static void sendUserParams(BaseMaster *master, vector<FMIClient*> slaves, map<pa
             for (auto it2 = it->second.begin(); it2 != it->second.end(); it2++) {
                 values.push_back(it2->realValue);
             }
-            master->send(client, &FMIClient::fmi2_import_set_real, 0, 0, vrs, values);
+            master->send(client, fmi2_import_set_real(0, 0, vrs, values));
             break;
         }
         case fmi2_base_type_enum:
@@ -180,7 +202,7 @@ static void sendUserParams(BaseMaster *master, vector<FMIClient*> slaves, map<pa
             for (auto it2 = it->second.begin(); it2 != it->second.end(); it2++) {
                 values.push_back(it2->intValue);
             }
-            master->send(client, &FMIClient::fmi2_import_set_integer, 0, 0, vrs, values);
+            master->send(client, fmi2_import_set_integer(0, 0, vrs, values));
             break;
         }
         case fmi2_base_type_bool: {
@@ -188,7 +210,7 @@ static void sendUserParams(BaseMaster *master, vector<FMIClient*> slaves, map<pa
             for (auto it2 = it->second.begin(); it2 != it->second.end(); it2++) {
                 values.push_back(it2->boolValue);
             }
-            master->send(client, &FMIClient::fmi2_import_set_boolean, 0, 0, vrs, values);
+            master->send(client, fmi2_import_set_boolean(0, 0, vrs, values));
             break;
         }
         case fmi2_base_type_str: {
@@ -196,7 +218,7 @@ static void sendUserParams(BaseMaster *master, vector<FMIClient*> slaves, map<pa
             for (auto it2 = it->second.begin(); it2 != it->second.end(); it2++) {
                 values.push_back(it2->stringValue);
             }
-            master->send(client, &FMIClient::fmi2_import_set_string, 0, 0, vrs, values);
+            master->send(client, fmi2_import_set_string(0, 0, vrs, values));
             break;
         }
         }
@@ -205,7 +227,9 @@ static void sendUserParams(BaseMaster *master, vector<FMIClient*> slaves, map<pa
 
 int main(int argc, char *argv[] ) {
     fmitcp::Logger logger;
+#ifdef USE_LACEWING
     fmitcp::EventPump pump;
+#endif
     double timeStep = 0.1;
     double startTime = 0;
     double endTime = 10;
@@ -253,7 +277,12 @@ int main(int argc, char *argv[] ) {
         fprintf(stderr, "WARNING: -o not implemented (output always goes to stdout)\n");
     }
 
+#ifdef USE_LACEWING
     vector<FMIClient*> slaves = setupSlaves(fmuURIs, &pump);
+#else
+    zmq::context_t context(1);
+    vector<FMIClient*> slaves = setupSlaves(fmuURIs, context);
+#endif
     vector<WeakConnection*> weakConnections = setupWeakConnections(connections, slaves);
     setupConstraintsAndSolver(scs, slaves, &solver);
 
@@ -266,10 +295,19 @@ int main(int argc, char *argv[] ) {
         }
 
         solver.setSpookParams(relaxation,compliance,timeStep);
+#ifdef USE_LACEWING
         master = new StrongMaster(&pump, slaves, weakConnections, solver);
+#else
+        master = new StrongMaster(slaves, weakConnections, solver);
+#endif
     } else {
+#ifdef USE_LACEWING
         master = (method == gs) ?           (BaseMaster*)new GaussSeidelMaster(&pump, slaves, weakConnections) :
                                             (BaseMaster*)new JacobiMaster(&pump, slaves, weakConnections);
+#else
+        master = (method == gs) ?           (BaseMaster*)new GaussSeidelMaster(slaves, weakConnections) :
+                                            (BaseMaster*)new JacobiMaster(slaves, weakConnections);
+#endif
     }
 
     //hook clients to master
@@ -278,12 +316,14 @@ int main(int argc, char *argv[] ) {
     }
 
     //init
-    master->send(slaves, &FMIClient::connect);
-    master->send(slaves, &FMIClient::get_xml, 0, 0);
+    for (auto it = slaves.begin(); it != slaves.end(); it++) {
+        (*it)->connect();
+    }
+    master->send(slaves, get_xml(0, 0));
 
     for (size_t x = 0; x < slaves.size(); x++) {
         //set visibility based on command line
-        master->send(slaves[x], &FMIClient::fmi2_import_instantiate2, 0, x < fmuVisibilities.size() ? fmuVisibilities[x] : false);
+        master->send(slaves[x], fmi2_import_instantiate2(0, x < fmuVisibilities.size() ? fmuVisibilities[x] : false));
     }
 
     //TODO: send initial values parsed from XML
@@ -291,7 +331,7 @@ int main(int argc, char *argv[] ) {
     //send user-defined parameters
     sendUserParams(master, slaves, params);
 
-    master->block(slaves, &FMIClient::fmi2_import_initialize_slave, 0, 0, true, relativeTolerance, startTime, endTime >= 0, endTime);
+    master->block(slaves, fmi2_import_initialize_slave(0, 0, true, relativeTolerance, startTime, endTime >= 0, endTime));
 
     double t = startTime;
 #ifdef WIN32
@@ -345,7 +385,7 @@ int main(int argc, char *argv[] ) {
 
         //get outputs
         for (auto it = slaves.begin(); it != slaves.end(); it++) {
-            master->send(*it, &FMIClient::fmi2_import_get_real, 0, 0, (*it)->getRealOutputValueReferences());
+            master->send(*it, fmi2_import_get_real(0, 0, (*it)->getRealOutputValueReferences()));
         }
 
         master->wait();

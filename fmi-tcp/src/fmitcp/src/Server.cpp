@@ -7,6 +7,7 @@
 
 using namespace fmitcp;
 
+#ifdef USE_LACEWING
 void serverOnConnect(lw_server s, lw_client c) {
   Server * server = (Server*)lw_server_tag(s);
   server->clientConnected(c);
@@ -24,6 +25,7 @@ void serverOnError(lw_server s, lw_error error) {
   Server * server = (Server*)lw_server_tag(s);
   server->error(s,error);
 }
+#endif
 
 /*!
  * Callback function for FMILibrary. Logs the FMILibrary operations.
@@ -32,6 +34,7 @@ void jmCallbacksLogger(jm_callbacks* c, jm_string module, jm_log_level_enu_t log
   printf("[module = %s][log level = %s] %s\n", module, jm_log_level_to_string(log_level), message);fflush(NULL);
 }
 
+#ifdef USE_LACEWING
 Server::Server(string fmuPath, bool debugLogging, jm_log_level_enu_t logLevel, EventPump *pump) {
   m_fmuParsed = true;
   m_fmuPath = fmuPath;
@@ -48,14 +51,38 @@ Server::Server(string fmuPath, bool debugLogging, jm_log_level_enu_t logLevel, E
   m_logger = logger;
   init(pump);
 }
-
-Server::~Server() {
-  lw_server_delete(m_server);
+#else
+Server::Server(string fmuPath, bool debugLogging, jm_log_level_enu_t logLevel) {
+  m_fmuParsed = true;
+  m_fmuPath = fmuPath;
+  m_debugLogging = debugLogging;
+  m_logLevel = logLevel;
+  init();
 }
 
+Server::Server(string fmuPath, bool debugLogging, jm_log_level_enu_t logLevel, const Logger &logger) {
+  m_fmuParsed = true;
+  m_fmuPath = fmuPath;
+  m_debugLogging = debugLogging;
+  m_logLevel = logLevel;
+  m_logger = logger;
+  init();
+}
+#endif
+
+Server::~Server() {
+#ifdef USE_LACEWING
+  lw_server_delete(m_server);
+#endif
+}
+
+#ifdef USE_LACEWING
 void Server::init(EventPump * pump) {
   m_pump = pump;
   m_server = lw_server_new(pump->getPump());
+#else
+void Server::init() {
+#endif
   m_sendDummyResponses = false;
 
   if(m_fmuPath == "dummy"){
@@ -168,6 +195,7 @@ void Server::clientDisconnected(lw_client c) {
   onClientDisconnect();
 }
 
+#ifdef USE_LACEWING
 void Server::clientData(lw_client c, const char *data, size_t size) {
  //undo the framing - we might have gotten more than one packet
  vector<string> messages = unpackBuffer(data, size, &tail);
@@ -178,6 +206,11 @@ void Server::clientData(lw_client c, const char *data, size_t size) {
   // Construct message
   fmitcp_proto::fmitcp_message req;
   bool parseStatus = req.ParseFromString(data2);
+#else
+string Server::clientData(const char *data, size_t size) {
+  fmitcp_proto::fmitcp_message req;
+  bool parseStatus = req.ParseFromArray(data, size);
+#endif
   fmitcp_proto::fmitcp_message_Type type = req.type();
 
   m_logger.log(Logger::LOG_DEBUG,"Parse status: %d\n", parseStatus);
@@ -1008,10 +1041,18 @@ void Server::clientData(lw_client c, const char *data, size_t size) {
     m_logger.log(Logger::LOG_ERROR,"Message type not recognized: %d.\n",type);
   }
 
+#ifdef USE_LACEWING
   if (sendResponse) {
-    fmitcp::sendProtoBuffer(c,&res);
+    fmitcp::sendProtoBuffer(c,res.SerializeAsString());
   }
  }
+#else
+    if (sendResponse) {
+        return res.SerializeAsString();
+    } else {
+        return "";
+    }
+#endif
 }
 
 void Server::error(lw_server s, lw_error error) {
@@ -1019,6 +1060,7 @@ void Server::error(lw_server s, lw_error error) {
   onError(err);
 }
 
+#ifdef USE_LACEWING
 void Server::host(string hostName, long port) {
   // save this object in the server tag so we can use it later on.
   lw_server_set_tag(m_server, (void*)this);
@@ -1036,6 +1078,7 @@ void Server::host(string hostName, long port) {
 
   m_logger.log(Logger::LOG_NETWORK,"Listening to %s:%ld\n",hostName.c_str(),port);
 }
+#endif
 
 void Server::sendDummyResponses(bool sendDummyResponses) {
   m_sendDummyResponses = sendDummyResponses;

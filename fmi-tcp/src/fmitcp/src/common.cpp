@@ -2,9 +2,8 @@
 #include <vector>
 #include <string>
 
-void fmitcp::sendProtoBuffer(lw_client c, fmitcp_proto::fmitcp_message * message){
-    std::string s = message->SerializeAsString();
-
+#ifdef USE_LACEWING
+void fmitcp::sendProtoBuffer(lw_client c, std::string s){
     char sz[4] = {
         //big endian network order is customary
         s.size() >> 24,
@@ -53,6 +52,7 @@ vector<string> fmitcp::unpackBuffer(const char* indata, long insize, string *tai
 
     return messages;
 }
+#endif
 
 fmitcp_proto::jm_status_enu_t fmitcp::fmiJMStatusToProtoJMStatus(jm_status_enu_t status) {
   switch (status) {

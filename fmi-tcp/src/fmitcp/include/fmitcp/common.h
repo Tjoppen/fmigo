@@ -39,9 +39,11 @@ namespace fmitcp {
     return res;
   }
 
+#ifdef USE_LACEWING
   /// Send a binary protobuf to a client
-  void sendProtoBuffer(lw_client c, fmitcp_proto::fmitcp_message * message);
+  void sendProtoBuffer(lw_client c, std::string s);
   std::vector<std::string> unpackBuffer(const char* data, long size, std::string *tail);
+#endif
 
   fmitcp_proto::jm_status_enu_t fmiJMStatusToProtoJMStatus(jm_status_enu_t status);
   fmitcp_proto::fmi2_status_t fmi2StatusToProtofmi2Status(fmi2_status_t status);

@@ -298,20 +298,6 @@ void Client::disconnect(){
     //lw_pump_delete(m_pump->getPump());
 }
 
-void Client::getXml(int message_id, int fmuId) {
-  // Construct message
-  fmitcp_message m;
-  m.set_type(fmitcp_message_Type_type_get_xml_req);
-
-  get_xml_req * req = m.mutable_get_xml_req();
-  req->set_message_id(message_id);
-  req->set_fmuid(fmuId);
-
-  m_logger.log(Logger::LOG_NETWORK, "> get_xml_req(mid=%d,fmuId=%d)\n", message_id, fmuId);
-
-  sendMessage(&m);
-}
-
 void Client::fmi2_import_instantiate(int message_id) {
     fmi2_import_instantiate2(message_id, false);
 }

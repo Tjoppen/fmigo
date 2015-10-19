@@ -279,7 +279,7 @@ int main(int argc, char *argv[] ) {
 
     //init
     master->send(slaves, &FMIClient::connect);
-    master->send(slaves, &FMIClient::getXml, 0, 0);
+    master->send(slaves, &FMIClient::get_xml, 0, 0);
 
     for (size_t x = 0; x < slaves.size(); x++) {
         //set visibility based on command line

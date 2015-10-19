@@ -106,8 +106,6 @@ namespace fmitcp {
         */
         virtual void on_fmi2_import_get_directional_derivative_res(int mid, const vector<double>& dz, fmitcp_proto::fmi2_status_t status){}
 
-        void getXml(int message_id, int fmuId);
-
         // FMI functions follow. These should correspond to FMILibrary functions.
 
         // =========== FMI 2.0 (CS) Co-Simulation functions ===========

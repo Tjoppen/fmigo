@@ -85,7 +85,7 @@ bool FMIClient::isInitialized(){
     return m_initialized;
 };
 
-void FMIClient::onGetXmlRes(int mid, fmitcp_proto::jm_log_level_enu_t logLevel, string xml) {
+void FMIClient::on_get_xml_res(int mid, fmitcp_proto::jm_log_level_enu_t logLevel, string xml) {
   m_xml = xml;
   // parse the xml.
   // JM callbacks

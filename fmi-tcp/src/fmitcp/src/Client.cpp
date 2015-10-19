@@ -221,7 +221,7 @@ void Client::clientData(lw_client c, const char* data, long size){
 
         get_xml_res * r = res.mutable_get_xml_res();
         m_logger.log(Logger::LOG_NETWORK,"< get_xml_res(mid=%d,xml=...)\n",r->message_id());
-        onGetXmlRes(r->message_id(), r->loglevel(), r->xml());
+        on_get_xml_res(r->message_id(), r->loglevel(), r->xml());
 
         break;
     }

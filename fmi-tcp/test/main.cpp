@@ -255,7 +255,7 @@ public:
         get_xml(messageId(),0);
     }
 
-    void onGetXmlRes(int message_id, string xml){
+    void on_get_xml_res(int message_id, string xml){
         assertMessageId(message_id);
         m_pump->exitEventLoop();
     };

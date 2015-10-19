@@ -99,7 +99,6 @@ namespace fmitcp_master {
 
         // --- These methods overrides Client methods. Most of them just passes the result to the Master ---
 
-        void onGetXmlRes(int mid, fmitcp_proto::jm_log_level_enu_t logLevel, string xml);
         void on_fmi2_import_instantiate_res                     (int mid, fmitcp_proto::jm_status_enu_t status);
         void on_fmi2_import_initialize_slave_res                (int mid, fmitcp_proto::fmi2_status_t status);
         void on_fmi2_import_terminate_slave_res                 (int mid, fmitcp_proto::fmi2_status_t status);
@@ -141,6 +140,7 @@ namespace fmitcp_master {
         void on_fmi2_import_set_fmu_state_res                   (int mid, fmitcp_proto::fmi2_status_t status);
         void on_fmi2_import_free_fmu_state_res                  (int mid, fmitcp_proto::fmi2_status_t status);
         void on_fmi2_import_get_directional_derivative_res      (int mid, const vector<double>& dz, fmitcp_proto::fmi2_status_t status);
+        void on_get_xml_res                                     (int mid, fmitcp_proto::jm_log_level_enu_t logLevel, string xml);
     };
 };
 

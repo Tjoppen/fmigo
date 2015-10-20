@@ -40,7 +40,7 @@ public:
         fprintf(stderr, "JacobiMaster\n");
     }
 
-    void transferWeakValues() {
+    void runIteration(double t, double dt) {
         //get connection outputs
         const map<FMIClient*, vector<int> > clientWeakRefs = getOutputWeakRefs(m_weakConnections);
 
@@ -63,10 +63,6 @@ public:
         for (auto it = refValues.begin(); it != refValues.end(); it++) {
             send(it->first, fmi2_import_set_real(0, 0, it->second.first, it->second.second));
         }
-    }
-
-    void runIteration(double t, double dt) {
-        transferWeakValues();
 
 #ifdef ENABLE_DEMO_HACKS
         //AgX requires newStep=true

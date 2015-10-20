@@ -55,12 +55,21 @@ void StrongMaster::getSpatialAngularDirectionalDerivatives(FMIClient *client, Eq
 }
 
 void StrongMaster::runIteration(double t, double dt) {
-    //handle weak values like JacobiMaster
-    transferWeakValues();
+    //get weak connector outputs
+    const map<FMIClient*, vector<int> > clientWeakRefs = getOutputWeakRefs(m_weakConnections);
+
+    for (auto it = clientWeakRefs.begin(); it != clientWeakRefs.end(); it++) {
+        send(it->first, fmi2_import_get_real(0, 0, it->second));
+    }
+    wait();
+
+    //disentangle received values for set_real() further down (before do_step())
+    //we shouldn't set_real() for these until we've gotten directional derivatives
+    //this sets StrongMaster apart from the weak masters
+    const map<FMIClient*, pair<vector<int>, vector<double> > > refValues = getInputWeakRefsAndValues(m_weakConnections);
 
     //get strong connector inputs
-    //NOTE: set_real() for weak values are in-flight here
-    //TODO: it'd be nice if thse get_real() were pipelined with the get_real()s done in transferWeakValues()
+    //TODO: it'd be nice if these get_real() were pipelined with the get_real()s done above
     for(int i=0; i<m_slaves.size(); i++){
         //check m_getDirectionalDerivativeValues while we're at it
         if (m_slaves[i]->m_getDirectionalDerivativeValues.size() > 0) {
@@ -230,6 +239,11 @@ void StrongMaster::runIteration(double t, double dt) {
 
             send(client, fmi2_import_set_real(0, 0, fvrs, vec));
         }
+    }
+
+    //set weak connector inputs
+    for (auto it = refValues.begin(); it != refValues.end(); it++) {
+        send(it->first, fmi2_import_set_real(0, 0, it->second.first, it->second.second));
     }
 
     //do actual step

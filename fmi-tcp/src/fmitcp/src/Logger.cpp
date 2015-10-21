@@ -6,7 +6,8 @@
 using namespace fmitcp;
 
 Logger::Logger(){
-    m_filter = ~0; // Log everything
+    //default to only logging errors
+    m_filter = LOG_ERROR;
     m_prefix = "";
 }
 
@@ -15,6 +16,14 @@ Logger::~Logger(){
 }
 
 void Logger::log(Logger::LogMessageType type, const char * format, ...){
+    if (type < m_filter) {
+        //need to do this because reasons
+        va_list args;
+        va_start(args, format);
+        va_end(args);
+        fflush(NULL);
+        return;
+    }
     // Print prefix
     if(m_prefix != ""){
         fprintf(stderr, "%s",m_prefix.c_str());

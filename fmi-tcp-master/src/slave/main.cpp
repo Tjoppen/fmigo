@@ -183,9 +183,7 @@ int main(int argc, char *argv[]) {
       if (!socket.recv(&msg)) {
           break;
       }
-      fprintf(stderr, "Got REQuest of size %li\n", msg.size());
       string str = server.clientData(static_cast<char*>(msg.data()), msg.size());
-      fprintf(stderr, "Reply: %i B\n", str.length());
       if (str.length() == 0) {
           fprintf(stderr, "Zero-length reply implies error - quitting\n");
           exit(1);

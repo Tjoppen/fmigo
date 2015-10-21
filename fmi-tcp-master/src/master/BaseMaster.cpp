@@ -28,6 +28,10 @@ BaseMaster::~BaseMaster() {
 }
 
 void BaseMaster::wait() {
+    //allow polling once for each request, plus ten seconds more
+    int maxPolls = m_pendingRequests + 10;
+    int numPolls = 0;
+
     while (m_pendingRequests > 0) {
 #ifdef USE_LACEWING
         m_pump->tick();
@@ -43,8 +47,8 @@ void BaseMaster::wait() {
         items[x].socket = m_slaves[x]->m_socket;
         items[x].events = ZMQ_POLLIN;
     }
-    fprintf(stderr, "polling %li sockets, %li pending\n", m_slaves.size(), m_pendingRequests);
-    int n = zmq::poll(items.data(), m_slaves.size());
+    fprintf(stderr, "polling %li sockets, %li pending (%i/%i)\n", m_slaves.size(), m_pendingRequests, numPolls, maxPolls);
+    int n = zmq::poll(items.data(), m_slaves.size(), 1000);
     fprintf(stderr, "zmq::poll(): %i new events vs %li pending\n", n, m_pendingRequests);
     for (size_t x = 0; x < m_slaves.size(); x++) {
         if (items[x].revents & ZMQ_POLLIN) {
@@ -53,6 +57,13 @@ void BaseMaster::wait() {
             fprintf(stderr, "Got message of size %li\n", msg.size());
             m_pendingRequests--;
             m_slaves[x]->Client::clientData(static_cast<char*>(msg.data()), msg.size());
+        }
+    }
+    if (m_pendingRequests > 0) {
+        if (++numPolls >= maxPolls) {
+            //Jenkins caught something like this, I think
+            fprintf(stderr, "Exceeded max number of polls (%i) - stuck?\n", maxPolls);
+            exit(1);
         }
     }
 #endif

@@ -66,6 +66,10 @@ EXAMPLES\n\
 }
 
 int main(int argc, char *argv[]) {
+#ifndef USE_LACEWING
+  zmq::context_t context(1);
+#endif
+
   if (argc == 1) {
     // No args given, print help
     printHelp();
@@ -73,7 +77,7 @@ int main(int argc, char *argv[]) {
   }
 
   int j;
-  long port = 3000;
+  int port = 3000;
   bool debugLogging = false;
   //there does not appear to be any way to actually set the log level in an FMU
   //default to logging nothing, else every little thing gets logged
@@ -172,7 +176,6 @@ int main(int argc, char *argv[]) {
   //server.getLogger()->setFilter(Logger::LOG_NETWORK | Logger::LOG_DEBUG | Logger::LOG_ERROR);
   pump.startEventLoop();
 #else
-  zmq::context_t context(1);
   zmq::socket_t socket(context, ZMQ_PAIR);
   ostringstream oss;
   oss << "tcp://*:" << port;
@@ -181,7 +184,8 @@ int main(int argc, char *argv[]) {
   for (;;) {
       zmq::message_t msg;
       if (!socket.recv(&msg)) {
-          break;
+          fprintf(stderr, "Port %i: !socket.recv(&msg)\n", port);
+          exit(1);
       }
       string str = server.clientData(static_cast<char*>(msg.data()), msg.size());
       if (str.length() == 0) {

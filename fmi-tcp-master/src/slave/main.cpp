@@ -66,9 +66,6 @@ EXAMPLES\n\
 }
 
 int main(int argc, char *argv[]) {
-
-  printf("FMI Server %s\n",FMITCP_VERSION);fflush(NULL);
-
   if (argc == 1) {
     // No args given, print help
     printHelp();
@@ -78,8 +75,9 @@ int main(int argc, char *argv[]) {
   int j;
   long port = 3000;
   bool debugLogging = false;
-  jm_log_level_enu_t log_level = jm_log_level_fatal;
-  int logging = jm_log_level_fatal;
+  //there does not appear to be any way to actually set the log level in an FMU
+  //default to logging nothing, else every little thing gets logged
+  jm_log_level_enu_t log_level = jm_log_level_nothing;
   string hostName = "localhost",
       fmuPath = "";
 
@@ -102,6 +100,7 @@ int main(int argc, char *argv[]) {
       std::string nextArg = argv[j+1];
 
       std::istringstream ss(nextArg);
+      int logging;
       ss >> logging;
 
       if (logging < 0) {
@@ -161,6 +160,7 @@ int main(int argc, char *argv[]) {
   if (!server.isFmuParsed())
     return EXIT_FAILURE;
 
+  printf("FMI Server %s - tcp://%s:%i <-- %s\n",FMITCP_VERSION, hostName.c_str(), port, fmuPath.c_str());
   server.getLogger()->setPrefix("Server: ");
 
 #ifdef USE_LACEWING

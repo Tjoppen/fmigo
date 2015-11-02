@@ -47,14 +47,15 @@ void BaseMaster::wait() {
         items[x].socket = m_slaves[x]->m_socket;
         items[x].events = ZMQ_POLLIN;
     }
-    fprintf(stderr, "polling %li sockets, %li pending (%i/%i)\n", m_slaves.size(), m_pendingRequests, numPolls, maxPolls);
     int n = zmq::poll(items.data(), m_slaves.size(), 1000000);
-    fprintf(stderr, "zmq::poll(): %i new events vs %li pending\n", n, m_pendingRequests);
+    if (!n) {
+        fprintf(stderr, "polled %li sockets, %li pending (%i/%i), no new events\n", m_slaves.size(), m_pendingRequests, numPolls, maxPolls);
+    }
     for (size_t x = 0; x < m_slaves.size(); x++) {
         if (items[x].revents & ZMQ_POLLIN) {
             zmq::message_t msg;
             m_slaves[x]->m_socket.recv(&msg);
-            fprintf(stderr, "Got message of size %li\n", msg.size());
+            //fprintf(stderr, "Got message of size %li\n", msg.size());
             m_pendingRequests--;
             m_slaves[x]->Client::clientData(static_cast<char*>(msg.data()), msg.size());
         }
@@ -66,7 +67,7 @@ void BaseMaster::wait() {
             exit(1);
         }
     } else {
-        fprintf(stderr, "wait() done\n");
+        //fprintf(stderr, "wait() done\n");
     }
 #endif
     }

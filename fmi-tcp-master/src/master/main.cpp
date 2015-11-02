@@ -345,6 +345,7 @@ int main(int argc, char *argv[] ) {
 
     //run
     while (endTime < 0 || t < endTime) {
+        fprintf(stderr, "\r                                                   \r");
         if (realtimeMode) {
             double t_wall;
 
@@ -375,12 +376,12 @@ int main(int argc, char *argv[] ) {
 
             if (t_wall > t + 1) {
                 //print slowdown factor if we start running behind wall clock
-                fprintf(stderr, "t=%.3f, t_wall = %.3f (slowdown = realtime / %.2f)\n", t, t_wall, t_wall / t);
+                fprintf(stderr, "t=%.3f, t_wall = %.3f (slowdown = realtime / %.2f)", t, t_wall, t_wall / t);
             } else {
-                fprintf(stderr, "t=%.3f, t_wall = %.3f\n", t, t_wall);
+                fprintf(stderr, "t=%.3f, t_wall = %.3f", t, t_wall);
             }
         } else {
-            fprintf(stderr, "t=%.3f\n", t);
+            fprintf(stderr, "t=%.3f", t);
         }
 
         //get outputs
@@ -407,6 +408,7 @@ int main(int argc, char *argv[] ) {
         printf("\n");
         t += timeStep;
     }
+    fprintf(stderr, "\n");
 
     cleanUp(master, slaves, weakConnections);
 

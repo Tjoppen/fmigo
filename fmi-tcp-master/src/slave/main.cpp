@@ -66,6 +66,7 @@ EXAMPLES\n\
 }
 
 int main(int argc, char *argv[]) {
+ try {
 #ifndef USE_LACEWING
   zmq::context_t context(1);
 #endif
@@ -200,4 +201,10 @@ int main(int argc, char *argv[]) {
 #endif
 
   return EXIT_SUCCESS;
+ } catch (zmq::error_t e) {
+      //catch any stray ZMQ exceptions
+      //this should prevent "program stopped working" messages on Windows when fmi-tcp-slaves are taskkill'd
+      fprintf(stderr, "zmq::error_t: %s\n", e.what());
+      return 1;
+ }
 }

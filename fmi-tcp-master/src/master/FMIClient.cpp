@@ -100,6 +100,41 @@ void FMIClient::on_get_xml_res(int mid, fmitcp_proto::jm_log_level_enu_t logLeve
   }
 };
 
+std::string FMIClient::getModelName() const {
+    return fmi2_import_get_model_name(m_fmi2Instance);
+}
+
+variable_map FMIClient::getVariables() const {
+    variable_map ret;
+
+    if (!m_fmi2Instance) {
+        fprintf(stderr, "!m_fmi2Instance in FMIClient::getVariables() - get_xml() failed?\n");
+        exit(1);
+    }
+
+    fmi2_import_variable_list_t *vl = fmi2_import_get_variable_list(m_fmi2Instance, 0);
+    size_t sz = fmi2_import_get_variable_list_size(vl);
+    for (size_t x = 0; x < sz; x++) {
+        fmi2_import_variable_t *var = fmi2_import_get_variable(vl, x);
+        string name = fmi2_import_get_variable_name(var);
+
+        variable var2;
+        var2.vr = fmi2_import_get_variable_vr(var);
+        var2.type = fmi2_import_get_variable_base_type(var);
+        var2.causality = fmi2_import_get_causality(var);
+
+        //fprintf(stderr, "VR %i, type %i, causality %i: %s \"%s\"\n", var2.vr, var2.type, var2.causality, name.c_str(), fmi2_import_get_variable_description(var));
+
+        if (ret.find(name) != ret.end()) {
+            fprintf(stderr, "WARNING: Two or variables named \"%s\"\n", name.c_str());
+        }
+        ret[name] = var2;
+    }
+    fmi2_import_free_variable_list(vl);
+
+    return ret;
+}
+
 void FMIClient::on_fmi2_import_instantiate_res(int mid, fmitcp_proto::jm_status_enu_t status){
     m_master->onSlaveInstantiated(this);
 };

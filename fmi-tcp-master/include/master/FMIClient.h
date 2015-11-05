@@ -10,6 +10,12 @@
 #include <deque>
 
 namespace fmitcp_master {
+    struct variable {
+        int vr;
+        fmi2_base_type_enu_t type;
+        fmi2_causality_enu_t causality;
+    };
+    typedef std::map<std::string, variable> variable_map;
 
     class BaseMaster;
 
@@ -40,6 +46,9 @@ namespace fmitcp_master {
 
         /// Values returned from calls to fmiGetDirectionalDerivative()
         std::deque<std::vector<double> > m_getDirectionalDerivativeValues;
+
+        std::string getModelName() const;
+        variable_map getVariables() const;
 
 #ifdef USE_LACEWING
         /// Create a new client for the Master, driven by the given eventpump.

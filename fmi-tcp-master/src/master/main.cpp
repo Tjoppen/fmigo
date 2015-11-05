@@ -30,6 +30,8 @@ using namespace fmitcp;
 using namespace fmitcp::serialize;
 using namespace sc;
 
+typedef map<pair<int,fmi2_base_type_enu_t>, vector<param> > parameter_map;
+
 #ifdef USE_LACEWING
 static FMIClient* connectSlave(std::string uri, fmitcp::EventPump *pump, int slaveId){
 #else
@@ -81,7 +83,7 @@ static vector<WeakConnection*> setupWeakConnections(vector<connection> connectio
     vector<WeakConnection*> weakConnections;
     for (auto it = connections.begin(); it != connections.end(); it++) {
         if (it->type == fmi2_base_type_real) {
-            fprintf(stderr, "Creating weak connection %d %d %d %d\n", it->fromFMU, it->fromOutputVR, it->toFMU, it->toInputVR);
+            fprintf(stderr, "Creating weak connection FMU %d VR %d -> FMU %d VR %d\n", it->fromFMU, it->fromOutputVR, it->toFMU, it->toInputVR);
             weakConnections.push_back(new WeakConnection(slaves[it->fromFMU], slaves[it->toFMU], it->fromOutputVR, it->toInputVR));
         } else {
             fprintf(stderr, "Unsupported connection type %i\n", it->type);
@@ -89,6 +91,88 @@ static vector<WeakConnection*> setupWeakConnections(vector<connection> connectio
         }
     }
     return weakConnections;
+}
+
+/**
+ * Look for exactly zero or one match for given node+signal name and given causality
+ */
+typedef map<FMIClient*, variable_map> clientvarmap;
+static bool matchNodesignal(const clientvarmap& varmaps, fmi2_causality_enu_t causality,
+        nodesignal ns, clientvarmap::const_iterator& varmapit, variable_map::const_iterator& varit) {
+    //fprintf(stderr, "looking for signal %s, causality %i\n", ns.signal.c_str(), causality);
+    varmapit = varmaps.end();
+    size_t nmatches = 0;
+    for (clientvarmap::const_iterator m = varmaps.begin(); m != varmaps.end(); m++) {
+        varit = m->second.find(ns.signal);
+        if (m->first->getModelName() == ns.node && varit != m->second.end() && varit->second.causality == causality) {
+            //found something!
+            varmapit = m;
+            nmatches++;
+        }
+    }
+    if (nmatches > 1) {
+        fprintf(stderr, "Found %li matches for node \"%s\" signal \"%s\" (expected zero or one) - bailing out!\n", nmatches, ns.node.c_str(), ns.signal.c_str());
+        exit(1);
+    }
+    return nmatches == 1;
+}
+
+static void addAutomaticConnectionsAndParams(const vector<connectionconfig> &connconf,
+        vector<FMIClient*> slaves, vector<WeakConnection*> &weakConnections, parameter_map &params) {
+    clientvarmap maps;
+    for (auto slave : slaves) {
+        maps[slave] = slave->getVariables();
+    }
+    for (auto cc : connconf) {
+        //first see if we can find a corresponding input
+        clientvarmap::const_iterator varmapit, ovarmapit;
+        variable_map::const_iterator varit, ovarit;
+        bool match = matchNodesignal(maps, fmi2_causality_enu_input, cc.input, varmapit, varit);
+
+        //fprintf(stderr, "signal %s matched? %i\n", cc.input.signal.c_str(), match);
+        if (!match) {
+            //this happens often, nothing to alarm the user about
+            continue;
+        }
+
+        match = false;
+        nodesignal ons;
+        //fprintf(stderr, "%li outputs\n", cc.outputs.size());
+        for (auto o : cc.outputs) {
+            if ((match = matchNodesignal(maps, fmi2_causality_enu_output, o, ovarmapit, ovarit))) {
+                ons = o;
+                break;
+            }
+        }
+
+        if (match) {
+            fprintf(stderr, "Creating weak connection FMU %d VR %d -> FMU %d VR %d [automatic] (node \"%s\" signal \"%s\" -> node \"%s\" signal \"%s\")\n",
+                    ovarmapit->first->getId(), ovarit->second.vr, varmapit->first->getId(), varit->second.vr,
+                    ons.node.c_str(), ons.signal.c_str(), cc.input.node.c_str(), cc.input.signal.c_str());
+            weakConnections.push_back(new WeakConnection(ovarmapit->first, varmapit->first, ovarit->second.vr, varit->second.vr));
+
+            if (varit->second.type != fmi2_base_type_real) {
+                fprintf(stderr, "Only real valued weak connections supported at the moment\n");
+                exit(1);
+            }
+        } else {
+            //no match - see if there's a default value
+            if (cc.hasDefault) {
+                //TODO: actually print the value? a bit of a hassle right not since params have variable type
+                fprintf(stderr, "Default value -> FMU %d VR %d [automatic] (node \"%s\" signal \"%s\")\n",
+                    varmapit->first->getId(), varit->second.vr, cc.input.node.c_str(), cc.input.signal.c_str());
+                param p = cc.defaultValue;
+                p.fmuIndex = varmapit->first->getId();
+                p.valueReference = varit->second.vr;
+                params[make_pair(p.fmuIndex, varit->second.type)].push_back(p);
+            } else {
+                //no default value - fail!
+                fprintf(stderr, "Node \"%s\" signal \"%s\" has input but no output or default value!\n",
+                        cc.input.node.c_str(), cc.input.signal.c_str());
+                exit(1);
+            }
+        }
+    }
 }
 
 static void setupConstraintsAndSolver(vector<strongconnection> strongConnections, vector<FMIClient*> slaves, Solver *solver) {
@@ -238,7 +322,7 @@ int main(int argc, char *argv[] ) {
            compliance = 0.01;
     vector<string> fmuURIs;
     vector<connection> connections;
-    map<pair<int,fmi2_base_type_enu_t>, vector<param> > params;
+    parameter_map params;
     int loggingOn = 0;
     char csv_separator = ',';
     string outFilePath = DEFAULT_OUTFILE;
@@ -291,6 +375,7 @@ int main(int argc, char *argv[] ) {
     }
 
     vector<WeakConnection*> weakConnections = setupWeakConnections(connections, slaves);
+    addAutomaticConnectionsAndParams(connconf, slaves, weakConnections, params);
     setupConstraintsAndSolver(scs, slaves, &solver);
 
     BaseMaster *master;

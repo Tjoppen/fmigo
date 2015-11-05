@@ -325,8 +325,6 @@ int fmitcp_master::parseArguments( int argc,
             }
             fprintf(stderr, "Parsed %li connection configuration(s) from %s\n",
                     connconf->size(), optarg);
-
-            exit(1);
             break;
         }
 

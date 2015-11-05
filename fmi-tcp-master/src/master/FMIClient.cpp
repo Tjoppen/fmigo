@@ -19,8 +19,7 @@ void jmCallbacksLoggerClient(jm_callbacks* c, jm_string module, jm_log_level_enu
 #ifdef USE_LACEWING
 FMIClient::FMIClient(fmitcp::EventPump* pump, int id, string host, long port) : fmitcp::Client(pump), sc::Slave() {
 #else
-FMIClient::FMIClient(zmq::context_t &context, int id, string host, long port) : fmitcp::Client(), sc::Slave(),
-    m_socket(context, ZMQ_PAIR) {
+FMIClient::FMIClient(zmq::context_t &context, int id, string host, long port) : fmitcp::Client(context), sc::Slave() {
 #endif
     m_id = id;
     m_host = host;
@@ -41,16 +40,7 @@ FMIClient::~FMIClient() {
 };
 
 void FMIClient::connect(void) {
-#ifdef USE_LACEWING
     Client::connect(m_host, m_port);
-#else
-    ostringstream oss;
-    oss << "tcp://" << m_host << ":" << m_port;
-    string str = oss.str();
-    m_logger.log(fmitcp::Logger::LOG_DEBUG,"connecting to %s\n", str.c_str());
-    m_socket.connect(str.c_str());
-    m_logger.log(fmitcp::Logger::LOG_DEBUG,"connected\n");
-#endif
 }
 
 void FMIClient::onConnect(){

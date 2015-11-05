@@ -8,9 +8,6 @@
 #include <string>
 #include "master/StrongConnector.h"
 #include <deque>
-#ifndef USA_LACEWING
-#include <zmq.hpp>
-#endif
 
 namespace fmitcp_master {
 
@@ -35,9 +32,6 @@ namespace fmitcp_master {
         fmi2_import_variable_list_t* m_fmi2Outputs;
 
     public:
-#ifndef USE_LACEWING
-        zmq::socket_t m_socket;
-#endif
 
         BaseMaster * m_master;
 

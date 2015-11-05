@@ -67,26 +67,14 @@ namespace fmitcp_master {
         void send(std::vector<FMIClient*> fmus, std::string str) {
             m_pendingRequests += fmus.size();
             for (auto it = fmus.begin(); it != fmus.end(); it++) {
-#ifdef USE_LACEWING
                 (*it)->sendMessage(str);
-#else
-                zmq::message_t msg(str.size());
-                memcpy(msg.data(), str.data(), str.size());
-                (*it)->m_socket.send(msg);
-#endif
             }
         }
 
         //like send() but only for one FMU
         void send(FMIClient *fmu, std::string str) {
             m_pendingRequests++;
-#ifdef USE_LACEWING
             fmu->sendMessage(str);
-#else
-            zmq::message_t msg(str.size());
-            memcpy(msg.data(), str.data(), str.size());
-            fmu->m_socket.send(msg);
-#endif
         }
 
         //like send() except it blocks

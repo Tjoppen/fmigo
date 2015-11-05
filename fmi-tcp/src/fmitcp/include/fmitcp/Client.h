@@ -3,6 +3,8 @@
 
 #ifdef USE_LACEWING
 #include "EventPump.h"
+#else
+#include <zmq.hpp>
 #endif
 #include "Logger.h"
 #include "fmitcp.pb.h"
@@ -32,27 +34,32 @@ namespace fmitcp {
     private:
 #ifdef USE_LACEWING
         lw_client m_client;
-#endif
         std::string tail;
+#else
+    public:
+        zmq::socket_t m_socket;
+#endif
 
     public:
 #ifdef USE_LACEWING
         Client(EventPump * pump);
 #else
-        Client();
+        Client(zmq::context_t &context);
 #endif
         virtual ~Client();
 
         Logger * getLogger();
 
-#ifdef USE_LACEWING
         /// Connect the client to a server
         void connect(string host, long port);
+#ifdef USE_LACEWING
         void disconnect();
+#endif
 
         /// Send a binary message
         void sendMessage(std::string s);
 
+#ifdef USE_LACEWING
         bool isConnected();
 #endif
 

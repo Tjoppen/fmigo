@@ -266,7 +266,7 @@ Client::Client(EventPump * pump){
     m_client = lw_client_new(m_pump->getPump());
     //lw_fdstream_nagle(m_client,lw_false);
 #else
-Client::Client() {
+Client::Client(zmq::context_t &context) : m_socket(context, ZMQ_PAIR) {
 #endif
     GOOGLE_PROTOBUF_VERIFY_VERSION;
 }
@@ -294,13 +294,18 @@ Logger * Client::getLogger() {
     return &m_logger;
 }
 
-#ifdef USE_LACEWING
 void Client::sendMessage(std::string s){
+#ifdef USE_LACEWING
     fmitcp::sendProtoBuffer(m_client, s);
+#else
+    zmq::message_t msg(s.size());
+    memcpy(msg.data(), s.data(), s.size());
+    m_socket.send(msg);
+#endif
 }
 
 void Client::connect(string host, long port){
-
+#ifdef USE_LACEWING
     // Set the master object as tag
     lw_stream_set_tag(m_client, (void*)this);
 
@@ -314,8 +319,17 @@ void Client::connect(string host, long port){
     lw_client_connect(m_client, host.c_str(), port);
 
     m_logger.log(Logger::LOG_DEBUG,"Connecting to %s:%ld...\n",host.c_str(),port);
+#else
+    ostringstream oss;
+    oss << "tcp://" << host << ":" << port;
+    string str = oss.str();
+    m_logger.log(fmitcp::Logger::LOG_DEBUG,"connecting to %s\n", str.c_str());
+    m_socket.connect(str.c_str());
+    m_logger.log(fmitcp::Logger::LOG_DEBUG,"connected\n");
+#endif
 }
 
+#ifdef USE_LACEWING
 void Client::disconnect(){
     //lw_eventpump_post_eventloop_exit(m_pump->getPump());
     //lw_stream_close(m_client,lw_true);

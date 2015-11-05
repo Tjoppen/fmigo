@@ -31,7 +31,7 @@ if(WIN32)
     set(PROTOBUF_BIN_DIR "${PROTOBUF_DIR}/vsprojects/${CMAKE_BUILD_TYPE}")
 
     set(SUITESPARSE_COMMIT "232acd3f6c2ab2539167043e31c22a1ac1f599b8")
-    set(SUITESPARSE_DIR "${CMAKE_CURRENT_BINARY_DIR}/suitesparse-metis-for-windows-${SUITESPARSE_COMMIT}")
+    set(SUITESPARSE_DIR "${CMAKE_CURRENT_BINARY_DIR}/suitesparse-metis-for-windows")
     set(SUITESPARSE_URL "https://github.com/jlblancoc/suitesparse-metis-for-windows/archive/${SUITESPARSE_COMMIT}.zip")
     set(SUITESPARSE_MD5 "1e9b5fcdc38ec0c2aebe3d3cbd1ee8cd")
 

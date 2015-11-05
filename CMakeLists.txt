@@ -69,6 +69,22 @@ if(WIN32)
         include_directories(${CMAKE_CURRENT_SOURCE_DIR}/3dparty/zeromq/4.2.0-master/include)
         link_directories(${CMAKE_CURRENT_SOURCE_DIR}/3dparty/zeromq/4.2.0-master/cl32-11)
     endif()
+
+    set(JSONCPP_DIR "${CMAKE_CURRENT_BINARY_DIR}/jsoncpp")
+    set(JSONCPP_URL "https://github.com/open-source-parsers/jsoncpp/archive/0.10.5.zip")
+    set(JSONCPP_MD5 "7ebcc0530b77cd25b2d6920dd19c2d53")
+
+    ExternalProject_Add(jsoncpp-ext
+        PREFIX ${JSONCPP_DIR}
+        URL ${JSONCPP_URL}
+        URL_MD5 ${JSONCPP_MD5}
+        BUILD_COMMAND msbuild jsoncpp.sln  /p:Configuration=${CMAKE_BUILD_TYPE}
+        INSTALL_COMMAND ""
+    )
+
+    include_directories(${JSONCPP_DIR}/src/jsoncpp-ext/include)
+    link_directories(${JSONCPP_DIR}/src/jsoncpp-ext-build/src/lib_json/${CMAKE_BUILD_TYPE})
+
 else(WIN32)
     # TODO: tell the user what's needed?
 endif(WIN32)
@@ -87,5 +103,5 @@ add_subdirectory(strong-coupling-core)
 add_dependencies(sc suitesparse-ext)
 add_subdirectory(FMILibrary-2.0b2)
 add_subdirectory(fmi-tcp)
-add_dependencies(fmitcp fmilib)
+add_dependencies(fmitcp fmilib jsoncpp-ext)
 add_subdirectory(fmi-tcp-master)

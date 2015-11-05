@@ -2,13 +2,14 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #ifdef WIN32
+#include <json/json.h>
 #include "master/getopt.h"
 #else
+#include <jsoncpp/json/json.h>
 #include <getopt.h>
 #endif
 #include <deque>
 #include <fstream>
-#include <jsoncpp/json/json.h>
 #include "common/common.h"
 
 #include "master/parseargs.h"

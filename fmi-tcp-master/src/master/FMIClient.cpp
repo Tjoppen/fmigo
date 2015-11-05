@@ -2,12 +2,14 @@
 #include <sstream>
 #include <fmitcp/Client.h>
 #include <fmitcp/Logger.h>
+#include <fmitcp/serialize.h>
 
 #include "master/BaseMaster.h"
 #include "common/common.h"
 #include "master/FMIClient.h"
 
 using namespace fmitcp_master;
+using namespace fmitcp::serialize;
 
 /*!
  * Callback function for FMILibrary. Logs the FMILibrary operations.
@@ -41,6 +43,9 @@ FMIClient::~FMIClient() {
 
 void FMIClient::connect(void) {
     Client::connect(m_host, m_port);
+    //request modelDescription XML, don't return until we have it
+    sendMessage(get_xml(0,0));
+    handleReply();
 }
 
 void FMIClient::onConnect(){
@@ -93,8 +98,6 @@ void FMIClient::on_get_xml_res(int mid, fmitcp_proto::jm_log_level_enu_t logLeve
   } else {
     m_logger.log(fmitcp::Logger::LOG_ERROR, "Error parsing the modelDescription.xml file contained in %s\n", m_workingDir.c_str());
   }
-  // Inform the master now.
-  m_master->onSlaveGetXML(this);
 };
 
 void FMIClient::on_fmi2_import_instantiate_res(int mid, fmitcp_proto::jm_status_enu_t status){

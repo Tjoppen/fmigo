@@ -1,6 +1,10 @@
 #include "Client.h"
 #include "Logger.h"
 #include "common.h"
+#include <stdio.h>
+#ifndef WIN32
+#include <unistd.h>
+#endif
 
 using namespace std;
 using namespace fmitcp;
@@ -60,6 +64,12 @@ void Client::clientData(const char* data, long size){
     fmitcp_message res;
     bool status = res.ParseFromArray(data, size);
     fmitcp_message_Type type = res.type();
+
+    if (m_pendingRequests == 0) {
+        fprintf(stderr, "Got response while m_pendingRequests = 0\n");
+        exit(1);
+    }
+    m_pendingRequests--;
 
     m_logger.log(Logger::LOG_DEBUG,"Client parse status: %d (%i byte in)\n", status, size);
 #endif
@@ -268,6 +278,7 @@ Client::Client(EventPump * pump){
 #else
 Client::Client(zmq::context_t &context) : m_socket(context, ZMQ_PAIR) {
 #endif
+    m_pendingRequests = 0;
     GOOGLE_PROTOBUF_VERIFY_VERSION;
 }
 
@@ -295,6 +306,7 @@ Logger * Client::getLogger() {
 }
 
 void Client::sendMessage(std::string s){
+    m_pendingRequests++;
 #ifdef USE_LACEWING
     fmitcp::sendProtoBuffer(m_client, s);
 #else
@@ -302,6 +314,29 @@ void Client::sendMessage(std::string s){
     memcpy(msg.data(), s.data(), s.size());
     m_socket.send(msg);
 #endif
+}
+
+void Client::handleReply() {
+#ifdef USE_LACEWING
+    size_t pendingBefore = getNumPendingRequests();
+    while (pendingBefore == getNumPendingRequests()) {
+        m_pump->tick();
+        fflush(NULL);
+#ifdef WIN32
+        Yield();
+#else
+        usleep(10);
+#endif
+    }
+#else
+    zmq::message_t msg;
+    m_socket.recv(&msg);
+    clientData(static_cast<char*>(msg.data()), msg.size());
+#endif
+}
+
+size_t Client::getNumPendingRequests() const {
+    return m_pendingRequests;
 }
 
 void Client::connect(string host, long port){

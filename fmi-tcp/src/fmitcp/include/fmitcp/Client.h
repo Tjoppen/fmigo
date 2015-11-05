@@ -32,6 +32,8 @@ namespace fmitcp {
         Logger m_logger;
 
     private:
+        size_t m_pendingRequests;
+
 #ifdef USE_LACEWING
         lw_client m_client;
         std::string tail;
@@ -78,6 +80,12 @@ namespace fmitcp {
         void clientDisconnected(lw_client c);
         void clientError(lw_client c, lw_error error);
 #endif
+        
+        //handle reply to sendMessage()
+        //specifically, this receives the next result message and calls clientData() on it
+        void handleReply();
+
+        size_t getNumPendingRequests() const;
 
         /**
          * clientData

@@ -15,11 +15,9 @@ using namespace fmitcp;
 
 #ifdef USE_LACEWING
 BaseMaster::BaseMaster(EventPump *pump, vector<FMIClient*> slaves) :
-        m_pendingRequests(0),
         m_pump(pump),
 #else
 BaseMaster::BaseMaster(vector<FMIClient*> slaves) :
-        m_pendingRequests(0),
 #endif
         m_slaves(slaves) {
 }
@@ -27,12 +25,20 @@ BaseMaster::BaseMaster(vector<FMIClient*> slaves) :
 BaseMaster::~BaseMaster() {
 }
 
+size_t BaseMaster::getNumPendingRequests() const {
+    size_t ret = 0;
+    for (auto s : m_slaves) {
+        ret += s->getNumPendingRequests();
+    }
+    return ret;
+}
+
 void BaseMaster::wait() {
     //allow polling once for each request, plus ten seconds more
-    int maxPolls = m_pendingRequests + 10;
+    int maxPolls = getNumPendingRequests() + 10;
     int numPolls = 0;
 
-    while (m_pendingRequests > 0) {
+    while (getNumPendingRequests() > 0) {
 #ifdef USE_LACEWING
         m_pump->tick();
 #ifdef WIN32
@@ -49,18 +55,17 @@ void BaseMaster::wait() {
     }
     int n = zmq::poll(items.data(), m_slaves.size(), 1000000);
     if (!n) {
-        fprintf(stderr, "polled %li sockets, %li pending (%i/%i), no new events\n", m_slaves.size(), m_pendingRequests, numPolls, maxPolls);
+        fprintf(stderr, "polled %li sockets, %li pending (%i/%i), no new events\n", m_slaves.size(), getNumPendingRequests(), numPolls, maxPolls);
     }
     for (size_t x = 0; x < m_slaves.size(); x++) {
         if (items[x].revents & ZMQ_POLLIN) {
             zmq::message_t msg;
             m_slaves[x]->m_socket.recv(&msg);
             //fprintf(stderr, "Got message of size %li\n", msg.size());
-            m_pendingRequests--;
             m_slaves[x]->Client::clientData(static_cast<char*>(msg.data()), msg.size());
         }
     }
-    if (m_pendingRequests > 0) {
+    if (getNumPendingRequests() > 0) {
         if (++numPolls >= maxPolls) {
             //Jenkins caught something like this, I think
             fprintf(stderr, "Exceeded max number of polls (%i) - stuck?\n", maxPolls);

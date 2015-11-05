@@ -283,6 +283,12 @@ int main(int argc, char *argv[] ) {
     zmq::context_t context(1);
     vector<FMIClient*> slaves = setupSlaves(fmuURIs, context);
 #endif
+
+    //connect, get modelDescription XML (important for connconf)
+    for (auto it = slaves.begin(); it != slaves.end(); it++) {
+        (*it)->connect();
+    }
+
     vector<WeakConnection*> weakConnections = setupWeakConnections(connections, slaves);
     setupConstraintsAndSolver(scs, slaves, &solver);
 
@@ -316,11 +322,6 @@ int main(int argc, char *argv[] ) {
     }
 
     //init
-    for (auto it = slaves.begin(); it != slaves.end(); it++) {
-        (*it)->connect();
-    }
-    master->send(slaves, get_xml(0, 0));
-
     for (size_t x = 0; x < slaves.size(); x++) {
         //set visibility based on command line
         master->send(slaves[x], fmi2_import_instantiate2(0, x < fmuVisibilities.size() ? fmuVisibilities[x] : false));

@@ -51,6 +51,7 @@ namespace fmitcp_master {
 
         int getId();
 
+        //connects to remote host and gets modelDescription XML
         void connect(void);
 
         bool isInitialized();

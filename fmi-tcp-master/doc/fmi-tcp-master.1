@@ -4,7 +4,7 @@ fmi-tcp-master \- simulate FMUs
 .SH SYNOPSIS
 .ll +8
 .B fmi-tcp-master
-.RB [ " \-xrlvqhtcdsopfmgwC " ]
+.RB [ " \-xrlvqhtcdsopfmgwCj " ]
 [
 .I "URLs \&..."
 ]
@@ -165,6 +165,9 @@ Note that like all lists you can concatenate the strong connection specification
     -C\ shaft,0,1,1,20,19,14,17,20,19,14,17:lock,0,1,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18:ball,1,2,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18
 
 Default is no strong connections. Specifying strong connections is incompatible with using the Gauss-Seidel stepper (-m gs).
+.TP
+.B \-j [JSON filename]
+Connection configuration file. Used to automatically connect inputs/outputs with specified names, and to assign default values to inputs when no suitable output is found.
 .TP
 .B \-d [TIMESTEP]
 Timestep size. Default is 0.1.

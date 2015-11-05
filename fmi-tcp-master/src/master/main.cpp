@@ -250,13 +250,14 @@ int main(int argc, char *argv[] ) {
     vector<int> stepOrder;
     vector<int> fmuVisibilities;
     vector<strongconnection> scs;
+    vector<connectionconfig> connconf;
     Solver solver;
 
     if (parseArguments(
             argc, argv, &fmuURIs, &connections, &params, &endTime, &timeStep,
             &loggingOn, &csv_separator, &outFilePath, &quietMode, &fileFormat,
             &method, &realtimeMode, &printXML, &stepOrder, &fmuVisibilities,
-            &scs)) {
+            &scs, &connconf)) {
         return 1;
     }
 

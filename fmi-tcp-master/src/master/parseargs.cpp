@@ -7,6 +7,8 @@
 #include <getopt.h>
 #endif
 #include <deque>
+#include <fstream>
+#include <jsoncpp/json/json.h>
 #include "common/common.h"
 
 #include "master/parseargs.h"
@@ -61,11 +63,12 @@ int fmitcp_master::parseArguments( int argc,
                     int * printXML,
                     std::vector<int> *stepOrder,
                     std::vector<int> *fmuVisibilities,
-                    vector<strongconnection> *strongConnections) {
+                    vector<strongconnection> *strongConnections,
+                    vector<connectionconfig> *connconf) {
     int index, c;
     opterr = 0;
 
-    while ((c = getopt (argc, argv, "xrlvqht:c:d:s:o:p:f:m:g:w:C:")) != -1){
+    while ((c = getopt (argc, argv, "xrlvqht:c:d:s:o:p:f:m:g:w:C:j:")) != -1){
         int n, skip, l, cont, i, numScanned, stop, vis;
         deque<string> parts;
         if (optarg) parts = split(optarg, ':');
@@ -265,6 +268,67 @@ int fmitcp_master::parseArguments( int argc,
                 fmuVisibilities->push_back(atoi(it->c_str()));
             }
             break;
+
+        case 'j': {
+            Json::Value root;
+            std::ifstream ifs(optarg);
+            if (!ifs) {
+                fprintf(stderr, "%s does not exist\n", optarg);
+                exit(1);
+            }
+            ifs >> root;
+
+            for (auto conn : root["connections"]) {
+                //fprintf(stderr, "node %s, signal %s\n", conn["input"]["node"].asString().c_str(), conn["input"]["signal"].asString().c_str());
+                connectionconfig conf;
+                conf.input.node   = conn["input"]["node"].asString();
+                conf.input.signal = conn["input"]["signal"].asString();
+
+                for (auto output : conn["outputs"]) {
+                    //fprintf(stderr, "-> %s, %s\n", output["node"].asString().c_str(), output["signal"].asString().c_str());
+                    nodesignal ns;
+                    ns.node   = output["node"].asString();
+                    ns.signal = output["signal"].asString();
+                    conf.outputs.push_back(ns);
+                }
+
+                if (conn.isMember("constant")) {
+                    auto c = conn["constant"];
+
+                    if (c.isBool()) {
+                        //fprintf(stderr, "bool: %s\n", c.asBool() ? "true" : "false");
+                        conf.defaultValue.type = fmi2_base_type_bool;
+                        conf.defaultValue.boolValue = c.asBool();
+                    } else if (c.isDouble()) {
+                        //fprintf(stderr, "double: %lf\n", c.asDouble());
+                        conf.defaultValue.type = fmi2_base_type_real;
+                        conf.defaultValue.realValue = c.asDouble();
+                    } else if (c.isInt()) {
+                        //fprintf(stderr, "int: %i\n", c.asInt());
+                        conf.defaultValue.type = fmi2_base_type_int;
+                        conf.defaultValue.intValue = c.asInt();
+                    } else if (c.isString()) {
+                        //fprintf(stderr, "string: %s\n", c.asString().c_str());
+                        conf.defaultValue.type = fmi2_base_type_str;
+                        conf.defaultValue.stringValue = c.asString();
+                    } else {
+                        fprintf(stderr, "unknown constant value type for node %s, signal %s\n",
+                                conn["input"]["node"].asString().c_str(), conn["input"]["signal"].asString().c_str());
+                        exit(1);
+                    }
+
+                    conf.hasDefault = true;
+                } else {
+                    conf.hasDefault = false;
+                }
+                connconf->push_back(conf);
+            }
+            fprintf(stderr, "Parsed %li connection configuration(s) from %s\n",
+                    connconf->size(), optarg);
+
+            exit(1);
+            break;
+        }
 
         case '?':
 

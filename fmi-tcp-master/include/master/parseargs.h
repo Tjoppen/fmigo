@@ -34,6 +34,17 @@ struct param {
     int boolValue;                      // Boolean
 };
 
+struct nodesignal {
+    std::string node, signal;
+};
+
+struct connectionconfig {
+    nodesignal input;
+    std::vector<nodesignal> outputs;
+    bool hasDefault;
+    param defaultValue;
+};
+
 enum FILEFORMAT {
     csv
 };
@@ -85,7 +96,8 @@ int parseArguments( int argc,
                     int * printXML,
                     std::vector<int> *stepOrder,
                     std::vector<int> *fmuVisibilities,
-                    std::vector<strongconnection> *strongConnections);
+                    std::vector<strongconnection> *strongConnections,
+                    std::vector<connectionconfig> *connconf);
 }
 
 #endif /* PARSEARGS_H */

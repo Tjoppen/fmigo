@@ -371,6 +371,8 @@ string Server::clientData(const char *data, size_t size) {
 
     if (!m_sendDummyResponses) {
       // Interact with FMU
+      fmi2_import_free_instance(m_fmi2Instance);
+      fmi2_import_destroy_dllfmu(m_fmi2Instance);
       fmi2_import_free(m_fmi2Instance);
       fmi_import_free_context(m_context);
       fmi_import_rmdir(&m_jmCallbacks, m_workingDir.c_str());

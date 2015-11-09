@@ -61,6 +61,9 @@ namespace fmitcp {
         /// Send a binary message
         void sendMessage(std::string s);
 
+        //like sendMessage() but also receives the result message and calls clientData() on it
+        void sendMessageBlocking(std::string s);
+
 #ifdef USE_LACEWING
         bool isConnected();
 #endif
@@ -80,10 +83,6 @@ namespace fmitcp {
         void clientDisconnected(lw_client c);
         void clientError(lw_client c, lw_error error);
 #endif
-        
-        //handle reply to sendMessage()
-        //specifically, this receives the next result message and calls clientData() on it
-        void handleReply();
 
         size_t getNumPendingRequests() const;
 

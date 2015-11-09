@@ -316,7 +316,9 @@ void Client::sendMessage(std::string s){
 #endif
 }
 
-void Client::handleReply() {
+void Client::sendMessageBlocking(std::string s) {
+    sendMessage(s);
+
 #ifdef USE_LACEWING
     size_t pendingBefore = getNumPendingRequests();
     while (pendingBefore == getNumPendingRequests()) {

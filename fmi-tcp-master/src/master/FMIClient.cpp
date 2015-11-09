@@ -34,6 +34,10 @@ FMIClient::FMIClient(zmq::context_t &context, int id, string host, long port) : 
 };
 
 FMIClient::~FMIClient() {
+  //tell remove FMU to free itself
+  sendMessageBlocking(fmi2_import_terminate_slave(0,0));
+  sendMessageBlocking(fmi2_import_free_slave_instance(0,0));
+
   // free the FMIL instances used for parsing the xml file.
   if(m_fmi2Instance!=NULL)  fmi2_import_free(m_fmi2Instance);
   if(m_context!=NULL)       fmi_import_free_context(m_context);
@@ -44,8 +48,7 @@ FMIClient::~FMIClient() {
 void FMIClient::connect(void) {
     Client::connect(m_host, m_port);
     //request modelDescription XML, don't return until we have it
-    sendMessage(get_xml(0,0));
-    handleReply();
+    sendMessageBlocking(get_xml(0,0));
 }
 
 void FMIClient::onConnect(){

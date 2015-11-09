@@ -165,10 +165,18 @@ void Server::init() {
       return;
     }
     m_instanceName = fmi2_import_get_model_name(m_fmi2Instance);
-    m_fmuLocation = fmi_import_create_URL_from_abs_path(&m_jmCallbacks, m_fmuPath.c_str());
-    m_resourcePath = fmi_import_create_URL_from_abs_path(&m_jmCallbacks, m_workingDir.c_str());
+    {
+        char *temp = fmi_import_create_URL_from_abs_path(&m_jmCallbacks, m_fmuPath.c_str());
+        m_fmuLocation = temp;
+        m_jmCallbacks.free(temp);
+    }
 
-    strcat(m_resourcePath,"/resources");
+    {
+        char *temp = fmi_import_create_URL_from_abs_path(&m_jmCallbacks, m_workingDir.c_str());
+        m_resourcePath = temp;
+        m_resourcePath = m_resourcePath + "/resources";
+        m_jmCallbacks.free(temp);
+    }
 
     /* 0 - original order as found in the XML file;
      * 1 - sorted alphabetically by variable name;
@@ -244,7 +252,7 @@ string Server::clientData(const char *data, size_t size) {
     jm_status_enu_t status = jm_status_success;
     if (!m_sendDummyResponses) {
       // instantiate FMU
-      status = fmi2_import_instantiate(m_fmi2Instance, m_instanceName, fmi2_cosimulation, m_resourcePath, visible);
+      status = fmi2_import_instantiate(m_fmi2Instance, m_instanceName, fmi2_cosimulation, m_resourcePath.c_str(), visible);
     }
 
     // Create response message

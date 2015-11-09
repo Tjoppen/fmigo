@@ -54,8 +54,8 @@ namespace fmitcp {
     fmi2_import_variable_list_t* m_fmi2Variables;
 
     const char* m_instanceName;
-    char* m_fmuLocation;
-    char* m_resourcePath;
+    std::string m_fmuLocation;
+    std::string m_resourcePath;
 
   public:
 

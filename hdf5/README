@@ -1,0 +1,16 @@
+This contains a minimalistic C++ interface to HDF5.  The interface is meant
+to be simple to use as shown in the example program ex1.cpp
+
+The code is not documented yet but there are doxygen compatible comments
+which should make that easy. 
+
+There are issues with this because the HDF5 C++ API is NOT THREAD SAFE and
+this is something that the HDF5 group is not addressing as of
+Tue Nov 10 13:40:18 CET 2015
+
+Moving to the C library would not be too much work given how the interface
+is built. This will be necessary however. 
+
+
+
+

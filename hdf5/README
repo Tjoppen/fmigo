@@ -9,7 +9,20 @@ this is something that the HDF5 group is not addressing as of
 Tue Nov 10 13:40:18 CET 2015
 
 Moving to the C library would not be too much work given how the interface
-is built. This will be necessary however. 
+is built. This will be necessary however.
+
+There are also command line utilities with more or less descriptive names
+and simple usage strings.  Briefly:
+
+h5insert_image:  insert an hdf5 image obtained from gif2h5 into a file
+
+h5insertstring: insert a text file as a standard string into an HDF5 file.
+This allows utf8 encoding.  There is no limit on the size of the file.
+
+h5rename_groups: rename all groups in a file which match a given name, and
+rename to a new one.
+
+
 
 
 

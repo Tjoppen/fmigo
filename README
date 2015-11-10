@@ -1,0 +1,34 @@
+Things to do:
+
+-- clean fmu templates:
+         -- with events
+         -- without events
+
+    Must have ability to undo step, stubs for directional derivatives, data
+    hiding (nothing in headers), minimal generic logging ability
+
+-- timing infrastructure
+
+-- hdf5 ability  
+
+-- test displacement/displacement and force/displacement couplings, wait
+   for Edo to give input to do force/velocity
+
+-- move this file to Jira
+
+-- FMUs needed
+   Stage 1: 
+   a) mass + spring subject to force inputs, returns position + velocity
+   b) mass + spring subject to a second coupling spring force depending on local x,v
+   + x,v received from another FMU, and which returns the force of the
+   coupling spring
+
+   c) 2D rod to make chains
+
+-- FMU cleanup:  revise examples from  QTronic
+
+-- Future:  FMU cosim wrapper for FMU model exchange, including directional
+            derivatives 
+
+
+

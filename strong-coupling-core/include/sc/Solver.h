@@ -17,6 +17,24 @@ private:
     std::vector<Slave*> m_slaves;
     std::vector<Constraint*> m_constraints;
     std::vector<Connector*> m_connectors;
+    std::vector<Equation*> eqs;
+    std::vector<double> rhs;
+    std::vector<int> aSrow;
+    std::vector<int> aScol;
+    std::vector<double> aSval;
+    std::vector<int> Ap;
+    std::vector<int> Ai;
+    std::vector<double> lambda;
+    std::vector<double> Ax;
+    bool equations_dirty;
+    int nchangingentries, numsystemrows;
+    std::vector<int> Srow;
+    std::vector<int> Scol;
+    std::vector<double> Sval;
+
+    //for internal use only
+    void constructS();
+    void getEquationsFast();
 
 public:
 
@@ -54,7 +72,7 @@ public:
      * @param eqs Vector that will be appended with the equations.
      */
     void getEquations(std::vector<Equation*> * eqs);
-
+    
     /// Get a constraint
     Constraint * getConstraint(int i);
 

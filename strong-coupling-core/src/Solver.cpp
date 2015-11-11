@@ -14,11 +14,13 @@ using namespace sc;
 
 Solver::Solver(){
     m_connectorIndexCounter = 0;
+    equations_dirty = true;
 }
 
 Solver::~Solver(){}
 
 void Solver::addSlave(Slave * slave){
+    equations_dirty = true;
     m_slaves.push_back(slave);
     int n = slave->numConnectors();
     for (int i = 0; i < n; ++i){
@@ -28,10 +30,12 @@ void Solver::addSlave(Slave * slave){
 }
 
 void Solver::addConstraint(Constraint * constraint){
+    equations_dirty = true;
     m_constraints.push_back(constraint);
 }
 
 int Solver::getSystemMatrixRows(){
+  if (equations_dirty) {
     // Easy. Just count total number of equations
     int i,
         nConstraints=m_constraints.size(),
@@ -39,7 +43,10 @@ int Solver::getSystemMatrixRows(){
     for(i=0; i<nConstraints; ++i){
         nEquations += m_constraints[i]->getNumEquations();
     }
-    return nEquations;
+
+    numsystemrows = nEquations;
+  }
+  return numsystemrows;
 }
 
 int Solver::getSystemMatrixCols(){
@@ -60,6 +67,26 @@ void Solver::getEquations(std::vector<Equation*> * result){
         int nEquations = m_constraints[i]->getNumEquations();
         for(j=0; j<nEquations; ++j){
             result->push_back(m_constraints[i]->getEquation(j));
+        }
+    }
+}
+
+void Solver::getEquationsFast(){
+    if (equations_dirty) {
+        eqs.clear();
+    }
+
+    int ofs = 0;
+    for (int i=0; i< m_constraints.size(); ++i){
+        int nEquations = m_constraints[i]->getNumEquations();
+        for (int j=0; j<nEquations; ++j, ofs++){
+            Equation *eq = m_constraints[i]->getEquation(j);
+
+            if (equations_dirty) {
+                eqs.push_back(eq);
+            } else {
+                eqs[ofs] = eq;
+            }
         }
     }
 }
@@ -88,68 +115,31 @@ void Solver::updateConstraints(){
     }
 }
 
-void Solver::solve(){
-    solve(0);
-}
-
-void Solver::solve(int printDebugInfo){
-    int i, j, k, l;
-    std::vector<Equation*> eqs;
-    getEquations(&eqs);
-    int numRows = getSystemMatrixRows(),
-        neq = eqs.size(),
-        nconstraints=m_constraints.size();
-
-    // Compute RHS
-    double * rhs = (double*)malloc(numRows*sizeof(double));
-    for(i=0; i<neq; ++i){
-        Equation * eq = eqs[i];
-        double  Z = eq->getFutureVelocity() - eq->getVelocity(),
-                GW = eq->getVelocity(),
-                g = eq->getViolation(),
-                a = eq->m_a,
-                b = eq->m_b;
-        rhs[i] = -a * g  - b * GW  - Z; // RHS = -a*g -b*G*W -Z
-    }
-
-    // Compute matrix S = G * inv(M) * G' = G * z
-    // Should be easy, since we already got the entries from the user
-    std::vector<int> Srow;
-    std::vector<int> Scol;
-    std::vector<double> Sval;
-
+void Solver::constructS() {
+    Srow.clear();
+    Scol.clear();
+    Sval.clear();
+    
+    int neq = eqs.size();
     for (int i = 0; i < neq; ++i){
         for (int j = 0; j < neq; ++j){
             // We are at element i,j in S
             Equation * ei = eqs[i];
             Equation * ej = eqs[j];
 
-            double val = 0;
-            int nonzero = 0;
-            if(ei->getConnA() == ej->getConnA()){
-                val += ei->getGA().multiply(ej->getddA());
-                nonzero = 1;
-            }
-            if(ei->getConnA() == ej->getConnB()){
-                val += ei->getGA().multiply(ej->getddB());
-                nonzero = 1;
-            }
-            if(ei->getConnB() == ej->getConnA()){
-                val += ei->getGB().multiply(ej->getddA());
-                nonzero = 1;
-            }
-            if(ei->getConnB() == ej->getConnB()){
-                val += ei->getGB().multiply(ej->getddB());
-                nonzero = 1;
-            }
-
-            if(nonzero){
+            if     (ei->getConnA() == ej->getConnA() ||
+                    ei->getConnA() == ej->getConnB() ||
+                    ei->getConnB() == ej->getConnA() ||
+                    ei->getConnB() == ej->getConnB()) {
                 Srow.push_back(i);
                 Scol.push_back(j);
-                Sval.push_back(val);
+                Sval.push_back(0);  //dummy value
             }
         }
     }
+
+    //remember how many entries we have that change every time step
+    nchangingentries = Srow.size();
 
     // Add regularization to diagonal entries
     for (int i = 0; i < eqs.size(); ++i){
@@ -175,8 +165,64 @@ void Solver::solve(int printDebugInfo){
             }
         }
     }
+}
 
+void Solver::solve(){
+    solve(0);
+}
 
+void Solver::solve(int printDebugInfo){
+    int i, j, k, l;
+    getEquationsFast();
+    int numRows = getSystemMatrixRows(),
+        neq = eqs.size();
+
+    // Compute RHS
+    rhs.reserve(numRows);
+    for(i=0; i<neq; ++i){
+        Equation * eq = eqs[i];
+        double  Z = eq->getFutureVelocity() - eq->getVelocity(),
+                GW = eq->getVelocity(),
+                g = eq->getViolation(),
+                a = eq->m_a,
+                b = eq->m_b;
+        rhs[i] = -a * g  - b * GW  - Z; // RHS = -a*g -b*G*W -Z
+    }
+
+    // Compute matrix S = G * inv(M) * G' = G * z
+    // Should be easy, since we already got the entries from the user
+    //TODO: figure out if these vary, reset each time
+    if (equations_dirty) {
+        constructS();
+        //alright, we have the structure of the matrix - don't redo all this work unless we have to
+        equations_dirty = false;
+    }
+
+    for (size_t x = 0; x < nchangingentries; x++) {
+        int i = Srow[x];
+        int j = Scol[x];
+        // We are at element i,j in S
+        Equation * ei = eqs[i];
+        Equation * ej = eqs[j];
+
+        double val = 0;
+        if(ei->getConnA() == ej->getConnA()){
+            val += ei->getGA().multiply(ej->getddA());
+        }
+        if(ei->getConnA() == ej->getConnB()){
+            val += ei->getGA().multiply(ej->getddB());
+        }
+        if(ei->getConnB() == ej->getConnA()){
+            val += ei->getGB().multiply(ej->getddA());
+        }
+        if(ei->getConnB() == ej->getConnB()){
+            val += ei->getGB().multiply(ej->getddB());
+        }
+
+        Sval[x] = val;
+    }
+
+#if 0
     // Print matrices
     if(printDebugInfo){
         for (int i = 0; i < Srow.size(); ++i){
@@ -334,11 +380,12 @@ void Solver::solve(int printDebugInfo){
                 printf(";\n");
         }
     }
+#endif
 
     // convert vectors to arrays
-    int * aSrow =    (int *)    malloc ((Srow.size()+1) * sizeof (int));
-    int * aScol =    (int *)    malloc ((Scol.size()+1) * sizeof (int));
-    double * aSval = (double *) malloc ((Sval.size()+1) * sizeof (double));
+    aSrow.reserve(Srow.size()+1);
+    aScol.reserve(Scol.size()+1);
+    aSval.reserve(Sval.size()+1);
     for (int i = 0; i < Srow.size(); ++i){
         aSval[i] = Sval[i];
         aScol[i] = Scol[i];
@@ -357,19 +404,16 @@ void Solver::solve(int printDebugInfo){
     int nz = Sval.size(),       // Non-zeros
         n = eqs.size(),         // Number of equations
         nz1 = std::max(nz,1) ;  // ensure arrays are not of size zero.
-    int * Ap = (int *) malloc ((n+1) * sizeof (int)) ;
-    int * Ai = (int *) malloc (nz1 * sizeof (int)) ;
-    double * lambda = (double *) malloc (n * sizeof (double)) ;
-    double * Ax = (double *) malloc (nz1 * sizeof (double)) ;
-    if (!Ap || !Ai || !Ax){
-        fprintf(stderr, "out of memory\n") ;
-    }
+    Ap.reserve(n+1);
+    Ai.reserve(nz1);
+    lambda.reserve(n);
+    Ax.reserve(nz1);
 
     if(printDebugInfo)
         printf("n=%d, nz=%d\n",n, nz);
 
     // Triplet form to column form
-    int status = umfpack_di_triplet_to_col (n, n, nz, aSrow, aScol, aSval, Ap, Ai, Ax, (int *) NULL) ;
+    int status = umfpack_di_triplet_to_col (n, n, nz, aSrow.data(), aScol.data(), aSval.data(), Ap.data(), Ai.data(), Ax.data(), (int *) NULL) ;
     if (status < 0){
         umfpack_di_report_status (Control, status) ;
         fprintf(stderr, "umfpack_di_triplet_to_col failed\n") ;
@@ -377,7 +421,7 @@ void Solver::solve(int printDebugInfo){
     }
 
     // symbolic factorization
-    status = umfpack_di_symbolic (n, n, Ap, Ai, Ax, &Symbolic, Control, Info) ;
+    status = umfpack_di_symbolic (n, n, Ap.data(), Ai.data(), Ax.data(), &Symbolic, Control, Info) ;
     if (status < 0){
         umfpack_di_report_info (Control, Info) ;
         umfpack_di_report_status (Control, status) ;
@@ -386,7 +430,7 @@ void Solver::solve(int printDebugInfo){
     }
 
     // numeric factorization
-    status = umfpack_di_numeric (Ap, Ai, Ax, Symbolic, &Numeric, Control, Info) ;
+    status = umfpack_di_numeric (Ap.data(), Ai.data(), Ax.data(), Symbolic, &Numeric, Control, Info) ;
     if (status < 0){
         umfpack_di_report_info (Control, Info) ;
         umfpack_di_report_status (Control, status) ;
@@ -395,7 +439,7 @@ void Solver::solve(int printDebugInfo){
     }
 
     // solve S*lambda = B
-    status = umfpack_di_solve (UMFPACK_A, Ap, Ai, Ax, lambda, rhs, Numeric, Control, Info) ;
+    status = umfpack_di_solve (UMFPACK_A, Ap.data(), Ai.data(), Ax.data(), lambda.data(), rhs.data(), Numeric, Control, Info) ;
     umfpack_di_report_info (Control, Info) ;
     umfpack_di_report_status (Control, status) ;
     if (status < 0){
@@ -442,6 +486,7 @@ void Solver::solve(int printDebugInfo){
         */
     }
 
+#if 0
     // Print matrices
     if(printDebugInfo){
 
@@ -477,15 +522,8 @@ void Solver::solve(int printDebugInfo){
         }
         printf("]\n");
     }
+#endif
 
-    free(rhs);
-    free(lambda);
-    free(aSrow);
-    free(aScol);
-    free(aSval);
-    free(Ap);
-    free(Ai);
-    free(Ax);
     umfpack_di_free_symbolic(&Symbolic);
     umfpack_di_free_numeric(&Numeric);
 }

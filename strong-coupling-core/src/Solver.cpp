@@ -219,6 +219,14 @@ void Solver::solve(int printDebugInfo){
             val += ei->getGB().multiply(ej->getddB());
         }
 
+        if (i == j) {
+            if (ei->m_epsilon != ej->m_epsilon) {
+                fprintf(stderr, "epsilons differ\n");
+                exit(1);
+            }
+            val += ei->m_epsilon;
+        }
+
         Sval[x] = val;
     }
 

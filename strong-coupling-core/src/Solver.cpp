@@ -167,6 +167,13 @@ void Solver::constructS() {
     }
 }
 
+void Solver::prepare() {
+    getSystemMatrixRows();
+    getEquationsFast();
+    constructS();
+    equations_dirty = false;
+}
+
 void Solver::solve(){
     solve(0);
 }
@@ -193,6 +200,7 @@ void Solver::solve(int printDebugInfo){
     // Should be easy, since we already got the entries from the user
     //TODO: figure out if these vary, reset each time
     if (equations_dirty) {
+        //NOTE: this will be slow
         constructS();
         //alright, we have the structure of the matrix - don't redo all this work unless we have to
         equations_dirty = false;

@@ -29,6 +29,7 @@ namespace fmitcp_master {
         explicit BaseMaster(std::vector<FMIClient*> slaves);
 #endif
         virtual ~BaseMaster();
+        virtual void prepare() {};
         virtual void runIteration(double t, double dt) = 0;
 
         // These are callbacks that fire when a slave did something:

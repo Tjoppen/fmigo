@@ -26,6 +26,9 @@ StrongMaster::StrongMaster(vector<FMIClient*> slaves, vector<WeakConnection*> we
     fprintf(stderr, "StrongMaster\n");
 }
 
+void StrongMaster::prepare() {
+    m_strongCouplingSolver.prepare();
+}
 
 void StrongMaster::getDirectionalDerivative(FMIClient *client, Equation *eq, void (Equation::*getSeed)(Vec3&), vector<int> accelerationRefs, vector<int> forceRefs) {
     Vec3 seedVec;

@@ -24,6 +24,7 @@ public:
 #else
     StrongMaster(std::vector<FMIClient*> slaves, std::vector<WeakConnection*> weakConnections, sc::Solver strongCouplingSolver);
 #endif
+    void prepare();
     void runIteration(double t, double dt);
 };
 }

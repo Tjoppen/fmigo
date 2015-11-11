@@ -79,6 +79,9 @@ public:
     /// Get a constraint
     int getNumConstraints();
 
+    /// Set everything up for solving. This may have complexity greater than O(N)
+    void prepare();
+
     /**
      * @brief Solves the system of equation. Sets the constraint forces in each connector.
      */

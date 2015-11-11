@@ -441,6 +441,9 @@ int main(int argc, char *argv[] ) {
     gettimeofday(&t1, NULL);
 #endif
 
+    //prepare solver and all that
+    master->prepare();
+
 #ifndef WIN32
     //HDF5
     int expected_records = 1+1.01*(endTime-startTime)/timeStep, nrecords = 0;

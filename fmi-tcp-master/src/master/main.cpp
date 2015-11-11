@@ -30,6 +30,13 @@ using namespace fmitcp;
 using namespace fmitcp::serialize;
 using namespace sc;
 
+#ifndef WIN32
+timeval tl1, tl2;
+vector<int> timelog;
+int columnofs;
+std::map<int, const char*> columnnames;
+#endif
+
 typedef map<pair<int,fmi2_base_type_enu_t>, vector<param> > parameter_map;
 
 #ifdef USE_LACEWING
@@ -336,12 +343,13 @@ int main(int argc, char *argv[] ) {
     vector<strongconnection> scs;
     vector<connectionconfig> connconf;
     Solver solver;
+    string hdf5Filename;
 
     if (parseArguments(
             argc, argv, &fmuURIs, &connections, &params, &endTime, &timeStep,
             &loggingOn, &csv_separator, &outFilePath, &quietMode, &fileFormat,
             &method, &realtimeMode, &printXML, &stepOrder, &fmuVisibilities,
-            &scs, &connconf)) {
+            &scs, &connconf, &hdf5Filename)) {
         return 1;
     }
 
@@ -430,8 +438,20 @@ int main(int argc, char *argv[] ) {
     gettimeofday(&t1, NULL);
 #endif
 
+#ifndef WIN32
+    //HDF5
+    int expected_records = 1+1.01*(endTime-startTime)/timeStep, nrecords = 0;
+    timelog.reserve(expected_records*MAX_TIME_COLS);
+
+    gettimeofday(&tl1, NULL);
+#endif
+
     //run
     while (endTime < 0 || t < endTime) {
+#ifndef WIN32
+        //HDF5
+        columnofs = 0;
+#endif
         fprintf(stderr, "\r                                                   \r");
         if (realtimeMode) {
             double t_wall;
@@ -475,8 +495,12 @@ int main(int argc, char *argv[] ) {
         for (auto it = slaves.begin(); it != slaves.end(); it++) {
             master->send(*it, fmi2_import_get_real(0, 0, (*it)->getRealOutputValueReferences()));
         }
+        
+        PRINT_HDF5_DELTA("get_outputs");
 
         master->wait();
+        
+        PRINT_HDF5_DELTA("get_outputs_wait");
 
         //print as CSV
         printf("%f", t);
@@ -490,11 +514,48 @@ int main(int argc, char *argv[] ) {
         //TESTING: send params every frame
         sendUserParams(master, slaves, params);
 #endif
+        
+        PRINT_HDF5_DELTA("print_csv");
 
         master->runIteration(t, timeStep);
+        
         printf("\n");
         t += timeStep;
+
+#ifndef WIN32
+        //HDF5
+        nrecords++;
+#endif
     }
+
+#ifndef WIN32
+    //HDF5
+    if (hdf5Filename.length()) {
+        vector<size_t> field_offset;
+        vector<hid_t> field_types;
+        vector<const char*> field_names;
+
+        fprintf(stderr, "Writing HDF5 file \"%s\"\n", hdf5Filename.c_str());
+        fprintf(stderr, "HDF5 column names:\n");
+
+        for (size_t x = 0; x < columnnames.size(); x++) {
+            field_offset.push_back(x*sizeof(int));
+            field_types.push_back(H5T_NATIVE_INT);
+            field_names.push_back(columnnames[x]);
+            fprintf(stderr, "%2li: %s\n", x, columnnames[x]);
+        }
+
+        hid_t file_id = H5Fcreate(hdf5Filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT );
+        H5TBmake_table("Timings", file_id, "table", columnnames.size(), nrecords,
+                columnnames.size()*sizeof(int), &field_names[0], &field_offset[0],
+                &field_types[0], 10 /* chunk_size */, NULL, 0, &timelog[0]);
+        H5Fclose(file_id);
+    }
+#else
+    if (hdf5Filename.length()) {
+        fprintf(stderr, "WARNING: HDF5 output not enabled on Windows\n");
+    }
+#endif
     fprintf(stderr, "\n");
 
     cleanUp(master, slaves, weakConnections);

@@ -96,6 +96,8 @@ ELSE(WIN32)
         ##sc m umfpack amd blas atlas cholmod colamd suitesparseconfig # For strong coupling
         sc m umfpack amd blas cholmod colamd suitesparseconfig # For strong coupling
         jsoncpp
+        hdf5
+        hdf5_hl
         ${Boost_FILESYSTEM_LIBRARY}
         ${Boost_SYSTEM_LIBRARY}
         ${PROTOBUF_LIBRARY}

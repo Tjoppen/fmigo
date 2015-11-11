@@ -97,7 +97,9 @@ int parseArguments( int argc,
                     std::vector<int> *stepOrder,
                     std::vector<int> *fmuVisibilities,
                     std::vector<strongconnection> *strongConnections,
-                    std::vector<connectionconfig> *connconf);
+                    std::vector<connectionconfig> *connconf,
+                    std::string *hdf5Filename
+                    );
 }
 
 #endif /* PARSEARGS_H */

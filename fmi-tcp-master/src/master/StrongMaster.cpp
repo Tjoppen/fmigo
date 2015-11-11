@@ -8,6 +8,7 @@
 #include "master/StrongMaster.h"
 #include "master/FMIClient.h"
 #include <fmitcp/serialize.h>
+#include "common/common.h"
 
 using namespace fmitcp_master;
 using namespace fmitcp;
@@ -61,7 +62,9 @@ void StrongMaster::runIteration(double t, double dt) {
     for (auto it = clientWeakRefs.begin(); it != clientWeakRefs.end(); it++) {
         send(it->first, fmi2_import_get_real(0, 0, it->second));
     }
+    PRINT_HDF5_DELTA("get_weak_reals");
     wait();
+    PRINT_HDF5_DELTA("get_weak_reals_wait");
 
     //disentangle received values for set_real() further down (before do_step())
     //we shouldn't set_real() for these until we've gotten directional derivatives
@@ -81,7 +84,9 @@ void StrongMaster::runIteration(double t, double dt) {
         const vector<int> valueRefs = m_slaves[i]->getStrongConnectorValueReferences();
         send(m_slaves[i], fmi2_import_get_real(0, 0, valueRefs));
     }
+    PRINT_HDF5_DELTA("get_strong_reals");
     wait();
+    PRINT_HDF5_DELTA("get_strong_reals_wait");
 
     //set connector values
     for (int i=0; i<m_slaves.size(); i++){
@@ -136,7 +141,9 @@ void StrongMaster::runIteration(double t, double dt) {
         getSpatialAngularDirectionalDerivatives(slaveB, eq, scB, &Equation::getSpatialJacobianSeedB, &Equation::getRotationalJacobianSeedB);
 #endif
     }
+    PRINT_HDF5_DELTA("get_directional_derivs");
     wait();
+    PRINT_HDF5_DELTA("get_directional_derivs_wait");
 
     for (size_t j = 0; j < eqs.size(); ++j){
         Equation * eq = eqs[j];
@@ -200,11 +207,13 @@ void StrongMaster::runIteration(double t, double dt) {
         }
         }
     }
+    PRINT_HDF5_DELTA("distribute_directional_derivs");
 
     //TODO: figure out if future velocities need to be set when we have proper directional derivatives..
 
     //compute strong coupling forces
     m_strongCouplingSolver.solve();
+    PRINT_HDF5_DELTA("run_solver");
 
     //distribute forces
     for (int i=0; i<m_slaves.size(); i++){
@@ -240,11 +249,13 @@ void StrongMaster::runIteration(double t, double dt) {
             send(client, fmi2_import_set_real(0, 0, fvrs, vec));
         }
     }
+    PRINT_HDF5_DELTA("send_strong_forces");
 
     //set weak connector inputs
     for (auto it = refValues.begin(); it != refValues.end(); it++) {
         send(it->first, fmi2_import_set_real(0, 0, it->second.first, it->second.second));
     }
+    PRINT_HDF5_DELTA("send_weak_reals");
 
     //do actual step
 #ifdef ENABLE_DEMO_HACKS
@@ -253,4 +264,5 @@ void StrongMaster::runIteration(double t, double dt) {
 #else
     block(m_slaves, fmi2_import_do_step(0, 0, t, dt, false));
 #endif
+    PRINT_HDF5_DELTA("do_step");
 }

@@ -374,6 +374,9 @@ int main(int argc, char *argv[] ) {
     vector<FMIClient*> slaves = setupSlaves(fmuURIs, &pump);
 #else
     zmq::context_t context(1);
+    //without this the maximum number of slaves tops out at 300 on Linux,
+    //around 63 on Windows (according to Web searches)
+    zmq_ctx_set(context, ZMQ_MAX_SOCKETS, fmuURIs.size());
     vector<FMIClient*> slaves = setupSlaves(fmuURIs, context);
 #endif
 

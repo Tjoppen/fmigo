@@ -88,7 +88,8 @@ void FMIClient::on_get_xml_res(int mid, fmitcp_proto::jm_log_level_enu_t logLeve
   char* dir = fmi_import_mk_temp_dir(&m_jmCallbacks, NULL, "fmitcp_master_");
   m_workingDir = dir; // convert to std::string
   // save the xml as a file i.e modelDescription.xml
-  ofstream xmlFile (m_workingDir.append("/modelDescription.xml").c_str());
+  string xmlPath = m_workingDir + "/modelDescription.xml";
+  ofstream xmlFile (xmlPath.c_str());
   xmlFile << m_xml;
   xmlFile.close();
   // import allocate context

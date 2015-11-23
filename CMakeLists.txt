@@ -87,6 +87,10 @@ if(WIN32)
 
 else(WIN32)
     # TODO: tell the user what's needed?
+	include(FindProtobuf)
+	find_package(Protobuf REQUIRED)
+	include_directories(${PROTOBUF_INCLUDE_DIR} )
+	link_directories(${PROTOBUF_LIBRARY})
 endif(WIN32)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/fmi-tcp/src/fmitcp/include)
@@ -106,5 +110,5 @@ add_subdirectory(strong-coupling-core)
 add_dependencies(sc suitesparse-ext)
 add_subdirectory(${FMILIBRARY_VERSION})
 add_subdirectory(fmi-tcp)
-add_dependencies(fmitcp fmilib jsoncpp-ext)
+add_dependencies(fmitcp fmilib jsoncpp-ext protobuf-ext)
 add_subdirectory(fmi-tcp-master)

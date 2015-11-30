@@ -405,10 +405,10 @@ int main(int argc, char *argv[] ) {
 #endif
     } else {
 #ifdef USE_LACEWING
-        master = (method == gs) ?           (BaseMaster*)new GaussSeidelMaster(&pump, slaves, weakConnections) :
+        master = (method == gs) ?           (BaseMaster*)new GaussSeidelMaster(&pump, slaves, weakConnections, stepOrder) :
                                             (BaseMaster*)new JacobiMaster(&pump, slaves, weakConnections);
 #else
-        master = (method == gs) ?           (BaseMaster*)new GaussSeidelMaster(slaves, weakConnections) :
+        master = (method == gs) ?           (BaseMaster*)new GaussSeidelMaster(slaves, weakConnections, stepOrder) :
                                             (BaseMaster*)new JacobiMaster(slaves, weakConnections);
 #endif
     }

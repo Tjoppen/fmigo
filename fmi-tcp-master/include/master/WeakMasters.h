@@ -75,41 +75,80 @@ public:
 
 //aka serial stepper
 class GaussSeidelMaster : public WeakMaster {
+    std::vector<int> stepOrder;
+    struct ClientThingy {
+        std::map<FMIClient*, std::vector<int> > vrMap;
+        std::vector<int> vrs;
+    };
+    std::map<FMIClient*, ClientThingy> conns;
 public:
 #ifdef USE_LACEWING
-    GaussSeidelMaster(fmitcp::EventPump *pump, vector<FMIClient*> slaves, vector<WeakConnection*> weakConnections) : WeakMaster(pump, slaves, weakConnections) {
+    GaussSeidelMaster(fmitcp::EventPump *pump, vector<FMIClient*> slaves, vector<WeakConnection*> weakConnections, std::vector<int> stepOrder) :
+        WeakMaster(pump, slaves, weakConnections), stepOrder(stepOrder) {
 #else
-    GaussSeidelMaster(vector<FMIClient*> slaves, vector<WeakConnection*> weakConnections) : WeakMaster(slaves, weakConnections) {
+    GaussSeidelMaster(vector<FMIClient*> slaves, vector<WeakConnection*> weakConnections, std::vector<int> stepOrder) :
+        WeakMaster(slaves, weakConnections), stepOrder(stepOrder) {
 #endif
         fprintf(stderr, "GSMaster\n");
     }
 
+    void prepare() {
+        //work out what clients and VRs each client has to grab from,
+        //and where to put the retrieved values
+        for (int o : stepOrder) {
+            FMIClient *client = m_slaves[o];
+
+            for (size_t x = 0; x < m_weakConnections.size(); x++) {
+                WeakConnection *wc = m_weakConnections[x];
+                if (wc->getSlaveB() == client) {
+                    //connection has client as destination - remember it
+                    conns[wc->getSlaveB()].vrMap[wc->getSlaveA()].push_back(wc->getValueRefA());
+                    conns[wc->getSlaveB()].vrs.push_back(wc->getValueRefB());
+                }
+            }
+        }
+    }
+
     void runIteration(double t, double dt) {
-        map<FMIClient*, vector<int> > clientWeakRefs = getOutputWeakRefs(m_weakConnections);
+        //fprintf(stderr, "\n\n");
+        for (int o : stepOrder) {
+            FMIClient *client = m_slaves[o];
 
-        for (auto it = m_slaves.begin(); it != m_slaves.end(); it++) {
-            if (clientWeakRefs[*it].size() > 0) {
-            //get connection outputs
-            block(*it, fmi2_import_get_real(0, 0, clientWeakRefs[*it]));
+            //fprintf(stderr, "client %i:", client->getId());
+            if (conns[client].vrs.size() > 0) {
+                for (auto it : conns[client].vrMap) {
+                    /*fprintf(stderr, " %i(", it.first->getId());
+                    for (int vr : it.second) {
+                        fprintf(stderr, "%i ", vr);
+                    }
+                    fprintf(stderr, "\b)");*/
+                    send(it.first, fmi2_import_get_real(0, 0, it.second));
+                }
 
-            //set connection inputs, pipeline with do_step()
-            const pair<vector<int>, vector<double> > refValues = getInputWeakRefsAndValues(m_weakConnections)[*it];
+                /*fprintf(stderr, " ->");
+                for (int vr : conns[client].vrs) {
+                    fprintf(stderr, " %i", vr);
+                }
+                fprintf(stderr, "\n");*/
 
-            /*int i = 0;
-            for (auto it2 = refValues.second.begin(); it2 != refValues.second.end(); it2++, i++) {
-                fprintf(stderr, "%i real VR %i = %f\n", (*it)->getId(), refValues.first[i], *it2);
-            }*/
+                wait();
 
-            send(*it, fmi2_import_set_real(0, 0, refValues.first, refValues.second));
+                std::vector<double> values;
+                for (auto it : conns[client].vrMap) {
+                    values.insert(values.end(), it.first->m_getRealValues.begin(), it.first->m_getRealValues.end());
+                }
+
+                send(client, fmi2_import_set_real(0, 0, conns[client].vrs, values));
             }
 
 #ifdef ENABLE_DEMO_HACKS
             //AgX requires newStep=true
-            block(*it, &FMIClient::fmi2_import_do_step, 0, 0, t, dt, true);
+            block(client, &FMIClient::fmi2_import_do_step, 0, 0, t, dt, true);
 #else
-            block(*it, fmi2_import_do_step(0, 0, t, dt, false));
+            block(client, fmi2_import_do_step(0, 0, t, dt, false));
 #endif
         }
+        //fprintf(stderr, "\n\n");
     }
 };
 }

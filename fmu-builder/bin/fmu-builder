@@ -62,7 +62,8 @@ elif fmiVersion == "2.0":
 # Get system info
 system = platform.system()
 is_64bits = sys.maxsize > 2**32
-arch = system.lower()+( "64" if is_64bits else "32")
+# 'win32' seems to be the proper name for all Windows FMUs since FMILibrary-2.0.1
+arch = 'win32' if system.lower() == 'windows' else system.lower()+( "64" if is_64bits else "32")
 
 # Create temp dir for the cmake file
 d = tempfile.mkdtemp()

@@ -122,21 +122,33 @@ TARGET_LINK_LIBRARIES( ${TARGET} %s )""" % (arch, modelIdentifier, definitions, 
         if subprocess.call(["cmake","--build","."]) == 0:
 
             # Zip everything needed in FMU
-            with zipfile.ZipFile("%s.fmu" % (modelIdentifier), 'w', zipfile.ZIP_DEFLATED) as myzip:
-                # TODO: Should look up what library type (.so, .dll... was created)
+            # If the Zip file already exists, try updating it with any new files we might have
+            outpath = pjoin(cwd,args.outdir,"%s.fmu" % (modelIdentifier))
+            print 'Writing/updating ' + outpath
+            existed = os.path.exists(outpath)
+            changed = False
+
+            with zipfile.ZipFile(outpath, 'a', zipfile.ZIP_DEFLATED) as myzip:
+                def write_if_new(filename, arcname=''):
+                    if arcname == '': arcname = filename
+                    if arcname in myzip.namelist():
+                        print '\tSkipped %s' % (arcname)
+                    else:
+                        myzip.write(filename, arcname)
+                        print '\t  Added %s' % (arcname)
+                        changed = True
+
                 if system == 'Windows':
-                    myzip.write(pjoin('Debug',modelIdentifier+'.dll'),pjoin('binaries',arch,modelIdentifier+'.dll'))
+                    write_if_new(pjoin('Debug',modelIdentifier+'.dll'),pjoin('binaries',arch,modelIdentifier+'.dll'))
                 else:
-                    myzip.write(pjoin('binaries',arch,modelIdentifier+".so"))
+                    write_if_new(pjoin('binaries',arch,modelIdentifier+".so"))
                 os.chdir(cwd)
-                myzip.write('modelDescription.xml')
+                write_if_new('modelDescription.xml')
                 sources = [pjoin(d,"sources",s) for s in os.listdir(pjoin(d,"sources")) if os.path.isfile(pjoin(d,"sources",s))]
                 for s in sources:
-                    myzip.write(s, pjoin('sources', os.path.basename(s)))
+                    write_if_new(s, pjoin('sources', os.path.basename(s)))
 
-            # Move the FMU to the out directory
-            shutil.move(pjoin(d,modelIdentifier+".fmu"),args.outdir)
-            print("\n"+pjoin(args.outdir,modelIdentifier+".fmu")+" created.");
+            print(outpath + (" created." if not existed else " updated." if changed else " not changed."));
         else:
             log("Make failed.")
     else:

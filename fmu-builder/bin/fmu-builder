@@ -130,6 +130,7 @@ TARGET_LINK_LIBRARIES( ${TARGET} %s )""" % (arch, modelIdentifier, definitions, 
 
             with zipfile.ZipFile(outpath, 'a', zipfile.ZIP_DEFLATED) as myzip:
                 def write_if_new(filename, arcname=''):
+                    global changed
                     if arcname == '': arcname = filename
                     if arcname in myzip.namelist():
                         print '\tSkipped %s' % (arcname)
@@ -146,7 +147,7 @@ TARGET_LINK_LIBRARIES( ${TARGET} %s )""" % (arch, modelIdentifier, definitions, 
                 write_if_new('modelDescription.xml')
                 sources = [pjoin(d,"sources",s) for s in os.listdir(pjoin(d,"sources")) if os.path.isfile(pjoin(d,"sources",s))]
                 for s in sources:
-                    write_if_new(s, pjoin('sources', os.path.basename(s)))
+                    write_if_new(s, pjoin('sources', os.path.basename(s)).replace('\\','/'))
 
             print(outpath + (" created." if not existed else " updated." if changed else " not changed."));
         else:

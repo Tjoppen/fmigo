@@ -33,4 +33,77 @@ Things to do:
             derivatives 
 
 
+==========  Runtime support =====
+
+In no particular order, some items might be deleted
+
+-- SPP integration
+
+-- FMI/X:
+   -- support for
+                  -- shared memory
+                  -- MPI
+                  -- TCP/IP
+                  -- UDP
+    -- check performance on high performance switches, clusters, etc.
+    -- Abisko for TCP/IP and MPI
+
+    -- graph designs for performance
+
+-- Servers for FMI/X
+           -- logging (there's an FMI standard coming, some issues exist)
+           -- HDF5 support with buffering and async
+           -- Model exchange support: server does integration
+           -- GSL or own integrators
+           -- support for directional derivatives and numerical Jacobians
+              for Model Exchange support
+
+-- Model exchange support: needed in servers and global stepper
+                  -- can do leap-frog if we have derivative info in
+                     modelDescription.xml
+
+-- Support for FMU testing from Modelon
+
+-- Error analysis framework
+         -- estimate error as function of time-step
+                     -- Richardson extrapolation?
+                     -- correlation?
+                     -- FFT and power spectrum?
+                     -- ???
+                     -- Plot designs + automation
+                     -- Power graphs
+
+-- Stability analysis framework
+             -- Lanczos or Arnoldi method to compute eigenvalues at a
+                particular configuration? (needs lots thinking)
+             -- eigenvalues of explicit stepping operators built from
+                theory (lots of work)
+
+-- Master stepper
+          -- force / displacement
+          -- force / velocity
+          -- displacement / displacement
+          -- kinematic ( can we do force velocity here? ) 
+          -- extrapolation + interpolation
+          -- iterative methods
+          -- event handling?
+          -- multirate?
+          -- filtering for f/d f/v and d/d couplings
+          -- model based extrapolation???  model reduction and integration
+             inside of simuling (etc.) and additional
+          -- Grandiose mix of model exchange and co-sim: master stepper
+             takes change of several ME FMUs as well as cosim ones, and
+             time-integrates the ME FMUs together with a sensible
+             integrator. 
+                         -- puts constraints on SPP
+
+-- Simulation master
+              -- weather report
+              -- global time
+              -- events
+              -- database to store and communicate data
+              -- monitors: ill-defined interface
+              -- 
+             
+
 

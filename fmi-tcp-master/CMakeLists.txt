@@ -90,8 +90,6 @@ ELSE(WIN32)
     SET(LINUXLIBS
         fmitcp
         fmilib
-        lacewing
-        zmq
         dl
         ##sc m umfpack amd blas atlas cholmod colamd suitesparseconfig # For strong coupling
         sc m umfpack amd blas cholmod colamd suitesparseconfig # For strong coupling
@@ -102,6 +100,11 @@ ELSE(WIN32)
         ${Boost_SYSTEM_LIBRARY}
         ${PROTOBUF_LIBRARY}
         ${CMAKE_THREAD_LIBS_INIT})
+    if (USE_LACEWING)
+        set(LINUXLIBS ${LINUXLIBS} lacewing)
+    else ()
+        set(LINUXLIBS ${LINUXLIBS} zmq)
+    endif ()
     TARGET_LINK_LIBRARIES(${MASTER_NAME} ${LINUXLIBS})
     TARGET_LINK_LIBRARIES(${SLAVE_NAME}  ${LINUXLIBS})
 ENDIF(WIN32)

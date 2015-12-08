@@ -7,7 +7,7 @@
 #include <algorithm>
 
 extern "C" {
-#include "umfpack.h"
+#include "suitesparse/umfpack.h"
 }
 
 using namespace sc;

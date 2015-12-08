@@ -41,7 +41,7 @@ if(WIN32)
         URL_MD5 ${SUITESPARSE_MD5}
     )
 
-    include_directories(${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/include/suitesparse)
+    include_directories(${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/include)
     link_directories(${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib)
     link_directories(${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib/lapack_blas_windows)
     link_directories(${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib64)

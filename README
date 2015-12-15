@@ -42,6 +42,7 @@ Things to do:
    d) systems with loops
    e) feed through
    c) 2D rod to make chains
+   d) nonlinear oscillators
    Stage 2:
        -- each FMU with own integrator
 

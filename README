@@ -10,22 +10,40 @@ Things to do:
 -- timing infrastructure
 
 -- hdf5 ability  
+     -- timing data
+        --> done 
+     -- output dynamic data from FMU with HDF5 hierarchy mirroring
+        ModelDescription file
+                         --> problem: thread safety for ioh5
+     -- merging files from the different FMUs                    
+
+-- Sensible measures of errors and differences
+        -- phase shift
+        -- order of method (errors as function of step size)
+        -- power spectrum (displacement of frequency)
+        -- ???
+-- Stability analysis
+        -- ???
+
+
 
 -- timing
-
--- test displacement/displacement and force/displacement couplings, wait
-   for Edo to give input to do force/velocity
-
--- move this file to Jira
+                -- done
 
 -- FMUs needed
    Stage 1: 
    a) mass + spring subject to force inputs, returns position + velocity
+             --> done
    b) mass + spring subject to a second coupling spring force depending on local x,v
    + x,v received from another FMU, and which returns the force of the
    coupling spring
+            --> done with SHO in each FMU
 
+   d) systems with loops
+   e) feed through
    c) 2D rod to make chains
+   Stage 2:
+       -- each FMU with own integrator
 
 -- FMU cleanup:  revise examples from  QTronic
 
@@ -84,11 +102,16 @@ In no particular order, some items might be deleted
           -- force / velocity
           -- displacement / displacement
           -- kinematic ( can we do force velocity here? ) 
+          -- Edo's technique
+          -- support for NEPCE from Benedikt (Nearly Energy Perserving
+             Coupling Elements)
+          -- Support for TLM
           -- extrapolation + interpolation
           -- iterative methods
           -- event handling?
           -- multirate?
           -- filtering for f/d f/v and d/d couplings
+          -- Full support for Edo's filterning
           -- model based extrapolation???  model reduction and integration
              inside of simuling (etc.) and additional
           -- Grandiose mix of model exchange and co-sim: master stepper
@@ -107,3 +130,11 @@ In no particular order, some items might be deleted
              
 
 
+-- publication plan
+               -- Edo's filter
+               -- large comparisons of different weak masters
+               -- kinematic coupling
+               -- FMI/TCP with distribution, servers that bridge for
+                  FMI/model exchange to FMI/co-sim, and numerical
+                  directional derivatives + Jacobians
+               -- theory of linear stability

@@ -91,6 +91,9 @@ else(WIN32)
 	find_package(Protobuf REQUIRED)
 	include_directories(${PROTOBUF_INCLUDE_DIR} )
 	link_directories(${PROTOBUF_LIBRARY})
+
+    include_directories(/usr/include/hdf5/serial)
+    link_directories(/usr/lib/x86_64-linux-gnu/hdf5/serial)
 endif(WIN32)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/fmi-tcp/src/fmitcp/include)

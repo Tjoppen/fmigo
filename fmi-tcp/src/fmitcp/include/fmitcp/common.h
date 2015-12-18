@@ -12,6 +12,11 @@
 #include <fmilib.h>
 #include <string>
 #include <sstream>
+#ifndef WIN32
+//for HDF5 output
+#include <hdf5.h>
+#include <hdf5_hl.h>
+#endif
 
 using namespace std;
 namespace fmitcp {
@@ -52,6 +57,18 @@ namespace fmitcp {
   fmitcp_proto::jm_log_level_enu_t fmiJMLogLevelToProtoJMLogLevel(jm_log_level_enu_t logLevel);
   fmi2_status_kind_t protoStatusKindToFmiStatusKind(fmitcp_proto::fmi2_status_kind_t statusKind);
 
+#ifndef WIN32
+    void writeHDF5File(
+        std::string hdf5Filename,
+        std::vector<size_t>& field_offset,
+        std::vector<hid_t>& field_types,
+        std::vector<const char*>& field_names,
+        const char *table_title,
+        const char *dset_name,
+        hsize_t nrecords,
+        hsize_t type_size,
+        const void *buf);
+#endif
 }
 
 #endif

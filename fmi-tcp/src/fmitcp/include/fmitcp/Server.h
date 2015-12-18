@@ -13,6 +13,7 @@
 #endif
 #include "Logger.h"
 #include "fmitcp.pb.h"
+#include "common.h"
 
 using namespace std;
 
@@ -51,21 +52,29 @@ namespace fmitcp {
     /// FMI 2.0 instance
     fmi2_import_t* m_fmi2Instance;
     fmi2_callback_functions_t m_fmi2CallbackFunctions;
-    fmi2_import_variable_list_t* m_fmi2Variables;
+    fmi2_import_variable_list_t *m_fmi2Variables, *m_fmi2Outputs;
 
     const char* m_instanceName;
     std::string m_fmuLocation;
     std::string m_resourcePath;
 
+#ifndef WIN32
+    //HDF5 output
+    std::string hdf5Filename;
+    std::vector<size_t> field_offset;
+    std::vector<hid_t> field_types;
+    std::vector<const char*> field_names;
+    std::vector<char> hdf5data; //this should be a map<int,vector<char>> once we start getting into having multiple FMU instances
+    size_t rowsz, nrecords;
+#endif
+
   public:
 
 #ifdef USE_LACEWING
     /// Create a server for an FMU using an eventpump
-    Server(string fmuPath, bool debugLogging, jm_log_level_enu_t logLevel, EventPump *pump);
-    Server(string fmuPath, bool debugLogging, jm_log_level_enu_t logLevel, EventPump *pump, const Logger &logger);
+    Server(string fmuPath, bool debugLogging, jm_log_level_enu_t logLevel, EventPump *pump, const Logger &logger = Logger());
 #else
-    Server(string fmuPath, bool debugLogging, jm_log_level_enu_t logLevel);
-    Server(string fmuPath, bool debugLogging, jm_log_level_enu_t logLevel, const Logger &logger);
+    Server(string fmuPath, bool debugLogging, jm_log_level_enu_t logLevel, std::string hdf5Filename = "", const Logger &logger = Logger());
 #endif
     virtual ~Server();
 
@@ -112,6 +121,11 @@ namespace fmitcp {
     bool fmi2StatusOkOrWarning(fmi2_status_t fmistatus) {
       return (fmistatus == fmi2_status_ok) || (fmistatus == fmi2_status_warning);
     }
+
+#ifndef WIN32
+    void getHDF5Info();
+    void fillHDF5Row(char *dest, double t);
+#endif
   };
 
 };

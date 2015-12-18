@@ -16,8 +16,8 @@ public:
   FMIServer(string fmuPath, bool debugLogging, jm_log_level_enu_t logLevel, EventPump* pump)
    : Server(fmuPath, debugLogging, logLevel, pump) {}
 #else
-  FMIServer(string fmuPath, bool debugLogging, jm_log_level_enu_t logLevel)
-   : Server(fmuPath, debugLogging, logLevel) {}
+  FMIServer(string fmuPath, bool debugLogging, jm_log_level_enu_t logLevel, string hdf5Filename)
+   : Server(fmuPath, debugLogging, logLevel, hdf5Filename) {}
 #endif
   ~FMIServer() {};
   void onClientConnect() {
@@ -85,6 +85,7 @@ int main(int argc, char *argv[]) {
   jm_log_level_enu_t log_level = jm_log_level_nothing;
   string hostName = "localhost",
       fmuPath = "";
+  string hdf5Filename;
 
   for (j = 1; j < argc; j++) {
     string arg = argv[j];
@@ -145,7 +146,8 @@ int main(int argc, char *argv[]) {
 
     } else if (arg == "--host" && !last) {
       hostName = argv[j+1];
-
+    } else if (arg == "-5" && !last) {
+      hdf5Filename = argv[++j];
     } else {
       fmuPath = argv[j];
     }
@@ -160,7 +162,7 @@ int main(int argc, char *argv[]) {
   EventPump pump;
   FMIServer server(fmuPath, debugLogging, log_level, &pump);
 #else
-  FMIServer server(fmuPath, debugLogging, log_level);
+  FMIServer server(fmuPath, debugLogging, log_level, hdf5Filename);
 #endif
   if (!server.isFmuParsed())
     return EXIT_FAILURE;

@@ -534,34 +534,19 @@ int main(int argc, char *argv[] ) {
 #endif
     }
 
-#ifndef WIN32
-    //HDF5
-    if (hdf5Filename.length()) {
-        vector<size_t> field_offset;
-        vector<hid_t> field_types;
-        vector<const char*> field_names;
+    vector<size_t> field_offset;
+    vector<hid_t> field_types;
+    vector<const char*> field_names;
 
-        fprintf(stderr, "Writing HDF5 file \"%s\"\n", hdf5Filename.c_str());
-        fprintf(stderr, "HDF5 column names:\n");
-
-        for (size_t x = 0; x < columnnames.size(); x++) {
-            field_offset.push_back(x*sizeof(int));
-            field_types.push_back(H5T_NATIVE_INT);
-            field_names.push_back(columnnames[x]);
-            fprintf(stderr, "%2li: %s\n", x, columnnames[x]);
-        }
-
-        hid_t file_id = H5Fcreate(hdf5Filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT );
-        H5TBmake_table("Timings", file_id, "table", columnnames.size(), nrecords,
-                columnnames.size()*sizeof(int), &field_names[0], &field_offset[0],
-                &field_types[0], 10 /* chunk_size */, NULL, 0, &timelog[0]);
-        H5Fclose(file_id);
+    for (size_t x = 0; x < columnnames.size(); x++) {
+        field_offset.push_back(x*sizeof(int));
+        field_types.push_back(H5T_NATIVE_INT);
+        field_names.push_back(columnnames[x]);
     }
-#else
-    if (hdf5Filename.length()) {
-        fprintf(stderr, "WARNING: HDF5 output not enabled on Windows\n");
-    }
-#endif
+
+    writeHDF5File(hdf5Filename, field_offset, field_types, field_names,
+        "Timings", "table", nrecords, columnnames.size()*sizeof(int), &timelog[0]);
+
     fprintf(stderr, "\n");
 
     cleanUp(master, slaves, weakConnections);

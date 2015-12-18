@@ -123,3 +123,36 @@ fmi2_status_kind_t fmitcp::protoStatusKindToFmiStatusKind(fmitcp_proto::fmi2_sta
     return fmi2_do_step_status;
   }
 }
+
+void fmitcp::writeHDF5File(
+        std::string hdf5Filename,
+        std::vector<size_t>& field_offset,
+        std::vector<hid_t>& field_types,
+        std::vector<const char*>& field_names,
+        const char *table_title,
+        const char *dset_name,
+        hsize_t nrecords,
+        hsize_t type_size,
+        const void *buf) {
+#ifndef WIN32
+    //HDF5
+    if (hdf5Filename.length()) {
+        fprintf(stderr, "Writing HDF5 file \"%s\"\n", hdf5Filename.c_str());
+        fprintf(stderr, "HDF5 column names:\n");
+
+        for (size_t x = 0; x < field_names.size(); x++) {
+            fprintf(stderr, "%2li: %s\n", x, field_names[x]);
+        }
+
+        hid_t file_id = H5Fcreate(hdf5Filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT );
+        H5TBmake_table(table_title, file_id, dset_name, field_names.size(), nrecords,
+                type_size, field_names.data(), field_offset.data(),
+                field_types.data(), 10 /* chunk_size */, NULL, 0, buf);
+        H5Fclose(file_id);
+    }
+#else
+    if (hdf5Filename.length()) {
+        fprintf(stderr, "WARNING: HDF5 output not enabled on Windows\n");
+    }
+#endif
+}

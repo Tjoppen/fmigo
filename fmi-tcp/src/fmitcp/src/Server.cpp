@@ -35,15 +35,8 @@ void jmCallbacksLogger(jm_callbacks* c, jm_string module, jm_log_level_enu_t log
 }
 
 #ifdef USE_LACEWING
-Server::Server(string fmuPath, bool debugLogging, jm_log_level_enu_t logLevel, EventPump *pump) {
-  m_fmuParsed = true;
-  m_fmuPath = fmuPath;
-  m_debugLogging = debugLogging;
-  m_logLevel = logLevel;
-  init(pump);
-}
-
 Server::Server(string fmuPath, bool debugLogging, jm_log_level_enu_t logLevel, EventPump *pump, const Logger &logger) {
+  m_fmi2Outputs = NULL;
   m_fmuParsed = true;
   m_fmuPath = fmuPath;
   m_debugLogging = debugLogging;
@@ -52,20 +45,14 @@ Server::Server(string fmuPath, bool debugLogging, jm_log_level_enu_t logLevel, E
   init(pump);
 }
 #else
-Server::Server(string fmuPath, bool debugLogging, jm_log_level_enu_t logLevel) {
-  m_fmuParsed = true;
-  m_fmuPath = fmuPath;
-  m_debugLogging = debugLogging;
-  m_logLevel = logLevel;
-  init();
-}
-
-Server::Server(string fmuPath, bool debugLogging, jm_log_level_enu_t logLevel, const Logger &logger) {
+Server::Server(string fmuPath, bool debugLogging, jm_log_level_enu_t logLevel, std::string hdf5Filename, const Logger &logger) {
+  m_fmi2Outputs = NULL;
   m_fmuParsed = true;
   m_fmuPath = fmuPath;
   m_debugLogging = debugLogging;
   m_logLevel = logLevel;
   m_logger = logger;
+  this->hdf5Filename = hdf5Filename;
   init();
 }
 #endif
@@ -74,6 +61,7 @@ Server::~Server() {
 #ifdef USE_LACEWING
   lw_server_delete(m_server);
 #endif
+  if(m_fmi2Outputs!=NULL)   fmi2_import_free_variable_list(m_fmi2Outputs);
 }
 
 #ifdef USE_LACEWING
@@ -184,6 +172,12 @@ void Server::init() {
      */
     int sortOrder = 0;
     m_fmi2Variables = fmi2_import_get_variable_list(m_fmi2Instance, sortOrder);
+    m_fmi2Outputs = fmi2_import_get_outputs_list(m_fmi2Instance);
+
+#ifndef WIN32
+    //prepare HDF5
+    getHDF5Info();
+#endif
   } else {
     // todo add FMI 1.0 later on.
     fmi_import_free_context(m_context);
@@ -356,6 +350,16 @@ string Server::clientData(const char *data, size_t size) {
     m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_reset_slave_res(mid=%d,status=%d)\n",messageId,resetRes->status());
 
   } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_free_slave_instance_req) {
+#ifndef WIN32
+    if (hdf5Filename.length()) {
+        //dump hdf5 data
+        //NOTE: this will only work if we have exactly one FMU instance on this server
+        fprintf(stderr, "Gathered %li B HDF5 data\n", nrecords*rowsz);
+        writeHDF5File(hdf5Filename, field_offset, field_types, field_names, "FMU", "fmu", nrecords, rowsz, hdf5data.data());
+        nrecords = 0;
+        hdf5data.clear();
+    }
+#endif
 
     // Unpack message
     fmitcp_proto::fmi2_import_free_slave_instance_req * r = req.mutable_fmi2_import_free_slave_instance_req();
@@ -476,6 +480,15 @@ string Server::clientData(const char *data, size_t size) {
         communicationStepSize = r->communicationstepsize();
     bool newStep = r->newstep();
     m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_do_step_req(fmuId=%d,commPoint=%g,stepSize=%g,newStep=%d)\n",fmuId,currentCommunicationPoint,communicationStepSize,newStep?1:0);
+
+#ifndef WIN32
+    if (hdf5Filename.length()) {
+        //log outputs before doing anything
+        hdf5data.insert(hdf5data.begin()+nrecords*rowsz, rowsz, 0);
+        fillHDF5Row(&hdf5data[nrecords*rowsz], currentCommunicationPoint);
+        nrecords++;
+    }
+#endif
 
     fmi2_status_t status = fmi2_status_ok;
     if (!m_sendDummyResponses) {
@@ -1107,3 +1120,76 @@ void Server::host(string hostName, long port) {
 void Server::sendDummyResponses(bool sendDummyResponses) {
   m_sendDummyResponses = sendDummyResponses;
 }
+
+#ifndef WIN32
+static size_t fmi2_type_size(fmi2_base_type_enu_t type) {
+    switch (type) {
+    case fmi2_base_type_real: return sizeof(fmi2_real_t);
+    case fmi2_base_type_int:  return sizeof(fmi2_integer_t);
+    case fmi2_base_type_bool: return sizeof(fmi2_boolean_t);
+    default:
+        fprintf(stderr, "Type not supported for HDF5 output\n");
+        exit(1);
+    }
+}
+
+static hid_t fmi2_type_to_hdf5(fmi2_base_type_enu_t type) {
+    switch (type) {
+    case fmi2_base_type_real: return H5T_NATIVE_DOUBLE;
+    case fmi2_base_type_int:  return H5T_NATIVE_INT;
+    case fmi2_base_type_bool: return H5T_NATIVE_INT;
+    default:
+        fprintf(stderr, "Type not supported for HDF5 output\n");
+        exit(1);
+    }
+}
+
+void Server::getHDF5Info() {
+    if (!hdf5Filename.length()) {
+        return;
+    }
+
+    //first entry is time
+    field_offset.push_back(0);
+    field_names.push_back("currentCommunicationPoint");
+    field_types.push_back(H5T_NATIVE_DOUBLE);
+    size_t ofs = sizeof(double);
+
+    for (size_t x = 0; x < fmi2_import_get_variable_list_size(m_fmi2Outputs); x++) {
+        fmi2_import_variable_t *var = fmi2_import_get_variable(m_fmi2Outputs, x);
+        fmi2_base_type_enu_t type = fmi2_import_get_variable_base_type(var);
+
+        field_offset.push_back(ofs);
+        field_names.push_back(fmi2_import_get_variable_name(var));
+        field_types.push_back(fmi2_type_to_hdf5(type));
+
+        ofs += fmi2_type_size(type);
+    }
+
+    rowsz = ofs;
+
+    //preallocate some space for HDF5 data
+    nrecords = 0;
+    size_t res = rowsz*1000;
+    hdf5data.reserve(res);
+}
+
+void Server::fillHDF5Row(char *dest, double t) {
+    *reinterpret_cast<double*>(dest + field_offset[0]) = t;
+
+    for (size_t x = 0; x < fmi2_import_get_variable_list_size(m_fmi2Outputs); x++) {
+        fmi2_import_variable_t *var = fmi2_import_get_variable(m_fmi2Outputs, x);
+        fmi2_base_type_enu_t type = fmi2_import_get_variable_base_type(var);
+        fmi2_value_reference_t vr = fmi2_import_get_variable_vr(var);
+
+        switch (type) {
+        case fmi2_base_type_real: fmi2_import_get_real(m_fmi2Instance,    &vr, 1, reinterpret_cast<fmi2_real_t*>(   dest + field_offset[x+1])); break;
+        case fmi2_base_type_int:  fmi2_import_get_integer(m_fmi2Instance, &vr, 1, reinterpret_cast<fmi2_integer_t*>(dest + field_offset[x+1])); break;
+        case fmi2_base_type_bool: fmi2_import_get_boolean(m_fmi2Instance, &vr, 1, reinterpret_cast<fmi2_boolean_t*>(dest + field_offset[x+1])); break;
+        default:
+            fprintf(stderr, "Type not supported for HDF5 output\n");
+            exit(1);
+        }
+    }
+}
+#endif

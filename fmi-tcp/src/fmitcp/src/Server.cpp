@@ -91,7 +91,7 @@ void Server::init() {
   // working directory
   char* dir;
   //This loop is needed because sometimes fmi_import_mk_temp_dir() fails.
-  //I'm not entirely sure why yet, but it might be that two fmi-tcp-slaves
+  //I'm not entirely sure why yet, but it might be that two fmi-tcp-servers
   //started at the same time end up getting the same path from mktemp()
   for (int x = 10;; x--) {
       if ((dir = fmi_import_mk_temp_dir(&m_jmCallbacks, NULL, "fmitcp_"))) {

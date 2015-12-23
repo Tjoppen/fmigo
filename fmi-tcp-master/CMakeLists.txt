@@ -36,19 +36,13 @@ if(WIN32)
     set(MASTER_HEADERS ${MASTER_HEADERS} include/master/getopt.h)
 endif()
 
-SET(SLAVE_SRCS
-  src/slave/main.cpp
-)
-SET(SLAVE_HEADERS
-)
-
 SET(MASTER_NAME fmi-tcp-master)
-set(SLAVE_NAME  fmi-tcp-slave)
+set(TCP_SERVER_NAME fmi-tcp-server)
 
 SET(EXECUTABLE_OUTPUT_PATH "${CMAKE_CURRENT_LIST_DIR}/bin")
 
 ADD_EXECUTABLE(${MASTER_NAME} ${MASTER_HEADERS} ${MASTER_SRCS})
-ADD_EXECUTABLE(${SLAVE_NAME}  ${SLAVE_HEADERS}  ${SLAVE_SRCS})
+ADD_EXECUTABLE(${TCP_SERVER_NAME}  src/server/fmi-tcp-server.cpp)
 
 IF(WIN32)
     SET(WINLIBS
@@ -76,7 +70,7 @@ IF(WIN32)
         set(WINLIBS ${WINLIBS} libzmq)
     endif()
     TARGET_LINK_LIBRARIES(${MASTER_NAME} ${WINLIBS})
-    TARGET_LINK_LIBRARIES(${SLAVE_NAME}  ${WINLIBS})
+    TARGET_LINK_LIBRARIES(${TCP_SERVER_NAME}  ${WINLIBS})
     INSTALL (FILES
         ${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib/lapack_blas_windows/libblas.dll
         ${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib/lapack_blas_windows/libgcc_s_dw2-1.dll
@@ -106,10 +100,10 @@ ELSE(WIN32)
         set(LINUXLIBS ${LINUXLIBS} zmq)
     endif ()
     TARGET_LINK_LIBRARIES(${MASTER_NAME} ${LINUXLIBS})
-    TARGET_LINK_LIBRARIES(${SLAVE_NAME}  ${LINUXLIBS})
+    TARGET_LINK_LIBRARIES(${TCP_SERVER_NAME}  ${LINUXLIBS})
 ENDIF(WIN32)
 
-# TODO: Slave manpage?
+# TODO: Server manpage?
 if(NOT WIN32)
     SET(IN_MANPAGE ${CMAKE_CURRENT_LIST_DIR}/doc/${MASTER_NAME}.1)
     SET(OUT_MANPAGE ${CMAKE_CURRENT_BINARY_DIR}/${MASTER_NAME}.1.gz)
@@ -118,7 +112,7 @@ if(NOT WIN32)
     INSTALL (FILES ${OUT_MANPAGE} DESTINATION man/man1)
 endif()
 
-INSTALL(TARGETS ${MASTER_NAME} ${SLAVE_NAME} DESTINATION bin)
+INSTALL(TARGETS ${MASTER_NAME} ${TCP_SERVER_NAME} DESTINATION bin)
 
 SET(FMU_SRCS
   fmu/fmu_interface.c

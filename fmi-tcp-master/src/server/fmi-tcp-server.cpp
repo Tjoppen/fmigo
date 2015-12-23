@@ -43,7 +43,7 @@ public:
 void printHelp() {
   printf("Usage\n\
 \n\
-slave [OPTIONS] FMUPATH\n\
+fmi-tcp-server [OPTIONS] FMUPATH\n\
 \n\
 OPTIONS\n\
 \n\
@@ -62,7 +62,7 @@ FMUPATH\n\
 \n\
 EXAMPLES\n\
 \n\
-    slave --host localhost --port 3000 mySim.fmu\n\n");fflush(NULL);
+    fmi-tcp-server --host localhost --port 3000 mySim.fmu\n\n");fflush(NULL);
 }
 
 int main(int argc, char *argv[]) {
@@ -205,7 +205,7 @@ int main(int argc, char *argv[]) {
   return EXIT_SUCCESS;
  } catch (zmq::error_t e) {
       //catch any stray ZMQ exceptions
-      //this should prevent "program stopped working" messages on Windows when fmi-tcp-slaves are taskkill'd
+      //this should prevent "program stopped working" messages on Windows when fmi-tcp-servers are taskkill'd
       fprintf(stderr, "zmq::error_t: %s\n", e.what());
       return 1;
  }

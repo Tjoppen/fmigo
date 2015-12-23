@@ -36,13 +36,14 @@ if(WIN32)
     set(MASTER_HEADERS ${MASTER_HEADERS} include/master/getopt.h)
 endif()
 
-SET(MASTER_NAME fmi-tcp-master)
+SET(TCP_MASTER_NAME fmi-tcp-master)
+SET(MPI_MASTER_NAME fmi-mpi-master)
 set(TCP_SERVER_NAME fmi-tcp-server)
 set(MPI_SERVER_NAME fmi-mpi-server)
 
 SET(EXECUTABLE_OUTPUT_PATH "${CMAKE_CURRENT_LIST_DIR}/bin")
 
-ADD_EXECUTABLE(${MASTER_NAME} ${MASTER_HEADERS} ${MASTER_SRCS})
+ADD_EXECUTABLE(${TCP_MASTER_NAME} ${MASTER_HEADERS} ${MASTER_SRCS})
 ADD_EXECUTABLE(${TCP_SERVER_NAME}  src/server/fmi-tcp-server.cpp)
 
 IF(WIN32)
@@ -70,7 +71,7 @@ IF(WIN32)
     else()
         set(WINLIBS ${WINLIBS} libzmq)
     endif()
-    TARGET_LINK_LIBRARIES(${MASTER_NAME} ${WINLIBS})
+    TARGET_LINK_LIBRARIES(${TCP_MASTER_NAME} ${WINLIBS})
     TARGET_LINK_LIBRARIES(${TCP_SERVER_NAME}  ${WINLIBS})
     INSTALL (FILES
         ${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib/lapack_blas_windows/libblas.dll
@@ -100,28 +101,31 @@ ELSE(WIN32)
     else ()
         set(LINUXLIBS ${LINUXLIBS} zmq)
     endif ()
-    TARGET_LINK_LIBRARIES(${MASTER_NAME} ${LINUXLIBS})
+    TARGET_LINK_LIBRARIES(${TCP_MASTER_NAME} ${LINUXLIBS})
     TARGET_LINK_LIBRARIES(${TCP_SERVER_NAME}  ${LINUXLIBS})
 
     # MPI stuff. Linux only for now
     # NOTE: switching to MPI compilers. This seems to work fine, surprisingly
     set(CMAKE_C_COMPILER   mpicc)
     set(CMAKE_CXX_COMPILER mpicxx)
-    ADD_EXECUTABLE(${MPI_SERVER_NAME}  src/server/fmi-mpi-server.cpp)
-    TARGET_LINK_LIBRARIES(${MPI_SERVER_NAME}  ${LINUXLIBS} mpi)
-    INSTALL(TARGETS ${MPI_SERVER_NAME} DESTINATION bin)
+    add_executable(${MPI_SERVER_NAME}  src/server/fmi-mpi-server.cpp)
+    add_executable(${MPI_MASTER_NAME} ${MASTER_HEADERS} ${MASTER_SRCS})
+    set_target_properties(${MPI_MASTER_NAME} PROPERTIES COMPILE_FLAGS -DUSE_MPI)
+    target_link_libraries(${MPI_SERVER_NAME} ${LINUXLIBS})
+    target_link_libraries(${MPI_MASTER_NAME} ${LINUXLIBS})
+    install(TARGETS ${MPI_MASTER_NAME} ${MPI_SERVER_NAME} DESTINATION bin)
 ENDIF(WIN32)
 
 # TODO: Server manpage?
 if(NOT WIN32)
-    SET(IN_MANPAGE ${CMAKE_CURRENT_LIST_DIR}/doc/${MASTER_NAME}.1)
-    SET(OUT_MANPAGE ${CMAKE_CURRENT_BINARY_DIR}/${MASTER_NAME}.1.gz)
+    SET(IN_MANPAGE ${CMAKE_CURRENT_LIST_DIR}/doc/${TCP_MASTER_NAME}.1)
+    SET(OUT_MANPAGE ${CMAKE_CURRENT_BINARY_DIR}/${TCP_MASTER_NAME}.1.gz)
     ADD_CUSTOM_TARGET(manpage COMMAND gzip -kc9 ${IN_MANPAGE} > ${OUT_MANPAGE} DEPENDS ${IN_MANPAGE} SOURCES ${IN_MANPAGE})
-    ADD_DEPENDENCIES(${MASTER_NAME} manpage)
+    ADD_DEPENDENCIES(${TCP_MASTER_NAME} manpage)
     INSTALL (FILES ${OUT_MANPAGE} DESTINATION man/man1)
 endif()
 
-INSTALL(TARGETS ${MASTER_NAME} ${TCP_SERVER_NAME} DESTINATION bin)
+INSTALL(TARGETS ${TCP_MASTER_NAME} ${TCP_SERVER_NAME} DESTINATION bin)
 
 SET(FMU_SRCS
   fmu/fmu_interface.c

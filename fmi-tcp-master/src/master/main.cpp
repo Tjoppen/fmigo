@@ -317,6 +317,12 @@ static void sendUserParams(BaseMaster *master, vector<FMIClient*> slaves, map<pa
 }
 
 int main(int argc, char *argv[] ) {
+#ifdef USE_MPI
+    fprintf(stderr, "MPI enabled\n");
+#else
+    fprintf(stderr, "MPI disabled\n");
+#endif
+
     fmitcp::Logger logger;
 #ifdef USE_LACEWING
     fmitcp::EventPump pump;

@@ -38,6 +38,7 @@ endif()
 
 SET(MASTER_NAME fmi-tcp-master)
 set(TCP_SERVER_NAME fmi-tcp-server)
+set(MPI_SERVER_NAME fmi-mpi-server)
 
 SET(EXECUTABLE_OUTPUT_PATH "${CMAKE_CURRENT_LIST_DIR}/bin")
 
@@ -101,6 +102,14 @@ ELSE(WIN32)
     endif ()
     TARGET_LINK_LIBRARIES(${MASTER_NAME} ${LINUXLIBS})
     TARGET_LINK_LIBRARIES(${TCP_SERVER_NAME}  ${LINUXLIBS})
+
+    # MPI stuff. Linux only for now
+    # NOTE: switching to MPI compilers. This seems to work fine, surprisingly
+    set(CMAKE_C_COMPILER   mpicc)
+    set(CMAKE_CXX_COMPILER mpicxx)
+    ADD_EXECUTABLE(${MPI_SERVER_NAME}  src/server/fmi-mpi-server.cpp)
+    TARGET_LINK_LIBRARIES(${MPI_SERVER_NAME}  ${LINUXLIBS} mpi)
+    INSTALL(TARGETS ${MPI_SERVER_NAME} DESTINATION bin)
 ENDIF(WIN32)
 
 # TODO: Server manpage?

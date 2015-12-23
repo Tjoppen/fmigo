@@ -104,9 +104,14 @@ struct vertex {
 int main(){
 
   color c( {1,2,3} );
+  color c1( (char) 4, (float)1, (double)3);
+  
 
   color_list cl(c, 4);
   
+  for ( size_t i = 0; i < 3; ++i )
+    cerr << c1[ i ] << "  " ;
+  cerr << endl;
 
   for ( size_t i = 0; i < 3; ++i )
     cerr << c[ i ] << "  " ;

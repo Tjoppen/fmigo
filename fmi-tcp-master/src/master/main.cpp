@@ -394,8 +394,15 @@ int main(int argc, char *argv[] ) {
     vector<FMIClient*> slaves = setupSlaves(fmuURIs, &pump);
 #elif defined(USE_MPI)
     //world = master at 0, FMUs at 1..N
-    int world_size;
+    int world_size, world_rank;
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+
+    if (world_rank != 0) {
+        fprintf(stderr, "fmi-mpi-master: Expected world_rank = 0, got %i\n", world_rank);
+        return 1;
+    }
+
     vector<FMIClient*> slaves = setupSlaves(world_size-1);
 #else
     zmq::context_t context(1);

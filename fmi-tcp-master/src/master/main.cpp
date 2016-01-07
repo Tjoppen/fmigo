@@ -4,6 +4,8 @@
 #include <fmitcp/Logger.h>
 #ifdef USE_LACEWING
 #include <fmitcp/EventPump.h>
+#elif defined(USE_MPI)
+#include <mpi.h>
 #else
 #include <zmq.hpp>
 #endif
@@ -39,6 +41,16 @@ std::map<int, const char*> columnnames;
 
 typedef map<pair<int,fmi2_base_type_enu_t>, vector<param> > parameter_map;
 
+#ifdef USE_MPI
+static vector<FMIClient*> setupSlaves(int numFMUs) {
+    vector<FMIClient*> slaves;
+    for (int x = 0; x < numFMUs; x++) {
+        FMIClient* client = new FMIClient(x+1 /* world_rank */, x /* slaveId */);
+        slaves.push_back(client);
+    }
+    return slaves;
+}
+#else
 #ifdef USE_LACEWING
 static FMIClient* connectSlave(std::string uri, fmitcp::EventPump *pump, int slaveId){
 #else
@@ -85,6 +97,7 @@ static vector<FMIClient*> setupSlaves(vector<string> fmuURIs, zmq::context_t &co
     }
     return slaves;
 }
+#endif
 
 static vector<WeakConnection*> setupWeakConnections(vector<connection> connections, vector<FMIClient*> slaves) {
     vector<WeakConnection*> weakConnections;
@@ -378,6 +391,11 @@ int main(int argc, char *argv[] ) {
 
 #ifdef USE_LACEWING
     vector<FMIClient*> slaves = setupSlaves(fmuURIs, &pump);
+#elif defined(USE_MPI)
+    //world = master at 0, FMUs at 1..N
+    int world_size;
+    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+    vector<FMIClient*> slaves = setupSlaves(world_size-1);
 #else
     zmq::context_t context(1);
     //without this the maximum number of slaves tops out at 300 on Linux,

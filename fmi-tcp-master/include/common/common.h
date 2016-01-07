@@ -9,7 +9,7 @@
 
 #define FMILIB_BUILDING_LIBRARY
 #include <fmilib.h>
-#include "fmitcp/fmitcp.pb.h"
+#include "fmitcp.pb.h"
 
 #ifndef WIN32
 //for HDF5 output

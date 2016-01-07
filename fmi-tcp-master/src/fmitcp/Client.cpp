@@ -275,6 +275,8 @@ Client::Client(EventPump * pump){
     m_pump = pump;
     m_client = lw_client_new(m_pump->getPump());
     //lw_fdstream_nagle(m_client,lw_false);
+#elif defined(USE_MPI)
+Client::Client(int world_rank) : world_rank(world_rank) {
 #else
 Client::Client(zmq::context_t &context) : m_socket(context, ZMQ_PAIR) {
 #endif
@@ -309,6 +311,9 @@ void Client::sendMessage(std::string s){
     m_pendingRequests++;
 #ifdef USE_LACEWING
     fmitcp::sendProtoBuffer(m_client, s);
+#elif defined(USE_MPI)
+    fprintf(stderr, "TODO\n");
+    exit(1);
 #else
     zmq::message_t msg(s.size());
     memcpy(msg.data(), s.data(), s.size());
@@ -330,6 +335,9 @@ void Client::sendMessageBlocking(std::string s) {
         usleep(10);
 #endif
     }
+#elif defined(USE_MPI)
+    fprintf(stderr, "TODO\n");
+    exit(1);
 #else
     zmq::message_t msg;
     m_socket.recv(&msg);
@@ -341,6 +349,7 @@ size_t Client::getNumPendingRequests() const {
     return m_pendingRequests;
 }
 
+#ifndef USE_MPI
 void Client::connect(string host, long port){
 #ifdef USE_LACEWING
     // Set the master object as tag
@@ -365,6 +374,7 @@ void Client::connect(string host, long port){
     m_logger.log(fmitcp::Logger::LOG_DEBUG,"connected\n");
 #endif
 }
+#endif
 
 #ifdef USE_LACEWING
 void Client::disconnect(){

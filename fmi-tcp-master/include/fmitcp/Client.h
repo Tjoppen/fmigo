@@ -3,7 +3,7 @@
 
 #ifdef USE_LACEWING
 #include "EventPump.h"
-#else
+#elif !defined(USE_MPI)
 #include <zmq.hpp>
 #endif
 #include "Logger.h"
@@ -37,6 +37,8 @@ namespace fmitcp {
 #ifdef USE_LACEWING
         lw_client m_client;
         std::string tail;
+#elif defined(USE_MPI)
+        int world_rank;
 #else
     public:
         zmq::socket_t m_socket;
@@ -45,6 +47,8 @@ namespace fmitcp {
     public:
 #ifdef USE_LACEWING
         Client(EventPump * pump);
+#elif defined(USE_MPI)
+        Client(int world_rank);
 #else
         Client(zmq::context_t &context);
 #endif
@@ -52,10 +56,12 @@ namespace fmitcp {
 
         Logger * getLogger();
 
+#ifndef USE_MPI
         /// Connect the client to a server
         void connect(string host, long port);
 #ifdef USE_LACEWING
         void disconnect();
+#endif
 #endif
 
         /// Send a binary message

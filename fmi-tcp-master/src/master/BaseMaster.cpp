@@ -46,6 +46,10 @@ void BaseMaster::wait() {
 #else
         usleep(10);
 #endif
+#elif defined(USE_MPI)
+    //TODO
+    fprintf(stderr, "TODO: MPI_recv()\n");
+    exit(1);
 #else
     //poll all clients, decrease m_pendingRequests as we see REPlies coming in
     vector<zmq::pollitem_t> items(m_slaves.size());

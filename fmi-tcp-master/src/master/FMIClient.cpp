@@ -20,12 +20,16 @@ void jmCallbacksLoggerClient(jm_callbacks* c, jm_string module, jm_log_level_enu
 
 #ifdef USE_LACEWING
 FMIClient::FMIClient(fmitcp::EventPump* pump, int id, string host, long port) : fmitcp::Client(pump), sc::Slave() {
-#else
-FMIClient::FMIClient(zmq::context_t &context, int id, string host, long port) : fmitcp::Client(context), sc::Slave() {
-#endif
-    m_id = id;
     m_host = host;
     m_port = port;
+#elif defined(USE_MPI)
+FMIClient::FMIClient(int world_rank, int id) : fmitcp::Client(world_rank), sc::Slave() {
+#else
+FMIClient::FMIClient(zmq::context_t &context, int id, string host, long port) : fmitcp::Client(context), sc::Slave() {
+    m_host = host;
+    m_port = port;
+#endif
+    m_id = id;
     m_master = NULL;
     m_initialized = false;
     m_fmi2Instance = NULL;
@@ -46,7 +50,9 @@ FMIClient::~FMIClient() {
 };
 
 void FMIClient::connect(void) {
+#ifndef USE_MPI
     Client::connect(m_host, m_port);
+#endif
     //request modelDescription XML, don't return until we have it
     sendMessageBlocking(get_xml(0,0));
 }

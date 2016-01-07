@@ -9,6 +9,9 @@
 #ifndef WIN32
 #include <unistd.h>
 #endif
+#ifdef USE_MPI
+#include "common/mpi_tools.h"
+#endif
 
 using namespace fmitcp_master;
 using namespace fmitcp;
@@ -47,9 +50,15 @@ void BaseMaster::wait() {
         usleep(10);
 #endif
 #elif defined(USE_MPI)
-    //TODO
-    fprintf(stderr, "TODO: MPI_recv()\n");
-    exit(1);
+        int rank;
+        std::string str = mpi_recv_string(MPI_ANY_SOURCE, &rank, NULL);
+
+        if (rank < 1 || rank > m_slaves.size()) {
+            fprintf(stderr, "MPI rank out of bounds: %i\n", rank);
+            exit(1);
+        }
+
+        m_slaves[rank-1]->Client::clientData(str.c_str(), str.length());
 #else
     //poll all clients, decrease m_pendingRequests as we see REPlies coming in
     vector<zmq::pollitem_t> items(m_slaves.size());

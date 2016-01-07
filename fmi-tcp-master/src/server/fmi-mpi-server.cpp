@@ -1,4 +1,4 @@
-#include <mpi.h>
+#include "common/mpi_tools.h"
 #include "server/FMIServer.h"
 
 using namespace std;
@@ -20,21 +20,20 @@ int main(int argc, char *argv[]) {
     FMIServer server(argv[1], false, jm_log_level_nothing, "");
 
     for (;;) {
-        MPI_Status status, status2;
-        int nbytes;
+        int rank, tag;
+        std::string recv_str = mpi_recv_string(MPI_ANY_SOURCE, &rank, &tag);
 
-        //figure out how many bytes are incoming
-        MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-        MPI_Get_count(&status, MPI_CHAR, &nbytes);
+        //shutdown command?
+        if (tag == 1) {
+            break;
+        }
 
-        //put received data on stack
-        char *data = static_cast<char*>(alloca(nbytes));
-        MPI_Recv(data, nbytes, MPI_CHAR, status.MPI_SOURCE, status.MPI_TAG, MPI_COMM_WORLD, &status2);
-
-        //let Server handle packet, send reply back to client
-        std::string str = server.clientData(data, nbytes);
-        MPI_Send((void*)str.c_str(), str.length(), MPI_CHAR, status.MPI_SOURCE, status.MPI_TAG, MPI_COMM_WORLD);
+        //let Server handle packet, send reply back to master
+        std::string str = server.clientData(recv_str.c_str(), recv_str.length());
+        MPI_Send((void*)str.c_str(), str.length(), MPI_CHAR, rank, tag, MPI_COMM_WORLD);
     }
+
+    MPI_Finalize();
 
     return 0;
 }

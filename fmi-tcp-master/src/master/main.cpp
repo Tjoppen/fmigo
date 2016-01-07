@@ -332,6 +332,7 @@ static void sendUserParams(BaseMaster *master, vector<FMIClient*> slaves, map<pa
 int main(int argc, char *argv[] ) {
 #ifdef USE_MPI
     fprintf(stderr, "MPI enabled\n");
+    MPI_Init(NULL, NULL);
 #else
     fprintf(stderr, "MPI disabled\n");
 #endif
@@ -574,6 +575,14 @@ int main(int argc, char *argv[] ) {
     fprintf(stderr, "\n");
 
     cleanUp(master, slaves, weakConnections);
+
+#ifdef USE_MPI
+    //send shutdown message (tag = 1), finalize
+    for (int x = 1; x < world_size; x++) {
+        MPI_Send(NULL, 0, MPI_CHAR, x, 1, MPI_COMM_WORLD);
+    }
+    MPI_Finalize();
+#endif
 
     return 0;
 }

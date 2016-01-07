@@ -11,6 +11,9 @@
 #include <deque>
 #include <fstream>
 #include "common/common.h"
+#ifdef USE_MPI
+#include <mpi.h>
+#endif
 
 #include "master/parseargs.h"
 
@@ -34,12 +37,12 @@ static fmi2_base_type_enu_t type_from_char(char type) {
     }
 }
 
-template<typename T> int checkFMUIndex(T it, int i, std::vector<std::string> *fmuFilePaths) {
-    if(it->fromFMU < 0 || it->fromFMU >= fmuFilePaths->size()){
+template<typename T> int checkFMUIndex(T it, int i, size_t numFMUs) {
+    if(it->fromFMU < 0 || it->fromFMU >= numFMUs){
         fprintf(stderr,"Connection %d connects from FMU %d, which does not exist.\n", i, it->fromFMU);
         return 1;
     }
-    if(it->toFMU < 0 || it->toFMU >= fmuFilePaths->size()){
+    if(it->toFMU < 0 || it->toFMU >= numFMUs){
         fprintf(stderr,"Connection %d connects to FMU %d, which does not exist.\n", i, it->toFMU);
         return 1;
     }
@@ -354,33 +357,41 @@ int fmitcp_master::parseArguments( int argc,
         }
     }
 
+#ifdef USE_MPI
+    int world_size;
+    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+    size_t numFMUs = world_size - 1;
+#else
     // Parse FMU paths in the end of the command line
     for (index = optind; index < argc; index++) {
         fmuFilePaths->push_back(argv[index]);
     }
 
-    if (fmuFilePaths->size() == 0){
+    size_t numFMUs = fmuFilePaths->size();
+
+    if (numFMUs == 0){
         fprintf(stderr, "No FMUs given. Aborting... (see -h for help)\n");
         return 1;
     }
+#endif
 
     // Check if connections refer to nonexistant FMU index
     int i = 0;
     for (auto it = connections->begin(); it != connections->end(); it++, i++) {
-        if (checkFMUIndex(it, i, fmuFilePaths))
+        if (checkFMUIndex(it, i, numFMUs))
             return 1;
     }
 
     i = 0;
     for (auto it = strongConnections->begin(); it != strongConnections->end(); it++, i++) {
-        if (checkFMUIndex(it, i, fmuFilePaths))
+        if (checkFMUIndex(it, i, numFMUs))
             return 1;
     }
 
     // Check if parameters refer to nonexistant FMU index
     i = 0;
     for (auto it = params->begin(); it != params->end(); it++, i++) {
-        if(it->first.first < 0 || it->first.first >= fmuFilePaths->size()){
+        if(it->first.first < 0 || it->first.first >= numFMUs){
             fprintf(stderr,"Parameter %d refers to FMU %d, which does not exist.\n", i, it->first.first);
             return 1;
         }
@@ -388,11 +399,11 @@ int fmitcp_master::parseArguments( int argc,
 
     // Default step order is all FMUs in their current order
     if (stepOrder->size() == 0){
-        for(c=0; c<fmuFilePaths->size(); c++){
+        for(c=0; c<numFMUs; c++){
             stepOrder->push_back(c);
         }
-    } else if (stepOrder->size() != fmuFilePaths->size()) {
-        fprintf(stderr, "Step order/FMU count mismatch: %zu vs %zu\n", stepOrder->size(), fmuFilePaths->size());
+    } else if (stepOrder->size() != numFMUs) {
+        fprintf(stderr, "Step order/FMU count mismatch: %zu vs %zu\n", stepOrder->size(), numFMUs);
         return 1;
     }
 

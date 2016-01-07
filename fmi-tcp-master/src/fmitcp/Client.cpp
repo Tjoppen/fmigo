@@ -5,6 +5,9 @@
 #ifndef WIN32
 #include <unistd.h>
 #endif
+#ifdef USE_MPI
+#include "common/mpi_tools.h"
+#endif
 
 using namespace std;
 using namespace fmitcp;
@@ -312,8 +315,7 @@ void Client::sendMessage(std::string s){
 #ifdef USE_LACEWING
     fmitcp::sendProtoBuffer(m_client, s);
 #elif defined(USE_MPI)
-    fprintf(stderr, "TODO\n");
-    exit(1);
+    MPI_Send((void*)s.c_str(), s.length(), MPI_CHAR, world_rank, 0, MPI_COMM_WORLD);
 #else
     zmq::message_t msg(s.size());
     memcpy(msg.data(), s.data(), s.size());
@@ -336,8 +338,8 @@ void Client::sendMessageBlocking(std::string s) {
 #endif
     }
 #elif defined(USE_MPI)
-    fprintf(stderr, "TODO\n");
-    exit(1);
+    std::string str = mpi_recv_string(world_rank, NULL, NULL);
+    clientData(str.c_str(), str.length());
 #else
     zmq::message_t msg;
     m_socket.recv(&msg);

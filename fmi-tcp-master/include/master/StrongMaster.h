@@ -15,6 +15,7 @@ namespace fmitcp_master {
 class WeakConnection;
 class StrongMaster : public JacobiMaster {
     sc::Solver m_strongCouplingSolver;
+    map<FMIClient*, vector<int> > clientWeakRefs;
 
     void getDirectionalDerivative(FMIClient *client, sc::Equation *eq, void (sc::Equation::*getSeed)(sc::Vec3&), std::vector<int> accelerationRefs, std::vector<int> forceRefs);
     void getSpatialAngularDirectionalDerivatives(FMIClient *client, sc::Equation *eq, StrongConnector *sc, void (sc::Equation::*getSpatialSeed)(sc::Vec3&), void (sc::Equation::*getRotationalSeed)(sc::Vec3&));

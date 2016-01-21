@@ -31,6 +31,8 @@ public:
 
 //aka parallel stepper
 class JacobiMaster : public WeakMaster {
+    map<FMIClient*, vector<int> > clientWeakRefs;
+
 public:
 #ifdef USE_LACEWING
     JacobiMaster(fmitcp::EventPump *pump, vector<FMIClient*> slaves, vector<WeakConnection*> weakConnections) : WeakMaster(pump, slaves, weakConnections) {
@@ -40,10 +42,12 @@ public:
         fprintf(stderr, "JacobiMaster\n");
     }
 
+    void prepare() {
+        clientWeakRefs = getOutputWeakRefs(m_weakConnections);
+    }
+
     void runIteration(double t, double dt) {
         //get connection outputs
-        const map<FMIClient*, vector<int> > clientWeakRefs = getOutputWeakRefs(m_weakConnections);
-
         for (auto it = clientWeakRefs.begin(); it != clientWeakRefs.end(); it++) {
             send(it->first, fmi2_import_get_real(0, 0, it->second));
         }

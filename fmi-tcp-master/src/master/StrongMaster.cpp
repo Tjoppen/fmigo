@@ -28,6 +28,7 @@ StrongMaster::StrongMaster(vector<FMIClient*> slaves, vector<WeakConnection*> we
 
 void StrongMaster::prepare() {
     m_strongCouplingSolver.prepare();
+    clientWeakRefs = getOutputWeakRefs(m_weakConnections);
 }
 
 void StrongMaster::getDirectionalDerivative(FMIClient *client, Equation *eq, void (Equation::*getSeed)(Vec3&), vector<int> accelerationRefs, vector<int> forceRefs) {
@@ -60,8 +61,6 @@ void StrongMaster::getSpatialAngularDirectionalDerivatives(FMIClient *client, Eq
 
 void StrongMaster::runIteration(double t, double dt) {
     //get weak connector outputs
-    const map<FMIClient*, vector<int> > clientWeakRefs = getOutputWeakRefs(m_weakConnections);
-
     for (auto it = clientWeakRefs.begin(); it != clientWeakRefs.end(); it++) {
         send(it->first, fmi2_import_get_real(0, 0, it->second));
     }

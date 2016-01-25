@@ -4,6 +4,9 @@
 #ifdef WIN32
 #include <json/json.h>
 #include "master/getopt.h"
+#elif __APPLE__
+#include <json/json.h>
+#include <getopt.h>
 #else
 #include <jsoncpp/json/json.h>
 #include <getopt.h>
@@ -164,7 +167,7 @@ int fmitcp_master::parseArguments( int argc,
                 return 1;
             }
             break;
-            
+
         case 't':
             numScanned = sscanf(optarg, "%lf", tEnd);
             if(numScanned <= 0){

@@ -141,6 +141,8 @@ TARGET_LINK_LIBRARIES( ${TARGET} %s )""" % (arch, modelIdentifier, definitions, 
 
                 if system == 'Windows':
                     write_if_new(pjoin('Debug',modelIdentifier+'.dll'),pjoin('binaries',arch,modelIdentifier+'.dll'))
+                elif system == 'Darwin':
+                    write_if_new(pjoin('binaries',arch,modelIdentifier+".dylib"))
                 else:
                     write_if_new(pjoin('binaries',arch,modelIdentifier+".so"))
                 os.chdir(cwd)

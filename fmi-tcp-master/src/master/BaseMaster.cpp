@@ -63,7 +63,7 @@ void BaseMaster::wait() {
     //poll all clients, decrease m_pendingRequests as we see REPlies coming in
     vector<zmq::pollitem_t> items(m_slaves.size());
     for (size_t x = 0; x < m_slaves.size(); x++) {
-        items[x].socket = m_slaves[x]->m_socket;
+        items[x].socket = (void*)m_slaves[x]->m_socket;
         items[x].events = ZMQ_POLLIN;
     }
     int n = zmq::poll(items.data(), m_slaves.size(), 1000000);

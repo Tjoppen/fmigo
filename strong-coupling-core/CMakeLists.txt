@@ -50,7 +50,7 @@ SET_TARGET_PROPERTIES( sc
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     INCLUDE_DIRECTORIES(/opt/local/include)
     LINK_DIRECTORIES(/opt/local/lib)
-    TARGET_LINK_LIBRARIES(sc m umfpack amd cblas SuiteSparse)
+    TARGET_LINK_LIBRARIES(sc m umfpack amd cblas cholmod colamd suitesparseconfig)
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 # LINUX

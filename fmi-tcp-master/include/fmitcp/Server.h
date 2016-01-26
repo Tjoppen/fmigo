@@ -58,9 +58,9 @@ namespace fmitcp {
     std::string m_fmuLocation;
     std::string m_resourcePath;
 
-#ifndef WIN32
     //HDF5 output
     std::string hdf5Filename;
+#ifndef WIN32
     std::vector<size_t> field_offset;
     std::vector<hid_t> field_types;
     std::vector<const char*> field_names;

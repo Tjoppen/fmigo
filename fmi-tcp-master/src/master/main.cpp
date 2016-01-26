@@ -566,6 +566,7 @@ int main(int argc, char *argv[] ) {
 #endif
     }
 
+#ifndef WIN32
     vector<size_t> field_offset;
     vector<hid_t> field_types;
     vector<const char*> field_names;
@@ -578,6 +579,7 @@ int main(int argc, char *argv[] ) {
 
     writeHDF5File(hdf5Filename, field_offset, field_types, field_names,
         "Timings", "table", nrecords, columnnames.size()*sizeof(int), &timelog[0]);
+#endif
 
     fprintf(stderr, "\n");
 

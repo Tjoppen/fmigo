@@ -124,6 +124,7 @@ fmi2_status_kind_t fmitcp::protoStatusKindToFmiStatusKind(fmitcp_proto::fmi2_sta
   }
 }
 
+#ifndef WIN32
 void fmitcp::writeHDF5File(
         std::string hdf5Filename,
         std::vector<size_t>& field_offset,
@@ -134,7 +135,6 @@ void fmitcp::writeHDF5File(
         hsize_t nrecords,
         hsize_t type_size,
         const void *buf) {
-#ifndef WIN32
     //HDF5
     if (hdf5Filename.length()) {
         fprintf(stderr, "Writing HDF5 file \"%s\"\n", hdf5Filename.c_str());
@@ -150,9 +150,5 @@ void fmitcp::writeHDF5File(
                 field_types.data(), 10 /* chunk_size */, NULL, 0, buf);
         H5Fclose(file_id);
     }
-#else
-    if (hdf5Filename.length()) {
-        fprintf(stderr, "WARNING: HDF5 output not enabled on Windows\n");
-    }
-#endif
 }
+#endif

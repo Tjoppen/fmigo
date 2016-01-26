@@ -7,26 +7,6 @@
 
 using namespace fmitcp;
 
-#ifdef USE_LACEWING
-void serverOnConnect(lw_server s, lw_client c) {
-  Server * server = (Server*)lw_server_tag(s);
-  server->clientConnected(c);
-  //lw_fdstream_nagle(c,lw_false);
-}
-void serverOnData(lw_server s, lw_client client, const char* data, size_t size) {
-  Server * server = (Server*)lw_server_tag(s);
-  server->clientData(client,data,size);
-}
-void serverOnDisconnect(lw_server s, lw_client c) {
-  Server * server = (Server*)lw_server_tag(s);
-  server->clientDisconnected(c);
-}
-void serverOnError(lw_server s, lw_error error) {
-  Server * server = (Server*)lw_server_tag(s);
-  server->error(s,error);
-}
-#endif
-
 /*!
  * Callback function for FMILibrary. Logs the FMILibrary operations.
  */
@@ -34,17 +14,6 @@ void jmCallbacksLogger(jm_callbacks* c, jm_string module, jm_log_level_enu_t log
   printf("[module = %s][log level = %s] %s\n", module, jm_log_level_to_string(log_level), message);fflush(NULL);
 }
 
-#ifdef USE_LACEWING
-Server::Server(string fmuPath, bool debugLogging, jm_log_level_enu_t logLevel, EventPump *pump, const Logger &logger) {
-  m_fmi2Outputs = NULL;
-  m_fmuParsed = true;
-  m_fmuPath = fmuPath;
-  m_debugLogging = debugLogging;
-  m_logLevel = logLevel;
-  m_logger = logger;
-  init(pump);
-}
-#else
 Server::Server(string fmuPath, bool debugLogging, jm_log_level_enu_t logLevel, std::string hdf5Filename, const Logger &logger) {
   m_fmi2Outputs = NULL;
   m_fmuParsed = true;
@@ -55,22 +24,12 @@ Server::Server(string fmuPath, bool debugLogging, jm_log_level_enu_t logLevel, s
   this->hdf5Filename = hdf5Filename;
   init();
 }
-#endif
 
 Server::~Server() {
-#ifdef USE_LACEWING
-  lw_server_delete(m_server);
-#endif
   if(m_fmi2Outputs!=NULL)   fmi2_import_free_variable_list(m_fmi2Outputs);
 }
 
-#ifdef USE_LACEWING
-void Server::init(EventPump * pump) {
-  m_pump = pump;
-  m_server = lw_server_new(pump->getPump());
-#else
 void Server::init() {
-#endif
   m_sendDummyResponses = false;
 
   if(m_fmuPath == "dummy"){
@@ -188,45 +147,9 @@ void Server::init() {
   }
 }
 
-#ifdef USE_LACEWING
-void Server::clientConnected(lw_client c) {
-  m_logger.log(Logger::LOG_NETWORK,"+ Client connected.\n");
-  onClientConnect();
-}
-
-void Server::clientDisconnected(lw_client c) {
-  m_logger.log(Logger::LOG_NETWORK,"- Client disconnected.\n");
-  /*
-  lw_stream_close(c,true);
-  lw_stream_delete(c);
-  fflush(NULL);
-  */
-
- /*
-  lw_server_delete(m_server);
-  lw_pump_remove_user(m_pump->getPump());
-  init(m_pump);
-  */
-  onClientDisconnect();
-}
-#endif
-
-#ifdef USE_LACEWING
-void Server::clientData(lw_client c, const char *data, size_t size) {
- //undo the framing - we might have gotten more than one packet
- vector<string> messages = unpackBuffer(data, size, &tail);
-
- for (size_t x = 0; x < messages.size(); x++) {
-  string data2 = messages[x];
-
-  // Construct message
-  fmitcp_proto::fmitcp_message req;
-  bool parseStatus = req.ParseFromString(data2);
-#else
 string Server::clientData(const char *data, size_t size) {
   fmitcp_proto::fmitcp_message req;
   bool parseStatus = req.ParseFromArray(data, size);
-#endif
   fmitcp_proto::fmitcp_message_Type type = req.type();
 
   m_logger.log(Logger::LOG_DEBUG,"Parse status: %d\n", parseStatus);
@@ -1078,44 +1001,12 @@ string Server::clientData(const char *data, size_t size) {
     m_logger.log(Logger::LOG_ERROR,"Message type not recognized: %d.\n",type);
   }
 
-#ifdef USE_LACEWING
-  if (sendResponse) {
-    fmitcp::sendProtoBuffer(c,res.SerializeAsString());
-  }
- }
-#else
     if (sendResponse) {
         return res.SerializeAsString();
     } else {
         return "";
     }
-#endif
 }
-
-#ifdef USE_LACEWING
-void Server::error(lw_server s, lw_error error) {
-  string err = lw_error_tostring(error);
-  onError(err);
-}
-
-void Server::host(string hostName, long port) {
-  // save this object in the server tag so we can use it later on.
-  lw_server_set_tag(m_server, (void*)this);
-  // connect the hooks
-  lw_server_on_connect(   m_server, serverOnConnect);
-  lw_server_on_data(      m_server, serverOnData);
-  lw_server_on_disconnect(m_server, serverOnDisconnect);
-  lw_server_on_error(     m_server, serverOnError);
-  // setup the server port
-  lw_filter filter = lw_filter_new();
-  lw_filter_set_local_port(filter, port);
-  // host/start the server
-  lw_server_host_filter(m_server, filter);
-  lw_filter_delete(filter);
-
-  m_logger.log(Logger::LOG_NETWORK,"Listening to %s:%ld\n",hostName.c_str(),port);
-}
-#endif
 
 void Server::sendDummyResponses(bool sendDummyResponses) {
   m_sendDummyResponses = sendDummyResponses;

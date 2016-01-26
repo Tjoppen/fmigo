@@ -12,10 +12,6 @@
 
 namespace fmitcp_master {
     class BaseMaster {
-#ifdef USE_LACEWING
-        fmitcp::EventPump *m_pump;
-#endif
-
     protected:
         std::vector<FMIClient*> m_slaves;
 
@@ -23,11 +19,7 @@ namespace fmitcp_master {
         //number of pending requests sent to clients
         size_t getNumPendingRequests() const;
 
-#ifdef USE_LACEWING
-        explicit BaseMaster(fmitcp::EventPump *pump, std::vector<FMIClient*> slaves);
-#else
         explicit BaseMaster(std::vector<FMIClient*> slaves);
-#endif
         virtual ~BaseMaster();
         virtual void prepare() {};
         virtual void runIteration(double t, double dt) = 0;

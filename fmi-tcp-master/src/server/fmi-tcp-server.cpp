@@ -37,9 +37,7 @@ EXAMPLES\n\
 
 int main(int argc, char *argv[]) {
  try {
-#ifndef USE_LACEWING
   zmq::context_t context(1);
-#endif
 
   if (argc == 1) {
     // No args given, print help
@@ -128,27 +126,13 @@ int main(int argc, char *argv[]) {
     return EXIT_FAILURE;
   }
 
-#ifdef USE_LACEWING
-  EventPump pump;
-  FMIServer server(fmuPath, debugLogging, log_level, &pump);
-#else
   FMIServer server(fmuPath, debugLogging, log_level, hdf5Filename);
-#endif
   if (!server.isFmuParsed())
     return EXIT_FAILURE;
 
   printf("FMI Server %s - tcp://%s:%i <-- %s\n",FMITCP_VERSION, hostName.c_str(), port, fmuPath.c_str());
   server.getLogger()->setPrefix("Server: ");
 
-#ifdef USE_LACEWING
-  server.host(hostName, port);
-
-  // If communication stops without reason, try removing one or both of these. This is due to a bug in the lacewing library?
-  //fflush(NULL); fflush(NULL);
-
-  //server.getLogger()->setFilter(Logger::LOG_NETWORK | Logger::LOG_DEBUG | Logger::LOG_ERROR);
-  pump.startEventLoop();
-#else
   zmq::socket_t socket(context, ZMQ_PAIR);
   ostringstream oss;
   oss << "tcp://*:" << port;
@@ -169,8 +153,6 @@ int main(int argc, char *argv[]) {
       memcpy(rep.data(), str.data(), str.length());
       socket.send(rep);
   }
-
-#endif
 
   return EXIT_SUCCESS;
  } catch (zmq::error_t e) {

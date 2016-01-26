@@ -10,7 +10,7 @@ Co-simulates slaves (FMUs) over TCP. Has built in support for weak and strong co
 
 # Install instructions
 Prerequisities are
-* [Lacewing](http://lacewing-project.org/) version 0.5.4
+* [ZMQ] (http://zeromq.org/)
 * [Protobuf](https://developers.google.com/protocol-buffers)
 * [FMITCP](https://github.com/umitresearchlab/fmi-co-simulation)
 * [Strong Coupling Core](https://github.com/umitresearchlab/strong-coupling-core)
@@ -19,11 +19,7 @@ To build, run:
 
     cd fmi-tcp-master/;
     mkdir build && cd build;
-    cmake .. -DFMITCP_INCLUDE_DIR=<FMITCP include files location> \
-             -DFMITCP_LIBS_DIR=<FMITCP libraries location> \
-             -DLACEWING_INCLUDE_DIR=<Lacewing include files location> \
-             -DLACEWING_LIBS_DIR=<Lacewing libraries location> \
-             -DSTRONG_COUPLING_INCLUDE_DIR=<Strong coupling core include files location> \
+    cmake .. -DSTRONG_COUPLING_INCLUDE_DIR=<Strong coupling core include files location> \
              -DSTRONG_COUPLING_LIBS_DIR=<Strong coupling core libraries location>
              -DFMIL_INCLUDE_DIR=<FMILibrary include files location> \
              -DFMIL_LIBS_DIR=<FMILibrary libraries location>

@@ -7,8 +7,8 @@ FIND_PACKAGE(Threads REQUIRED)
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O3")
 
-INCLUDE_DIRECTORIES(${FMIL_INCLUDE_DIR} ${STRONG_COUPLING_INCLUDE_DIR} ${FMITCP_INCLUDE_DIR} ${LACEWING_INCLUDE_DIR} include include/fmitcp src/fmitcp)
-LINK_DIRECTORIES   (${FMIL_LIBS_DIR}    ${STRONG_COUPLING_LIBS_DIR}    ${FMITCP_LIBS_DIR}    ${LACEWING_LIBS_DIR})
+INCLUDE_DIRECTORIES(${FMIL_INCLUDE_DIR} ${STRONG_COUPLING_INCLUDE_DIR} ${FMITCP_INCLUDE_DIR} include include/fmitcp src/fmitcp)
+LINK_DIRECTORIES   (${FMIL_LIBS_DIR}    ${STRONG_COUPLING_LIBS_DIR}    ${FMITCP_LIBS_DIR})
 
 set(FMITCP_SRCS
     src/fmitcp/Client.cpp
@@ -51,12 +51,6 @@ SET(MASTER_HEADERS
     ${FMITCP_HEADERS}
 )
 
-if(USE_LACEWING)
-    set(MASTER_SRCS     ${MASTER_SRCS}      src/fmitcp/EventPump.cpp)
-    set(MASTER_HEADERS  ${MASTER_HEADERS}   include/fmitcp/EventPump.h)
-endif()
-
-
 if(WIN32)
     set(MASTER_SRCS    ${MASTER_SRCS}    src/master/getopt.cpp)
     set(MASTER_HEADERS ${MASTER_HEADERS} include/master/getopt.h)
@@ -85,16 +79,12 @@ IF(WIN32)
         ${Boost_SYSTEM_LIBRARY}
         libprotobuf
         jsoncpp
+        libzmq
         ${CMAKE_THREAD_LIBS_INIT})
     if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
         set(WINLIBS ${WINLIBS} sc libumfpackd libamdd libblas libcholmodd libcolamdd libccolamdd libcamdd metisd suitesparseconfigd)
     else()
         set(WINLIBS ${WINLIBS} sc libumfpack  libamd  libblas libcholmod  libcolamd  libccolamd  libcamd  metis  suitesparseconfig)
-    endif()
-    if (USE_LACEWING)
-        set(WINLIBS ${WINLIBS} lacewing)
-    else()
-        set(WINLIBS ${WINLIBS} libzmq)
     endif()
     TARGET_LINK_LIBRARIES(${TCP_MASTER_NAME} ${WINLIBS})
     TARGET_LINK_LIBRARIES(${TCP_SERVER_NAME}  ${WINLIBS})
@@ -104,9 +94,7 @@ IF(WIN32)
         ${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib/lapack_blas_windows/libgfortran-3.dll
         ${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib/lapack_blas_windows/libquadmath-0.dll
         DESTINATION bin)
-    if (NOT USE_LACEWING)
-        INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../3dparty/zeromq/4.2.0-master/cl32-11/libzmq.dll DESTINATION bin)
-    endif()
+    INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../3dparty/zeromq/4.2.0-master/cl32-11/libzmq.dll DESTINATION bin)
 ELSE(WIN32)
     SET(LINUXLIBS
         fmilib
@@ -116,15 +104,11 @@ ELSE(WIN32)
         jsoncpp
         hdf5
         hdf5_hl
+        zmq
         ${Boost_FILESYSTEM_LIBRARY}
         ${Boost_SYSTEM_LIBRARY}
         ${PROTOBUF_LIBRARY}
         ${CMAKE_THREAD_LIBS_INIT})
-    if (USE_LACEWING)
-        set(LINUXLIBS ${LINUXLIBS} lacewing)
-    else ()
-        set(LINUXLIBS ${LINUXLIBS} zmq)
-    endif ()
     TARGET_LINK_LIBRARIES(${TCP_MASTER_NAME} ${LINUXLIBS})
     TARGET_LINK_LIBRARIES(${TCP_SERVER_NAME}  ${LINUXLIBS})
 

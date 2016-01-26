@@ -1,9 +1,7 @@
 #ifndef CLIENT_H_
 #define CLIENT_H_
 
-#ifdef USE_LACEWING
-#include "EventPump.h"
-#elif !defined(USE_MPI)
+#ifndef USE_MPI
 #include <zmq.hpp>
 #endif
 #include "Logger.h"
@@ -23,21 +21,13 @@ namespace fmitcp {
 
     protected:
 
-#ifdef USE_LACEWING
-        /// Event pump that will push the communication forward
-        EventPump * m_pump;
-#endif
-
         /// For logging
         Logger m_logger;
 
     private:
         size_t m_pendingRequests;
 
-#ifdef USE_LACEWING
-        lw_client m_client;
-        std::string tail;
-#elif defined(USE_MPI)
+#ifdef USE_MPI
         int world_rank;
 #else
     public:
@@ -45,9 +35,7 @@ namespace fmitcp {
 #endif
 
     public:
-#ifdef USE_LACEWING
-        Client(EventPump * pump);
-#elif defined(USE_MPI)
+#ifdef USE_MPI
         Client(int world_rank);
 #else
         Client(zmq::context_t &context);
@@ -59,9 +47,6 @@ namespace fmitcp {
 #ifndef USE_MPI
         /// Connect the client to a server
         void connect(string host, long port);
-#ifdef USE_LACEWING
-        void disconnect();
-#endif
 #endif
 
         /// Send a binary message
@@ -69,10 +54,6 @@ namespace fmitcp {
 
         //like sendMessage() but also receives the result message and calls clientData() on it
         void sendMessageBlocking(std::string s);
-
-#ifdef USE_LACEWING
-        bool isConnected();
-#endif
 
         /// To be implemented in subclass
         virtual void onConnect(){}
@@ -82,13 +63,6 @@ namespace fmitcp {
 
         /// To be implemented in subclass
         virtual void onError(string message){}
-
-        /// Called when a client connects
-#ifdef USE_LACEWING
-        void clientConnected(lw_client c);
-        void clientDisconnected(lw_client c);
-        void clientError(lw_client c, lw_error error);
-#endif
 
         size_t getNumPendingRequests() const;
 

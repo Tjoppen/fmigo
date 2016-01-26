@@ -15,13 +15,8 @@ using namespace fmitcp;
 using namespace fmitcp::serialize;
 using namespace sc;
 
-#ifdef USE_LACEWING
-StrongMaster::StrongMaster(EventPump *pump, vector<FMIClient*> slaves, vector<WeakConnection*> weakConnections, Solver strongCouplingSolver) :
-        JacobiMaster(pump, slaves, weakConnections),
-#else
 StrongMaster::StrongMaster(vector<FMIClient*> slaves, vector<WeakConnection*> weakConnections, Solver strongCouplingSolver) :
         JacobiMaster(slaves, weakConnections),
-#endif
         m_strongCouplingSolver(strongCouplingSolver) {
     fprintf(stderr, "StrongMaster\n");
 }

@@ -13,30 +13,6 @@ using namespace std;
 using namespace fmitcp;
 using namespace fmitcp_proto;
 
-#ifdef USE_LACEWING
-void clientOnConnect(lw_client c) {
-    Client * client = (Client*)lw_stream_tag(c);
-    client->clientConnected(c);
-}
-void clientOnData(lw_client c, const char* data, long size) {
-    Client * client = (Client*)lw_stream_tag(c);
-    client->clientData(data,size);
-}
-void clientOnDisconnect(lw_client c) {
-    Client * client = (Client*)lw_stream_tag(c);
-    client->clientDisconnected(c);
-}
-void clientOnError(lw_client c, lw_error error) {
-    Client * client = (Client*)lw_stream_tag(c);
-    client->clientError(c,error);
-}
-
-void Client::clientConnected(lw_client c){
-    m_logger.log(Logger::LOG_NETWORK,"+ Connected to FMU server.\n");
-    onConnect();
-}
-#endif
-
 template<typename T, typename R> vector<T> values_to_vector(R *r) {
     vector<T> values;
     for(int i=0; i<r->values_size(); i++)
@@ -51,18 +27,6 @@ template<typename T, typename R> void handle_get_value_res(Client *c, Logger log
 }
 
 void Client::clientData(const char* data, long size){
-#ifdef USE_LACEWING
-  //undo the framing - we might have gotten more than one packet
-  vector<string> messages = unpackBuffer(data, size, &tail);
-
-  for (size_t x = 0; x < messages.size(); x++) {
-    // Parse message
-    fmitcp_message res;
-    bool status = res.ParseFromString(messages[x]);
-    fmitcp_message_Type type = res.type();
-
-    m_logger.log(Logger::LOG_DEBUG,"Client parse status: %d (%i byte in)\n", status, messages[x].length());
-#else
     // Parse message
     fmitcp_message res;
     bool status = res.ParseFromArray(data, size);
@@ -75,7 +39,6 @@ void Client::clientData(const char* data, long size){
     m_pendingRequests--;
 
     m_logger.log(Logger::LOG_DEBUG,"Client parse status: %d (%i byte in)\n", status, size);
-#endif
 
 #define NORMAL_CASE(type) {\
         type##_res * r = res.mutable_##type##_res();\
@@ -253,32 +216,9 @@ void Client::clientData(const char* data, long size){
         m_logger.log(Logger::LOG_ERROR,"Message type not recognized: %d!\n",type);
         break;
     }
-#ifdef USE_LACEWING
-  }
-#endif
 }
 
-#ifdef USE_LACEWING
-void Client::clientDisconnected(lw_client c){
-    m_logger.log(Logger::LOG_NETWORK,"- Disconnected from server.\n");
-    lw_stream_close(c,true);
-    lw_stream_delete(c);
-    onDisconnect();
-}
-
-void Client::clientError(lw_client c, lw_error error){
-    string err = lw_error_tostring(error);
-    m_logger.log(Logger::LOG_ERROR,"Error: %s\n",err.c_str());
-    onError(err);
-}
-#endif
-
-#ifdef USE_LACEWING
-Client::Client(EventPump * pump){
-    m_pump = pump;
-    m_client = lw_client_new(m_pump->getPump());
-    //lw_fdstream_nagle(m_client,lw_false);
-#elif defined(USE_MPI)
+#ifdef USE_MPI
 Client::Client(int world_rank) : world_rank(world_rank) {
 #else
 Client::Client(zmq::context_t &context) : m_socket(context, ZMQ_PAIR) {
@@ -288,23 +228,8 @@ Client::Client(zmq::context_t &context) : m_socket(context, ZMQ_PAIR) {
 }
 
 Client::~Client(){
-#ifdef USE_LACEWING
-    m_logger.log(Logger::LOG_DEBUG,"Closing stream.\n");
-
-    bool status = lw_stream_close(m_client,false);
-    m_logger.log(Logger::LOG_DEBUG,"Closed stream with status %d.\n",status);
-
-    //lw_stream_delete(m_client);
-#endif
-
     google::protobuf::ShutdownProtobufLibrary();
 }
-
-#ifdef USE_LACEWING
-bool Client::isConnected(){
-    return lw_client_connected(m_client);
-}
-#endif
 
 Logger * Client::getLogger() {
     return &m_logger;
@@ -312,9 +237,7 @@ Logger * Client::getLogger() {
 
 void Client::sendMessage(std::string s){
     m_pendingRequests++;
-#ifdef USE_LACEWING
-    fmitcp::sendProtoBuffer(m_client, s);
-#elif defined(USE_MPI)
+#ifdef USE_MPI
     MPI_Send((void*)s.c_str(), s.length(), MPI_CHAR, world_rank, 0, MPI_COMM_WORLD);
 #else
     zmq::message_t msg(s.size());
@@ -326,18 +249,7 @@ void Client::sendMessage(std::string s){
 void Client::sendMessageBlocking(std::string s) {
     sendMessage(s);
 
-#ifdef USE_LACEWING
-    size_t pendingBefore = getNumPendingRequests();
-    while (pendingBefore == getNumPendingRequests()) {
-        m_pump->tick();
-        fflush(NULL);
-#ifdef WIN32
-        Yield();
-#else
-        usleep(10);
-#endif
-    }
-#elif defined(USE_MPI)
+#ifdef USE_MPI
     std::string str = mpi_recv_string(world_rank, NULL, NULL);
     clientData(str.c_str(), str.length());
 #else
@@ -353,36 +265,11 @@ size_t Client::getNumPendingRequests() const {
 
 #ifndef USE_MPI
 void Client::connect(string host, long port){
-#ifdef USE_LACEWING
-    // Set the master object as tag
-    lw_stream_set_tag(m_client, (void*)this);
-
-    // connect the event handlers
-    lw_client_on_connect(   m_client, clientOnConnect);
-    lw_client_on_data(      m_client, clientOnData);
-    lw_client_on_disconnect(m_client, clientOnDisconnect);
-    lw_client_on_error(     m_client, clientOnError);
-
-    // connect the client to the server
-    lw_client_connect(m_client, host.c_str(), port);
-
-    m_logger.log(Logger::LOG_DEBUG,"Connecting to %s:%ld...\n",host.c_str(),port);
-#else
     ostringstream oss;
     oss << "tcp://" << host << ":" << port;
     string str = oss.str();
     m_logger.log(fmitcp::Logger::LOG_DEBUG,"connecting to %s\n", str.c_str());
     m_socket.connect(str.c_str());
     m_logger.log(fmitcp::Logger::LOG_DEBUG,"connected\n");
-#endif
-}
-#endif
-
-#ifdef USE_LACEWING
-void Client::disconnect(){
-    //lw_eventpump_post_eventloop_exit(m_pump->getPump());
-    //lw_stream_close(m_client,lw_true);
-    //lw_stream_delete(m_client);
-    //lw_pump_delete(m_pump->getPump());
 }
 #endif

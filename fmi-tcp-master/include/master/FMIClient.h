@@ -52,10 +52,7 @@ namespace fmitcp_master {
         std::string getModelName() const;
         variable_map getVariables() const;
 
-#ifdef USE_LACEWING
-        /// Create a new client for the Master, driven by the given eventpump.
-        FMIClient(fmitcp::EventPump* pump, int id, std::string host, long port);
-#elif defined(USE_MPI)
+#ifdef USE_MPI
         FMIClient(int world_rank, int id);
 #else
         FMIClient(zmq::context_t &context, int id, string host, long port);

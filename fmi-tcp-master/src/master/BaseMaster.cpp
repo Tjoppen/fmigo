@@ -16,12 +16,7 @@
 using namespace fmitcp_master;
 using namespace fmitcp;
 
-#ifdef USE_LACEWING
-BaseMaster::BaseMaster(EventPump *pump, vector<FMIClient*> slaves) :
-        m_pump(pump),
-#else
 BaseMaster::BaseMaster(vector<FMIClient*> slaves) :
-#endif
         m_slaves(slaves) {
 }
 
@@ -42,14 +37,7 @@ void BaseMaster::wait() {
     int numPolls = 0;
 
     while (getNumPendingRequests() > 0) {
-#ifdef USE_LACEWING
-        m_pump->tick();
-#ifdef WIN32
-        Yield();
-#else
-        usleep(10);
-#endif
-#elif defined(USE_MPI)
+#ifdef USE_MPI
         int rank;
         std::string str = mpi_recv_string(MPI_ANY_SOURCE, &rank, NULL);
 

@@ -15,11 +15,6 @@ SET(SRCS
     src/serialize.cpp
 )
 
-if(USE_LACEWING)
-    set(HEADERS ${HEADERS} include/fmitcp/EventPump.h)
-    set(SRCS    ${SRCS}    src/EventPump.cpp)
-endif()
-
 # Compile proto
 IF(WIN32)
     add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/include/fmitcp/fmitcp.pb.h
@@ -35,8 +30,8 @@ ELSE(WIN32)
         DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp.proto)
 ENDIF(WIN32)
 
-INCLUDE_DIRECTORIES(include/fmitcp  ${FMIL_INCLUDE_DIR} ${LACEWING_INCLUDE_DIR})
-LINK_DIRECTORIES(${FMIL_LIBS_DIR} ${LACEWING_LIBS_DIR})
+INCLUDE_DIRECTORIES(include/fmitcp  ${FMIL_INCLUDE_DIR})
+LINK_DIRECTORIES(${FMIL_LIBS_DIR})
 
 ADD_LIBRARY(fmitcp ${HEADERS} ${SRCS})
 add_dependencies(fmitcp ${CMAKE_CURRENT_SOURCE_DIR}/include/fmitcp/fmitcp.pb.h)

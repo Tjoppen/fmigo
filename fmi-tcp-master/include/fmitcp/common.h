@@ -4,10 +4,6 @@
 #define FMITCP_VERSION "0.0.1"
 
 #include "fmitcp.pb.h"
-#ifdef USE_LACEWING
-#define lw_import
-#include <lacewing.h>
-#endif
 #define FMILIB_BUILDING_LIBRARY
 #include <fmilib.h>
 #include <string>
@@ -45,12 +41,6 @@ namespace fmitcp {
     res.append("}");
     return res;
   }
-
-#ifdef USE_LACEWING
-  /// Send a binary protobuf to a client
-  void sendProtoBuffer(lw_client c, std::string s);
-  std::vector<std::string> unpackBuffer(const char* data, long size, std::string *tail);
-#endif
 
   fmitcp_proto::jm_status_enu_t fmiJMStatusToProtoJMStatus(jm_status_enu_t status);
   fmitcp_proto::fmi2_status_t fmi2StatusToProtofmi2Status(fmi2_status_t status);

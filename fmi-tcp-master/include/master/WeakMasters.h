@@ -20,11 +20,7 @@ class WeakMaster : public BaseMaster {
 protected:
     vector<WeakConnection*> m_weakConnections;
 public:
-#ifdef USE_LACEWING
-    WeakMaster(fmitcp::EventPump *pump, vector<FMIClient*> slaves, vector<WeakConnection*> weakConnections) : BaseMaster(pump, slaves),
-#else
     WeakMaster(vector<FMIClient*> slaves, vector<WeakConnection*> weakConnections) : BaseMaster(slaves),
-#endif
             m_weakConnections(weakConnections) {
     }
 };
@@ -34,11 +30,7 @@ class JacobiMaster : public WeakMaster {
     map<FMIClient*, vector<int> > clientWeakRefs;
 
 public:
-#ifdef USE_LACEWING
-    JacobiMaster(fmitcp::EventPump *pump, vector<FMIClient*> slaves, vector<WeakConnection*> weakConnections) : WeakMaster(pump, slaves, weakConnections) {
-#else
     JacobiMaster(vector<FMIClient*> slaves, vector<WeakConnection*> weakConnections) : WeakMaster(slaves, weakConnections) {
-#endif
         fprintf(stderr, "JacobiMaster\n");
     }
 
@@ -86,13 +78,8 @@ class GaussSeidelMaster : public WeakMaster {
     };
     std::map<FMIClient*, ClientThingy> conns;
 public:
-#ifdef USE_LACEWING
-    GaussSeidelMaster(fmitcp::EventPump *pump, vector<FMIClient*> slaves, vector<WeakConnection*> weakConnections, std::vector<int> stepOrder) :
-        WeakMaster(pump, slaves, weakConnections), stepOrder(stepOrder) {
-#else
     GaussSeidelMaster(vector<FMIClient*> slaves, vector<WeakConnection*> weakConnections, std::vector<int> stepOrder) :
         WeakMaster(slaves, weakConnections), stepOrder(stepOrder) {
-#endif
         fprintf(stderr, "GSMaster\n");
     }
 

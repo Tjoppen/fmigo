@@ -2,9 +2,7 @@
 #include <fmitcp/Client.h>
 #include <fmitcp/common.h>
 #include <fmitcp/Logger.h>
-#ifdef USE_LACEWING
-#include <fmitcp/EventPump.h>
-#elif defined(USE_MPI)
+#ifdef USE_MPI
 #include <mpi.h>
 #else
 #include <zmq.hpp>
@@ -51,11 +49,7 @@ static vector<FMIClient*> setupSlaves(int numFMUs) {
     return slaves;
 }
 #else
-#ifdef USE_LACEWING
-static FMIClient* connectSlave(std::string uri, fmitcp::EventPump *pump, int slaveId){
-#else
-    static FMIClient* connectSlave(std::string uri, zmq::context_t &context, int slaveId){
-#endif
+static FMIClient* connectSlave(std::string uri, zmq::context_t &context, int slaveId){
     struct parsed_url * url = parse_url(uri.c_str());
 
     if (!url || !url->port || !url->host) {
@@ -63,30 +57,18 @@ static FMIClient* connectSlave(std::string uri, fmitcp::EventPump *pump, int sla
         return NULL;
     }
 
-#ifdef USE_LACEWING
-    FMIClient* client = new FMIClient(pump, slaveId, url->host, atoi(url->port));
-#else
     FMIClient* client = new FMIClient(context, slaveId, url->host, atoi(url->port));
-#endif
     parsed_url_free(url);
 
     return client;
 }
 
-#ifdef USE_LACEWING
-static vector<FMIClient*> setupSlaves(vector<string> fmuURIs, EventPump *pump) {
-#else
 static vector<FMIClient*> setupSlaves(vector<string> fmuURIs, zmq::context_t &context) {
-#endif
     vector<FMIClient*> slaves;
     int slaveId = 0;
     for (auto it = fmuURIs.begin(); it != fmuURIs.end(); it++, slaveId++) {
         // Assume URI to slave
-#ifdef USE_LACEWING
-        FMIClient *slave = connectSlave(*it, pump, slaveId);
-#else
         FMIClient *slave = connectSlave(*it, context, slaveId);
-#endif
 
         if (!slave) {
             fprintf(stderr, "Failed to connect slave with URI %s\n", it->c_str());
@@ -338,9 +320,6 @@ int main(int argc, char *argv[] ) {
 #endif
 
     fmitcp::Logger logger;
-#ifdef USE_LACEWING
-    fmitcp::EventPump pump;
-#endif
     double timeStep = 0.1;
     double startTime = 0;
     double endTime = 10;
@@ -390,9 +369,7 @@ int main(int argc, char *argv[] ) {
         fprintf(stderr, "WARNING: -o not implemented (output always goes to stdout)\n");
     }
 
-#ifdef USE_LACEWING
-    vector<FMIClient*> slaves = setupSlaves(fmuURIs, &pump);
-#elif defined(USE_MPI)
+#ifdef USE_MPI
     //world = master at 0, FMUs at 1..N
     int world_size, world_rank;
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
@@ -430,19 +407,10 @@ int main(int argc, char *argv[] ) {
         }
 
         solver.setSpookParams(relaxation,compliance,timeStep);
-#ifdef USE_LACEWING
-        master = new StrongMaster(&pump, slaves, weakConnections, solver);
-#else
         master = new StrongMaster(slaves, weakConnections, solver);
-#endif
     } else {
-#ifdef USE_LACEWING
-        master = (method == gs) ?           (BaseMaster*)new GaussSeidelMaster(&pump, slaves, weakConnections, stepOrder) :
-                                            (BaseMaster*)new JacobiMaster(&pump, slaves, weakConnections);
-#else
         master = (method == gs) ?           (BaseMaster*)new GaussSeidelMaster(slaves, weakConnections, stepOrder) :
                                             (BaseMaster*)new JacobiMaster(slaves, weakConnections);
-#endif
     }
 
     //hook clients to master

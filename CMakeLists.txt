@@ -83,7 +83,6 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_VERSION}/src/XML/in
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_VERSION}/src/ZIP/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_VERSION}/ThirdParty/FMI/default)
 
-link_directories(${CMAKE_CURRENT_SOURCE_DIR}/fmi-tcp/lib)
 add_subdirectory(strong-coupling-core)
 add_dependencies(sc suitesparse-ext)
 add_subdirectory(${FMILIBRARY_VERSION})

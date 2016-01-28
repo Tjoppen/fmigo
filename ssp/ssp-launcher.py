@@ -24,6 +24,17 @@ print d
 fmus = []
 systems = []
 
+# Adds (key,value) to given multimap.
+# Each (key,value) may appear only once.
+def add_multimap_value(multimap, key, value):
+    if key in multimap:
+        if value in multimap[key]:
+            print str((key,value)) + ' already exists in ' + str(multimap)
+            exit(1)
+        multimap[key].add(value)
+    else:
+        multimap[key] = set([value])
+
 class FMU:
     def __init__(self, name, path, connectors, system):
         self.name = name
@@ -34,16 +45,15 @@ class FMU:
         global fmus
         self.id = len(fmus)
         fmus.append(self)
-        #print '%i: %s %s' % (self.id, self.name, self.path)
+        #print '%i: %s %s, %i connectors' % (self.id, self.name, self.path, len(connectors))
 
     def get_name(self):
         return self.system.get_name() + '.' + self.name
 
-    def connect(self):
+    def connect(self, connectionmultimap):
         '''
-        Returns list of connections for this FMU to other FMUs in the System tree
+        Adds connections for this FMU to other FMUs in the System tree to the given connections multimap
         '''
-        ret = {}
         for conn in self.connectors:
             # Look at inputs, work back toward outputs
             if conn.attrib[CAUSALITY] == 'input':
@@ -51,7 +61,7 @@ class FMU:
                 ttl = len(fmus) + len(systems)
                 sys = self.system
                 key = (self.name, conn.attrib['name'])
-                #print
+                #print self.get_name() + '.' + conn.attrib['name']
 
                 while True:
                     #print 'key = ' + str(key) + ', sys = ' + sys.name
@@ -73,7 +83,9 @@ class FMU:
                         sys = sys.parent
                     elif key[0] in sys.fmus:
                         fmu = sys.fmus[key[0]]
-                        ret[(fmu.id, key[1])] = (self.id, conn.attrib['name'])
+                        value = (self.id, conn.attrib['name'])
+                        key = (fmu.id, key[1])
+                        add_multimap_value(connectionmultimap, key, value)
                         break
                     elif key[0] in sys.children:
                         #print 'down'
@@ -89,8 +101,6 @@ class FMU:
                     if ttl <= 0:
                         print 'SSP contains a loop!'
                         exit(1)
-
-        return ret
 
 class System:
     '''
@@ -192,10 +202,10 @@ unzip_ssp(d, sys.argv[1])
 root = System(d, SSD_NAME)
 
 # Figure out connections, parse modelDescriptions
-connections = {}
+connectionmultimap = {} # Multimap of outputs to inputs
 mds = []
 for fmu in fmus:
-    connections.update(fmu.connect())
+    fmu.connect(connectionmultimap)
 
     # Parse modelDescription, turn variable list into map
     tree = ET.parse(os.path.join(os.path.splitext(fmu.path)[0], MODELDESCRIPTION))
@@ -231,15 +241,16 @@ for fmu in fmus:
 
 # Build command line
 args = []
-for fr,to in connections.iteritems():
-    #print str((fr,to)) + ' vs ' + str(mds[fr[0]])
-    f = mds[fr[0]]
-    fv = f[fr[1]]
-    t = mds[to[0]]
-    tv = t[to[1]]
-    
-    connstr = '%s,%i,%i,%i,%i' % (fv['type'], fr[0], fv['vr'], to[0], tv['vr'])
-    args.extend(['-c', connstr])
+for fr,to1 in connectionmultimap.iteritems():
+    for to in to1:
+        #print str((fr,to)) + ' vs ' + str(mds[fr[0]])
+        f = mds[fr[0]]
+        fv = f[fr[1]]
+        t = mds[to[0]]
+        tv = t[to[1]]
+
+        connstr = '%s,%i,%i,%i,%i' % (fv['type'], fr[0], fv['vr'], to[0], tv['vr'])
+        args.extend(['-c', connstr])
 
 #TODO: build an SSP we can actually use, then have this script either call the TCP or MPI versions of our server/master as appropriate
 args.extend(fmu.path for fmu in fmus)

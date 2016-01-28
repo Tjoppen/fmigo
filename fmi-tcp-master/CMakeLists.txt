@@ -126,12 +126,12 @@ ENDIF(WIN32)
 
 # Compile proto
 IF(WIN32)
-    add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.pb.h
+    add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.pb.cc
         COMMAND ${PROTOBUF_BIN_DIR}/protoc --cpp_out=. fmitcp.proto
         WORKING_DIRECTORY   ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp
         DEPENDS libprotobuf ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.proto)
 ELSE(WIN32)
-    add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.pb.h
+    add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.pb.cc
         COMMAND protoc --cpp_out=. fmitcp.proto
         WORKING_DIRECTORY   ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp
         DEPENDS             ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.proto)
@@ -180,7 +180,7 @@ SET_TARGET_PROPERTIES(vanilla
 EXECUTE_PROCESS(COMMAND rm -r -f "${CMAKE_CURRENT_LIST_DIR}/bin/binaries")
 EXECUTE_PROCESS(COMMAND rm -f "${CMAKE_CURRENT_LIST_DIR}/bin/vanilla.fmu")
 
-if ( 0 ) 
+if ( 0 )
 # create the needed directories
 EXECUTE_PROCESS(COMMAND mkdir -p "${CMAKE_CURRENT_LIST_DIR}/bin/binaries/win32")
 
@@ -192,4 +192,4 @@ EXECUTE_PROCESS(COMMAND cp "${CMAKE_CURRENT_LIST_DIR}/fmu/modelDescription.xml" 
 EXECUTE_PROCESS(COMMAND zip -r "vanilla.fmu" "binaries" "modelDescription.xml"
                 WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/bin)
 
-endif ( 0 ) 
+endif ( 0 )

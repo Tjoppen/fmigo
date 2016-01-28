@@ -58,6 +58,8 @@ if(WIN32)
     include_directories(${JSONCPP_DIR}/src/jsoncpp-ext/include)
     link_directories(${JSONCPP_DIR}/src/jsoncpp-ext-build/src/lib_json/${CMAKE_BUILD_TYPE})
 
+elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/3dparty/zeromq/4.2.0-master/include)
 else(WIN32)
     # TODO: tell the user what's needed?
 	include(FindProtobuf)
@@ -68,10 +70,6 @@ else(WIN32)
     include_directories(/usr/include/hdf5/serial)
     link_directories(/usr/lib/x86_64-linux-gnu/hdf5/serial)
 endif(WIN32)
-
-if(APPLE)
-  include_directories(${CMAKE_CURRENT_SOURCE_DIR}/3dparty/zeromq/4.2.0-master/include)
-endif()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/fmi-tcp/src/fmitcp/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/strong-coupling-core/include)
@@ -85,7 +83,6 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_VERSION}/src/XML/in
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_VERSION}/src/ZIP/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_VERSION}/ThirdParty/FMI/default)
 
-link_directories(${CMAKE_CURRENT_SOURCE_DIR}/fmi-tcp/lib)
 add_subdirectory(strong-coupling-core)
 add_dependencies(sc suitesparse-ext)
 add_subdirectory(${FMILIBRARY_VERSION})

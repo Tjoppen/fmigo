@@ -6,6 +6,8 @@ import os
 import os.path
 import glob
 import xml.etree.ElementTree as ET
+import subprocess
+import shutil
 
 if len(sys.argv) < 2:
     #TODO: we probably want to know which of TCP and MPI is wanted
@@ -240,7 +242,7 @@ for fmu in fmus:
 #print mds
 
 # Build command line
-args = []
+flatconns = []
 for fr,to1 in connectionmultimap.iteritems():
     for to in to1:
         #print str((fr,to)) + ' vs ' + str(mds[fr[0]])
@@ -250,9 +252,20 @@ for fr,to1 in connectionmultimap.iteritems():
         tv = t[to[1]]
 
         connstr = '%s,%i,%i,%i,%i' % (fv['type'], fr[0], fv['vr'], to[0], tv['vr'])
-        args.extend(['-c', connstr])
+        flatconns.extend(['-c', connstr])
 
-#TODO: build an SSP we can actually use, then have this script either call the TCP or MPI versions of our server/master as appropriate
-args.extend(fmu.path for fmu in fmus)
-print ' '.join(args)
+servers = []
+for fmu in fmus:
+    servers.extend([':','-np','1','fmi-mpi-server',fmu.path])
+
+args = ['mpirun','-np','1','fmi-mpi-master'] + flatconns + servers
+#print args
+ret = subprocess.call(args)
+
+if ret == 0:
+    shutil.rmtree(d)
+else:
+    print 'An error occured. Check ' + d
+
+exit(ret)
 

@@ -1,0 +1,247 @@
+#!/usr/bin/python
+import tempfile
+import zipfile
+import sys
+import os
+import os.path
+import glob
+import xml.etree.ElementTree as ET
+
+if len(sys.argv) < 2:
+    #TODO: we probably want to know which of TCP and MPI is wanted
+    print 'USAGE: %s ssp-file' % sys.argv[0]
+    exit(1)
+
+RESOURCE_DIR='resources'
+SSD_NAME='SystemStructure.ssd'
+CAUSALITY='causality'
+MODELDESCRIPTION='modelDescription.xml'
+
+ns = {'ssd': 'http://www.pmsf.net/xsd/SystemStructureDescriptionDraft'}
+d = tempfile.mkdtemp(prefix='ssp')
+print d
+
+fmus = []
+systems = []
+
+class FMU:
+    def __init__(self, name, path, connectors, system):
+        self.name = name
+        self.path = path
+        self.connectors = connectors
+        self.system = system
+
+        global fmus
+        self.id = len(fmus)
+        fmus.append(self)
+        #print '%i: %s %s' % (self.id, self.name, self.path)
+
+    def get_name(self):
+        return self.system.get_name() + '.' + self.name
+
+    def connect(self):
+        '''
+        Returns list of connections for this FMU to other FMUs in the System tree
+        '''
+        ret = {}
+        for conn in self.connectors:
+            # Look at inputs, work back toward outputs
+            if conn.attrib[CAUSALITY] == 'input':
+                global fmus, systems
+                ttl = len(fmus) + len(systems)
+                sys = self.system
+                key = (self.name, conn.attrib['name'])
+                #print
+
+                while True:
+                    #print 'key = ' + str(key) + ', sys = ' + sys.name
+                    if not key in sys.connections:
+                        print 'No connection %s in system %s' % (str(key), self.system.name)
+                        exit(1)
+
+                    key = sys.connections[key]
+                    if key[0] == '':
+                        # Connection leads to parent node
+                        if sys.parent == None:
+                            # Can't go any further - issue a warning and move on
+                            print ('WARNING: ' + self.get_name() + '.' + conn.attrib['name'] + ' takes data from ' +
+                                   key[1] + ' of root system, which no output connects to - skipping')
+                            break
+
+                        #print 'up'
+                        key = (sys.name, key[1])
+                        sys = sys.parent
+                    elif key[0] in sys.fmus:
+                        fmu = sys.fmus[key[0]]
+                        ret[(fmu.id, key[1])] = (self.id, conn.attrib['name'])
+                        break
+                    elif key[0] in sys.children:
+                        #print 'down'
+                        sys = sys.children[key[0]]
+                        key = ('', key[1])
+                    else:
+                        print 'Key %s not found in system %s' % (str(key), sys.name)
+                        print sys.fmus
+                        print sys.children
+                        exit(1)
+
+                    ttl -= 1
+                    if ttl <= 0:
+                        print 'SSP contains a loop!'
+                        exit(1)
+
+        return ret
+
+class System:
+    '''
+    A System is a tree of Systems and FMUs
+    In each System there are Connections between 
+    '''
+    def __init__(self, d, filename, parent=None):
+        global systems
+        systems.append(self)
+
+        path = os.path.join(d, filename)
+        #print 'parse_ssd: ' + path
+        tree = ET.parse(path)
+        #print tree
+        #print tree.getroot()
+        
+        #tree.register_namespace('ssd', 'http://www.pmsf.net/xsd/SystemStructureDescriptionDraft')
+        sys = tree.getroot().findall('ssd:System', ns)
+        if len(sys) != 1:
+            print 'Must have exactly one System'
+            exit(1)
+        s = sys[0]
+
+        connectors  = s.find('ssd:Connectors',  ns).findall('ssd:Connector',  ns)
+        connections = s.find('ssd:Connections', ns).findall('ssd:Connection', ns)
+        components  = s.find('ssd:Elements',    ns).findall('ssd:Component',  ns)
+
+        self.name = s.attrib['name']
+        #print self.name + ', parent=' + (parent.name if parent != None else 'None')
+        self.parent = parent
+        self.inputs  = {}
+        self.outputs = {}
+        for conn in connectors:
+            if conn.attrib[CAUSALITY] == 'input':
+                self.inputs[conn.attrib['name']] = conn
+            elif conn.attrib[CAUSALITY] == 'output':
+                self.outputs[conn.attrib['name']] = conn
+            else:
+                print 'Unknown causality: ' + conn.attrib[CAUSALITY]
+                exit(1)
+
+        # Bi-directional
+        self.connections = {}
+        for conn in connections:
+            a = (conn.attrib['startElement'] if 'startElement' in conn.attrib else '',
+                 conn.attrib['startConnector'])
+            b = (conn.attrib['endElement']   if 'endElement'   in conn.attrib else '',
+                 conn.attrib['endConnector'])
+            self.connections[a] = b
+            self.connections[b] = a
+
+        #print self.connections
+
+        self.children = {}
+        self.fmus     = {}
+        for comp in components:
+            #print comp
+            t = comp.attrib['type']
+            #print t
+
+            if t == 'application/x-ssp-package':
+                d2 = os.path.join(d, os.path.splitext(comp.attrib['source'])[0])
+                child = System(d2, SSD_NAME, self)
+                #print 'Added subsystem ' + child.name
+                self.children[comp.attrib['name']] = child
+            elif t == 'application/x-fmu-sharedlibrary':
+                pass #print 
+                self.fmus[comp.attrib['name']] = FMU(
+                    comp.attrib['name'],
+                    os.path.join(d, comp.attrib['source']),
+                    comp.find('ssd:Connectors', ns).findall('ssd:Connector', ns),
+                    self,
+                )
+            else:
+                print 'unknown type: ' + t
+                exit(1)
+
+    def get_name(self):
+        return self.parent.get_name() + '::' + self.name if self.parent != None else self.name
+
+def unzip_ssp(dest_dir, ssp_filename):
+    #print 'unzip_ssp: ' + dest_dir + ' ' + ssp_filename
+    with zipfile.ZipFile(ssp_filename) as z:
+        z.extractall(dest_dir)
+        # Extract sub-SSPs
+        for f in glob.glob(os.path.join(dest_dir, RESOURCE_DIR, '*.ssp')):
+            d = os.path.join(dest_dir, RESOURCE_DIR, os.path.splitext(f)[0])
+            os.mkdir(d)
+            unzip_ssp(d, f)
+
+        # Extract modelDescription.xml from FMUs
+        for f in glob.glob(os.path.join(dest_dir, RESOURCE_DIR, '*.fmu')):
+            d = os.path.join(dest_dir, RESOURCE_DIR, os.path.splitext(f)[0])
+            os.mkdir(d)
+            with zipfile.ZipFile(f) as z:
+                z.extract(MODELDESCRIPTION, d)
+
+unzip_ssp(d, sys.argv[1])
+root = System(d, SSD_NAME)
+
+# Figure out connections, parse modelDescriptions
+connections = {}
+mds = []
+for fmu in fmus:
+    connections.update(fmu.connect())
+
+    # Parse modelDescription, turn variable list into map
+    tree = ET.parse(os.path.join(os.path.splitext(fmu.path)[0], MODELDESCRIPTION))
+
+    svs = {}
+    for sv in tree.getroot().find('ModelVariables').findall('ScalarVariable'):
+        if sv.attrib['name'] in svs:
+            print fmu.path + ' contains multiple variables named "' + sc.attrib['name'] + '"!'
+            exit(1)
+
+        if not CAUSALITY in sv.attrib:
+            # Not an input or output. Probably a parameter
+            continue
+
+        t = ''
+        if sv.find('Real')      != None: t = 'r'
+        elif sv.find('Integer') != None: t = 'i'
+        elif sv.find('Boolean') != None: t = 'b'
+        elif sv.find('Enum')    != None: t = 'e'
+        else:
+            print fmu.path + ' variable "' + sc.attrib['name'] + '" has unknown type'
+            exit(1)
+
+        svs[sv.attrib['name']] = {
+            'vr': int(sv.attrib['valueReference']),
+            CAUSALITY: sv.attrib[CAUSALITY],
+            'type': t,
+        }
+    mds.append(svs)
+
+#print connections
+#print mds
+
+# Build command line
+args = []
+for fr,to in connections.iteritems():
+    #print str((fr,to)) + ' vs ' + str(mds[fr[0]])
+    f = mds[fr[0]]
+    fv = f[fr[1]]
+    t = mds[to[0]]
+    tv = t[to[1]]
+    
+    connstr = '%s,%i,%i,%i,%i' % (fv['type'], fr[0], fv['vr'], to[0], tv['vr'])
+    args.extend(['-c', connstr])
+
+#TODO: build an SSP we can actually use, then have this script either call the TCP or MPI versions of our server/master as appropriate
+args.extend(fmu.path for fmu in fmus)
+print ' '.join(args)
+

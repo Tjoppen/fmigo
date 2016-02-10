@@ -44,13 +44,11 @@ namespace fmitcp {
 
     //HDF5 output
     std::string hdf5Filename;
-#ifndef WIN32
     std::vector<size_t> field_offset;
     std::vector<hid_t> field_types;
     std::vector<const char*> field_names;
     std::vector<char> hdf5data; //this should be a map<int,vector<char>> once we start getting into having multiple FMU instances
     size_t rowsz, nrecords;
-#endif
 
   public:
 
@@ -85,10 +83,8 @@ namespace fmitcp {
       return (fmistatus == fmi2_status_ok) || (fmistatus == fmi2_status_warning);
     }
 
-#ifndef WIN32
     void getHDF5Info();
     void fillHDF5Row(char *dest, double t);
-#endif
   };
 
 };

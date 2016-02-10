@@ -72,7 +72,6 @@ fmi2_status_kind_t fmitcp::protoStatusKindToFmiStatusKind(fmitcp_proto::fmi2_sta
   }
 }
 
-#ifndef WIN32
 void fmitcp::writeHDF5File(
         std::string hdf5Filename,
         std::vector<size_t>& field_offset,
@@ -99,4 +98,3 @@ void fmitcp::writeHDF5File(
         H5Fclose(file_id);
     }
 }
-#endif

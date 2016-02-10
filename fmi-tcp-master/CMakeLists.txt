@@ -79,6 +79,8 @@ IF(WIN32)
         ${Boost_SYSTEM_LIBRARY}
         libprotobuf
         jsoncpp
+        libhdf5
+        libhdf5_hl
         libzmq
         ${CMAKE_THREAD_LIBS_INIT})
     if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")

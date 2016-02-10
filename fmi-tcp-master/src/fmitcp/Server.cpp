@@ -273,7 +273,6 @@ string Server::clientData(const char *data, size_t size) {
     m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_reset_slave_res(mid=%d,status=%d)\n",messageId,resetRes->status());
 
   } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_free_slave_instance_req) {
-#ifndef WIN32
     if (hdf5Filename.length()) {
         //dump hdf5 data
         //NOTE: this will only work if we have exactly one FMU instance on this server
@@ -282,7 +281,6 @@ string Server::clientData(const char *data, size_t size) {
         nrecords = 0;
         hdf5data.clear();
     }
-#endif
 
     // Unpack message
     fmitcp_proto::fmi2_import_free_slave_instance_req * r = req.mutable_fmi2_import_free_slave_instance_req();
@@ -404,14 +402,12 @@ string Server::clientData(const char *data, size_t size) {
     bool newStep = r->newstep();
     m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_do_step_req(fmuId=%d,commPoint=%g,stepSize=%g,newStep=%d)\n",fmuId,currentCommunicationPoint,communicationStepSize,newStep?1:0);
 
-#ifndef WIN32
     if (hdf5Filename.length()) {
         //log outputs before doing anything
         hdf5data.insert(hdf5data.begin()+nrecords*rowsz, rowsz, 0);
         fillHDF5Row(&hdf5data[nrecords*rowsz], currentCommunicationPoint);
         nrecords++;
     }
-#endif
 
     fmi2_status_t status = fmi2_status_ok;
     if (!m_sendDummyResponses) {
@@ -1012,7 +1008,6 @@ void Server::sendDummyResponses(bool sendDummyResponses) {
   m_sendDummyResponses = sendDummyResponses;
 }
 
-#ifndef WIN32
 static size_t fmi2_type_size(fmi2_base_type_enu_t type) {
     switch (type) {
     case fmi2_base_type_real: return sizeof(fmi2_real_t);
@@ -1083,4 +1078,3 @@ void Server::fillHDF5Row(char *dest, double t) {
         }
     }
 }
-#endif

@@ -58,6 +58,21 @@ if(WIN32)
     include_directories(${JSONCPP_DIR}/src/jsoncpp-ext/include)
     link_directories(${JSONCPP_DIR}/src/jsoncpp-ext-build/src/lib_json/${CMAKE_BUILD_TYPE})
 
+    set(HDF5_DIR "${CMAKE_CURRENT_BINARY_DIR}/hdf5")
+    ExternalProject_Add(hdf5-ext
+        PREFIX  ${HDF5_DIR}
+        URL     "http://www.hdfgroup.org/ftp/HDF5/current/src/CMake-hdf5-1.8.16.zip"
+        URL_MD5 "f909d87f2a913d9ec6a970c1063f907b"
+        CONFIGURE_COMMAND cmake          ${HDF5_DIR}/src/hdf5-ext/hdf5-1.8.16 -G ${CMAKE_GENERATOR}
+        BUILD_COMMAND     cmake -E chdir ${HDF5_DIR}/src/hdf5-ext-build msbuild HDF5.sln /p:Configuration=${CMAKE_BUILD_TYPE}
+        INSTALL_COMMAND   ""
+    )
+
+    include_directories(${HDF5_DIR}/src/hdf5-ext/hdf5-1.8.16/src)
+    include_directories(${HDF5_DIR}/src/hdf5-ext/hdf5-1.8.16/hl/src)
+    include_directories(${HDF5_DIR}/src/hdf5-ext-build)
+    link_directories(${HDF5_DIR}/src/hdf5-ext-build/bin/${CMAKE_BUILD_TYPE})
+
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/3dparty/zeromq/4.2.0-master/include)
 else(WIN32)
@@ -87,4 +102,4 @@ add_subdirectory(strong-coupling-core)
 add_dependencies(sc suitesparse-ext)
 add_subdirectory(${FMILIBRARY_VERSION})
 add_subdirectory(fmi-tcp-master)
-add_dependencies(fmi-tcp-master fmilib jsoncpp-ext protobuf-ext)
+add_dependencies(fmi-tcp-master fmilib jsoncpp-ext protobuf-ext hdf5-ext)

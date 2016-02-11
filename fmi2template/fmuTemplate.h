@@ -1,0 +1,60 @@
+/* ---------------------------------------------------------------------------*
+ * fmuTemplate.h
+ * Definitions by the includer of this file
+ * Copyright QTronic GmbH. All rights reserved.
+ * ---------------------------------------------------------------------------*/
+
+#include <stdio.h>
+#include <string.h>
+#include <assert.h>
+
+#include "fmi2Functions.h"
+
+// categories of logging supported by model.
+// Value is the index in logCategories of a ModelInstance.
+#define LOG_ALL       0
+#define LOG_ERROR     1
+#define LOG_FMI_CALL  2
+#define LOG_EVENT     3
+
+#define NUMBER_OF_CATEGORIES 4
+
+typedef enum {
+    modelInstantiated       = 1<<0,
+    modelInitializationMode = 1<<1,
+    modelInitialized        = 1<<2, // state just after fmiExitInitializationMode
+    modelStepping           = 1<<3, // state after initialization
+    modelTerminated         = 1<<4,
+    modelError              = 1<<5
+} ModelState;
+
+#ifndef WIN32
+//Tomas: needed since fmuTemplate_impl.h doesn't define it
+static inline int max(int a, int b) {
+    return a > b ? a : b;
+}
+#endif
+
+//making a special macro for this because reasons
+//needed because cl.exe doesn't accept zero-length arrays
+#define atleast1(a) ((a) < 1 ? 1 : (a))
+
+typedef struct {
+    fmi2Real    r[atleast1(NUMBER_OF_REALS)];
+    fmi2Integer i[atleast1(NUMBER_OF_INTEGERS)];
+    fmi2Boolean b[atleast1(NUMBER_OF_BOOLEANS)];
+    char       *s[atleast1(NUMBER_OF_STRINGS)]; //char* instead of fmi2String to avoid compiler warning about strcpy()ing to const char*
+    fmi2Boolean isPositive[atleast1(NUMBER_OF_EVENT_INDICATORS)];
+
+    fmi2Real time;
+    char* instanceName;
+    fmi2Type type;
+    char* GUID;
+    const fmi2CallbackFunctions *functions;
+    fmi2Boolean loggingOn;
+    fmi2Boolean logCategories[NUMBER_OF_CATEGORIES];
+
+    fmi2ComponentEnvironment componentEnvironment;
+    ModelState state;
+    fmi2EventInfo eventInfo;
+} ModelInstance;

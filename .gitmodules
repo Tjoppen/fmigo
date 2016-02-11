@@ -1,0 +1,3 @@
+[submodule "fmu-builder"]
+	path = fmu-builder
+	url = git@mimmi.math.umu.se:vtb/fmu-builder.git

@@ -36,6 +36,7 @@ if(WIN32)
     )
 
     include_directories(${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/include)
+    include_directories(${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/include/suitesparse)
     link_directories(${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib)
     link_directories(${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib/lapack_blas_windows)
     link_directories(${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib64)
@@ -98,8 +99,17 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_VERSION}/src/XML/in
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_VERSION}/src/ZIP/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_VERSION}/ThirdParty/FMI/default)
 
+if (UNIX)
+    # Ubuntu
+    include_directories(/usr/include/jsoncpp)
+endif ()
+
 add_subdirectory(strong-coupling-core)
-add_dependencies(sc suitesparse-ext)
 add_subdirectory(${FMILIBRARY_VERSION})
 add_subdirectory(fmi-tcp-master)
-add_dependencies(fmi-tcp-master fmilib jsoncpp-ext protobuf-ext hdf5-ext)
+add_dependencies(fmi-tcp-master fmilib)
+
+if (WIN32)
+    add_dependencies(sc suitesparse-ext)
+    add_dependencies(fmi-tcp-master jsoncpp-ext protobuf-ext hdf5-ext)
+endif ()

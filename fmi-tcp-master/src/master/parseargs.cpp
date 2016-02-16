@@ -2,15 +2,11 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #ifdef WIN32
-#include <json/json.h>
 #include "master/getopt.h"
-#elif __APPLE__
-#include <json/json.h>
-#include <getopt.h>
 #else
-#include <jsoncpp/json/json.h>
 #include <getopt.h>
 #endif
+#include <json/json.h>
 #include <deque>
 #include <fstream>
 #include "common/common.h"

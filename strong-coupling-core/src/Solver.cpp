@@ -7,11 +7,7 @@
 #include <algorithm>
 
 extern "C" {
-#ifdef __APPLE__
 #include "umfpack.h"
-#else
-#include "suitesparse/umfpack.h"
-#endif
 }
 
 using namespace sc;

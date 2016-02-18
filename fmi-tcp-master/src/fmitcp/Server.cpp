@@ -30,6 +30,7 @@ Server::~Server() {
 }
 
 void Server::init() {
+  nextStateId = 0;
   m_sendDummyResponses = false;
 
   if(m_fmuPath == "dummy"){
@@ -862,18 +863,21 @@ string Server::clientData(const char *data, size_t size) {
     fmitcp_proto::fmi2_import_get_fmu_state_req * r = req.mutable_fmi2_import_get_fmu_state_req();
     m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_fmu_state_req(mid=%d,fmuId=%d)\n",r->message_id(),r->fmuid());
 
-    fmitcp_proto::fmi2_import_get_fmu_state_res * getStatusRes = res.mutable_fmi2_import_get_fmu_state_res();
-    res.set_type(fmitcp_proto::fmitcp_message_Type_type_fmi2_import_get_fmu_state_res);
-    getStatusRes->set_message_id(r->message_id());
-    getStatusRes->set_status(fmitcp_proto::fmi2_status_ok);
-    getStatusRes->set_stateid(0); // TODO
-
+    fmi2_status_t status = fmi2_status_ok;
+    ::google::protobuf::int32 stateId = nextStateId++;
     if(!m_sendDummyResponses){
-      // TODO: interact with FMU
+        fmi2_FMU_state_t state;
+        status = fmi2_import_get_fmu_state(m_fmi2Instance, &state);
+        stateMap[stateId] = state;
     }
 
     // Create response
-    m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_get_fmu_state_res(mid=%d,stateId=%d,status=%d)\n",getStatusRes->message_id(),getStatusRes->stateid(),getStatusRes->status());
+    fmitcp_proto::fmi2_import_get_fmu_state_res * res2 = res.mutable_fmi2_import_get_fmu_state_res();
+    res.set_type(fmitcp_proto::fmitcp_message_Type_type_fmi2_import_get_fmu_state_res);
+    res2->set_message_id(r->message_id());
+    res2->set_status(fmi2StatusToProtofmi2Status(status));
+    res2->set_stateid(stateId);
+    m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_get_fmu_state_res(mid=%d,stateId=%d,status=%d)\n",res2->message_id(),res2->stateid(),res2->status());
 
   } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_set_fmu_state_req){
 
@@ -881,17 +885,17 @@ string Server::clientData(const char *data, size_t size) {
     fmitcp_proto::fmi2_import_set_fmu_state_req * r = req.mutable_fmi2_import_set_fmu_state_req();
     m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_set_fmu_state_req(mid=%d,fmuId=%d,stateId=%d)\n",r->message_id(),r->fmuid(),r->stateid());
 
-    fmitcp_proto::fmi2_import_set_fmu_state_res * getStatusRes = res.mutable_fmi2_import_set_fmu_state_res();
-    res.set_type(fmitcp_proto::fmitcp_message_Type_type_fmi2_import_set_fmu_state_res);
-    getStatusRes->set_message_id(r->message_id());
-    getStatusRes->set_status(fmitcp_proto::fmi2_status_ok);
-
+    fmi2_status_t status = fmi2_status_ok;
     if(!m_sendDummyResponses){
-      // TODO: interact with FMU
+        status = fmi2_import_set_fmu_state(m_fmi2Instance, stateMap[r->stateid()]);
     }
 
     // Create response
-    m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_set_fmu_state_res(mid=%d,status=%d)\n",getStatusRes->message_id(),getStatusRes->status());
+    fmitcp_proto::fmi2_import_set_fmu_state_res * res2 = res.mutable_fmi2_import_set_fmu_state_res();
+    res.set_type(fmitcp_proto::fmitcp_message_Type_type_fmi2_import_set_fmu_state_res);
+    res2->set_message_id(r->message_id());
+    res2->set_status(fmi2StatusToProtofmi2Status(status));
+    m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_set_fmu_state_res(mid=%d,status=%d)\n",res2->message_id(),res2->status());
 
   } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_free_fmu_state_req){
 
@@ -899,17 +903,19 @@ string Server::clientData(const char *data, size_t size) {
     fmitcp_proto::fmi2_import_free_fmu_state_req * r = req.mutable_fmi2_import_free_fmu_state_req();
     m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_free_fmu_state_req(mid=%d,stateId=%d)\n",r->message_id(),r->stateid());
 
-    fmitcp_proto::fmi2_import_free_fmu_state_res * getStatusRes = res.mutable_fmi2_import_free_fmu_state_res();
-    res.set_type(fmitcp_proto::fmitcp_message_Type_type_fmi2_import_free_fmu_state_res);
-    getStatusRes->set_message_id(r->message_id());
-    getStatusRes->set_status(fmitcp_proto::fmi2_status_ok);
-
+    fmi2_status_t status = fmi2_status_ok;
     if(!m_sendDummyResponses){
-      // TODO: interact with FMU
+        auto it = stateMap.find(r->stateid());
+        status = fmi2_import_free_fmu_state(m_fmi2Instance, &it->second);
+        stateMap.erase(it);
     }
 
     // Create response
-    m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_free_fmu_state_res(mid=%d,status=%d)\n",getStatusRes->message_id(),getStatusRes->status());
+    fmitcp_proto::fmi2_import_free_fmu_state_res * res2 = res.mutable_fmi2_import_free_fmu_state_res();
+    res.set_type(fmitcp_proto::fmitcp_message_Type_type_fmi2_import_free_fmu_state_res);
+    res2->set_message_id(r->message_id());
+    res2->set_status(fmitcp_proto::fmi2_status_ok);
+    m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_free_fmu_state_res(mid=%d,status=%d)\n",res2->message_id(),res2->status());
 
   } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_serialized_fmu_state_size_req){
     // TODO

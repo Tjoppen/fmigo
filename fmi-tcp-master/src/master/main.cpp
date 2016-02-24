@@ -554,11 +554,6 @@ int main(int argc, char *argv[] ) {
             }
         }
 
-#ifdef ENABLE_DEMO_HACKS
-        //TESTING: send params every frame
-        sendUserParams(master, slaves, params);
-#endif
-        
         PRINT_HDF5_DELTA("print_csv");
 
         master->runIteration(t, timeStep);

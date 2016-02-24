@@ -60,12 +60,7 @@ public:
             send(it->first, fmi2_import_set_real(0, 0, it->second.first, it->second.second));
         }
 
-#ifdef ENABLE_DEMO_HACKS
-        //AgX requires newStep=true
-        block(m_slaves, fmi2_import_do_step(0, 0, t, dt, true));
-#else
         block(m_slaves, fmi2_import_do_step(0, 0, t, dt, false));
-#endif
     }
 };
 
@@ -132,12 +127,7 @@ public:
                 send(client, fmi2_import_set_real(0, 0, conns[client].vrs, values));
             }
 
-#ifdef ENABLE_DEMO_HACKS
-            //AgX requires newStep=true
-            block(client, &FMIClient::fmi2_import_do_step, 0, 0, t, dt, true);
-#else
             block(client, fmi2_import_do_step(0, 0, t, dt, false));
-#endif
         }
         //fprintf(stderr, "\n\n");
     }

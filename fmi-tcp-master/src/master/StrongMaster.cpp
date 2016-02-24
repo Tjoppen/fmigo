@@ -272,11 +272,6 @@ void StrongMaster::runIteration(double t, double dt) {
     PRINT_HDF5_DELTA("send_weak_reals");
 
     //do actual step
-#ifdef ENABLE_DEMO_HACKS
-    //TODO: always do newStep=true? Keep it a demo hack for now
-    block(m_slaves, fmi2_import_do_step(0, 0, t, dt, true));
-#else
     block(m_slaves, fmi2_import_do_step(0, 0, t, dt, false));
-#endif
     PRINT_HDF5_DELTA("do_step");
 }

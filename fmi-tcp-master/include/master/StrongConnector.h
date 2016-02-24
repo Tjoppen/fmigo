@@ -83,6 +83,15 @@ namespace fmitcp_master {
 
         /// Set velocities of bodies one step forward
         void setFutureValues(std::vector<int> valueReferences, std::vector<double> values);
+
+        bool matchesBallLockConnector(
+                int posX, int posY, int posZ,
+                int accX, int accY, int accZ,
+                int forceX, int forceY, int forceZ,
+                int quatX, int quatY, int quatZ, int quatW,
+                int angAccX, int angAccY, int angAccZ,
+                int torqueX, int torqueY, int torqueZ);
+        bool matchesShaftConnector(int angle, int angularVel, int angularAcc, int torque);
     };
 };
 

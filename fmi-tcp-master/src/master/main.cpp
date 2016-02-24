@@ -177,66 +177,104 @@ static void addAutomaticConnectionsAndParams(const vector<connectionconfig> &con
     }
 }
 
+static StrongConnector* findOrCreateBallLockConnector(FMIClient *client,
+        int posX, int posY, int posZ,
+        int accX, int accY, int accZ,
+        int forceX, int forceY, int forceZ,
+        int quatX, int quatY, int quatZ, int quatW,
+        int angAccX, int angAccY, int angAccZ,
+        int torqueX, int torqueY, int torqueZ) {
+    for (int x = 0; x < client->numConnectors(); x++) {
+        StrongConnector *sc = client->getConnector(x);
+        if (sc->matchesBallLockConnector(
+                posX, posY, posZ, accX, accY, accZ, forceX, forceY, forceZ,
+                quatX, quatY, quatZ, quatW, angAccX, angAccY, angAccZ, torqueX, torqueY, torqueZ)) {
+            return sc;
+        }
+    }
+    StrongConnector *sc = client->createConnector();
+    sc->setPositionValueRefs           (posX, posY, posZ);
+    sc->setAccelerationValueRefs       (accX, accY, accZ);
+    sc->setForceValueRefs              (forceX, forceY, forceZ);
+    sc->setQuaternionValueRefs         (quatX, quatY, quatZ, quatW);
+    sc->setAngularAccelerationValueRefs(angAccX, angAccY, angAccZ);
+    sc->setTorqueValueRefs             (torqueX, torqueY, torqueZ);
+    return sc;
+}
+
+static StrongConnector* findOrCreateShaftConnector(FMIClient *client,
+        int angle, int angularVel, int angularAcc, int torque) {
+    for (int x = 0; x < client->numConnectors(); x++) {
+        StrongConnector *sc = client->getConnector(x);
+        if (sc->matchesShaftConnector(angle, angularVel, angularAcc, torque)) {
+            fprintf(stderr, "Match! id = %i\n", sc->m_index);
+            return sc;
+        }
+    }
+    StrongConnector *sc = client->createConnector();
+    sc->setShaftAngleValueRef          (angle);
+    sc->setAngularVelocityValueRefs    (angularVel, -1, -1);
+    sc->setAngularAccelerationValueRefs(angularAcc, -1, -1);
+    sc->setTorqueValueRefs             (torque,     -1, -1);
+    return sc;
+}
+
 static void setupConstraintsAndSolver(vector<strongconnection> strongConnections, vector<FMIClient*> slaves, Solver *solver) {
     for (auto it = strongConnections.begin(); it != strongConnections.end(); it++) {
         //NOTE: this leaks memory, but I don't really care since it's only setup
-        StrongConnector *scA = slaves[it->fromFMU]->createConnector();
-        StrongConnector *scB = slaves[it->toFMU]->createConnector();
         Constraint *con;
         char t = tolower(it->type[0]);
 
         switch (t) {
         case 'b':
         case 'l':
+        {
             if (it->vrs.size() != 38) {
                 fprintf(stderr, "Bad %s specification: need 38 VRs ([XYZpos + XYZacc + XYZforce + Quat + XYZrotAcc + XYZtorque] x 2), got %zu\n",
                         t == 'b' ? "ball joint" : "lock", it->vrs.size());
                 exit(1);
             }
 
-            scA->setPositionValueRefs           (it->vrs[0], it->vrs[1], it->vrs[2]);
-            scA->setAccelerationValueRefs       (it->vrs[3], it->vrs[4], it->vrs[5]);
-            scA->setForceValueRefs              (it->vrs[6], it->vrs[7], it->vrs[8]);
-            scA->setQuaternionValueRefs         (it->vrs[9], it->vrs[10],it->vrs[11],it->vrs[12]);
-            scA->setAngularAccelerationValueRefs(it->vrs[13],it->vrs[14],it->vrs[15]);
-            scA->setTorqueValueRefs             (it->vrs[16],it->vrs[17],it->vrs[18]);
+            StrongConnector *scA = findOrCreateBallLockConnector(slaves[it->fromFMU],
+                                                 it->vrs[0], it->vrs[1], it->vrs[2],
+                                                 it->vrs[3], it->vrs[4], it->vrs[5],
+                                                 it->vrs[6], it->vrs[7], it->vrs[8],
+                                                 it->vrs[9], it->vrs[10],it->vrs[11],it->vrs[12],
+                                                 it->vrs[13],it->vrs[14],it->vrs[15],
+                                                 it->vrs[16],it->vrs[17],it->vrs[18]);
 
-            scB->setPositionValueRefs           (it->vrs[19],it->vrs[20],it->vrs[21]);
-            scB->setAccelerationValueRefs       (it->vrs[22],it->vrs[23],it->vrs[24]);
-            scB->setForceValueRefs              (it->vrs[25],it->vrs[26],it->vrs[27]);
-            scB->setQuaternionValueRefs         (it->vrs[28],it->vrs[29],it->vrs[30],it->vrs[31]);
-            scB->setAngularAccelerationValueRefs(it->vrs[32],it->vrs[33],it->vrs[34]);
-            scB->setTorqueValueRefs             (it->vrs[35],it->vrs[36],it->vrs[37]);
+            StrongConnector *scB = findOrCreateBallLockConnector(slaves[it->toFMU],
+                                                 it->vrs[19],it->vrs[20],it->vrs[21],
+                                                 it->vrs[22],it->vrs[23],it->vrs[24],
+                                                 it->vrs[25],it->vrs[26],it->vrs[27],
+                                                 it->vrs[28],it->vrs[29],it->vrs[30],it->vrs[31],
+                                                 it->vrs[32],it->vrs[33],it->vrs[34],
+                                                 it->vrs[35],it->vrs[36],it->vrs[37]);
 
             con = t == 'b' ? new BallJointConstraint(scA, scB, Vec3(), Vec3())
                            : new LockConstraint(scA, scB, Vec3(), Vec3(), Quat(), Quat());
 
             break;
+        }
         case 's':
         {
-            if (it->vrs.size() != 9) {
-                fprintf(stderr, "Bad shaft specification: need axis (0 = X, 1 = Y, 2 = Z) and 8 VRs ([shaft angle + angular velocity + angular acceleration + torque] x 2)\n");
-                exit(1);
+            int ofs = 0;
+            if (it->vrs.size() != 8) {
+                //maybe it's the old type of specification?
+                ofs = 1;
+                if (it->vrs.size() != 9) {
+                    fprintf(stderr, "Bad shaft specification: need 8 VRs ([shaft angle + angular velocity + angular acceleration + torque] x 2)\n");
+                    exit(1);
+                }
             }
 
-            int axis = it->vrs[0];
+            StrongConnector *scA = findOrCreateShaftConnector(slaves[it->fromFMU],
+                    it->vrs[ofs+0], it->vrs[ofs+1], it->vrs[ofs+2], it->vrs[ofs+3]);
 
-            if (axis < 0 || axis > 2) {
-                fprintf(stderr, "Bad axis: %i\n", axis);
-                exit(1);
-            }
+            StrongConnector *scB = findOrCreateShaftConnector(slaves[it->toFMU],
+                    it->vrs[ofs+4], it->vrs[ofs+5], it->vrs[ofs+6], it->vrs[ofs+7]);
 
-            scA->setShaftAngleValueRef(it->vrs[1]);
-            scA->setAngularVelocityValueRefs    (axis == 0 ? it->vrs[2] : -1, axis == 1 ? it->vrs[2] : -1, axis == 2 ? it->vrs[2] : -1);
-            scA->setAngularAccelerationValueRefs(axis == 0 ? it->vrs[3] : -1, axis == 1 ? it->vrs[3] : -1, axis == 2 ? it->vrs[3] : -1);
-            scA->setTorqueValueRefs             (axis == 0 ? it->vrs[4] : -1, axis == 1 ? it->vrs[4] : -1, axis == 2 ? it->vrs[4] : -1);
-
-            scB->setShaftAngleValueRef(it->vrs[5]);
-            scB->setAngularVelocityValueRefs    (axis == 0 ? it->vrs[6] : -1, axis == 1 ? it->vrs[6] : -1, axis == 2 ? it->vrs[6] : -1);
-            scB->setAngularAccelerationValueRefs(axis == 0 ? it->vrs[7] : -1, axis == 1 ? it->vrs[7] : -1, axis == 2 ? it->vrs[7] : -1);
-            scB->setTorqueValueRefs             (axis == 0 ? it->vrs[8] : -1, axis == 1 ? it->vrs[8] : -1, axis == 2 ? it->vrs[8] : -1);
-
-            con = new ShaftConstraint(scA, scB, axis);
+            con = new ShaftConstraint(scA, scB);
             break;
         }
         default:

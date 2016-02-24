@@ -40,6 +40,7 @@ namespace fmitcp_master {
         fmi2_import_variable_list_t* m_fmi2Outputs;
 
     public:
+        int m_stateId;
 
         BaseMaster * m_master;
 

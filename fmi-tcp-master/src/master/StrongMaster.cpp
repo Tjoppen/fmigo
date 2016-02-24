@@ -32,25 +32,36 @@ void StrongMaster::getDirectionalDerivative(FMIClient *client, Equation *eq, voi
 
     vector<double> seed;
     seed.push_back(seedVec.x());
-    seed.push_back(seedVec.y());
-    seed.push_back(seedVec.z());
 
-    send(client, fmi2_import_get_directional_derivative(0, 0, accelerationRefs, forceRefs, seed));
+    if (accelerationRefs.size() == 1) {
+        //HACKHACK: special handling for 1-dimensional couplings (shafts)
+        accelerationRefs.resize(1);
+        forceRefs.resize(1);
+    } else {
+        seed.push_back(seedVec.y());
+        seed.push_back(seedVec.z());
+    }
+
+    block(client, fmi2_import_get_directional_derivative(0, 0, accelerationRefs, forceRefs, seed));
 }
 
 void StrongMaster::getSpatialAngularDirectionalDerivatives(FMIClient *client, Equation *eq, StrongConnector *sc, void (Equation::*getSpatialSeed)(Vec3&), void (Equation::*getRotationalSeed)(Vec3&)) {
+    if (eq->m_isSpatial) {
     if (sc->hasAcceleration() && sc->hasForce()) {
         getDirectionalDerivative(client, eq, getSpatialSeed, sc->getAccelerationValueRefs(), sc->getForceValueRefs());
     } else {
         fprintf(stderr, "Strong coupling requires acceleration outputs for now\n");
         exit(1);
     }
+    }
 
+    if (eq->m_isRotational) {
     if (sc->hasAngularAcceleration() && sc->hasTorque()) {
         getDirectionalDerivative(client, eq, getRotationalSeed, sc->getAngularAccelerationValueRefs(), sc->getTorqueValueRefs());
     } else {
         fprintf(stderr, "Strong coupling requires angular acceleration outputs for now\n");
         exit(1);
+    }
     }
 }
 
@@ -75,6 +86,7 @@ void StrongMaster::runIteration(double t, double dt) {
         if (m_slaves[i]->m_getDirectionalDerivativeValues.size() > 0) {
             fprintf(stderr, "WARNING: Client %i had %zu unprocessed directional derivative results\n", i,
                     m_slaves[i]->m_getDirectionalDerivativeValues.size());
+            exit(1);
             m_slaves[i]->m_getDirectionalDerivativeValues.clear();
         }
 
@@ -100,6 +112,56 @@ void StrongMaster::runIteration(double t, double dt) {
     //update constraints since connector values changed
     m_strongCouplingSolver.updateConstraints();
 
+    //get future velocities:
+    //0. save FMU states
+    //1. zero forces
+    //2. step
+    //3. get velocity
+    //4. restore FMU states
+    send(m_slaves, fmi2_import_get_fmu_state(0, 0));
+
+    //zero forces
+    //if we don't do this then the forces would explode
+    for (int i=0; i<m_slaves.size(); i++){
+        FMIClient *client = m_slaves[i];
+        for (int j = 0; j < client->numConnectors(); j++) {
+            StrongConnector *sc = client->getConnector(j);
+            vector<int> fvrs = sc->getForceValueRefs();
+            vector<int> tvrs = sc->getTorqueValueRefs();
+            fvrs.insert(fvrs.end(), tvrs.begin(), tvrs.end());
+
+            vector<double> vec(fvrs.size(), 0.0);
+
+            send(client, fmi2_import_set_real(0, 0, fvrs, vec));
+        }
+    }
+
+    send(m_slaves, fmi2_import_do_step(0, 0, t, dt, false));
+
+    //do about the same thing we did a little bit further up, but store the results in future values
+    for(int i=0; i<m_slaves.size(); i++){
+        const vector<int> valueRefs = m_slaves[i]->getStrongConnectorValueReferences();
+        send(m_slaves[i], fmi2_import_get_real(0, 0, valueRefs));
+    }
+
+    PRINT_HDF5_DELTA("get_future_values");
+    wait();
+    PRINT_HDF5_DELTA("get_future_values_wait");
+
+    //set FUTURE connector values (velocities only)
+    for (int i=0; i<m_slaves.size(); i++){
+        FMIClient *client = m_slaves[i];
+        vector<int> vrs = client->getStrongConnectorValueReferences();
+        client->setConnectorFutureVelocities(vrs, client->m_getRealValues);
+    }
+
+    //restore
+    for (int i=0; i<m_slaves.size(); i++){
+        FMIClient *client = m_slaves[i];
+        send(client, fmi2_import_set_fmu_state(0, 0, client->m_stateId));
+        send(client, fmi2_import_free_fmu_state(0, 0, client->m_stateId));
+    }
+
     //get directional derivatives
     vector<Equation*> eqs;
     m_strongCouplingSolver.getEquations(&eqs);
@@ -111,32 +173,8 @@ void StrongMaster::runIteration(double t, double dt) {
         FMIClient * slaveA = (FMIClient *)scA->m_userData;
         FMIClient * slaveB = (FMIClient *)scB->m_userData;
 
-#ifdef ENABLE_DEMO_HACKS
-        if (eqs.size() != 1) {
-            fprintf(stderr, "Only one equation supported in demo mode\n");
-            exit(1);
-        }
-        Vec3 seedA; eq->getRotationalJacobianSeedA(seedA);
-        Vec3 seedB; eq->getRotationalJacobianSeedB(seedB);
-
-        //inverse moments of inertia
-        double J1inv = 1/1000.0;
-        double J2inv = 1/1200.0;
-
-        seedA = seedA * J1inv;
-        seedB = seedB * J2inv;
-
-        vector<double> a;
-        vector<double> b;
-        a.push_back(seedA.x()); a.push_back(seedA.y()); a.push_back(seedA.z());
-        b.push_back(seedB.x()); b.push_back(seedB.y()); b.push_back(seedB.z());
-
-        slaveA->m_getDirectionalDerivativeValues.push_back(a);
-        slaveB->m_getDirectionalDerivativeValues.push_back(b);
-#else
         getSpatialAngularDirectionalDerivatives(slaveA, eq, scA, &Equation::getSpatialJacobianSeedA, &Equation::getRotationalJacobianSeedA);
         getSpatialAngularDirectionalDerivatives(slaveB, eq, scB, &Equation::getSpatialJacobianSeedB, &Equation::getRotationalJacobianSeedB);
-#endif
     }
     PRINT_HDF5_DELTA("get_directional_derivs");
     wait();
@@ -149,59 +187,43 @@ void StrongMaster::runIteration(double t, double dt) {
         FMIClient * slaveA = (FMIClient *)scA->m_userData;
         FMIClient * slaveB = (FMIClient *)scB->m_userData;
 
-#ifdef ENABLE_DEMO_HACKS
-        if (slaveA->m_getDirectionalDerivativeValues.size() == 1 &&
-            slaveB->m_getDirectionalDerivativeValues.size() == 1) {
-
-            eq->setSpatialJacobianA(0,0,0);
-            eq->setRotationalJacobianA(slaveA->m_getDirectionalDerivativeValues[0][0], slaveA->m_getDirectionalDerivativeValues[0][1], slaveA->m_getDirectionalDerivativeValues[0][2]);
-            eq->setSpatialJacobianB(0,0,0);
-            eq->setRotationalJacobianB(slaveB->m_getDirectionalDerivativeValues[0][0], slaveB->m_getDirectionalDerivativeValues[0][1], slaveB->m_getDirectionalDerivativeValues[0][2]);
-
-            //dump directional derivatives
-            printf(",%f,%f,%f,%f,%f,%f",
-                    slaveA->m_getDirectionalDerivativeValues[0][0], slaveA->m_getDirectionalDerivativeValues[0][1], slaveA->m_getDirectionalDerivativeValues[0][2],
-                    slaveB->m_getDirectionalDerivativeValues[0][0], slaveB->m_getDirectionalDerivativeValues[0][1], slaveB->m_getDirectionalDerivativeValues[0][2]);
-
+        if (eq->m_isSpatial) {
+            if (scA->getAccelerationValueRefs().size() == 1) {
+                eq->setSpatialJacobianA(    slaveA->m_getDirectionalDerivativeValues.front()[0], 0, 0);
+                eq->setSpatialJacobianB(    slaveB->m_getDirectionalDerivativeValues.front()[0], 0, 0);
+            } else {
+                eq->setSpatialJacobianA(    slaveA->m_getDirectionalDerivativeValues.front()[0],
+                                            slaveA->m_getDirectionalDerivativeValues.front()[1],
+                                            slaveA->m_getDirectionalDerivativeValues.front()[2]);
+                eq->setSpatialJacobianB(    slaveB->m_getDirectionalDerivativeValues.front()[0],
+                                            slaveB->m_getDirectionalDerivativeValues.front()[1],
+                                            slaveB->m_getDirectionalDerivativeValues.front()[2]);
+            }
             slaveA->m_getDirectionalDerivativeValues.pop_front();
             slaveB->m_getDirectionalDerivativeValues.pop_front();
-        } else
-#endif
-        if (slaveA->m_getDirectionalDerivativeValues.size() < 2 ||
-            slaveB->m_getDirectionalDerivativeValues.size() < 2) {
-            fprintf(stderr, "Not enough results: %zu %zu\n", slaveA->m_getDirectionalDerivativeValues.size(),
-                                                             slaveB->m_getDirectionalDerivativeValues.size());
-            exit(1);
         } else {
-        eq->setSpatialJacobianA(    slaveA->m_getDirectionalDerivativeValues[0][0],
-                                    slaveA->m_getDirectionalDerivativeValues[0][1],
-                                    slaveA->m_getDirectionalDerivativeValues[0][2]);
-        eq->setRotationalJacobianA( slaveA->m_getDirectionalDerivativeValues[1][0],
-                                    slaveA->m_getDirectionalDerivativeValues[1][1],
-                                    slaveA->m_getDirectionalDerivativeValues[1][2]);
-        eq->setSpatialJacobianB(    slaveB->m_getDirectionalDerivativeValues[0][0],
-                                    slaveB->m_getDirectionalDerivativeValues[0][1],
-                                    slaveB->m_getDirectionalDerivativeValues[0][2]);
-        eq->setRotationalJacobianB( slaveB->m_getDirectionalDerivativeValues[1][0],
-                                    slaveB->m_getDirectionalDerivativeValues[1][1],
-                                    slaveB->m_getDirectionalDerivativeValues[1][2]);
-
-        //dump directional derivatives
-        for (int x = 0; x < 2; x++) {
-            for (int y = 0; y < 3; y++) {
-                printf(",%f", slaveA->m_getDirectionalDerivativeValues[x][y]);
-            }
-        }
-        for (int x = 0; x < 2; x++) {
-            for (int y = 0; y < 3; y++) {
-                printf(",%f", slaveB->m_getDirectionalDerivativeValues[x][y]);
-            }
+            eq->setSpatialJacobianA(0,0,0);
+            eq->setSpatialJacobianB(0,0,0);
         }
 
-        for (int x = 0; x < 2; x++) {
+        if (eq->m_isRotational) {
+            //1-D?
+            if (scA->getAngularAccelerationValueRefs().size() == 1) {
+                eq->setRotationalJacobianA( slaveA->m_getDirectionalDerivativeValues.front()[0], 0, 0);
+                eq->setRotationalJacobianB( slaveB->m_getDirectionalDerivativeValues.front()[0], 0, 0);
+            } else {
+                eq->setRotationalJacobianA( slaveA->m_getDirectionalDerivativeValues.front()[0],
+                                            slaveA->m_getDirectionalDerivativeValues.front()[1],
+                                            slaveA->m_getDirectionalDerivativeValues.front()[2]);
+                eq->setRotationalJacobianB( slaveB->m_getDirectionalDerivativeValues.front()[0],
+                                            slaveB->m_getDirectionalDerivativeValues.front()[1],
+                                            slaveB->m_getDirectionalDerivativeValues.front()[2]);
+            }
             slaveA->m_getDirectionalDerivativeValues.pop_front();
             slaveB->m_getDirectionalDerivativeValues.pop_front();
-        }
+        } else {
+            eq->setRotationalJacobianA(0,0,0);
+            eq->setRotationalJacobianB(0,0,0);
         }
     }
     PRINT_HDF5_DELTA("distribute_directional_derivs");
@@ -228,15 +250,10 @@ void StrongMaster::runIteration(double t, double dt) {
             }
 
             if (sc->hasTorque()) {
-#ifdef ENABLE_DEMO_HACKS
-                printf(",%f", sc->m_torque.y());
-                vec.push_back(sc->m_torque.y());
-#else
                 printf(",%f,%f,%f", sc->m_torque.x(),sc->m_torque.y(),sc->m_torque.z());
                 vec.push_back(sc->m_torque.x());
                 vec.push_back(sc->m_torque.y());
                 vec.push_back(sc->m_torque.z());
-#endif
             }
 
             vector<int> fvrs = sc->getForceValueRefs();

@@ -18,8 +18,9 @@ Equation::Equation(Connector * connA, Connector * connB){
 Equation::~Equation(){}
 
 void Equation::setDefault(){
-    setSpookParams(4,1e-5,1.0/100.0);
     m_relativeVelocity = 0;
+    m_isSpatial = true;
+    m_isRotational = true;
 }
 
 void Equation::setRelativeVelocity(double v){
@@ -38,7 +39,7 @@ JacobianElement Equation::getddB(){ return m_invMGt_B; }
 
 void Equation::setSpookParams(double relaxation, double compliance, double timeStep){
     m_a = 4/(1+4*relaxation)/timeStep;
-    m_b = 4*relaxation/(1+4*relaxation);
+    m_b = 1/(1+4*relaxation);
     m_epsilon = 4 * compliance / (timeStep*timeStep * (1 + 4*relaxation));
     m_timeStep = timeStep;
 }

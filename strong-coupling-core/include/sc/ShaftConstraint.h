@@ -19,7 +19,7 @@ private:
     Equation m_eq;
 
 public:
-    ShaftConstraint(Connector* connA, Connector* connB, int axis);
+    ShaftConstraint(Connector* connA, Connector* connB);
 
     virtual ~ShaftConstraint();
     void update();

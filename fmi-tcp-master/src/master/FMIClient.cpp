@@ -31,6 +31,7 @@ FMIClient::FMIClient(zmq::context_t &context, int id, string host, long port) : 
     m_fmi2Instance = NULL;
     m_context = NULL;
     m_fmi2Outputs = NULL;
+    m_stateId = 0;
 };
 
 FMIClient::~FMIClient() {
@@ -180,6 +181,8 @@ void FMIClient::on_fmi2_import_get_real_res(int mid, const vector<double>& value
 };
 
 void FMIClient::on_fmi2_import_get_fmu_state_res(int mid, int stateId, fmitcp_proto::fmi2_status_t status){
+    //remember stateId
+    m_stateId = stateId;
     m_master->onSlaveGotState(this);
 };
 

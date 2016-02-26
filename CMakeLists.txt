@@ -14,7 +14,7 @@ if(WIN32)
         PREFIX "${PROTOBUF_PREFIX}"
         URL ${PROTOBUF_URL}
         URL_MD5 ${PROTOBUF_MD5}
-        CONFIGURE_COMMAND cmake -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/msvc2013/protobuf-2.6.1 ${PROTOBUF_DIR}
+        CONFIGURE_COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/msvc2013/protobuf-2.6.1 ${PROTOBUF_DIR}
         BINARY_DIR "${PROTOBUF_DIR}/vsprojects"
         BUILD_COMMAND msbuild protobuf.sln  /p:Configuration=${CMAKE_BUILD_TYPE}
         INSTALL_COMMAND ""
@@ -64,8 +64,8 @@ if(WIN32)
         PREFIX  ${HDF5_DIR}
         URL     "http://www.hdfgroup.org/ftp/HDF5/current/src/CMake-hdf5-1.8.16.zip"
         URL_MD5 "f909d87f2a913d9ec6a970c1063f907b"
-        CONFIGURE_COMMAND cmake          ${HDF5_DIR}/src/hdf5-ext/hdf5-1.8.16 -G ${CMAKE_GENERATOR}
-        BUILD_COMMAND     cmake -E chdir ${HDF5_DIR}/src/hdf5-ext-build msbuild HDF5.sln /p:Configuration=${CMAKE_BUILD_TYPE}
+        CONFIGURE_COMMAND ${CMAKE_COMMAND}         ${HDF5_DIR}/src/hdf5-ext/hdf5-1.8.16 -G ${CMAKE_GENERATOR}
+        BUILD_COMMAND     ${CMAKE_COMMAND} -E chdir ${HDF5_DIR}/src/hdf5-ext-build msbuild HDF5.sln /p:Configuration=${CMAKE_BUILD_TYPE}
         INSTALL_COMMAND   ""
     )
 

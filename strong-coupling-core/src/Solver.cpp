@@ -81,6 +81,7 @@ void Solver::getEquationsFast(){
         int nEquations = m_constraints[i]->getNumEquations();
         for (int j=0; j<nEquations; ++j, ofs++){
             Equation *eq = m_constraints[i]->getEquation(j);
+            eq->m_index = ofs;
 
             if (equations_dirty) {
                 eqs.push_back(eq);
@@ -127,10 +128,11 @@ void Solver::constructS() {
             Equation * ei = eqs[i];
             Equation * ej = eqs[j];
 
-            if     (ei->getConnA() == ej->getConnA() ||
-                    ei->getConnA() == ej->getConnB() ||
-                    ei->getConnB() == ej->getConnA() ||
-                    ei->getConnB() == ej->getConnB()) {
+            //check for overlap in connector FMUs, not the connectors themselves
+            if     (ei->getConnA()->m_slave == ej->getConnA()->m_slave ||
+                    ei->getConnA()->m_slave == ej->getConnB()->m_slave ||
+                    ei->getConnB()->m_slave == ej->getConnA()->m_slave ||
+                    ei->getConnB()->m_slave == ej->getConnB()->m_slave) {
                 Srow.push_back(i);
                 Scol.push_back(j);
                 Sval.push_back(0);  //dummy value
@@ -174,11 +176,11 @@ void Solver::prepare() {
     equations_dirty = false;
 }
 
-void Solver::solve(){
-    solve(0);
+void Solver::solve(bool holonomic){
+    solve(holonomic, 0);
 }
 
-void Solver::solve(int printDebugInfo){
+void Solver::solve(bool holonomic, int printDebugInfo){
     int i, j, k, l;
     getEquationsFast();
     int numRows = getSystemMatrixRows(),
@@ -193,7 +195,11 @@ void Solver::solve(int printDebugInfo){
                 g = eq->getViolation(),
                 a = eq->m_a,
                 b = eq->m_b;
-        rhs[i] = -a * g  - b * GW  - Z; // RHS = -a*g -b*G*W -Z
+        if (holonomic) {
+            rhs[i] = -a * g  - b * GW  - Z; // RHS = -a*g -b*G*W -Z
+        } else {
+            rhs[i] =          -b * GW -Z; //nonholonomic
+        }
     }
 
     // Compute matrix S = G * inv(M) * G' = G * z
@@ -213,18 +219,23 @@ void Solver::solve(int printDebugInfo){
         Equation * ei = eqs[i];
         Equation * ej = eqs[j];
 
+        //TODO: Equation needs a *list* of StrongConnectors, not "A" and "B"
+        //each S_ij = G_i*J_i^T
+        //our job is to figure out J_i^T
         double val = 0;
-        if(ei->getConnA() == ej->getConnA()){
-            val += ei->getGA().multiply(ej->getddA());
-        }
-        if(ei->getConnA() == ej->getConnB()){
-            val += ei->getGA().multiply(ej->getddB());
-        }
-        if(ei->getConnB() == ej->getConnA()){
-            val += ei->getGB().multiply(ej->getddA());
-        }
-        if(ei->getConnB() == ej->getConnB()){
-            val += ei->getGB().multiply(ej->getddB());
+        for (int c = 0; c < 2; c++) {
+            //here is where we'd put stuff for more than one connector per equation
+            Connector *conn = (c == 0 ? ei->getConnA() : ei->getConnB());
+            std::pair<int,int> key(conn->m_index, ej->m_index);
+
+            if (m_mobilities.find(key) != m_mobilities.end()) {
+                //fprintf(stderr, "found something @ %i,%i\n", key.first, key.second);
+                if (c == 0) {
+                    val += ei->getGA().multiply(m_mobilities[key]);
+                } else {
+                    val += ei->getGB().multiply(m_mobilities[key]);
+                }
+            }
         }
 
         if (i == j) {

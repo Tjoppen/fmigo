@@ -41,16 +41,7 @@ struct vertex {
   template <typename T>
   vertex( float X[2] ): x( (float) X[ 0 ] ), y( ( float ) X[ 1 ] ){};
   vertex & operator= ( const vertex & v ) { x = v.x; y = v.y; return *this; }
-  float operator [] (size_t i)  const {
-    if ( i == 0 ) {
-      return x;
-    } else if ( i == 1 ){ 
-      return y;
-    }
-    else {
-        return 0; 
-    }
-  }
+  float operator [] (size_t i)  const { return  * ( (float * ) this + i );}
   
 };
 
@@ -96,23 +87,6 @@ struct gl_shape {
 };
 
 
-struct gl_rectangle : gl_shape {
-
-  template < typename T, typename U > 
-
-  gl_rectangle( vector< color > & c,  U _l1, U _l2 )   {
-    
-    gl_shape(GL_QUADS, color,
-             vector< vertex > (
-               {
-                   vertex( -_l1, -_l2),
-                   vertex(  _l1, -_l2), 
-                   vertex(  _l1,  _l2), 
-                   vertex( -_l1,  _l2)
-                   } ) );
-  }
-
-                                                 };
 
 
 

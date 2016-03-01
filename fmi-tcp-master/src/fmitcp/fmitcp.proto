@@ -754,7 +754,8 @@ message fmi2_import_set_fmu_state_res {
 //     Wrapper for the FMI function fmiFreeFMUstate(...)
 message fmi2_import_free_fmu_state_req {
     required int32 message_id = 1;
-    required int32 stateId = 2;
+    required int32 fmuId = 2;
+    required int32 stateId = 3;
 }
 message fmi2_import_free_fmu_state_res {
     required int32 message_id = 1;

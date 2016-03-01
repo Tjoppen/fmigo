@@ -49,6 +49,9 @@ public:
     /// Time step
     double m_timeStep;
 
+    // for figuring out which jacobians we need
+    bool m_isSpatial, m_isRotational;
+
     /**
      * @brief Sets a, b, epsilon according to SPOOK.
      * @param relaxation

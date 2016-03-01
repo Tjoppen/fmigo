@@ -360,6 +360,18 @@ std::string fmitcp::serialize::fmi2_import_set_fmu_state(int message_id, int fmu
     return m.SerializeAsString();
 }
 
+std::string fmitcp::serialize::fmi2_import_free_fmu_state(int message_id, int fmuId, int stateId) {
+    fmitcp_message m;
+    m.set_type(fmitcp_message_Type_type_fmi2_import_free_fmu_state_req);
+
+    fmi2_import_free_fmu_state_req * req = m.mutable_fmi2_import_free_fmu_state_req();
+    req->set_message_id(message_id);
+    req->set_stateid(stateId);
+    req->set_fmuid(fmuId);
+
+    return m.SerializeAsString();
+}
+
 std::string fmitcp::serialize::fmi2_import_get_directional_derivative(int message_id, int fmuId,
                                                     const vector<int>& v_ref,
                                                     const vector<int>& z_ref,

@@ -249,21 +249,20 @@ void Solver::solve(bool holonomic, int printDebugInfo){
         Sval[x] = val;
     }
 
-#if 0
     // Print matrices
     if(printDebugInfo){
         for (int i = 0; i < Srow.size(); ++i){
-            printf("(%d,%d) => %g\n",Scol[i],Srow[i],Sval[i]);
+            fprintf(stderr, "(%d,%d) => %g\n",Scol[i],Srow[i],Sval[i]);
         }
         char empty = '0';
         char tab = '\t';
-        printf("G = [\n");
+        fprintf(stderr, "G = [\n");
         for(int i=0; i<eqs.size(); ++i){
             Equation * eq = eqs[i];
             Connector * connA = eq->getConnA();
             Connector * connB = eq->getConnB();
 
-            //printf("%d %d\n",connA->m_index,connB->m_index);
+            //fprintf(stderr, "%d %d\n",connA->m_index,connB->m_index);
 
             int swapped = 0;
             if(connA->m_index > connB->m_index){
@@ -275,12 +274,12 @@ void Solver::solve(bool holonomic, int printDebugInfo){
 
             // Print empty until first
             for (int j = 0; j < 6*connA->m_index; ++j){
-                printf("%c\t",empty);
+                fprintf(stderr, "%c\t",empty);
             }
 
             // Print contents of first ( 6 jacobian entries )
             JacobianElement G = !swapped ? eq->getGA() : eq->getGB();
-            printf("%g%c%g%c%g%c%g%c%g%c%g%c",
+            fprintf(stderr, "%g%c%g%c%g%c%g%c%g%c%g%c",
                 G.getSpatial().x(),tab,
                 G.getSpatial().y(),tab,
                 G.getSpatial().z(),tab,
@@ -290,12 +289,12 @@ void Solver::solve(bool holonomic, int printDebugInfo){
 
             // Print empty until second
             for (int j = 6*(connA->m_index+1); j < 6*connB->m_index; ++j){
-                printf("%c\t",empty);
+                fprintf(stderr, "%c\t",empty);
             }
 
             // Print contents of second ( 6 jacobian entries )
             JacobianElement G2 = !swapped ? eq->getGB() : eq->getGA();
-            printf("%g%c%g%c%g%c%g%c%g%c%g%c",
+            fprintf(stderr, "%g%c%g%c%g%c%g%c%g%c%g%c",
                 G2.getSpatial().x(),tab,
                 G2.getSpatial().y(),tab,
                 G2.getSpatial().z(),tab,
@@ -305,22 +304,22 @@ void Solver::solve(bool holonomic, int printDebugInfo){
 
             // Print empty until end of row
             for (int j = 6*(connB->m_index+1); j < getSystemMatrixCols(); ++j){
-                printf("%c\t",empty);
+                fprintf(stderr, "%c\t",empty);
             }
 
             if(i == eqs.size()-1)
-                printf("]\n");
+                fprintf(stderr, "]\n");
             else
-                printf(";\n");
+                fprintf(stderr, ";\n");
         }
 
-        printf("D = [\n");
+        fprintf(stderr, "D = [\n");
         for(int i=0; i<eqs.size(); ++i){
             Equation * eq = eqs[i];
             Connector * connA = eq->getConnA();
             Connector * connB = eq->getConnB();
 
-            //printf("%d %d\n",connA->m_index,connB->m_index);
+            //fprintf(stderr, "%d %d\n",connA->m_index,connB->m_index);
 
             int swapped = 0;
             if(connA->m_index > connB->m_index){
@@ -332,12 +331,12 @@ void Solver::solve(bool holonomic, int printDebugInfo){
 
             // Print empty until first
             for (int j = 0; j < 6*connA->m_index; ++j){
-                printf("%c\t",empty);
+                fprintf(stderr, "%c\t",empty);
             }
 
             // Print contents of first ( 6 jacobian entries )
             JacobianElement G = !swapped ? eq->getddA() : eq->getddB();
-            printf("%g%c%g%c%g%c%g%c%g%c%g%c",
+            fprintf(stderr, "%g%c%g%c%g%c%g%c%g%c%g%c",
                 G.getSpatial().x(),tab,
                 G.getSpatial().y(),tab,
                 G.getSpatial().z(),tab,
@@ -347,12 +346,12 @@ void Solver::solve(bool holonomic, int printDebugInfo){
 
             // Print empty until second
             for (int j = 6*(connA->m_index+1); j < 6*connB->m_index; ++j){
-                printf("%c\t",empty);
+                fprintf(stderr, "%c\t",empty);
             }
 
             // Print contents of second ( 6 jacobian entries )
             JacobianElement G2 = !swapped ? eq->getddB() : eq->getddA();
-            printf("%g%c%g%c%g%c%g%c%g%c%g%c",
+            fprintf(stderr, "%g%c%g%c%g%c%g%c%g%c%g%c",
                 G2.getSpatial().x(),tab,
                 G2.getSpatial().y(),tab,
                 G2.getSpatial().z(),tab,
@@ -362,30 +361,30 @@ void Solver::solve(bool holonomic, int printDebugInfo){
 
             // Print empty until end of row
             for (int j = 6*(connB->m_index+1); j < getSystemMatrixCols(); ++j){
-                printf("%c\t",empty);
+                fprintf(stderr, "%c\t",empty);
             }
 
             if(i == eqs.size()-1)
-                printf("]\n");
+                fprintf(stderr, "]\n");
             else
-                printf(";\n");
+                fprintf(stderr, ";\n");
         }
 
-        printf("E = [\n");
+        fprintf(stderr, "E = [\n");
         for (int i = 0; i < eqs.size(); ++i){ // Rows
             for (int j = 0; j < eqs.size(); ++j){ // Cols
                 if(i==j)
-                    printf("%g\t", eqs[i]->m_epsilon);
+                    fprintf(stderr, "%g\t", eqs[i]->m_epsilon);
                 else
-                    printf("0\t");
+                    fprintf(stderr, "0\t");
             }
             if(i == eqs.size()-1)
-                printf("]\n");
+                fprintf(stderr, "]\n");
             else
-                printf(";\n");
+                fprintf(stderr, ";\n");
         }
 
-        printf("S = [\n");
+        fprintf(stderr, "S = [\n");
         for (int i = 0; i < eqs.size(); ++i){ // Rows
             for (int j = 0; j < eqs.size(); ++j){ // Cols
 
@@ -393,21 +392,20 @@ void Solver::solve(bool holonomic, int printDebugInfo){
                 int found = 0;
                 for(int k = 0; k < Srow.size(); ++k){
                     if(Srow[k] == i && Scol[k] == j){
-                        printf("%g\t", Sval[k]);
+                        fprintf(stderr, "%g\t", Sval[k]);
                         found = 1;
                         break;
                     }
                 }
                 if(!found)
-                    printf("%c\t",empty);
+                    fprintf(stderr, "%c\t",empty);
             }
             if(i == eqs.size()-1)
-                printf("]\n");
+                fprintf(stderr, "]\n");
             else
-                printf(";\n");
+                fprintf(stderr, ";\n");
         }
     }
-#endif
 
     // convert vectors to arrays
     aSrow.reserve(Srow.size()+1);

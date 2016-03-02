@@ -375,7 +375,7 @@ int main(int argc, char *argv[] ) {
     double endTime = 10;
     double relativeTolerance = 0.0001;
     double relaxation = 4,
-           compliance = 1e-6;
+           compliance = 0;
     vector<string> fmuURIs;
     vector<connection> connections;
     parameter_map params;

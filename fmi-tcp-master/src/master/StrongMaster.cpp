@@ -16,10 +16,10 @@ using namespace fmitcp;
 using namespace fmitcp::serialize;
 using namespace sc;
 
-StrongMaster::StrongMaster(vector<FMIClient*> slaves, vector<WeakConnection*> weakConnections, Solver strongCouplingSolver) :
+StrongMaster::StrongMaster(vector<FMIClient*> slaves, vector<WeakConnection*> weakConnections, Solver strongCouplingSolver, bool holonomic) :
         JacobiMaster(slaves, weakConnections),
-        m_strongCouplingSolver(strongCouplingSolver) {
-    fprintf(stderr, "StrongMaster\n");
+        m_strongCouplingSolver(strongCouplingSolver), holonomic(holonomic) {
+    fprintf(stderr, "StrongMaster (%s)\n", holonomic ? "holonomic" : "non-holonomic");
 }
 
 void StrongMaster::prepare() {
@@ -241,7 +241,7 @@ void StrongMaster::runIteration(double t, double dt) {
     }
 
     //compute strong coupling forces
-    m_strongCouplingSolver.solve(false);    //nonholonomic
+    m_strongCouplingSolver.solve(holonomic);
     PRINT_HDF5_DELTA("run_solver");
 
     //distribute forces

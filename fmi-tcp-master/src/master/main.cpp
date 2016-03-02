@@ -394,12 +394,13 @@ int main(int argc, char *argv[] ) {
     Solver solver;
     string hdf5Filename;
     string fieldnameFilename;
+    bool holonomic = true;
 
     if (parseArguments(
             argc, argv, &fmuURIs, &connections, &params, &endTime, &timeStep,
             &loggingOn, &csv_separator, &outFilePath, &quietMode, &fileFormat,
             &method, &realtimeMode, &printXML, &stepOrder, &fmuVisibilities,
-            &scs, &connconf, &hdf5Filename, &fieldnameFilename)) {
+            &scs, &connconf, &hdf5Filename, &fieldnameFilename, &holonomic)) {
         return 1;
     }
 
@@ -459,7 +460,7 @@ int main(int argc, char *argv[] ) {
         }
 
         solver.setSpookParams(relaxation,compliance,timeStep);
-        StrongMaster *sm = new StrongMaster(slaves, weakConnections, solver);
+        StrongMaster *sm = new StrongMaster(slaves, weakConnections, solver, holonomic);
         master = sm;
         fieldnames += sm->getForceFieldnames();
     } else {

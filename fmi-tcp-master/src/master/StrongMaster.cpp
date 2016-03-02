@@ -56,6 +56,12 @@ void StrongMaster::runIteration(double t, double dt) {
     //this sets StrongMaster apart from the weak masters
     const map<FMIClient*, pair<vector<int>, vector<double> > > refValues = getInputWeakRefsAndValues(m_weakConnections);
 
+    //set weak connector inputs
+    for (auto it = refValues.begin(); it != refValues.end(); it++) {
+        send(it->first, fmi2_import_set_real(0, 0, it->second.first, it->second.second));
+    }
+    PRINT_HDF5_DELTA("send_weak_reals");
+
     //get strong connector inputs
     //TODO: it'd be nice if these get_real() were pipelined with the get_real()s done above
     for(int i=0; i<m_slaves.size(); i++){
@@ -267,12 +273,6 @@ void StrongMaster::runIteration(double t, double dt) {
         }
     }
     PRINT_HDF5_DELTA("send_strong_forces");
-
-    //set weak connector inputs
-    for (auto it = refValues.begin(); it != refValues.end(); it++) {
-        send(it->first, fmi2_import_set_real(0, 0, it->second.first, it->second.second));
-    }
-    PRINT_HDF5_DELTA("send_weak_reals");
 
     //do actual step
     block(m_slaves, fmi2_import_do_step(0, 0, t, dt, false));

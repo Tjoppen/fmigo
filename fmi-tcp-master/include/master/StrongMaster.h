@@ -16,12 +16,17 @@ class WeakConnection;
 class StrongMaster : public JacobiMaster {
     sc::Solver m_strongCouplingSolver;
     map<FMIClient*, vector<int> > clientWeakRefs;
+    bool holonomic;
 
     void getDirectionalDerivative(FMIClient *client, sc::Vec3 seedVec, std::vector<int> accelerationRefs, std::vector<int> forceRefs);
 public:
-    StrongMaster(std::vector<FMIClient*> slaves, std::vector<WeakConnection*> weakConnections, sc::Solver strongCouplingSolver);
+    StrongMaster(std::vector<FMIClient*> slaves, std::vector<WeakConnection*> weakConnections, sc::Solver strongCouplingSolver, bool holonomic);
     void prepare();
     void runIteration(double t, double dt);
+
+    //StrongMaster adds some extra columns to the CSV output, this returns the names of those columns
+    //the returned strings begins with a space
+    std::string getForceFieldnames() const;
 };
 }
 

@@ -20,6 +20,8 @@ private:
     double m_relativeVelocity;
 
 public:
+    //index in system (row/column in S)
+    int m_index;
 
     Equation();
     Equation(Connector*,Connector*);
@@ -108,6 +110,10 @@ public:
 
     /// Get the rotational components of connector B jacobian.
     void getRotationalJacobianSeedB(Vec3& seed);
+
+    //these return the seed for some connector associated with this Equation
+    Vec3 getSpatialJacobianSeed(Connector *conn);
+    Vec3 getRotationalJacobianSeed(Connector *conn);
 
     void setG(  double,double,double,
                 double,double,double,

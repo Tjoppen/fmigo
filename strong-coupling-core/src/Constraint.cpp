@@ -16,6 +16,9 @@ int Constraint::getNumEquations(){
 }
 
 void Constraint::addEquation(Equation * eq){
+    //add equation to its own connectors' lists of equations
+    m_connA->m_equations.push_back(eq);
+    m_connB->m_equations.push_back(eq);
     m_equations.push_back(eq);
 }
 

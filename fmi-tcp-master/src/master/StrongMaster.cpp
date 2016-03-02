@@ -26,10 +26,7 @@ void StrongMaster::prepare() {
     clientWeakRefs = getOutputWeakRefs(m_weakConnections);
 }
 
-void StrongMaster::getDirectionalDerivative(FMIClient *client, Equation *eq, void (Equation::*getSeed)(Vec3&), vector<int> accelerationRefs, vector<int> forceRefs) {
-    Vec3 seedVec;
-    (eq->*getSeed)(seedVec);
-
+void StrongMaster::getDirectionalDerivative(FMIClient *client, Vec3 seedVec, vector<int> accelerationRefs, vector<int> forceRefs) {
     vector<double> seed;
     seed.push_back(seedVec.x());
 
@@ -45,26 +42,6 @@ void StrongMaster::getDirectionalDerivative(FMIClient *client, Equation *eq, voi
     block(client, fmi2_import_get_directional_derivative(0, 0, accelerationRefs, forceRefs, seed));
 }
 
-void StrongMaster::getSpatialAngularDirectionalDerivatives(FMIClient *client, Equation *eq, StrongConnector *sc, void (Equation::*getSpatialSeed)(Vec3&), void (Equation::*getRotationalSeed)(Vec3&)) {
-    if (eq->m_isSpatial) {
-    if (sc->hasAcceleration() && sc->hasForce()) {
-        getDirectionalDerivative(client, eq, getSpatialSeed, sc->getAccelerationValueRefs(), sc->getForceValueRefs());
-    } else {
-        fprintf(stderr, "Strong coupling requires acceleration outputs for now\n");
-        exit(1);
-    }
-    }
-
-    if (eq->m_isRotational) {
-    if (sc->hasAngularAcceleration() && sc->hasTorque()) {
-        getDirectionalDerivative(client, eq, getRotationalSeed, sc->getAngularAccelerationValueRefs(), sc->getTorqueValueRefs());
-    } else {
-        fprintf(stderr, "Strong coupling requires angular acceleration outputs for now\n");
-        exit(1);
-    }
-    }
-}
-
 void StrongMaster::runIteration(double t, double dt) {
     //get weak connector outputs
     for (auto it = clientWeakRefs.begin(); it != clientWeakRefs.end(); it++) {
@@ -78,6 +55,12 @@ void StrongMaster::runIteration(double t, double dt) {
     //we shouldn't set_real() for these until we've gotten directional derivatives
     //this sets StrongMaster apart from the weak masters
     const map<FMIClient*, pair<vector<int>, vector<double> > > refValues = getInputWeakRefsAndValues(m_weakConnections);
+
+    //set weak connector inputs
+    for (auto it = refValues.begin(); it != refValues.end(); it++) {
+        send(it->first, fmi2_import_set_real(0, 0, it->second.first, it->second.second));
+    }
+    PRINT_HDF5_DELTA("send_weak_reals");
 
     //get strong connector inputs
     //TODO: it'd be nice if these get_real() were pipelined with the get_real()s done above
@@ -163,75 +146,101 @@ void StrongMaster::runIteration(double t, double dt) {
     }
 
     //get directional derivatives
-    vector<Equation*> eqs;
-    m_strongCouplingSolver.getEquations(&eqs);
+    //this is a two-step process which is important to get the order of correct
+    for (int step = 0; step < 2; step++) {
+        for (int k=0; k<m_slaves.size(); k++){
+            FMIClient *client = m_slaves[k];
+            for (int i = 0; i < client->numConnectors(); i++) { //acceleration part
+                StrongConnector *accelerationConnector = client->getConnector(i);
 
-    for (size_t j = 0; j < eqs.size(); ++j){
-        Equation * eq = eqs[j];
-        StrongConnector *scA = (StrongConnector*)eq->getConnA();
-        StrongConnector *scB = (StrongConnector*)eq->getConnB();
-        FMIClient * slaveA = (FMIClient *)scA->m_userData;
-        FMIClient * slaveB = (FMIClient *)scB->m_userData;
+                if (accelerationConnector->m_equations.size() != 1) {
+                    //NOTE: m_equations.size() >= 2 could work, but isn't tested yet
+                    fprintf(stderr, "More than one equation on Connector - bailing out!\n");
+                    exit(1);
+                }
 
-        getSpatialAngularDirectionalDerivatives(slaveA, eq, scA, &Equation::getSpatialJacobianSeedA, &Equation::getRotationalJacobianSeedA);
-        getSpatialAngularDirectionalDerivatives(slaveB, eq, scB, &Equation::getSpatialJacobianSeedB, &Equation::getRotationalJacobianSeedB);
-    }
-    PRINT_HDF5_DELTA("get_directional_derivs");
-    wait();
-    PRINT_HDF5_DELTA("get_directional_derivs_wait");
+                for (size_t q = 0; q < accelerationConnector->m_equations.size(); q++) {
+                    Equation *eq = accelerationConnector->m_equations[q];
+                    for (int j = 0; j < client->numConnectors(); j++) { //force part
+                        StrongConnector *forceConnector = client->getConnector(j);
 
-    for (size_t j = 0; j < eqs.size(); ++j){
-        Equation * eq = eqs[j];
-        StrongConnector *scA = (StrongConnector*)eq->getConnA();
-        StrongConnector *scB = (StrongConnector*)eq->getConnB();
-        FMIClient * slaveA = (FMIClient *)scA->m_userData;
-        FMIClient * slaveB = (FMIClient *)scB->m_userData;
+                        //HACKHACK: use the presence of shaft angle VR to distinguish connector type
+                        if (accelerationConnector->hasShaftAngle() != forceConnector->hasShaftAngle()) {
+                            //the reason this is a problem is because we can't always get the positional mobilities for rotational constraints and vice versa
+                            //in theory we can though, by just putting zeroes in the relevant places
+                            //it's just very hairy, so i'm not doing it right now
+                            fprintf(stderr, "Can't deal with different types of kinematic connections to the same FMU\n");
+                            exit(1);
+                        }
 
-        if (eq->m_isSpatial) {
-            if (scA->getAccelerationValueRefs().size() == 1) {
-                eq->setSpatialJacobianA(    slaveA->m_getDirectionalDerivativeValues.front()[0], 0, 0);
-                eq->setSpatialJacobianB(    slaveB->m_getDirectionalDerivativeValues.front()[0], 0, 0);
-            } else {
-                eq->setSpatialJacobianA(    slaveA->m_getDirectionalDerivativeValues.front()[0],
-                                            slaveA->m_getDirectionalDerivativeValues.front()[1],
-                                            slaveA->m_getDirectionalDerivativeValues.front()[2]);
-                eq->setSpatialJacobianB(    slaveB->m_getDirectionalDerivativeValues.front()[0],
-                                            slaveB->m_getDirectionalDerivativeValues.front()[1],
-                                            slaveB->m_getDirectionalDerivativeValues.front()[2]);
+                        if (step == 0) {
+                            //step 0 = send fmi2_import_get_directional_derivative() requests
+                            if (eq->m_isSpatial) {
+                                if (accelerationConnector->hasAcceleration() && forceConnector->hasForce()) {
+                                    getDirectionalDerivative(client, eq->getSpatialJacobianSeed(accelerationConnector), accelerationConnector->getAccelerationValueRefs(), forceConnector->getForceValueRefs());
+                                } else {
+                                    fprintf(stderr, "Strong coupling requires acceleration outputs for now\n");
+                                    exit(1);
+                                }
+                            }
+
+                            if (eq->m_isRotational) {
+                                if (accelerationConnector->hasAngularAcceleration() && forceConnector->hasTorque()) {
+                                    getDirectionalDerivative(client, eq->getRotationalJacobianSeed(accelerationConnector), accelerationConnector->getAngularAccelerationValueRefs(), forceConnector->getTorqueValueRefs());
+                                } else {
+                                    fprintf(stderr, "Strong coupling requires angular acceleration outputs for now\n");
+                                    exit(1);
+                                }
+                            }
+                        } else {
+                            //step 1 = put returned directional derivatives in the correct place in the sparse mobility matrix
+                            int I = forceConnector->m_index;
+                            int J = eq->m_index;
+                            JacobianElement &el = m_strongCouplingSolver.m_mobilities[make_pair(I,J)];
+
+                            if (eq->m_isSpatial) {
+                                if (accelerationConnector->getAccelerationValueRefs().size() == 1) {
+                                    el.setSpatial(    client->m_getDirectionalDerivativeValues.front()[0], 0, 0);
+                                } else {
+                                    el.setSpatial(    client->m_getDirectionalDerivativeValues.front()[0],
+                                                      client->m_getDirectionalDerivativeValues.front()[1],
+                                                      client->m_getDirectionalDerivativeValues.front()[2]);
+                                }
+                                client->m_getDirectionalDerivativeValues.pop_front();
+                            } else {
+                                el.setSpatial(0,0,0);
+                            }
+
+                            if (eq->m_isRotational) {
+                                //1-D?
+                                if (accelerationConnector->getAngularAccelerationValueRefs().size() == 1) {
+                                    //fprintf(stderr, "J(%i,%i) = %f\n", I, J, client->m_getDirectionalDerivativeValues.front()[0]);
+                                    el.setRotational( client->m_getDirectionalDerivativeValues.front()[0], 0, 0);
+                                } else {
+                                    el.setRotational( client->m_getDirectionalDerivativeValues.front()[0],
+                                                      client->m_getDirectionalDerivativeValues.front()[1],
+                                                      client->m_getDirectionalDerivativeValues.front()[2]);
+                                }
+                                client->m_getDirectionalDerivativeValues.pop_front();
+                            } else {
+                                el.setRotational(0,0,0);
+                            }
+                        }
+                    }
+                }
             }
-            slaveA->m_getDirectionalDerivativeValues.pop_front();
-            slaveB->m_getDirectionalDerivativeValues.pop_front();
-        } else {
-            eq->setSpatialJacobianA(0,0,0);
-            eq->setSpatialJacobianB(0,0,0);
         }
-
-        if (eq->m_isRotational) {
-            //1-D?
-            if (scA->getAngularAccelerationValueRefs().size() == 1) {
-                eq->setRotationalJacobianA( slaveA->m_getDirectionalDerivativeValues.front()[0], 0, 0);
-                eq->setRotationalJacobianB( slaveB->m_getDirectionalDerivativeValues.front()[0], 0, 0);
-            } else {
-                eq->setRotationalJacobianA( slaveA->m_getDirectionalDerivativeValues.front()[0],
-                                            slaveA->m_getDirectionalDerivativeValues.front()[1],
-                                            slaveA->m_getDirectionalDerivativeValues.front()[2]);
-                eq->setRotationalJacobianB( slaveB->m_getDirectionalDerivativeValues.front()[0],
-                                            slaveB->m_getDirectionalDerivativeValues.front()[1],
-                                            slaveB->m_getDirectionalDerivativeValues.front()[2]);
-            }
-            slaveA->m_getDirectionalDerivativeValues.pop_front();
-            slaveB->m_getDirectionalDerivativeValues.pop_front();
+        if (step == 0) {
+            PRINT_HDF5_DELTA("get_directional_derivs");
+            wait();
+            PRINT_HDF5_DELTA("get_directional_derivs_wait");
         } else {
-            eq->setRotationalJacobianA(0,0,0);
-            eq->setRotationalJacobianB(0,0,0);
+            PRINT_HDF5_DELTA("distribute_directional_derivs");
         }
     }
-    PRINT_HDF5_DELTA("distribute_directional_derivs");
-
-    //TODO: figure out if future velocities need to be set when we have proper directional derivatives..
 
     //compute strong coupling forces
-    m_strongCouplingSolver.solve();
+    m_strongCouplingSolver.solve(false);    //nonholonomic
     PRINT_HDF5_DELTA("run_solver");
 
     //distribute forces
@@ -264,12 +273,6 @@ void StrongMaster::runIteration(double t, double dt) {
         }
     }
     PRINT_HDF5_DELTA("send_strong_forces");
-
-    //set weak connector inputs
-    for (auto it = refValues.begin(); it != refValues.end(); it++) {
-        send(it->first, fmi2_import_set_real(0, 0, it->second.first, it->second.second));
-    }
-    PRINT_HDF5_DELTA("send_weak_reals");
 
     //do actual step
     block(m_slaves, fmi2_import_do_step(0, 0, t, dt, false));

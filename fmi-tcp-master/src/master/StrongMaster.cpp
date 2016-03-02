@@ -8,6 +8,7 @@
 #include "master/StrongMaster.h"
 #include "master/FMIClient.h"
 #include <fmitcp/serialize.h>
+#include <sstream>
 #include "common/common.h"
 
 using namespace fmitcp_master;
@@ -277,4 +278,29 @@ void StrongMaster::runIteration(double t, double dt) {
     //do actual step
     block(m_slaves, fmi2_import_do_step(0, 0, t, dt, false));
     PRINT_HDF5_DELTA("do_step");
+}
+
+string StrongMaster::getForceFieldnames() const {
+    ostringstream oss;
+    for (int i=0; i<m_slaves.size(); i++){
+        FMIClient *client = m_slaves[i];
+        for (int j = 0; j < client->numConnectors(); j++) {
+            StrongConnector *sc = client->getConnector(j);
+            ostringstream basename;
+            basename << "fmu" << i << "_conn" << j << "_";
+
+            if (sc->hasForce()) {
+                oss << " " << basename.str() << "force_x";
+                oss << " " << basename.str() << "force_y";
+                oss << " " << basename.str() << "force_z";
+            }
+
+            if (sc->hasTorque()) {
+                oss << " " << basename.str() << "torque_x";
+                oss << " " << basename.str() << "torque_y";
+                oss << " " << basename.str() << "torque_z";
+            }
+        }
+    }
+    return oss.str();
 }

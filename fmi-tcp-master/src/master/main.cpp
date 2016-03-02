@@ -24,6 +24,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 #endif
+#include <fstream>
 
 using namespace fmitcp_master;
 using namespace fmitcp;
@@ -349,6 +350,17 @@ static void sendUserParams(BaseMaster *master, vector<FMIClient*> slaves, map<pa
     }
 }
 
+static string getFieldnames(vector<FMIClient*> clients) {
+    ostringstream oss;
+    oss << "t";
+    for (auto client : clients) {
+        ostringstream prefix;
+        prefix << " " << "fmu" << client->getId() << "_";
+        oss << client->getSpaceSeparatedFieldNames(prefix.str());
+    }
+    return oss.str();
+}
+
 int main(int argc, char *argv[] ) {
 #ifdef USE_MPI
     fprintf(stderr, "MPI enabled\n");
@@ -381,12 +393,13 @@ int main(int argc, char *argv[] ) {
     vector<connectionconfig> connconf;
     Solver solver;
     string hdf5Filename;
+    string fieldnameFilename;
 
     if (parseArguments(
             argc, argv, &fmuURIs, &connections, &params, &endTime, &timeStep,
             &loggingOn, &csv_separator, &outFilePath, &quietMode, &fileFormat,
             &method, &realtimeMode, &printXML, &stepOrder, &fmuVisibilities,
-            &scs, &connconf, &hdf5Filename)) {
+            &scs, &connconf, &hdf5Filename, &fieldnameFilename)) {
         return 1;
     }
 
@@ -437,6 +450,7 @@ int main(int argc, char *argv[] ) {
     setupConstraintsAndSolver(scs, slaves, &solver);
 
     BaseMaster *master;
+    string fieldnames = getFieldnames(slaves);
 
     if (scs.size()) {
         if (method != jacobi) {
@@ -445,10 +459,18 @@ int main(int argc, char *argv[] ) {
         }
 
         solver.setSpookParams(relaxation,compliance,timeStep);
-        master = new StrongMaster(slaves, weakConnections, solver);
+        StrongMaster *sm = new StrongMaster(slaves, weakConnections, solver);
+        master = sm;
+        fieldnames += sm->getForceFieldnames();
     } else {
         master = (method == gs) ?           (BaseMaster*)new GaussSeidelMaster(slaves, weakConnections, stepOrder) :
                                             (BaseMaster*)new JacobiMaster(slaves, weakConnections);
+    }
+
+    if (fieldnameFilename.length() > 0) {
+        ofstream ofs(fieldnameFilename.c_str());
+        ofs << fieldnames;
+        ofs << endl;
     }
 
     //hook clients to master

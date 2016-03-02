@@ -313,3 +313,12 @@ std::vector<int> FMIClient::getRealOutputValueReferences() {
 
     return std::vector<int>(vrs, vrs + n);
 }
+
+string FMIClient::getSpaceSeparatedFieldNames(string prefix) const {
+    ostringstream oss;
+    for (size_t x = 0; x < fmi2_import_get_variable_list_size(m_fmi2Outputs); x++) {
+        fmi2_import_variable_t *var = fmi2_import_get_variable(m_fmi2Outputs, x);
+        oss << prefix << fmi2_import_get_variable_name(var);
+    }
+    return oss.str();
+}

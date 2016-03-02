@@ -22,6 +22,10 @@ public:
     StrongMaster(std::vector<FMIClient*> slaves, std::vector<WeakConnection*> weakConnections, sc::Solver strongCouplingSolver);
     void prepare();
     void runIteration(double t, double dt);
+
+    //StrongMaster adds some extra columns to the CSV output, this returns the names of those columns
+    //the returned strings begins with a space
+    std::string getForceFieldnames() const;
 };
 }
 

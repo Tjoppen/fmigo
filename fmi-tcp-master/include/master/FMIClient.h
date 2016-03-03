@@ -151,6 +151,9 @@ namespace fmitcp_master {
         void on_fmi2_import_free_fmu_state_res                  (int mid, fmitcp_proto::fmi2_status_t status);
         void on_fmi2_import_get_directional_derivative_res      (int mid, const vector<double>& dz, fmitcp_proto::fmi2_status_t status);
         void on_get_xml_res                                     (int mid, fmitcp_proto::jm_log_level_enu_t logLevel, string xml);
+
+        //returns string of field names, all of which prepended with prefix
+        std::string getSpaceSeparatedFieldNames(std::string prefix) const;
     };
 };
 

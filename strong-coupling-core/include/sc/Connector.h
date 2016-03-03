@@ -3,8 +3,10 @@
 
 #include "sc/Vec3.h"
 #include "sc/Quat.h"
+#include <vector>
 
 namespace sc {
+class Equation;
 
 /**
  * @brief The connector is a handle in each slave, which can be constrained.
@@ -49,6 +51,9 @@ public:
 
     /// Resulting constraint torque.
     Vec3 m_torque;
+
+    //equations this connector is part of
+    std::vector<sc::Equation*> m_equations;
 
     /// Set the position of this connector
     void setPosition(double x, double y, double z);

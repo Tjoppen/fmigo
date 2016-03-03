@@ -5,6 +5,7 @@
 #include "sc/Constraint.h"
 #include "sc/Connector.h"
 #include <vector>
+#include <map>
 
 #define SCSOLVER_DEBUGPRINTS 0
 
@@ -37,6 +38,8 @@ private:
     void getEquationsFast();
 
 public:
+    //sparse matrix of mobilities
+    std::map<std::pair<int,int>, JacobianElement> m_mobilities;
 
     Solver();
     virtual ~Solver();
@@ -85,8 +88,8 @@ public:
     /**
      * @brief Solves the system of equation. Sets the constraint forces in each connector.
      */
-    void solve(int printDebugInfo);
-    void solve();
+    void solve(bool holonomic, int printDebugInfo);
+    void solve(bool holonomic = true);
 
     /**
      * Set spook parameters for all equations at once.

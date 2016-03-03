@@ -155,3 +155,27 @@ void Equation::getSpatialJacobianSeedB(Vec3& seed){
 void Equation::getRotationalJacobianSeedB(Vec3& seed){
     seed.copy(m_G_B.getRotational());
 }
+
+Vec3 Equation::getSpatialJacobianSeed(Connector *conn) {
+    //here is where we'd generalize this thing if we wanted more than two connectors per equation
+    if (conn == m_connA) {
+        return m_G_A.getSpatial();
+    } else if (conn == m_connB) {
+        return m_G_B.getSpatial();
+    } else {
+        fprintf(stderr, "Attempted to getSpatialJacobianSeed() with connector which is not part of the Equation\n");
+        exit(1);
+    }
+}
+
+Vec3 Equation::getRotationalJacobianSeed(Connector *conn) {
+    //fprintf(stderr, "getRotationalJacobianSeed: %p vs %p %p\n", conn, m_connA, m_connB);
+    if (conn == m_connA) {
+        return m_G_A.getRotational();
+    } else if (conn == m_connB) {
+        return m_G_B.getRotational();
+    } else {
+        fprintf(stderr, "Attempted to getRotationalJacobianSeed() with connector which is not part of the Equation\n");
+        exit(1);
+    }
+}

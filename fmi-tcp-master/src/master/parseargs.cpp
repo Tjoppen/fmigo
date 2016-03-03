@@ -68,12 +68,14 @@ int fmitcp_master::parseArguments( int argc,
                     std::vector<int> *fmuVisibilities,
                     vector<strongconnection> *strongConnections,
                     vector<connectionconfig> *connconf,
-                    string *hdf5Filename
+                    string *hdf5Filename,
+                    string *fieldnameFilename,
+                    bool *holonomic
         ) {
     int index, c;
     opterr = 0;
 
-    while ((c = getopt (argc, argv, "xrlvqht:c:d:s:o:p:f:m:g:w:C:j:5:")) != -1){
+    while ((c = getopt (argc, argv, "xrlvqht:c:d:s:o:p:f:m:g:w:C:j:5:F:N")) != -1){
         int n, skip, l, cont, i, numScanned, stop, vis;
         deque<string> parts;
         if (optarg) parts = split(optarg, ':');
@@ -335,6 +337,14 @@ int fmitcp_master::parseArguments( int argc,
 
         case '5':
             *hdf5Filename = optarg;
+            break;
+
+        case 'F':
+            *fieldnameFilename = optarg;
+            break;
+
+        case 'N':
+            *holonomic = false;
             break;
 
         case '?':

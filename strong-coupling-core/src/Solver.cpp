@@ -81,6 +81,7 @@ void Solver::getEquationsFast(){
         int nEquations = m_constraints[i]->getNumEquations();
         for (int j=0; j<nEquations; ++j, ofs++){
             Equation *eq = m_constraints[i]->getEquation(j);
+            eq->m_index = ofs;
 
             if (equations_dirty) {
                 eqs.push_back(eq);
@@ -127,10 +128,11 @@ void Solver::constructS() {
             Equation * ei = eqs[i];
             Equation * ej = eqs[j];
 
-            if     (ei->getConnA() == ej->getConnA() ||
-                    ei->getConnA() == ej->getConnB() ||
-                    ei->getConnB() == ej->getConnA() ||
-                    ei->getConnB() == ej->getConnB()) {
+            //check for overlap in connector FMUs, not the connectors themselves
+            if     (ei->getConnA()->m_slave == ej->getConnA()->m_slave ||
+                    ei->getConnA()->m_slave == ej->getConnB()->m_slave ||
+                    ei->getConnB()->m_slave == ej->getConnA()->m_slave ||
+                    ei->getConnB()->m_slave == ej->getConnB()->m_slave) {
                 Srow.push_back(i);
                 Scol.push_back(j);
                 Sval.push_back(0);  //dummy value
@@ -174,11 +176,11 @@ void Solver::prepare() {
     equations_dirty = false;
 }
 
-void Solver::solve(){
-    solve(0);
+void Solver::solve(bool holonomic){
+    solve(holonomic, 0);
 }
 
-void Solver::solve(int printDebugInfo){
+void Solver::solve(bool holonomic, int printDebugInfo){
     int i, j, k, l;
     getEquationsFast();
     int numRows = getSystemMatrixRows(),
@@ -193,7 +195,11 @@ void Solver::solve(int printDebugInfo){
                 g = eq->getViolation(),
                 a = eq->m_a,
                 b = eq->m_b;
-        rhs[i] = -a * g  - b * GW  - Z; // RHS = -a*g -b*G*W -Z
+        if (holonomic) {
+            rhs[i] = -a * g  - b * GW  - Z; // RHS = -a*g -b*G*W -Z
+        } else {
+            rhs[i] =          -b * GW -Z; //nonholonomic
+        }
     }
 
     // Compute matrix S = G * inv(M) * G' = G * z
@@ -213,18 +219,23 @@ void Solver::solve(int printDebugInfo){
         Equation * ei = eqs[i];
         Equation * ej = eqs[j];
 
+        //TODO: Equation needs a *list* of StrongConnectors, not "A" and "B"
+        //each S_ij = G_i*J_i^T
+        //our job is to figure out J_i^T
         double val = 0;
-        if(ei->getConnA() == ej->getConnA()){
-            val += ei->getGA().multiply(ej->getddA());
-        }
-        if(ei->getConnA() == ej->getConnB()){
-            val += ei->getGA().multiply(ej->getddB());
-        }
-        if(ei->getConnB() == ej->getConnA()){
-            val += ei->getGB().multiply(ej->getddA());
-        }
-        if(ei->getConnB() == ej->getConnB()){
-            val += ei->getGB().multiply(ej->getddB());
+        for (int c = 0; c < 2; c++) {
+            //here is where we'd put stuff for more than one connector per equation
+            Connector *conn = (c == 0 ? ei->getConnA() : ei->getConnB());
+            std::pair<int,int> key(conn->m_index, ej->m_index);
+
+            if (m_mobilities.find(key) != m_mobilities.end()) {
+                //fprintf(stderr, "found something @ %i,%i\n", key.first, key.second);
+                if (c == 0) {
+                    val += ei->getGA().multiply(m_mobilities[key]);
+                } else {
+                    val += ei->getGB().multiply(m_mobilities[key]);
+                }
+            }
         }
 
         if (i == j) {
@@ -238,21 +249,20 @@ void Solver::solve(int printDebugInfo){
         Sval[x] = val;
     }
 
-#if 0
     // Print matrices
     if(printDebugInfo){
         for (int i = 0; i < Srow.size(); ++i){
-            printf("(%d,%d) => %g\n",Scol[i],Srow[i],Sval[i]);
+            fprintf(stderr, "(%d,%d) => %g\n",Scol[i],Srow[i],Sval[i]);
         }
         char empty = '0';
         char tab = '\t';
-        printf("G = [\n");
+        fprintf(stderr, "G = [\n");
         for(int i=0; i<eqs.size(); ++i){
             Equation * eq = eqs[i];
             Connector * connA = eq->getConnA();
             Connector * connB = eq->getConnB();
 
-            //printf("%d %d\n",connA->m_index,connB->m_index);
+            //fprintf(stderr, "%d %d\n",connA->m_index,connB->m_index);
 
             int swapped = 0;
             if(connA->m_index > connB->m_index){
@@ -264,12 +274,12 @@ void Solver::solve(int printDebugInfo){
 
             // Print empty until first
             for (int j = 0; j < 6*connA->m_index; ++j){
-                printf("%c\t",empty);
+                fprintf(stderr, "%c\t",empty);
             }
 
             // Print contents of first ( 6 jacobian entries )
             JacobianElement G = !swapped ? eq->getGA() : eq->getGB();
-            printf("%g%c%g%c%g%c%g%c%g%c%g%c",
+            fprintf(stderr, "%g%c%g%c%g%c%g%c%g%c%g%c",
                 G.getSpatial().x(),tab,
                 G.getSpatial().y(),tab,
                 G.getSpatial().z(),tab,
@@ -279,12 +289,12 @@ void Solver::solve(int printDebugInfo){
 
             // Print empty until second
             for (int j = 6*(connA->m_index+1); j < 6*connB->m_index; ++j){
-                printf("%c\t",empty);
+                fprintf(stderr, "%c\t",empty);
             }
 
             // Print contents of second ( 6 jacobian entries )
             JacobianElement G2 = !swapped ? eq->getGB() : eq->getGA();
-            printf("%g%c%g%c%g%c%g%c%g%c%g%c",
+            fprintf(stderr, "%g%c%g%c%g%c%g%c%g%c%g%c",
                 G2.getSpatial().x(),tab,
                 G2.getSpatial().y(),tab,
                 G2.getSpatial().z(),tab,
@@ -294,22 +304,22 @@ void Solver::solve(int printDebugInfo){
 
             // Print empty until end of row
             for (int j = 6*(connB->m_index+1); j < getSystemMatrixCols(); ++j){
-                printf("%c\t",empty);
+                fprintf(stderr, "%c\t",empty);
             }
 
             if(i == eqs.size()-1)
-                printf("]\n");
+                fprintf(stderr, "]\n");
             else
-                printf(";\n");
+                fprintf(stderr, ";\n");
         }
 
-        printf("D = [\n");
+        fprintf(stderr, "D = [\n");
         for(int i=0; i<eqs.size(); ++i){
             Equation * eq = eqs[i];
             Connector * connA = eq->getConnA();
             Connector * connB = eq->getConnB();
 
-            //printf("%d %d\n",connA->m_index,connB->m_index);
+            //fprintf(stderr, "%d %d\n",connA->m_index,connB->m_index);
 
             int swapped = 0;
             if(connA->m_index > connB->m_index){
@@ -321,12 +331,12 @@ void Solver::solve(int printDebugInfo){
 
             // Print empty until first
             for (int j = 0; j < 6*connA->m_index; ++j){
-                printf("%c\t",empty);
+                fprintf(stderr, "%c\t",empty);
             }
 
             // Print contents of first ( 6 jacobian entries )
             JacobianElement G = !swapped ? eq->getddA() : eq->getddB();
-            printf("%g%c%g%c%g%c%g%c%g%c%g%c",
+            fprintf(stderr, "%g%c%g%c%g%c%g%c%g%c%g%c",
                 G.getSpatial().x(),tab,
                 G.getSpatial().y(),tab,
                 G.getSpatial().z(),tab,
@@ -336,12 +346,12 @@ void Solver::solve(int printDebugInfo){
 
             // Print empty until second
             for (int j = 6*(connA->m_index+1); j < 6*connB->m_index; ++j){
-                printf("%c\t",empty);
+                fprintf(stderr, "%c\t",empty);
             }
 
             // Print contents of second ( 6 jacobian entries )
             JacobianElement G2 = !swapped ? eq->getddB() : eq->getddA();
-            printf("%g%c%g%c%g%c%g%c%g%c%g%c",
+            fprintf(stderr, "%g%c%g%c%g%c%g%c%g%c%g%c",
                 G2.getSpatial().x(),tab,
                 G2.getSpatial().y(),tab,
                 G2.getSpatial().z(),tab,
@@ -351,30 +361,30 @@ void Solver::solve(int printDebugInfo){
 
             // Print empty until end of row
             for (int j = 6*(connB->m_index+1); j < getSystemMatrixCols(); ++j){
-                printf("%c\t",empty);
+                fprintf(stderr, "%c\t",empty);
             }
 
             if(i == eqs.size()-1)
-                printf("]\n");
+                fprintf(stderr, "]\n");
             else
-                printf(";\n");
+                fprintf(stderr, ";\n");
         }
 
-        printf("E = [\n");
+        fprintf(stderr, "E = [\n");
         for (int i = 0; i < eqs.size(); ++i){ // Rows
             for (int j = 0; j < eqs.size(); ++j){ // Cols
                 if(i==j)
-                    printf("%g\t", eqs[i]->m_epsilon);
+                    fprintf(stderr, "%g\t", eqs[i]->m_epsilon);
                 else
-                    printf("0\t");
+                    fprintf(stderr, "0\t");
             }
             if(i == eqs.size()-1)
-                printf("]\n");
+                fprintf(stderr, "]\n");
             else
-                printf(";\n");
+                fprintf(stderr, ";\n");
         }
 
-        printf("S = [\n");
+        fprintf(stderr, "S = [\n");
         for (int i = 0; i < eqs.size(); ++i){ // Rows
             for (int j = 0; j < eqs.size(); ++j){ // Cols
 
@@ -382,21 +392,20 @@ void Solver::solve(int printDebugInfo){
                 int found = 0;
                 for(int k = 0; k < Srow.size(); ++k){
                     if(Srow[k] == i && Scol[k] == j){
-                        printf("%g\t", Sval[k]);
+                        fprintf(stderr, "%g\t", Sval[k]);
                         found = 1;
                         break;
                     }
                 }
                 if(!found)
-                    printf("%c\t",empty);
+                    fprintf(stderr, "%c\t",empty);
             }
             if(i == eqs.size()-1)
-                printf("]\n");
+                fprintf(stderr, "]\n");
             else
-                printf(";\n");
+                fprintf(stderr, ";\n");
         }
     }
-#endif
 
     // convert vectors to arrays
     aSrow.reserve(Srow.size()+1);

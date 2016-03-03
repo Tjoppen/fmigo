@@ -100,7 +100,8 @@ int parseArguments( int argc,
                     std::vector<connectionconfig> *connconf,
                     std::string *hdf5Filename,
                     std::string *fieldnameFilename,
-                    bool *holonomic
+                    bool *holonomic,
+                    double *compliance
                     );
 }
 

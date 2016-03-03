@@ -400,7 +400,7 @@ int main(int argc, char *argv[] ) {
             argc, argv, &fmuURIs, &connections, &params, &endTime, &timeStep,
             &loggingOn, &csv_separator, &outFilePath, &quietMode, &fileFormat,
             &method, &realtimeMode, &printXML, &stepOrder, &fmuVisibilities,
-            &scs, &connconf, &hdf5Filename, &fieldnameFilename, &holonomic)) {
+            &scs, &connconf, &hdf5Filename, &fieldnameFilename, &holonomic, &compliance)) {
         return 1;
     }
 

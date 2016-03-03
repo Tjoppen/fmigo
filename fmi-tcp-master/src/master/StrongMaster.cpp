@@ -118,12 +118,21 @@ void StrongMaster::runIteration(double t, double dt) {
     //2. step
     //3. get velocity
     //4. restore FMU states
-    send(m_slaves, fmi2_import_get_fmu_state(0, 0));
+
+    //first filter out FMUs with save/load functionality
+    std::vector<FMIClient*> saveLoadClients;
+    for (int i=0; i<m_slaves.size(); i++){
+        FMIClient *client = m_slaves[i];
+        if (client->hasCapability(fmi2_cs_canGetAndSetFMUstate)) {
+            saveLoadClients.push_back(client);
+        }
+    }
+    send(saveLoadClients, fmi2_import_get_fmu_state(0, 0));
 
     //zero forces
     //if we don't do this then the forces would explode
-    for (int i=0; i<m_slaves.size(); i++){
-        FMIClient *client = m_slaves[i];
+    for (int i=0; i<saveLoadClients.size(); i++){
+        FMIClient *client = saveLoadClients[i];
         for (int j = 0; j < client->numConnectors(); j++) {
             StrongConnector *sc = client->getConnector(j);
             vector<int> fvrs = sc->getForceValueRefs();
@@ -136,12 +145,12 @@ void StrongMaster::runIteration(double t, double dt) {
         }
     }
 
-    send(m_slaves, fmi2_import_do_step(0, 0, t, dt, false));
+    send(saveLoadClients, fmi2_import_do_step(0, 0, t, dt, false));
 
     //do about the same thing we did a little bit further up, but store the results in future values
-    for(int i=0; i<m_slaves.size(); i++){
-        const vector<int> valueRefs = m_slaves[i]->getStrongConnectorValueReferences();
-        send(m_slaves[i], fmi2_import_get_real(0, 0, valueRefs));
+    for(int i=0; i<saveLoadClients.size(); i++){
+        const vector<int> valueRefs = saveLoadClients[i]->getStrongConnectorValueReferences();
+        send(saveLoadClients[i], fmi2_import_get_real(0, 0, valueRefs));
     }
 
     PRINT_HDF5_DELTA("get_future_values");
@@ -149,15 +158,15 @@ void StrongMaster::runIteration(double t, double dt) {
     PRINT_HDF5_DELTA("get_future_values_wait");
 
     //set FUTURE connector values (velocities only)
-    for (int i=0; i<m_slaves.size(); i++){
-        FMIClient *client = m_slaves[i];
+    for (int i=0; i<saveLoadClients.size(); i++){
+        FMIClient *client = saveLoadClients[i];
         vector<int> vrs = client->getStrongConnectorValueReferences();
         client->setConnectorFutureVelocities(vrs, client->m_getRealValues);
     }
 
     //restore
-    for (int i=0; i<m_slaves.size(); i++){
-        FMIClient *client = m_slaves[i];
+    for (int i=0; i<saveLoadClients.size(); i++){
+        FMIClient *client = saveLoadClients[i];
         send(client, fmi2_import_set_fmu_state(0, 0, client->m_stateId));
         send(client, fmi2_import_free_fmu_state(0, 0, client->m_stateId));
     }

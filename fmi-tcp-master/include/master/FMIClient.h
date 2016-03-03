@@ -105,6 +105,7 @@ namespace fmitcp_master {
         /// Called if an error occurred.
         void onError(string err);
 
+        bool hasCapability(fmi2_capabilities_enu_t cap) const;
 
         // --- These methods overrides Client methods. Most of them just passes the result to the Master ---
 

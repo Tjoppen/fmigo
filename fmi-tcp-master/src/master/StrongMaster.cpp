@@ -162,10 +162,14 @@ void StrongMaster::runIteration(double t, double dt) {
             FMIClient *client = m_slaves[k];
             for (int i = 0; i < client->numConnectors(); i++) { //acceleration part
                 StrongConnector *accelerationConnector = client->getConnector(i);
+                //HACKHACK: there should be a better way of doing this..
+                size_t numAccRefs = max(accelerationConnector->getAccelerationValueRefs().size(),
+                                        accelerationConnector->getAngularAccelerationValueRefs().size());
 
-                if (accelerationConnector->m_equations.size() != 1) {
-                    //NOTE: m_equations.size() >= 2 could work, but isn't tested yet
-                    fprintf(stderr, "More than one equation on Connector - bailing out!\n");
+                if (accelerationConnector->m_equations.size() != numAccRefs) {
+                    //NOTE: having excess equations could work, but isn't tested yet
+                    fprintf(stderr, "Number of equations on Connector (%zu) must match number of acceleration VRs (%zu) - bailing out!\n",
+                            accelerationConnector->m_equations.size(), numAccRefs);
                     exit(1);
                 }
 

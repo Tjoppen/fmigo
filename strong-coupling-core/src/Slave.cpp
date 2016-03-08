@@ -8,7 +8,7 @@ Slave::~Slave(){}
 
 void Slave::addConnector(Connector * conn){
     m_connectors.push_back(conn);
-    conn->m_slave = (void*)this;
+    conn->m_slave = this;
 }
 
 int Slave::numConnectors(){

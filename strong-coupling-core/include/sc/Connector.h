@@ -7,6 +7,7 @@
 
 namespace sc {
 class Equation;
+class Slave;
 
 /**
  * @brief The connector is a handle in each slave, which can be constrained.
@@ -27,7 +28,7 @@ public:
     void * m_userData;
 
     /// Pointer to the owner slave
-    void * m_slave; // problems with #include'ing scSlave in here, how to fix?
+    Slave * m_slave;
 
     /// Physical position of the connector.
     Vec3 m_position;

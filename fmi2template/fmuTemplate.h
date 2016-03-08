@@ -8,7 +8,7 @@
 #include <string.h>
 #include <assert.h>
 
-#include "fmi2Functions.h"
+#include "FMI2/fmi2Functions.h"
 
 // categories of logging supported by model.
 // Value is the index in logCategories of a ModelInstance.
@@ -40,21 +40,22 @@ static inline int max(int a, int b) {
 #define atleast1(a) ((a) < 1 ? 1 : (a))
 
 typedef struct {
-    fmi2Real    r[atleast1(NUMBER_OF_REALS)];
-    fmi2Integer i[atleast1(NUMBER_OF_INTEGERS)];
-    fmi2Boolean b[atleast1(NUMBER_OF_BOOLEANS)];
-    char       *s[atleast1(NUMBER_OF_STRINGS)]; //char* instead of fmi2String to avoid compiler warning about strcpy()ing to const char*
-    fmi2Boolean isPositive[atleast1(NUMBER_OF_EVENT_INDICATORS)];
-
-    fmi2Real time;
     char* instanceName;
-    fmi2Type type;
-    char* GUID;
     const fmi2CallbackFunctions *functions;
+    fmi2ComponentEnvironment componentEnvironment;
+    fmi2Type type;
     fmi2Boolean loggingOn;
     fmi2Boolean logCategories[NUMBER_OF_CATEGORIES];
 
-    fmi2ComponentEnvironment componentEnvironment;
-    ModelState state;
-    fmi2EventInfo eventInfo;
+    struct state_t {
+        fmi2Real    r[atleast1(NUMBER_OF_REALS)];
+        fmi2Integer i[atleast1(NUMBER_OF_INTEGERS)];
+        fmi2Boolean b[atleast1(NUMBER_OF_BOOLEANS)];
+        fmi2Boolean isPositive[atleast1(NUMBER_OF_EVENT_INDICATORS)];
+        fmi2Real time;
+        ModelState state;
+        fmi2EventInfo eventInfo;
+    } s;
 } ModelInstance;
+
+typedef struct state_t state_t;

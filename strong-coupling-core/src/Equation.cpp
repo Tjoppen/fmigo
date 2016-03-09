@@ -2,6 +2,7 @@
 #include "stdio.h"
 
 using namespace sc;
+using namespace std;
 
 Equation::Equation(){
     setDefault();
@@ -29,6 +30,14 @@ void Equation::setRelativeVelocity(double v){
 
 Connector * Equation::getConnA(){ return m_connA; }
 Connector * Equation::getConnB(){ return m_connB; }
+
+vector<Connector*> Equation::getConnectors() {
+    vector<Connector*> ret;
+    ret.push_back(m_connA);
+    ret.push_back(m_connB);
+    return ret;
+}
+
 void Equation::setConnA(Connector* c){ m_connA = c; }
 void Equation::setConnB(Connector* c){ m_connB = c; }
 void Equation::setConnectors(Connector* cA, Connector* cB){ setConnA(cA);setConnB(cB); }

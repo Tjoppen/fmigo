@@ -209,8 +209,7 @@ int main(int argc, char ** argv){
     solver.setSpookParams(relaxation,compliance,dt);
 
     // Get system equations
-    std::vector<Equation*> eqs;
-    solver.getEquations(&eqs);
+    std::vector<Equation*> eqs = solver.getEquations();
 
     // Print CSV first column
     if(enableCSV) printFirstCSVRow(bodies);

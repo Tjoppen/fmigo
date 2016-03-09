@@ -11,6 +11,7 @@ extern "C" {
 }
 
 using namespace sc;
+using namespace std;
 
 Solver::Solver(){
     m_connectorIndexCounter = 0;
@@ -60,18 +61,7 @@ int Solver::getSystemMatrixCols(){
     return 6*numConnectors;
 }
 
-void Solver::getEquations(std::vector<Equation*> * result){
-    int i,j,
-        nConstraints=m_constraints.size();
-    for(i=0; i<nConstraints; ++i){
-        int nEquations = m_constraints[i]->getNumEquations();
-        for(j=0; j<nEquations; ++j){
-            result->push_back(m_constraints[i]->getEquation(j));
-        }
-    }
-}
-
-void Solver::getEquationsFast(){
+vector<Equation*> Solver::getEquations(){
     if (equations_dirty) {
         eqs.clear();
     }
@@ -90,6 +80,8 @@ void Solver::getEquationsFast(){
             }
         }
     }
+
+    return eqs;
 }
 
 void Solver::setSpookParams(double relaxation, double compliance, double timeStep){
@@ -171,7 +163,7 @@ void Solver::constructS() {
 
 void Solver::prepare() {
     getSystemMatrixRows();
-    getEquationsFast();
+    getEquations();
     constructS();
     equations_dirty = false;
 }
@@ -182,7 +174,7 @@ void Solver::solve(bool holonomic){
 
 void Solver::solve(bool holonomic, int printDebugInfo){
     int i, j, k, l;
-    getEquationsFast();
+    getEquations();
     int numRows = getSystemMatrixRows(),
         neq = eqs.size();
 

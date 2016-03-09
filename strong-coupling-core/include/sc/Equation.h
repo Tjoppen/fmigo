@@ -29,6 +29,7 @@ public:
 
     Connector * getConnA();
     Connector * getConnB();
+    std::vector<Connector*> getConnectors();
     void setDefault();
     void setConnA(Connector *);
     void setConnB(Connector *);

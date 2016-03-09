@@ -129,6 +129,9 @@ void StrongMaster::runIteration(double t, double dt) {
         }
     }
 
+    //noSetFMUStatePriorToCurrentPoint = false
+    //This signals to the FMU that we might restore it to a state prior to currentCommunicationPoint=t
+    //In other words: do the step, but don't commit the results
     send(saveLoadClients, fmi2_import_do_step(0, 0, t, dt, false));
 
     //do about the same thing we did a little bit further up, but store the results in future values
@@ -289,7 +292,9 @@ void StrongMaster::runIteration(double t, double dt) {
     PRINT_HDF5_DELTA("send_strong_forces");
 
     //do actual step
-    block(m_slaves, fmi2_import_do_step(0, 0, t, dt, false));
+    //noSetFMUStatePriorToCurrentPoint = true
+    //In other words: do the step, commit the results (basically, we're not going back)
+    block(m_slaves, fmi2_import_do_step(0, 0, t, dt, true));
     PRINT_HDF5_DELTA("do_step");
 }
 

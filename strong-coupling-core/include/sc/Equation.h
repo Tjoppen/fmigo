@@ -29,14 +29,7 @@ public:
 
     std::vector<Connector*> getConnectors() const;
     void setDefault();
-    void setConnA(Connector *);
-    void setConnB(Connector *);
     void setConnectors(Connector *,Connector *);
-
-    JacobianElement getGA();
-    JacobianElement getGB();
-    JacobianElement getddA();
-    JacobianElement getddB();
 
     /// Spook parameter "a"
     double m_a;

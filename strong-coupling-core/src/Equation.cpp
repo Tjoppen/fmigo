@@ -35,13 +35,10 @@ vector<Connector*> Equation::getConnectors() const {
     return ret;
 }
 
-void Equation::setConnA(Connector* c){ m_connA = c; }
-void Equation::setConnB(Connector* c){ m_connB = c; }
-void Equation::setConnectors(Connector* cA, Connector* cB){ setConnA(cA);setConnB(cB); }
-JacobianElement Equation::getGA(){ return m_G_A; }
-JacobianElement Equation::getGB(){ return m_G_B; }
-JacobianElement Equation::getddA(){ return m_invMGt_A; }
-JacobianElement Equation::getddB(){ return m_invMGt_B; }
+void Equation::setConnectors(Connector* cA, Connector* cB) {
+    m_connA = cA;
+    m_connB = cB;
+}
 
 void Equation::setSpookParams(double relaxation, double compliance, double timeStep){
     m_a = 4/(1+4*relaxation)/timeStep;

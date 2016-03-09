@@ -302,8 +302,8 @@ int main(int argc, char ** argv){
             for (int j = 0; j < eqs.size(); ++j){
                 Equation * eq = eqs[j];
 
-                RigidBody * bodyA = (RigidBody *)eq->getConnA()->m_userData;
-                RigidBody * bodyB = (RigidBody *)eq->getConnB()->m_userData;
+                RigidBody * bodyA = (RigidBody *)eq->getConnectors()[0]->m_userData;
+                RigidBody * bodyB = (RigidBody *)eq->getConnectors()[1]->m_userData;
 
                 Vec3 spatSeed,
                      rotSeed,

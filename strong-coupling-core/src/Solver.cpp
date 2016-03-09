@@ -121,10 +121,7 @@ void Solver::constructS() {
             Equation * ej = eqs[j];
 
             //check for overlap in connector FMUs, not the connectors themselves
-            if     (ei->getConnA()->m_slave == ej->getConnA()->m_slave ||
-                    ei->getConnA()->m_slave == ej->getConnB()->m_slave ||
-                    ei->getConnB()->m_slave == ej->getConnA()->m_slave ||
-                    ei->getConnB()->m_slave == ej->getConnB()->m_slave) {
+            if (ei->haveOverlappingFMUs(ej)) {
                 Srow.push_back(i);
                 Scol.push_back(j);
                 Sval.push_back(0);  //dummy value
@@ -211,22 +208,13 @@ void Solver::solve(bool holonomic, int printDebugInfo){
         Equation * ei = eqs[i];
         Equation * ej = eqs[j];
 
-        //TODO: Equation needs a *list* of StrongConnectors, not "A" and "B"
         //each S_ij = G_i*J_i^T
         //our job is to figure out J_i^T
         double val = 0;
-        for (int c = 0; c < 2; c++) {
-            //here is where we'd put stuff for more than one connector per equation
-            Connector *conn = (c == 0 ? ei->getConnA() : ei->getConnB());
+        for (Connector *conn : ei->getConnectors()) {
             std::pair<int,int> key(conn->m_index, ej->m_index);
-
             if (m_mobilities.find(key) != m_mobilities.end()) {
-                //fprintf(stderr, "found something @ %i,%i\n", key.first, key.second);
-                if (c == 0) {
-                    val += ei->getGA().multiply(m_mobilities[key]);
-                } else {
-                    val += ei->getGB().multiply(m_mobilities[key]);
-                }
+                val += ei->jacobianElementForConnector(conn).multiply(m_mobilities[key]);
             }
         }
 
@@ -248,119 +236,6 @@ void Solver::solve(bool holonomic, int printDebugInfo){
         }
         char empty = '0';
         char tab = '\t';
-        fprintf(stderr, "G = [\n");
-        for(int i=0; i<eqs.size(); ++i){
-            Equation * eq = eqs[i];
-            Connector * connA = eq->getConnA();
-            Connector * connB = eq->getConnB();
-
-            //fprintf(stderr, "%d %d\n",connA->m_index,connB->m_index);
-
-            int swapped = 0;
-            if(connA->m_index > connB->m_index){
-                Connector * temp = connA;
-                connA = connB;
-                connB = temp;
-                swapped = 1;
-            }
-
-            // Print empty until first
-            for (int j = 0; j < 6*connA->m_index; ++j){
-                fprintf(stderr, "%c\t",empty);
-            }
-
-            // Print contents of first ( 6 jacobian entries )
-            JacobianElement G = !swapped ? eq->getGA() : eq->getGB();
-            fprintf(stderr, "%g%c%g%c%g%c%g%c%g%c%g%c",
-                G.getSpatial().x(),tab,
-                G.getSpatial().y(),tab,
-                G.getSpatial().z(),tab,
-                G.getRotational().x(),tab,
-                G.getRotational().y(),tab,
-                G.getRotational().z(),tab);
-
-            // Print empty until second
-            for (int j = 6*(connA->m_index+1); j < 6*connB->m_index; ++j){
-                fprintf(stderr, "%c\t",empty);
-            }
-
-            // Print contents of second ( 6 jacobian entries )
-            JacobianElement G2 = !swapped ? eq->getGB() : eq->getGA();
-            fprintf(stderr, "%g%c%g%c%g%c%g%c%g%c%g%c",
-                G2.getSpatial().x(),tab,
-                G2.getSpatial().y(),tab,
-                G2.getSpatial().z(),tab,
-                G2.getRotational().x(),tab,
-                G2.getRotational().y(),tab,
-                G2.getRotational().z(),tab);
-
-            // Print empty until end of row
-            for (int j = 6*(connB->m_index+1); j < getSystemMatrixCols(); ++j){
-                fprintf(stderr, "%c\t",empty);
-            }
-
-            if(i == eqs.size()-1)
-                fprintf(stderr, "]\n");
-            else
-                fprintf(stderr, ";\n");
-        }
-
-        fprintf(stderr, "D = [\n");
-        for(int i=0; i<eqs.size(); ++i){
-            Equation * eq = eqs[i];
-            Connector * connA = eq->getConnA();
-            Connector * connB = eq->getConnB();
-
-            //fprintf(stderr, "%d %d\n",connA->m_index,connB->m_index);
-
-            int swapped = 0;
-            if(connA->m_index > connB->m_index){
-                Connector * temp = connA;
-                connA = connB;
-                connB = temp;
-                swapped = 1;
-            }
-
-            // Print empty until first
-            for (int j = 0; j < 6*connA->m_index; ++j){
-                fprintf(stderr, "%c\t",empty);
-            }
-
-            // Print contents of first ( 6 jacobian entries )
-            JacobianElement G = !swapped ? eq->getddA() : eq->getddB();
-            fprintf(stderr, "%g%c%g%c%g%c%g%c%g%c%g%c",
-                G.getSpatial().x(),tab,
-                G.getSpatial().y(),tab,
-                G.getSpatial().z(),tab,
-                G.getRotational().x(),tab,
-                G.getRotational().y(),tab,
-                G.getRotational().z(),tab);
-
-            // Print empty until second
-            for (int j = 6*(connA->m_index+1); j < 6*connB->m_index; ++j){
-                fprintf(stderr, "%c\t",empty);
-            }
-
-            // Print contents of second ( 6 jacobian entries )
-            JacobianElement G2 = !swapped ? eq->getddB() : eq->getddA();
-            fprintf(stderr, "%g%c%g%c%g%c%g%c%g%c%g%c",
-                G2.getSpatial().x(),tab,
-                G2.getSpatial().y(),tab,
-                G2.getSpatial().z(),tab,
-                G2.getRotational().x(),tab,
-                G2.getRotational().y(),tab,
-                G2.getRotational().z(),tab);
-
-            // Print empty until end of row
-            for (int j = 6*(connB->m_index+1); j < getSystemMatrixCols(); ++j){
-                fprintf(stderr, "%c\t",empty);
-            }
-
-            if(i == eqs.size()-1)
-                fprintf(stderr, "]\n");
-            else
-                fprintf(stderr, ";\n");
-        }
 
         fprintf(stderr, "E = [\n");
         for (int i = 0; i < eqs.size(); ++i){ // Rows
@@ -474,33 +349,13 @@ void Solver::solve(bool holonomic, int printDebugInfo){
         Equation * eq = eqs[i];
         double l = lambda[i] / eq->m_timeStep;
 
-        JacobianElement GA = eq->getGA();
-        JacobianElement GB = eq->getGB();
-        Vec3 fA = GA.getSpatial()    * l;
-        Vec3 tA = GA.getRotational() * l;
-        Vec3 fB = GB.getSpatial()    * l;
-        Vec3 tB = GB.getRotational() * l;
-
-        // We are on row i in the matrix
-        eq->getConnA()->m_force  += fA;
-        eq->getConnA()->m_torque += tA;
-        eq->getConnB()->m_force  += fB;
-        eq->getConnB()->m_torque += tB;
-
-        /*
-        printf("forceA  += %g %g %g\n", fA[0], fA[1], fA[2]);
-        printf("torqueA += %g %g %g\n", tA[0], tA[1], tA[2]);
-        printf("forceB  += %g %g %g\n", fB[0], fB[1], fB[2]);
-        printf("torqueB += %g %g %g\n", tB[0], tB[1], tB[2]);
-
-
-        printf("   GAs = %g %g %g\n", GA.getSpatial()[0], GA.getSpatial()[1], GA.getSpatial()[2]);
-        printf("   GBs = %g %g %g\n", GB.getSpatial()[0], GB.getSpatial()[1], GB.getSpatial()[2]);
-        printf("   GAr = %g %g %g\n", GA.getRotational()[0], GA.getRotational()[1], GA.getRotational()[2]);
-        printf("   GBr = %g %g %g\n", GB.getRotational()[0], GB.getRotational()[1], GB.getRotational()[2]);
-
-        printf("\n");
-        */
+        for (Connector *conn : eq->getConnectors()) {
+            JacobianElement G = eq->jacobianElementForConnector(conn);
+            Vec3 f = G.getSpatial()    * l;
+            Vec3 t = G.getRotational() * l;
+            conn->m_force  += f;
+            conn->m_torque += t;
+        }
     }
 
 #if 0

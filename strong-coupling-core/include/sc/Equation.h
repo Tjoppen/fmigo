@@ -27,9 +27,7 @@ public:
     Equation(Connector*,Connector*);
     virtual ~Equation();
 
-    Connector * getConnA();
-    Connector * getConnB();
-    std::vector<Connector*> getConnectors();
+    std::vector<Connector*> getConnectors() const;
     void setDefault();
     void setConnA(Connector *);
     void setConnB(Connector *);
@@ -125,6 +123,8 @@ public:
                 const Vec3& spatialB,
                 const Vec3& rotationalB);
 
+    bool haveOverlappingFMUs(Equation *other) const;
+    JacobianElement& jacobianElementForConnector(Connector *conn);
 };
 
 }

@@ -28,10 +28,7 @@ void Equation::setRelativeVelocity(double v){
     m_relativeVelocity = v;
 }
 
-Connector * Equation::getConnA(){ return m_connA; }
-Connector * Equation::getConnB(){ return m_connB; }
-
-vector<Connector*> Equation::getConnectors() {
+vector<Connector*> Equation::getConnectors() const {
     vector<Connector*> ret;
     ret.push_back(m_connA);
     ret.push_back(m_connB);
@@ -185,6 +182,29 @@ Vec3 Equation::getRotationalJacobianSeed(Connector *conn) {
         return m_G_B.getRotational();
     } else {
         fprintf(stderr, "Attempted to getRotationalJacobianSeed() with connector which is not part of the Equation\n");
+        exit(1);
+    }
+}
+
+bool Equation::haveOverlappingFMUs(Equation *other) const {
+    //quadratic complexity, but only used once in Solver
+    for (Connector *conn1 : getConnectors()) {
+        for (Connector *conn2 : other->getConnectors()) {
+            if (conn1->m_slave == conn2->m_slave) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+JacobianElement& Equation::jacobianElementForConnector(Connector *conn) {
+    if (conn == m_connA) {
+        return m_G_A;
+    } else if (conn == m_connB) {
+        return m_G_B;
+    } else {
+        fprintf(stderr, "Attempted to jacobianElementForConnector() with connector which is not part of the Equation\n");
         exit(1);
     }
 }

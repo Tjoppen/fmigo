@@ -26,12 +26,4 @@ Equation * Constraint::getEquation(int i){
     return m_equations[i];
 }
 
-Connector * Constraint::getConnA(){
-    return m_connA;
-}
-
-Connector * Constraint::getConnB(){
-    return m_connB;
-}
-
 void Constraint::update(){}

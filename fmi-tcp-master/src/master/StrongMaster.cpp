@@ -178,7 +178,7 @@ void StrongMaster::runIteration(double t, double dt) {
                             //step 0 = send fmi2_import_get_directional_derivative() requests
                             if (eq->m_isSpatial) {
                                 if (accelerationConnector->hasAcceleration() && forceConnector->hasForce()) {
-                                    getDirectionalDerivative(client, eq->getSpatialJacobianSeed(forceConnector), accelerationConnector->getAccelerationValueRefs(), forceConnector->getForceValueRefs());
+                                    getDirectionalDerivative(client, eq->jacobianElementForConnector(forceConnector).getSpatial(), accelerationConnector->getAccelerationValueRefs(), forceConnector->getForceValueRefs());
                                 } else {
                                     fprintf(stderr, "Strong coupling requires acceleration outputs for now\n");
                                     exit(1);
@@ -187,7 +187,7 @@ void StrongMaster::runIteration(double t, double dt) {
 
                             if (eq->m_isRotational) {
                                 if (accelerationConnector->hasAngularAcceleration() && forceConnector->hasTorque()) {
-                                    getDirectionalDerivative(client, eq->getRotationalJacobianSeed(forceConnector), accelerationConnector->getAngularAccelerationValueRefs(), forceConnector->getTorqueValueRefs());
+                                    getDirectionalDerivative(client, eq->jacobianElementForConnector(forceConnector).getRotational(), accelerationConnector->getAngularAccelerationValueRefs(), forceConnector->getTorqueValueRefs());
                                 } else {
                                     fprintf(stderr, "Strong coupling requires angular acceleration outputs for now\n");
                                     exit(1);

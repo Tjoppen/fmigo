@@ -302,34 +302,22 @@ int main(int argc, char ** argv){
             for (int j = 0; j < eqs.size(); ++j){
                 Equation * eq = eqs[j];
 
-                RigidBody * bodyA = (RigidBody *)eq->getConnectors()[0]->m_userData;
-                RigidBody * bodyB = (RigidBody *)eq->getConnectors()[1]->m_userData;
+                for (Connector *conn : eq->getConnectors()) {
+                    RigidBody * body = (RigidBody *)conn->m_userData;
 
-                Vec3 spatSeed,
-                     rotSeed,
-                     ddSpatial,
-                     ddRotational;
+                    Vec3 spatSeed = eq->jacobianElementForConnector(conn).getSpatial(),
+                         rotSeed  = eq->jacobianElementForConnector(conn).getRotational(),
+                         ddSpatial,
+                         ddRotational;
 
-                // Set jacobians
-                eq->getSpatialJacobianSeedA(spatSeed);
-                eq->getRotationalJacobianSeedA(rotSeed);
-                bodyA->getDirectionalDerivative(ddSpatial,ddRotational,bodyA->m_position,spatSeed,rotSeed, dt);
-                //printf("Eq %d:\n", j);
-                //printf("A = (%f %f %f)\n", ddSpatial[0], ddSpatial[1], ddSpatial[2]);
-                eq->setSpatialJacobianA(ddSpatial);
-                eq->setRotationalJacobianA(ddRotational);
-
-                ////printf("A = (%f %f %f)\n", ddRotational[0], ddRotational[1], ddRotational[2]);
-
-                eq->getSpatialJacobianSeedB(spatSeed);
-                eq->getRotationalJacobianSeedB(rotSeed);
-                bodyB->getDirectionalDerivative(ddSpatial,ddRotational,bodyB->m_position,spatSeed,rotSeed, dt);
-                //printf("B: dd=(%f %f %f), seed=(%f %f %f)\n", ddSpatial[0], ddSpatial[1], ddSpatial[2], spatSeed[0], spatSeed[1], spatSeed[2]);
-                eq->setSpatialJacobianB(ddSpatial);
-                eq->setRotationalJacobianB(ddRotational);
-
-                //printf("t=%f wA=(%g %g %g)\n",t,bodyA->m_torque[0],bodyA->m_torque[1],bodyA->m_torque[2]);
-                //printf("t=%f wB=(%g %g %g)\n",t,bodyB->m_torque[0],bodyB->m_torque[1],bodyB->m_torque[2]);
+                    // Set jacobians
+                    body->getDirectionalDerivative(ddSpatial,ddRotational,body->m_position,spatSeed,rotSeed, dt);
+                    int I = conn->m_index;
+                    int J = eq->m_index;
+                    JacobianElement &el = solver.m_mobilities[std::make_pair(I,J)];
+                    el.setSpatial(ddSpatial);
+                    el.setRotational(ddRotational);
+                }
             }
 
             // Solve system

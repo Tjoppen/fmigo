@@ -321,7 +321,7 @@ int main(int argc, char ** argv){
             }
 
             // Solve system
-            solver.solve(debug);
+            solver.solve(true, debug);
 
             // Add resulting constraint forces to the bodies
             for (int j = 0; j < slaves.size(); ++j){

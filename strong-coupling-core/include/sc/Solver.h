@@ -33,11 +33,24 @@ private:
     std::vector<int> Scol;
     std::vector<double> Sval;
 
+    /// Spook parameter "a"
+    double m_a;
+
+    /// Spook parameter "b"
+    double m_b;
+
+    /// Spook parameter "epsilon"
+    double m_epsilon;
+
+    /// Time step
+    double m_timeStep;
+
     //for internal use only
     void constructS();
-    void getEquationsFast();
 
 public:
+    std::vector<Equation*> getEquations();
+
     //sparse matrix of mobilities
     std::map<std::pair<int,int>, JacobianElement> m_mobilities;
 
@@ -69,12 +82,6 @@ public:
      * @brief Get number of columns in the system matrix.
      */
     int getSystemMatrixCols();
-
-    /**
-     * @brief Get all equations in a vector.
-     * @param eqs Vector that will be appended with the equations.
-     */
-    void getEquations(std::vector<Equation*> * eqs);
     
     /// Get a constraint
     Constraint * getConstraint(int i);

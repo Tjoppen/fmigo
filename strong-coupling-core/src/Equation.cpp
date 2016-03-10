@@ -2,6 +2,7 @@
 #include "stdio.h"
 
 using namespace sc;
+using namespace std;
 
 Equation::Equation(){
     setDefault();
@@ -27,21 +28,16 @@ void Equation::setRelativeVelocity(double v){
     m_relativeVelocity = v;
 }
 
-Connector * Equation::getConnA(){ return m_connA; }
-Connector * Equation::getConnB(){ return m_connB; }
-void Equation::setConnA(Connector* c){ m_connA = c; }
-void Equation::setConnB(Connector* c){ m_connB = c; }
-void Equation::setConnectors(Connector* cA, Connector* cB){ setConnA(cA);setConnB(cB); }
-JacobianElement Equation::getGA(){ return m_G_A; }
-JacobianElement Equation::getGB(){ return m_G_B; }
-JacobianElement Equation::getddA(){ return m_invMGt_A; }
-JacobianElement Equation::getddB(){ return m_invMGt_B; }
+vector<Connector*> Equation::getConnectors() const {
+    vector<Connector*> ret;
+    ret.push_back(m_connA);
+    ret.push_back(m_connB);
+    return ret;
+}
 
-void Equation::setSpookParams(double relaxation, double compliance, double timeStep){
-    m_a = 4/(1+4*relaxation)/timeStep;
-    m_b = 1/(1+4*relaxation);
-    m_epsilon = 4 * compliance / (timeStep*timeStep * (1 + 4*relaxation));
-    m_timeStep = timeStep;
+void Equation::setConnectors(Connector* cA, Connector* cB) {
+    m_connA = cA;
+    m_connB = cB;
 }
 
 void Equation::setDefaultViolation(){
@@ -88,94 +84,25 @@ void Equation::setG(const Vec3& spatialA,
     m_G_B.setRotational(rotationalB);
 }
 
-void Equation::setJacobian( double G1,
-                            double G2,
-                            double G3,
-                            double G4,
-                            double G5,
-                            double G6,
-                            double G7,
-                            double G8,
-                            double G9,
-                            double G10,
-                            double G11,
-                            double G12 ){
-    setSpatialJacobianA(G1,G2,G3);
-    setRotationalJacobianA(G4,G5,G6);
-    setSpatialJacobianB(G7,G8,G9);
-    setRotationalJacobianB(G10,G11,G12);
-}
-
-void Equation::setSpatialJacobianA(double x, double y, double z){
-    m_invMGt_A.setSpatial(x,y,z);
-}
-
-void Equation::setSpatialJacobianA(const Vec3& seed){
-    setSpatialJacobianA(seed.x(),seed.y(),seed.z());
-}
-
-void Equation::setRotationalJacobianA(double x, double y, double z){
-    m_invMGt_A.setRotational(x,y,z);
-}
-
-void Equation::setRotationalJacobianA(const Vec3& seed){
-    setRotationalJacobianA(seed.x(),seed.y(),seed.z());
-}
-
-void Equation::setSpatialJacobianB(double x, double y, double z){
-    m_invMGt_B.setSpatial(x,y,z);
-}
-
-void Equation::setSpatialJacobianB(const Vec3& seed){
-    setSpatialJacobianB(seed.x(),seed.y(),seed.z());
-}
-
-void Equation::setRotationalJacobianB(double x, double y, double z){
-    m_invMGt_B.setRotational(x,y,z);
-}
-
-void Equation::setRotationalJacobianB(const Vec3& seed){
-    setRotationalJacobianB( seed.x(),
-                            seed.y(),
-                            seed.z());
-}
-
-void Equation::getSpatialJacobianSeedA(Vec3& seed){
-    seed.copy(m_G_A.getSpatial());
-}
-
-void Equation::getRotationalJacobianSeedA(Vec3& seed){
-    seed.copy(m_G_A.getRotational());
-}
-
-void Equation::getSpatialJacobianSeedB(Vec3& seed){
-    seed.copy(m_G_B.getSpatial());
-}
-
-void Equation::getRotationalJacobianSeedB(Vec3& seed){
-    seed.copy(m_G_B.getRotational());
-}
-
-Vec3 Equation::getSpatialJacobianSeed(Connector *conn) {
-    //here is where we'd generalize this thing if we wanted more than two connectors per equation
-    if (conn == m_connA) {
-        return m_G_A.getSpatial();
-    } else if (conn == m_connB) {
-        return m_G_B.getSpatial();
-    } else {
-        fprintf(stderr, "Attempted to getSpatialJacobianSeed() with connector which is not part of the Equation\n");
-        exit(1);
+bool Equation::haveOverlappingFMUs(Equation *other) const {
+    //quadratic complexity, but only used once in Solver
+    for (Connector *conn1 : getConnectors()) {
+        for (Connector *conn2 : other->getConnectors()) {
+            if (conn1->m_slave == conn2->m_slave) {
+                return true;
+            }
+        }
     }
+    return false;
 }
 
-Vec3 Equation::getRotationalJacobianSeed(Connector *conn) {
-    //fprintf(stderr, "getRotationalJacobianSeed: %p vs %p %p\n", conn, m_connA, m_connB);
+JacobianElement& Equation::jacobianElementForConnector(Connector *conn) {
     if (conn == m_connA) {
-        return m_G_A.getRotational();
+        return m_G_A;
     } else if (conn == m_connB) {
-        return m_G_B.getRotational();
+        return m_G_B;
     } else {
-        fprintf(stderr, "Attempted to getRotationalJacobianSeed() with connector which is not part of the Equation\n");
+        fprintf(stderr, "Attempted to jacobianElementForConnector() with connector which is not part of the Equation\n");
         exit(1);
     }
 }

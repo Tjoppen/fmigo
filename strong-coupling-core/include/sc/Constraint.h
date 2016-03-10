@@ -33,10 +33,6 @@ public:
     /// Get one of the equations
     Equation * getEquation(int i);
 
-    /// Get connectors
-    Connector * getConnA();
-    Connector * getConnB();
-
     // Update the internal stuff
     virtual void update();
 };

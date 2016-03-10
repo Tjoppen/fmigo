@@ -161,25 +161,12 @@ void StrongMaster::runIteration(double t, double dt) {
     //get directional derivatives
     //this is a two-step process which is important to get the order of correct
     for (int step = 0; step < 2; step++) {
-        for (int k=0; k<m_slaves.size(); k++){
-            FMIClient *client = m_slaves[k];
-            for (int i = 0; i < client->numConnectors(); i++) { //acceleration part
-                StrongConnector *accelerationConnector = client->getConnector(i);
-                //HACKHACK: there should be a better way of doing this..
-                size_t numAccRefs = max(accelerationConnector->getAccelerationValueRefs().size(),
-                                        accelerationConnector->getAngularAccelerationValueRefs().size());
-
-                if (accelerationConnector->m_equations.size() != numAccRefs) {
-                    //NOTE: having excess equations could work, but isn't tested yet
-                    fprintf(stderr, "Number of equations on Connector (%zu) must match number of acceleration VRs (%zu) - bailing out!\n",
-                            accelerationConnector->m_equations.size(), numAccRefs);
-                    exit(1);
-                }
-
-                for (size_t q = 0; q < accelerationConnector->m_equations.size(); q++) {
-                    Equation *eq = accelerationConnector->m_equations[q];
-                    for (int j = 0; j < client->numConnectors(); j++) { //force part
-                        StrongConnector *forceConnector = client->getConnector(j);
+        for (sc::Equation *eq : m_strongCouplingSolver.getEquations()) {
+            for (sc::Connector *fc : eq->getConnectors()) {
+                StrongConnector *forceConnector = dynamic_cast<StrongConnector*>(fc);
+                FMIClient *client = dynamic_cast<FMIClient*>(forceConnector->m_slave);
+                for (int x = 0; x < client->numConnectors(); x++) {
+                    StrongConnector *accelerationConnector = dynamic_cast<StrongConnector*>(forceConnector->m_slave->getConnector(x));
 
                         //HACKHACK: use the presence of shaft angle VR to distinguish connector type
                         if (accelerationConnector->hasShaftAngle() != forceConnector->hasShaftAngle()) {
@@ -194,7 +181,7 @@ void StrongMaster::runIteration(double t, double dt) {
                             //step 0 = send fmi2_import_get_directional_derivative() requests
                             if (eq->m_isSpatial) {
                                 if (accelerationConnector->hasAcceleration() && forceConnector->hasForce()) {
-                                    getDirectionalDerivative(client, eq->getSpatialJacobianSeed(accelerationConnector), accelerationConnector->getAccelerationValueRefs(), forceConnector->getForceValueRefs());
+                                    getDirectionalDerivative(client, eq->jacobianElementForConnector(forceConnector).getSpatial(), accelerationConnector->getAccelerationValueRefs(), forceConnector->getForceValueRefs());
                                 } else {
                                     fprintf(stderr, "Strong coupling requires acceleration outputs for now\n");
                                     exit(1);
@@ -203,7 +190,7 @@ void StrongMaster::runIteration(double t, double dt) {
 
                             if (eq->m_isRotational) {
                                 if (accelerationConnector->hasAngularAcceleration() && forceConnector->hasTorque()) {
-                                    getDirectionalDerivative(client, eq->getRotationalJacobianSeed(accelerationConnector), accelerationConnector->getAngularAccelerationValueRefs(), forceConnector->getTorqueValueRefs());
+                                    getDirectionalDerivative(client, eq->jacobianElementForConnector(forceConnector).getRotational(), accelerationConnector->getAngularAccelerationValueRefs(), forceConnector->getTorqueValueRefs());
                                 } else {
                                     fprintf(stderr, "Strong coupling requires angular acceleration outputs for now\n");
                                     exit(1);
@@ -211,7 +198,7 @@ void StrongMaster::runIteration(double t, double dt) {
                             }
                         } else {
                             //step 1 = put returned directional derivatives in the correct place in the sparse mobility matrix
-                            int I = forceConnector->m_index;
+                            int I = accelerationConnector->m_index;
                             int J = eq->m_index;
                             JacobianElement &el = m_strongCouplingSolver.m_mobilities[make_pair(I,J)];
 
@@ -243,7 +230,6 @@ void StrongMaster::runIteration(double t, double dt) {
                                 el.setRotational(0,0,0);
                             }
                         }
-                    }
                 }
             }
         }

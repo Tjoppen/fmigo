@@ -29,28 +29,8 @@ public:
     void setDefault();
     void setConnectors(Connector *,Connector *);
 
-    /// Spook parameter "a"
-    double m_a;
-
-    /// Spook parameter "b"
-    double m_b;
-
-    /// Spook parameter "epsilon"
-    double m_epsilon;
-
-    /// Time step
-    double m_timeStep;
-
     // for figuring out which jacobians we need
     bool m_isSpatial, m_isRotational;
-
-    /**
-     * @brief Sets a, b, epsilon according to SPOOK.
-     * @param relaxation
-     * @param compliance
-     * @param timeStep
-     */
-    void setSpookParams(double relaxation, double compliance, double timeStep);
 
     /// Get constraint violation, g
     double getViolation();

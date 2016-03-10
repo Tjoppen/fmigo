@@ -40,13 +40,6 @@ void Equation::setConnectors(Connector* cA, Connector* cB) {
     m_connB = cB;
 }
 
-void Equation::setSpookParams(double relaxation, double compliance, double timeStep){
-    m_a = 4/(1+4*relaxation)/timeStep;
-    m_b = 1/(1+4*relaxation);
-    m_epsilon = 4 * compliance / (timeStep*timeStep * (1 + 4*relaxation));
-    m_timeStep = timeStep;
-}
-
 void Equation::setDefaultViolation(){
     Vec3 zero;
     m_g = m_G_A.multiply(m_connA->m_position, zero) +

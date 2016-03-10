@@ -33,6 +33,18 @@ private:
     std::vector<int> Scol;
     std::vector<double> Sval;
 
+    /// Spook parameter "a"
+    double m_a;
+
+    /// Spook parameter "b"
+    double m_b;
+
+    /// Spook parameter "epsilon"
+    double m_epsilon;
+
+    /// Time step
+    double m_timeStep;
+
     //for internal use only
     void constructS();
 

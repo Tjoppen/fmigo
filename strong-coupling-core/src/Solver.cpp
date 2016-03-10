@@ -85,13 +85,10 @@ vector<Equation*> Solver::getEquations(){
 }
 
 void Solver::setSpookParams(double relaxation, double compliance, double timeStep){
-    int i,j, nConstraints=m_constraints.size();
-    for(i=0; i<nConstraints; ++i){
-        int nEquations = m_constraints[i]->getNumEquations();
-        for(j=0; j<nEquations; ++j){
-            m_constraints[i]->getEquation(j)->setSpookParams(relaxation, compliance, timeStep);
-        }
-    }
+    m_a = 4/(1+4*relaxation)/timeStep;
+    m_b = 1/(1+4*relaxation);
+    m_epsilon = 4 * compliance / (timeStep*timeStep * (1 + 4*relaxation));
+    m_timeStep = timeStep;
 }
 
 void Solver::resetConstraintForces(){
@@ -134,15 +131,14 @@ void Solver::constructS() {
 
     // Add regularization to diagonal entries
     for (int i = 0; i < eqs.size(); ++i){
-        double eps = eqs[i]->m_epsilon;
-        if(eps > 0){
+        if(m_epsilon > 0){
 
             int found = 0;
 
             // Find the corresponding triplet
             for(int j = 0; j < Srow.size(); ++j){
                 if(Srow[j] == i && Scol[j] == i){
-                    Sval[j] += eps;
+                    Sval[j] += m_epsilon;
                     found = 1;
                     break;
                 }
@@ -150,7 +146,7 @@ void Solver::constructS() {
 
             // Could not find triplet. Add it.
             if(!found){
-                Sval.push_back(eps);
+                Sval.push_back(m_epsilon);
                 Srow.push_back(i);
                 Scol.push_back(i);
             }
@@ -181,13 +177,11 @@ void Solver::solve(bool holonomic, int printDebugInfo){
         Equation * eq = eqs[i];
         double  Z = eq->getFutureVelocity() - eq->getVelocity(),
                 GW = eq->getVelocity(),
-                g = eq->getViolation(),
-                a = eq->m_a,
-                b = eq->m_b;
+                g = eq->getViolation();
         if (holonomic) {
-            rhs[i] = -a * g  - b * GW  - Z; // RHS = -a*g -b*G*W -Z
+            rhs[i] = -m_a * g - m_b * GW - Z; // RHS = -a*g -b*G*W -Z
         } else {
-            rhs[i] =          -b * GW -Z; //nonholonomic
+            rhs[i] =          - m_b * GW - Z; //nonholonomic
         }
     }
 
@@ -219,11 +213,7 @@ void Solver::solve(bool holonomic, int printDebugInfo){
         }
 
         if (i == j) {
-            if (ei->m_epsilon != ej->m_epsilon) {
-                fprintf(stderr, "epsilons differ\n");
-                exit(1);
-            }
-            val += ei->m_epsilon;
+            val += m_epsilon;
         }
 
         Sval[x] = val;
@@ -241,7 +231,7 @@ void Solver::solve(bool holonomic, int printDebugInfo){
         for (int i = 0; i < eqs.size(); ++i){ // Rows
             for (int j = 0; j < eqs.size(); ++j){ // Cols
                 if(i==j)
-                    fprintf(stderr, "%g\t", eqs[i]->m_epsilon);
+                    fprintf(stderr, "%g\t", m_epsilon);
                 else
                     fprintf(stderr, "0\t");
             }
@@ -347,7 +337,7 @@ void Solver::solve(bool holonomic, int printDebugInfo){
     // f = G'*lambda
     for (int i = 0; i<eqs.size(); ++i){
         Equation * eq = eqs[i];
-        double l = lambda[i] / eq->m_timeStep;
+        double l = lambda[i] / m_timeStep;
 
         for (Connector *conn : eq->getConnectors()) {
             JacobianElement G = eq->jacobianElementForConnector(conn);

@@ -1,0 +1,3 @@
+[submodule "umit-fmus"]
+	path = umit-fmus
+	url = git@mimmi.math.umu.se:vtb/umit-fmus.git

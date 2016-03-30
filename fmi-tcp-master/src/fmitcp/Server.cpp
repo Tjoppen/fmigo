@@ -398,8 +398,9 @@ string Server::clientData(const char *data, size_t size) {
     // Unpack message
     fmitcp_proto::fmi2_import_do_step_req * r = req.mutable_fmi2_import_do_step_req();
     int fmuId = r->fmuid();
-    double currentCommunicationPoint = r->currentcommunicationpoint(),
-        communicationStepSize = r->communicationstepsize();
+    //remember values
+    currentCommunicationPoint = r->currentcommunicationpoint();
+    communicationStepSize = r->communicationstepsize();
     bool newStep = r->newstep();
     m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_do_step_req(fmuId=%d,commPoint=%g,stepSize=%g,newStep=%d)\n",fmuId,currentCommunicationPoint,communicationStepSize,newStep?1:0);
 
@@ -950,8 +951,15 @@ string Server::clientData(const char *data, size_t size) {
 
     fmi2_status_t status = fmi2_status_ok;
     if (!m_sendDummyResponses) {
+     if (hasCapability(fmi2_cs_providesDirectionalDerivatives)) {
       // interact with FMU
       status = fmi2_import_get_directional_derivative(m_fmi2Instance, v_ref.data(), r->v_ref_size(), z_ref.data(), r->z_ref_size(), dv.data(), dz.data());
+     } else if (hasCapability(fmi2_cs_canGetAndSetFMUstate)) {
+      dz = computeNumericalJacobian(z_ref, v_ref, dv);
+     } else {
+      m_logger.log(Logger::LOG_ERROR, "Tried to fmi2_import_get_directional_derivative() on FMU without directional derivatives or ability to save/load FMU state\n");
+      status = fmi2_status_error;
+     }
     }
 
     // Create response
@@ -1083,4 +1091,47 @@ void Server::fillHDF5Row(char *dest, double t) {
             exit(1);
         }
     }
+}
+
+bool Server::hasCapability(fmi2_capabilities_enu_t cap) const {
+    return fmi2_import_get_capability(m_fmi2Instance, cap) != 0;
+}
+
+vector<fmi2_real_t> Server::computeNumericalJacobian(
+        const vector<fmi2_value_reference_t>& z_ref,
+        const vector<fmi2_value_reference_t>& v_ref,
+        const vector<fmi2_real_t>& dv) {
+    vector<fmi2_real_t> dz;
+    fmi2_FMU_state_t state;
+    double t = currentCommunicationPoint + communicationStepSize;
+    double dt = communicationStepSize;
+
+    fmi2_import_get_fmu_state(m_fmi2Instance, &state);
+
+    //this assumes the system is linear
+    //conveniently this allows us to simplify things to just two do_step() calls
+    vector<fmi2_real_t> v0(v_ref.size()), v1;
+    vector<fmi2_real_t> z0(z_ref.size());
+    vector<fmi2_real_t> z1(z_ref.size());
+
+    fmi2_import_get_real(m_fmi2Instance, v_ref.data(), v_ref.size(), v0.data());
+    fmi2_import_do_step(m_fmi2Instance, t, dt, false);
+    fmi2_import_get_real(m_fmi2Instance, z_ref.data(), z_ref.size(), z0.data());
+    fmi2_import_set_fmu_state(m_fmi2Instance, state);
+
+    for (size_t x = 0; x < v_ref.size(); x++) {
+        v1.push_back(v0[x] + dv[x]);
+    }
+
+    fmi2_import_set_real(m_fmi2Instance, v_ref.data(), v_ref.size(), v1.data());
+    fmi2_import_do_step(m_fmi2Instance, t, dt, false);
+    fmi2_import_get_real(m_fmi2Instance, z_ref.data(), z_ref.size(), z1.data());
+    fmi2_import_set_fmu_state(m_fmi2Instance, state);
+    fmi2_import_free_fmu_state(m_fmi2Instance, &state);
+
+    for (size_t x = 0; x < z_ref.size(); x++) {
+        dz.push_back(z1[x] - z0[x]);
+    }
+
+    return dz;
 }

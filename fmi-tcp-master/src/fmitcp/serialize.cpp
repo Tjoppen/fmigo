@@ -373,8 +373,8 @@ std::string fmitcp::serialize::fmi2_import_free_fmu_state(int message_id, int fm
 }
 
 std::string fmitcp::serialize::fmi2_import_get_directional_derivative(int message_id, int fmuId,
-                                                    const vector<int>& v_ref,
                                                     const vector<int>& z_ref,
+                                                    const vector<int>& v_ref,
                                                     const vector<double>& dv){
     fmitcp_message m;
     m.set_type(fmitcp_message_Type_type_fmi2_import_get_directional_derivative_req);

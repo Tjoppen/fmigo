@@ -452,14 +452,8 @@ fmi2Status fmi2DoStep(fmi2Component cc, fmi2Real currentCommunicationPoint,
     return fmi2OK;
 }
 
-/*
-vUnknown and vKnown swapped order between FMILibrary-2.0b2 and FMILibrary-2.0.1
-
-fmi2Status fmiGetDirectionalDerivative(fmi2Component c, const fmi2ValueReference vUnknown_ref[], size_t nUnknown,
+fmi2Status fmi2GetDirectionalDerivative(fmi2Component c, const fmi2ValueReference vUnknown_ref[], size_t nUnknown,
                 const fmi2ValueReference vKnown_ref[] , size_t nKnown, const fmi2Real dvKnown[], fmi2Real dvUnknown[]) {
-*/
-fmi2Status fmi2GetDirectionalDerivative(fmi2Component c, const fmi2ValueReference vKnown_ref[] , size_t nKnown,
-                const fmi2ValueReference vUnknown_ref[], size_t nUnknown, const fmi2Real dvKnown[], fmi2Real dvUnknown[]) {
     ModelInstance *comp = (ModelInstance *)c;
     size_t x, y;
 

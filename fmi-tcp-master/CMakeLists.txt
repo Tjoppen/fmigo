@@ -10,6 +10,10 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O3")
 INCLUDE_DIRECTORIES(${FMIL_INCLUDE_DIR} ${STRONG_COUPLING_INCLUDE_DIR} ${FMITCP_INCLUDE_DIR} include include/fmitcp src/fmitcp)
 LINK_DIRECTORIES   (${FMIL_LIBS_DIR}    ${STRONG_COUPLING_LIBS_DIR}    ${FMITCP_LIBS_DIR})
 
+if (WIN32)
+    link_directories($ENV{MSMPI_LIB32})
+endif()
+
 set(FMITCP_SRCS
     src/fmitcp/Client.cpp
     src/fmitcp/common.cpp
@@ -66,6 +70,10 @@ SET(EXECUTABLE_OUTPUT_PATH "${CMAKE_CURRENT_LIST_DIR}/bin")
 ADD_EXECUTABLE(${TCP_MASTER_NAME} ${MASTER_HEADERS} ${MASTER_SRCS})
 ADD_EXECUTABLE(${TCP_SERVER_NAME}  src/server/fmi-tcp-server.cpp ${FMITCP_SRCS})
 
+add_executable(${MPI_SERVER_NAME}  src/server/fmi-mpi-server.cpp   src/common/mpi_tools.cpp ${FMITCP_SRCS})
+add_executable(${MPI_MASTER_NAME} ${MASTER_HEADERS} ${MASTER_SRCS} src/common/mpi_tools.cpp )
+set_target_properties(${MPI_MASTER_NAME} PROPERTIES COMPILE_FLAGS -DUSE_MPI)
+
 IF(WIN32)
     SET(WINLIBS
         fmilib
@@ -88,8 +96,11 @@ IF(WIN32)
     else()
         set(WINLIBS ${WINLIBS} sc libumfpack  libamd  libblas libcholmod  libcolamd  libccolamd  libcamd  metis  suitesparseconfig)
     endif()
+    include_directories($ENV{MSMPI_INC} $ENV{MSMPI_INC}x86)
     TARGET_LINK_LIBRARIES(${TCP_MASTER_NAME} ${WINLIBS})
     TARGET_LINK_LIBRARIES(${TCP_SERVER_NAME}  ${WINLIBS})
+    target_link_libraries(${MPI_SERVER_NAME} ${WINLIBS} msmpi)
+    target_link_libraries(${MPI_MASTER_NAME} ${WINLIBS} msmpi)
     INSTALL (FILES
         ${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib/lapack_blas_windows/libblas.dll
         ${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib/lapack_blas_windows/libgcc_s_dw2-1.dll
@@ -118,12 +129,8 @@ ELSE(WIN32)
     # NOTE: switching to MPI compilers. This seems to work fine, surprisingly
     set(CMAKE_C_COMPILER   mpicc)
     set(CMAKE_CXX_COMPILER mpicxx)
-    add_executable(${MPI_SERVER_NAME}  src/server/fmi-mpi-server.cpp   src/common/mpi_tools.cpp ${FMITCP_SRCS})
-    add_executable(${MPI_MASTER_NAME} ${MASTER_HEADERS} ${MASTER_SRCS} src/common/mpi_tools.cpp )
-    set_target_properties(${MPI_MASTER_NAME} PROPERTIES COMPILE_FLAGS -DUSE_MPI)
     target_link_libraries(${MPI_SERVER_NAME} ${LINUXLIBS})
     target_link_libraries(${MPI_MASTER_NAME} ${LINUXLIBS})
-    install(TARGETS ${MPI_MASTER_NAME} ${MPI_SERVER_NAME} DESTINATION bin)
 ENDIF(WIN32)
 
 # Compile proto
@@ -156,6 +163,7 @@ if(NOT WIN32)
 endif()
 
 INSTALL(TARGETS ${TCP_MASTER_NAME} ${TCP_SERVER_NAME} DESTINATION bin)
+install(TARGETS ${MPI_MASTER_NAME} ${MPI_SERVER_NAME} DESTINATION bin)
 
 SET(FMU_SRCS
   fmu/fmu_interface.c

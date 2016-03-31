@@ -23,6 +23,9 @@ namespace fmitcp {
     ::google::protobuf::int32 nextStateId;
     std::map<::google::protobuf::int32, fmi2_FMU_state_t> stateMap;
 
+    //for computeNumericalJacobian
+    double currentCommunicationPoint, communicationStepSize;
+
   protected:
     string m_fmuPath;
 
@@ -88,6 +91,13 @@ namespace fmitcp {
 
     void getHDF5Info();
     void fillHDF5Row(char *dest, double t);
+
+    bool hasCapability(fmi2_capabilities_enu_t cap) const;
+
+    std::vector<fmi2_real_t> computeNumericalJacobian(
+        const std::vector<fmi2_value_reference_t>& z_ref,
+        const std::vector<fmi2_value_reference_t>& v_ref,
+        const std::vector<fmi2_real_t>& dv);
   };
 
 };

@@ -10,6 +10,6 @@ do
     set -e
     cd simpletruck/$d
     rm -f ${d}.fmu
-    CFLAGS="-Wall -O3" python ../../fmu-builder/bin/fmu-builder -t ../../fmi2template/
+    CFLAGS="-Wall -O3" python ../../fmu-builder/bin/fmu-builder -t ../../fmi2template/ -i `pwd`/../../../FMILibrary-2.0.1/ThirdParty/FMI/default
     )
 done

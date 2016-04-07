@@ -1,5 +1,5 @@
 #include "lumped_rod.h"
-#include "fmuTemplate.h"
+#include <math.h>
 
 
 
@@ -84,9 +84,6 @@ static void setStartValues(state_t *s) {
 // called by fmiExitInitializationMode() after setting eventInfo to defaults
 // Used to set the first time event, if any.
 static void initialize(state_t *s, fmi2EventInfo* eventInfo) {
-  
-
-
 }
 
 // called by fmiGetReal, fmiGetContinuousStates and fmiGetDerivatives
@@ -102,22 +99,22 @@ static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReferen
   lumped_rod_sim * sim  = ( lumped_rod_sim  *) s->simulation;
 
     if (vr == ALPHA1 && wrt == TAU1 ) {
-      *partial = sim->mobility[ 0 ];
+      *partial = sim->rod.mobility[ 0 ];
         return fmi2OK;
     }
 
     if (vr == ALPHA1 && wrt == TAU2 ) {
-      *partial = sim->mobility[ 1 ];
+      *partial = sim->rod.mobility[ 1 ];
         return fmi2OK;
     }
 
     if (vr == ALPHA2 && wrt == TAU1 ) {
-      *partial = sim->mobility[ 2 ];
+      *partial = sim->rod.mobility[ 2 ];
         return fmi2OK;
     }
     
     if (vr == ALPHA2 && wrt == TAU2 ) {
-      *partial = sim->mobility[ 3 ];
+      *partial = sim->rod.mobility[ 3 ];
         return fmi2OK;
     }
 

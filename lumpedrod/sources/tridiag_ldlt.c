@@ -32,7 +32,7 @@ tri_matrix  tri_matrix_alloc( int n ){
 /**
    No error checking: use at your own risks!
  */
-void tri_matrix_delete( tri_matrix  m ){
+void tri_matrix_free( tri_matrix  m ){
 
   free ( m.diag ) ; 
   free ( m.sub  ) ; 

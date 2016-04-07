@@ -41,7 +41,7 @@ typedef struct tri_matrix {
  * WARNING: no checks are made here. 
 */ 
 tri_matrix  tri_matrix_alloc( int n ); 
-void tri_matrix_delete( tri_matrix m );
+void tri_matrix_free( tri_matrix m );
 
 /** this is the only one which requires a pointer argument */ 
 int tri_factor( tri_matrix  * m);

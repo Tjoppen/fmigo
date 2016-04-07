@@ -3,12 +3,12 @@
   fmiVersion="2.0"
   description="Lumped element rod which can be thought of as either a
                rotational or translational body"
-  modelName="lumped rod"
+  modelName="lumped_rod"
   guid="{b8998512-96a7-4e6d-8350-6d1f9aeae4a1}"
   numberOfEventIndicators="0">
 
 <CoSimulation
-  modelIdentifier="lumped rod"
+  modelIdentifier="lumped_rod"
   canHandleVariableCommunicationStepSize="false"
   canGetAndSetFMUstate="true"
   providesDirectionalDerivative="true"/>

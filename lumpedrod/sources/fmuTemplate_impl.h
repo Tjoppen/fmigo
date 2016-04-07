@@ -419,12 +419,12 @@ fmi2Status fmi2SerializedFMUstateSize(fmi2Component c, fmi2FMUstate FMUstate, si
 }
 fmi2Status fmi2SerializeFMUstate (fmi2Component c, fmi2FMUstate FMUstate, fmi2Byte serializedState[], size_t size) {
     memcpy(serializedState, FMUstate, size);
-    comp->functions->serializeState( ( (ModelInstance *) comp)->simulation);
+    lumped_rod_sim_store( (( ModelInstance *) c)->s.simulation );
     return fmi2OK;
 }
 fmi2Status fmi2DeSerializeFMUstate (fmi2Component c, const fmi2Byte serializedState[], size_t size, fmi2FMUstate* FMUstate) {
     memcpy(*FMUstate, serializedState, size);
-    comp->functions->deSerializeState( ( (ModelInstance *) comp)->simulation);
+    lumped_rod_sim_restore( (( ModelInstance *) c)->s.simulation );
     return fmi2OK;
 }
 

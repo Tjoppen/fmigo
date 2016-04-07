@@ -13,11 +13,21 @@ int main(int argc, char *argv[]) {
 
     //init
     if (argc < 2) {
-        fprintf(stderr, "USAGE: %s fmu-path\n", argv[0]);
+        fprintf(stderr, "USAGE: %s [-F filter_depth] fmu-path\n", argv[0]);
         return 1;
     }
 
-    FMIServer server(argv[1], false, jm_log_level_nothing, "");
+    //parse arguments
+    const char *fmu_path = argv[1];
+    int filter_depth = 0;
+    
+    if (argc >= 4 && strcmp(argv[1], "-F") == 0) {
+        filter_depth = atoi(argv[2]);
+        fprintf(stderr, "Using output filter with depth %i\n", filter_depth);
+        fmu_path = argv[3];
+    }
+
+    FMIServer server(fmu_path, false, jm_log_level_nothing, "", filter_depth);
 
     for (;;) {
         int rank, tag;

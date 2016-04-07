@@ -22,6 +22,8 @@ OPTIONS\n\
 \n\
     --host [STRING]\n\
         The host name to run the server on. Default is 'localhost'.\n\
+    -F filter_depth\n\
+        Depth of FIR filter applied to all outputs. Filter is disabled by default.\n\
 \n\
     --help\n\
         You're looking at it.\n\
@@ -54,6 +56,7 @@ int main(int argc, char *argv[]) {
   string hostName = "localhost",
       fmuPath = "";
   string hdf5Filename;
+  int filter_depth = 0;
 
   for (j = 1; j < argc; j++) {
     string arg = argv[j];
@@ -116,6 +119,9 @@ int main(int argc, char *argv[]) {
       hostName = argv[j+1];
     } else if (arg == "-5" && !last) {
       hdf5Filename = argv[++j];
+    } else if (arg == "-F" && !last) {
+      filter_depth = atoi(argv[++j]);
+      fprintf(stderr, "Using output filter with depth %i\n", filter_depth);
     } else {
       fmuPath = argv[j];
     }
@@ -126,7 +132,7 @@ int main(int argc, char *argv[]) {
     return EXIT_FAILURE;
   }
 
-  FMIServer server(fmuPath, debugLogging, log_level, hdf5Filename);
+  FMIServer server(fmuPath, debugLogging, log_level, hdf5Filename, filter_depth);
   if (!server.isFmuParsed())
     return EXIT_FAILURE;
 

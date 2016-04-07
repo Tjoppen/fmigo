@@ -8,6 +8,7 @@
 #include "fmitcp.pb.h"
 #include "common.h"
 #include <map>
+#include <list>
 
 using namespace std;
 
@@ -56,12 +57,13 @@ namespace fmitcp {
     std::vector<char> hdf5data; //this should be a map<int,vector<char>> once we start getting into having multiple FMU instances
     size_t rowsz, nrecords;
 
+    int filter_depth;                                   //depth of filter lists. if zero, no filtering
+    std::map<int, std::list<fmi2_real_t> > filter_log;  //the actual log used for filtering
+    std::map<int, fmi2_real_t> next_filter_map;         //next values to push into log
   public:
 
-    Server(string fmuPath, bool debugLogging, jm_log_level_enu_t logLevel, std::string hdf5Filename = "", const Logger &logger = Logger());
+    Server(string fmuPath, bool debugLogging, jm_log_level_enu_t logLevel, std::string hdf5Filename = "", int filter_depth = 0, const Logger &logger = Logger());
     virtual ~Server();
-
-    void init();
 
     /// To be implemented in subclass
     virtual void onClientConnect(){};

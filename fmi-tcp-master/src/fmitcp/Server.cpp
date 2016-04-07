@@ -14,7 +14,7 @@ void jmCallbacksLogger(jm_callbacks* c, jm_string module, jm_log_level_enu_t log
   printf("[module = %s][log level = %s] %s\n", module, jm_log_level_to_string(log_level), message);fflush(NULL);
 }
 
-Server::Server(string fmuPath, bool debugLogging, jm_log_level_enu_t logLevel, std::string hdf5Filename, const Logger &logger) {
+Server::Server(string fmuPath, bool debugLogging, jm_log_level_enu_t logLevel, std::string hdf5Filename, int filter_depth, const Logger &logger) {
   m_fmi2Outputs = NULL;
   m_fmuParsed = true;
   m_fmuPath = fmuPath;
@@ -22,16 +22,9 @@ Server::Server(string fmuPath, bool debugLogging, jm_log_level_enu_t logLevel, s
   m_logLevel = logLevel;
   m_logger = logger;
   this->hdf5Filename = hdf5Filename;
-  init();
-}
-
-Server::~Server() {
-  if(m_fmi2Outputs!=NULL)   fmi2_import_free_variable_list(m_fmi2Outputs);
-}
-
-void Server::init() {
   nextStateId = 0;
   m_sendDummyResponses = false;
+  this->filter_depth = filter_depth;
 
   if(m_fmuPath == "dummy"){
     m_sendDummyResponses = true;
@@ -146,6 +139,10 @@ void Server::init() {
     m_fmuParsed = false;
     return;
   }
+}
+
+Server::~Server() {
+  if(m_fmi2Outputs!=NULL)   fmi2_import_free_variable_list(m_fmi2Outputs);
 }
 
 string Server::clientData(const char *data, size_t size) {
@@ -415,6 +412,21 @@ string Server::clientData(const char *data, size_t size) {
     if (!m_sendDummyResponses) {
       // Step the FMU
       status = fmi2_import_do_step(m_fmi2Instance, currentCommunicationPoint, communicationStepSize, newStep);
+    }
+
+    if (filter_depth) {
+        //advance filter
+        for (auto it : next_filter_map) {
+            filter_log[it.first].push_back(it.second);
+
+            if (filter_log[it.first].size() > filter_depth) {
+                filter_log[it.first].pop_front();
+            }
+        }
+
+        for (auto it : filter_log) {
+            next_filter_map[it.first] = it.second.back();
+        }
     }
 
     // Create response
@@ -756,7 +768,25 @@ string Server::clientData(const char *data, size_t size) {
         status = fmi2_import_get_real(m_fmi2Instance, vr.data(), r->valuereferences_size(), value.data());
         getRealRes->set_status(fmi2StatusToProtofmi2Status(status));
         for (int i = 0 ; i < r->valuereferences_size() ; i++) {
-          getRealRes->add_values(value[i]);
+            //use filter if we should
+            if (filter_depth) {
+                //remember the value for do_step() to push it into the log
+                next_filter_map[vr[i]] = value[i];
+
+                //check that there's a corresponding entry and that it has values
+                auto it = filter_log.find(vr[i]);
+                if (it != filter_log.end() && it->second.size() > 0) {
+                    fmi2_real_t sum = value[i];
+                    for (fmi2_real_t val : it->second) {
+                        sum += val;
+                    }
+                    getRealRes->add_values(sum / (1 + it->second.size()));
+                } else {
+                    getRealRes->add_values(value[i]);
+                }
+            } else {
+                getRealRes->add_values(value[i]);
+            }
         }
     } else {
         // Set dummy values

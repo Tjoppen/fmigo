@@ -3,7 +3,7 @@
 
 
 
-#define MODEL_IDENTIFIER lumped_rod
+#define MODEL_IDENTIFIER lumpedrod
 #define MODEL_GUID "{b8998512-96a7-4e6d-8350-6d1f9aeae4a1}"
 
 enum {
@@ -76,6 +76,19 @@ static void setStartValues(state_t *s) {
     s->r[ TAU2 ]
   };
 
+  p.N = 100; 
+  p.mass = 1000.0;
+  p.compliance = 1e-3;
+  p.step  = 0.01;
+  p.tau  = 0.1; 
+  p.x1 = 0; 
+  p.xN = 0; 
+  p.v1 = 0; 
+  p.vN = 0; 
+  p.f1 =  1e3;
+  p.fN = -1e3;
+  
+  
   lumped_rod_sim * sim =  lumped_rod_sim_create( p );
   s->simulation = (void * ) sim; 
 

@@ -217,11 +217,17 @@ fmi2Status fmi2Reset(fmi2Component c) {
 void fmi2FreeInstance(fmi2Component c) {
     ModelInstance *comp = (ModelInstance *)c;
     if (!comp) return;
+
+    
     if (invalidState(comp, "fmi2FreeInstance", modelTerminated))
         return;
+
     FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2FreeInstance")
     if (comp->instanceName) comp->functions->freeMemory(comp->instanceName);
+
+    lumped_rod_sim_delete( ( lumped_rod_sim * ) comp->s.simulation ) ;
     comp->functions->freeMemory(comp);
+    
 }
 
 // ---------------------------------------------------------------------------

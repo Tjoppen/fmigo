@@ -118,7 +118,14 @@ tri_matrix build_rod_matrix( lumped_rod  rod, double step, double tau ) {
     rod.compliance  / ( double ) ( rod.n - 1 );
   int i;
 
+  
+  if ( n == 0  ){ 
+    fprintf(stderr, "N = 0!\n" );
+    abort();
+  }
+
   m = tri_matrix_alloc( 2 * n - 1 );
+
 
   for( i = 0; i < m.n; i+= 2 ){
     m.diag[ i ] =  rod.mass;
@@ -173,7 +180,10 @@ void lumped_rod_sim_delete( lumped_rod_sim   * sim ) {
   lumped_rod_free( sim->rod      );
   lumped_rod_free( sim->rod_back );
   tri_matrix_free( sim->m );
-  lumped_rod_sim_free ( sim     );
+  free ( sim->z );
+  free ( sim );
+
+  return;
   
 }
 

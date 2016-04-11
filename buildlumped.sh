@@ -11,6 +11,6 @@ do
     NAME=`sed -e 's/.*\///' <<< $d`
     cd $d
     rm -f ${NAME}.fmu
-    CFLAGS="-Wall -O3" python2 ../fmu-builder/bin/fmu-builder   -i `pwd`/../../FMILibrary-2.0.1/ThirdParty/FMI/default
+    CFLAGS="-Wall -O3" python2 ../../fmu-builder/bin/fmu-builder   -i `pwd`/../../FMILibrary-2.0.1/ThirdParty/FMI/default
     )
 done

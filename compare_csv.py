@@ -14,7 +14,7 @@ csv1 = csv.reader(open(sys.argv[1]), delimiter=delim)
 csv2 = csv.reader(open(sys.argv[2]), delimiter=delim)
 
 for row1 in csv1:
-    row2 = csv2.next()
+    row2 = next(csv2)
     if row1 == row2:
         # Nothing to do if they're completely identical
         # This also takes care of headers not being parsable as float

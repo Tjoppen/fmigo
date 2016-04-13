@@ -6,7 +6,6 @@ set -e
 for d in \
     simpletruck/body\
     simpletruck/engine\
-    simpletruck/gearbox\
     simpletruck/gearbox2\
     forcevelocitytruck/body\
     forcevelocitytruck/gearbox\

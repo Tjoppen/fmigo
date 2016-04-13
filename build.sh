@@ -7,6 +7,7 @@ for d in \
     simpletruck/body\
     simpletruck/engine\
     simpletruck/gearbox2\
+    simpletruck/clutch\
     forcevelocitytruck/body\
     forcevelocitytruck/gearbox\
 ;do

@@ -154,6 +154,7 @@ TARGET_LINK_LIBRARIES( ${TARGET} %s )""" % (arch, modelIdentifier, definitions, 
             print(outpath + (" created." if not existed else " updated." if changed else " not changed."));
         else:
             log("Make failed.")
+            exit(1)
     else:
         log("CMake failed.")
-        exit()
+        exit(1)

@@ -33,6 +33,12 @@ enum {
 #define NUMBER_OF_EVENT_INDICATORS 0
 #define FMI_COSIMULATION
 
+#define SIMULATION_TYPE lumped_rod_sim
+#define SIMULATION_INIT setStartValues  //called after getting default values from XML
+#define SIMULATION_FREE lumped_rod_sim_delete
+#define SIMULATION_GET lumped_rod_sim_store
+#define SIMULATION_SET lumped_rod_sim_restore
+
 #include "fmuTemplate.h"
 
 

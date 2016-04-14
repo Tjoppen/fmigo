@@ -221,6 +221,9 @@ void fmi2FreeInstance(fmi2Component c) {
         return;
     FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2FreeInstance")
     if (comp->instanceName) comp->functions->freeMemory(comp->instanceName);
+#ifdef SIMULATION_FREE
+    SIMULATION_FREE(comp->s.simulation);
+#endif
     comp->functions->freeMemory(comp);
 }
 
@@ -398,12 +401,18 @@ fmi2Status fmi2SetString (fmi2Component c, const fmi2ValueReference vr[], size_t
 fmi2Status fmi2GetFMUstate (fmi2Component c, fmi2FMUstate* FMUstate) {
     ModelInstance *comp = (ModelInstance *)c;
     *FMUstate = comp->functions->allocateMemory(1, sizeof(comp->s));
+#ifdef SIMULATION_GET
+    SIMULATION_GET( (( ModelInstance *) c)->s.simulation );
+#endif
     memcpy(*FMUstate, &comp->s, sizeof(comp->s));
     return fmi2OK;
 }
 fmi2Status fmi2SetFMUstate (fmi2Component c, fmi2FMUstate FMUstate) {
     ModelInstance *comp = (ModelInstance *)c;
     memcpy(&comp->s, FMUstate, sizeof(comp->s));
+#ifdef SIMULATION_SET
+    SIMULATION_SET( (( ModelInstance *) c)->s.simulation );
+#endif
     return fmi2OK;
 }
 fmi2Status fmi2FreeFMUstate(fmi2Component c, fmi2FMUstate* FMUstate) {
@@ -413,17 +422,20 @@ fmi2Status fmi2FreeFMUstate(fmi2Component c, fmi2FMUstate* FMUstate) {
     return fmi2OK;
 }
 fmi2Status fmi2SerializedFMUstateSize(fmi2Component c, fmi2FMUstate FMUstate, size_t *size) {
-    ModelInstance *comp = (ModelInstance *)c;
-    *size = sizeof(comp->s);
-    return fmi2OK;
+    return fmi2Error; //disabled for now
+    //ModelInstance *comp = (ModelInstance *)c;
+    //*size = sizeof(comp->s);
+    //return fmi2OK;
 }
 fmi2Status fmi2SerializeFMUstate (fmi2Component c, fmi2FMUstate FMUstate, fmi2Byte serializedState[], size_t size) {
-    memcpy(serializedState, FMUstate, size);
-    return fmi2OK;
+    return fmi2Error; //disabled for now
+    //memcpy(serializedState, FMUstate, size);
+    //return fmi2OK;
 }
 fmi2Status fmi2DeSerializeFMUstate (fmi2Component c, const fmi2Byte serializedState[], size_t size, fmi2FMUstate* FMUstate) {
-    memcpy(*FMUstate, serializedState, size);
-    return fmi2OK;
+    return fmi2Error; //disabled for now
+    //memcpy(*FMUstate, serializedState, size);
+    //return fmi2OK;
 }
 
 fmi2Status fmi2DoStep(fmi2Component cc, fmi2Real currentCommunicationPoint,

@@ -79,18 +79,28 @@ static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real comm
     //else lerp between two values in c
 
     fmi2Real tc = c[0]; //clutch torque
-    int i;
-    for (i = 0; i < 4; i++) {
-        if (deltaphi >= b[i] && deltaphi <= b[i+1]) {
-            fmi2Real k = (deltaphi - b[i]) / (b[i+1] - b[i]);
-            tc = (1-k) * c[i] + k * c[i+1];
-            break;
+    if (deltaphi <= b[0]) {
+        tc = (deltaphi - b[0]) / 0.034906585039886591 *  970.0 + c[0];
+    } else if (deltaphi >= b[4]) {
+        tc = (deltaphi - b[4]) / 0.078539816339744828 * 3450.0 + c[4];
+    } else {
+        int i;
+        for (i = 0; i < 4; i++) {
+            if (deltaphi >= b[i] && deltaphi <= b[i+1]) {
+                fmi2Real k = (deltaphi - b[i]) / (b[i+1] - b[i]);
+                tc = (1-k) * c[i] + k * c[i+1];
+                break;
+            }
+        }
+        if (i >= 4) {
+            //too high (shouldn't happen)
+            tc = c[4];
         }
     }
-    if (i >= 4) {
-        //too high
-        tc = c[4];
-    }
+
+    //add damping. Scania uses D=100
+    tc += 100*(s->r[OMEGA_E] - s->r[OMEGA_L]);
+    //fprintf(stderr, "clutch: deltaphi %f, deltaomega %f -> tc = %f\n", deltaphi, s->r[OMEGA_E] - s->r[OMEGA_L], tc);
 
     s->r[ALPHA_E] = (s->r[TAU_E] - tc) / s->r[J_E];
     s->r[ALPHA_L] = (s->r[TAU_L] + tc) / s->r[J_L];

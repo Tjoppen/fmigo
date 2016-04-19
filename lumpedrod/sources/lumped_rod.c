@@ -235,7 +235,7 @@ void build_rod_rhs( lumped_rod_sim * sim ){
 void lumped_rod_sim_mobility( lumped_rod_sim * sim, double  * mob ){
 
   /* force on first mass */
-  bzero( sim->z, sim->m.n * sizeof( double ) ); 
+  memset( sim->z, 0, sim->m.n * sizeof( double ) );
   sim->z[ 0 ] = ( double ) 1.0; 
   tri_solve( &sim->m, sim->z );
 
@@ -243,7 +243,7 @@ void lumped_rod_sim_mobility( lumped_rod_sim * sim, double  * mob ){
   mob[ 0 ] = sim->z[ 0 ];
   mob[ 1 ] = sim->z[ sim->m.n - 1 ];
 
-  bzero( sim->z, sim->m.n * sizeof( double ) ); 
+  memset( sim->z, 0, sim->m.n * sizeof( double ) );
   sim->z[ sim->m.n - 1  ] = ( double ) 1.0; 
   tri_solve( &sim->m, sim->z );
   

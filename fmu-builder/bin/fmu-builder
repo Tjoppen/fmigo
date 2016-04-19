@@ -27,9 +27,8 @@ parser.add_argument('-i','--includedir',
                     help='Include directories. Separate with commas.',
                     default='')
 parser.add_argument('-t','--templatedir',
-                    type=str,
-                    help='Directory to pull template code from, to avoid copy-pasting it all over the place.',
-                    default='')
+                    action='append',
+                    help='Directories to pull template code from, to avoid copy-pasting it all over the place.')
 args = parser.parse_args()
 link_libraries = args.link.split(",")
 definitions = " -".join(args.definitions.split(","))
@@ -79,8 +78,7 @@ with open(path,'w') as f:
     cwd = os.getcwd()
     source_files = []
     dirs = [pjoin(cwd,"sources")]
-    if args.templatedir != '':
-        dirs.append(pjoin(cwd,args.templatedir))
+    dirs.extend([pjoin(cwd,td) for td in args.templatedir])
     for dir in dirs:
         source_files.extend([ pjoin(dir,s).replace('\\','/') for s in os.listdir(dir) if os.path.isfile(pjoin(dir,s))])
 

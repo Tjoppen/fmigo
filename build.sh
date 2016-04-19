@@ -19,7 +19,6 @@ for d in \
     NAME=`sed -e 's/.*\///' <<< $d`
     pushd $d
         rm -f ${NAME}.fmu
-        echo FMUBUILDER: asd $FMUBUILDER
         CFLAGS="-Wall -O3" python ${FMUBUILDER}
     popd
 done

@@ -102,6 +102,15 @@ fmi2Status setString(fmi2Component comp, fmi2ValueReference vr, fmi2String value
     return fmi2SetString(comp, &vr, 1, &value);
 }
 
+static void zeroState(state_t *s) {
+    //zero s, except simulation pointer
+#ifdef SIMULATION_TYPE
+    memset(s, 0, sizeof(*s) - sizeof(s->simulation));
+#else
+    memset(s, 0, sizeof(*s));
+#endif
+}
+
 // ---------------------------------------------------------------------------
 // FMI functions
 // ---------------------------------------------------------------------------
@@ -150,8 +159,12 @@ fmi2Component fmi2Instantiate(fmi2String instanceName, fmi2Type fmuType, fmi2Str
     comp->functions = functions;
     comp->componentEnvironment = functions->componentEnvironment;
     comp->loggingOn = loggingOn;
+#ifdef SIMULATION_INIT
+    SIMULATION_INIT(&comp->s);
+#else
+    zeroState(&comp->s);
+#endif
     comp->s.state = modelInstantiated;
-    setStartValues(&comp->s); // to be implemented by the includer of this file
 
     FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2Instantiate: GUID=%s", fmuGUID)
 
@@ -188,7 +201,6 @@ fmi2Status fmi2ExitInitializationMode(fmi2Component c) {
         return fmi2Error;
     FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2ExitInitializationMode")
 
-    initialize(&comp->s, &comp->s.eventInfo); // to be implemented by the includer of this file
     comp->s.state = modelInitialized;
     return fmi2OK;
 }
@@ -209,8 +221,12 @@ fmi2Status fmi2Reset(fmi2Component c) {
         return fmi2Error;
     FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2Reset")
 
+#ifdef SIMULATION_INIT
+    SIMULATION_INIT(&comp->s);
+#else
+    zeroState(&comp->s);
+#endif
     comp->s.state = modelInstantiated;
-    setStartValues(&comp->s); // to be implemented by the includer of this file
     return fmi2OK;
 }
 
@@ -285,8 +301,7 @@ fmi2Status fmi2GetReal (fmi2Component c, const fmi2ValueReference vr[], size_t n
     for (i = 0; i < nvr; i++) {
         if (vrOutOfRange(comp, "fmi2GetReal", vr[i], NUMBER_OF_REALS))
             return fmi2Error;
-        value[i] = getReal(&comp->s, vr[i]); // to be implemented by the includer of this file
-
+        value[i] = comp->s.r[vr[i]];
         FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2GetReal: #r%u# = %.16g", vr[i], value[i])
     }
     return fmi2OK;
@@ -700,7 +715,7 @@ fmi2Status fmiGetDerivatives(fmi2Component c, fmi2Real derivatives[], size_t nx)
 #if NUMBER_OF_STATES>0
     for (i = 0; i < nx; i++) {
         fmi2ValueReference vr = vrStates[i] + 1;
-        derivatives[i] = getReal(&comp->s, vr); // to be implemented by the includer of this file
+        derivatives[i] = comp->s.r[vr];
         FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmiGetDerivatives: #r%d# = %.16g", vr, derivatives[i])
     }
 #endif
@@ -734,7 +749,7 @@ fmi2Status fmiGetContinuousStates(fmi2Component c, fmi2Real states[], size_t nx)
         return fmi2Error;
     for (i = 0; i < nx; i++) {
         fmi2ValueReference vr = vrStates[i];
-        states[i] = getReal(comp, vr); // to be implemented by the includer of this file
+        states[i] = comp->s.r[vr];
         FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmiGetContinuousStates: #r%u# = %.16g", vr, states[i])
     }
     return fmi2OK;

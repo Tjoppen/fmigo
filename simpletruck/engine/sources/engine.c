@@ -31,33 +31,6 @@ enum {
 
 #include "fmuTemplate.h"
 
-static void setStartValues(state_t *s) {
-    int x;
-    for (x = 0; x < NUMBER_OF_REALS; x++) {
-        s->r[x] = 0;
-    }
-
-    s->b[CLAMP_BETA]= 1;            //bounded torque by default
-
-    s->r[JINV]      = 1/4.0;
-    s->r[OMEGA_L0]  = 70 / 3.6 / 0.5;   //70 km/h, 1 meter wheel diamater (0.5 radius)
-    s->r[KP]        = 20;               //gain
-    s->r[D]         = 1;                //drag [Nm / (radians/s)]
-    s->r[TAU_MAX]   = 1350;             //max torque
-}
-
-// called by fmiExitInitializationMode() after setting eventInfo to defaults
-// Used to set the first time event, if any.
-static void initialize(state_t *s, fmi2EventInfo* eventInfo) {
-}
-
-// called by fmiGetReal, fmiGetContinuousStates and fmiGetDerivatives
-static fmi2Real getReal(state_t *s, fmi2ValueReference vr){
-    switch (vr) {
-    default:        return s->r[vr];
-    }
-}
-
 //returns partial derivative of vr with respect to wrt
 static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
     if (vr == ALPHA && wrt == TAU) {

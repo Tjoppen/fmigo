@@ -25,14 +25,14 @@
   <ScalarVariable name="theta_e"    valueReference="0"  description="Engine angle"                      causality="input" initial="exact"><Real start="0"/></ScalarVariable>
   <ScalarVariable name="omega_e"    valueReference="1"  description="Engine angular velocity"           causality="input" initial="exact"><Real start="0"/></ScalarVariable>
   <ScalarVariable name="tau_e"      valueReference="2"  description="Engine torque"                     causality="output"><Real start="0"/></ScalarVariable>
-  <ScalarVariable name="d1"         valueReference="3"  description="Damping (engine gear)"             causality="parameter" variability="fixed"><Real start="0"/></ScalarVariable>
+  <ScalarVariable name="d1"         valueReference="3"  description="Damping (engine gear)"             causality="parameter" variability="fixed"><Real start="1"/></ScalarVariable>
 
   <ScalarVariable name="theta_l"    valueReference="4"  description="Load angle"                        causality="output" initial="exact"><Real start="0"/></ScalarVariable>
   <ScalarVariable name="omega_l"    valueReference="5"  description="Load angular velocity"             causality="output" initial="exact"><Real start="0"/></ScalarVariable>
   <ScalarVariable name="tau_l"      valueReference="6"  description="Load torque"                       causality="input"><Real start="0"/></ScalarVariable>
-  <ScalarVariable name="d2"         valueReference="7"  description="Damping (load gear)"               causality="parameter" variability="fixed"><Real start="0"/></ScalarVariable>
+  <ScalarVariable name="d2"         valueReference="7"  description="Damping (load gear)"               causality="parameter" variability="fixed"><Real start="1"/></ScalarVariable>
 
-  <ScalarVariable name="alpha"      valueReference="8" description="Gear ratio (>1 means gear down)"   causality="parameter" variability="fixed"><Real start="0"/></ScalarVariable>
+  <ScalarVariable name="alpha"      valueReference="8" description="Gear ratio (>1 means gear down)"   causality="parameter" variability="fixed"><Real start="4.3"/></ScalarVariable>
 </ModelVariables>
 
 <ModelStructure>

@@ -26,15 +26,17 @@
   <ScalarVariable name="omega_e"    valueReference="1"  description="Engine angular velocity"           causality="output" initial="exact"><Real start="0"/></ScalarVariable>
   <ScalarVariable name="omegadot_e" valueReference="2"  description="Engine angular acceleration"       causality="output" initial="exact"><Real start="0"/></ScalarVariable>
   <ScalarVariable name="tau_e"      valueReference="3"  description="Engine torque"                     causality="input"><Real start="0"/></ScalarVariable>
-  <ScalarVariable name="jinv"       valueReference="4"  description="Inverse moment of inertia"         causality="parameter" variability="fixed"><Real start="0"/></ScalarVariable>
-  <ScalarVariable name="d"          valueReference="5"  description="Damping"                           causality="parameter" variability="fixed"><Real start="0"/></ScalarVariable>
+  <ScalarVariable name="j1"         valueReference="4"  description="Inverse moment of inertia"         causality="parameter" variability="fixed"><Real start="1"/></ScalarVariable>
+  <ScalarVariable name="d1"         valueReference="5"  description="Damping"                           causality="parameter" variability="fixed"><Real start="1"/></ScalarVariable>
 
   <ScalarVariable name="theta_l"    valueReference="6"  description="Load angle"                        causality="output" initial="exact"><Real start="0"/></ScalarVariable>
   <ScalarVariable name="omega_l"    valueReference="7"  description="Load angular velocity"             causality="output" initial="exact"><Real start="0"/></ScalarVariable>
   <ScalarVariable name="omegadot_l" valueReference="8"  description="Load angular acceleration"         causality="output" initial="exact"><Real start="0"/></ScalarVariable>
   <ScalarVariable name="tau_l"      valueReference="9"  description="Load torque"                       causality="input"><Real start="0"/></ScalarVariable>
 
-  <ScalarVariable name="alpha"      valueReference="10" description="Gear ratio (>1 means gear down)"   causality="parameter" variability="fixed"><Real start="0"/></ScalarVariable>
+  <ScalarVariable name="alpha"      valueReference="10" description="Gear ratio (>1 means gear down)"   causality="parameter" variability="fixed"><Real start="4.3"/></ScalarVariable>
+  <ScalarVariable name="j2"         valueReference="11" description="Inverse moment of inertia"         causality="parameter" variability="fixed"><Real start="1"/></ScalarVariable>
+  <ScalarVariable name="d2"         valueReference="12" description="Damping"                           causality="parameter" variability="fixed"><Real start="1"/></ScalarVariable>
 </ModelVariables>
 
 <ModelStructure>

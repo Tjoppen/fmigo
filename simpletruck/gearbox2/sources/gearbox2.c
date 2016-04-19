@@ -31,31 +31,6 @@ enum {
 
 #include "fmuTemplate.h"
 
-static void setStartValues(state_t *s) {
-    int x;
-    for (x = 0; x < NUMBER_OF_REALS; x++) {
-        s->r[x] = 0;
-    }
-
-    s->r[ALPHA]     = 4.3;
-    s->r[J1]        = 1;
-    s->r[J2]        = 1;
-    s->r[D1]        = 1;
-    s->r[D2]        = 1;
-}
-
-// called by fmiExitInitializationMode() after setting eventInfo to defaults
-// Used to set the first time event, if any.
-static void initialize(state_t *s, fmi2EventInfo* eventInfo) {
-}
-
-// called by fmiGetReal, fmiGetContinuousStates and fmiGetDerivatives
-static fmi2Real getReal(state_t *s, fmi2ValueReference vr){
-    switch (vr) {
-    default:        return s->r[vr];
-    }
-}
-
 //returns partial derivative of vr with respect to wrt
 static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
     fmi2Real a2 = s->r[ALPHA]*s->r[ALPHA];

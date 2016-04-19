@@ -27,6 +27,7 @@ namespace fmitcp {
     //for computeNumericalJacobian
     double currentCommunicationPoint, communicationStepSize;
 
+    void setStartValues();
   protected:
     string m_fmuPath;
 

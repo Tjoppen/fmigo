@@ -8,5 +8,5 @@ setup(
     description='Build FMUs simply via command line.',
     author='Stefan Hedman',
     author_email='schteppe@gmail.com',
-    scripts=['bin/fmu-builder']
+    scripts=['bin/fmu-builder','bin/modeldescription2header']
     )

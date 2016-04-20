@@ -159,11 +159,7 @@ fmi2Component fmi2Instantiate(fmi2String instanceName, fmi2Type fmuType, fmi2Str
     comp->functions = functions;
     comp->componentEnvironment = functions->componentEnvironment;
     comp->loggingOn = loggingOn;
-#ifdef SIMULATION_INIT
-    SIMULATION_INIT(&comp->s);
-#else
     zeroState(&comp->s);
-#endif
     comp->s.state = modelInstantiated;
 
     FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2Instantiate: GUID=%s", fmuGUID)
@@ -201,6 +197,9 @@ fmi2Status fmi2ExitInitializationMode(fmi2Component c) {
         return fmi2Error;
     FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2ExitInitializationMode")
 
+#ifdef SIMULATION_INIT
+    SIMULATION_INIT(&comp->s);
+#endif
     comp->s.state = modelInitialized;
     return fmi2OK;
 }
@@ -221,11 +220,7 @@ fmi2Status fmi2Reset(fmi2Component c) {
         return fmi2Error;
     FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2Reset")
 
-#ifdef SIMULATION_INIT
-    SIMULATION_INIT(&comp->s);
-#else
     zeroState(&comp->s);
-#endif
     comp->s.state = modelInstantiated;
     return fmi2OK;
 }

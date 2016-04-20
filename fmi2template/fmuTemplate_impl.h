@@ -285,7 +285,9 @@ fmi2Status fmi2SetDebugLogging(fmi2Component c, fmi2Boolean loggingOn, size_t nC
 }
 
 fmi2Status fmi2GetReal (fmi2Component c, const fmi2ValueReference vr[], size_t nvr, fmi2Real value[]) {
+#ifndef HAVE_GENERATED_GETTERS_SETTERS
     int i;
+#endif
     ModelInstance *comp = (ModelInstance *)c;
     if (invalidState(comp, "fmi2GetReal", modelInitializationMode|modelInitialized|modelStepping|modelError))
         return fmi2Error;
@@ -293,6 +295,9 @@ fmi2Status fmi2GetReal (fmi2Component c, const fmi2ValueReference vr[], size_t n
         return fmi2Error;
     if (nvr > 0 && nullPointer(comp, "fmi2GetReal", "value[]", value))
         return fmi2Error;
+#ifdef HAVE_GENERATED_GETTERS_SETTERS
+    return generated_fmi2GetReal(&comp->s.md, vr, nvr, value);
+#else
     for (i = 0; i < nvr; i++) {
         if (vrOutOfRange(comp, "fmi2GetReal", vr[i], NUMBER_OF_REALS))
             return fmi2Error;
@@ -300,10 +305,13 @@ fmi2Status fmi2GetReal (fmi2Component c, const fmi2ValueReference vr[], size_t n
         FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2GetReal: #r%u# = %.16g", vr[i], value[i])
     }
     return fmi2OK;
+#endif
 }
 
 fmi2Status fmi2GetInteger(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, fmi2Integer value[]) {
+#ifndef HAVE_GENERATED_GETTERS_SETTERS
     int i;
+#endif
     ModelInstance *comp = (ModelInstance *)c;
     if (invalidState(comp, "fmi2GetInteger", modelInitializationMode|modelInitialized|modelStepping|modelError))
         return fmi2Error;
@@ -311,6 +319,9 @@ fmi2Status fmi2GetInteger(fmi2Component c, const fmi2ValueReference vr[], size_t
             return fmi2Error;
     if (nvr > 0 && nullPointer(comp, "fmi2GetInteger", "value[]", value))
             return fmi2Error;
+#ifdef HAVE_GENERATED_GETTERS_SETTERS
+    return generated_fmi2GetInteger(&comp->s.md, vr, nvr, value);
+#else
     for (i = 0; i < nvr; i++) {
         if (vrOutOfRange(comp, "fmi2GetInteger", vr[i], NUMBER_OF_INTEGERS))
             return fmi2Error;
@@ -318,10 +329,13 @@ fmi2Status fmi2GetInteger(fmi2Component c, const fmi2ValueReference vr[], size_t
         FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2GetInteger: #i%u# = %d", vr[i], value[i])
     }
     return fmi2OK;
+#endif
 }
 
 fmi2Status fmi2GetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, fmi2Boolean value[]) {
+#ifndef HAVE_GENERATED_GETTERS_SETTERS
     int i;
+#endif
     ModelInstance *comp = (ModelInstance *)c;
     if (invalidState(comp, "fmi2GetBoolean", modelInitializationMode|modelInitialized|modelStepping|modelError))
         return fmi2Error;
@@ -329,6 +343,9 @@ fmi2Status fmi2GetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t
             return fmi2Error;
     if (nvr > 0 && nullPointer(comp, "fmi2GetBoolean", "value[]", value))
             return fmi2Error;
+#ifdef HAVE_GENERATED_GETTERS_SETTERS
+    return generated_fmi2GetBoolean(&comp->s.md, vr, nvr, value);
+#else
     for (i = 0; i < nvr; i++) {
         if (vrOutOfRange(comp, "fmi2GetBoolean", vr[i], NUMBER_OF_BOOLEANS))
             return fmi2Error;
@@ -336,6 +353,7 @@ fmi2Status fmi2GetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t
         FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2GetBoolean: #b%u# = %s", vr[i], value[i]? "true" : "false")
     }
     return fmi2OK;
+#endif
 }
 
 fmi2Status fmi2GetString (fmi2Component c, const fmi2ValueReference vr[], size_t nvr, fmi2String value[]) {
@@ -344,7 +362,9 @@ fmi2Status fmi2GetString (fmi2Component c, const fmi2ValueReference vr[], size_t
 }
 
 fmi2Status fmi2SetReal (fmi2Component c, const fmi2ValueReference vr[], size_t nvr, const fmi2Real value[]) {
+#ifndef HAVE_GENERATED_GETTERS_SETTERS
     int i;
+#endif
     ModelInstance *comp = (ModelInstance *)c;
     if (invalidState(comp, "fmi2SetReal", modelInstantiated|modelInitializationMode|modelInitialized|modelStepping))
         return fmi2Error;
@@ -353,7 +373,9 @@ fmi2Status fmi2SetReal (fmi2Component c, const fmi2ValueReference vr[], size_t n
     if (nvr > 0 && nullPointer(comp, "fmi2SetReal", "value[]", value))
         return fmi2Error;
     FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2SetReal: nvr = %d", nvr)
-    // no check whether setting the value is allowed in the current state
+#ifdef HAVE_GENERATED_GETTERS_SETTERS
+    return generated_fmi2SetReal(&comp->s.md, vr, nvr, value);
+#else
     for (i = 0; i < nvr; i++) {
         if (vrOutOfRange(comp, "fmi2SetReal", vr[i], NUMBER_OF_REALS))
             return fmi2Error;
@@ -361,10 +383,13 @@ fmi2Status fmi2SetReal (fmi2Component c, const fmi2ValueReference vr[], size_t n
         comp->s.r[vr[i]] = value[i];
     }
     return fmi2OK;
+#endif
 }
 
 fmi2Status fmi2SetInteger(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, const fmi2Integer value[]) {
+#ifndef HAVE_GENERATED_GETTERS_SETTERS
     int i;
+#endif
     ModelInstance *comp = (ModelInstance *)c;
     if (invalidState(comp, "fmi2SetInteger", modelInstantiated|modelInitializationMode|modelInitialized|modelStepping))
         return fmi2Error;
@@ -373,7 +398,9 @@ fmi2Status fmi2SetInteger(fmi2Component c, const fmi2ValueReference vr[], size_t
     if (nvr > 0 && nullPointer(comp, "fmi2SetInteger", "value[]", value))
         return fmi2Error;
     FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2SetInteger: nvr = %d", nvr)
-
+#ifdef HAVE_GENERATED_GETTERS_SETTERS
+    return generated_fmi2SetInteger(&comp->s.md, vr, nvr, value);
+#else
     for (i = 0; i < nvr; i++) {
         if (vrOutOfRange(comp, "fmi2SetInteger", vr[i], NUMBER_OF_INTEGERS))
             return fmi2Error;
@@ -381,10 +408,13 @@ fmi2Status fmi2SetInteger(fmi2Component c, const fmi2ValueReference vr[], size_t
         comp->s.i[vr[i]] = value[i];
     }
     return fmi2OK;
+#endif
 }
 
 fmi2Status fmi2SetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, const fmi2Boolean value[]) {
+#ifndef HAVE_GENERATED_GETTERS_SETTERS
     int i;
+#endif
     ModelInstance *comp = (ModelInstance *)c;
     if (invalidState(comp, "fmi2SetBoolean", modelInstantiated|modelInitializationMode|modelInitialized|modelStepping))
         return fmi2Error;
@@ -393,7 +423,9 @@ fmi2Status fmi2SetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t
     if (nvr>0 && nullPointer(comp, "fmi2SetBoolean", "value[]", value))
         return fmi2Error;
     FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2SetBoolean: nvr = %d", nvr)
-
+#ifdef HAVE_GENERATED_GETTERS_SETTERS
+    return generated_fmi2SetBoolean(&comp->s.md, vr, nvr, value);
+#else
     for (i = 0; i < nvr; i++) {
         if (vrOutOfRange(comp, "fmi2SetBoolean", vr[i], NUMBER_OF_BOOLEANS))
             return fmi2Error;
@@ -401,6 +433,7 @@ fmi2Status fmi2SetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t
         comp->s.b[vr[i]] = value[i];
     }
     return fmi2OK;
+#endif
 }
 
 fmi2Status fmi2SetString (fmi2Component c, const fmi2ValueReference vr[], size_t nvr, const fmi2String value[]) {

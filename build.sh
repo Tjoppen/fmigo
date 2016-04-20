@@ -4,6 +4,7 @@ echo
 
 set -e
 
+MD2HDR="`pwd`/../fmu-builder/bin/modeldescription2header"
 FMUBUILDER="`pwd`/../fmu-builder/bin/fmu-builder -t `pwd`/fmi2template/ -i `pwd`/../FMILibrary-2.0.1/ThirdParty/FMI/default"
 
 for d in \
@@ -19,6 +20,7 @@ for d in \
     NAME=`sed -e 's/.*\///' <<< $d`
     pushd $d
         rm -f ${NAME}.fmu
+        python ${MD2HDR} modelDescription.xml > sources/modelDescription.h
         CFLAGS="-Wall -O3" python ${FMUBUILDER}
     popd
 done

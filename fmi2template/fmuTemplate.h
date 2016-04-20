@@ -48,10 +48,14 @@ typedef struct {
     fmi2Boolean logCategories[NUMBER_OF_CATEGORIES];
 
     struct state_t {
+#ifdef HAVE_MODELDESCRIPTION_STRUCT
+        modelDescription_t md;
+#else
         fmi2Real    r[atleast1(NUMBER_OF_REALS)];
         fmi2Integer i[atleast1(NUMBER_OF_INTEGERS)];
         fmi2Boolean b[atleast1(NUMBER_OF_BOOLEANS)];
         fmi2Boolean isPositive[atleast1(NUMBER_OF_EVENT_INDICATORS)];
+#endif
         fmi2Real time;
         ModelState state;
         fmi2EventInfo eventInfo;

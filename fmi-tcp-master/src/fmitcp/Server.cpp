@@ -4,6 +4,7 @@
 #include "Logger.h"
 #include "common.h"
 #include "fmitcp.pb.h"
+#include <FMI2/fmi2_xml_variable.h>
 
 using namespace fmitcp;
 
@@ -141,6 +142,57 @@ Server::Server(string fmuPath, bool debugLogging, jm_log_level_enu_t logLevel, s
   }
 }
 
+void Server::setStartValues() {
+    //step through all variables, setReal/Integer/whatever() their start values, when present
+    int nstart = 0;
+    for (size_t x = 0; x < fmi2_import_get_variable_list_size(m_fmi2Variables); x++) {
+        fmi2_import_variable_t *var = fmi2_import_get_variable(m_fmi2Variables, x);
+        fmi2_value_reference_t vr = fmi2_import_get_variable_vr(var);
+        fmi2_base_type_enu_t type = fmi2_import_get_variable_base_type(var);
+
+        if (fmi2_xml_get_variable_has_start(var)) {
+            nstart++;
+
+            switch(type) {
+            case fmi2_base_type_real: {
+                fmi2_real_t r = fmi2_xml_get_real_variable_start(fmi2_xml_get_variable_as_real(var));
+                fmi2_import_set_real(m_fmi2Instance, &vr, 1, &r);
+                //fprintf(stderr, "Setting start=%f for VR=%i\n", r, vr);
+                break;
+            }
+            case fmi2_base_type_int: {
+                fmi2_integer_t i = fmi2_xml_get_integer_variable_start(fmi2_xml_get_variable_as_integer(var));
+                fmi2_import_set_integer(m_fmi2Instance, &vr, 1, &i);
+                //fprintf(stderr, "Setting start=%i for VR=%i\n", i, vr);
+                break;
+            }
+            case fmi2_base_type_bool: {
+                fmi2_boolean_t b = fmi2_xml_get_boolean_variable_start(fmi2_xml_get_variable_as_boolean(var));
+                fmi2_import_set_boolean(m_fmi2Instance, &vr, 1, &b);
+                //fprintf(stderr, "Setting start=%i for VR=%i\n", b, vr);
+                break;
+            }
+            case fmi2_base_type_str: {
+                fmi2_string_t s = fmi2_xml_get_string_variable_start(fmi2_xml_get_variable_as_string(var));
+                fmi2_import_set_string(m_fmi2Instance, &vr, 1, &s);
+                //fprintf(stderr, "Setting start=%s for VR=%i\n", s, vr);
+                break;
+            }
+            case fmi2_base_type_enum: {
+                fmi2_integer_t i = fmi2_xml_get_enum_variable_start(fmi2_xml_get_variable_as_enum(var));
+                fmi2_import_set_integer(m_fmi2Instance, &vr, 1, &i);
+                //fprintf(stderr, "Setting start=%i for VR=%i\n", i, vr);
+                break;
+            }
+            }
+        }
+    }
+
+    if (nstart) {
+        fprintf(stderr, "%s: Initialized %i variables with values from modelDescription.xml\n", m_instanceName, nstart);
+    }
+}
+
 Server::~Server() {
   if(m_fmi2Outputs!=NULL)   fmi2_import_free_variable_list(m_fmi2Outputs);
 }
@@ -168,6 +220,7 @@ string Server::clientData(const char *data, size_t size) {
     if (!m_sendDummyResponses) {
       // instantiate FMU
       status = fmi2_import_instantiate(m_fmi2Instance, m_instanceName, fmi2_cosimulation, m_resourcePath.c_str(), visible);
+      setStartValues();
     }
 
     // Create response message

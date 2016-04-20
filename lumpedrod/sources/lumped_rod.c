@@ -5,7 +5,11 @@
 #include <stdio.h>
 #include "lumped_rod.h"
 
-
+/** to allow simpler copy paste in store/restore functions */ 
+#define COPY_FWD( a , b )  a  = b
+#define COPY_BCK( a , b )  b  = a
+#define MEMCP_FWD( a , b , c)  memcpy(a, b, c)
+#define MEMCP_BCK( b , a , c)  memcpy(a, b, c)
 
 
 /**
@@ -142,7 +146,9 @@ tri_matrix build_rod_matrix( lumped_rod  rod, double step, double tau ) {
   }
   
 
-  tri_factor( &m );			/* this only has to be factored once */
+  tri_factor( &m );			/** this only has to be factored
+					 *  once unless we introduce
+					 *  nonlinear elasticity */
 
   return m;
   

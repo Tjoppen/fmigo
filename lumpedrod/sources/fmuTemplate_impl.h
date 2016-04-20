@@ -225,7 +225,9 @@ void fmi2FreeInstance(fmi2Component c) {
     FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2FreeInstance")
     if (comp->instanceName) comp->functions->freeMemory(comp->instanceName);
 
-    lumped_rod_sim_delete( ( lumped_rod_sim * ) comp->s.simulation ) ;
+    /** pass by pointer since 'state' could be large */ 
+    freeSimulation( &comp->s );
+     
     comp->functions->freeMemory(comp);
     
 }
@@ -456,6 +458,7 @@ fmi2Status fmi2DoStep(fmi2Component cc, fmi2Real currentCommunicationPoint,
         return fmi2Error;
     }
 
+    /** Pass by pointer since 'state'  could be large */
     doStep(&comp->s, currentCommunicationPoint, communicationStepSize);
     return fmi2OK;
 }

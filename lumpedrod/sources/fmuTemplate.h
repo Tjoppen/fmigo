@@ -55,7 +55,7 @@ typedef struct {
         fmi2Real time;
         ModelState state;
         fmi2EventInfo eventInfo;
-      void * simulation;        /* this contains everything in the
+        void * simulation;        /* this contains everything in the
 				   simulation not related the FMI */
       
     } s;

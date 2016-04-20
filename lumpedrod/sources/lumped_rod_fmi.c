@@ -60,8 +60,13 @@ static void lumped_rod_fmi_sync_in( lumped_rod_sim * sim, state_t *s){
 
 }
  
+/**
+   Instantiate the simulation and set initial conditions.
+ */
 static void setStartValues(state_t *s) {
-
+  /** read the init values given by the master, either from command line
+  arguments or as defaults from modelDescription.xml
+  */
   lumped_rod_sim_parameters p = {
     s->r[ J0 ], 
     s->i[ NELEM ],
@@ -76,37 +81,38 @@ static void setStartValues(state_t *s) {
     s->r[ TAU2 ]
   };
 
-  p.N = 100; 
-  p.mass = 1000.0;
-  p.compliance = 1e-3;
-  p.step  = 0.01;
-  p.tau  = 0.1; 
-  p.x1 = 0; 
-  p.xN = 0; 
-  p.v1 = 0; 
-  p.vN = 0; 
-  p.f1 =  1e3;
-  p.fN = -1e3;
-  
-  
+ 
+  /** WARNING: hack!  Default values didn't work as time of writing */
+  p.N = 100; p.mass = 1000.0; p.compliance = 1e-3; p.step  = 0.01;
+  p.tau  = 0.1; p.x1 = 0; p.xN = 0; p.v1 = 0; 
+  p.vN = 0; p.f1 =  1e3; p.fN = -1e3; 
+
   lumped_rod_sim * sim =  lumped_rod_sim_create( p );
   s->simulation = (void * ) sim; 
 
 }
 
-// called by fmiExitInitializationMode() after setting eventInfo to defaults
-// Used to set the first time event, if any.
+/**
+   called by fmiExitInitializationMode() after setting eventInfo to defaults
+   Used to set the first time event, if any. 
+ 
+ */
 static void initialize(state_t *s, fmi2EventInfo* eventInfo) {
 }
 
-// called by fmiGetReal, fmiGetContinuousStates and fmiGetDerivatives
+/** 
+  called by fmiGetReal, fmiGetContinuousStates and fmiGetDerivatives
+ NOTE: this should be in the boiler plate code
+*/
 static fmi2Real getReal(state_t *s, fmi2ValueReference vr){
     switch (vr) {
     default:        return s->r[vr];
     }
 }
 
-//returns partial derivative of vr with respect to wrt
+/** Returns partial derivative of vr with respect to wrt  
+ *  We could define a smart convention here.  
+*/ 
 static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
 
   lumped_rod_sim * sim  = ( lumped_rod_sim  *) s->simulation;
@@ -137,15 +143,19 @@ static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReferen
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
   
   lumped_rod_sim * sim  = ( lumped_rod_sim  *) s->simulation;
-   
+  /*  Copy the input variable from the state vector */
   lumped_rod_fmi_sync_in(sim, s);
 
   int n = ( int ) ceil( communicationStepSize / sim->step );
-  
+  /* Execute the simulation */
   step_rod_sim( sim , n );
-  
+  /* Copy state variables to ouputs */
   lumped_rod_fmi_sync_out( sim, s);
   
+}
+
+static void freeSimulation( state_t * s ) {
+  lumped_rod_sim_delete( ( lumped_rod_sim * ) s->simulation ) ;
 }
 
 // include code that implements the FMI based on the above definitions

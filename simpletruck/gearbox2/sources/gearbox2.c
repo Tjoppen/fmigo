@@ -1,75 +1,20 @@
-#define MODEL_IDENTIFIER gearbox2
-#define MODEL_GUID "{9b727233-c36a-4ede-a3e9-ec1ab2cee17b}"
-
-#define TAU_MAX 135
-
-enum {
-    THETA_E,    //engine angle (output, state)
-    OMEGA_E,    //engine angular velocity (output, state)
-    OMEGADOT_E, //engine angular acceleration (output)
-    TAU_E,      //engine torque (input)
-    J1,         //moment of inertia of input gear [1/(kg*m^2)] (parameter)
-    D1,         //drag of input gear (parameter)
-
-    THETA_L,    //load angle (output)
-    OMEGA_L,    //load angular velocity (output)
-    OMEGADOT_L, //load angular acceleration (output)
-    TAU_L,      //load torque (input)
-
-    ALPHA,       //gear ratio from engine to load (less than one means gear down) (parameter)
-    J2,         //moment of inertia of output gear [1/(kg*m^2)] (parameter)
-    D2,         //drag of output gear (parameter)
-
-    NUMBER_OF_REALS
-};
-
-#define NUMBER_OF_INTEGERS 0
-#define NUMBER_OF_BOOLEANS 0
-#define NUMBER_OF_STATES 0
-#define NUMBER_OF_EVENT_INDICATORS 0
-#define FMI_COSIMULATION
-
+#include "modelDescription.h"
 #include "fmuTemplate.h"
-
-static void setStartValues(state_t *s) {
-    int x;
-    for (x = 0; x < NUMBER_OF_REALS; x++) {
-        s->r[x] = 0;
-    }
-
-    s->r[ALPHA]     = 4.3;
-    s->r[J1]        = 1;
-    s->r[J2]        = 1;
-    s->r[D1]        = 1;
-    s->r[D2]        = 1;
-}
-
-// called by fmiExitInitializationMode() after setting eventInfo to defaults
-// Used to set the first time event, if any.
-static void initialize(state_t *s, fmi2EventInfo* eventInfo) {
-}
-
-// called by fmiGetReal, fmiGetContinuousStates and fmiGetDerivatives
-static fmi2Real getReal(state_t *s, fmi2ValueReference vr){
-    switch (vr) {
-    default:        return s->r[vr];
-    }
-}
 
 //returns partial derivative of vr with respect to wrt
 static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
-    fmi2Real a2 = s->r[ALPHA]*s->r[ALPHA];
+    fmi2Real a2 = s->md.alpha*s->md.alpha;
 
-    if (vr == OMEGADOT_E && wrt == TAU_E) {
-        *partial = a2/(s->r[J2] + a2*s->r[J1]);
+    if (vr == VR_OMEGADOT_E && wrt == VR_TAU_E) {
+        *partial = a2/(s->md.j2 + a2*s->md.j1);
         return fmi2OK;
     }
-    if ((vr == OMEGADOT_L && wrt == TAU_E) || (vr == OMEGADOT_E && wrt == TAU_L)) {
-        *partial = s->r[ALPHA]/(s->r[J2] + a2*s->r[J1]);
+    if ((vr == VR_OMEGADOT_L && wrt == VR_TAU_E) || (vr == VR_OMEGADOT_E && wrt == VR_TAU_L)) {
+        *partial = s->md.alpha/(s->md.j2 + a2*s->md.j1);
         return fmi2OK;
     }
-    if (vr == OMEGADOT_L && wrt == TAU_L) {
-        *partial =  1/(s->r[J2] + a2*s->r[J1]);   //load side sees a higher moment of inertia (lower inverse)
+    if (vr == VR_OMEGADOT_L && wrt == VR_TAU_L) {
+        *partial =  1/(s->md.j2 + a2*s->md.j1);   //load side sees a higher moment of inertia (lower inverse)
         return fmi2OK;
     }
 
@@ -77,22 +22,22 @@ static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReferen
 }
 
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
-    fmi2Real a = s->r[ALPHA], a2 = a*a, h = communicationStepSize;
-    fmi2Real A = s->r[TAU_E] - s->r[D1]*s->r[OMEGA_E];
-    fmi2Real B = s->r[TAU_L] - s->r[D2]*s->r[OMEGA_L];
+    fmi2Real a = s->md.alpha, a2 = a*a, h = communicationStepSize;
+    fmi2Real A = s->md.tau_e - s->md.d1*s->md.omega_e;
+    fmi2Real B = s->md.tau_l - s->md.d2*s->md.omega_l;
 
-    fmi2Real lambda = (-s->r[OMEGA_E] + a*s->r[OMEGA_L] - h*s->r[TAU_E]/s->r[J1] + h*a*s->r[TAU_L]/s->r[J2]) / (s->r[J1] + a2*s->r[J2]);
+    fmi2Real lambda = (-s->md.omega_e + a*s->md.omega_l - h*s->md.tau_e/s->md.j1 + h*a*s->md.tau_l/s->md.j2) / (s->md.j1 + a2*s->md.j2);
     
-    fmi2Real delta1 = (   lambda + h*A) / s->r[J1];
-    fmi2Real delta2 = (-a*lambda + h*B) / s->r[J2];
+    fmi2Real delta1 = (   lambda + h*A) / s->md.j1;
+    fmi2Real delta2 = (-a*lambda + h*B) / s->md.j2;
 
-    s->r[OMEGADOT_E]  = delta1 / h;
-    s->r[OMEGA_E]    += delta1;
-    s->r[THETA_E]    += s->r[OMEGA_E] * h;
+    s->md.omegadot_e  = delta1 / h;
+    s->md.omega_e    += delta1;
+    s->md.theta_e    += s->md.omega_e * h;
 
-    s->r[OMEGADOT_L]  = delta2 / h;
-    s->r[OMEGA_L]    += delta2;
-    s->r[THETA_L]    += s->r[OMEGA_L] * h;
+    s->md.omegadot_l  = delta2 / h;
+    s->md.omega_l    += delta2;
+    s->md.theta_l    += s->md.omega_l * h;
 }
 
 // include code that implements the FMI based on the above definitions

@@ -25,30 +25,6 @@ enum {
 
 #include "fmuTemplate.h"
 
-static void setStartValues(state_t *s) {
-    int x;
-    for (x = 0; x < NUMBER_OF_REALS; x++) {
-        s->r[x] = 0;
-    }
-
-    s->r[JINV]      = 1/10000.0;
-    s->r[KC]        = 5000;
-    s->r[DC]        = 250;
-    s->r[D]         = 10;           //drag [Nm / (radians/s)]
-}
-
-// called by fmiExitInitializationMode() after setting eventInfo to defaults
-// Used to set the first time event, if any.
-static void initialize(state_t *s, fmi2EventInfo* eventInfo) {
-}
-
-// called by fmiGetReal, fmiGetContinuousStates and fmiGetDerivatives
-static fmi2Real getReal(state_t *s, fmi2ValueReference vr){
-    switch (vr) {
-    default:        return s->r[vr];
-    }
-}
-
 //returns partial derivative of vr with respect to wrt
 static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
     return fmi2Error;

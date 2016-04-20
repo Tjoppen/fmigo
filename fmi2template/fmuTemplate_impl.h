@@ -102,6 +102,15 @@ fmi2Status setString(fmi2Component comp, fmi2ValueReference vr, fmi2String value
     return fmi2SetString(comp, &vr, 1, &value);
 }
 
+static void zeroState(state_t *s) {
+    //zero s, except simulation pointer
+#ifdef SIMULATION_TYPE
+    memset(s, 0, sizeof(*s) - sizeof(s->simulation));
+#else
+    memset(s, 0, sizeof(*s));
+#endif
+}
+
 // ---------------------------------------------------------------------------
 // FMI functions
 // ---------------------------------------------------------------------------
@@ -150,8 +159,8 @@ fmi2Component fmi2Instantiate(fmi2String instanceName, fmi2Type fmuType, fmi2Str
     comp->functions = functions;
     comp->componentEnvironment = functions->componentEnvironment;
     comp->loggingOn = loggingOn;
+    zeroState(&comp->s);
     comp->s.state = modelInstantiated;
-    setStartValues(&comp->s); // to be implemented by the includer of this file
 
     FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2Instantiate: GUID=%s", fmuGUID)
 
@@ -188,7 +197,9 @@ fmi2Status fmi2ExitInitializationMode(fmi2Component c) {
         return fmi2Error;
     FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2ExitInitializationMode")
 
-    initialize(&comp->s, &comp->s.eventInfo); // to be implemented by the includer of this file
+#ifdef SIMULATION_INIT
+    SIMULATION_INIT(&comp->s);
+#endif
     comp->s.state = modelInitialized;
     return fmi2OK;
 }
@@ -209,8 +220,8 @@ fmi2Status fmi2Reset(fmi2Component c) {
         return fmi2Error;
     FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2Reset")
 
+    zeroState(&comp->s);
     comp->s.state = modelInstantiated;
-    setStartValues(&comp->s); // to be implemented by the includer of this file
     return fmi2OK;
 }
 
@@ -221,6 +232,9 @@ void fmi2FreeInstance(fmi2Component c) {
         return;
     FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2FreeInstance")
     if (comp->instanceName) comp->functions->freeMemory(comp->instanceName);
+#ifdef SIMULATION_FREE
+    SIMULATION_FREE(comp->s.simulation);
+#endif
     comp->functions->freeMemory(comp);
 }
 
@@ -271,7 +285,9 @@ fmi2Status fmi2SetDebugLogging(fmi2Component c, fmi2Boolean loggingOn, size_t nC
 }
 
 fmi2Status fmi2GetReal (fmi2Component c, const fmi2ValueReference vr[], size_t nvr, fmi2Real value[]) {
+#ifndef HAVE_GENERATED_GETTERS_SETTERS
     int i;
+#endif
     ModelInstance *comp = (ModelInstance *)c;
     if (invalidState(comp, "fmi2GetReal", modelInitializationMode|modelInitialized|modelStepping|modelError))
         return fmi2Error;
@@ -279,18 +295,23 @@ fmi2Status fmi2GetReal (fmi2Component c, const fmi2ValueReference vr[], size_t n
         return fmi2Error;
     if (nvr > 0 && nullPointer(comp, "fmi2GetReal", "value[]", value))
         return fmi2Error;
+#ifdef HAVE_GENERATED_GETTERS_SETTERS
+    return generated_fmi2GetReal(&comp->s.md, vr, nvr, value);
+#else
     for (i = 0; i < nvr; i++) {
         if (vrOutOfRange(comp, "fmi2GetReal", vr[i], NUMBER_OF_REALS))
             return fmi2Error;
-        value[i] = getReal(&comp->s, vr[i]); // to be implemented by the includer of this file
-
+        value[i] = comp->s.r[vr[i]];
         FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2GetReal: #r%u# = %.16g", vr[i], value[i])
     }
     return fmi2OK;
+#endif
 }
 
 fmi2Status fmi2GetInteger(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, fmi2Integer value[]) {
+#ifndef HAVE_GENERATED_GETTERS_SETTERS
     int i;
+#endif
     ModelInstance *comp = (ModelInstance *)c;
     if (invalidState(comp, "fmi2GetInteger", modelInitializationMode|modelInitialized|modelStepping|modelError))
         return fmi2Error;
@@ -298,6 +319,9 @@ fmi2Status fmi2GetInteger(fmi2Component c, const fmi2ValueReference vr[], size_t
             return fmi2Error;
     if (nvr > 0 && nullPointer(comp, "fmi2GetInteger", "value[]", value))
             return fmi2Error;
+#ifdef HAVE_GENERATED_GETTERS_SETTERS
+    return generated_fmi2GetInteger(&comp->s.md, vr, nvr, value);
+#else
     for (i = 0; i < nvr; i++) {
         if (vrOutOfRange(comp, "fmi2GetInteger", vr[i], NUMBER_OF_INTEGERS))
             return fmi2Error;
@@ -305,10 +329,13 @@ fmi2Status fmi2GetInteger(fmi2Component c, const fmi2ValueReference vr[], size_t
         FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2GetInteger: #i%u# = %d", vr[i], value[i])
     }
     return fmi2OK;
+#endif
 }
 
 fmi2Status fmi2GetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, fmi2Boolean value[]) {
+#ifndef HAVE_GENERATED_GETTERS_SETTERS
     int i;
+#endif
     ModelInstance *comp = (ModelInstance *)c;
     if (invalidState(comp, "fmi2GetBoolean", modelInitializationMode|modelInitialized|modelStepping|modelError))
         return fmi2Error;
@@ -316,6 +343,9 @@ fmi2Status fmi2GetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t
             return fmi2Error;
     if (nvr > 0 && nullPointer(comp, "fmi2GetBoolean", "value[]", value))
             return fmi2Error;
+#ifdef HAVE_GENERATED_GETTERS_SETTERS
+    return generated_fmi2GetBoolean(&comp->s.md, vr, nvr, value);
+#else
     for (i = 0; i < nvr; i++) {
         if (vrOutOfRange(comp, "fmi2GetBoolean", vr[i], NUMBER_OF_BOOLEANS))
             return fmi2Error;
@@ -323,6 +353,7 @@ fmi2Status fmi2GetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t
         FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2GetBoolean: #b%u# = %s", vr[i], value[i]? "true" : "false")
     }
     return fmi2OK;
+#endif
 }
 
 fmi2Status fmi2GetString (fmi2Component c, const fmi2ValueReference vr[], size_t nvr, fmi2String value[]) {
@@ -331,7 +362,9 @@ fmi2Status fmi2GetString (fmi2Component c, const fmi2ValueReference vr[], size_t
 }
 
 fmi2Status fmi2SetReal (fmi2Component c, const fmi2ValueReference vr[], size_t nvr, const fmi2Real value[]) {
+#ifndef HAVE_GENERATED_GETTERS_SETTERS
     int i;
+#endif
     ModelInstance *comp = (ModelInstance *)c;
     if (invalidState(comp, "fmi2SetReal", modelInstantiated|modelInitializationMode|modelInitialized|modelStepping))
         return fmi2Error;
@@ -340,7 +373,9 @@ fmi2Status fmi2SetReal (fmi2Component c, const fmi2ValueReference vr[], size_t n
     if (nvr > 0 && nullPointer(comp, "fmi2SetReal", "value[]", value))
         return fmi2Error;
     FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2SetReal: nvr = %d", nvr)
-    // no check whether setting the value is allowed in the current state
+#ifdef HAVE_GENERATED_GETTERS_SETTERS
+    return generated_fmi2SetReal(&comp->s.md, vr, nvr, value);
+#else
     for (i = 0; i < nvr; i++) {
         if (vrOutOfRange(comp, "fmi2SetReal", vr[i], NUMBER_OF_REALS))
             return fmi2Error;
@@ -348,10 +383,13 @@ fmi2Status fmi2SetReal (fmi2Component c, const fmi2ValueReference vr[], size_t n
         comp->s.r[vr[i]] = value[i];
     }
     return fmi2OK;
+#endif
 }
 
 fmi2Status fmi2SetInteger(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, const fmi2Integer value[]) {
+#ifndef HAVE_GENERATED_GETTERS_SETTERS
     int i;
+#endif
     ModelInstance *comp = (ModelInstance *)c;
     if (invalidState(comp, "fmi2SetInteger", modelInstantiated|modelInitializationMode|modelInitialized|modelStepping))
         return fmi2Error;
@@ -360,7 +398,9 @@ fmi2Status fmi2SetInteger(fmi2Component c, const fmi2ValueReference vr[], size_t
     if (nvr > 0 && nullPointer(comp, "fmi2SetInteger", "value[]", value))
         return fmi2Error;
     FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2SetInteger: nvr = %d", nvr)
-
+#ifdef HAVE_GENERATED_GETTERS_SETTERS
+    return generated_fmi2SetInteger(&comp->s.md, vr, nvr, value);
+#else
     for (i = 0; i < nvr; i++) {
         if (vrOutOfRange(comp, "fmi2SetInteger", vr[i], NUMBER_OF_INTEGERS))
             return fmi2Error;
@@ -368,10 +408,13 @@ fmi2Status fmi2SetInteger(fmi2Component c, const fmi2ValueReference vr[], size_t
         comp->s.i[vr[i]] = value[i];
     }
     return fmi2OK;
+#endif
 }
 
 fmi2Status fmi2SetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, const fmi2Boolean value[]) {
+#ifndef HAVE_GENERATED_GETTERS_SETTERS
     int i;
+#endif
     ModelInstance *comp = (ModelInstance *)c;
     if (invalidState(comp, "fmi2SetBoolean", modelInstantiated|modelInitializationMode|modelInitialized|modelStepping))
         return fmi2Error;
@@ -380,7 +423,9 @@ fmi2Status fmi2SetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t
     if (nvr>0 && nullPointer(comp, "fmi2SetBoolean", "value[]", value))
         return fmi2Error;
     FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2SetBoolean: nvr = %d", nvr)
-
+#ifdef HAVE_GENERATED_GETTERS_SETTERS
+    return generated_fmi2SetBoolean(&comp->s.md, vr, nvr, value);
+#else
     for (i = 0; i < nvr; i++) {
         if (vrOutOfRange(comp, "fmi2SetBoolean", vr[i], NUMBER_OF_BOOLEANS))
             return fmi2Error;
@@ -388,6 +433,7 @@ fmi2Status fmi2SetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t
         comp->s.b[vr[i]] = value[i];
     }
     return fmi2OK;
+#endif
 }
 
 fmi2Status fmi2SetString (fmi2Component c, const fmi2ValueReference vr[], size_t nvr, const fmi2String value[]) {
@@ -398,12 +444,18 @@ fmi2Status fmi2SetString (fmi2Component c, const fmi2ValueReference vr[], size_t
 fmi2Status fmi2GetFMUstate (fmi2Component c, fmi2FMUstate* FMUstate) {
     ModelInstance *comp = (ModelInstance *)c;
     *FMUstate = comp->functions->allocateMemory(1, sizeof(comp->s));
+#ifdef SIMULATION_GET
+    SIMULATION_GET( (( ModelInstance *) c)->s.simulation );
+#endif
     memcpy(*FMUstate, &comp->s, sizeof(comp->s));
     return fmi2OK;
 }
 fmi2Status fmi2SetFMUstate (fmi2Component c, fmi2FMUstate FMUstate) {
     ModelInstance *comp = (ModelInstance *)c;
     memcpy(&comp->s, FMUstate, sizeof(comp->s));
+#ifdef SIMULATION_SET
+    SIMULATION_SET( (( ModelInstance *) c)->s.simulation );
+#endif
     return fmi2OK;
 }
 fmi2Status fmi2FreeFMUstate(fmi2Component c, fmi2FMUstate* FMUstate) {
@@ -413,17 +465,20 @@ fmi2Status fmi2FreeFMUstate(fmi2Component c, fmi2FMUstate* FMUstate) {
     return fmi2OK;
 }
 fmi2Status fmi2SerializedFMUstateSize(fmi2Component c, fmi2FMUstate FMUstate, size_t *size) {
-    ModelInstance *comp = (ModelInstance *)c;
-    *size = sizeof(comp->s);
-    return fmi2OK;
+    return fmi2Error; //disabled for now
+    //ModelInstance *comp = (ModelInstance *)c;
+    //*size = sizeof(comp->s);
+    //return fmi2OK;
 }
 fmi2Status fmi2SerializeFMUstate (fmi2Component c, fmi2FMUstate FMUstate, fmi2Byte serializedState[], size_t size) {
-    memcpy(serializedState, FMUstate, size);
-    return fmi2OK;
+    return fmi2Error; //disabled for now
+    //memcpy(serializedState, FMUstate, size);
+    //return fmi2OK;
 }
 fmi2Status fmi2DeSerializeFMUstate (fmi2Component c, const fmi2Byte serializedState[], size_t size, fmi2FMUstate* FMUstate) {
-    memcpy(*FMUstate, serializedState, size);
-    return fmi2OK;
+    return fmi2Error; //disabled for now
+    //memcpy(*FMUstate, serializedState, size);
+    //return fmi2OK;
 }
 
 fmi2Status fmi2DoStep(fmi2Component cc, fmi2Real currentCommunicationPoint,
@@ -688,7 +743,7 @@ fmi2Status fmiGetDerivatives(fmi2Component c, fmi2Real derivatives[], size_t nx)
 #if NUMBER_OF_STATES>0
     for (i = 0; i < nx; i++) {
         fmi2ValueReference vr = vrStates[i] + 1;
-        derivatives[i] = getReal(&comp->s, vr); // to be implemented by the includer of this file
+        derivatives[i] = comp->s.r[vr];
         FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmiGetDerivatives: #r%d# = %.16g", vr, derivatives[i])
     }
 #endif
@@ -722,7 +777,7 @@ fmi2Status fmiGetContinuousStates(fmi2Component c, fmi2Real states[], size_t nx)
         return fmi2Error;
     for (i = 0; i < nx; i++) {
         fmi2ValueReference vr = vrStates[i];
-        states[i] = getReal(comp, vr); // to be implemented by the includer of this file
+        states[i] = comp->s.r[vr];
         FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmiGetContinuousStates: #r%u# = %.16g", vr, states[i])
     }
     return fmi2OK;

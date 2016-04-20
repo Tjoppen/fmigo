@@ -4,3 +4,6 @@
 *.mex*
 slprj/
 nbproject/
+modelDescription.h
+*.fmu
+

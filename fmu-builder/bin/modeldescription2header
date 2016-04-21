@@ -1,0 +1,156 @@
+#!/usr/bin/python
+from __future__ import print_function
+import sys
+import xml.etree.ElementTree as e
+
+def warning(*objs):
+    print("WARNING: ", *objs, file=sys.stderr)
+
+if len(sys.argv) < 2:
+    print('USAGE: '+sys.argv[0] +' modelDescription-filename > header-filename', file=sys.stderr)
+    print('Example: '+sys.argv[0]+' modelDescription.xml > header.h', file=sys.stderr)
+    exit(1)
+
+# Parse xml file
+tree = e.parse(sys.argv[1])
+root = tree.getroot()
+
+# Get FMU version
+fmiVersion = root.get('fmiVersion')
+
+# Get model identifier.
+fmuType = "cs"
+modelIdentifier = "modelIdentifier"
+
+if fmiVersion == "1.0":
+    modelIdentifier = root.get('modelIdentifier')
+elif fmiVersion == "2.0":
+    me = root.find('ModelExchange')
+    cs = root.find('CoSimulation')
+    if cs != None:
+        fmuType = "cs"
+        modelIdentifier = cs.get('modelIdentifier')
+    elif me != None:
+        fmuType = me
+        modelIdentifier = me.get('modelIdentifier')
+    else:
+        warning('FMU is neither ModelExchange or CoSimulation')
+        exit(1)
+
+
+reals = {}
+ints  = {}
+bools = {}
+
+for sv in root.find('ModelVariables').findall('ScalarVariable'):
+    name = sv.attrib['name']
+    vr = int(sv.attrib['valueReference'])
+
+    if name in reals.values() or name in ints.values() or name in bools.values():
+        warning(sys.argv[1]+' contains multiple variables named "' + name + '"!')
+        exit(1)
+
+    if sv.find('Real')      != None:
+        if vr in reals:
+            warning(sys.argv[1]+' contains multiple Reals with VR='+str(vr))
+            exit(1)
+        reals[vr] = name
+    elif sv.find('Integer') != None or sv.find('Enum')    != None:
+        if vr in ints:
+            warning(sys.argv[1]+' contains multiple Integers/Enums with VR='+str(vr))
+            exit(1)
+        ints[vr] = name
+    elif sv.find('Boolean') != None:
+        if vr in bools:
+            warning(sys.argv[1]+' contains multiple Booleans with VR='+str(vr))
+            exit(1)
+        bools[vr] = name
+    else:
+        warning('Variable "' + sc.attrib['name'] + '" has unknown/unsupported type')
+        exit(1)
+
+print('''#ifndef MODELDESCRIPTION_H
+#define MODELDESCRIPTION_H
+#include "FMI2/fmi2Functions.h" //for fmi2Real etc.
+
+#define MODEL_IDENTIFIER %s
+#define MODEL_GUID "%s"
+%s
+#define NUMBER_OF_REALS %i
+#define NUMBER_OF_INTEGERS %i
+#define NUMBER_OF_BOOLEANS %i
+#define NUMBER_OF_STATES 0
+#define NUMBER_OF_EVENT_INDICATORS 0
+''' % (
+    modelIdentifier,
+    root.get('guid'),
+    '#define FMI_COSIMULATION' if fmuType == 'cs' else '',
+    len(reals),
+    len(ints),
+    len(bools),
+))
+
+print('''
+#define HAVE_MODELDESCRIPTION_STRUCT
+typedef struct {
+%s
+%s
+%s
+} modelDescription_t;
+''' % (
+    '\n'.join(['    fmi2Real '+value+'; //VR='+str(key) for key,value in reals.iteritems()]),
+    '\n'.join(['    fmi2Integer '+value+'; //VR='+str(key) for key,value in ints.iteritems()]),
+    '\n'.join(['    fmi2Boolean '+value+'; //VR='+str(key) for key,value in bools.iteritems()]),
+))
+
+print('''
+%s
+%s
+%s''' % (
+    '\n'.join(['#define VR_'+value.upper()+' '+str(key) for key,value in reals.iteritems()]),
+    '\n'.join(['#define VR_'+value.upper()+' '+str(key) for key,value in ints.iteritems()]),
+    '\n'.join(['#define VR_'+value.upper()+' '+str(key) for key,value in bools.iteritems()]),
+))
+
+print('''
+//the following getters and setters are static to avoid getting linking errors if this file is included in more than one place
+
+#define HAVE_GENERATED_GETTERS_SETTERS  //for letting the template know that we have our own getters and setters
+''')
+
+def gen_getters_setters(t, d):
+    print('''
+static fmi2Status generated_fmi2Get%s(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2%s value[]) {
+    int i;
+    for (i = 0; i < nvr; i++) {
+        switch (vr[i]) {
+%s
+        default: return fmi2Error;
+        }
+    }
+    return fmi2OK;
+}
+
+static fmi2Status generated_fmi2Set%s(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2%s value[]) {
+    int i;
+    for (i = 0; i < nvr; i++) {
+        switch (vr[i]) {
+%s
+        default: return fmi2Error;
+        }
+    }
+    return fmi2OK;
+}''' % (
+        t,t,
+        '\n'.join(['        case %i: value[i] = md->%s; break;' % (key, value) for key,value in d.iteritems()]),
+        t,t,
+        '\n'.join(['        case %i: md->%s = value[i]; break;' % (key, value) for key,value in d.iteritems()]),
+    ))
+
+
+gen_getters_setters('Real',    reals)
+gen_getters_setters('Integer', ints)
+gen_getters_setters('Boolean', bools)
+
+print('#endif //MODELDESCRIPTION_H')
+

@@ -4,3 +4,5 @@ lib
 testout
 *.pb.cc
 *.pb.h
+*.o
+

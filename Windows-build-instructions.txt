@@ -1,7 +1,7 @@
 To build on Windows you may use build.bat. There are some prerequisites though:
 
 Microsoft Visual Studio 2013
-CMake: https://cmake.org/download/
+CMake: https://cmake.org/download/ (Must be Cmake 3.3.2)
 MS-MPI: https://msdn.microsoft.com/en-us/library/windows/desktop/bb524831(v=vs.85).aspx Download and install both msmpisdk.msi and MSMpiSetup.exe
 
 If you have everything set up correctly then the following commands should work in cmd.exe: cmake, msbuild, mpiexec.
@@ -10,6 +10,7 @@ If not then you need to set point %PATH% to where these programs are located.
 Run build.bat to build the system.
 
 For being able to run the tests:
+Python
 bash: Should be shipped with your git installation. Any bash which has support for forking should be good.
 win-bash: https://sourceforge.net/projects/win-bash/ For dd, sed etc. DO NOT USE win-bash's bash.exe - it does not support forking.
 An alternative to using the tools in win-bash may be to point %PATH% to C:\Program Files\Git\usr\bin. This has not been tested though.

@@ -34,9 +34,9 @@ static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real comm
 
     fmi2Real tc = c[0]; //clutch torque
     if (deltaphi <= b[0]) {
-        tc = (deltaphi - b[0]) / 0.034906585039886591 *  970.0 + c[0];
+        tc = (deltaphi - b[0]) / (b[1] - b[0]) *  970.0 + c[0];
     } else if (deltaphi >= b[4]) {
-        tc = (deltaphi - b[4]) / 0.078539816339744828 * 3450.0 + c[4];
+        tc = (deltaphi - b[4]) / (b[4] - b[3]) * 3450.0 + c[4];
     } else {
         int i;
         for (i = 0; i < 4; i++) {

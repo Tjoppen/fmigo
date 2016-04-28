@@ -60,7 +60,7 @@ typedef struct {
         ModelState state;
         fmi2EventInfo eventInfo;
 #ifdef SIMULATION_TYPE
-        SIMULATION_TYPE * simulation;  /* this contains everything in the
+        SIMULATION_TYPE simulation;  /* this contains everything in the
                                           simulation not related the FMI */
 #endif
     } s;

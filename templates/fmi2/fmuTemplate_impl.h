@@ -233,7 +233,7 @@ void fmi2FreeInstance(fmi2Component c) {
     FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2FreeInstance")
     if (comp->instanceName) comp->functions->freeMemory(comp->instanceName);
 #ifdef SIMULATION_FREE
-    SIMULATION_FREE(comp->s.simulation);
+    SIMULATION_FREE(&comp->s.simulation);
 #endif
     comp->functions->freeMemory(comp);
 }
@@ -445,7 +445,7 @@ fmi2Status fmi2GetFMUstate (fmi2Component c, fmi2FMUstate* FMUstate) {
     ModelInstance *comp = (ModelInstance *)c;
     *FMUstate = comp->functions->allocateMemory(1, sizeof(comp->s));
 #ifdef SIMULATION_GET
-    SIMULATION_GET( (( ModelInstance *) c)->s.simulation );
+    SIMULATION_GET( &(( ModelInstance *) c)->s.simulation );
 #endif
     memcpy(*FMUstate, &comp->s, sizeof(comp->s));
     return fmi2OK;
@@ -454,7 +454,7 @@ fmi2Status fmi2SetFMUstate (fmi2Component c, fmi2FMUstate FMUstate) {
     ModelInstance *comp = (ModelInstance *)c;
     memcpy(&comp->s, FMUstate, sizeof(comp->s));
 #ifdef SIMULATION_SET
-    SIMULATION_SET( (( ModelInstance *) c)->s.simulation );
+    SIMULATION_SET( &(( ModelInstance *) c)->s.simulation );
 #endif
     return fmi2OK;
 }

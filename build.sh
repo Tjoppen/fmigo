@@ -27,7 +27,6 @@ for d in \
     simpletruck/clutch\
     forcevelocitytruck/body\
     forcevelocitytruck/gearbox\
-    lumpedrod\
 ;do
     echo Building $d
     NAME=`sed -e 's/.*\///' <<< $d`

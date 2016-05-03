@@ -56,9 +56,11 @@ typedef struct {
         fmi2Boolean b[atleast1(NUMBER_OF_BOOLEANS)];
         fmi2Boolean isPositive[atleast1(NUMBER_OF_EVENT_INDICATORS)];
 #endif
+#ifndef CONSOLE
         fmi2Real time;
         ModelState state;
         fmi2EventInfo eventInfo;
+#endif
 #ifdef SIMULATION_TYPE
         SIMULATION_TYPE simulation;  /* this contains everything in the
                                           simulation not related the FMI */

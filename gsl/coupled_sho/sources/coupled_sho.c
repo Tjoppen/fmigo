@@ -1,9 +1,15 @@
 #include "modelDescription.h"
 #include "gsl-interface.h"
 
-#define SIMULATION_TYPE cgsl_simulation
+typedef struct {
+    cgsl_simulation sim;
+    fmi2Real momega2;
+    fmi2Real mzeta_cw;
+} coupled_sho_simulation;
+
+#define SIMULATION_TYPE coupled_sho_simulation
 #define SIMULATION_INIT coupled_sho_init
-#define SIMULATION_FREE cgsl_free
+#define SIMULATION_FREE coupled_sho_free
 
 #include "fmuTemplate.h"
 
@@ -21,24 +27,22 @@
 
 static int coupled_sho (double t, const double x[], double dxdt[], void * params){
 
-  modelDescription_t    * p  = (modelDescription_t *)params;
-  double momega2 = p->mu *p->omega * p->omega;
-  double mzeta_cw = p->zeta_c * p->omega;
+  state_t *s  = (state_t*)params;
 
   /** compute the coupling force: NOTE THE SIGN!
    *  This is the force *applied* to the coupled system
    */
-  p->force_c =   mzeta_cw * ( x[ 1 ] - p->v0 )  + momega2 * x[ 2 ];
+  s->md.force_c =   s->simulation.mzeta_cw * ( x[ 1 ] - s->md.v0 )  + s->simulation.momega2 * x[ 2 ];
 
   dxdt[ 0 ]  = x[ 1 ];
   /** internal dynamics */ 
-  dxdt[ 1 ] = - ( x[ 0 ] - p->x0 ) - p->zeta * x[ 1 ];
+  dxdt[ 1 ] = - ( x[ 0 ] - s->md.x0 ) - s->md.zeta * x[ 1 ];
   /** coupling */ 
-  dxdt[ 1 ] -= p->force_c; 
+  dxdt[ 1 ] -= s->md.force_c;
   /** additional driver */ 
-  dxdt[ 1 ] += p->force;
+  dxdt[ 1 ] += s->md.force;
 
-  dxdt[ 2 ] = x[ 1 ] - p->v0;
+  dxdt[ 2 ] = x[ 1 ] - s->md.v0;
 
   return GSL_SUCCESS;
 
@@ -48,9 +52,7 @@ static int coupled_sho (double t, const double x[], double dxdt[], void * params
 
 static int jac_coupled_sho (double t, const double x[], double *dfdx, double dfdt[], void *params)
 {
-  modelDescription_t  * p = (modelDescription_t *)params;
-  double momega2 = p->mu *p->omega * p->omega;
-  double mzeta_cw = p->zeta_c * p->omega;
+  state_t *s  = (state_t*)params;
 
   gsl_matrix_view dfdx_mat = gsl_matrix_view_array (dfdx, 3, 3);
   gsl_matrix * J = &dfdx_mat.matrix; 
@@ -62,8 +64,8 @@ static int jac_coupled_sho (double t, const double x[], double *dfdx, double dfd
 
   /** second row */
   gsl_matrix_set (J, 1, 0, -1 );
-  gsl_matrix_set (J, 1, 1, - ( p->zeta + mzeta_cw ) );
-  gsl_matrix_set (J, 1, 2, - momega2);
+  gsl_matrix_set (J, 1, 1, - ( s->md.zeta + s->simulation.mzeta_cw ) );
+  gsl_matrix_set (J, 1, 2, - s->simulation.momega2);
 
   /** third row */
   gsl_matrix_set (J, 2, 0, 0.0 );
@@ -80,10 +82,13 @@ static int jac_coupled_sho (double t, const double x[], double *dfdx, double dfd
 
 static void coupled_sho_init(state_t *s) {
     const double initials[3] = {s->md.x, s->md.v, s->md.dx};
-    //TODO: see https://mimmi.math.umu.se/vtb/umit-fmus/issues/5
-    //p->momega2 = p->mu *p->omega * p->omega;
-    //p->mzeta_cw = p->zeta_c * p->omega; 
-    s->simulation = cgsl_init_simulation( 3, initials, &s->md, coupled_sho, jac_coupled_sho, rkf45, 1e-5, 0, 0, 0, NULL );
+    s->simulation.momega2 = s->md.mu *s->md.omega * s->md.omega;
+    s->simulation.mzeta_cw = s->md.zeta_c * s->md.omega;
+    s->simulation.sim = cgsl_init_simulation( 3, initials, s, coupled_sho, jac_coupled_sho, rkf45, 1e-5, 0, 0, 0, NULL );
+}
+
+static void coupled_sho_free(coupled_sho_simulation *css) {
+    cgsl_free(&css->sim);
 }
 
 //returns partial derivative of vr with respect to wrt
@@ -92,8 +97,39 @@ static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReferen
 }
 
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
-    cgsl_step_to( &s->simulation, currentCommunicationPoint, communicationStepSize );
+    cgsl_step_to( &s->simulation.sim, currentCommunicationPoint, communicationStepSize );
 }
+
+//gcc -g coupled_sho.c ../../../templates/gsl/*.c -DCONSOLE -I../../../templates/gsl -I../../../templates/fmi2 -lgsl -lgslcblas -lm -Wall
+#ifdef CONSOLE
+int main(void) {
+    state_t s = {
+        {
+            1.0,
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0, 
+            0.0,
+            8,
+            -4,
+            0,
+            0,
+        }
+    };
+    coupled_sho_init(&s);
+    s.simulation.sim.file = fopen( "foo.m", "w+" );
+    s.simulation.sim.save = 1;
+    s.simulation.sim.print = 1;
+
+    cgsl_step_to( &s.simulation.sim, 0.0, 10.0 );
+    cgsl_free(&s.simulation.sim);
+    return 0;
+}
+#else
 
 // include code that implements the FMI based on the above definitions
 #include "fmuTemplate_impl.h"
+
+#endif

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fmiModelDescription
+  fmiVersion="2.0"
+  description="Unit mass subject to a force"
+  modelName="mass_force"
+  guid="{829a504d-15f3-4312-a01f-ca78b6600f18}"
+  numberOfEventIndicators="0">
+
+<CoSimulation
+  modelIdentifier="mass_force"
+  canHandleVariableCommunicationStepSize="true"
+  canGetAndSetFMUstate="true"
+  providesDirectionalDerivative="true"/>
+
+<LogCategories>
+  <Category name="logAll"/>
+  <Category name="logError"/>
+  <Category name="logFmiCall"/>
+  <Category name="logEvent"/>
+</LogCategories>
+
+<DefaultExperiment startTime="0" stopTime="10" stepSize="0.1"/>
+
+<ModelVariables>
+    <!-- inputs -->
+    <ScalarVariable name="force"    valueReference="0" description="driving force" causality="input" initial="exact"><Real start="0"/></ScalarVariable>
+
+    <!-- output variables -->
+    <ScalarVariable name="x"        valueReference="1" description="position"      causality="output"><Real start="0"/></ScalarVariable>
+    <ScalarVariable name="v"        valueReference="2" description="velocity"      causality="output"><Real start="0"/></ScalarVariable>
+</ModelVariables>
+
+<ModelStructure>
+  <Outputs>
+    <Unknown index="2"/>
+    <Unknown index="3"/>
+  </Outputs>
+  <Derivatives/>
+  <DiscreteStates/>
+  <InitialUnknowns />
+</ModelStructure>
+
+</fmiModelDescription>

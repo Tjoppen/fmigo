@@ -10,6 +10,7 @@ FMUBUILDER="`pwd`/../fmu-builder/bin/fmu-builder -t `pwd`/templates/fmi2/ -i `pw
 # GSL FMUs
 for d in \
     gsl/coupled_sho\
+    gsl/mass_force\
 ;do
     echo Building $d
     GSL="-t `pwd`/templates/gsl/"

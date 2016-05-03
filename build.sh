@@ -13,7 +13,7 @@ for d in \
     gsl/mass_force\
 ;do
     echo Building $d
-    GSL="-t `pwd`/templates/gsl/"
+    GSL="-t `pwd`/templates/gsl/ -l gsl,gslcblas,m"
     pushd $d
         rm -f $d.fmu
         python ${MD2HDR} modelDescription.xml > sources/modelDescription.h

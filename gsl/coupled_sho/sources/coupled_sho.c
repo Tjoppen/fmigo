@@ -80,11 +80,17 @@ static int jac_coupled_sho (double t, const double x[], double *dfdx, double dfd
   return GSL_SUCCESS;
 }
 
+static void sync_out(state_t *s) {
+    s->md.x = s->simulation.sim.x[0];
+    s->md.v = s->simulation.sim.x[1];
+}
+
 static void coupled_sho_init(state_t *s) {
     const double initials[3] = {s->md.xstart, s->md.vstart, s->md.dxstart};
     s->simulation.momega2 = s->md.mu *s->md.omega * s->md.omega;
     s->simulation.mzeta_cw = s->md.zeta_c * s->md.omega;
     s->simulation.sim = cgsl_init_simulation( 3, initials, s, coupled_sho, jac_coupled_sho, rkf45, 1e-5, 0, 0, 0, NULL );
+    sync_out(s);
 }
 
 static void coupled_sho_free(coupled_sho_simulation *css) {
@@ -98,8 +104,7 @@ static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReferen
 
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
     cgsl_step_to( &s->simulation.sim, currentCommunicationPoint, communicationStepSize );
-    s->md.x = s->simulation.sim.x[0];
-    s->md.v = s->simulation.sim.x[1];
+    sync_out(s);
 }
 
 //gcc -g coupled_sho.c ../../../templates/gsl/*.c -DCONSOLE -I../../../templates/gsl -I../../../templates/fmi2 -lgsl -lgslcblas -lm -Wall

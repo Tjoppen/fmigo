@@ -51,9 +51,15 @@ jac_mass_force (double t, const double x[], double *dfdx, double dfdt[], void *p
   return GSL_SUCCESS;
 }
 
+static void sync_out(state_t *s) {
+    s->md.x = s->simulation.x[0];
+    s->md.v = s->simulation.x[1];
+}
+
 static void mass_force_init(state_t *s) {
     const double initials[2] = {s->md.x, s->md.v};
     s->simulation = cgsl_init_simulation( 2, initials, s, mass_force, jac_mass_force, rkf45, 1e-5, 0, 0, 0, NULL );
+    sync_out(s);
 }
 
 //returns partial derivative of vr with respect to wrt
@@ -63,8 +69,7 @@ static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReferen
 
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
     cgsl_step_to( &s->simulation, currentCommunicationPoint, communicationStepSize );
-    s->md.x = s->simulation.x[0];
-    s->md.v = s->simulation.x[1];
+    sync_out(s);
 }
 
 //gcc -g mass_force.c ../../../templates/gsl/*.c -DCONSOLE -I../../../templates/gsl -I../../../templates/fmi2 -lgsl -lgslcblas -lm -Wall

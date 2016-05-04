@@ -63,6 +63,8 @@ static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReferen
 
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
     cgsl_step_to( &s->simulation, currentCommunicationPoint, communicationStepSize );
+    s->md.x = s->simulation.x[0];
+    s->md.v = s->simulation.x[1];
 }
 
 //gcc -g mass_force.c ../../../templates/gsl/*.c -DCONSOLE -I../../../templates/gsl -I../../../templates/fmi2 -lgsl -lgslcblas -lm -Wall

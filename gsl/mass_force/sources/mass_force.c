@@ -22,7 +22,7 @@ int mass_force (double t, const double x[], double dxdt[], void * params){
    */
 
   dxdt[ 0 ] = x[ 1 ];
-  dxdt[ 1 ] =  s->md.force;
+  dxdt[ 1 ] =  s->md.force + s->md.force_c;
 
   return GSL_SUCCESS;
 
@@ -71,6 +71,7 @@ int main(void) {
     state_t s = {
         {
             1,
+            0,
             0,
             0,
         }

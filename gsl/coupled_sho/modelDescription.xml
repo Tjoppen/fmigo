@@ -36,12 +36,14 @@
     <ScalarVariable name="force"    valueReference="6"  description="driving force"                             causality="input" initial="exact"><Real start="0"/></ScalarVariable>
 
     <!-- variables which are not reported but must be initialized -->
-    <ScalarVariable name="x"        valueReference="7"  description="initial position"                          causality="parameter" variability="fixed"><Real start="1"/></ScalarVariable>
-    <ScalarVariable name="v"        valueReference="8"  description="initial velocity"                          causality="parameter" variability="fixed"><Real start="1"/></ScalarVariable>
-    <ScalarVariable name="dx"       valueReference="9"  description="(estimated) angle difference"              causality="parameter" variability="fixed"><Real start="1"/></ScalarVariable>
+    <ScalarVariable name="xstart"   valueReference="7"  description="initial position"                          causality="parameter" variability="fixed"><Real start="1"/></ScalarVariable>
+    <ScalarVariable name="vstart"   valueReference="8"  description="initial velocity"                          causality="parameter" variability="fixed"><Real start="1"/></ScalarVariable>
+    <ScalarVariable name="dxstart"  valueReference="9"  description="(estimated) angle difference"              causality="parameter" variability="fixed"><Real start="1"/></ScalarVariable>
 
     <!-- outputs -->
-    <ScalarVariable name="force_c"  valueReference="10" description="value of coupling force at last step."     causality="output"><Real start="0"/></ScalarVariable>
+    <ScalarVariable name="force_c"  valueReference="10" description="value of coupling force at last step."     causality="output"><Real /></ScalarVariable>
+    <ScalarVariable name="x"        valueReference="11" description="position"                                  causality="output"><Real /></ScalarVariable>
+    <ScalarVariable name="v"        valueReference="12" description="velocity"                                  causality="output"><Real /></ScalarVariable>
 </ModelVariables>
 
 <ModelStructure>

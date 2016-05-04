@@ -49,6 +49,8 @@
 <ModelStructure>
   <Outputs>
     <Unknown index="11"/>
+    <Unknown index="12"/>
+    <Unknown index="13"/>
   </Outputs>
   <Derivatives/>
   <DiscreteStates/>

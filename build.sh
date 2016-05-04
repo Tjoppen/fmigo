@@ -14,8 +14,9 @@ for d in \
 ;do
     echo Building $d
     GSL="-t `pwd`/templates/gsl/ -l gsl,gslcblas,m"
+    NAME=`sed -e 's/.*\///' <<< $d`
     pushd $d
-        rm -f $d.fmu
+        rm -f ${NAME}.fmu
         python ${MD2HDR} modelDescription.xml > sources/modelDescription.h
         CFLAGS="-Wall -O3" python ${FMUBUILDER} ${GSL}
     popd

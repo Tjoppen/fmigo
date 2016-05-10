@@ -78,6 +78,7 @@ static fmi2Boolean nullPointer(ModelInstance* comp, const char *f, const char *a
     return fmi2False;
 }
 
+#ifndef HAVE_GENERATED_GETTERS_SETTERS
 static fmi2Boolean vrOutOfRange(ModelInstance *comp, const char *f, fmi2ValueReference vr, int end) {
     if (vr >= end) {
         FILTERED_LOG(comp, fmi2Error, LOG_ERROR, "%s: Illegal value reference %u.", f, vr)
@@ -86,6 +87,7 @@ static fmi2Boolean vrOutOfRange(ModelInstance *comp, const char *f, fmi2ValueRef
     }
     return fmi2False;
 }
+#endif
 
 static fmi2Status unsupportedFunction(fmi2Component c, const char *fName, int statesExpected) {
     ModelInstance *comp = (ModelInstance *)c;

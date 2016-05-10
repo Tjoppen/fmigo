@@ -23,6 +23,7 @@ for d in \
 done
 
 for d in \
+    lumpedrod\
     simpletruck/body\
     simpletruck/engine\
     simpletruck/gearbox2\

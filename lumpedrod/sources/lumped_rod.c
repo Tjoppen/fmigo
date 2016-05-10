@@ -50,11 +50,11 @@ void lumped_rod_free( lumped_rod rod ){
 
 
 /** WARNING:  no error checking */
-lumped_rod_sim * lumped_rod_sim_alloc( int n ) {
+lumped_rod_sim lumped_rod_sim_alloc( int n ) {
 
-  lumped_rod_sim * sim = ( lumped_rod_sim * ) malloc( sizeof( lumped_rod_sim ) );
+  lumped_rod_sim sim;
   
-  sim->z       = (double * ) malloc( ( 2 * n + 1 ) * sizeof( double ) );
+  sim.z       = (double * ) malloc( ( 2 * n + 1 ) * sizeof( double ) );
 
   return sim;
 
@@ -159,23 +159,23 @@ tri_matrix build_rod_matrix( lumped_rod  rod, double step, double tau ) {
    struct has a valid value for rod_mass, N,   and compliance.  Everything
    else is derived from that. 
 */
-lumped_rod_sim * lumped_rod_sim_create( lumped_rod_sim_parameters p) {
-  lumped_rod_sim * sim = lumped_rod_sim_alloc( p.N );
-  sim->rod      = lumped_rod_alloc( p.N, p.mass, p.compliance ); 
-  sim->rod_back = lumped_rod_alloc( p.N, p.mass, p.compliance ); /* for store / restore */
-  sim->step = p.step;
-  sim->tau  = p.tau;
-  sim->gamma_v = ( double  ) 1.0  /  (  1.0  +  4.0  * sim->tau );
-  sim->gamma_x = - (double ) 4.0  * sim->gamma_v   /  sim->step  ;
+lumped_rod_sim lumped_rod_sim_create( lumped_rod_sim_parameters p) {
+  lumped_rod_sim sim = lumped_rod_sim_alloc( p.N );
+  sim.rod      = lumped_rod_alloc( p.N, p.mass, p.compliance ); 
+  sim.rod_back = lumped_rod_alloc( p.N, p.mass, p.compliance ); /* for store / restore */
+  sim.step = p.step;
+  sim.tau  = p.tau;
+  sim.gamma_v = ( double  ) 1.0  /  (  1.0  +  4.0  * sim.tau );
+  sim.gamma_x = - (double ) 4.0  * sim.gamma_v   /  sim.step  ;
 
-  sim->m = build_rod_matrix( sim->rod, sim->step, sim->tau ) ;
-  lumped_rod_sim_mobility( sim, sim->rod.mobility );
-  sim->forces[ 0 ] = p.f1; 
-  sim->forces[ 1 ] = p.fN; 
+  sim.m = build_rod_matrix( sim.rod, sim.step, sim.tau ) ;
+  lumped_rod_sim_mobility( &sim, sim.rod.mobility );
+  sim.forces[ 0 ] = p.f1; 
+  sim.forces[ 1 ] = p.fN; 
   
-  lumped_rod_initialize(  & ( sim->rod ), p.x1, p.xN, p.v1, p.vN );
+  lumped_rod_initialize(  & ( sim.rod ), p.x1, p.xN, p.v1, p.vN );
 
-  lumped_rod_sim_sync_state_out( sim );
+  lumped_rod_sim_sync_state_out( &sim );
   
   return sim;
 }
@@ -186,7 +186,6 @@ void lumped_rod_sim_delete( lumped_rod_sim   * sim ) {
   lumped_rod_free( sim->rod_back );
   tri_matrix_free( sim->m );
   free ( sim->z );
-  free ( sim );
 
   return;
   

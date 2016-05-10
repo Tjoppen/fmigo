@@ -93,53 +93,31 @@ static void setStartValues(state_t *s) {
   p.tau  = 0.1; p.x1 = 0; p.xN = 0; p.v1 = 0; 
   p.vN = 0; p.f1 =  1e3; p.fN = -1e3; 
 
-  lumped_rod_sim * sim =  lumped_rod_sim_create( p );
-  s->simulation = (void * ) sim; 
+  s->simulation = lumped_rod_sim_create( p ); 
 
-}
-
-/**
-   called by fmiExitInitializationMode() after setting eventInfo to defaults
-   Used to set the first time event, if any. 
- 
- */
-static void initialize(state_t *s, fmi2EventInfo* eventInfo) {
-}
-
-/** 
-  called by fmiGetReal, fmiGetContinuousStates and fmiGetDerivatives
- NOTE: this should be in the boiler plate code
-*/
-static fmi2Real getReal(state_t *s, fmi2ValueReference vr){
-    switch (vr) {
-    default:        return s->r[vr];
-    }
 }
 
 /** Returns partial derivative of vr with respect to wrt  
  *  We could define a smart convention here.  
 */ 
 static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
-
-  lumped_rod_sim * sim  = ( lumped_rod_sim  *) s->simulation;
-
     if (vr == ALPHA1 && wrt == TAU1 ) {
-      *partial = sim->rod.mobility[ 0 ];
+      *partial = s->simulation.rod.mobility[ 0 ];
         return fmi2OK;
     }
 
     if (vr == ALPHA1 && wrt == TAU2 ) {
-      *partial = sim->rod.mobility[ 1 ];
+      *partial = s->simulation.rod.mobility[ 1 ];
         return fmi2OK;
     }
 
     if (vr == ALPHA2 && wrt == TAU1 ) {
-      *partial = sim->rod.mobility[ 2 ];
+      *partial = s->simulation.rod.mobility[ 2 ];
         return fmi2OK;
     }
     
     if (vr == ALPHA2 && wrt == TAU2 ) {
-      *partial = sim->rod.mobility[ 3 ];
+      *partial = s->simulation.rod.mobility[ 3 ];
         return fmi2OK;
     }
 
@@ -147,21 +125,15 @@ static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReferen
 }
 
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
-  
-  lumped_rod_sim * sim  = ( lumped_rod_sim  *) s->simulation;
   /*  Copy the input variable from the state vector */
-  lumped_rod_fmi_sync_in(sim, s);
+  lumped_rod_fmi_sync_in(&s->simulation, s);
 
-  int n = ( int ) ceil( communicationStepSize / sim->step );
+  int n = ( int ) ceil( communicationStepSize / s->simulation.step );
   /* Execute the simulation */
-  step_rod_sim( sim , n );
+  step_rod_sim(&s->simulation , n );
   /* Copy state variables to ouputs */
-  lumped_rod_fmi_sync_out( sim, s);
+  lumped_rod_fmi_sync_out(&s->simulation, s);
   
-}
-
-static void freeSimulation( state_t * s ) {
-  lumped_rod_sim_delete( ( lumped_rod_sim * ) s->simulation ) ;
 }
 
 // include code that implements the FMI based on the above definitions

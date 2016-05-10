@@ -119,7 +119,7 @@ void lumped_rod_sim_store ( lumped_rod_sim  * sim );
 void lumped_rod_sim_restore ( lumped_rod_sim *  sim );
 
 /** Very basic allocation for the sates belonging to the string itself */
-lumped_rod_sim * lumped_rod_sim_alloc( int n ) ;
+lumped_rod_sim lumped_rod_sim_alloc( int n ) ;
 /** Shallow free */
 void lumped_rod_sim_free ( lumped_rod_sim *sim ) ;
 
@@ -136,7 +136,7 @@ double *   lumped_rod_sim_get_state( lumped_rod_sim  * sim );
 tri_matrix build_rod_matrix( lumped_rod  rod, double step, double tau ) ; 
 /** Allocate data, prepare and factorize matrices and setup all parameters
  * for the simulation */ 
-lumped_rod_sim * lumped_rod_sim_create( lumped_rod_sim_parameters p);
+lumped_rod_sim lumped_rod_sim_create( lumped_rod_sim_parameters p);
 /** Deep deallocation of all included objects */
 void lumped_rod_sim_delete( lumped_rod_sim  * sim ) ;
  

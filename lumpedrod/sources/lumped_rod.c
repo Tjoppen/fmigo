@@ -180,12 +180,12 @@ lumped_rod_sim lumped_rod_sim_create( lumped_rod_sim_parameters p) {
   return sim;
 }
 
-void lumped_rod_sim_delete( lumped_rod_sim   * sim ) {
+void lumped_rod_sim_delete( lumped_rod_sim   sim ) {
 
-  lumped_rod_free( sim->rod      );
-  lumped_rod_free( sim->rod_back );
-  tri_matrix_free( sim->m );
-  free ( sim->z );
+  lumped_rod_free( sim.rod      );
+  lumped_rod_free( sim.rod_back );
+  tri_matrix_free( sim.m );
+  free ( sim.z );
 
   return;
   

@@ -108,17 +108,17 @@ cgsl_simulation cgsl_init_simulation(
     return sim;
 }
 
-void  cgsl_free( struct cgsl_simulation * sim ) {
-    gsl_odeiv2_driver_free  (sim->i.driver);
-    gsl_odeiv2_step_free    (sim->i.step);
-    gsl_odeiv2_evolve_free  (sim->i.evolution);
-    gsl_odeiv2_control_free (sim->i.control);
-    free(sim->x);
-    if (sim->data) {
-        free(sim->data);
+void  cgsl_free( struct cgsl_simulation sim ) {
+    gsl_odeiv2_driver_free  (sim.i.driver);
+    gsl_odeiv2_step_free    (sim.i.step);
+    gsl_odeiv2_evolve_free  (sim.i.evolution);
+    gsl_odeiv2_control_free (sim.i.control);
+    free(sim.x);
+    if (sim.data) {
+        free(sim.data);
     }
-    if (sim->file) {
-        fclose(sim->file);
+    if (sim.file) {
+        fclose(sim.file);
     }
 }
 

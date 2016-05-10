@@ -93,8 +93,8 @@ static void coupled_sho_init(state_t *s) {
     sync_out(s);
 }
 
-static void coupled_sho_free(coupled_sho_simulation *css) {
-    cgsl_free(&css->sim);
+static void coupled_sho_free(coupled_sho_simulation css) {
+    cgsl_free(css.sim);
 }
 
 //returns partial derivative of vr with respect to wrt

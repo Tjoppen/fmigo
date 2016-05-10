@@ -138,7 +138,7 @@ tri_matrix build_rod_matrix( lumped_rod  rod, double step, double tau ) ;
  * for the simulation */ 
 lumped_rod_sim lumped_rod_sim_create( lumped_rod_sim_parameters p);
 /** Deep deallocation of all included objects */
-void lumped_rod_sim_delete( lumped_rod_sim  * sim ) ;
+void lumped_rod_sim_delete( lumped_rod_sim  sim ) ;
  
 /** Called at each step */ 
 void build_rod_rhs( lumped_rod_sim * sim );

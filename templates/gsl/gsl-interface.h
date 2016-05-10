@@ -86,7 +86,7 @@ cgsl_simulation cgsl_init_simulation(
         int save,
         int print,
         FILE *f);
-void  cgsl_free( cgsl_simulation * sim );
+void  cgsl_free( cgsl_simulation sim );
 
 int cgsl_step(void  * s ) ;     /* fixed step, autonomous systems */
 

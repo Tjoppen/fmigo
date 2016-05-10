@@ -233,7 +233,7 @@ void fmi2FreeInstance(fmi2Component c) {
     FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2FreeInstance")
     if (comp->instanceName) comp->functions->freeMemory(comp->instanceName);
 #ifdef SIMULATION_FREE
-    SIMULATION_FREE(&comp->s.simulation);
+    SIMULATION_FREE(comp->s.simulation);
 #endif
     comp->functions->freeMemory(comp);
 }

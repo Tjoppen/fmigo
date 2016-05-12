@@ -20,9 +20,9 @@ int mass_force (double t, const double x[], double dxdt[], void * params){
   /** compute the coupling force: NOTE THE SIGN!
    *  This is the force *applied* to the coupled system
    */
-
+  
   dxdt[ 0 ] = x[ 1 ];
-  dxdt[ 1 ] =  s->md.force + s->md.force_c;
+  dxdt[ 1 ] =  ( s->md.force + s->md.force_c - s->md.damping * x[ 1 ] ) / s->md.mass;
 
   return GSL_SUCCESS;
 
@@ -33,6 +33,7 @@ int mass_force (double t, const double x[], double dxdt[], void * params){
 int
 jac_mass_force (double t, const double x[], double *dfdx, double dfdt[], void *params)
 {
+  state_t *s = (state_t*)params;
   gsl_matrix_view dfdx_mat = gsl_matrix_view_array (dfdx, 2, 2);
   gsl_matrix * J           = &dfdx_mat.matrix; 
 
@@ -42,7 +43,7 @@ jac_mass_force (double t, const double x[], double *dfdx, double dfdt[], void *p
 
   /** second row */
   gsl_matrix_set (J, 1, 0, 0.0);
-  gsl_matrix_set (J, 1, 1, 0.0);
+  gsl_matrix_set (J, 1, 1, -s->md.damping / s->md.mass );
 
   dfdt[0] = 0.0;		
   dfdt[1] = 0.0; /* would have a term here if the force is
@@ -81,6 +82,8 @@ int main(void) {
             0,
             0,
             0,
+            0,
+            1,
         }
     };
     mass_force_init(&s);

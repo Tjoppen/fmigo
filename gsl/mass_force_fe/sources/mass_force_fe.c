@@ -22,8 +22,13 @@ int mass_force (double t, const double x[], double dxdt[], void * params){
    *  This is the force *applied* to the coupled system
    */
   
+  
   double coupling = - s->md.coupling_spring * x[ 2 ] - s->md.coupling_damping * ( x[ 1 ] - s->md.vin );
+
+  s->md.force_out = -coupling;
+  
   dxdt[ 0 ] =  x[ 1 ];
+
   dxdt[ 1 ] =  ( coupling + s->md.force_c - s->md.damping * x[ 1 ] ) / s->md.mass;
   dxdt[ 2 ] =  x[ 1 ] - s->md.vin;
 

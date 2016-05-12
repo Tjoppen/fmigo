@@ -60,7 +60,7 @@ public:
             send(it->first, fmi2_import_set_real(0, 0, it->second.first, it->second.second));
         }
 
-        block(m_slaves, fmi2_import_do_step(0, 0, t, dt, false));
+        block(m_slaves, fmi2_import_do_step(0, 0, t, dt, true));
     }
 };
 
@@ -127,7 +127,7 @@ public:
                 send(client, fmi2_import_set_real(0, 0, conns[client].vrs, values));
             }
 
-            block(client, fmi2_import_do_step(0, 0, t, dt, false));
+            block(client, fmi2_import_do_step(0, 0, t, dt, true));
         }
         //fprintf(stderr, "\n\n");
     }

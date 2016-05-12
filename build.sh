@@ -24,10 +24,10 @@ done
 
 for d in \
     lumpedrod\
-    simpletruck/body\
-    simpletruck/engine\
-    simpletruck/gearbox2\
-    simpletruck/clutch\
+    kinematictruck/body\
+    kinematictruck/engine\
+    kinematictruck/gearbox2\
+    kinematictruck/clutch\
     forcevelocitytruck/body\
     forcevelocitytruck/gearbox\
 ;do

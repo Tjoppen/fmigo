@@ -12,17 +12,17 @@ for d in \
     gsl/clutch\
     gsl/coupled_sho\
     gsl/mass_force\
+    gsl/mass_force_fe\
 ;do
     echo Building $d
     GSL="-t `pwd`/templates/gsl/ -l gsl,gslcblas,m"
     NAME=`sed -e 's/.*\///' <<< $d`
     pushd $d
         rm -f ${NAME}.fmu
-        python ${MD2HDR} modelDescription.xml > sources/modelDescription.h
-        CFLAGS="-Wall -O3" python ${FMUBUILDER} ${GSL}
+        python2 ${MD2HDR} modelDescription.xml > sources/modelDescription.h
+        CFLAGS="-Wall -O3" python2 ${FMUBUILDER} ${GSL}
     popd
 done
-
 for d in \
     lumpedrod\
     kinematictruck/body\
@@ -36,7 +36,7 @@ for d in \
     NAME=`sed -e 's/.*\///' <<< $d`
     pushd $d
         rm -f ${NAME}.fmu
-        python ${MD2HDR} modelDescription.xml > sources/modelDescription.h
-        CFLAGS="-Wall -O3" python ${FMUBUILDER}
+        python2 ${MD2HDR} modelDescription.xml > sources/modelDescription.h
+        CFLAGS="-Wall -O3" python2 ${FMUBUILDER}
     popd
 done

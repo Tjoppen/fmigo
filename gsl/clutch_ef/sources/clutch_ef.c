@@ -16,18 +16,12 @@ static double fclutch_dphi_derivative( double dphi, double domega );
 const static double flip = -1;
 
 /*  
-    A single (rotational) body driven via a clutch. 
+    Two rotational bodies.  The force between them comes for an empirical
+    clutch deviation-torque curve. 
 
-    An angular velocity is given as input and this is integrated to compute
-    the angular difference.  The differences in velocity and speed are fed
-    to a clutch model which gives torques as a function of angle
-    difference.  
-
-    An external torque is also provided as would come from another coupled
-    body. 
-
-    The torque is reported back to the body which is feeding an angular
-    velocity. 
+    The first of the two bodies receives a torque from the outside.  The
+    second body reports velocity.  Feedback torque is applied directly on
+    the output body.
 
  */
 
@@ -35,23 +29,17 @@ int clutch (double t, const double x[], double dxdt[], void * params){
 
   state_t *s = (state_t*)params;
 
-  double v = flip * s->md.v_in;
-  /** compute the coupling force: NOTE THE SIGN!
-   *  This is the force *applied* to the coupled system
-   */
-  s->md.force_clutch =   fclutch( x[ 2 ], ( x[ 1 ] - v ), s->md.clutch_damping );
+  s->md.force_clutch =   fclutch( x[ 2 ] - x[ 0 ], ( x[ 3 ] - x[ 1 ] ), s->md.clutch_damping );
 
-  /** second order dynamics */
   dxdt[ 0 ]  = x[ 1 ];
-  /** internal dynamics */ 
-  dxdt[ 1 ] = -s->md.gamma * x[ 1 ];		
-  /** coupling */ 
-  dxdt[ 1 ] = -s->md.force_clutch; 
-  /** additional driver */ 
-  dxdt[ 1 ] += s->md.force_in;
-  dxdt[ 1 ] /= s->md.mass;
-  /** angle difference */
-  dxdt[ 2 ] = x[ 1 ] - v;
+  dxdt[ 1 ] =  -s->md.force_clutch - s->md.gamma1 * x[ 1 ] ;
+  dxdt[ 1 ] += s->md.force_in1;
+  dxdt[ 1 ] /= s->md.mass1;
+
+  dxdt[ 2 ]  = x[ 3 ];
+  dxdt[ 3 ] =  -s->md.force_clutch - s->md.gamma2 * x[ 3 ] ;
+  dxdt[ 3 ] += s->md.force_in2;
+  dxdt[ 3 ] /= s->md.mass2;
 
   return GSL_SUCCESS;
 
@@ -62,8 +50,10 @@ int clutch (double t, const double x[], double dxdt[], void * params){
 int jac_clutch (double t, const double x[], double *dfdx, double dfdt[], void *params)
 {
   
+#if 0
+  NEEDS WORK!
   state_t *s = (state_t*)params;
-  gsl_matrix_view dfdx_mat = gsl_matrix_view_array (dfdx, 3, 3);
+  gsl_matrix_view dfdx_mat = gsl_matrix_view_array (dfdx, 4, 4);
   gsl_matrix * J = &dfdx_mat.matrix; 
   double v =  flip * s->md.v_in;
 
@@ -71,17 +61,14 @@ int jac_clutch (double t, const double x[], double *dfdx, double dfdt[], void *p
   gsl_matrix_set (J, 0, 0, 0.0); 
   gsl_matrix_set (J, 0, 1, 1.0 ); /* position/velocity */
   gsl_matrix_set (J, 0, 2, 0.0 ); 
+  gsl_matrix_set (J, 0, 3, 0.0 ); 
 
-  /** second row */
-  gsl_matrix_set (J, 1, 0, 0 ); 
-  gsl_matrix_set (J, 0, 1, -( s->md.clutch_damping + s->md.gamma ) / s->md.mass ); 
-  gsl_matrix_set (J, 1, 2, -fclutch_dphi_derivative( x[ 2 ], x[ 1 ] - v)  / s->md.mass );
-
-
-  /** third row */
-  gsl_matrix_set (J, 2, 0, 0.0 );
-  gsl_matrix_set (J, 2, 1, 1.0 ); /* angle difference */
+  /** third row*/
+  gsl_matrix_set (J, 2, 0, 0.0); 
+  gsl_matrix_set (J, 2, 1, 0.0 ); /* position/velocity */
   gsl_matrix_set (J, 2, 2, 0.0 ); 
+  gsl_matrix_set (J, 2, 3, 1.0 ); 
+
 
   
   dfdt[0] = 0.0;		
@@ -89,6 +76,7 @@ int jac_clutch (double t, const double x[], double *dfdx, double dfdt[], void *p
   dfdt[2] = 0.0; /* would have a term here if the force is
 		    some polynomial interpolation */
 
+#endif
   return GSL_SUCCESS;
 }
 
@@ -183,8 +171,8 @@ static void sync_out(state_t *s) {
 }
 
 static void clutch_init(state_t *s) {
-    const double initials[3] = {s->md.x0, s->md.v0, s->md.dx0};
-    s->simulation = cgsl_init_simulation( 3, initials, s, clutch, jac_clutch, rkf45, 1e-5, 0, 0, 0, NULL );
+    const double initials[4] = {s->md.x0, s->md.v0, s->md.dx0};
+    s->simulation = cgsl_init_simulation( 4, initials, s, clutch, jac_clutch, rkf45, 1e-5, 0, 0, 0, NULL );
     sync_out(s);
 }
 

@@ -146,15 +146,15 @@ PARAMS depend on TYPE, and TYPE is the type of connection:
         The difference between "ball" and "lock" is that lock tries to lock the orientation of both connectors (ball only cares about position). 
 
     shaft:
-        PARAMS=axis,shaftAngle0,angularVelocity0,angularAcceleration0,torque0,shaftAngle1,angularVelocity1,angularAcceleration1,torque1
+        PARAMS=shaftAngle0,angularVelocity0,angularAcceleration0,torque0,shaftAngle1,angularVelocity1,angularAcceleration1,torque1
 
-        where axis specifies what cardinal direction the shaft runs along (0 = X, 1 = Y, 2 = Z) and the rest are value references whose meaning should be obvious. The connection tries to keep both shaftAngles equal.
+        The connection tries to keep both shaftAngles equal.
 
 Examples:
 
-    -C\ shaft,0,1,1,20,19,14,17,20,19,14,17
+    -C\ shaft,0,1,20,19,14,17,20,19,14,17
 
-Meaning: Connect a shaft between FMU0 and FMU1 along the Y axis (1), with VRs shaftAngle=20, angularVelocity=19, angularAcceleration=14 and torque=17 on both sides
+Meaning: Connect a shaft between FMU0 and FMU1, with VRs shaftAngle=20, angularVelocity=19, angularAcceleration=14 and torque=17 on both sides
 
     -C\ lock,0,1,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18
 
@@ -162,7 +162,7 @@ Meaning: Create a lock constraints between FMU0 and FMU1 with VRs pos={0,1,2}, a
 
 Note that like all lists you can concatenate the strong connection specifications with colon characters, but the result is hardly readable:
 
-    -C\ shaft,0,1,1,20,19,14,17,20,19,14,17:lock,0,1,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18:ball,1,2,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18
+    -C\ shaft,0,1,20,19,14,17,20,19,14,17:lock,0,1,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18:ball,1,2,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18
 
 Default is no strong connections. Specifying strong connections is incompatible with using the Gauss-Seidel stepper (-m gs).
 .TP

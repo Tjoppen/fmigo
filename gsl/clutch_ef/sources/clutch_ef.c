@@ -11,7 +11,7 @@
  *  The force function from the clutch
  */
 static double fclutch( double dphi, double domega, double clutch_damping ); 
-static double fclutch_dphi_derivative( double dphi, double domega );
+static double fclutch_dphi_derivative( double dphi );
 
 
 /*  
@@ -28,15 +28,15 @@ int clutch (double t, const double x[], double dxdt[], void * params){
 
   state_t *s = (state_t*)params;
 
-  s->md.force_clutch =   fclutch( x[ 2 ] - x[ 0 ], ( x[ 3 ] - x[ 1 ] ), s->md.clutch_damping );
+  double force_clutch =   fclutch( x[ 2 ] - x[ 0 ], ( x[ 3 ] - x[ 1 ] ), s->md.clutch_damping );
 
   dxdt[ 0 ]  = x[ 1 ];
-  dxdt[ 1 ] =  -s->md.force_clutch - s->md.gamma1 * x[ 1 ] ;
+  dxdt[ 1 ] =   force_clutch - s->md.gamma1 * x[ 1 ] ;
   dxdt[ 1 ] += s->md.force_in1;
   dxdt[ 1 ] /= s->md.mass1;
 
   dxdt[ 2 ]  = x[ 3 ];
-  dxdt[ 3 ] =  -s->md.force_clutch - s->md.gamma2 * x[ 3 ] ;
+  dxdt[ 3 ] =  -force_clutch - s->md.gamma2 * x[ 3 ] ;
   dxdt[ 3 ] += s->md.force_in2;
   dxdt[ 3 ] /= s->md.mass2;
 
@@ -48,17 +48,30 @@ int clutch (double t, const double x[], double dxdt[], void * params){
 
 int jac_clutch (double t, const double x[], double *dfdx, double dfdt[], void *params)
 {
-  
-#if 0
-
-  NEEDS WORK!  See the gsl clutch model to get started.
-
   state_t *s = (state_t*)params;
   gsl_matrix_view dfdx_mat = gsl_matrix_view_array (dfdx, 4, 4);
-  gsl_matrix * J = &dfdx_mat.matrix; 
-  double v =  s->md.v_in;
+  gsl_matrix * J = &dfdx_mat.matrix;
+  double dfdphi = fclutch_dphi_derivative( x[ 2 ] - x[ 0 ] );
 
-#endif
+  gsl_matrix_set (J, 0, 0, 0);
+  gsl_matrix_set (J, 0, 1, 1);  /* v1 */
+  gsl_matrix_set (J, 0, 2, 0);
+  gsl_matrix_set (J, 0, 3, 0);
+
+  gsl_matrix_set (J, 1, 0,  -dfdphi                               / s->md.mass1);
+  gsl_matrix_set (J, 1, 1, (-s->md.clutch_damping - s->md.gamma1) / s->md.mass1);
+  gsl_matrix_set (J, 1, 2,   dfdphi                               / s->md.mass1);
+  gsl_matrix_set (J, 1, 3,   s->md.clutch_damping                 / s->md.mass1);
+
+  gsl_matrix_set (J, 2, 0, 0);
+  gsl_matrix_set (J, 2, 1, 0);
+  gsl_matrix_set (J, 2, 2, 0);
+  gsl_matrix_set (J, 2, 3, 1);  /* v2 */
+
+  gsl_matrix_set (J, 3, 0,   dfdphi                               / s->md.mass2);
+  gsl_matrix_set (J, 3, 1,   s->md.clutch_damping                 / s->md.mass2);
+  gsl_matrix_set (J, 3, 2,  -dfdphi                               / s->md.mass2);
+  gsl_matrix_set (J, 3, 3, (-s->md.clutch_damping - s->md.gamma2) / s->md.mass2);
 
   return GSL_SUCCESS;
 }
@@ -109,7 +122,7 @@ static double fclutch( double dphi, double domega, double clutch_damping ) {
 
 }
 
-static double fclutch_dphi_derivative( double dphi, double domega ) {
+static double fclutch_dphi_derivative( double dphi ) {
   
   //Scania's clutch curve
   static const double b[] = { -0.087266462599716474, -0.052359877559829883, 0.0, 0.09599310885968812, 0.17453292519943295 };
@@ -150,12 +163,19 @@ static double fclutch_dphi_derivative( double dphi, double domega ) {
 
 
 static void sync_out(state_t *s) {
-    s->md.v = s->simulation.x[1];
+    s->md.v1 = s->simulation.x[1];
+    s->md.v2 = s->simulation.x[3];
 }
 
 static void clutch_init(state_t *s) {
-    const double initials[4] = {s->md.x0, s->md.v0, s->md.dx0};
-    s->simulation = cgsl_init_simulation( 4, initials, s, clutch, jac_clutch, rkf45, 1e-5, 0, 0, 0, NULL );
+    const double initials[4] = {
+        s->md.xi0,
+        s->md.vi0,
+        s->md.xo0,
+        s->md.vo0
+    };
+
+    s->simulation = cgsl_init_simulation( 4, initials, s, clutch, jac_clutch, s->md.integrator_type, 1e-5, 0, 0, 0, NULL );
     sync_out(s);
 }
 
@@ -170,7 +190,7 @@ static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real comm
 }
 
 
-//gcc -g clutch.c ../../../templates/gsl/*.c -DCONSOLE -I../../../templates/gsl -I../../../templates/fmi2 -lgsl -lgslcblas -lm -Wall
+//gcc -g clutch_ef.c ../../../templates/gsl/*.c -DCONSOLE -I../../../templates/gsl -I../../../templates/fmi2 -lgsl -lgslcblas -lm -Wall
 #ifdef CONSOLE
 int main(){
 
@@ -192,14 +212,20 @@ int main(){
   fclose( f );
 
   state_t s = {{
-    8.0, 			/* init position */
-    4.0, 			/* init velocity */
-    0.0, 			/* init angle difference*/
-    10.0, 			/* mass */
-    2.0,			/* damping */
-    10.0,			/* clutch damping */
-    15.0,			/* init angular velocity */
-    10,				/* input force */
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1,
+        100,
+        1,
+        -1,
+        0,
+        0,
+        rk2imp,
   }};
   clutch_init(&s);
   s.simulation.file = fopen( "s.m", "w+" );

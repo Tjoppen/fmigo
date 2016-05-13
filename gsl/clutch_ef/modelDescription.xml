@@ -38,7 +38,7 @@
     <!-- internal parameters -->
     <ScalarVariable name="mass1"
                     valueReference="4"
-                    description="mass"
+                    description="mass of in plate"
                     causality="parameter"
                     variability="fixed">
       <Real start="1"/>
@@ -46,50 +46,83 @@
 
     <ScalarVariable name="gamma1"
                     valueReference="5"
-                    description="damping constant for the body"
-                    causality="parameter" variability="fixed">
-      <Real start="1"/>
-    </ScalarVariable>
-    <ScalarVariable name="clutch_damping"
-                    valueReference="6"
-                    description="internal clutch damping constant"
+                    description="damping constant for in plate"
                     causality="parameter" variability="fixed">
       <Real start="1"/>
     </ScalarVariable>
 
-    <!-- inputs -->
-    <ScalarVariable name="v_in0"
+    <ScalarVariable name="mass2"
+                    valueReference="6"
+                    description="mass of out plate"
+                    causality="parameter"
+                    variability="fixed">
+      <Real start="1"/>
+    </ScalarVariable>
+
+    <ScalarVariable name="gamma2"
                     valueReference="7"
-                    description="external driving velocity"
+                    description="damping constant for out plate"
+                    causality="parameter" variability="fixed">
+      <Real start="1"/>
+    </ScalarVariable>
+
+    <ScalarVariable name="clutch_damping"
+                    valueReference="8"
+                    description="internal clutch damping constant"
+                    causality="parameter" variability="fixed">
+      <Real start="100"/>
+    </ScalarVariable>
+
+    <!-- inputs -->
+    <ScalarVariable name="force_in1"
+                    valueReference="9"
+                    description="driving torque from engine"
                     causality="input"
                     initial="exact">
       <Real start="0"/>
     </ScalarVariable>
 
-    <ScalarVariable name="torque_in1"
-                    valueReference="8"
-                    description="counter torque from the load, applied to the out plate"
+    <ScalarVariable name="force_in2"
+                    valueReference="10"
+                    description="counter torque from load"
                     causality="input" initial="exact">
       <Real start="0"/>
     </ScalarVariable>
 
     <!-- outputs -->
     <ScalarVariable name="v1"
-                    valueReference="9"
+                    valueReference="11"
+                    description="velocity of the in plate"
+                    causality="output">
+      <Real />
+    </ScalarVariable>
+
+    <ScalarVariable name="v2"
+                    valueReference="12"
                     description="velocity of the out plate"
                     causality="output">
       <Real />
     </ScalarVariable>
 
-    <ScalarVariable name="torque_out0"
-                    valueReference="10"
-                    description="value of coupling torque, applied to driver"
-                    causality="output">
-      <Real />
-    </ScalarVariable>
+    <!-- integrator. from gsl-interface.c:
 
-    <ScalarVariable name="integrator_type"   valueReference="11"  description="Integration method as per the GSL"
-                    causality="parameter" variability="fixed"><Integer start="1"/></ScalarVariable>
+        enum cgsl_integrator_ids
+        {
+          rk2,		/* 0 */
+          rk4,		/* 1 */ 
+          rkf45,	/* 2 */
+          rkck,		/* 3 */
+          rk8pd,	/* 4 */
+          rk1imp,	/* 5 */
+          rk2imp,	/* 6 */
+          rk4imp,	/* 7 */
+          bsimp,	/* 8 */
+          msadams,	/* 9 */
+          msbdf		/*10 */
+        };
+    -->
+    <ScalarVariable name="integrator_type"   valueReference="99"  description="Integration method as per the GSL"
+                    causality="parameter" variability="fixed"><Integer start="6"/></ScalarVariable>
 
 
 </ModelVariables>
@@ -97,14 +130,14 @@
 <ModelStructure>
 
   <Inputs>
-    <Unknown index="8"/>
-    <Unknown index="9"/>
+    <Unknown index="10"/>
+    <Unknown index="11"/>
   </Inputs>
 
   
   <Outputs>
-    <Unknown index="10"/>
-    <Unknown index="11"/>
+    <Unknown index="12"/>
+    <Unknown index="13"/>
   </Outputs>
 
 

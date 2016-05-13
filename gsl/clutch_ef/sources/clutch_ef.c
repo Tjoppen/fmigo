@@ -13,7 +13,6 @@
 static double fclutch( double dphi, double domega, double clutch_damping ); 
 static double fclutch_dphi_derivative( double dphi, double domega );
 
-const static double flip = -1;
 
 /*  
     Two rotational bodies.  The force between them comes for an empirical
@@ -51,32 +50,16 @@ int jac_clutch (double t, const double x[], double *dfdx, double dfdt[], void *p
 {
   
 #if 0
-  NEEDS WORK!
+
+  NEEDS WORK!  See the gsl clutch model to get started.
+
   state_t *s = (state_t*)params;
   gsl_matrix_view dfdx_mat = gsl_matrix_view_array (dfdx, 4, 4);
   gsl_matrix * J = &dfdx_mat.matrix; 
-  double v =  flip * s->md.v_in;
-
-  /** first row */
-  gsl_matrix_set (J, 0, 0, 0.0); 
-  gsl_matrix_set (J, 0, 1, 1.0 ); /* position/velocity */
-  gsl_matrix_set (J, 0, 2, 0.0 ); 
-  gsl_matrix_set (J, 0, 3, 0.0 ); 
-
-  /** third row*/
-  gsl_matrix_set (J, 2, 0, 0.0); 
-  gsl_matrix_set (J, 2, 1, 0.0 ); /* position/velocity */
-  gsl_matrix_set (J, 2, 2, 0.0 ); 
-  gsl_matrix_set (J, 2, 3, 1.0 ); 
-
-
-  
-  dfdt[0] = 0.0;		
-  dfdt[1] = 0.0;		
-  dfdt[2] = 0.0; /* would have a term here if the force is
-		    some polynomial interpolation */
+  double v =  s->md.v_in;
 
 #endif
+
   return GSL_SUCCESS;
 }
 

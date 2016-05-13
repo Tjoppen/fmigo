@@ -22,37 +22,92 @@
 <DefaultExperiment startTime="0" stopTime="10" stepSize="0.1"/>
 
 <ModelVariables>
-    <ScalarVariable name="xi0"               valueReference="0"  description="initial position of in plate"                      causality="parameter" variability="fixed"><Real start="0"/></ScalarVariable>
-    <ScalarVariable name="vi0"               valueReference="1"  description="initial velocity of in plate"                      causality="parameter" variability="fixed"><Real start="0"/></ScalarVariable>
+  <ScalarVariable name="xi0"
+                  valueReference="0"  description="initial position of in plate"                      causality="parameter" variability="fixed"><Real start="0"/></ScalarVariable>
+  <ScalarVariable name="vi0"
+                  valueReference="1"  description="initial velocity of in plate"                      causality="parameter" variability="fixed"><Real start="0"/></ScalarVariable>
 
 
-    <ScalarVariable name="xo0"               valueReference="2"  description="initial position of out plate"                      causality="parameter" variability="fixed"><Real start="0"/></ScalarVariable>
-    <ScalarVariable name="vo0"               valueReference="3"  description="initial velocity of out plate"                      causality="parameter" variability="fixed"><Real start="0"/></ScalarVariable>
+  <ScalarVariable name="xo0"
+                  valueReference="2"  description="initial position of out plate"                      causality="parameter" variability="fixed"><Real start="0"/></ScalarVariable>
+  <ScalarVariable name="vo0"
+                  valueReference="3"  description="initial velocity of out plate"                      causality="parameter" variability="fixed"><Real start="0"/></ScalarVariable>
 
 
 
-    
+    <!-- internal parameters -->
+    <ScalarVariable name="mass1"
+                    valueReference="4"
+                    description="mass"
+                    causality="parameter"
+                    variability="fixed">
+      <Real start="1"/>
+    </ScalarVariable>
 
-    <!-- internal parameter -->
-    <ScalarVariable name="mass1"             valueReference="3"  description="mass"                                  causality="parameter" variability="fixed"><Real start="1"/></ScalarVariable>
-    <ScalarVariable name="gamma1"            valueReference="4"  description="damping constant for the body"         causality="parameter" variability="fixed"><Real start="1"/></ScalarVariable>
-    <ScalarVariable name="clutch_damping"   valueReference="5"  description="internal clutch damping constant"      causality="parameter" variability="fixed"><Real start="1"/></ScalarVariable>
-
+    <ScalarVariable name="gamma1"
+                    valueReference="5"
+                    description="damping constant for the body"
+                    causality="parameter" variability="fixed">
+      <Real start="1"/>
+    </ScalarVariable>
+    <ScalarVariable name="clutch_damping"
+                    valueReference="6"
+                    description="internal clutch damping constant"
+                    causality="parameter" variability="fixed">
+      <Real start="1"/>
+    </ScalarVariable>
 
     <!-- inputs -->
-    <ScalarVariable name="v_in"             valueReference="6"  description="external driving velocity"             causality="input" initial="exact"><Real start="0"/></ScalarVariable>
-    <ScalarVariable name="force_in"         valueReference="7"  description="driving force"                         causality="input" initial="exact"><Real start="0"/></ScalarVariable>
+    <ScalarVariable name="v_in0"
+                    valueReference="7"
+                    description="external driving velocity"
+                    causality="input"
+                    initial="exact">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <ScalarVariable name="torque_in1"
+                    valueReference="8"
+                    description="counter torque from the load, applied to the out plate"
+                    causality="input" initial="exact">
+      <Real start="0"/>
+    </ScalarVariable>
 
     <!-- outputs -->
-    <ScalarVariable name="v"                valueReference="8"  description="velocity"                              causality="output"><Real /></ScalarVariable>
-    <ScalarVariable name="force_clutch"     valueReference="9"  description="value of coupling force at last step"  causality="output"><Real /></ScalarVariable>
+    <ScalarVariable name="v1"
+                    valueReference="9"
+                    description="velocity of the out plate"
+                    causality="output">
+      <Real />
+    </ScalarVariable>
+
+    <ScalarVariable name="torque_out0"
+                    valueReference="10"
+                    description="value of coupling torque, applied to driver"
+                    causality="output">
+      <Real />
+    </ScalarVariable>
+
+    <ScalarVariable name="integrator_type"   valueReference="11"  description="Integration method as per the GSL"
+                    causality="parameter" variability="fixed"><Integer start="1"/></ScalarVariable>
+
+
 </ModelVariables>
 
 <ModelStructure>
-  <Outputs>
+
+  <Inputs>
+    <Unknown index="8"/>
     <Unknown index="9"/>
+  </Inputs>
+
+  
+  <Outputs>
     <Unknown index="10"/>
+    <Unknown index="11"/>
   </Outputs>
+
+
   <Derivatives/>
   <DiscreteStates/>
   <InitialUnknowns />

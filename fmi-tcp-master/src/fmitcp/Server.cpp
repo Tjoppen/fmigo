@@ -1213,6 +1213,19 @@ vector<fmi2_real_t> Server::computeNumericalJacobian(
     fmi2_import_free_fmu_state(m_fmi2Instance, &state);
 
     for (size_t x = 0; x < z_ref.size(); x++) {
+        /**
+         * NOTE: This works because the master only cares about computing mobilities,
+         * which can be defined as:
+         *
+         *  m^-1 = a/f = da/df = (a1 - a0) / (f1 - f0)
+         *
+         * So since we only ever get partial derivatives on acceleration outputs,
+         * and f1 - f0 (aka dv) has magnitude one, this simplifies to the
+         * z1 - z0 computation below.
+         *
+         * A more proper solution would at least divide the difference by the
+         * magnitude of dv.
+         */
         dz.push_back(z1[x] - z0[x]);
     }
 

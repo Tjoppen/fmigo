@@ -18,52 +18,47 @@
    of the structs aren't. 
 */
 
-/** WARNING:  no error checking */
+/** WARNING:  no error checking 
+ *  No initialization is done here.  
+*/
 
-lumped_rod  lumped_rod_alloc( int n, double mass, double compliance ) {
-  lumped_rod  rod;
+void lumped_rod_alloc( lumped_rod * rod ) {
+  
+  rod->mass  = rod->rod_mass  / ( double ) rod->n;
+  
+  rod->state.x            = ( double * ) calloc(    rod->n    ,    sizeof( double ) );		
+  rod->state.v            = ( double * ) calloc(    rod->n    ,    sizeof( double ) );		
+  rod->state.a            = ( double * ) malloc(    rod->n    *    sizeof( double ) );		
+  rod->state.torsion      = ( double * ) malloc( ( rod->n - 1 )  * sizeof( double ) );		
 
-  rod.n = n;			
-  rod.rod_mass = mass;
-  rod.mass = rod.rod_mass / ( double ) rod.n ;
-  rod.compliance = compliance;
+  return ;
 
-  rod.x            = ( double * ) calloc(    n    ,    sizeof( double ) );		
-  rod.v            = ( double * ) calloc(    n    ,    sizeof( double ) );		
-  rod.a            = ( double * ) calloc(    n    ,    sizeof( double ) );		
-  rod.torsion      = ( double * ) malloc( ( n - 1 )  * sizeof( double ) );		
-
-  return rod;
 }
 
 /** WARNING:  no error checking */
 void lumped_rod_free( lumped_rod rod ){
 
-  free( rod.x           );
-  free( rod.v           );
-  free( rod.a           );
-  free( rod.torsion     );
+  free( rod.state.x           );
+  free( rod.state.v           );
+  free( rod.state.a           );
+  free( rod.state.torsion     );
 
   return;
 
 }
 
 
-/** WARNING:  no error checking */
+/** WARNING:  no error checking 
+    We need space for n masses and n-1 constraints.
+*/
 lumped_rod_sim lumped_rod_sim_alloc( int n ) {
 
   lumped_rod_sim sim;
   
-  sim.z       = (double * ) malloc( ( 2 * n + 1 ) * sizeof( double ) );
+  sim.z       = (double * ) malloc( ( 2 * n - 1 ) * sizeof( double ) );
 
   return sim;
 
-}
-
-void lumped_rod_sim_free( lumped_rod_sim * sim ) {
-  free ( sim->z );
-  free ( sim );
-  return; 
 }
 
 
@@ -110,15 +105,29 @@ void lumped_rod_sim_free( lumped_rod_sim * sim ) {
    The parameter tau is related to damping.  With a value of 2, the
    dynamics is nearly critically damped independently of the time step.
    Higher values introduce overdamping.  
+
+   To allow for a velocity input at either end, we introduce a stiff
+   spring-damper based on the estimated integral of the difference between
+   actual velocities v1 and vN and the driver v_in and v_out.
+
+   What this does is to modify the first and last masses according to 
+   m <-   m +  stiffness * h * h * ( 1 + relaxation ) / 4;
+
+   The RHS is then modified to include   h * K * ( dx1 - h * dv / 4 );
+
 */
 
-tri_matrix build_rod_matrix( lumped_rod  rod, double step, double tau ) { 
+tri_matrix build_rod_matrix( lumped_rod  rod, double step) { 
 
   int n = rod.n;
   tri_matrix m; 		/* matrix  */
-  double gamma = 1.0 /  ( 1.0 + 4.0 * tau  );
-  double compliance = - ( 4.0  * gamma / step / step ) * 
-    rod.compliance  / ( double ) ( rod.n - 1 );
+  double gamma = 1.0 /  ( 1.0 + 4.0 * rod.relaxation_rate );
+  double compliance = - ( 4.0  * gamma / step / step ) * rod.compliance * ( double ) rod.n  ; 
+
+  double stiffness1 =  rod.driver_stiffness1 * ( 1  + 4 * rod.driver_relaxation1 ) * step * step /  4 ;
+  double stiffnessN =  rod.driver_stiffnessN * ( 1  + 4 * rod.driver_relaxationN ) * step * step /  4 ;
+
+
   int i;
 
   
@@ -138,10 +147,14 @@ tri_matrix build_rod_matrix( lumped_rod  rod, double step, double tau ) {
     m.diag[ i ] =   compliance;
   }
     
+  /** this accounts for stiff springs coupled to drivers */
+  m.diag[     0 ]   += stiffness1;
+  m.diag[ m.n-1 ]   += stiffnessN;
 
-  for( i = 0; i < n - 1; ++i ) {
-    m.sub[ 2 * i     ] =   ( double ) 1.0;
-    m.sub[ 2 * i + 1 ] = - ( double ) 1.0;
+  /** place a -1 on each row with a mass starting from second */
+  for( i = 1; i < n; ++i ) {
+    m.sub[   2 * i - 2   ] =     1.0;
+    m.sub[   2 * i - 1   ] =   - 1.0;
   }
   
 
@@ -160,30 +173,38 @@ tri_matrix build_rod_matrix( lumped_rod  rod, double step, double tau ) {
    else is derived from that. 
 */
 lumped_rod_sim lumped_rod_sim_create( lumped_rod_sim_parameters p) {
-  lumped_rod_sim sim = lumped_rod_sim_alloc( p.N );
-  sim.rod      = lumped_rod_alloc( p.N, p.mass, p.compliance ); 
-  sim.rod_back = lumped_rod_alloc( p.N, p.mass, p.compliance ); /* for store / restore */
-  sim.step = p.step;
-  sim.tau  = p.tau;
-  sim.gamma_v = ( double  ) 1.0  /  (  1.0  +  4.0  * sim.tau );
-  sim.gamma_x = - (double ) 4.0  * sim.gamma_v   /  sim.step  ;
+  lumped_rod_sim sim = lumped_rod_sim_alloc( p.rod.n );
+  sim.state = p;
+  sim.rod      =  sim.state.rod;
 
-  sim.m = build_rod_matrix( sim.rod, sim.step, sim.tau ) ;
-  lumped_rod_sim_mobility( &sim, sim.rod.mobility );
-  sim.forces[ 0 ] = p.f1; 
-  sim.forces[ 1 ] = p.fN; 
+  lumped_rod_alloc( &sim.rod );
   
-  lumped_rod_initialize(  & ( sim.rod ), p.x1, p.xN, p.v1, p.vN );
+  sim.state_backup = p;
 
-  lumped_rod_sim_sync_state_out( &sim );
+  lumped_rod_alloc( & sim.state_backup.rod ); /* for store / restore */
+
+  sim.gamma_v =   ( double ) 1.0  /  (  1.0  +  4.0  * sim.rod.relaxation_rate );
+  sim.gamma_x = - ( double ) 4.0  * sim.gamma_v   /  sim.state.state.step  ;
+
+  sim.gamma_driver1_v =   ( double ) 1.0  /  (  1.0  +  4.0  * sim.rod.driver_relaxation1 );
+  sim.gamma_driver1_x = - ( double ) 4.0  * sim.gamma_driver1_v   /  sim.state.state.step  ;
+
+  sim.gamma_driverN_v =   ( double ) 1.0  /  (  1.0  +  4.0  * sim.rod.driver_relaxationN );
+  sim.gamma_driverN_x = - ( double ) 4.0  * sim.gamma_driverN_v   /  sim.state.state.step  ;
+
+  sim.m = build_rod_matrix( sim.rod, sim.state.state.step) ;
+  lumped_rod_sim_mobility( &sim, sim.rod.mobility );
+
+  lumped_rod_initialize(   sim.rod , sim.state.state.x1, sim.state.state.xN, sim.state.state.v1, sim.state.state.vN );
+
   
   return sim;
 }
 
-void lumped_rod_sim_delete( lumped_rod_sim   sim ) {
+void lumped_rod_sim_free( lumped_rod_sim   sim ) {
 
-  lumped_rod_free( sim.rod      );
-  lumped_rod_free( sim.rod_back );
+   lumped_rod_free( sim.rod      );
+  lumped_rod_free( sim.state_backup.rod );
   tri_matrix_free( sim.m );
   free ( sim.z );
 
@@ -191,16 +212,16 @@ void lumped_rod_sim_delete( lumped_rod_sim   sim ) {
   
 }
 
-void lumped_rod_initialize( lumped_rod * rod, double x1, double xN, double v1, double vN){
+void lumped_rod_initialize( lumped_rod rod, double x1, double xN, double v1, double vN){
 
-  double dx =  ( xN - x1 )  / ( double )  rod->n;
-  double dv =  ( vN - v1 )  / ( double )  rod->n;
+  /** no need to initialize acceleration or torsion */
+  double dx =  ( xN - x1 )  / ( double )  rod.n;
+  double dv =  ( vN - v1 )  / ( double )  rod.n;
   int i; 
 
-  for ( i = 0; i < rod->n; ++i ){
-    rod->x[ i ]  =  x1 + ( ( double ) i ) * dx ; 
-    rod->v[ i ]  =  v1 + ( ( double ) i ) * dv ; 
-    rod->a[ i ]  =  0;
+  for ( i = 0; i < rod.n; ++i ){
+    rod.state.x[ i ]  =  x1 + ( ( double ) i ) * dx ; 
+    rod.state.v[ i ]  =  v1 + ( ( double ) i ) * dv ; 
   }
 
 }
@@ -211,22 +232,24 @@ void lumped_rod_initialize( lumped_rod * rod, double x1, double xN, double v1, d
 void build_rod_rhs( lumped_rod_sim * sim ){
 
   int i;
-  
-  for ( i = 0; i < sim->rod.n ; ++i ) {
-    sim->z[ 2 * i ] = sim->rod.mass * sim->rod.v[ i ]; 
+  for ( i = 0; i < sim->rod.n - 1 ; ++i ) {
+
+    sim->z[ 2 * i ] = sim->rod.mass * sim->rod.state.v[ i ]; 
+
+    sim->z[ 2 * i  + 1 ] +=
+      sim->gamma_x * ( sim->rod.state.x[  i  ] - sim->rod.state.x[ i + 1 ] )
+      + sim->gamma_v * ( sim->rod.state.v[  i  ] - sim->rod.state.v[ i + 1 ] );
   }
+
+  sim->z[ sim->m.n  - 1 ] = sim->rod.mass * sim->rod.state.v[ sim->rod.n -1 ]; 
 
   /* forces at the end */
-  sim->z[  0          ] +=  sim->step * sim->forces[ 0 ]; 
-  sim->z[ sim->m.n - 1 ] +=  sim->step * sim->forces[ 1 ]; 
+  sim->z[  0          ]  +=  sim->state.state.step * sim->state.state.driver_f1;
+  sim->z[ sim->m.n - 1]  +=  sim->state.state.step * sim->state.state.driver_fN;
 
-  for ( i = 0; i <  sim->rod.n - 1 ;  ++i ) {
-
-    sim->z[ 2 * i  + 1 ] =
-      sim->gamma_x * ( sim->rod.x[  i  ] - sim->rod.x[ i + 1 ] )
-      + sim->gamma_v * ( sim->rod.v[  i  ] - sim->rod.v[ i + 1 ] );
-
-  }
+  /* drivers */
+  sim->z[ 0 ]           += - sim->state.state.step *  sim->rod.driver_stiffness1  * ( sim->state.state.dx1 - sim->state.state.step * sim->state.state.v_driver1 / 4.0 );
+  sim->z[ sim->m.n -1 ] += - sim->state.state.step *  sim->rod.driver_stiffnessN  * ( sim->state.state.dxN - sim->state.state.step * sim->state.state.v_driverN / 4.0 );
 
 }
 
@@ -239,7 +262,7 @@ void build_rod_rhs( lumped_rod_sim * sim ){
 */
 void lumped_rod_sim_mobility( lumped_rod_sim * sim, double  * mob ){
 
-  /* force on first mass */
+  /* unit force on first mass */
   memset( sim->z, 0, sim->m.n * sizeof( double ) );
   sim->z[ 0 ] = ( double ) 1.0; 
   tri_solve( &sim->m, sim->z );
@@ -248,6 +271,7 @@ void lumped_rod_sim_mobility( lumped_rod_sim * sim, double  * mob ){
   mob[ 0 ] = sim->z[ 0 ];
   mob[ 1 ] = sim->z[ sim->m.n - 1 ];
 
+  /* unit force on the last mass */
   memset( sim->z, 0, sim->m.n * sizeof( double ) );
   sim->z[ sim->m.n - 1  ] = ( double ) 1.0; 
   tri_solve( &sim->m, sim->z );
@@ -258,61 +282,48 @@ void lumped_rod_sim_mobility( lumped_rod_sim * sim, double  * mob ){
 
 }
 
-double *   lumped_rod_sim_get_state( lumped_rod_sim  * sim ){
-  return ( double *) & ( sim->state ) ; 
-}
-
-void  lumped_rod_sim_sync_state_out( lumped_rod_sim * sim ){
-
-  int last = sim->rod.n -1 ; 
-
-  COPY_BCK(  sim->rod.x [    0  ]  ,  sim->state.x1 );
-  COPY_BCK(  sim->rod.x [  last ]  , sim->state.xN  );
-  COPY_BCK(  sim->rod.v [    0  ]  , sim->state.v1  );
-  COPY_BCK(  sim->rod.v [  last ]  , sim->state.vN  );
-  COPY_BCK(  sim->forces[    0  ]  , sim->state.f1  );
-  COPY_BCK(  sim->forces[    1  ]  ,  sim->state.fN );
-  return;
-}
-
-
-void  lumped_rod_sim_sync_state_in( lumped_rod_sim * sim ){
-
-  int last = sim->rod.n -1 ; 
-
-  COPY_FWD(  sim->rod.x [    0  ]  ,  sim->state.x1 );
-  COPY_FWD(  sim->rod.x [  last ]  , sim->state.xN  );
-  COPY_FWD(  sim->rod.v [    0  ]  , sim->state.v1  );
-  COPY_FWD(  sim->rod.v [  last ]  , sim->state.vN  );
-  COPY_FWD(  sim->forces[    0  ]  , sim->state.f1  );
-  COPY_FWD(  sim->forces[    1  ]  ,  sim->state.fN );
-  return;
-}
 
 /**
  *   Step forward in time.  
  */
 void step_rod_sim( lumped_rod_sim * sim, int n ){
   
-  double h_inv = 1.0  / sim->step;
-  lumped_rod_sim_sync_state_in(  sim );
+  double h_inv = 1.0  / sim->state.state.step;
   int i, j ; 
+
   for ( j = 0; j < n; ++j  ){
 
     build_rod_rhs( sim );
+
     tri_solve( &sim->m, sim->z );
   
     for ( i = 0; i < sim->rod.n; ++i ){
-      sim->rod.a[ i ]  = ( sim->z[ 2 * i ] - sim->rod.v[ i ] ) * h_inv; 
-      sim->rod.v[ i ]  =   sim->z[ 2 * i ]; 
-      sim->rod.x[ i ] +=   sim->step * sim->rod.v[ i ]; 
+      sim->rod.state.a[ i ]  = ( sim->z[ 2 * i ] - sim->rod.state.v[ i ] ) * h_inv; 
+      sim->rod.state.v[ i ]  =   sim->z[ 2 * i ]; 
+      sim->rod.state.x[ i ] +=   sim->state.state.step * sim->rod.state.v[ i ]; 
     }
 
-    for ( i = 0; i < sim->rod.n - 1 ; ++i ){
-      sim->rod.torsion[ i ] = sim->z[ 2 * i + 1 ] * h_inv ;
+    for ( i = 0; i < sim->rod.n -1 ; ++i ){
+      sim->rod.state.torsion[ i ] = sim->z[ 2 * i + 1 ] * h_inv ;
     }
   }
-  lumped_rod_sim_sync_state_out(  sim );
+
+  /** 
+      Publish variables.
+  */
+
+  sim->state.state.f1 = sim->rod.state.torsion[ 0     ];
+  sim->state.state.fN = sim->rod.state.torsion[ n - 1 ];
+  sim->state.state.x1 = sim->rod.state.x      [ 0     ];
+  sim->state.state.xN = sim->rod.state.x      [ n - 1 ];
+  sim->state.state.v1 = sim->rod.state.v      [ 0     ];
+  sim->state.state.vN = sim->rod.state.v      [ n - 1 ];
+  sim->state.state.a1 = sim->rod.state.a      [ 0     ];
+  sim->state.state.aN = sim->rod.state.a      [ n - 1 ];
+
+  sim->state.state.dx1 += sim->state.state.step * ( sim->rod.state.v[ 0     ] - sim->state.state.v_driver1 );
+  sim->state.state.dxN += sim->state.state.step * ( sim->rod.state.v[ n - 1 ] - sim->state.state.v_driverN );
+
 }
 
 
@@ -321,12 +332,12 @@ void step_rod_sim( lumped_rod_sim * sim, int n ){
 void lumped_sim_set_velocity ( lumped_rod_sim * sim, double v, int j ){
 
   if ( j == 1 ) { 
-    sim->rod.v[ sim->rod.n - 1  ] = v;
-    sim->state.vN = v;
+    sim->rod.state.v[ sim->rod.n - 1  ] = v;
+    sim->state.state.vN = v;
   }
   else {
-    sim->rod.v[ 0 ] = v; 
-    sim->state.v1 = v;
+    sim->rod.state.v[ 0 ] = v; 
+    sim->state.state.v1 = v;
   }
 
 }
@@ -335,82 +346,43 @@ void lumped_sim_set_velocity ( lumped_rod_sim * sim, double v, int j ){
 void lumped_sim_set_position ( lumped_rod_sim * sim, double x, int j ){
 
   if ( j == 1 ) { 
-    sim->rod.x[ sim->rod.n - 1  ] = x;
-    sim->state.xN = x;
+    sim->rod.state.x[ sim->rod.n - 1  ] = x;
+    sim->state.state.xN = x;
   }
   else {
-    sim->rod.x[ 0 ] = x; 
-    sim->state.x1 = x;
+    sim->rod.state.x[ 0 ] = x; 
+    sim->state.state.x1 = x;
   }
 
 }
 
-/** set the forces at the ends */
-void lumped_sim_set_force ( lumped_rod_sim * sim, double f, int j ){
-  sim->forces[ j ] = f;
-  if ( j == 0 )
-    sim->state.f1 = f;
-  else
-    sim->state.fN = f;
-}
-
-
-/** get the positions at the end */
-double lumped_sim_get_position ( lumped_rod_sim  * sim, int j ){
-
-  if ( j ==  1 ){
-    j = sim->rod.n - 1 ; 
-  }
-
-  return sim->rod.x[ j ];
-
-}
-
-
-/** get the velocities at the end */
-double lumped_sim_get_velocity ( lumped_rod_sim * sim, int j ){
-
-  if ( j ==  1 ){
-    j = sim->rod.n - 1 ; 
-  }
-
-  return sim->rod.v[ j ];
-
-}
-
-
-/** get the accelerations at the end */
-double lumped_sim_get_acceleration ( lumped_rod_sim * sim, int j ){
-
-  if ( j ==  1 ){
-    j = sim->rod.n - 1 ; 
-  }
-
-  return sim->rod.a[ j ];
-
-}
 
 /**
-   only copy dynamic states
+   We don't want to copy the ponters!  
 */ 
 void   lumped_rod_copy( lumped_rod * src, lumped_rod  * dest ){
 
+  lumped_rod_kinematics tmp  = dest->state;
+  
+  *dest = *src;
+
   int N = src->n * sizeof( double ); 
 
-  memcpy( dest->x, src->x, N);
-  memcpy( dest->v, src->v, N);
-  memcpy( dest->a, src->a, N);
-  memcpy( dest->torsion, src->torsion, ( src->n - 1 ) * sizeof( double ) );
+  memcpy( dest->state.x, tmp.x, N);
+  memcpy( dest->state.v, tmp.v, N);
+  memcpy( dest->state.a, tmp.a, N);
+  memcpy( dest->state.torsion, tmp.torsion, ( src->n - 1 ) * sizeof( double ) );
+  dest->state = tmp;
 
   return;
 }
 
 void lumped_rod_sim_store ( lumped_rod_sim  * sim ){
-  lumped_rod_copy( & sim->rod, & sim->rod_back );
+  lumped_rod_copy(  & sim->rod,  & sim->state_backup.rod );
   return;
 }
 
 void lumped_rod_sim_restore ( lumped_rod_sim  * sim ){
-  lumped_rod_copy( & ( sim->rod_back ), & ( sim->rod ) );
+  lumped_rod_copy( & ( sim->state_backup.rod ),  & ( sim->rod ) );
   return;
 }

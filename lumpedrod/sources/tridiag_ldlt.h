@@ -1,6 +1,12 @@
 #ifndef TRIDIAG_LDLT
 #define TRIDIAG_LDLT
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 /** 
     LDLT factorization of a tridiagonal matrix without any pivoting. 
  */ 
@@ -65,5 +71,8 @@ void solve_upper( tri_matrix * m, double * rhs );
  */
 void tri_multiply( tri_matrix  m, double * x, double *y, double a, double b ) ;
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif

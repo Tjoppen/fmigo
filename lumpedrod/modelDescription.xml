@@ -1,75 +1,206 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <fmiModelDescription
-  fmiVersion="2.0"
-  description="Lumped element rod which can be thought of as either a
-               rotational or translational body"
-  modelName="lumpedrod"
-  guid="{b8998512-96a7-4e6d-8350-6d1f9aeae4a1}"
-  numberOfEventIndicators="0">
+    fmiVersion="2.0"
+    description="Lumped element rod which can be thought of as either a
+                 rotational or translational body.  It takes either a force or a driving velocity at either end."
+    modelName="lumpedrod"
+    guid="{b8998512-96a7-4e6d-8350-6d1f9aeae4a1}"
+    numberOfEventIndicators="0">
 
-<CoSimulation
-  modelIdentifier="lumpedrod"
-  canHandleVariableCommunicationStepSize="false"
-  canGetAndSetFMUstate="true"
-  providesDirectionalDerivative="true"/>
+  <CoSimulation
+      modelIdentifier="lumpedrod"
+      canHandleVariableCommunicationStepSize="false"
+      canGetAndSetFMUstate="true"
+      providesDirectionalDerivative="true"/>
 
-<LogCategories>
-  <Category name="logAll"/>
-  <Category name="logError"/>
-  <Category name="logFmiCall"/>
-  <Category name="logEvent"/>
-</LogCategories>
+  <LogCategories>
+    <Category name="logAll"/>
+    <Category name="logError"/>
+    <Category name="logFmiCall"/>
+    <Category name="logEvent"/>
+  </LogCategories>
 
-<DefaultExperiment startTime="0" stopTime="10" stepSize="0.1"/>
+  <DefaultExperiment startTime="0" stopTime="10" stepSize="0.1"/>
 
-<ModelVariables>
-  <ScalarVariable name="theta1"      valueReference="0"  description="First angle"                             causality="output" initial="exact"><Real start="0"/></ScalarVariable>
-  <ScalarVariable name="theta2"      valueReference="1"  description="Second angle"                             causality="output" initial="exact"><Real start="0"/></ScalarVariable>
+  <ModelVariables>
 
-  
-  <ScalarVariable name="omega1"      valueReference="2"  description="First angular velocity"                  causality="output" initial="exact"><Real start="0"/></ScalarVariable>
+    <ScalarVariable name="theta1"
+                    valueReference="0"
+                    description="First angle"
+                    causality="output" initial="exact">
+      <Real start="0"/>
+    </ScalarVariable>
 
-  <ScalarVariable name="omega2"      valueReference="3"  description="Second angular velocity"                  causality="output" initial="exact"><Real start="0"/></ScalarVariable>
-  
-  <ScalarVariable name="alpha1"      valueReference="4"  description="First angular acceleration"              causality="output" initial="exact"><Real start="0"/></ScalarVariable>
+    <ScalarVariable name="theta2"
+                    valueReference="1"
+                    description="Second angle"
+                    causality="output" initial="exact">
+      <Real start="0"/>
+    </ScalarVariable>
 
-  <ScalarVariable name="alpha2"      valueReference="5"  description="First angular acceleration"              causality="output" initial="exact"><Real start="0"/></ScalarVariable>
-  
-  <ScalarVariable name="tau1"        valueReference="6"  description="First torque"                            causality="input"><Real start="0"/></ScalarVariable>
+    <ScalarVariable name="omega1"
+                    valueReference="2"
+                    description="First angular velocity"
+                    causality="output" initial="exact">
+      <Real start="0"/>
+    </ScalarVariable>
 
-  <ScalarVariable name="tau2"        valueReference="7"  description="Second torque"                            causality="input"><Real start="0"/></ScalarVariable>
+    <ScalarVariable name="omega2"      
+                    valueReference="3"
+                    description="Second angular velocity"
+                    causality="output" initial="exact">
+      <Real start="0"/>
+    </ScalarVariable>
+    
+    <ScalarVariable name="alpha1"      
+                    valueReference="4"
+                    description="First angular acceleration"
+                    causality="output" initial="exact">
+      <Real start="0"/>
+    </ScalarVariable>
 
-  
-  <ScalarVariable name="J0"       valueReference="8"  description="Moment of inertia"         causality="parameter" variability="fixed"><Real start="10"/></ScalarVariable>
+    <ScalarVariable name="alpha2"      
+                    valueReference="5"
+                    description="First angular acceleration"
+                    causality="output" initial="exact">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <ScalarVariable name="counter_torque1"        
+                    valueReference="6"
+                    description="Countertorque of driver on first element"
+                    causality="output">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <ScalarVariable name="counter_torque2"        
+                    valueReference="7"
+                    description="Countertorque of driver on last element"
+                    causality="output">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <ScalarVariable name="dtheta1"        
+                    valueReference="8"
+                    description="Estimated angle difference between input driver and theta1"
+                    causality="output">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <ScalarVariable name="dtheta2"        
+                    valueReference="9"
+                    description="Estimated angle difference between input driver and theta2"
+                    causality="output">
+      <Real start="0"/>
+    </ScalarVariable>
+    
+    <ScalarVariable name="tau1"        
+                    valueReference="10"
+                    description="First torque"
+                    causality="input">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <ScalarVariable name="tau2"        
+                    valueReference="11"
+                    description="Second torque"
+                    causality="input">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <ScalarVariable name="omega_drive1"        
+                    valueReference="12"
+                    description="Driving velocity on first element"
+                    causality="input">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <ScalarVariable name="omega_drive2"        
+                    valueReference="13"
+                    description="Driving input velocity on last element"
+                    causality="input">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <ScalarVariable name="J0"       
+                    valueReference="14"
+                    description="Moment of inertia"
+                    causality="parameter" variability="fixed">
+      <Real start="10"/>
+    </ScalarVariable>
 
 
-  <ScalarVariable name="K"       valueReference="9"  description="Stiffness.  Use negative value for infinity"         causality="parameter" variability="fixed"><Real start="10"/></ScalarVariable>
+    <ScalarVariable name="K"       
+                    valueReference="15"
+                    description="Stiffness.  Use negative value for infinity"
+                    causality="parameter" variability="fixed">
+      <Real start="10"/>
+    </ScalarVariable>
 
-  
-  <ScalarVariable name="D"          valueReference="10"  description="Damping"                           causality="parameter" variability="fixed"><Real start="2"/></ScalarVariable>
+    <ScalarVariable name="D"          
+                    valueReference="16"
+                    description="Damping rate in units of step size, should be around 2"
+                    causality="parameter" variability="fixed">
+      <Real start="2"/>
+    </ScalarVariable>
+
+    <ScalarVariable name="step"          
+                    valueReference="17"
+                    description="Initial time step.  If this is set to 0, the communication time is used"
+                    causality="parameter" variability="fixed">
+      <Real start="0.1"/>
+    </ScalarVariable>
+    
+    <ScalarVariable name="N"       
+                    valueReference="18"
+                    description="Number of elements"
+                    causality="parameter" variability="fixed">
+      <Integer start="10"/>
+    </ScalarVariable>
+
+    <ScalarVariable name="K_drive"       
+                    valueReference="19"
+                    description="Spring constant for velocity driver"
+                    causality="parameter" variability="fixed">
+      <Real start="10000"/>
+    </ScalarVariable>
+    
+    <ScalarVariable name="D_drive"       
+                    valueReference="20"
+                    description="Damping rate for the driver spring, in units of time step: should be around 2"
+                    causality="parameter" variability="fixed">
+      <Real start="10000"/>
+    </ScalarVariable> 
+
+  </ModelVariables>
 
 
-  <ScalarVariable name="step"          valueReference="11"  description="Initial time step.  If this is set to 0, the communication time is used"                           causality="parameter" variability="fixed"><Real start="0.1"/></ScalarVariable>
-  
-  <ScalarVariable name="N"       valueReference="0"  description="Number of elements"         causality="parameter" variability="fixed"><Integer start="10"/></ScalarVariable>
-</ModelVariables>
 
+  <ModelStructure>
 
+    <Outputs>
+      <Unknown index="1"/>
+      <Unknown index="2"/>
+      <Unknown index="3"/>
+      <Unknown index="4"/>
+      <Unknown index="5"/>
+      <Unknown index="6"/>
+      <Unknown index="7"/>
+      <Unknown index="8"/>
+      <Unknown index="9"/>
+      <Unknown index="10"/>
+    </Outputs>
 
-<ModelStructure>
-  <Outputs>
-    <Unknown index="1"/>
-    <Unknown index="2"/>
-    <Unknown index="3"/>
-    <Unknown index="4"/>
-    <Unknown index="5"/>
-    <Unknown index="6"/>
-  </Outputs>
-  <Derivatives>
-    <Unknown index="3"/>        <!-- unused -->
-  </Derivatives>
-  <DiscreteStates/>
-  <InitialUnknowns />
-</ModelStructure>
+    <Inputs>
+      <Unknown index="11"/>
+      <Unknown index="12"/>
+      <Unknown index="13"/>
+      <Unknown index="14"/>
+    </Inputs>
+
+    <Derivatives/>
+    <DiscreteStates/>
+    <InitialUnknowns />
+  </ModelStructure>
 
 </fmiModelDescription>

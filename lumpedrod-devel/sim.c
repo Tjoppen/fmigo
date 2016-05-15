@@ -34,14 +34,15 @@ int main(){
 
   double v[ N ]; 
 
-  memset( v, 0, N * sizeof( v[ 0 ] ) );
+  memset( v, 0,  sizeof( x ) );
 
 
   lumped_rod_sim_parameters p = {
+    1.0/100.0,			/* time step */
     {
       /* these are normally outputs, but used at init condition */
-      -1.0,			/* position of first point */
-      1.0,			/* position of last point */
+      0.0,			/* position of first point */
+      0.0,			/* position of last point */
       0.0,			/* vel of first */
       0.0, 			/* vel of last */
       0.0,			/* accel */
@@ -53,26 +54,26 @@ int main(){
       /* here come inputs*/
       0.0,			/* driving forces */
       0.0, 
-      4.0,			/* velocity driver */
+      0.0,			/* velocity driver */
       0.0,
-      1.0/100.0			/* time step */
     },
     /* now the rod physical parameters */
     {
       N, 			/* number of elements */
       100,			/* total mass*/
-      1e-3,			/* global compliance */
+      1e3,			/* stiffness */
       1,			/* relaxation rate in unit of steps */
-      1000,
-      2,
+      0,
+      0,
       0,
       0
     }
   };
   
   lumped_rod_sim sim = lumped_rod_sim_create( p ) ; 
+  memcpy( sim.rod.state.x, x, sizeof( x ) );
 
-  step_rod_sim( &sim, 2000 );
+  rod_sim_do_step( &sim, 1 );
 
   for ( int i = 0; i < N; ++i ) {
     fprintf( stderr, "x[  %-2d  ] = %6.4f\n" , i, sim.rod.state.x[ i ] );

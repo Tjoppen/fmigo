@@ -5,9 +5,9 @@ IOH5LIB = ../../../hdf5
 LDFLAGS = -L$(IOH5LIB) -lh5io -lhdf5_cpp -lhdf5 -lm
 #CXXFLAGS = -g -std=c++11 
 CFLAGS = -fPIC -g -I$(IOH5LIB)  -I/usr/local/include
-
-
 #CFLAGS =  -g -I$(IOH5LIB)  -I/usr/local/include
+
+
 OBJS  = lumped_rod.o  tridiag_ldlt.o 
 LIBE = liblumpedrod.a
 

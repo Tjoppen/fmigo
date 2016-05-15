@@ -7,18 +7,31 @@
 #define MODEL_GUID "{b8998512-96a7-4e6d-8350-6d1f9aeae4a1}"
 
 enum {
+/* all outputs */
   THETA1,      //angle (output, state)
   THETA2,      //angle (output, state)
   OMEGA1,      //angular velocity (output, state)
   OMEGA2,      //angular velocity (output, state)
   ALPHA1,      //angular acceleration (output)
   ALPHA2,      //angular acceleration (output)
-  TAU1,        //coupling torque (input)
-  TAU2,        //coupling torque (input)
+  DTHETA1,     /* estimated angle difference */
+  DTHETA2,     /* estimated angle difference */
+  TAU_OUT1,    /* internal torque computed on first element */
+  TAU_OUT2,    /* internal torque computed on last element */
+/* inputs */
+  TAU1,				// driving torque
+  TAU2,				// driving torque
+  OMEGA_DRIVE1,			/* driving velocity */
+  OMEGA_DRIVE2,			/* driving velocity */
+
   J0,          // moment of inertia [1/(kg*m^2)] (parameter)
-  COMP,           // compliance of the rod
-  DAMP,          //drag (parameter)
-  STEP,          // *internal* time step
+  STIFFNESS,   // stiffness of the rod
+  RELAX,       //relaxation parameter
+  STIFFNESS1,  // stiffness of first velocity driver
+  RELAX1,      //relaxation parameter of driver
+  STIFFNESS2,  // stiffness of last velocity driver
+  RELAX2,      //relaxation parameter of driver
+  STEP,        // *internal* time step
     NUMBER_OF_REALS
 };
 
@@ -35,7 +48,7 @@ enum {
 
 #define SIMULATION_TYPE lumped_rod_sim
 #define SIMULATION_INIT setStartValues  //called after getting default values from XML
-#define SIMULATION_FREE lumped_rod_sim_delete
+#define SIMULATION_FREE lumped_rod_sim_free
 #define SIMULATION_GET lumped_rod_sim_store
 #define SIMULATION_SET lumped_rod_sim_restore
 
@@ -44,14 +57,21 @@ enum {
 
 static void lumped_rod_fmi_sync_out( lumped_rod_sim * sim, state_t *s){
   
-  s->r[ THETA1 ]  = sim->state.x1;
-  s->r[ THETA2 ]  = sim->state.xN;
-  s->r[ OMEGA1 ]  = sim->state.v1;
-  s->r[ OMEGA2 ]  = sim->state.vN;
-  s->r[ ALPHA1 ]  = sim->state.a1;
-  s->r[ ALPHA2 ]  = sim->state.aN;
-  s->r[ TAU1 ]    = sim->state.f1;
-  s->r[ TAU2 ]    = sim->state.fN;
+  s->r[ THETA1   ]  = sim->state.state.x1;
+  s->r[ THETA2   ]  = sim->state.state.xN;
+  s->r[ OMEGA1   ]  = sim->state.state.v1;
+  s->r[ OMEGA2   ]  = sim->state.state.vN;
+  s->r[ ALPHA1   ]  = sim->state.state.a1;
+  s->r[ ALPHA2   ]  = sim->state.state.aN;
+
+  s->r[ ALPHA1   ]  = sim->state.state.a1;
+  s->r[ ALPHA2   ]  = sim->state.state.aN;
+  
+  s->r[ DTHETA1  ]  = sim->state.state.dx1;
+  s->r[ DTHETA2  ]  = sim->state.state.dxN;
+
+  s->r[ TAU_OUT1 ]  = sim->state.state.f1;
+  s->r[ TAU_OUT2 ]  = sim->state.state.fN;
 
   return;
   
@@ -59,8 +79,10 @@ static void lumped_rod_fmi_sync_out( lumped_rod_sim * sim, state_t *s){
 
 static void lumped_rod_fmi_sync_in( lumped_rod_sim * sim, state_t *s){
   
-  sim->forces[ 0 ] =  s->r[ TAU1 ];
-  sim->forces[ 1 ] =  s->r[ TAU2 ];
+  sim->state.state.driver_f1  =  s->r[ TAU1 ];
+  sim->state.state.driver_fN  =  s->r[ TAU2 ];
+  sim->state.state.driver_v1  =  s->r[ OMEGA_DRIVE1 ];
+  sim->state.state.driver_vN  =  s->r[ OMEGA_DRIVE2 ];
 
   return;
 
@@ -73,25 +95,45 @@ static void setStartValues(state_t *s) {
   /** read the init values given by the master, either from command line
   arguments or as defaults from modelDescription.xml
   */
-  lumped_rod_sim_parameters p = {
-    s->r[ J0 ], 
-    s->i[ NELEM ],
-    s->r[ COMP ],
-    s->r[ STEP ],
-    s->r[ DAMP ],
-    s->r[ THETA1 ],
-    s->r[ THETA2 ],
-    s->r[ OMEGA1 ],
-    s->r[ OMEGA2 ],
-    s->r[ TAU1 ],
-    s->r[ TAU2 ]
-  };
+  lumped_rod_sim_parameters p =
 
- 
-  /** WARNING: hack!  Default values didn't work as time of writing */
-  p.N = 100; p.mass = 1000.0; p.compliance = 1e-3; p.step  = 0.01;
-  p.tau  = 0.1; p.x1 = 0; p.xN = 0; p.v1 = 0; 
-  p.vN = 0; p.f1 =  1e3; p.fN = -1e3; 
+    s->r[ STEP ],
+    {
+      /** these are normally outputs */
+      s->r[ THETA1       ],
+      s->r[ THETA2       ],
+      s->r[ OMEGA1       ],
+      s->r[ OMEGA2       ],
+      s->r[ ALPHA1       ],
+      s->r[ ALPHA2       ],
+      s->r[ DTHETA1      ],
+      s->r[ DTHETA2      ],
+      s->r[ TAU_OUT1     ],
+      s->r[ TAU_OUT2     ],
+      /** these are outputs */
+      s->r[ TAU1         ],
+      s->r[ TAU2         ],
+      s->r[ OMEGA_DRIVE1 ],
+      s->r[ OMEGA_DRIVE2 ],
+
+    }
+
+    {
+      /** physical parameters*/
+      s->i[ NELEM ],
+      s->r[ J0 ], 
+      s->r[ STIFFNESS ],
+      s->r[ RELAX ],
+
+      s->r[ STIFFNESS1 ],
+      s->r[ RELAX1 ],
+
+      s->r[ STIFFNESS2 ],
+      s->r[ RELAX2 ],
+
+
+
+    };
 
   s->simulation = lumped_rod_sim_create( p ); 
 
@@ -130,7 +172,7 @@ static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real comm
 
   int n = ( int ) ceil( communicationStepSize / s->simulation.step );
   /* Execute the simulation */
-  step_rod_sim(&s->simulation , n );
+  rod_sim_do_step(&s->simulation , n );
   /* Copy state variables to ouputs */
   lumped_rod_fmi_sync_out(&s->simulation, s);
   

@@ -38,8 +38,8 @@ extern "C" {
     /** fixed physical parameters */
     int n;			/** number of elements */
     double   rod_mass;		/** total mass */
-    double   compliance;	/** global compliance: the compliance used
-				 * in the constraints is  n * compliance  */
+    double   stiffness;	/** global stiffness: the stiffness used
+				 * in the constraints is  n * stiffness  */
     double  relaxation_rate;	/** even though this is timestep dependent,
 				    it logically belongs here since it is
 				    part of physical properties and could in fact be set to sensible
@@ -51,7 +51,8 @@ extern "C" {
     double driver_stiffnessN;	/** This is for the case when we have a
 				    driver at point N */
     double driver_relaxationN;	
-    double mass;		/* element mass */
+    double mass;		/* element mass: this is computed during
+                                 * initialization */
   
     double mobility[ 4 ];	/** rod's mobility wrt forcing at each
 				 * end: this is derived from parameters
@@ -92,10 +93,8 @@ extern "C" {
     /** Driving forces and velocities */
     double driver_f1;		/* force/torque on first point */
     double driver_fN;		/* force/torque on last point */
-    double v_driver1;		/* driving velocity on first point */
-    double v_driverN;		/* driving velocity on last point */
-    /** parameter */
-    double step;	           /** time step */
+    double driver_v1;		/* driving velocity on first point */
+    double driver_vN;		/* driving velocity on last point */
 
   } lumped_rod_state;
 
@@ -108,6 +107,8 @@ extern "C" {
     initializers.
 */
   typedef struct lumped_rod_sim_parameters{
+
+    double step;	           /** time step */
 
     lumped_rod_state state;
 
@@ -131,10 +132,10 @@ extern "C" {
     double * z;	                   /** buffer for solution: contains velocities and multipliers*/
     double gamma_x;                  /** stabilization factor for constraint violations */
     double gamma_v;                  /** stabilization factor for velocities */
-    double gamma_driver1_x;          /** stabilization factor for constraint * velocities */
-    double gamma_driver1_v;          
-    double gamma_driverN_x;         
-    double gamma_driverN_v;        
+    double gamma_driver_x1;          /** stabilization factor for constraint * velocities */
+    double gamma_driver_v1;          
+    double gamma_driver_xN;         
+    double gamma_driver_vN;        
     /** backup for store/restore */
     lumped_rod_sim_parameters state_backup; 
   
@@ -167,6 +168,8 @@ extern "C" {
 */
   void lumped_sim_set_driving_velocity ( lumped_rod_sim * sim, double v, int j );
 
+  void lumped_sim_set_timestep ( lumped_rod_sim * sim, double step);
+
 /** This will store the dynamic state in a preallocated buffer */
   void lumped_rod_sim_store ( lumped_rod_sim  * sim );
 /** This will restore the dynamic state from a preallocated buffer */
@@ -190,7 +193,7 @@ extern "C" {
   void build_rod_rhs( lumped_rod_sim * sim );
 
 /** Integrate forward in time using spook */
-  void step_rod_sim( lumped_rod_sim * sim, int n );
+  void rod_sim_do_step( lumped_rod_sim * sim, int n );
   
 
 #ifdef __cplusplus

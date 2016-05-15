@@ -74,6 +74,7 @@ DEFUN_DLD( rod_sim, args, nargout , "rod simulation") {
 
 
   lumped_rod_sim_parameters p = {
+      static_cast<double>(init_state.contents("step").scalar_value()),
     {
 
       static_cast<double>(init_state.contents("x1").scalar_value()),
@@ -90,7 +91,6 @@ DEFUN_DLD( rod_sim, args, nargout , "rod simulation") {
       static_cast<double>(init_state.contents("driver_fN").scalar_value()),
       static_cast<double>(init_state.contents("v_drive1").scalar_value()),
       static_cast<double>(init_state.contents("v_driveN").scalar_value()),
-      static_cast<double>(init_state.contents("step").scalar_value()),
 
     },
 
@@ -98,7 +98,7 @@ DEFUN_DLD( rod_sim, args, nargout , "rod simulation") {
 
       static_cast<int>(rod_params.contents("N").scalar_value()),
       static_cast<double>(rod_params.contents("mass").scalar_value()),
-      static_cast<double>(rod_params.contents("compliance").scalar_value()),
+      static_cast<double>(rod_params.contents("stiffness").scalar_value()),
       static_cast<double>(rod_params.contents("tau").scalar_value()),
       static_cast<double>(rod_params.contents("driver_stiffness1").scalar_value()),
       static_cast<double>(rod_params.contents("driver_relaxation1").scalar_value()),
@@ -130,7 +130,7 @@ DEFUN_DLD( rod_sim, args, nargout , "rod simulation") {
 
   
 
-  step_rod_sim( &sim, N );
+  rod_sim_do_step( &sim, N );
   
   array_to_oct( sim.rod.state.x, X );
   array_to_oct( sim.rod.state.v, V );

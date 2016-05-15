@@ -11,7 +11,7 @@
  *  The force function from the clutch
  */
 static double fclutch( double dphi, double domega, double clutch_damping ); 
-static double fclutch_dphi_derivative( double dphi, double domega );
+static double fclutch_dphi_derivative( double dphi );
 
 const static double flip = -1;
 
@@ -75,7 +75,7 @@ int jac_clutch (double t, const double x[], double *dfdx, double dfdt[], void *p
   /** second row */
   gsl_matrix_set (J, 1, 0, 0 ); 
   gsl_matrix_set (J, 0, 1, -( s->md.clutch_damping + s->md.gamma ) / s->md.mass ); 
-  gsl_matrix_set (J, 1, 2, -fclutch_dphi_derivative( x[ 2 ], x[ 1 ] - v)  / s->md.mass );
+  gsl_matrix_set (J, 1, 2, -fclutch_dphi_derivative( x[ 2 ] )  / s->md.mass );
 
 
   /** third row */
@@ -138,7 +138,7 @@ static double fclutch( double dphi, double domega, double clutch_damping ) {
 
 }
 
-static double fclutch_dphi_derivative( double dphi, double domega ) {
+static double fclutch_dphi_derivative( double dphi ) {
   
   //Scania's clutch curve
   static const double b[] = { -0.087266462599716474, -0.052359877559829883, 0.0, 0.09599310885968812, 0.17453292519943295 };

@@ -9,6 +9,7 @@ FMUBUILDER="`pwd`/../fmu-builder/bin/fmu-builder -t `pwd`/templates/fmi2/ -i `pw
 
 # GSL FMUs
 for d in \
+    gsl/clutch_ef\
     gsl/clutch\
     gsl/coupled_sho\
     gsl/mass_force\

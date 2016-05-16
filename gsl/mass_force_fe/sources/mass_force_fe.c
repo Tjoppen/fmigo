@@ -8,9 +8,12 @@
 #include "fmuTemplate.h"
 
 /*  Mass subject to a force, and coupled to the outside via a
- *  spring-damper
+ *  spring-damper.  this takes a force input and outputs a velocity.
 
-    x''  = f
+ There are two forces  applied here: an input force and a "counter force"
+ from the FMU that's attached to the output.
+
+    x''  = f_o  - K * ( dx ) - G * ( x' - v_in )
 
  */
 
@@ -25,7 +28,8 @@ int mass_force (double t, const double x[], double dxdt[], void * params){
   
   double coupling = - s->md.coupling_spring * x[ 2 ] - s->md.coupling_damping * ( x[ 1 ] - s->md.vin );
 
-  s->md.force_out = -coupling;
+  s->md.force_out1 = -coupling;
+  s->md.force_out2 =  coupling;
   
   dxdt[ 0 ] =  x[ 1 ];
 

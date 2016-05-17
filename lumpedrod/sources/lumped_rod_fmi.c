@@ -34,7 +34,7 @@ static void lumped_rod_fmi_sync_out( lumped_rod_sim * sim, state_t *s){
   s->md.dtheta2  = sim->state.state.dxN;
 
   s->md.out_torque1  = sim->state.state.f1;
-  s->md.out_torque1  = sim->state.state.fN;
+  s->md.out_torque2  = sim->state.state.fN;
 
   return;
   
@@ -84,10 +84,11 @@ static void setStartValues(state_t *s) {
       s->md.K_drive1, //VR=17
       s->md.D_drive1, //VR=18
       s->md.K_drive2, //VR=19
-      s->md.D_drive2  //VR=20
+      s->md.D_drive2,  //VR=20
+      s->md.driver_sign1, // VR=26
+      s->md.driver_sign2 // VR=27
     }
   };
-
   s->simulation = lumped_rod_sim_create( p ); 
 
   data_file  = fopen(filename, "w+");

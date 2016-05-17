@@ -51,6 +51,8 @@ extern "C" {
     double driver_stiffnessN;	/** This is for the case when we have a
 				    driver at point N */
     double driver_relaxationN;	
+    double driver_sign1;
+    double driver_signN;
     double mass;		/* element mass: this is computed during
                                  * initialization */
   

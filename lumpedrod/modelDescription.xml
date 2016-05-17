@@ -161,28 +161,28 @@
                     valueReference="17"
                     description="Spring constant for first velocity driver"
                     causality="parameter" variability="fixed">
-      <Real start="10000"/>
+      <Real start="0"/>
     </ScalarVariable>
     
     <ScalarVariable name="D_drive1"       
                     valueReference="18"
                     description="Damping rate for the driver spring, in units of time step: should be around 2"
                     causality="parameter" variability="fixed">
-      <Real start="2"/>
+      <Real start="0"/>
     </ScalarVariable> 
 
     <ScalarVariable name="K_drive2"       
                     valueReference="19"
                     description="Spring constant for first velocity driver"
                     causality="parameter" variability="fixed">
-      <Real start="10000"/>
+      <Real start="0"/>
     </ScalarVariable>
     
     <ScalarVariable name="D_drive2"       
                     valueReference="20"
                     description="Damping rate for the driver spring, in units of time step: should be around 2"
                     causality="parameter" variability="fixed">
-      <Real start="2"/>
+      <Real start="0"/>
     </ScalarVariable> 
 
     <ScalarVariable name="step"          
@@ -234,6 +234,21 @@
       <Real start="0"/>
     </ScalarVariable>
 
+    <ScalarVariable name="driver_sign1"       
+                    valueReference="26"
+                    description="polarity on input torque 1"
+                    causality="parameter"
+                    variability="fixed">
+      <Real start="1"/>
+    </ScalarVariable>
+
+    <ScalarVariable name="driver_sign2"       
+                    valueReference="27"
+                    description="polarity on input torque 2"
+                    causality="parameter"
+                    variability="fixed">
+      <Real start="1"/>
+    </ScalarVariable>
   </ModelVariables>
 
   <ModelStructure>

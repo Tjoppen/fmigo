@@ -177,6 +177,18 @@ lumped_rod_sim lumped_rod_sim_create( lumped_rod_sim_parameters p) {
   sim.state = p;
   sim.rod      =  sim.state.rod;
 
+  if ( sim.rod.driver_sign1 >= 0 ){
+    sim.rod.driver_sign1 =  1.0;
+  } else {
+    sim.rod.driver_sign1 = -1.0;
+  }
+
+  if ( sim.rod.driver_signN >= 0 ){
+    sim.rod.driver_signN =  1.0;
+  } else {
+    sim.rod.driver_signN = -1.0;
+  }
+
   lumped_rod_alloc( &sim.rod );
   
   sim.state_backup = p;

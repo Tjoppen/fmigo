@@ -168,7 +168,7 @@
                     valueReference="18"
                     description="Damping rate for the driver spring, in units of time step: should be around 2"
                     causality="parameter" variability="fixed">
-      <Real start="10000"/>
+      <Real start="2"/>
     </ScalarVariable> 
 
     <ScalarVariable name="K_drive2"       
@@ -182,7 +182,7 @@
                     valueReference="20"
                     description="Damping rate for the driver spring, in units of time step: should be around 2"
                     causality="parameter" variability="fixed">
-      <Real start="10000"/>
+      <Real start="2"/>
     </ScalarVariable> 
 
     <ScalarVariable name="step"          
@@ -202,9 +202,39 @@
     </ScalarVariable>
     
 
+    <ScalarVariable name="theta01"       
+                    valueReference="22"
+                    description="Initial value of angle"
+                    causality="parameter"
+                    variability="fixed">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <ScalarVariable name="theta02"       
+                    valueReference="23"
+                    description="Initial value of angle"
+                    causality="parameter"
+                    variability="fixed">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <ScalarVariable name="omega01"       
+                    valueReference="24"
+                    description="Initial value of angle"
+                    causality="parameter"
+                    variability="fixed">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <ScalarVariable name="omega02"       
+                    valueReference="25"
+                    description="Initial value of angle"
+                    causality="parameter"
+                    variability="fixed">
+      <Real start="0"/>
+    </ScalarVariable>
+
   </ModelVariables>
-
-
 
   <ModelStructure>
 
@@ -220,22 +250,6 @@
       <Unknown index="9"/>
       <Unknown index="10"/>
     </Outputs>
-
-    <Inputs>
-      <Unknown index="11"/>
-      <Unknown index="12"/>
-      <Unknown index="13"/>
-      <Unknown index="14"/>
-      <Unknown index="15"/>
-      <Unknown index="16"/>
-      <Unknown index="17"/>
-      <Unknown index="18"/>
-      <Unknown index="19"/>
-      <Unknown index="20"/>
-      <Unknown index="21"/>
-      <Unknown index="22"/>
-      <Unknown index="23"/>
-    </Inputs>
 
     <Derivatives/>
     <DiscreteStates/>

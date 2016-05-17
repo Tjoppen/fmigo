@@ -1,3 +1,4 @@
+#include <math.h>
 #include "modelDescription.h"
 #include "gsl-interface.h"
 

@@ -26,27 +26,23 @@ static double fclutch_dphi_derivative( double dphi );
 
 int clutch (double t, const double x[], double dxdt[], void * params){
 
+  
   state_t *s = (state_t*)params;
+  double engaged = fabs( s->md.on_off ) > 0.1  ;
+  double force_clutch =   fclutch( x[ 2 ] - x[ 0 ], ( x[ 3 ] - x[ 1 ] ), s->md.clutch_damping );
+  force_clutch = engaged  * force_clutch;
 
   /** fixme here: need some slip etc. */
-  if ( fabs( s->md.on_off ) > 0.1 ){
-    double force_clutch =   fclutch( x[ 2 ] - x[ 0 ], ( x[ 3 ] - x[ 1 ] ), s->md.clutch_damping );
 
-    dxdt[ 0 ]  = x[ 1 ];
-    dxdt[ 1 ] =   force_clutch - s->md.gamma1 * x[ 1 ] ;
+    dxdt[ 0 ]  = engaged * x[ 1 ];
+    dxdt[ 1 ] =  force_clutch - s->md.gamma1 * x[ 1 ] ;
     dxdt[ 1 ] += s->md.force_in1;
     dxdt[ 1 ] /= s->md.mass1;
 
-    dxdt[ 2 ]  = x[ 3 ];
+    dxdt[ 2 ]  = engaged * x[ 3 ];
     dxdt[ 3 ] =  -force_clutch - s->md.gamma2 * x[ 3 ] ;
     dxdt[ 3 ] += s->md.force_in2;
     dxdt[ 3 ] /= s->md.mass2;
-  } else {
-    dxdt[ 0 ] = 0;
-    dxdt[ 1 ] = 0;
-    dxdt[ 2 ] = 0;
-    dxdt[ 3 ] = 0;
-  }
 
   return GSL_SUCCESS;
 
@@ -59,10 +55,13 @@ int jac_clutch (double t, const double x[], double *dfdx, double dfdt[], void *p
   state_t *s = (state_t*)params;
   gsl_matrix_view dfdx_mat = gsl_matrix_view_array (dfdx, 4, 4);
   gsl_matrix * J = &dfdx_mat.matrix;
-  double dfdphi = fclutch_dphi_derivative( x[ 2 ] - x[ 0 ] );
 
-  gsl_matrix_set (J, 0, 0, 0);
-  gsl_matrix_set (J, 0, 1, 1);  /* v1 */
+  double engaged = fabs( s->md.on_off ) > 0.1  ;
+  
+  double dfdphi = engaged * fclutch_dphi_derivative( x[ 2 ] - x[ 0 ] );
+
+  gsl_matrix_set (J, 0, 0, 1.0-engaged);
+  gsl_matrix_set (J, 0, 1, engaged);  /* v1 */
   gsl_matrix_set (J, 0, 2, 0);
   gsl_matrix_set (J, 0, 3, 0);
 
@@ -73,8 +72,8 @@ int jac_clutch (double t, const double x[], double *dfdx, double dfdt[], void *p
 
   gsl_matrix_set (J, 2, 0, 0);
   gsl_matrix_set (J, 2, 1, 0);
-  gsl_matrix_set (J, 2, 2, 0);
-  gsl_matrix_set (J, 2, 3, 1);  /* v2 */
+  gsl_matrix_set (J, 2, 2, 1.0-engaged);
+  gsl_matrix_set (J, 2, 3, engaged);  /* v2 */
 
   gsl_matrix_set (J, 3, 0,   dfdphi                               / s->md.mass2);
   gsl_matrix_set (J, 3, 1,   s->md.clutch_damping                 / s->md.mass2);
@@ -194,6 +193,11 @@ static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReferen
 }
 
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
+  if ( fabs( s->md.on_off ) < 0.1 ){ 
+    s->simulation.x[ 0 ] = 0;
+    s->simulation.x[ 2 ] = 0;
+  }
+  
   cgsl_step_to( &s->simulation, currentCommunicationPoint, communicationStepSize );
   sync_out(s);
 }

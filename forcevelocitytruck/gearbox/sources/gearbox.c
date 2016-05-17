@@ -3,6 +3,25 @@
 
 #define TAU_MAX 135
 
+
+static double gear_ratios[] = {
+   0,
+   13.0,
+   10.0,
+   9.0,
+   7.0,
+   5.0,
+   4.6,
+   3.7,
+   3.0,
+   2.4,
+   1.9,
+   1.5,
+   1.2,
+   1.0,
+   0.8
+};
+
 enum {
     THETA_E,    //engine angle (output, state)
     OMEGA_E,    //engine angular velocity (output, state)
@@ -33,9 +52,11 @@ static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReferen
 }
 
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
-    s->r[THETA_L] = s->r[THETA_E] / s->r[ALPHA];
-    s->r[OMEGA_L] = s->r[OMEGA_E] / s->r[ALPHA];
-    s->r[TAU_E]   = -s->r[D1]*s->r[OMEGA_E] + (-s->r[D2]*s->r[OMEGA_L] + s->r[TAU_L]) / s->r[ALPHA];
+  double ratio = gear_ratios[ (int) s->r[ ALPHA ] ];
+    s->r[THETA_L] = s->r[THETA_E] / ratio;
+    s->r[OMEGA_L] = s->r[OMEGA_E] / ratio;
+    s->r[TAU_E]   = -s->r[D1]*s->r[OMEGA_E] + (-s->r[D2]*s->r[OMEGA_L] +
+  s->r[TAU_L]) / ratio;
 }
 
 // include code that implements the FMI based on the above definitions

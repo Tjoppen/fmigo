@@ -26,14 +26,16 @@
     <ScalarVariable name="vin"    
                     valueReference="0" 
                     description="driving velocity"  
-                    causality="input" initial="exact">
-      <Real start="0"/>
+                    causality="input"
+                    initial="approx">
+      <Real start="1"/>
     </ScalarVariable>
 
     <ScalarVariable name="force_c"  
                     valueReference="1" 
                     description="coupling force" 
-                    causality="input" initial="exact">
+                    causality="input"
+                    initial="approx">
       <Real start="0"/>
     </ScalarVariable>
 
@@ -84,18 +86,26 @@
 
     <ScalarVariable name="force_out1"        
                     valueReference="8" 
-                    description="output force" 
+                    description="output back force to the input giving the
+                                 driving velocity" 
                     causality="output">
       <Real start="0"/>
     </ScalarVariable>
 
     <ScalarVariable name="force_out2"        
                     valueReference="9" 
-                    description="output force" 
+                    description="output force to whatever follows" 
                     causality="output">
       <Real start="0"/>
     </ScalarVariable>
-    
+ 
+    <ScalarVariable name="dx"        
+                    valueReference="10" 
+                    description="angle difference" 
+                    causality="output">
+      <Real start="0"/>
+    </ScalarVariable>   
+
   </ModelVariables>
 
   <ModelStructure>
@@ -103,6 +113,9 @@
       <Unknown index="3"/>
       <Unknown index="4"/>
       <Unknown index="5"/>
+      <Unknown index="9"/>
+      <Unknown index="10"/>
+      <Unknown index="11"/>
     </Outputs>
     <Derivatives/>
     <DiscreteStates/>

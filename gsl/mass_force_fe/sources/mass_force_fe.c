@@ -71,8 +71,9 @@ jac_mass_force (double t, const double x[], double *dfdx, double dfdt[], void *p
 }
 
 static void sync_out(state_t *s) {
-    s->md.x = s->simulation.x[0];
-    s->md.v = s->simulation.x[1];
+    s->md.x  = s->simulation.x[0];
+    s->md.v  = s->simulation.x[1];
+    s->md.dx = s->simulation.x[2];
 }
 
 static void mass_force_init(state_t *s) {

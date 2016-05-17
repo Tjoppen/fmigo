@@ -194,11 +194,11 @@
     </ScalarVariable>
 
     <ScalarVariable name="n_elements"       
-                    valueReference="22"
+                    valueReference="0"
                     description="Number of lumped elements in the rod"
                     causality="parameter"
                     variability="fixed">
-      <Real start="10"/>
+      <Integer start="10"/>
     </ScalarVariable>
     
 

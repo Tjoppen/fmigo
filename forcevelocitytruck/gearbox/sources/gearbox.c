@@ -52,11 +52,19 @@ static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReferen
 }
 
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
-  double ratio = gear_ratios[ (int) s->r[ ALPHA ] ];
+  int gear = (int) s->r[ ALPHA ] ;
+  double ratio = gear_ratios[ gear ];
+
+  if ( gear != 0 ){
     s->r[THETA_L] = s->r[THETA_E] / ratio;
     s->r[OMEGA_L] = s->r[OMEGA_E] / ratio;
-    s->r[TAU_E]   = -s->r[D1]*s->r[OMEGA_E] + (-s->r[D2]*s->r[OMEGA_L] +
-  s->r[TAU_L]) / ratio;
+    s->r[TAU_E]   = -s->r[D1]*s->r[OMEGA_E] + (-s->r[D2]*s->r[OMEGA_L] + s->r[TAU_L]) / ratio;
+  }
+  else { 
+    s->r[THETA_L] = 0;
+    s->r[OMEGA_L] = 0;
+    s->r[TAU_E]   = 0;
+  }
 }
 
 // include code that implements the FMI based on the above definitions

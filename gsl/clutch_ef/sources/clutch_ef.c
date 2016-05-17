@@ -22,23 +22,31 @@ static double fclutch_dphi_derivative( double dphi );
     second body reports velocity.  Feedback torque is applied directly on
     the output body.
 
- */
+*/
 
 int clutch (double t, const double x[], double dxdt[], void * params){
 
   state_t *s = (state_t*)params;
 
-  double force_clutch =   fclutch( x[ 2 ] - x[ 0 ], ( x[ 3 ] - x[ 1 ] ), s->md.clutch_damping );
+  /** fixme here: need some slip etc. */
+  if ( fabs( s->md.on_off ) > 0.1 ){
+    double force_clutch =   fclutch( x[ 2 ] - x[ 0 ], ( x[ 3 ] - x[ 1 ] ), s->md.clutch_damping );
 
-  dxdt[ 0 ]  = x[ 1 ];
-  dxdt[ 1 ] =   force_clutch - s->md.gamma1 * x[ 1 ] ;
-  dxdt[ 1 ] += s->md.force_in1;
-  dxdt[ 1 ] /= s->md.mass1;
+    dxdt[ 0 ]  = x[ 1 ];
+    dxdt[ 1 ] =   force_clutch - s->md.gamma1 * x[ 1 ] ;
+    dxdt[ 1 ] += s->md.force_in1;
+    dxdt[ 1 ] /= s->md.mass1;
 
-  dxdt[ 2 ]  = x[ 3 ];
-  dxdt[ 3 ] =  -force_clutch - s->md.gamma2 * x[ 3 ] ;
-  dxdt[ 3 ] += s->md.force_in2;
-  dxdt[ 3 ] /= s->md.mass2;
+    dxdt[ 2 ]  = x[ 3 ];
+    dxdt[ 3 ] =  -force_clutch - s->md.gamma2 * x[ 3 ] ;
+    dxdt[ 3 ] += s->md.force_in2;
+    dxdt[ 3 ] /= s->md.mass2;
+  } else {
+    dxdt[ 0 ] = 0;
+    dxdt[ 1 ] = 0;
+    dxdt[ 2 ] = 0;
+    dxdt[ 3 ] = 0;
+  }
 
   return GSL_SUCCESS;
 
@@ -163,30 +171,31 @@ static double fclutch_dphi_derivative( double dphi ) {
 
 
 static void sync_out(state_t *s) {
-    s->md.v1 = s->simulation.x[1];
-    s->md.v2 = s->simulation.x[3];
+  s->md.v1 = s->simulation.x[1];
+  s->md.v2 = s->simulation.x[3];
 }
 
 static void clutch_init(state_t *s) {
-    const double initials[4] = {
-        s->md.xi0,
-        s->md.vi0,
-        s->md.xo0,
-        s->md.vo0
-    };
+  const double initials[4] = {
+    s->md.xi0,
+    s->md.vi0,
+    s->md.xo0,
+    s->md.vo0
+  };
 
-    s->simulation = cgsl_init_simulation( 4, initials, s, clutch, jac_clutch, s->md.integrator_type, 1e-5, 0, 0, 0, NULL );
-    sync_out(s);
+//    s->simulation = cgsl_init_simulation( 4, initials, s, clutch, jac_clutch, s->md.integrator_type, 1e-5, 0, 0, 0, NULL );
+  s->simulation = cgsl_init_simulation( 4, initials, s, clutch, jac_clutch, 6, 1e-5, 0, 0, 0, NULL );
+  sync_out(s);
 }
 
 //returns partial derivative of vr with respect to wrt
 static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
-    return fmi2Error;
+  return fmi2Error;
 }
 
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
-    cgsl_step_to( &s->simulation, currentCommunicationPoint, communicationStepSize );
-    sync_out(s);
+  cgsl_step_to( &s->simulation, currentCommunicationPoint, communicationStepSize );
+  sync_out(s);
 }
 
 
@@ -212,21 +221,21 @@ int main(){
   fclose( f );
 
   state_t s = {{
-        0,
-        0,
-        0,
-        0,
-        1,
-        1,
-        1,
-        1,
-        100,
-        1,
-        -1,
-        0,
-        0,
-        rk2imp,
-  }};
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      1,
+      1,
+      100,
+      1,
+      -1,
+      0,
+      0,
+      rk2imp,
+    }};
   clutch_init(&s);
   s.simulation.file = fopen( "s.m", "w+" );
   s.simulation.save = 1;

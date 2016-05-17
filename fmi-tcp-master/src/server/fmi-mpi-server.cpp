@@ -4,6 +4,8 @@
 using namespace std;
 using namespace fmitcp;
 
+#include "parse_server_args.cpp"
+
 int main(int argc, char *argv[]) {
     MPI_Init(NULL, NULL);
 
@@ -11,23 +13,16 @@ int main(int argc, char *argv[]) {
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
-    //init
-    if (argc < 2) {
-        fprintf(stderr, "USAGE: %s [-F filter_depth] fmu-path\n", argv[0]);
-        return 1;
-    }
-
     //parse arguments
-    const char *fmu_path = argv[1];
+    bool debugLogging = false;
+    jm_log_level_enu_t log_level = jm_log_level_nothing;
+    string fmuPath = "";
+    string hdf5Filename;
     int filter_depth = 0;
-    
-    if (argc >= 4 && strcmp(argv[1], "-F") == 0) {
-        filter_depth = atoi(argv[2]);
-        fprintf(stderr, "Using output filter with depth %i\n", filter_depth);
-        fmu_path = argv[3];
-    }
 
-    FMIServer server(fmu_path, false, jm_log_level_nothing, "", filter_depth);
+    parse_server_args(argc, argv, &fmuPath, &filter_depth, &hdf5Filename, &debugLogging, &log_level);
+
+    FMIServer server(fmuPath, debugLogging, log_level, hdf5Filename, filter_depth);
 
     for (;;) {
         int rank, tag;

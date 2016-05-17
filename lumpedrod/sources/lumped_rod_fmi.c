@@ -32,7 +32,7 @@ enum {
   STIFFNESS2,  // stiffness of last velocity driver
   RELAX2,      //relaxation parameter of driver
   STEP,        // *internal* time step
-    NUMBER_OF_REALS
+  NUMBER_OF_REALS
 };
 
 enum {
@@ -47,7 +47,8 @@ enum {
 #define FMI_COSIMULATION
 
 #define SIMULATION_TYPE lumped_rod_sim
-#define SIMULATION_INIT setStartValues  //called after getting default values from XML
+//called after getting default values from XML
+#define SIMULATION_INIT setStartValues
 #define SIMULATION_FREE lumped_rod_sim_free
 #define SIMULATION_GET lumped_rod_sim_store
 #define SIMULATION_SET lumped_rod_sim_restore
@@ -90,13 +91,13 @@ static void lumped_rod_fmi_sync_in( lumped_rod_sim * sim, state_t *s){
  
 /**
    Instantiate the simulation and set initial conditions.
- */
+*/
 static void setStartValues(state_t *s) {
   /** read the init values given by the master, either from command line
-  arguments or as defaults from modelDescription.xml
+      arguments or as defaults from modelDescription.xml
   */
-  lumped_rod_sim_parameters p =
-
+  int i; 
+  lumped_rod_sim_parameters p = { 
     s->r[ STEP ],
     {
       /** these are normally outputs */
@@ -114,63 +115,66 @@ static void setStartValues(state_t *s) {
       s->r[ TAU1         ],
       s->r[ TAU2         ],
       s->r[ OMEGA_DRIVE1 ],
-      s->r[ OMEGA_DRIVE2 ],
-
-    }
-
+      s->r[ OMEGA_DRIVE2 ]
+    },
     {
-      /** physical parameters*/
-      s->i[ NELEM ],
+      s->i[ NELEM ], /** physical parameters*/
       s->r[ J0 ], 
       s->r[ STIFFNESS ],
       s->r[ RELAX ],
-
+      
       s->r[ STIFFNESS1 ],
       s->r[ RELAX1 ],
-
+      
       s->r[ STIFFNESS2 ],
-      s->r[ RELAX2 ],
-
-
-
-    };
+      s->r[ RELAX2 ]
+    }
+  };
 
   s->simulation = lumped_rod_sim_create( p ); 
+  FILE * f = fopen("/tmp/z", "w+");
+  fprintf(f, "Init conditions.   Step  = %f \n", s->r[ STEP ]);
+  fprintf(f, "[ ... \n");
+  for ( i = 0; i < s->i[ NELEM ]; ++i ){
+    fprintf(stderr, "%f; ... \n", s->simulation.rod.state.x[ i ] );
+  }
+    
+  fclose(f);
 
-}
+};
 
 /** Returns partial derivative of vr with respect to wrt  
  *  We could define a smart convention here.  
-*/ 
+ */ 
 static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
-    if (vr == ALPHA1 && wrt == TAU1 ) {
-      *partial = s->simulation.rod.mobility[ 0 ];
-        return fmi2OK;
-    }
+  if (vr == ALPHA1 && wrt == TAU1 ) {
+    *partial = s->simulation.rod.mobility[ 0 ];
+    return fmi2OK;
+  }
 
-    if (vr == ALPHA1 && wrt == TAU2 ) {
-      *partial = s->simulation.rod.mobility[ 1 ];
-        return fmi2OK;
-    }
+  if (vr == ALPHA1 && wrt == TAU2 ) {
+    *partial = s->simulation.rod.mobility[ 1 ];
+    return fmi2OK;
+  }
 
-    if (vr == ALPHA2 && wrt == TAU1 ) {
-      *partial = s->simulation.rod.mobility[ 2 ];
-        return fmi2OK;
-    }
+  if (vr == ALPHA2 && wrt == TAU1 ) {
+    *partial = s->simulation.rod.mobility[ 2 ];
+    return fmi2OK;
+  }
     
-    if (vr == ALPHA2 && wrt == TAU2 ) {
-      *partial = s->simulation.rod.mobility[ 3 ];
-        return fmi2OK;
-    }
+  if (vr == ALPHA2 && wrt == TAU2 ) {
+    *partial = s->simulation.rod.mobility[ 3 ];
+    return fmi2OK;
+  }
 
-    return fmi2Error;
+  return fmi2Error;
 }
 
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
   /*  Copy the input variable from the state vector */
   lumped_rod_fmi_sync_in(&s->simulation, s);
 
-  int n = ( int ) ceil( communicationStepSize / s->simulation.step );
+  int n = ( int ) ceil( communicationStepSize / s->simulation.state.step );
   /* Execute the simulation */
   rod_sim_do_step(&s->simulation , n );
   /* Copy state variables to ouputs */

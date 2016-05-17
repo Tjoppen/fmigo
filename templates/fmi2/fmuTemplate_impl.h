@@ -163,6 +163,9 @@ fmi2Component fmi2Instantiate(fmi2String instanceName, fmi2Type fmuType, fmi2Str
     comp->loggingOn = loggingOn;
     zeroState(&comp->s);
     comp->s.state = modelInstantiated;
+#ifdef HAVE_DEFAULTS
+    comp->s.md = defaults;
+#endif
 
     FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2Instantiate: GUID=%s", fmuGUID)
 

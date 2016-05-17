@@ -50,21 +50,30 @@ for sv in root.find('ModelVariables').findall('ScalarVariable'):
         warning(sys.argv[1]+' contains multiple variables named "' + name + '"!')
         exit(1)
 
-    if sv.find('Real')      != None:
+    R = sv.find('Real')
+    I = sv.find('Integer')
+    E = sv.find('Enum')
+    B = sv.find('Boolean')
+
+    if R != None:
         if vr in reals:
             warning(sys.argv[1]+' contains multiple Reals with VR='+str(vr))
             exit(1)
-        reals[vr] = name
-    elif sv.find('Integer') != None or sv.find('Enum')    != None:
+        start = float(R.attrib['start']) if 'start' in R.attrib else 0
+        reals[vr] = (name, start)
+    elif I != None or E != None:
         if vr in ints:
             warning(sys.argv[1]+' contains multiple Integers/Enums with VR='+str(vr))
             exit(1)
-        ints[vr] = name
-    elif sv.find('Boolean') != None:
+        IE = I if I != None else E
+        start = int(IE.attrib['start']) if 'start' in IE.attrib else 0
+        ints[vr] = (name, start)
+    elif B != None:
         if vr in bools:
             warning(sys.argv[1]+' contains multiple Booleans with VR='+str(vr))
             exit(1)
-        bools[vr] = name
+        start = B.attrib['start'] if 'start' in B.attrib else '0'
+        bools[vr] = (name, 1 if start == '1' or start == 'true' else 0)
     else:
         warning('Variable "' + sc.attrib['name'] + '" has unknown/unsupported type')
         exit(1)
@@ -98,18 +107,31 @@ typedef struct {
 %s
 } modelDescription_t;
 ''' % (
-    '\n'.join(['    fmi2Real '+value+'; //VR='+str(key) for key,value in reals.iteritems()]),
-    '\n'.join(['    fmi2Integer '+value+'; //VR='+str(key) for key,value in ints.iteritems()]),
-    '\n'.join(['    fmi2Boolean '+value+'; //VR='+str(key) for key,value in bools.iteritems()]),
+    '\n'.join(['    fmi2Real '+value[0]+'; //VR='+str(key) for key,value in reals.iteritems()]),
+    '\n'.join(['    fmi2Integer '+value[0]+'; //VR='+str(key) for key,value in ints.iteritems()]),
+    '\n'.join(['    fmi2Boolean '+value[0]+'; //VR='+str(key) for key,value in bools.iteritems()]),
+))
+
+print('''
+#define HAVE_DEFAULTS
+static const modelDescription_t defaults = {
+%s
+%s
+%s
+};
+''' % (
+    '\n'.join(['    '+str(value[1])+', //'+value[0] for key,value in reals.iteritems()]),
+    '\n'.join(['    '+str(value[1])+', //'+value[0] for key,value in ints.iteritems()]),
+    '\n'.join(['    '+str(value[1])+', //'+value[0] for key,value in bools.iteritems()]),
 ))
 
 print('''
 %s
 %s
 %s''' % (
-    '\n'.join(['#define VR_'+value.upper()+' '+str(key) for key,value in reals.iteritems()]),
-    '\n'.join(['#define VR_'+value.upper()+' '+str(key) for key,value in ints.iteritems()]),
-    '\n'.join(['#define VR_'+value.upper()+' '+str(key) for key,value in bools.iteritems()]),
+    '\n'.join(['#define VR_'+value[0].upper()+' '+str(key) for key,value in reals.iteritems()]),
+    '\n'.join(['#define VR_'+value[0].upper()+' '+str(key) for key,value in ints.iteritems()]),
+    '\n'.join(['#define VR_'+value[0].upper()+' '+str(key) for key,value in bools.iteritems()]),
 ))
 
 print('''
@@ -142,9 +164,9 @@ static fmi2Status generated_fmi2Set%s(modelDescription_t *md, const fmi2ValueRef
     return fmi2OK;
 }''' % (
         t,t,
-        '\n'.join(['        case %i: value[i] = md->%s; break;' % (key, value) for key,value in d.iteritems()]),
+        '\n'.join(['        case %i: value[i] = md->%s; break;' % (key, value[0]) for key,value in d.iteritems()]),
         t,t,
-        '\n'.join(['        case %i: md->%s = value[i]; break;' % (key, value) for key,value in d.iteritems()]),
+        '\n'.join(['        case %i: md->%s = value[i]; break;' % (key, value[0]) for key,value in d.iteritems()]),
     ))
 
 

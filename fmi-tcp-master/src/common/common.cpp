@@ -3,7 +3,7 @@
 #include <vector>
 #include <string>
 #include <sstream>
-#include "master/WeakConnection.h"
+#include "master/FMIClient.h"
 
 using namespace fmitcp_master;
 using namespace std;
@@ -54,35 +54,35 @@ jm_log_level_enu_t fmitcp_master::protoJMLogLevelToFmiJMLogLevel(fmitcp_proto::j
   }
 }
 
-map<FMIClient*, vector<int> > fmitcp_master::getOutputWeakRefs(vector<WeakConnection*> weakConnections) {
+map<FMIClient*, vector<int> > fmitcp_master::getOutputWeakRefs(vector<WeakConnection> weakConnections) {
     map<FMIClient*, vector<int> > weakRefs;
 
     for (size_t x = 0; x < weakConnections.size(); x++) {
-        WeakConnection *wc = weakConnections[x];
-        weakRefs[wc->getSlaveA()].push_back(wc->getValueRefA());
+        WeakConnection wc = weakConnections[x];
+        weakRefs[wc.from].push_back(wc.conn.fromOutputVR);
     }
 
     return weakRefs;
 }
 
-map<FMIClient*, pair<vector<int>, vector<double> > > fmitcp_master::getInputWeakRefsAndValues(vector<WeakConnection*> weakConnections) {
+map<FMIClient*, pair<vector<int>, vector<double> > > fmitcp_master::getInputWeakRefsAndValues(vector<WeakConnection> weakConnections) {
     map<FMIClient*, pair<vector<int>, vector<double> > > refValues; //VRs and corresponding values for each client
     map<FMIClient*, size_t> realValueOfs;                           //for keeping track of where we are in each FMIClient->m_getRealValues
 
     for (size_t x = 0; x < weakConnections.size(); x++) {
-        WeakConnection *wc = weakConnections[x];
-        size_t ofs = realValueOfs[wc->getSlaveA()];
+        WeakConnection wc = weakConnections[x];
+        size_t ofs = realValueOfs[wc.from];
 
-        if (ofs >= wc->getSlaveA()->m_getRealValues.size()) {
+        if (ofs >= wc.from->m_getRealValues.size()) {
             //probably didn't call get_real() on this client yet - skip value and trust that the user knows what they're doing
             continue;
         }
 
-        double value = wc->getSlaveA()->m_getRealValues[ofs];
+        double value = wc.from->m_getRealValues[ofs];
 
-        refValues[wc->getSlaveB()].first.push_back(wc->getValueRefB());
-        refValues[wc->getSlaveB()].second.push_back(value);
-        realValueOfs[wc->getSlaveA()]++;
+        refValues[wc.to].first.push_back(wc.conn.toInputVR);
+        refValues[wc.to].second.push_back(value);
+        realValueOfs[wc.from]++;
     }
 
     return refValues;

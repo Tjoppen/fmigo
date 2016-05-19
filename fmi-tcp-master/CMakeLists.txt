@@ -33,7 +33,6 @@ set(FMITCP_HEADERS
 )
 
 SET(MASTER_SRCS
-    src/master/Connection.cpp
     src/master/StrongConnector.cpp
     src/master/main.cpp
     src/master/FMIClient.cpp
@@ -46,7 +45,6 @@ SET(MASTER_SRCS
     ${FMITCP_SRCS}
 )
 SET(MASTER_HEADERS
-    include/master/Connection.h
     include/master/FMIClient.h
     include/master/StrongConnector.h
     include/master/WeakConnection.h

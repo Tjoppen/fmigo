@@ -3,25 +3,29 @@
 
 #include <fmilib.h>
 #include <stdio.h>
-#include "master/WeakConnection.h"
+#include <string>
+#include <vector>
+#include <map>
 
 namespace fmitcp_master {
 
 #define DEFAULT_OUTFILE "result.csv"
 
 struct connection {
+    fmi2_base_type_enu_t fromType;
     int fromFMU;                // Index of FMU
     int fromOutputVR;           // Value reference
+    fmi2_base_type_enu_t toType;
     int toFMU;                  // FMU index
     int toInputVR;              // Value reference
-    fmi2_base_type_enu_t type;
+    double k, m;                // slope and intercept, for unit conversion. y = kx + m
 };
 
 struct strongconnection {
-    string type;
+    std::string type;
     int fromFMU;
     int toFMU;
-    vector<int> vrs;
+    std::vector<int> vrs;
 };
 
 struct param {

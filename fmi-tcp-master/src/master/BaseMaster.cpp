@@ -16,8 +16,8 @@
 using namespace fmitcp_master;
 using namespace fmitcp;
 
-BaseMaster::BaseMaster(vector<FMIClient*> slaves) :
-        m_slaves(slaves) {
+BaseMaster::BaseMaster(vector<FMIClient*> clients) :
+        m_clients(clients) {
 }
 
 BaseMaster::~BaseMaster() {
@@ -25,7 +25,7 @@ BaseMaster::~BaseMaster() {
 
 size_t BaseMaster::getNumPendingRequests() const {
     size_t ret = 0;
-    for (auto s : m_slaves) {
+    for (auto s : m_clients) {
         ret += s->getNumPendingRequests();
     }
     return ret;
@@ -41,29 +41,29 @@ void BaseMaster::wait() {
         int rank;
         std::string str = mpi_recv_string(MPI_ANY_SOURCE, &rank, NULL);
 
-        if (rank < 1 || rank > m_slaves.size()) {
+        if (rank < 1 || rank > m_clients.size()) {
             fprintf(stderr, "MPI rank out of bounds: %i\n", rank);
             exit(1);
         }
 
-        m_slaves[rank-1]->Client::clientData(str.c_str(), str.length());
+        m_clients[rank-1]->Client::clientData(str.c_str(), str.length());
 #else
     //poll all clients, decrease m_pendingRequests as we see REPlies coming in
-    vector<zmq::pollitem_t> items(m_slaves.size());
-    for (size_t x = 0; x < m_slaves.size(); x++) {
-        items[x].socket = (void*)m_slaves[x]->m_socket;
+    vector<zmq::pollitem_t> items(m_clients.size());
+    for (size_t x = 0; x < m_clients.size(); x++) {
+        items[x].socket = (void*)m_clients[x]->m_socket;
         items[x].events = ZMQ_POLLIN;
     }
-    int n = zmq::poll(items.data(), m_slaves.size(), 1000000);
+    int n = zmq::poll(items.data(), m_clients.size(), 1000000);
     if (!n) {
-        fprintf(stderr, "polled %li sockets, %li pending (%i/%i), no new events\n", m_slaves.size(), getNumPendingRequests(), numPolls, maxPolls);
+        fprintf(stderr, "polled %li sockets, %li pending (%i/%i), no new events\n", m_clients.size(), getNumPendingRequests(), numPolls, maxPolls);
     }
-    for (size_t x = 0; x < m_slaves.size(); x++) {
+    for (size_t x = 0; x < m_clients.size(); x++) {
         if (items[x].revents & ZMQ_POLLIN) {
             zmq::message_t msg;
-            m_slaves[x]->m_socket.recv(&msg);
+            m_clients[x]->m_socket.recv(&msg);
             //fprintf(stderr, "Got message of size %li\n", msg.size());
-            m_slaves[x]->Client::clientData(static_cast<char*>(msg.data()), msg.size());
+            m_clients[x]->Client::clientData(static_cast<char*>(msg.data()), msg.size());
         }
     }
     if (getNumPendingRequests() > 0) {

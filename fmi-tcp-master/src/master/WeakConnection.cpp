@@ -1,22 +1,21 @@
+/* 
+ * File:   WeakConnection.cpp
+ * Author: thardin
+ * 
+ * Created on May 24, 2016, 4:04 PM
+ */
+
 #include "master/WeakConnection.h"
 
 using namespace fmitcp_master;
 
-WeakConnection::WeakConnection( FMIClient* slaveA,
-                                FMIClient* slaveB,
-                                int valueRefA,
-                                int valueRefB ) : Connection(slaveA, slaveB){
-    m_valueRefA = valueRefA;
-    m_valueRefB = valueRefB;
-}
-WeakConnection::~WeakConnection(){
-
+fmitcp_master::WeakConnection::WeakConnection(const connection& conn, FMIClient *from, FMIClient *to) :
+    conn(conn), from(from), to(to) {
 }
 
-int WeakConnection::getValueRefA(){
-    return m_valueRefA;
+/*fmitcp_master::WeakConnection::WeakConnection(const fmitcp_master::WeakConnection& orig) {
 }
 
-int WeakConnection::getValueRefB(){
-    return m_valueRefB;
-}
+fmitcp_master::WeakConnection::~WeakConnection() {
+}*/
+

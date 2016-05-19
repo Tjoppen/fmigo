@@ -18,9 +18,9 @@ using namespace fmitcp::serialize;
 namespace fmitcp_master {
 class WeakMaster : public BaseMaster {
 protected:
-    vector<WeakConnection*> m_weakConnections;
+    vector<WeakConnection> m_weakConnections;
 public:
-    WeakMaster(vector<FMIClient*> slaves, vector<WeakConnection*> weakConnections) : BaseMaster(slaves),
+    WeakMaster(vector<FMIClient*> clients, vector<WeakConnection> weakConnections) : BaseMaster(clients),
             m_weakConnections(weakConnections) {
     }
 };
@@ -30,7 +30,7 @@ class JacobiMaster : public WeakMaster {
     map<FMIClient*, vector<int> > clientWeakRefs;
 
 public:
-    JacobiMaster(vector<FMIClient*> slaves, vector<WeakConnection*> weakConnections) : WeakMaster(slaves, weakConnections) {
+    JacobiMaster(vector<FMIClient*> clients, vector<WeakConnection> weakConnections) : WeakMaster(clients, weakConnections) {
         fprintf(stderr, "JacobiMaster\n");
     }
 
@@ -60,7 +60,7 @@ public:
             send(it->first, fmi2_import_set_real(0, 0, it->second.first, it->second.second));
         }
 
-        block(m_slaves, fmi2_import_do_step(0, 0, t, dt, true));
+        block(m_clients, fmi2_import_do_step(0, 0, t, dt, true));
     }
 };
 
@@ -73,8 +73,8 @@ class GaussSeidelMaster : public WeakMaster {
     };
     std::map<FMIClient*, ClientThingy> conns;
 public:
-    GaussSeidelMaster(vector<FMIClient*> slaves, vector<WeakConnection*> weakConnections, std::vector<int> stepOrder) :
-        WeakMaster(slaves, weakConnections), stepOrder(stepOrder) {
+    GaussSeidelMaster(vector<FMIClient*> clients, vector<WeakConnection> weakConnections, std::vector<int> stepOrder) :
+        WeakMaster(clients, weakConnections), stepOrder(stepOrder) {
         fprintf(stderr, "GSMaster\n");
     }
 
@@ -82,14 +82,14 @@ public:
         //work out what clients and VRs each client has to grab from,
         //and where to put the retrieved values
         for (int o : stepOrder) {
-            FMIClient *client = m_slaves[o];
+            FMIClient *client = m_clients[o];
 
             for (size_t x = 0; x < m_weakConnections.size(); x++) {
-                WeakConnection *wc = m_weakConnections[x];
-                if (wc->getSlaveB() == client) {
+                const WeakConnection& wc = m_weakConnections[x];
+                if (wc.to == client) {
                     //connection has client as destination - remember it
-                    conns[wc->getSlaveB()].vrMap[wc->getSlaveA()].push_back(wc->getValueRefA());
-                    conns[wc->getSlaveB()].vrs.push_back(wc->getValueRefB());
+                    conns[wc.to].vrMap[wc.from].push_back(wc.conn.fromOutputVR);
+                    conns[wc.to].vrs.push_back(wc.conn.toInputVR);
                 }
             }
         }
@@ -98,7 +98,7 @@ public:
     void runIteration(double t, double dt) {
         //fprintf(stderr, "\n\n");
         for (int o : stepOrder) {
-            FMIClient *client = m_slaves[o];
+            FMIClient *client = m_clients[o];
 
             //fprintf(stderr, "client %i:", client->getId());
             if (conns[client].vrs.size() > 0) {

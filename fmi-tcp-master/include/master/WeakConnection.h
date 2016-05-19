@@ -1,30 +1,38 @@
-#ifndef WEAKCONNECTION_H_
-#define WEAKCONNECTION_H_
+/* 
+ * File:   WeakConnection.h
+ * Author: thardin
+ *
+ * Created on May 24, 2016, 4:04 PM
+ */
 
-#include "Connection.h"
-#include "FMIClient.h"
+#ifndef WEAKCONNECTION_H
+#define	WEAKCONNECTION_H
+
+#include "parseargs.h"
 
 namespace fmitcp_master {
 
-    class WeakConnection : public Connection {
+class FMIClient;
+class WeakConnection {
+    double r;
+    int i;
+    bool b;
+    std::string s;
 
-    protected:
-        int m_valueRefA;
-        int m_valueRefB;
+public:
+    connection conn;
+    FMIClient *from;
+    FMIClient *to;
 
-    public:
+    WeakConnection(const connection& conn, FMIClient *from, FMIClient *to);
+    ~WeakConnection() {}
+    /*WeakConnection(const WeakConnection& orig);
+    virtual ~WeakConnection();*/
+private:
 
-        /// Crate a causal connection from a value reference in slaveA to a value reference in slaveB.
-        WeakConnection( FMIClient* slaveA,
-                        FMIClient* slaveB,
-                        int valueRefA,
-                        int valueRefB );
-        ~WeakConnection();
-
-        int getValueRefA();
-        int getValueRefB();
-
-    };
 };
 
-#endif
+}
+
+#endif	/* WEAKCONNECTION_H */
+

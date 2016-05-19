@@ -16,8 +16,8 @@ using namespace fmitcp;
 using namespace fmitcp::serialize;
 using namespace sc;
 
-StrongMaster::StrongMaster(vector<FMIClient*> slaves, vector<WeakConnection*> weakConnections, Solver strongCouplingSolver, bool holonomic) :
-        JacobiMaster(slaves, weakConnections),
+StrongMaster::StrongMaster(vector<FMIClient*> clients, vector<WeakConnection> weakConnections, Solver strongCouplingSolver, bool holonomic) :
+        JacobiMaster(clients, weakConnections),
         m_strongCouplingSolver(strongCouplingSolver), holonomic(holonomic) {
     fprintf(stderr, "StrongMaster (%s)\n", holonomic ? "holonomic" : "non-holonomic");
 }
@@ -65,25 +65,25 @@ void StrongMaster::runIteration(double t, double dt) {
 
     //get strong connector inputs
     //TODO: it'd be nice if these get_real() were pipelined with the get_real()s done above
-    for(int i=0; i<m_slaves.size(); i++){
+    for(int i=0; i<m_clients.size(); i++){
         //check m_getDirectionalDerivativeValues while we're at it
-        if (m_slaves[i]->m_getDirectionalDerivativeValues.size() > 0) {
+        if (m_clients[i]->m_getDirectionalDerivativeValues.size() > 0) {
             fprintf(stderr, "WARNING: Client %i had %zu unprocessed directional derivative results\n", i,
-                    m_slaves[i]->m_getDirectionalDerivativeValues.size());
+                    m_clients[i]->m_getDirectionalDerivativeValues.size());
             exit(1);
-            m_slaves[i]->m_getDirectionalDerivativeValues.clear();
+            m_clients[i]->m_getDirectionalDerivativeValues.clear();
         }
 
-        const vector<int> valueRefs = m_slaves[i]->getStrongConnectorValueReferences();
-        send(m_slaves[i], fmi2_import_get_real(0, 0, valueRefs));
+        const vector<int> valueRefs = m_clients[i]->getStrongConnectorValueReferences();
+        send(m_clients[i], fmi2_import_get_real(0, 0, valueRefs));
     }
     PRINT_HDF5_DELTA("get_strong_reals");
     wait();
     PRINT_HDF5_DELTA("get_strong_reals_wait");
 
     //set connector values
-    for (int i=0; i<m_slaves.size(); i++){
-        FMIClient *client = m_slaves[i];
+    for (int i=0; i<m_clients.size(); i++){
+        FMIClient *client = m_clients[i];
         vector<int> vrs = client->getStrongConnectorValueReferences();
         /*fprintf(stderr, "m_getRealValues:\n");
         for (int j = 0; j < client->m_getRealValues.size(); j++) {
@@ -105,8 +105,8 @@ void StrongMaster::runIteration(double t, double dt) {
 
     //first filter out FMUs with save/load functionality
     std::vector<FMIClient*> saveLoadClients;
-    for (int i=0; i<m_slaves.size(); i++){
-        FMIClient *client = m_slaves[i];
+    for (int i=0; i<m_clients.size(); i++){
+        FMIClient *client = m_clients[i];
         if (client->hasCapability(fmi2_cs_canGetAndSetFMUstate)) {
             saveLoadClients.push_back(client);
         }
@@ -247,8 +247,8 @@ void StrongMaster::runIteration(double t, double dt) {
     PRINT_HDF5_DELTA("run_solver");
 
     //distribute forces
-    for (int i=0; i<m_slaves.size(); i++){
-        FMIClient *client = m_slaves[i];
+    for (int i=0; i<m_clients.size(); i++){
+        FMIClient *client = m_clients[i];
         for (int j = 0; j < client->numConnectors(); j++) {
             StrongConnector *sc = client->getConnector(j);
             vector<double> vec;
@@ -280,14 +280,14 @@ void StrongMaster::runIteration(double t, double dt) {
     //do actual step
     //noSetFMUStatePriorToCurrentPoint = true
     //In other words: do the step, commit the results (basically, we're not going back)
-    block(m_slaves, fmi2_import_do_step(0, 0, t, dt, true));
+    block(m_clients, fmi2_import_do_step(0, 0, t, dt, true));
     PRINT_HDF5_DELTA("do_step");
 }
 
 string StrongMaster::getForceFieldnames() const {
     ostringstream oss;
-    for (int i=0; i<m_slaves.size(); i++){
-        FMIClient *client = m_slaves[i];
+    for (int i=0; i<m_clients.size(); i++){
+        FMIClient *client = m_clients[i];
         for (int j = 0; j < client->numConnectors(); j++) {
             StrongConnector *sc = client->getConnector(j);
             ostringstream basename;

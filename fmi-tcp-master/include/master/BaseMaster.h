@@ -13,13 +13,13 @@
 namespace fmitcp_master {
     class BaseMaster {
     protected:
-        std::vector<FMIClient*> m_slaves;
+        std::vector<FMIClient*> m_clients;
 
     public:
         //number of pending requests sent to clients
         size_t getNumPendingRequests() const;
 
-        explicit BaseMaster(std::vector<FMIClient*> slaves);
+        explicit BaseMaster(std::vector<FMIClient*> clients);
         virtual ~BaseMaster();
         virtual void prepare() {};
         virtual void runIteration(double t, double dt) = 0;

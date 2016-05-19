@@ -15,6 +15,7 @@
 #define FMILIB_BUILDING_LIBRARY
 #include <fmilib.h>
 #include "fmitcp.pb.h"
+#include "master/WeakConnection.h"
 
 #ifndef WIN32
 //for HDF5 output
@@ -49,10 +50,9 @@ namespace fmitcp_master {
 
     jm_log_level_enu_t protoJMLogLevelToFmiJMLogLevel(fmitcp_proto::jm_log_level_enu_t logLevel);
 
-    class WeakConnection;
     class FMIClient;
-    std::map<FMIClient*, std::vector<int> > getOutputWeakRefs(std::vector<WeakConnection*> weakConnections);
-    std::map<FMIClient*, std::pair<std::vector<int>, std::vector<double> > > getInputWeakRefsAndValues(std::vector<WeakConnection*> weakConnections);
+    std::map<FMIClient*, std::vector<int> > getOutputWeakRefs(std::vector<WeakConnection> weakConnections);
+    std::map<FMIClient*, std::pair<std::vector<int>, std::vector<double> > > getInputWeakRefsAndValues(std::vector<WeakConnection> weakConnections);
 }
 
 #endif

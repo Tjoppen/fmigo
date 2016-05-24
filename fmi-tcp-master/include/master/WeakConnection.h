@@ -26,10 +26,12 @@ public:
 
     WeakConnection(const connection& conn, FMIClient *from, FMIClient *to);
     ~WeakConnection() {}
-    /*WeakConnection(const WeakConnection& orig);
-    virtual ~WeakConnection();*/
-private:
 
+    //these perform automatic type conversion where appropriate
+    void setFromReal(double in);
+    void setFromInteger(int in);
+    void setFromBoolean(bool in);
+    void setFromString(std::string in);
 };
 
 }

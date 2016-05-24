@@ -92,16 +92,16 @@ int fmitcp_master::parseArguments( int argc,
             for (auto it = parts.begin(); it != parts.end(); it++) {
                 connection conn;
                 deque<string> values = split(*it, ',');
-                conn.k = 1;
-                conn.m = 0;
+                conn.slope = 1;
+                conn.intercept = 0;
                 int a = 0, b = 1, c = 2, d = 3; //positions of FMUFROM,VRFROM,FMUTO,VRTO in values
 
                 if (values.size() == 8) {
                     //TYPEFROM,FMUFROM,VRFROM,TYPETO,FMUTO,VRTO,k,m
                     conn.fromType = type_from_char(values[0]);
                     conn.toType   = type_from_char(values[3]);
-                    conn.k        = atof(values[6].c_str());
-                    conn.m        = atof(values[7].c_str());
+                    conn.slope    = atof(values[6].c_str());
+                    conn.intercept= atof(values[7].c_str());
                     a = 1; b = 2;  c = 4; d = 5;
                 } else if (values.size() == 6) {
                     //TYPEFROM,FMUFROM,VRFROM,TYPETO,FMUTO,VRTO

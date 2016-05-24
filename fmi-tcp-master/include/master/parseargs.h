@@ -12,13 +12,17 @@ namespace fmitcp_master {
 #define DEFAULT_OUTFILE "result.csv"
 
 struct connection {
+    connection() {
+        slope = 1;
+        intercept = 0;
+    }
     fmi2_base_type_enu_t fromType;
     int fromFMU;                // Index of FMU
     int fromOutputVR;           // Value reference
     fmi2_base_type_enu_t toType;
     int toFMU;                  // FMU index
     int toInputVR;              // Value reference
-    double k, m;                // slope and intercept, for unit conversion. y = kx + m
+    double slope, intercept;    // for unit conversion. y = slope*x + intercept
 };
 
 struct strongconnection {

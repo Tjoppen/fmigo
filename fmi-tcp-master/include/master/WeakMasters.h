@@ -16,21 +16,16 @@
 using namespace fmitcp::serialize;
 
 namespace fmitcp_master {
-class WeakMaster : public BaseMaster {
-protected:
-    vector<WeakConnection*> m_weakConnections;
-public:
-    WeakMaster(vector<FMIClient*> slaves, vector<WeakConnection*> weakConnections) : BaseMaster(slaves),
-            m_weakConnections(weakConnections) {
-    }
-};
 
 //aka parallel stepper
-class JacobiMaster : public WeakMaster {
-    map<FMIClient*, vector<int> > clientWeakRefs;
+class JacobiMaster : public BaseMaster {
+protected:
+    vector<WeakConnection> m_weakConnections;
+    OutputRefsType clientWeakRefs;
 
 public:
-    JacobiMaster(vector<FMIClient*> slaves, vector<WeakConnection*> weakConnections) : WeakMaster(slaves, weakConnections) {
+    JacobiMaster(vector<FMIClient*> clients, vector<WeakConnection> weakConnections) :
+            BaseMaster(clients), m_weakConnections(weakConnections) {
         fprintf(stderr, "JacobiMaster\n");
     }
 
@@ -41,7 +36,7 @@ public:
     void runIteration(double t, double dt) {
         //get connection outputs
         for (auto it = clientWeakRefs.begin(); it != clientWeakRefs.end(); it++) {
-            send(it->first, fmi2_import_get_real(0, 0, it->second));
+            it->first->sendGetX(it->second);
         }
         wait();
 
@@ -54,79 +49,45 @@ public:
         }*/
 
         //set connection inputs, pipeline with do_step()
-        const map<FMIClient*, pair<vector<int>, vector<double> > > refValues = getInputWeakRefsAndValues(m_weakConnections);
+        const InputRefsValuesType refValues = getInputWeakRefsAndValues(m_weakConnections);
 
         for (auto it = refValues.begin(); it != refValues.end(); it++) {
-            send(it->first, fmi2_import_set_real(0, 0, it->second.first, it->second.second));
+            it->first->sendSetX(it->second);
         }
 
-        block(m_slaves, fmi2_import_do_step(0, 0, t, dt, true));
+        block(m_clients, fmi2_import_do_step(0, 0, t, dt, true));
     }
 };
 
 //aka serial stepper
-class GaussSeidelMaster : public WeakMaster {
+class GaussSeidelMaster : public BaseMaster {
+    vector<WeakConnection> m_weakConnections;
+    map<FMIClient*, OutputRefsType> clientGetXs;  //one OutputRefsType for each client
     std::vector<int> stepOrder;
-    struct ClientThingy {
-        std::map<FMIClient*, std::vector<int> > vrMap;
-        std::vector<int> vrs;
-    };
-    std::map<FMIClient*, ClientThingy> conns;
 public:
-    GaussSeidelMaster(vector<FMIClient*> slaves, vector<WeakConnection*> weakConnections, std::vector<int> stepOrder) :
-        WeakMaster(slaves, weakConnections), stepOrder(stepOrder) {
+    GaussSeidelMaster(vector<FMIClient*> clients, vector<WeakConnection> weakConnections, std::vector<int> stepOrder) :
+        BaseMaster(clients), m_weakConnections(weakConnections), stepOrder(stepOrder) {
         fprintf(stderr, "GSMaster\n");
     }
 
     void prepare() {
-        //work out what clients and VRs each client has to grab from,
-        //and where to put the retrieved values
-        for (int o : stepOrder) {
-            FMIClient *client = m_slaves[o];
-
-            for (size_t x = 0; x < m_weakConnections.size(); x++) {
-                WeakConnection *wc = m_weakConnections[x];
-                if (wc->getSlaveB() == client) {
-                    //connection has client as destination - remember it
-                    conns[wc->getSlaveB()].vrMap[wc->getSlaveA()].push_back(wc->getValueRefA());
-                    conns[wc->getSlaveB()].vrs.push_back(wc->getValueRefB());
-                }
-            }
+        for (size_t x = 0; x < m_weakConnections.size(); x++) {
+            WeakConnection wc = m_weakConnections[x];
+            clientGetXs[wc.to][wc.from][wc.conn.fromType].push_back(wc.conn.fromOutputVR);
         }
     }
 
     void runIteration(double t, double dt) {
         //fprintf(stderr, "\n\n");
         for (int o : stepOrder) {
-            FMIClient *client = m_slaves[o];
+            FMIClient *client = m_clients[o];
 
-            //fprintf(stderr, "client %i:", client->getId());
-            if (conns[client].vrs.size() > 0) {
-                for (auto it : conns[client].vrMap) {
-                    /*fprintf(stderr, " %i(", it.first->getId());
-                    for (int vr : it.second) {
-                        fprintf(stderr, "%i ", vr);
-                    }
-                    fprintf(stderr, "\b)");*/
-                    send(it.first, fmi2_import_get_real(0, 0, it.second));
-                }
-
-                /*fprintf(stderr, " ->");
-                for (int vr : conns[client].vrs) {
-                    fprintf(stderr, " %i", vr);
-                }
-                fprintf(stderr, "\n");*/
-
-                wait();
-
-                std::vector<double> values;
-                for (auto it : conns[client].vrMap) {
-                    values.insert(values.end(), it.first->m_getRealValues.begin(), it.first->m_getRealValues.end());
-                }
-
-                send(client, fmi2_import_set_real(0, 0, conns[client].vrs, values));
+            for (auto it = clientGetXs[client].begin(); it != clientGetXs[client].end(); it++) {
+                it->first->sendGetX(it->second);
             }
-
+            wait();
+            const SendSetXType refValues = getInputWeakRefsAndValues(m_weakConnections, client);
+            client->sendSetX(refValues);
             block(client, fmi2_import_do_step(0, 0, t, dt, true));
         }
         //fprintf(stderr, "\n\n");

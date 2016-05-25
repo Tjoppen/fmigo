@@ -26,8 +26,13 @@ static void printInvalidArg(char option){
     fprintf(stderr, "Invalid argument of -%c. Use -h for help.\n",option);
 }
 
-static fmi2_base_type_enu_t type_from_char(char type) {
-    switch (type) {
+static fmi2_base_type_enu_t type_from_char(string type) {
+    if (type.size() != 1) {
+        fprintf(stderr, "Bad type: %s\n", type.c_str());
+        exit(1);
+    }
+
+    switch (type[0]) {
     default:
     case 'r': return fmi2_base_type_real;
     case 'i': return fmi2_base_type_int;
@@ -87,26 +92,38 @@ int fmitcp_master::parseArguments( int argc,
             for (auto it = parts.begin(); it != parts.end(); it++) {
                 connection conn;
                 deque<string> values = split(*it, ',');
+                conn.slope = 1;
+                conn.intercept = 0;
+                int a = 0, b = 1, c = 2, d = 3; //positions of FMUFROM,VRFROM,FMUTO,VRTO in values
 
-                if (values.size() == 5) {
-                    if (values[0].size() != 1) {
-                        fprintf(stderr, "Bad type: %s\n", values[0].c_str());
-                        return 1;
-                    }
-
-                    conn.type     = type_from_char(values[0][0]);
+                if (values.size() == 8) {
+                    //TYPEFROM,FMUFROM,VRFROM,TYPETO,FMUTO,VRTO,k,m
+                    conn.fromType = type_from_char(values[0]);
+                    conn.toType   = type_from_char(values[3]);
+                    conn.slope    = atof(values[6].c_str());
+                    conn.intercept= atof(values[7].c_str());
+                    a = 1; b = 2;  c = 4; d = 5;
+                } else if (values.size() == 6) {
+                    //TYPEFROM,FMUFROM,VRFROM,TYPETO,FMUTO,VRTO
+                    conn.fromType = type_from_char(values[0]);
+                    conn.toType   = type_from_char(values[3]);
+                    a = 1; b = 2;  c = 4; d = 5;
+                } else  if (values.size() == 5) {
+                    //TYPE,FMUFROM,VRFROM,FMUTO,VRTO
+                    conn.fromType = conn.toType = type_from_char(values[0]);
                     values.pop_front();
                 } else if (values.size() == 4) {
-                    conn.type     = type_from_char('r');
+                    //FMUFROM,VRFROM,FMUTO,VRTO
+                    conn.fromType = conn.toType = type_from_char("r");
                 } else {
                     fprintf(stderr, "Bad param: %s\n", it->c_str());
                     return 1;
                 }
 
-                conn.fromFMU      = atoi(values[0].c_str());
-                conn.fromOutputVR = atoi(values[1].c_str());
-                conn.toFMU        = atoi(values[2].c_str());
-                conn.toInputVR    = atoi(values[3].c_str());
+                conn.fromFMU      = atoi(values[a].c_str());
+                conn.fromOutputVR = atoi(values[b].c_str());
+                conn.toFMU        = atoi(values[c].c_str());
+                conn.toInputVR    = atoi(values[d].c_str());
 
                 connections->push_back(conn);
             }
@@ -238,15 +255,10 @@ int fmitcp_master::parseArguments( int argc,
 
                 //expect [type,]FMU,VR,value
                 if (values.size() == 4) {
-                    if (values[0].size() != 1) {
-                        fprintf(stderr, "Bad type: %s\n", values[0].c_str());
-                        return 1;
-                    }
-
-                    p.type       = type_from_char(values[0][0]);
+                    p.type       = type_from_char(values[0]);
                     values.pop_front();
                 } else if (values.size() == 3) {
-                    p.type       = type_from_char('r');
+                    p.type       = type_from_char("r");
                 } else {
                     fprintf(stderr, "Bad param: %s\n", it->c_str());
                     return 1;

@@ -7,6 +7,8 @@
 #include <sc/Slave.h>
 #include <string>
 #include "master/StrongConnector.h"
+#include "WeakConnection.h"
+#include "common/common.h"
 #include <deque>
 
 namespace fmitcp_master {
@@ -44,8 +46,11 @@ namespace fmitcp_master {
 
         BaseMaster * m_master;
 
-        /// Last fetched result from getReal
-        std::vector<double> m_getRealValues;
+        /// Last fetched result from getX
+        std::vector<double>      m_getRealValues;
+        std::vector<int>         m_getIntegerValues;
+        std::vector<bool>        m_getBooleanValues;
+        std::vector<std::string> m_getStringValues;
 
         /// Values returned from calls to fmiGetDirectionalDerivative()
         std::deque<std::vector<double> > m_getDirectionalDerivativeValues;
@@ -143,9 +148,9 @@ namespace fmitcp_master {
         //void on_fmi2_import_set_boolean_res                     (int mid, fmitcp_proto::fmi2_status_t status);
         //void on_fmi2_import_set_string_res                      (int mid, fmitcp_proto::fmi2_status_t status);
         void on_fmi2_import_get_real_res                        (int mid, const vector<double>& values, fmitcp_proto::fmi2_status_t status);
-        //void on_fmi2_import_get_integer_res                     (int mid, const vector<int>& values, fmitcp_proto::fmi2_status_t status);
-        //void on_fmi2_import_get_boolean_res                     (int mid, const vector<bool>& values, fmitcp_proto::fmi2_status_t status);
-        //void on_fmi2_import_get_string_res                      (int mid, const vector<string>& values, fmitcp_proto::fmi2_status_t status);
+        void on_fmi2_import_get_integer_res                     (int mid, const vector<int>& values, fmitcp_proto::fmi2_status_t status);
+        void on_fmi2_import_get_boolean_res                     (int mid, const vector<bool>& values, fmitcp_proto::fmi2_status_t status);
+        void on_fmi2_import_get_string_res                      (int mid, const vector<string>& values, fmitcp_proto::fmi2_status_t status);
         void on_fmi2_import_get_fmu_state_res                   (int mid, int stateId, fmitcp_proto::fmi2_status_t status);
         void on_fmi2_import_set_fmu_state_res                   (int mid, fmitcp_proto::fmi2_status_t status);
         void on_fmi2_import_free_fmu_state_res                  (int mid, fmitcp_proto::fmi2_status_t status);
@@ -154,6 +159,9 @@ namespace fmitcp_master {
 
         //returns string of field names, all of which prepended with prefix
         std::string getSpaceSeparatedFieldNames(std::string prefix) const;
+
+        void sendGetX(const SendGetXType& typeRefs);
+        void sendSetX(const SendSetXType& typeRefsValues);
     };
 };
 

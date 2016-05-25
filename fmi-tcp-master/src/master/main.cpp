@@ -41,16 +41,16 @@ std::map<int, const char*> columnnames;
 typedef map<pair<int,fmi2_base_type_enu_t>, vector<param> > parameter_map;
 
 #ifdef USE_MPI
-static vector<FMIClient*> setupSlaves(int numFMUs) {
-    vector<FMIClient*> slaves;
+static vector<FMIClient*> setupClients(int numFMUs) {
+    vector<FMIClient*> clients;
     for (int x = 0; x < numFMUs; x++) {
-        FMIClient* client = new FMIClient(x+1 /* world_rank */, x /* slaveId */);
-        slaves.push_back(client);
+        FMIClient* client = new FMIClient(x+1 /* world_rank */, x /* clientId */);
+        clients.push_back(client);
     }
-    return slaves;
+    return clients;
 }
 #else
-static FMIClient* connectSlave(std::string uri, zmq::context_t &context, int slaveId){
+static FMIClient* connectClient(std::string uri, zmq::context_t &context, int clientId){
     struct parsed_url * url = parse_url(uri.c_str());
 
     if (!url || !url->port || !url->host) {
@@ -58,40 +58,34 @@ static FMIClient* connectSlave(std::string uri, zmq::context_t &context, int sla
         return NULL;
     }
 
-    FMIClient* client = new FMIClient(context, slaveId, url->host, atoi(url->port));
+    FMIClient* client = new FMIClient(context, clientId, url->host, atoi(url->port));
     parsed_url_free(url);
 
     return client;
 }
 
-static vector<FMIClient*> setupSlaves(vector<string> fmuURIs, zmq::context_t &context) {
-    vector<FMIClient*> slaves;
-    int slaveId = 0;
-    for (auto it = fmuURIs.begin(); it != fmuURIs.end(); it++, slaveId++) {
-        // Assume URI to slave
-        FMIClient *slave = connectSlave(*it, context, slaveId);
+static vector<FMIClient*> setupClients(vector<string> fmuURIs, zmq::context_t &context) {
+    vector<FMIClient*> clients;
+    int clientId = 0;
+    for (auto it = fmuURIs.begin(); it != fmuURIs.end(); it++, clientId++) {
+        // Assume URI to client
+        FMIClient *client = connectClient(*it, context, clientId);
 
-        if (!slave) {
-            fprintf(stderr, "Failed to connect slave with URI %s\n", it->c_str());
+        if (!client) {
+            fprintf(stderr, "Failed to connect client with URI %s\n", it->c_str());
             exit(1);
         }
 
-        slaves.push_back(slave);
+        clients.push_back(client);
     }
-    return slaves;
+    return clients;
 }
 #endif
 
-static vector<WeakConnection*> setupWeakConnections(vector<connection> connections, vector<FMIClient*> slaves) {
-    vector<WeakConnection*> weakConnections;
+static vector<WeakConnection> setupWeakConnections(vector<connection> connections, vector<FMIClient*> clients) {
+    vector<WeakConnection> weakConnections;
     for (auto it = connections.begin(); it != connections.end(); it++) {
-        if (it->type == fmi2_base_type_real) {
-            fprintf(stderr, "Creating weak connection FMU %d VR %d -> FMU %d VR %d\n", it->fromFMU, it->fromOutputVR, it->toFMU, it->toInputVR);
-            weakConnections.push_back(new WeakConnection(slaves[it->fromFMU], slaves[it->toFMU], it->fromOutputVR, it->toInputVR));
-        } else {
-            fprintf(stderr, "Unsupported connection type %i\n", it->type);
-            exit(1);
-        }
+        weakConnections.push_back(WeakConnection(*it, clients[it->fromFMU], clients[it->toFMU]));
     }
     return weakConnections;
 }
@@ -121,10 +115,10 @@ static bool matchNodesignal(const clientvarmap& varmaps, fmi2_causality_enu_t ca
 }
 
 static void addAutomaticConnectionsAndParams(const vector<connectionconfig> &connconf,
-        vector<FMIClient*> slaves, vector<WeakConnection*> &weakConnections, parameter_map &params) {
+        vector<FMIClient*> clients, vector<WeakConnection> &weakConnections, parameter_map &params) {
     clientvarmap maps;
-    for (auto slave : slaves) {
-        maps[slave] = slave->getVariables();
+    for (auto client : clients) {
+        maps[client] = client->getVariables();
     }
     for (auto cc : connconf) {
         //first see if we can find a corresponding input
@@ -152,7 +146,11 @@ static void addAutomaticConnectionsAndParams(const vector<connectionconfig> &con
             fprintf(stderr, "Creating weak connection FMU %d VR %d -> FMU %d VR %d [automatic] (node \"%s\" signal \"%s\" -> node \"%s\" signal \"%s\")\n",
                     ovarmapit->first->getId(), ovarit->second.vr, varmapit->first->getId(), varit->second.vr,
                     ons.node.c_str(), ons.signal.c_str(), cc.input.node.c_str(), cc.input.signal.c_str());
-            weakConnections.push_back(new WeakConnection(ovarmapit->first, varmapit->first, ovarit->second.vr, varit->second.vr));
+            connection conn;
+            conn.fromType = conn.toType = fmi2_base_type_real;
+            conn.fromOutputVR = ovarit->second.vr;
+            conn.toInputVR = varit->second.vr;
+            weakConnections.push_back(WeakConnection(conn, ovarmapit->first, varmapit->first));
 
             if (varit->second.type != fmi2_base_type_real) {
                 fprintf(stderr, "Only real valued weak connections supported at the moment\n");
@@ -220,7 +218,7 @@ static StrongConnector* findOrCreateShaftConnector(FMIClient *client,
     return sc;
 }
 
-static void setupConstraintsAndSolver(vector<strongconnection> strongConnections, vector<FMIClient*> slaves, Solver *solver) {
+static void setupConstraintsAndSolver(vector<strongconnection> strongConnections, vector<FMIClient*> clients, Solver *solver) {
     for (auto it = strongConnections.begin(); it != strongConnections.end(); it++) {
         //NOTE: this leaks memory, but I don't really care since it's only setup
         Constraint *con;
@@ -236,7 +234,7 @@ static void setupConstraintsAndSolver(vector<strongconnection> strongConnections
                 exit(1);
             }
 
-            StrongConnector *scA = findOrCreateBallLockConnector(slaves[it->fromFMU],
+            StrongConnector *scA = findOrCreateBallLockConnector(clients[it->fromFMU],
                                                  it->vrs[0], it->vrs[1], it->vrs[2],
                                                  it->vrs[3], it->vrs[4], it->vrs[5],
                                                  it->vrs[6], it->vrs[7], it->vrs[8],
@@ -244,7 +242,7 @@ static void setupConstraintsAndSolver(vector<strongconnection> strongConnections
                                                  it->vrs[13],it->vrs[14],it->vrs[15],
                                                  it->vrs[16],it->vrs[17],it->vrs[18]);
 
-            StrongConnector *scB = findOrCreateBallLockConnector(slaves[it->toFMU],
+            StrongConnector *scB = findOrCreateBallLockConnector(clients[it->toFMU],
                                                  it->vrs[19],it->vrs[20],it->vrs[21],
                                                  it->vrs[22],it->vrs[23],it->vrs[24],
                                                  it->vrs[25],it->vrs[26],it->vrs[27],
@@ -269,10 +267,10 @@ static void setupConstraintsAndSolver(vector<strongconnection> strongConnections
                 }
             }
 
-            StrongConnector *scA = findOrCreateShaftConnector(slaves[it->fromFMU],
+            StrongConnector *scA = findOrCreateShaftConnector(clients[it->fromFMU],
                     it->vrs[ofs+0], it->vrs[ofs+1], it->vrs[ofs+2], it->vrs[ofs+3]);
 
-            StrongConnector *scB = findOrCreateShaftConnector(slaves[it->toFMU],
+            StrongConnector *scB = findOrCreateShaftConnector(clients[it->toFMU],
                     it->vrs[ofs+4], it->vrs[ofs+5], it->vrs[ofs+6], it->vrs[ofs+7]);
 
             con = new ShaftConstraint(scA, scB);
@@ -286,27 +284,14 @@ static void setupConstraintsAndSolver(vector<strongconnection> strongConnections
         solver->addConstraint(con);
     }
 
-    for (auto it = slaves.begin(); it != slaves.end(); it++) {
+    for (auto it = clients.begin(); it != clients.end(); it++) {
         solver->addSlave(*it);
    }
 }
 
-static void cleanUp(BaseMaster *master, vector<FMIClient*> slaves, vector<WeakConnection*> weakConnections) {
-    //clean up
-    delete master;
-
-    for (size_t x = 0; x < slaves.size(); x++) {
-        delete slaves[x];
-    }
-
-    for (size_t x = 0; x < weakConnections.size(); x++) {
-        delete weakConnections[x];
-    }
-}
-
-static void sendUserParams(BaseMaster *master, vector<FMIClient*> slaves, map<pair<int,fmi2_base_type_enu_t>, vector<param> > params) {
+static void sendUserParams(BaseMaster *master, vector<FMIClient*> clients, map<pair<int,fmi2_base_type_enu_t>, vector<param> > params) {
     for (auto it = params.begin(); it != params.end(); it++) {
-        FMIClient *client = slaves[it->first.first];
+        FMIClient *client = clients[it->first.first];
         vector<int> vrs;
         for (auto it2 = it->second.begin(); it2 != it->second.end(); it2++) {
             vrs.push_back(it2->valueReference);
@@ -432,26 +417,28 @@ int main(int argc, char *argv[] ) {
         return 1;
     }
 
-    vector<FMIClient*> slaves = setupSlaves(world_size-1);
+    vector<FMIClient*> clients = setupClients(world_size-1);
 #else
     zmq::context_t context(1);
-    //without this the maximum number of slaves tops out at 300 on Linux,
+    //without this the maximum number of clients tops out at 300 on Linux,
     //around 63 on Windows (according to Web searches)
+#ifdef ZMQ_MAX_SOCKETS
     zmq_ctx_set((void *)context, ZMQ_MAX_SOCKETS, fmuURIs.size());
-    vector<FMIClient*> slaves = setupSlaves(fmuURIs, context);
+#endif
+    vector<FMIClient*> clients = setupClients(fmuURIs, context);
 #endif
 
     //connect, get modelDescription XML (important for connconf)
-    for (auto it = slaves.begin(); it != slaves.end(); it++) {
+    for (auto it = clients.begin(); it != clients.end(); it++) {
         (*it)->connect();
     }
 
-    vector<WeakConnection*> weakConnections = setupWeakConnections(connections, slaves);
-    addAutomaticConnectionsAndParams(connconf, slaves, weakConnections, params);
-    setupConstraintsAndSolver(scs, slaves, &solver);
+    vector<WeakConnection> weakConnections = setupWeakConnections(connections, clients);
+    addAutomaticConnectionsAndParams(connconf, clients, weakConnections, params);
+    setupConstraintsAndSolver(scs, clients, &solver);
 
     BaseMaster *master;
-    string fieldnames = getFieldnames(slaves);
+    string fieldnames = getFieldnames(clients);
 
     if (scs.size()) {
         if (method != jacobi) {
@@ -460,12 +447,12 @@ int main(int argc, char *argv[] ) {
         }
 
         solver.setSpookParams(relaxation,compliance,timeStep);
-        StrongMaster *sm = new StrongMaster(slaves, weakConnections, solver, holonomic);
+        StrongMaster *sm = new StrongMaster(clients, weakConnections, solver, holonomic);
         master = sm;
         fieldnames += sm->getForceFieldnames();
     } else {
-        master = (method == gs) ?           (BaseMaster*)new GaussSeidelMaster(slaves, weakConnections, stepOrder) :
-                                            (BaseMaster*)new JacobiMaster(slaves, weakConnections);
+        master = (method == gs) ?           (BaseMaster*)new GaussSeidelMaster(clients, weakConnections, stepOrder) :
+                                            (BaseMaster*)new JacobiMaster(clients, weakConnections);
     }
 
     if (fieldnameFilename.length() > 0) {
@@ -475,22 +462,22 @@ int main(int argc, char *argv[] ) {
     }
 
     //hook clients to master
-    for (auto it = slaves.begin(); it != slaves.end(); it++) {
+    for (auto it = clients.begin(); it != clients.end(); it++) {
         (*it)->m_master = master;
     }
 
     //init
-    for (size_t x = 0; x < slaves.size(); x++) {
+    for (size_t x = 0; x < clients.size(); x++) {
         //set visibility based on command line
-        master->send(slaves[x], fmi2_import_instantiate2(0, x < fmuVisibilities.size() ? fmuVisibilities[x] : false));
+        master->send(clients[x], fmi2_import_instantiate2(0, x < fmuVisibilities.size() ? fmuVisibilities[x] : false));
     }
 
     //TODO: send initial values parsed from XML
 
     //send user-defined parameters
-    sendUserParams(master, slaves, params);
+    sendUserParams(master, clients, params);
 
-    master->block(slaves, fmi2_import_initialize_slave(0, 0, true, relativeTolerance, startTime, endTime >= 0, endTime));
+    master->block(clients, fmi2_import_initialize_slave(0, 0, true, relativeTolerance, startTime, endTime >= 0, endTime));
 
     double t = startTime;
 #ifdef WIN32
@@ -519,7 +506,6 @@ int main(int argc, char *argv[] ) {
         //HDF5
         columnofs = 0;
 #endif
-        fprintf(stderr, "\r                                                   \r");
         if (realtimeMode) {
             double t_wall;
 
@@ -547,19 +533,10 @@ int main(int argc, char *argv[] ) {
                 usleep(us);
 #endif
             }
-
-            if (t_wall > t + 1) {
-                //print slowdown factor if we start running behind wall clock
-                fprintf(stderr, "t=%.3f, t_wall = %.3f (slowdown = realtime / %.2f)", t, t_wall, t_wall / t);
-            } else {
-                fprintf(stderr, "t=%.3f, t_wall = %.3f", t, t_wall);
-            }
-        } else {
-            fprintf(stderr, "t=%.3f", t);
         }
 
         //get outputs
-        for (auto it = slaves.begin(); it != slaves.end(); it++) {
+        for (auto it = clients.begin(); it != clients.end(); it++) {
             master->send(*it, fmi2_import_get_real(0, 0, (*it)->getRealOutputValueReferences()));
         }
         
@@ -571,7 +548,7 @@ int main(int argc, char *argv[] ) {
 
         //print as CSV
         printf("%f", t);
-        for (auto it = slaves.begin(); it != slaves.end(); it++) {
+        for (auto it = clients.begin(); it != clients.end(); it++) {
             for (auto it2 = (*it)->m_getRealValues.begin(); it2 != (*it)->m_getRealValues.end(); it2++) {
                 printf("%c%f", csv_separator, *it2);
             }
@@ -605,9 +582,12 @@ int main(int argc, char *argv[] ) {
         "Timings", "table", nrecords, columnnames.size()*sizeof(int), &timelog[0]);
 #endif
 
-    fprintf(stderr, "\n");
+    //clean up
+    delete master;
 
-    cleanUp(master, slaves, weakConnections);
+    for (size_t x = 0; x < clients.size(); x++) {
+        delete clients[x];
+    }
 
 #ifdef USE_MPI
     //send shutdown message (tag = 1), finalize

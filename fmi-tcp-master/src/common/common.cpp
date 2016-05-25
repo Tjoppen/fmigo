@@ -88,7 +88,7 @@ template<typename T> void doit(
 
 }
 
-InputRefsValuesType fmitcp_master::getInputWeakRefsAndValues(vector<WeakConnection> weakConnections) {
+static InputRefsValuesType getInputWeakRefsAndValues_internal(vector<WeakConnection> weakConnections, FMIClient *toClient) {
     InputRefsValuesType refValues; //VRs and corresponding values for each client
 
     //for keeping track of where we are in each FMIClient->m_getXValues
@@ -99,6 +99,11 @@ InputRefsValuesType fmitcp_master::getInputWeakRefsAndValues(vector<WeakConnecti
 
     for (size_t x = 0; x < weakConnections.size(); x++) {
         WeakConnection& wc = weakConnections[x];
+
+        if (toClient && wc.to != toClient) {
+            //skip if we only want for a specific client
+            continue;
+        }
 
         switch (wc.conn.fromType) {
         case fmi2_base_type_real:
@@ -119,8 +124,12 @@ InputRefsValuesType fmitcp_master::getInputWeakRefsAndValues(vector<WeakConnecti
     return refValues;
 }
 
+InputRefsValuesType fmitcp_master::getInputWeakRefsAndValues(vector<WeakConnection> weakConnections) {
+    return getInputWeakRefsAndValues_internal(weakConnections, NULL);
+}
+
 SendSetXType fmitcp_master::getInputWeakRefsAndValues(vector<WeakConnection> weakConnections, FMIClient *client) {
-    InputRefsValuesType temp = getInputWeakRefsAndValues(weakConnections);
+    InputRefsValuesType temp = getInputWeakRefsAndValues_internal(weakConnections, client);
     auto it = temp.find(client);
     if (it == temp.end()) {
         return SendSetXType();

@@ -62,7 +62,7 @@ public:
 //aka serial stepper
 class GaussSeidelMaster : public BaseMaster {
     vector<WeakConnection> m_weakConnections;
-    OutputRefsType clientWeakRefs;
+    map<FMIClient*, OutputRefsType> clientGetXs;  //one OutputRefsType for each client
     std::vector<int> stepOrder;
 public:
     GaussSeidelMaster(vector<FMIClient*> clients, vector<WeakConnection> weakConnections, std::vector<int> stepOrder) :
@@ -71,21 +71,10 @@ public:
     }
 
     void prepare() {
-        clientWeakRefs = getOutputWeakRefs(m_weakConnections);
-        //work out what clients and VRs each client has to grab from,
-        //and where to put the retrieved values
-        /*for (int o : stepOrder) {
-            FMIClient *client = m_clients[o];
-
-            for (size_t x = 0; x < m_weakConnections.size(); x++) {
-                const WeakConnection& wc = m_weakConnections[x];
-                if (wc.to == client) {
-                    //connection has client as destination - remember it
-                    conns[wc.to].vrMap[wc.from].push_back(wc.conn.fromOutputVR);
-                    conns[wc.to].vrs.push_back(wc.conn.toInputVR);
-                }
-            }
-        }*/
+        for (size_t x = 0; x < m_weakConnections.size(); x++) {
+            WeakConnection wc = m_weakConnections[x];
+            clientGetXs[wc.to][wc.from][wc.conn.fromType].push_back(wc.conn.fromOutputVR);
+        }
     }
 
     void runIteration(double t, double dt) {
@@ -93,7 +82,9 @@ public:
         for (int o : stepOrder) {
             FMIClient *client = m_clients[o];
 
-            client->sendGetX(clientWeakRefs[client]);
+            for (auto it = clientGetXs[client].begin(); it != clientGetXs[client].end(); it++) {
+                it->first->sendGetX(it->second);
+            }
             wait();
             const SendSetXType refValues = getInputWeakRefsAndValues(m_weakConnections, client);
             client->sendSetX(refValues);

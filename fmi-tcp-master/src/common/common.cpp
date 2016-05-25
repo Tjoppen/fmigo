@@ -76,7 +76,7 @@ template<typename T> void doit(
 
     if (ofs >= values.size()) {
         //shouldn't happen
-        fprintf(stderr, "Number of setX() doesn't match number of getX()\n");
+        fprintf(stderr, "Number of setX() doesn't match number of getX() (%zu vs %zu) '%s'\n", ofs, values.size(), typeid(T).name());
         exit(1);
     }
 

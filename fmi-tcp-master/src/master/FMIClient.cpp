@@ -179,10 +179,19 @@ void FMIClient::on_fmi2_import_set_real_res(int mid, fmitcp_proto::fmi2_status_t
 void FMIClient::on_fmi2_import_get_real_res(int mid, const vector<double>& values, fmitcp_proto::fmi2_status_t status){
     // Store result
     m_getRealValues = values;
-
-    // Notify master
-    m_master->onSlaveGotReal(this);
 };
+
+void FMIClient::on_fmi2_import_get_integer_res(int mid, const vector<int>& values, fmitcp_proto::fmi2_status_t status) {
+    m_getIntegerValues = values;
+}
+
+void FMIClient::on_fmi2_import_get_boolean_res(int mid, const vector<bool>& values, fmitcp_proto::fmi2_status_t status) {
+    m_getBooleanValues = values;
+}
+
+void FMIClient::on_fmi2_import_get_string_res(int mid, const vector<string>& values, fmitcp_proto::fmi2_status_t status) {
+    m_getStringValues = values;
+}
 
 void FMIClient::on_fmi2_import_get_fmu_state_res(int mid, int stateId, fmitcp_proto::fmi2_status_t status){
     //remember stateId
@@ -237,9 +246,6 @@ void FMIClient::on_fmi2_import_get_directional_derivative_res(int mid, const vec
 //void on_fmi2_import_set_integer_res                     (int mid, fmitcp_proto::fmi2_status_t status);
 //void on_fmi2_import_set_boolean_res                     (int mid, fmitcp_proto::fmi2_status_t status);
 //void on_fmi2_import_set_string_res                      (int mid, fmitcp_proto::fmi2_status_t status);
-//void on_fmi2_import_get_integer_res                     (int mid, const vector<int>& values, fmitcp_proto::fmi2_status_t status);
-//void on_fmi2_import_get_boolean_res                     (int mid, const vector<bool>& values, fmitcp_proto::fmi2_status_t status);
-//void on_fmi2_import_get_string_res                      (int mid, const vector<string>& values, fmitcp_proto::fmi2_status_t status);
 */
 
 StrongConnector * FMIClient::createConnector(){
@@ -326,3 +332,60 @@ string FMIClient::getSpaceSeparatedFieldNames(string prefix) const {
     }
     return oss.str();
 }
+
+void FMIClient::sendGetX(const SendGetXType& typeRefs) {
+    for (auto it = typeRefs.begin(); it != typeRefs.end(); it++) {
+        if (it->second.size() > 0) {
+            switch (it->first) {
+            case fmi2_base_type_real:
+                sendMessage(fmi2_import_get_real(0, 0, it->second));
+                break;
+            case fmi2_base_type_int:
+                sendMessage(fmi2_import_get_integer(0, 0, it->second));
+                break;
+            case fmi2_base_type_bool:
+                sendMessage(fmi2_import_get_boolean(0, 0, it->second));
+                break;
+            case fmi2_base_type_str:
+                sendMessage(fmi2_import_get_string(0, 0, it->second));
+                break;
+            }
+        }
+    }
+}
+
+//converts a vector<MultiValue> to vector<T>, with the help of a member pointer of type T
+template<typename T> vector<T> vectorToBaseType(const vector<MultiValue>& in, T MultiValue::*member) {
+    vector<T> ret;
+    for (auto it = in.begin(); it != in.end(); it++) {
+        ret.push_back((*it).*member);
+    }
+    return ret;
+}
+
+void FMIClient::sendSetX(const SendSetXType& typeRefsValues) {
+    for (auto it = typeRefsValues.begin(); it != typeRefsValues.end(); it++) {
+        if (it->second.first.size() != it->second.second.size()) {
+            fprintf(stderr, "VR-values count mismatch - something is wrong\n");
+            exit(1);
+        }
+
+        if (it->second.first.size() > 0) {
+            switch (it->first) {
+            case fmi2_base_type_real:
+                sendMessage(fmi2_import_set_real   (0, 0, it->second.first, vectorToBaseType(it->second.second, &MultiValue::r)));
+                break;
+            case fmi2_base_type_int:
+                sendMessage(fmi2_import_set_integer(0, 0, it->second.first, vectorToBaseType(it->second.second, &MultiValue::i)));
+                break;
+            case fmi2_base_type_bool:
+                sendMessage(fmi2_import_set_boolean(0, 0, it->second.first, vectorToBaseType(it->second.second, &MultiValue::b)));
+                break;
+            case fmi2_base_type_str:
+                sendMessage(fmi2_import_set_string (0, 0, it->second.first, vectorToBaseType(it->second.second, &MultiValue::s)));
+                break;
+            }
+        }
+    }
+}
+//send(it->first, fmi2_import_set_real(0, 0, it->second.first, it->second.second));

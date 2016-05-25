@@ -15,7 +15,6 @@ namespace fmitcp_master {
 class WeakConnection;
 class StrongMaster : public JacobiMaster {
     sc::Solver m_strongCouplingSolver;
-    map<FMIClient*, vector<int> > clientWeakRefs;
     bool holonomic;
 
     void getDirectionalDerivative(FMIClient *client, sc::Vec3 seedVec, std::vector<int> accelerationRefs, std::vector<int> forceRefs);

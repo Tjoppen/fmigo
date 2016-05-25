@@ -13,12 +13,17 @@
 namespace fmitcp_master {
 
 class FMIClient;
-class WeakConnection {
+
+//simple struct wherein one of r, i, b or s is set
+//I'd make this a union, but std::string has a destructor
+struct MultiValue {
     double r;
     int i;
     bool b;
     std::string s;
+};
 
+class WeakConnection {
 public:
     connection conn;
     FMIClient *from;
@@ -28,10 +33,10 @@ public:
     ~WeakConnection() {}
 
     //these perform automatic type conversion where appropriate
-    void setFromReal(double in);
-    void setFromInteger(int in);
-    void setFromBoolean(bool in);
-    void setFromString(std::string in);
+    MultiValue setFromReal(double in) const;
+    MultiValue setFromInteger(int in) const;
+    MultiValue setFromBoolean(bool in) const;
+    MultiValue setFromString(std::string in) const;
 };
 
 }

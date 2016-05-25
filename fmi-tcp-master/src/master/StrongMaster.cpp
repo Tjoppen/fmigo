@@ -46,22 +46,22 @@ void StrongMaster::getDirectionalDerivative(FMIClient *client, Vec3 seedVec, vec
 void StrongMaster::runIteration(double t, double dt) {
     //get weak connector outputs
     for (auto it = clientWeakRefs.begin(); it != clientWeakRefs.end(); it++) {
-        send(it->first, fmi2_import_get_real(0, 0, it->second));
+        it->first->sendGetX(it->second);
     }
-    PRINT_HDF5_DELTA("get_weak_reals");
+    PRINT_HDF5_DELTA("get_weak_values");
     wait();
-    PRINT_HDF5_DELTA("get_weak_reals_wait");
+    PRINT_HDF5_DELTA("get_weak_values_wait");
 
     //disentangle received values for set_real() further down (before do_step())
     //we shouldn't set_real() for these until we've gotten directional derivatives
     //this sets StrongMaster apart from the weak masters
-    const map<FMIClient*, pair<vector<int>, vector<double> > > refValues = getInputWeakRefsAndValues(m_weakConnections);
+    const InputRefsValuesType refValues = getInputWeakRefsAndValues(m_weakConnections);
 
     //set weak connector inputs
     for (auto it = refValues.begin(); it != refValues.end(); it++) {
-        send(it->first, fmi2_import_set_real(0, 0, it->second.first, it->second.second));
+        it->first->sendSetX(it->second);
     }
-    PRINT_HDF5_DELTA("send_weak_reals");
+    PRINT_HDF5_DELTA("send_weak_values");
 
     //get strong connector inputs
     //TODO: it'd be nice if these get_real() were pipelined with the get_real()s done above

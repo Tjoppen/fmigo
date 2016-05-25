@@ -14,17 +14,17 @@ WeakConnection::WeakConnection(const connection& conn, FMIClient *from, FMIClien
     conn(conn), from(from), to(to) {
 }
 
-void WeakConnection::setFromReal(double in) {
+MultiValue WeakConnection::setFromReal(double in) const {
+    MultiValue ret;
     switch (conn.toType) {
     case fmi2_base_type_real:
-        r = in*conn.slope + conn.intercept;
+        ret.r = in*conn.slope + conn.intercept;
 	break;
     case fmi2_base_type_int:
-    case fmi2_base_type_enum:
-        i = (int)(in*conn.slope + conn.intercept);
+        ret.i = (int)(in*conn.slope + conn.intercept);
 	break;
     case fmi2_base_type_bool:
-        b = fabs(in * conn.slope + conn.intercept) > 0.5;
+        ret.b = fabs(in * conn.slope + conn.intercept) > 0.5;
 	break;
     case fmi2_base_type_str:
         //we could support this, but eh..
@@ -32,24 +32,25 @@ void WeakConnection::setFromReal(double in) {
         exit(1);
 	break;
     }
+    return ret;
 }
 
-void WeakConnection::setFromInteger(int in) {
+MultiValue WeakConnection::setFromInteger(int in) const {
+    MultiValue ret;
     switch (conn.toType) {
     case fmi2_base_type_real:
-        r = in*conn.slope + conn.intercept;
+        ret.r = in*conn.slope + conn.intercept;
 	break;
     case fmi2_base_type_int:
-    case fmi2_base_type_enum:
         if (conn.slope == 1 && conn.intercept == 0) {
             //special case to avoid losing precision
-            i = in;
+            ret.i = in;
         } else {
-            i = (int)(in*conn.slope + conn.intercept);
+            ret.i = (int)(in*conn.slope + conn.intercept);
         }
 	break;
     case fmi2_base_type_bool:
-        b = fabs(in*conn.slope + conn.intercept) > 0.5;
+        ret.b = fabs(in*conn.slope + conn.intercept) > 0.5;
 	break;
     case fmi2_base_type_str:
         //same here - let's avoid this for now
@@ -57,16 +58,17 @@ void WeakConnection::setFromInteger(int in) {
         exit(1);
 	break;
     }
+    return ret;
 }
 
-void WeakConnection::setFromBoolean(bool in) {
+MultiValue WeakConnection::setFromBoolean(bool in) const {
+    MultiValue ret;
     switch (conn.toType) {
     case fmi2_base_type_real:
-        r = in*conn.slope + conn.intercept;
+        ret.r = in*conn.slope + conn.intercept;
 	break;
     case fmi2_base_type_int:
-    case fmi2_base_type_enum:
-        i = (int)(in*conn.slope + conn.intercept);
+        ret.i = (int)(in*conn.slope + conn.intercept);
 	break;
     case fmi2_base_type_bool:
         //slope/intercept on bool -> bool doesn't really make sense IMO
@@ -74,20 +76,26 @@ void WeakConnection::setFromBoolean(bool in) {
             fprintf(stderr, "slope or intercept specified on bool -> bool connection doesn't make sense - stopping\n");
             exit(1);
         }
-        b = in;
+        ret.b = in;
 	break;
     case fmi2_base_type_str:
+        //this one too
+        fprintf(stderr, "Converting bool -> str not supported\n");
+        exit(1);
 	break;
     }
+    return ret;
 }
 
-void WeakConnection::setFromString(std::string in) {
+MultiValue WeakConnection::setFromString(std::string in) const {
+    MultiValue ret;
     if (conn.toType != fmi2_base_type_str) {
         fprintf(stderr, "String outputs may only be connected to string inputs\n");
         exit(1);
     }
 
-    s = in;
+    ret.s = in;
+    return ret;
 }
 
 }

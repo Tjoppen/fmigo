@@ -37,7 +37,6 @@ namespace fmitcp_master {
         on(onSlaveStepped)
         on(onSlaveGotVersion)
         on(onSlaveSetReal)
-        on(onSlaveGotReal)
         on(onSlaveGotState)
         on(onSlaveSetState)
         on(onSlaveFreedState)

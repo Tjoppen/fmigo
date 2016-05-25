@@ -506,7 +506,6 @@ int main(int argc, char *argv[] ) {
         //HDF5
         columnofs = 0;
 #endif
-        fprintf(stderr, "\r                                                   \r");
         if (realtimeMode) {
             double t_wall;
 
@@ -534,15 +533,6 @@ int main(int argc, char *argv[] ) {
                 usleep(us);
 #endif
             }
-
-            if (t_wall > t + 1) {
-                //print slowdown factor if we start running behind wall clock
-                fprintf(stderr, "t=%.3f, t_wall = %.3f (slowdown = realtime / %.2f)", t, t_wall, t_wall / t);
-            } else {
-                fprintf(stderr, "t=%.3f, t_wall = %.3f", t, t_wall);
-            }
-        } else {
-            fprintf(stderr, "t=%.3f", t);
         }
 
         //get outputs
@@ -591,8 +581,6 @@ int main(int argc, char *argv[] ) {
     writeHDF5File(hdf5Filename, field_offset, field_types, field_names,
         "Timings", "table", nrecords, columnnames.size()*sizeof(int), &timelog[0]);
 #endif
-
-    fprintf(stderr, "\n");
 
     //clean up
     delete master;

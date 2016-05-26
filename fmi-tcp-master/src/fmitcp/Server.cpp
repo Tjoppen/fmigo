@@ -66,9 +66,9 @@ Server::Server(string fmuPath, bool debugLogging, jm_log_level_enu_t logLevel, s
   if ((m_version <= fmi_version_unknown_enu) || (m_version >= fmi_version_unsupported_enu)) {
     fmi_import_free_context(m_context);
     fmi_import_rmdir(&m_jmCallbacks, m_workingDir.c_str());
-    m_logger.log(Logger::LOG_ERROR, "Unsupported/unknown FMU version: '%s'.\n", fmi_version_to_string(m_version));
+    m_logger.log(Logger::LOG_ERROR, "Unknown FMI version or FMU does not exist: working directory=%s, path=%s\n", m_workingDir.c_str(), m_fmuPath.c_str());
     m_fmuParsed = false;
-    return;
+    exit(1);
   }
   if (m_version == fmi_version_2_0_enu) { // FMI 2.0
     // parse the xml file

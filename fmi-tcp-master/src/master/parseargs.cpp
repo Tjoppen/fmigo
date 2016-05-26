@@ -54,6 +54,23 @@ template<typename T> int checkFMUIndex(T it, int i, size_t numFMUs) {
     return 0;
 }
 
+static void add_args(vector<string>& argvstore, vector<char*>& argv2, char *filename, int position) {
+    ifstream ifs(filename);
+    string token;
+
+    //read tokens, insert into argvstore/argv2
+    while (ifs >> token) {
+        if (token == "-a") {
+            fprintf(stderr, "Found -a token in argument file, which might lead to recursive list of arguments. Stopping.\n");
+            exit(1);
+        }
+
+        argvstore.insert(argvstore.begin() + position, token);
+        argv2.insert(argv2.begin() + position, (char*)argvstore[position].c_str());
+        position++;
+    }
+}
+
 int fmitcp_master::parseArguments( int argc,
                     char *argv[],
                     std::vector<std::string> *fmuFilePaths,
@@ -81,7 +98,16 @@ int fmitcp_master::parseArguments( int argc,
     int index, c;
     opterr = 0;
 
-    while ((c = getopt (argc, argv, "xrlvqht:c:d:s:o:p:f:m:g:w:C:j:5:F:NM:")) != -1){
+    //repack argv into argvstore, to which the entries in argv2 point
+    vector<string> argvstore;
+    vector<char*> argv2;
+
+    for (int x = 0; x < argc; x++) {
+        argvstore.push_back(argv[x]);
+        argv2.push_back((char*)argvstore[x].c_str());
+    }
+
+    while ((c = getopt (argv2.size(), argv2.data(), "xrlvqht:c:d:s:o:p:f:m:g:w:C:j:5:F:NM:a:")) != -1){
         int n, skip, l, cont, i, numScanned, stop, vis;
         deque<string> parts;
         if (optarg) parts = split(optarg, ':');
@@ -364,6 +390,10 @@ int fmitcp_master::parseArguments( int argc,
             *compliance = atof(optarg);
             break;
 
+        case 'a':
+            add_args(argvstore, argv2, optarg, optind);
+            break;
+
         case '?':
 
             if(isprint(optopt)){
@@ -389,8 +419,8 @@ int fmitcp_master::parseArguments( int argc,
     size_t numFMUs = world_size - 1;
 #else
     // Parse FMU paths in the end of the command line
-    for (index = optind; index < argc; index++) {
-        fmuFilePaths->push_back(argv[index]);
+    for (index = optind; index < argv2.size(); index++) {
+        fmuFilePaths->push_back(argv2[index]);
     }
 
     size_t numFMUs = fmuFilePaths->size();

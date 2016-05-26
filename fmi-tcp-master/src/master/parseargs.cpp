@@ -54,8 +54,9 @@ template<typename T> int checkFMUIndex(T it, int i, size_t numFMUs) {
     return 0;
 }
 
-static void add_args(vector<string>& argvstore, vector<char*>& argv2, char *filename, int position) {
-    ifstream ifs(filename);
+//template to handle not being able to use ifstream and istream at the same time
+//maybe there's a better way, but this works
+template<typename T> void add_args_internal(T& ifs, vector<string>& argvstore, vector<char*>& argv2, int position) {
     string token;
 
     //read tokens, insert into argvstore/argv2
@@ -68,6 +69,15 @@ static void add_args(vector<string>& argvstore, vector<char*>& argv2, char *file
         argvstore.insert(argvstore.begin() + position, token);
         argv2.insert(argv2.begin() + position, (char*)argvstore[position].c_str());
         position++;
+    }
+}
+
+static void add_args(vector<string>& argvstore, vector<char*>& argv2, string filename, int position) {
+    if (filename == "-") {
+        add_args_internal(std::cin, argvstore, argv2, position);
+    } else {
+        ifstream ifs(filename.c_str());
+        add_args_internal(ifs, argvstore, argv2, position);
     }
 }
 

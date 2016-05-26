@@ -203,7 +203,7 @@ This is useful for generating .ssv files for plotting with tikz.
 Set compliance for kinematic solver (real value, default = 0.0).
 .TP
 .B \-a [ARGSFILENAME]
-Add extra arguments parsed from file with given name.
+Add extra arguments parsed from file with given name, or stdin if filename is -.
 This is useful for large systems where the total size of the connection specification exceeds the operating system's limit for program arguments (2 KiB of Windows).
 The arguments in the file may be separated by anything std::ifstream::operator>>(std::string) considers a white space (space, newline, tab etc.).
 The parsed tokens effectively replace the "-a [ARGSFILENAME]" in the list of arguments.
@@ -221,6 +221,14 @@ Contents of file args:
 Resulting equivalent command line:
 
     fmi-tcp-master -t 100 -C shaft,0,1,0,1,2,3,0,1,2,3 -C shaft,1,2,6,7,8,9,0,1,2,3 -c 2,1,0,6 -p 0,1,123
+
+stdin example producing the same command line (bash style here-document):
+
+    fmi-tcp-master -t 100 -a - -p 0,1,123 << EOF
+    -C shaft,0,1,0,1,2,3,0,1,2,3
+    -C shaft,1,2,6,7,8,9,0,1,2,3
+    -c 2,1,0,6
+    EOF
 
 .SH URLs
 Each URL specifies the address and TCP port of an FMU. The syntax is:

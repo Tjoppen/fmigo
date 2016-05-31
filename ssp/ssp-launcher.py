@@ -243,7 +243,7 @@ for fmu in fmus:
 
 # Build command line
 flatconns = []
-for fr,to1 in connectionmultimap.iteritems():
+for fr,to1 in connectionmultimap.items():
     for to in to1:
         #print str((fr,to)) + ' vs ' + str(mds[fr[0]])
         f = mds[fr[0]]

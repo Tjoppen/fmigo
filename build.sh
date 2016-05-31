@@ -20,8 +20,8 @@ for d in \
     NAME=`sed -e 's/.*\///' <<< $d`
     pushd $d
         rm -f ${NAME}.fmu
-        python2 ${MD2HDR} modelDescription.xml > sources/modelDescription.h
-        CFLAGS="-Wall -O3" python2 ${FMUBUILDER} ${GSL}
+        python ${MD2HDR} modelDescription.xml > sources/modelDescription.h
+        CFLAGS="-Wall -O3" python ${FMUBUILDER} ${GSL}
     popd
 done
 for d in \
@@ -37,7 +37,7 @@ for d in \
     NAME=`sed -e 's/.*\///' <<< $d`
     pushd $d
         rm -f ${NAME}.fmu
-        python2 ${MD2HDR} modelDescription.xml > sources/modelDescription.h
-        CFLAGS="-Wall -O3" python2 ${FMUBUILDER}
+        python ${MD2HDR} modelDescription.xml > sources/modelDescription.h
+        CFLAGS="-Wall -O3" python ${FMUBUILDER}
     popd
 done

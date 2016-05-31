@@ -63,14 +63,14 @@ if(WIN32)
     ExternalProject_Add(hdf5-ext
         PREFIX  ${HDF5_DIR}
         URL     "http://www.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8.16/src/hdf5-1.8.16.zip"
-        URL_MD5 "f909d87f2a913d9ec6a970c1063f907b"
-        CONFIGURE_COMMAND ${CMAKE_COMMAND}         ${HDF5_DIR}/src/hdf5-ext/hdf5-1.8.16 -G ${CMAKE_GENERATOR}
+        URL_MD5 "5b50cdb2c0df1e0c3addaa24270393bb"
+        CONFIGURE_COMMAND ${CMAKE_COMMAND}         ${HDF5_DIR}/src/hdf5-ext -G ${CMAKE_GENERATOR}
         BUILD_COMMAND     ${CMAKE_COMMAND} -E chdir ${HDF5_DIR}/src/hdf5-ext-build msbuild HDF5.sln /p:Configuration=${CMAKE_BUILD_TYPE}
         INSTALL_COMMAND   ""
     )
 
-    include_directories(${HDF5_DIR}/src/hdf5-ext/hdf5-1.8.16/src)
-    include_directories(${HDF5_DIR}/src/hdf5-ext/hdf5-1.8.16/hl/src)
+    include_directories(${HDF5_DIR}/src/hdf5-ext/src)
+    include_directories(${HDF5_DIR}/src/hdf5-ext/hl/src)
     include_directories(${HDF5_DIR}/src/hdf5-ext-build)
     link_directories(${HDF5_DIR}/src/hdf5-ext-build/bin/${CMAKE_BUILD_TYPE})
 

@@ -2,8 +2,6 @@
 @echo This mirrors what Jenkins is doing
 @echo Prerequirements: cmake, Visual Studio 2013 (especially msbuild.exe)
 
-rmdir /s /q build
-
 set CMAKE_BUILD_TYPE=Release
 set BUILD_OPTIONS=/verbosity:d /p:Configuration=%CMAKE_BUILD_TYPE%
 set CMAKE_GENERATOR="Visual Studio 12 2013"

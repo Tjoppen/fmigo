@@ -55,6 +55,14 @@ template<typename T> int checkFMUIndex(T it, int i, size_t numFMUs) {
     return 0;
 }
 
+static vector<char*> make_char_vector(vector<string>& vec) {
+    vector<char*> ret;
+    for (size_t x = 0; x < vec.size(); x++) {
+        ret.push_back((char*)vec[x].c_str());
+    }
+    return ret;
+}
+
 //template to handle not being able to use ifstream and istream at the same time
 //maybe there's a better way, but this works
 template<typename T> void add_args_internal(T& ifs, vector<string>& argvstore, vector<char*>& argv2, int position) {
@@ -68,9 +76,10 @@ template<typename T> void add_args_internal(T& ifs, vector<string>& argvstore, v
         }
 
         argvstore.insert(argvstore.begin() + position, token);
-        argv2.insert(argv2.begin() + position, (char*)argvstore[position].c_str());
         position++;
     }
+
+    argv2 = make_char_vector(argvstore);
 }
 
 static void add_args(vector<string>& argvstore, vector<char*>& argv2, string filename, int position) {
@@ -111,12 +120,12 @@ int fmitcp_master::parseArguments( int argc,
 
     //repack argv into argvstore, to which the entries in argv2 point
     vector<string> argvstore;
-    vector<char*> argv2;
 
     for (int x = 0; x < argc; x++) {
-        argvstore.push_back(argv[x]);
-        argv2.push_back((char*)argvstore[x].c_str());
+        argvstore.push_back(string(argv[x]));
     }
+
+    vector<char*> argv2 = make_char_vector(argvstore);
 
     while ((c = getopt (argv2.size(), argv2.data(), "xrlvqht:c:d:s:o:p:f:m:g:w:C:j:5:F:NM:a:")) != -1){
         int n, skip, l, cont, i, numScanned, stop, vis;

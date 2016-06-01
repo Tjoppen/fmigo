@@ -39,6 +39,20 @@ public:
     MultiValue setFromString(std::string in) const;
 };
 
+class FMIClient;
+
+//this type holds value references grouped by data type and client
+typedef std::map<fmi2_base_type_enu_t, std::vector<int> > SendGetXType;
+typedef std::map<FMIClient*, SendGetXType> OutputRefsType;
+OutputRefsType getOutputWeakRefs(std::vector<WeakConnection> weakConnections);
+
+//OK, this type is getting a bit complicated
+//it collects value references and their associated type converted values, grouped by data type and client
+typedef std::map<fmi2_base_type_enu_t, std::pair<std::vector<int>, std::vector<MultiValue> > > SendSetXType;
+typedef std::map<FMIClient*, SendSetXType> InputRefsValuesType;
+InputRefsValuesType getInputWeakRefsAndValues(std::vector<WeakConnection> weakConnections);
+SendSetXType        getInputWeakRefsAndValues(std::vector<WeakConnection> weakConnections, FMIClient *client);
+
 }
 
 #endif	/* WEAKCONNECTION_H */

@@ -15,7 +15,6 @@
 #define FMILIB_BUILDING_LIBRARY
 #include <fmilib.h>
 #include "fmitcp.pb.h"
-#include "master/WeakConnection.h"
 
 #ifndef WIN32
 //for HDF5 output
@@ -49,20 +48,6 @@ namespace fmitcp_master {
     string int_to_string(int i);
 
     jm_log_level_enu_t protoJMLogLevelToFmiJMLogLevel(fmitcp_proto::jm_log_level_enu_t logLevel);
-
-    class FMIClient;
-
-    //this type holds value references grouped by data type and client
-    typedef map<fmi2_base_type_enu_t, vector<int> > SendGetXType;
-    typedef map<FMIClient*, SendGetXType> OutputRefsType;
-    OutputRefsType getOutputWeakRefs(std::vector<WeakConnection> weakConnections);
-
-    //OK, this type is getting a bit complicated
-    //it collects value references and their associated type converted values, grouped by data type and client
-    typedef std::map<fmi2_base_type_enu_t, std::pair<std::vector<int>, std::vector<MultiValue> > > SendSetXType;
-    typedef std::map<FMIClient*, SendSetXType> InputRefsValuesType;
-    InputRefsValuesType getInputWeakRefsAndValues(std::vector<WeakConnection> weakConnections);
-    SendSetXType        getInputWeakRefsAndValues(std::vector<WeakConnection> weakConnections, FMIClient *client);
 }
 
 #endif

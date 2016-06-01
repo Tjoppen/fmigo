@@ -55,6 +55,8 @@ namespace fmitcp_master {
         /// Values returned from calls to fmiGetDirectionalDerivative()
         std::deque<std::vector<double> > m_getDirectionalDerivativeValues;
 
+        jm_log_level_enu_t m_loglevel;
+
         std::string getModelName() const;
         variable_map getVariables() const;
 

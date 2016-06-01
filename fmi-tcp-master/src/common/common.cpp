@@ -4,10 +4,11 @@
 #include <string>
 #include <sstream>
 
-using namespace fmitcp_master;
 using namespace std;
 
-deque<string> fmitcp_master::split(const string &s, char delim) {
+namespace common {
+
+deque<string> split(const string &s, char delim) {
     deque<string> elems;
     stringstream ss(s);
     string item;
@@ -17,20 +18,20 @@ deque<string> fmitcp_master::split(const string &s, char delim) {
     return elems;
 }
 
-int fmitcp_master::string_to_int(const string& s){
+int string_to_int(const string& s){
     int result;
     std::istringstream ss(s);
     ss >> result;
     return result;
 }
 
-string fmitcp_master::int_to_string(int i){
+string int_to_string(int i){
     ostringstream ss;
     ss << i;
     return ss.str();
 }
 
-jm_log_level_enu_t fmitcp_master::protoJMLogLevelToFmiJMLogLevel(fmitcp_proto::jm_log_level_enu_t logLevel) {
+jm_log_level_enu_t protoJMLogLevelToFmiJMLogLevel(fmitcp_proto::jm_log_level_enu_t logLevel) {
   switch (logLevel) {
   case fmitcp_proto::jm_log_level_nothing:
     return jm_log_level_nothing;
@@ -51,4 +52,27 @@ jm_log_level_enu_t fmitcp_master::protoJMLogLevelToFmiJMLogLevel(fmitcp_proto::j
   default: // should never be reached
     return jm_log_level_nothing;
   }
+}
+
+jm_log_level_enu_t logOptionToJMLogLevel(const char* option) {
+    string str(option);
+    istringstream ss(str);
+    int logging;
+    ss >> logging;
+
+    switch (logging) {
+    case 0: return jm_log_level_nothing;
+    case 1: return jm_log_level_fatal;
+    case 2: return jm_log_level_error;
+    case 3: return jm_log_level_warning;
+    case 4: return jm_log_level_info;
+    case 5: return jm_log_level_verbose;
+    case 6: return jm_log_level_debug;
+    case 7: return jm_log_level_all;
+    default:
+        fprintf(stderr, "Invalid logging (%s). Possible options are from 0 to 7.\n", option);
+        exit(EXIT_FAILURE);
+    }
+}
+
 }

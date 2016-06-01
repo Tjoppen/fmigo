@@ -354,7 +354,6 @@ int main(int argc, char *argv[] ) {
     fprintf(stderr, "MPI disabled\n");
 #endif
 
-    fmitcp::Logger logger;
     double timeStep = 0.1;
     double startTime = 0;
     double endTime = 10;
@@ -364,7 +363,7 @@ int main(int argc, char *argv[] ) {
     vector<string> fmuURIs;
     vector<connection> connections;
     parameter_map params;
-    int loggingOn = 0;
+    jm_log_level_enu_t loglevel = jm_log_level_nothing;
     char csv_separator = ',';
     string outFilePath = DEFAULT_OUTFILE;
     int quietMode = 0;
@@ -383,7 +382,7 @@ int main(int argc, char *argv[] ) {
 
     if (parseArguments(
             argc, argv, &fmuURIs, &connections, &params, &endTime, &timeStep,
-            &loggingOn, &csv_separator, &outFilePath, &quietMode, &fileFormat,
+            &loglevel, &csv_separator, &outFilePath, &quietMode, &fileFormat,
             &method, &realtimeMode, &printXML, &stepOrder, &fmuVisibilities,
             &scs, &connconf, &hdf5Filename, &fieldnameFilename, &holonomic, &compliance)) {
         return 1;
@@ -392,10 +391,6 @@ int main(int argc, char *argv[] ) {
     if (printXML) {
         fprintf(stderr, "XML mode not implemented\n");
         return 1;
-    }
-
-    if (loggingOn) {
-        fprintf(stderr, "WARNING: -l not implemented\n");
     }
 
     if (quietMode) {
@@ -430,6 +425,7 @@ int main(int argc, char *argv[] ) {
 
     //connect, get modelDescription XML (important for connconf)
     for (auto it = clients.begin(); it != clients.end(); it++) {
+        (*it)->m_loglevel = loglevel;
         (*it)->connect();
     }
 

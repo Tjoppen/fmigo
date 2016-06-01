@@ -66,10 +66,10 @@ set(MPI_SERVER_NAME fmi-mpi-server)
 SET(EXECUTABLE_OUTPUT_PATH "${CMAKE_CURRENT_LIST_DIR}/bin")
 
 ADD_EXECUTABLE(${TCP_MASTER_NAME} ${MASTER_HEADERS} ${MASTER_SRCS})
-ADD_EXECUTABLE(${TCP_SERVER_NAME}  src/server/fmi-tcp-server.cpp ${FMITCP_SRCS})
+ADD_EXECUTABLE(${TCP_SERVER_NAME}  src/server/fmi-tcp-server.cpp src/common/common.cpp ${FMITCP_SRCS})
 
-add_executable(${MPI_SERVER_NAME}  src/server/fmi-mpi-server.cpp   src/common/mpi_tools.cpp ${FMITCP_SRCS})
-add_executable(${MPI_MASTER_NAME} ${MASTER_HEADERS} ${MASTER_SRCS} src/common/mpi_tools.cpp )
+add_executable(${MPI_SERVER_NAME}  src/server/fmi-mpi-server.cpp  src/common/common.cpp src/common/mpi_tools.cpp ${FMITCP_SRCS})
+add_executable(${MPI_MASTER_NAME} ${MASTER_HEADERS} ${MASTER_SRCS}                      src/common/mpi_tools.cpp )
 set_target_properties(${MPI_MASTER_NAME} PROPERTIES COMPILE_FLAGS -DUSE_MPI)
 
 IF(WIN32)

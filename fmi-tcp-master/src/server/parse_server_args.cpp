@@ -1,3 +1,5 @@
+#include "common/common.h"
+
 static void printHelp(char *program_name, string *host, int *port) {
   //hostName and port as arguments to see if they're non-NULL in parse_server_args()
   fprintf(stderr, "Usage: %s [OPTIONS] FMUPATH\n\
@@ -41,34 +43,7 @@ static void parse_server_args(int argc, char **argv, string *fmuPath, int *filte
       exit(EXIT_SUCCESS);
 
     } else if ((arg == "-l" || arg == "--logging") && !last) {
-      std::string nextArg = argv[j+1];
-
-      std::istringstream ss(nextArg);
-      int logging;
-      ss >> logging;
-
-      switch (logging) {
-      case 0:
-        *log_level = jm_log_level_nothing; break;
-      case 1:
-        *log_level = jm_log_level_fatal; break;
-      case 2:
-        *log_level = jm_log_level_error; break;
-      case 3:
-        *log_level = jm_log_level_warning; break;
-      case 4:
-        *log_level = jm_log_level_info; break;
-      case 5:
-        *log_level = jm_log_level_verbose; break;
-      case 6:
-        *log_level = jm_log_level_debug; break;
-      case 7:
-        *log_level = jm_log_level_all; break;
-      default:
-        fprintf(stderr, "Invalid logging. Possible options are from 0 to 7.\n");
-        exit(EXIT_FAILURE);
-      }
-
+      *log_level = common::logOptionToJMLogLevel(argv[j+1]);
     } else if((arg == "--port" || arg == "-p") && !last) {
       if (!port) {
         printHelp(argv[0], hostName, port);

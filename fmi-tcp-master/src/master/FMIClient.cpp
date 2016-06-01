@@ -10,12 +10,13 @@
 
 using namespace fmitcp_master;
 using namespace fmitcp::serialize;
+using namespace common;
 
 /*!
  * Callback function for FMILibrary. Logs the FMILibrary operations.
  */
 void jmCallbacksLoggerClient(jm_callbacks* c, jm_string module, jm_log_level_enu_t log_level, jm_string message) {
-  printf("[module = %s][log level = %s] %s\n", module, jm_log_level_to_string(log_level), message);fflush(NULL);
+  fprintf(stderr, "[module = %s][log level = %s] %s\n", module, jm_log_level_to_string(log_level), message);fflush(NULL);
 }
 
 #ifdef USE_MPI
@@ -32,6 +33,7 @@ FMIClient::FMIClient(zmq::context_t &context, int id, string host, long port) : 
     m_context = NULL;
     m_fmi2Outputs = NULL;
     m_stateId = 0;
+    m_loglevel = jm_log_level_nothing;
 };
 
 FMIClient::~FMIClient() {
@@ -85,7 +87,7 @@ void FMIClient::on_get_xml_res(int mid, fmitcp_proto::jm_log_level_enu_t logLeve
   m_jmCallbacks.realloc = realloc;
   m_jmCallbacks.free = free;
   m_jmCallbacks.logger = jmCallbacksLoggerClient;
-  m_jmCallbacks.log_level = protoJMLogLevelToFmiJMLogLevel(logLevel);
+  m_jmCallbacks.log_level = m_loglevel;
   m_jmCallbacks.context = 0;
   // working directory
   char* dir = fmi_import_mk_temp_dir(&m_jmCallbacks, NULL, "fmitcp_master_");

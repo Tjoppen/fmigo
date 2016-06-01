@@ -19,9 +19,6 @@ over TCP/IP, with optional strong coupling between simulation units.
 .B \-h
 Show help and quit.
 .TP
-.B \-l
-Show FMILibrary logs.
-.TP
 .B \-q
 Quiet mode, do not print simulation info to STDOUT. This flag should be used together with -r.
 .TP
@@ -41,6 +38,19 @@ In other words, only lock spatial/angular velocities, not positions or angles.
 First note that some options specify lists of values.
 These can either be specified as colon separated lists (like "-w 0:1:0") in one long option, or multiple times for each one ("-w 0 -w 1 -w 0"), or any combination of the two ("-w 0 -w 1:0").
 This is convenient when building command lines in script, especially when lengthy strong connection specifications (-C) are involved. 
+.TP
+.B \-l [0..7]
+Set FMILibrary log level. Levels are as follows:
+
+    0 = nothing     (default)
+    1 = fatal       Unrecoverable errors
+    2 = error       Errors that may be not critical for some FMUs
+    3 = warning     Non-critical issues
+    4 = info        Informative messages
+    5 = verbose     Verbose messages
+    6 = debug       Debug messages. Only enabled if FMILibrary is configured with FMILIB_ENABLE_LOG_LEVEL_DEBUG
+    7 = all
+
 .TP
 .B \-w [VISIBILITIES]
 Visibility specification list. Specifies which FMUs should show their simulator application windows. Syntax is

@@ -18,6 +18,8 @@
 #include "master/parseargs.h"
 
 using namespace fmitcp_master;
+using namespace common;
+using namespace std;
 
 static void printHelp(){
     system("man fmi-tcp-master");
@@ -98,7 +100,7 @@ int fmitcp_master::parseArguments( int argc,
                     map<pair<int,fmi2_base_type_enu_t>, vector<param> > *params,
                     double* tEnd,
                     double* timeStepSize,
-                    int* loggingOn,
+                    jm_log_level_enu_t *loglevel,
                     char* csv_separator,
                     std::string *outFilePath,
                     int* quietMode,
@@ -127,7 +129,7 @@ int fmitcp_master::parseArguments( int argc,
 
     vector<char*> argv2 = make_char_vector(argvstore);
 
-    while ((c = getopt (argv2.size(), argv2.data(), "xrlvqht:c:d:s:o:p:f:m:g:w:C:j:5:F:NM:a:")) != -1){
+    while ((c = getopt (argv2.size(), argv2.data(), "xrl:vqht:c:d:s:o:p:f:m:g:w:C:j:5:F:NM:a:")) != -1){
         int n, skip, l, cont, i, numScanned, stop, vis;
         deque<string> parts;
         if (optarg) parts = split(optarg, ':');
@@ -216,7 +218,7 @@ int fmitcp_master::parseArguments( int argc,
             break;
 
         case 'l':
-            *loggingOn = 1;
+            *loglevel = logOptionToJMLogLevel(optarg);
             break;
 
         case 'm':

@@ -94,7 +94,7 @@ static void parse_server_args(int argc, char **argv, string *fmuPath, int *filte
       *hdf5Filename = argv[++j];
     } else if (arg == "-F" && !last) {
       *filter_depth = atoi(argv[++j]);
-      fprintf(stderr, "Using output filter with depth %i\n", filter_depth);
+      fprintf(stderr, "Using output filter with depth %i\n", *filter_depth);
     } else {
       *fmuPath = argv[j];
     }

@@ -31,6 +31,7 @@ then
 fi
 
 for d in \
+    impulse\
     lumpedrod\
     kinematictruck/body\
     kinematictruck/engine\

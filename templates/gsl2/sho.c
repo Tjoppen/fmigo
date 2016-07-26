@@ -94,7 +94,7 @@ int
 jac_sho (double t, const double x[], double *dfdx, double dfdt[], void *params)
 {
   sho_params  * p = (sho_params *)params;
-  gsl_matrix_view dfdx_mat = gsl_matrix_view_array (dfdx, 2, 2);
+  gsl_matrix_view dfdx_mat = gsl_matrix_view_array (dfdx, , 2);
   gsl_matrix * J = &dfdx_mat.matrix; 
 
   gsl_matrix_set (J, 0, 0, 0.0);
@@ -119,8 +119,7 @@ int main()
 
 
   FILE *file = fopen("s.m", "w+");
-  cgsl_simulation  sim = cgsl_init_simulation(
-    init_sho_model( (sho_params ){2.0, 2.0, 0.01,30.0}, (double []) {2.0, 0.0}) ,
+  cgsl_simulation  sim = cgsl_init_simulation( init_sho_model( (sho_params ){2.0, 2.0, 0.01,30.0}, (double []) {2.0, 0.0}) ,
     rkf45,
     1e-6,
     0,
@@ -138,3 +137,28 @@ int main()
   return status;
 
 }
+
+/** what we want is this: 
+
+  cgsl_simulation  sim = cgsl_init_simulation(
+
+  cgsl_init_epcesim( init_sho_model( (sho_params ){2.0, 2.0, 0.01,30.0}, (double []) {2.0, 0.0}) ,
+		     init_sho_filter( ... ) ),
+ rkf45,
+    1e-6,
+    0,
+    1,
+    1,
+    file
+    );
+    
+
+The issue is how to get a reference to the parameter pointer of the
+original model.
+
+typedef struct filter_parameters{ 
+ cgsl_model * model;
+ 
+} filter_parameters;
+
+*/

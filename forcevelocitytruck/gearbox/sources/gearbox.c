@@ -1,10 +1,7 @@
-#define MODEL_IDENTIFIER gearbox
-#define MODEL_GUID "{16176ce9-5941-49b2-9f50-b6870dd10c46}"
+#include "modelDescription.h"
+#include "fmuTemplate.h"
 
-#define TAU_MAX 135
-
-
-static double gear_ratios[] = {
+static const double gear_ratios[] = {
    0,
    13.0,
    10.0,
@@ -21,30 +18,7 @@ static double gear_ratios[] = {
    1.0,
    0.8
 };
-
-enum {
-    THETA_E,    //engine angle (output, state)
-    OMEGA_E,    //engine angular velocity (output, state)
-    TAU_E,      //engine torque (input)
-    D1,         //drag of input gear (parameter)
-
-    THETA_L,    //load angle (output)
-    OMEGA_L,    //load angular velocity (output)
-    TAU_L,      //load torque (input)
-    D2,         //drag of output gear (parameter)
-
-    ALPHA,       //gear ratio from engine to load (less than one means gear down) (parameter)
-
-    NUMBER_OF_REALS
-};
-
-#define NUMBER_OF_INTEGERS 0
-#define NUMBER_OF_BOOLEANS 0
-#define NUMBER_OF_STATES 0
-#define NUMBER_OF_EVENT_INDICATORS 0
-#define FMI_COSIMULATION
-
-#include "fmuTemplate.h"
+static const int ngears = sizeof(gear_ratios)/sizeof(gear_ratios[0]);
 
 //returns partial derivative of vr with respect to wrt
 static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
@@ -52,18 +26,24 @@ static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReferen
 }
 
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
-  int gear = (int) s->r[ ALPHA ] ;
+  int gear = s->md.gear;
+  if (gear < 0) {
+      gear = 0;
+  } else if (gear >= ngears) {
+      gear = ngears-1;
+  }
+
   double ratio = gear_ratios[ gear ];
 
   if ( gear != 0 ){
-    s->r[THETA_L] = s->r[THETA_E] / ratio;
-    s->r[OMEGA_L] = s->r[OMEGA_E] / ratio;
-    s->r[TAU_E]   = -s->r[D1]*s->r[OMEGA_E] + (-s->r[D2]*s->r[OMEGA_L] + s->r[TAU_L]) / ratio;
+    s->md.theta_l = s->md.theta_e / ratio;
+    s->md.omega_l = s->md.omega_e / ratio;
+    s->md.tau_e   = -s->md.d1*s->md.omega_e + (-s->md.d2*s->md.omega_l + s->md.tau_l) / ratio;
   }
   else { 
-    s->r[THETA_L] = 0;
-    s->r[OMEGA_L] = 0;
-    s->r[TAU_E]   = 0;
+    s->md.theta_l = 0;
+    s->md.omega_l = 0;
+    s->md.tau_e   = 0;
   }
 }
 

@@ -96,7 +96,8 @@ static void setStartValues(state_t *s) {
 
 #if WRITE_TO_FILE
   data_file  = fopen(filename, "w+");
-  for ( int i = 0; i < s->md.n_elements; ++i ){
+  int i;
+  for ( i = 0; i < s->md.n_elements; ++i ){
     fprintf(data_file, " %f ", s->simulation.rod.state.x[ i ] );
   }
   fprintf(data_file, "\n");
@@ -141,7 +142,8 @@ static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real comm
   rod_sim_do_step(&s->simulation , n );
   /* Copy state variables to ouputs */
   lumped_rod_fmi_sync_out(&s->simulation, s);
-  for ( int i = 0; i < s->md.n_elements; ++i ){
+  int i;
+  for ( i = 0; i < s->md.n_elements; ++i ){
     fprintf(data_file, " %f ", s->simulation.rod.state.x[ i ] );
   }
   fprintf(data_file, "\n");

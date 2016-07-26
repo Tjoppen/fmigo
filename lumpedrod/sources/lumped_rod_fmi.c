@@ -2,6 +2,7 @@
 #include <math.h>
 #include "modelDescription.h"
 
+#define WRITE_TO_FILE 0
 
 #define SIMULATION_TYPE lumped_rod_sim
 //called after getting default values from XML
@@ -12,13 +13,15 @@
 
 #include "fmuTemplate.h"
 
-static char filename [] = "lumpdata.dat";
+static char filename [] = "lumped_rod.dat";
 static FILE * data_file;
 
 static void lumped_rod_sim_free_a( lumped_rod_sim  sim    ){
 
   lumped_rod_sim_free( sim ) ;
+#if WRITE_TO_FILE
   fclose( data_file);
+#endif
   
 }
 static void lumped_rod_fmi_sync_out( lumped_rod_sim * sim, state_t *s){
@@ -79,7 +82,7 @@ static void setStartValues(state_t *s) {
     {
       s->md.n_elements, //VR=0
       s->md.J0, //VR=14
-      s->md.K, //VR=15
+      s->md.compliance, //VR=15
       s->md.D, //VR=16
       s->md.K_drive1, //VR=17
       s->md.D_drive1, //VR=18
@@ -91,11 +94,13 @@ static void setStartValues(state_t *s) {
   };
   s->simulation = lumped_rod_sim_create( p ); 
 
+#if WRITE_TO_FILE
   data_file  = fopen(filename, "w+");
   for ( int i = 0; i < s->md.n_elements; ++i ){
     fprintf(data_file, " %f ", s->simulation.rod.state.x[ i ] );
   }
   fprintf(data_file, "\n");
+#endif
     
 
 };

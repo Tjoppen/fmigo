@@ -25,8 +25,8 @@ static int exp_function (double t, const double x[], double dxdt[], void * param
 
 static int exp_jacobian (double t, const double x[], double *dfdx, double dfdt[], void *params)
 {
-    dfdx[0] = 1;
-    dfdt[0] = 0;
+    dfdx[0] = 1.0;
+    dfdt[0] = 0.0;
     return GSL_SUCCESS;
 }
 
@@ -39,10 +39,10 @@ static int exp_filter (double t, const double x[], double dzdt[], void * params)
 
 static int exp_filter_jacobian (double t, const double x[], double *dgdx, double dgdt[], void *params)
 {
-    dgdx[0] = 1;
-    dgdx[1] = 1/x[0];
-    dgdt[0] = 0;
-    dgdt[1] = 0;
+    dgdx[0] = 1.0;
+    dgdx[1] = 1.0/x[0];
+    dgdt[0] = 0.0;
+    dgdt[1] = 0.0;
     return GSL_SUCCESS;
 }
 
@@ -83,7 +83,7 @@ cgsl_model  *  init_exp_filter(cgsl_model *exp_model){
 int main() {
     FILE *file = fopen("s.m", "w+");
     cgsl_model *exp_model  = init_exp_model( 1 );
-    cgsl_model *exp_filter = init_exp_filter( exp_model, 3, (double[]){0.25, 0.5, 0.25} );
+    cgsl_model *exp_filter = init_exp_filter( exp_model );
     cgsl_model *epce_model = cgsl_epce_model_init( *exp_model, *exp_filter );
 
     cgsl_simulation  sim = cgsl_init_simulation(  epce_model,

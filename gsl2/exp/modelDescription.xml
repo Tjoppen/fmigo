@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fmiModelDescription
+  fmiVersion="2.0"
+  description="Exponential"
+  modelName="exp"
+  guid="{fc5bb3ba-e1d3-4ab8-b3da-2acd5fbaf068}"
+  numberOfEventIndicators="0">
+
+<CoSimulation
+  modelIdentifier="exp"
+  canHandleVariableCommunicationStepSize="true"
+  canGetAndSetFMUstate="false"
+  providesDirectionalDerivative="false"/>
+
+<LogCategories>
+  <Category name="logAll"/>
+  <Category name="logError"/>
+  <Category name="logFmiCall"/>
+  <Category name="logEvent"/>
+</LogCategories>
+
+<DefaultExperiment startTime="0" stopTime="10" stepSize="0.1"/>
+
+<ModelVariables>
+    <ScalarVariable name="x0"
+                    valueReference="0"
+                    description="initial position"
+                    causality="parameter"
+                    variability="fixed">
+        <Real start="1"/>
+    </ScalarVariable>
+    <ScalarVariable name="x"
+                    valueReference="1"
+                    description="x = x0*e^t"
+                    causality="output">
+        <Real />
+    </ScalarVariable>
+</ModelVariables>
+
+<ModelStructure>
+  <Outputs>
+    <Unknown index="2"/>
+  </Outputs>
+  <Derivatives/>
+  <DiscreteStates/>
+  <InitialUnknowns />
+</ModelStructure>
+
+</fmiModelDescription>

@@ -11,6 +11,21 @@ FMUBUILDER="`pwd`/../fmu-builder/bin/fmu-builder -t `pwd`/templates/fmi2/ -i `pw
 #TODO: use msys2?
 if [ $WIN = 0 ]
 then
+
+    #New GSL interface
+    for d in \
+        gsl2/exp\
+    ;do
+        echo Building $d
+        GSL="-t `pwd`/templates/gsl2/gsl-interface.c -t `pwd`/templates/gsl2/gsl-interface.h -l gsl,gslcblas,m"
+        NAME=`sed -e 's/.*\///' <<< $d`
+        pushd $d
+            rm -f ${NAME}.fmu
+            python ${MD2HDR} modelDescription.xml > sources/modelDescription.h
+            CFLAGS="-Wall -O3" python ${FMUBUILDER} ${GSL}
+        popd
+    done
+
     # GSL FMUs
     for d in \
         gsl/clutch_ef\

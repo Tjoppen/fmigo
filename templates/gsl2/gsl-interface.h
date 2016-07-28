@@ -54,9 +54,15 @@ typedef struct cgsl_model{
   int (* function ) (double t, const double y[], double dydt[], void * params);
   /** Jacobian */
   int (* jacobian)  (double t, const double y[], double * dfdy, double dfdt[], void * params);
-  /** Callbacks */
-  int (* pre_step)  (double t, const double y[], void * params);
-  int (* post_step) (double t, const double y[], void * params);
+
+  /** Pre/post step callbacks
+   *      t: Start of the current time step (communicationPoint)
+   *     dt: Length of the current time step (communicationStepSize)
+   *      y: For pre, the values of the variables before stepping. For post, after.
+   * params: Opaque pointer
+   */
+  int (* pre_step)  (double t, double dt, const double y[], void * params);
+  int (* post_step) (double t, double dt, const double y[], void * params);
 
 } cgsl_model;
 
@@ -136,9 +142,6 @@ cgsl_simulation cgsl_init_simulation(
  */
 void  cgsl_free_simulation( cgsl_simulation * sim );
 
-/** One full step.*/
-int cgsl_step(void  * s ) ;     
-
 /**  Step from current time to next communication point. */
 int cgsl_step_to(void * _s,  double comm_point, double comm_step ) ; 
 
@@ -153,5 +156,7 @@ void cgsl_save_data( struct cgsl_simulation * sim );
 /** \TODO: make this a toggle */
 void cgsl_simulation_set_fixed_step( cgsl_simulation * s, double h );
 void cgsl_simulation_set_variable_step( cgsl_simulation * s );
+
+cgsl_model * cgsl_epce_model_init( cgsl_model  m, cgsl_model f);
 
 #endif

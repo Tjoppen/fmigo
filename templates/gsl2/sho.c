@@ -94,7 +94,7 @@ int
 jac_sho (double t, const double x[], double *dfdx, double dfdt[], void *params)
 {
   sho_params  * p = (sho_params *)params;
-  gsl_matrix_view dfdx_mat = gsl_matrix_view_array (dfdx, , 2);
+  gsl_matrix_view dfdx_mat = gsl_matrix_view_array (dfdx, 2, 2);
   gsl_matrix * J = &dfdx_mat.matrix; 
 
   gsl_matrix_set (J, 0, 0, 0.0);

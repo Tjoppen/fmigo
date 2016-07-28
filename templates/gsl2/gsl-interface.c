@@ -26,8 +26,10 @@ const gsl_odeiv2_step_type * cgsl_get_integrator( int  i ) {
 
 /**
  * Integrate the equations by one full step.
+ * Used by cgsl_step_to() only, can't be external because we need comm_step for
+ * being able to apply the ECPE filters (among other things).
  */
-int cgsl_step ( void * _s  ) {
+static int cgsl_step ( void * _s  ) {
 
   cgsl_simulation * s = ( cgsl_simulation * ) _s ;
   int status;
@@ -52,6 +54,10 @@ int cgsl_step_to(void * _s,  double comm_point, double comm_step ) {
 
   s->t  = comm_point;		/* start point */
   s->t1 = comm_point + comm_step; /* end point */
+  
+  if (s->model->pre_step) {
+    s->model->pre_step(comm_point, comm_step, s->model->x, s->model->parameters);
+  }
 
   ///
   /// GSL integrators return after each successful step hence the while
@@ -80,6 +86,10 @@ int cgsl_step_to(void * _s,  double comm_point, double comm_step ) {
       cgsl_save_data( s );
     }
     
+  }
+
+  if (s->model->post_step) {
+    s->model->post_step(comm_point, comm_step, s->model->x, s->model->parameters);
   }
 
   return 0;
@@ -203,3 +213,135 @@ void cgsl_simulation_set_variable_step( cgsl_simulation * s ) {
 
 
 
+typedef struct cgsl_epce_model {
+  cgsl_model  e_model;          /** this is what the cgsl_simulation and cgsl_integrator see */
+  cgsl_model  model;            /** actual model */
+  cgsl_model  filter;           /** filtered variables */
+
+  double *z_prev;               /** z values of previous step, copied in pre_step 
+                                 * TODO: replace with circular buffer for longer averaging
+                                 */
+  double dt;                    /** current timestep */
+} cgsl_epce_model;
+
+static int cgsl_epce_model_eval (double t, const double y[], double dydt[], void * params){
+
+  int x;
+  int status =  GSL_SUCCESS; 
+  cgsl_epce_model * p = (cgsl_epce_model *) params;
+
+  p->model.function (t, y, dydt,                        p->model.parameters);
+  //the semantics of filters is that they have read-only access to the model's
+  //variables, from which it computes its derivatives
+  p->filter.function(t, y, dydt + p->model.n_variables, p->filter.parameters);
+
+  for (x = 0; x < p->filter.n_variables; x++) {
+      //TODO: look at resetting z. should reduce error accumulation
+      dydt[x + p->model.n_variables] = (dydt[x + p->model.n_variables] - p->z_prev[x]) / p->dt;
+  }
+
+  return status;
+}
+
+static int cgsl_epce_model_jacobian (double t, const double y[], double * dfdy, double dfdt[], void * params){
+
+  int i, j;
+  cgsl_epce_model  * p = (cgsl_epce_model *)params;
+
+  double *dfdy_f = dfdy + p->model.n_variables*p->model.n_variables;
+
+  gsl_matrix_view dfdy_mat_e = gsl_matrix_view_array (dfdy,   p->e_model.n_variables, p->e_model.n_variables);
+  gsl_matrix_view dfdy_mat_m = gsl_matrix_view_array (dfdy,   p->model.n_variables,   p->model.n_variables);
+  gsl_matrix_view dfdy_mat_f = gsl_matrix_view_array (dfdy_f, p->filter.n_variables,  p->model.n_variables);    /** non-square */
+
+  //grab Jacobians and time derivatives
+  //the Jacobian will have to be rearranged since its values will end up smushed together at the start of dfdy
+  //the time derivatives on the other hand will already be in the proper order
+  p->model.jacobian (t, y, dfdy,   dfdt,                        p->model.parameters);
+  p->filter.jacobian(t, y, dfdy_f, dfdt + p->model.n_variables, p->filter.parameters);
+
+  //rearrange entries. start with the filter entries
+  for (i = p->filter.n_variables-1; i >= 0; i--) {
+    for (j = p->model.n_variables-1; j >= 0; j--) {
+      gsl_matrix_set(&dfdy_mat_e.matrix, i + p->model.n_variables, j, gsl_matrix_get(&dfdy_mat_f.matrix, i, j));
+    }
+  }
+
+  //now the model itself
+  for (i = p->model.n_variables-1; i >= 0; i--) {
+    for (j = p->model.n_variables-1; j >= 0; j--) {
+      gsl_matrix_set(&dfdy_mat_e.matrix, i, j, gsl_matrix_get(&dfdy_mat_m.matrix, i, j));
+    }
+  }
+  
+  //finally, zero fill the entire right side of the matrix
+  for (i = 0; i < p->e_model.n_variables; i++) {
+    for (j = p->model.n_variables; j < p->e_model.n_variables; j++) {
+      gsl_matrix_set(&dfdy_mat_e.matrix, i, j, 0);
+    }
+  }
+
+  return GSL_SUCCESS;
+
+}
+
+static int cgsl_epce_model_pre_step  (double t, double dt, const double y[], void * params){
+
+  cgsl_epce_model  * p = (cgsl_epce_model *)params;
+
+  //memorize timestep and z values
+  //TODO: circular buffer
+  p->dt = dt;
+  memcpy( p->z_prev, p->e_model.x + p->model.n_variables, p->filter.n_variables * sizeof(p->z_prev[0]));
+
+  if (p->model.pre_step) {
+    p->model.pre_step(t, dt, y, p->model.parameters);
+  }
+
+  if (p->filter.pre_step) {
+    p->filter.pre_step(t, dt, y + p->model.n_variables, p->filter.parameters);
+  }
+
+  return GSL_SUCCESS;
+
+}
+
+static int cgsl_epce_model_post_step (double t, double dt, const double y[], void * params){
+
+  cgsl_epce_model  * p = (cgsl_epce_model *)params;
+
+  if (p->model.post_step) {
+    p->model.post_step(t, dt, y, p->model.parameters);
+  }
+
+  if (p->filter.post_step) {
+    p->filter.post_step(t, dt, y + p->model.n_variables, p->filter.parameters);
+  }
+
+  return GSL_SUCCESS;
+
+}
+
+cgsl_model * cgsl_epce_model_init( cgsl_model  m, cgsl_model f){
+
+  cgsl_epce_model * model = ( cgsl_epce_model * )  malloc( sizeof( cgsl_epce_model ) );
+
+  model->e_model.n_variables    = m.n_variables + f.n_variables;
+  model->e_model.x              = (double*)malloc(model->e_model.n_variables * sizeof(double));
+  model->e_model.parameters     = model;
+  model->e_model.function       = cgsl_epce_model_eval;
+  model->e_model.jacobian       = cgsl_epce_model_jacobian;
+  model->e_model.pre_step       = cgsl_epce_model_pre_step;
+  model->e_model.post_step      = cgsl_epce_model_post_step;
+  model->model                  = m;
+  model->filter                 = f;
+  model->z_prev                 = (double*)malloc(f.n_variables * sizeof(double));
+
+  //copy initial values
+  memcpy(model->e_model.x,                 m.x, m.n_variables * sizeof(m.x[0]));
+  memcpy(model->e_model.x + m.n_variables, f.x, f.n_variables * sizeof(f.x[0])); /** should this not simply be initialized to zero */
+  memcpy(model->z_prev,                    f.x, f.n_variables * sizeof(f.x[0]));
+
+
+  return (cgsl_model*)model;
+}

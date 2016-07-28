@@ -11,7 +11,7 @@ typedef struct {
    Here, the z variables are the integrated values of the state variables x
    and v.
  */
-int sho_filter(double t, double dzdt [], const double x[], void *params ){
+int sho_filter(double t, const double x[], double dzdt [], void *params ){
 
   dzdt[ 0 ] = x[ 0 ]; 
   dzdt[ 1 ] = x[ 1 ]; 
@@ -105,39 +105,11 @@ void  free_sho_output_model(sho_outout_model * m){
 
 }
 
-
-#if 0 
-typedef struct cgsl_epce_model {
-  cgsl_model  e_model;		/* this is what the cgsl_simulation and cgsl_integrator see */
-  cgsl_model  model;		/* actual model */
-  cgsl_model  outputs;	/* filtered variables */
-} cgsl_epce_model;
-
-cgsl_model * cgsl_epce_model_init( cgsl_model  m, cgsl_model o){
-  
-  cgsl_epce_model * model = ( cgsl_epce_model * )  malloc( sizeof( cgsl_epce_model ) );
-
-  model->e_model->function = cgsl_epce_model_eval;
-  model->e_model->jacobian = cgsl_epce_model_jacobian;
-  model->model  = m;
-  model->output = o;
-
-
+#if 0
+int epce_post_function(int n, double outputs[], double filtered_outputs[], cgsl_epce_model * model, void * params) {
+    modelDescription_t *md = params;
+    md->x0 = md->filtered ? filtered_outputs[0] : outputs[0];
 }
 
-static int cgsl_epce_model_eval (double t, const double y[], double dydt[], void * params){
-
-  int status =  GSL_SUCCESS; 
-  cgsl_epce_model_parameters * p = (cgsl_epce_model_parameters *) params;
-  cgsl_model  * model  = p->model;
-  cgsl_model  * filter = p->filter;
-
-  p->model->function(t, y, dydt, p->model->parameters);
-  
-  p->filter->function(t, y, dydt + p->model->n_variables, p->filter->parameters);
-
-
-  return status;
-}
 
 #endif

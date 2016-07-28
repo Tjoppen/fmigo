@@ -140,12 +140,14 @@
     </ScalarVariable>
 
 
-    <ScalarVariable name="K"       
+    <ScalarVariable name="compliance"       
                     valueReference="15"
-                    description="Stiffness.  Use negative value for infinity"
+                    description="compliance.  This is the inverse of
+                                 stiffness and can be set to zero for
+                                 infinite rigidity"
                     causality="parameter"
                     variability="fixed">
-      <Real start="10"/>
+      <Real start="1e-4"/>
     </ScalarVariable>
 
     <ScalarVariable name="D"          

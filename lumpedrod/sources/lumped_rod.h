@@ -38,7 +38,7 @@ extern "C" {
     /** fixed physical parameters */
     int n;			/** number of elements */
     double   rod_mass;		/** total mass */
-    double   stiffness;	/** global stiffness: the stiffness used
+    double   compliance;	/** global stiffness: the stiffness used
 				 * in the constraints is  n * stiffness  */
     double  relaxation_rate;	/** even though this is timestep dependent,
 				    it logically belongs here since it is

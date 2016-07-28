@@ -122,7 +122,7 @@ tri_matrix build_rod_matrix( lumped_rod  rod, double step) {
   int n = rod.n;
   tri_matrix m; 		/* matrix  */
   double gamma = 1.0 /  ( 1.0 + 4.0 * rod.relaxation_rate );
-  double compliance = - ( 4.0  * gamma / step / step ) / rod.stiffness / ( double ) rod.n  ; 
+  double compliance = - rod.compliance * ( 4.0  * gamma / step / step ) /  ( double ) rod.n  ; 
 
   double stiffness1 =  rod.driver_stiffness1 * ( 1  + 4 * rod.driver_relaxation1 ) * step * step /  4 ;
   double stiffnessN =  rod.driver_stiffnessN * ( 1  + 4 * rod.driver_relaxationN ) * step * step /  4 ;

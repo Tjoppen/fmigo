@@ -514,6 +514,11 @@ fmi2Status fmi2DoStep(fmi2Component cc, fmi2Real currentCommunicationPoint,
 
 fmi2Status fmi2GetDirectionalDerivative(fmi2Component c, const fmi2ValueReference vUnknown_ref[], size_t nUnknown,
                 const fmi2ValueReference vKnown_ref[] , size_t nKnown, const fmi2Real dvKnown[], fmi2Real dvUnknown[]) {
+    //Two cases: we have the old modeldescription2header which does not define
+    //HAVE_DIRECTIONAL_DERIVATIVE so getPartial() must always be implemented,
+    //or we have the new one and modelDescription.xml indicates whether
+    //directional derivatives are available
+#if !defined(HAVE_DIRECTIONAL_DERIVATIVE) || (HAVE_DIRECTIONAL_DERIVATIVE == 1)
     ModelInstance *comp = (ModelInstance *)c;
     size_t x, y;
 
@@ -537,6 +542,9 @@ fmi2Status fmi2GetDirectionalDerivative(fmi2Component c, const fmi2ValueReferenc
     }
 
     return fmi2OK;
+#else
+    return fmi2Error;
+#endif
 }
 
 // ---------------------------------------------------------------------------

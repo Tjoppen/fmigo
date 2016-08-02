@@ -20,11 +20,6 @@ static const double gear_ratios[] = {
 };
 static const int ngears = sizeof(gear_ratios)/sizeof(gear_ratios[0]);
 
-//returns partial derivative of vr with respect to wrt
-static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
-    return fmi2Error;
-}
-
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
   int gear = s->md.gear;
   if (gear < 0) {

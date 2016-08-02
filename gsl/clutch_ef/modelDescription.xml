@@ -10,7 +10,7 @@
       modelIdentifier="clutch_ef"
       canHandleVariableCommunicationStepSize="true"
       canGetAndSetFMUstate="true"
-      providesDirectionalDerivative="true"/>
+      providesDirectionalDerivative="false"/>
 
   <LogCategories>
     <Category name="logAll"/>

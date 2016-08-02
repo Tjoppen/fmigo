@@ -97,11 +97,6 @@ static void coupled_sho_free(coupled_sho_simulation css) {
     cgsl_free(css.sim);
 }
 
-//returns partial derivative of vr with respect to wrt
-static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
-    return fmi2Error;
-}
-
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
     cgsl_step_to( &s->simulation.sim, currentCommunicationPoint, communicationStepSize );
     sync_out(s);

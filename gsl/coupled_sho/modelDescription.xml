@@ -10,7 +10,7 @@
   modelIdentifier="coupled_sho"
   canHandleVariableCommunicationStepSize="true"
   canGetAndSetFMUstate="true"
-  providesDirectionalDerivative="true"/>
+  providesDirectionalDerivative="false"/>
 
 <LogCategories>
   <Category name="logAll"/>

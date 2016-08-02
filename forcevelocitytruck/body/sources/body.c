@@ -25,11 +25,6 @@ enum {
 
 #include "fmuTemplate.h"
 
-//returns partial derivative of vr with respect to wrt
-static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
-    return fmi2Error;
-}
-
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
     //coupling spring torque
     s->r[TAU] = s->r[KC]*(s->r[THETA2] - s->r[THETA]) + s->r[DC]*(s->r[OMEGA2] - s->r[OMEGA]);

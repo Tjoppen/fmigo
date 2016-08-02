@@ -26,6 +26,17 @@ typedef struct cgsl_integrator{
 } cgsl_integrator;
 
 
+//see <gsl/gsl_odeiv2.h> for an explanation of these
+typedef int (* ode_function_ptr ) (double t, const double y[], double dydt[], void * params);
+typedef int (* ode_jacobian_ptr ) (double t, const double y[], double * dfdy, double dfdt[], void * params);
+
+/** Pre/post step callbacks
+ *      t: Start of the current time step (communicationPoint)
+ *     dt: Length of the current time step (communicationStepSize)
+ *      y: For pre, the values of the variables before stepping. For post, after.
+ * params: Opaque pointer
+ */
+typedef int (* pre_post_step_ptr ) (double t, double dt, const double y[], void * params);
 
 /**
  * 
@@ -46,26 +57,41 @@ typedef struct cgsl_integrator{
 */
 
 typedef struct cgsl_model{
-  double *x;  	        /** state variables */
   int n_variables;
+  double *x;  	        /** state variables */
   void * parameters;
 
   /** Definition of the dynamical system: this assumes an *explicit* ODE */
-  int (* function ) (double t, const double y[], double dydt[], void * params);
+  ode_function_ptr function;
   /** Jacobian */
-  int (* jacobian)  (double t, const double y[], double * dfdy, double dfdt[], void * params);
+  ode_jacobian_ptr jacobian;
 
-  /** Pre/post step callbacks
-   *      t: Start of the current time step (communicationPoint)
-   *     dt: Length of the current time step (communicationStepSize)
-   *      y: For pre, the values of the variables before stepping. For post, after.
-   * params: Opaque pointer
-   */
-  int (* pre_step)  (double t, double dt, const double y[], void * params);
-  int (* post_step) (double t, double dt, const double y[], void * params);
+  /** Pre/post step functions */
+  pre_post_step_ptr pre_step;
+  pre_post_step_ptr post_step;
 
+  /** Destructor */
+  void (* free) (struct cgsl_model * model);
 } cgsl_model;
 
+/**
+ * Useful function for allocating the most common type of model
+ */
+cgsl_model* cgsl_model_default_alloc(
+        int n_variables,            /** Number of variables */
+        double *x0,                 /** Initial values. If NULL, initialize model->x to all zeroes instead */
+        void *parameters,           /** User pointer */
+        ode_function_ptr function,  /** ODE function */
+        ode_jacobian_ptr jacobian,  /** Jacobian */
+        pre_post_step_ptr pre_step, /** Pre-step function */
+        pre_post_step_ptr post_step,/** Post-step function */
+        size_t sz                   /** If sz > sizeof(cgsl_model) then allocate sz bytes instead.
+                                        Useful for the my_model case described earlier in this file */
+);
+
+
+/** Default destructor. Frees model->x and the model itself */
+void cgsl_model_default_free(cgsl_model *model);
 
 /**
  * Finally we can put everything in a bag.  The spefic model only has to
@@ -140,7 +166,7 @@ cgsl_simulation cgsl_init_simulation(
 /**
  *  Memory deallocation.
  */
-void  cgsl_free_simulation( cgsl_simulation * sim );
+void  cgsl_free_simulation( cgsl_simulation sim );
 
 /**  Step from current time to next communication point. */
 int cgsl_step_to(void * _s,  double comm_point, double comm_step ) ; 
@@ -157,6 +183,6 @@ void cgsl_save_data( struct cgsl_simulation * sim );
 void cgsl_simulation_set_fixed_step( cgsl_simulation * s, double h );
 void cgsl_simulation_set_variable_step( cgsl_simulation * s );
 
-cgsl_model * cgsl_epce_model_init( cgsl_model  m, cgsl_model f);
+cgsl_model * cgsl_epce_model_init( cgsl_model  *m, cgsl_model *f);
 
 #endif

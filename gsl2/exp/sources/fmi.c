@@ -3,7 +3,7 @@
 
 #define SIMULATION_TYPE cgsl_simulation
 #define SIMULATION_INIT exp_init
-//#define SIMULATION_FREE cgsl_free
+#define SIMULATION_FREE cgsl_free_simulation
 
 #include "fmuTemplate.h"
 
@@ -17,7 +17,7 @@ static void sync_out(state_t *s) {
 static void exp_init(state_t *s) {
     cgsl_model *exp_model  = init_exp_model( s->md.x0 );
     cgsl_model *exp_filter = init_exp_filter( exp_model );
-    cgsl_model *epce_model = cgsl_epce_model_init( *exp_model, *exp_filter );
+    cgsl_model *epce_model = cgsl_epce_model_init( exp_model, exp_filter );
 
     s->simulation = cgsl_init_simulation(  epce_model,
         rkf45,

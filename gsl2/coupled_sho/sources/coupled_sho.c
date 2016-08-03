@@ -81,20 +81,23 @@ static int jac_coupled_sho (double t, const double x[], double *dfdx, double dfd
 }
 
 static void sync_out(state_t *s) {
-    s->md.x = s->simulation.sim.x[0];
-    s->md.v = s->simulation.sim.x[1];
+    s->md.x = s->simulation.sim.model->x[0];
+    s->md.v = s->simulation.sim.model->x[1];
 }
 
 static void coupled_sho_init(state_t *s) {
     const double initials[3] = {s->md.xstart, s->md.vstart, s->md.dxstart};
     s->simulation.momega2 = s->md.mu *s->md.omega * s->md.omega;
     s->simulation.mzeta_cw = s->md.zeta_c * s->md.omega;
-    s->simulation.sim = cgsl_init_simulation( 3, initials, s, coupled_sho, jac_coupled_sho, rkf45, 1e-5, 0, 0, 0, NULL );
+    s->simulation.sim = cgsl_init_simulation(
+        cgsl_model_default_alloc(3, initials, s, coupled_sho, jac_coupled_sho, NULL, NULL, 0),
+        rkf45, 1e-5, 0, 0, 0, NULL
+    );
     sync_out(s);
 }
 
 static void coupled_sho_free(coupled_sho_simulation css) {
-    cgsl_free(css.sim);
+    cgsl_free_simulation(css.sim);
 }
 
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
@@ -102,7 +105,7 @@ static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real comm
     sync_out(s);
 }
 
-//gcc -g coupled_sho.c ../../../templates/gsl/*.c -DCONSOLE -I../../../templates/gsl -I../../../templates/fmi2 -lgsl -lgslcblas -lm -Wall
+//gcc -g coupled_sho.c ../../../templates/gsl2/gsl-interface.c -DCONSOLE -I../../../templates/gsl2 -I../../../templates/fmi2 -lgsl -lgslcblas -lm -Wall
 #ifdef CONSOLE
 int main(void) {
     state_t s = {
@@ -126,7 +129,7 @@ int main(void) {
     s.simulation.sim.print = 1;
 
     cgsl_step_to( &s.simulation.sim, 0.0, 10.0 );
-    cgsl_free(&s.simulation.sim);
+    cgsl_free_simulation(s.simulation.sim);
     return 0;
 }
 #else

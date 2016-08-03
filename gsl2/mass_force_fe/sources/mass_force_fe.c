@@ -3,7 +3,7 @@
 
 #define SIMULATION_TYPE cgsl_simulation
 #define SIMULATION_INIT mass_force_init
-#define SIMULATION_FREE cgsl_free
+#define SIMULATION_FREE cgsl_free_simulation
 
 #include "fmuTemplate.h"
 
@@ -71,14 +71,17 @@ jac_mass_force (double t, const double x[], double *dfdx, double dfdt[], void *p
 }
 
 static void sync_out(state_t *s) {
-    s->md.x  = s->simulation.x[0];
-    s->md.v  = s->simulation.x[1];
-    s->md.dx = s->simulation.x[2];
+    s->md.x  = s->simulation.model->x[0];
+    s->md.v  = s->simulation.model->x[1];
+    s->md.dx = s->simulation.model->x[2];
 }
 
 static void mass_force_init(state_t *s) {
     const double initials[3] = {s->md.x, s->md.v};
-    s->simulation = cgsl_init_simulation( 3, initials, s, mass_force, jac_mass_force, rkf45, 1e-5, 0, 0, 0, NULL );
+    s->simulation = cgsl_init_simulation(
+        cgsl_model_default_alloc(3, initials, s, mass_force, jac_mass_force, NULL, NULL, 0),
+        rkf45, 1e-5, 0, 0, 0, NULL
+    );
     sync_out(s);
 }
 
@@ -87,7 +90,7 @@ static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real comm
     sync_out(s);
 }
 
-//gcc -g mass_force.c ../../../templates/gsl/*.c -DCONSOLE -I../../../templates/gsl -I../../../templates/fmi2 -lgsl -lgslcblas -lm -Wall
+//gcc -g mass_force_fe.c ../../../templates/gsl2/gsl-interface.c -DCONSOLE -I../../../templates/gsl2 -I../../../templates/fmi2 -lgsl -lgslcblas -lm -Wall
 #ifdef CONSOLE
 int main(void) {
     state_t s = {
@@ -109,7 +112,7 @@ int main(void) {
     s.simulation.print = 1;
 
     cgsl_step_to( &s.simulation, 0.0, 100.0 );
-    cgsl_free(s.simulation);
+    cgsl_free_simulation(s.simulation);
     return 0;
 }
 #else

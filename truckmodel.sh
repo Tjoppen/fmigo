@@ -8,5 +8,5 @@ mpirun \
     -c 1,8,2,0 -c 2,8,1,7 -c 2,3,0,6 \
     -p 2,5,1 : \
 -np  1 $FMIPATH/fmi-mpi-server ./kinematictruck/engine/engine.fmu :  \
--np  1 $FMIPATH/fmi-mpi-server ./gsl/clutch/clutch.fmu   : \
--np  1 $FMIPATH/fmi-mpi-server ./gsl/mass_force_fe/mass_force_fe.fmu  
+-np  1 $FMIPATH/fmi-mpi-server ./gsl2/clutch/clutch.fmu   : \
+-np  1 $FMIPATH/fmi-mpi-server ./gsl2/mass_force_fe/mass_force_fe.fmu  

@@ -1,5 +1,6 @@
 #define MODEL_IDENTIFIER body
 #define MODEL_GUID "{cd4d8666-fd68-4809-b9bb-5b62a55cab84}"
+#define HAVE_DIRECTIONAL_DERIVATIVE 0
 
 enum {
     THETA,      //angle (input)

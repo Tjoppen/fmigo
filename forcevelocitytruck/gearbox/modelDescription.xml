@@ -27,7 +27,7 @@
         valueReference="0"  
         description="Engine angle"                      
         causality="input" 
-        initial="exact">
+        initial="approx">
       <Real start="0"/>
     </ScalarVariable>
     <ScalarVariable 
@@ -35,7 +35,7 @@
         valueReference="1"  
         description="Engine angular velocity"           
         causality="input" 
-        initial="exact">
+        initial="approx">
       <Real start="0"/>
     </ScalarVariable>
     <ScalarVariable 
@@ -43,7 +43,7 @@
         valueReference="2"  
         description="Back torque on the engine or clutch"                     
         causality="output">
-      <Real start="0"/>
+      <Real/>
     </ScalarVariable>
     <ScalarVariable 
         name="d1"         
@@ -58,23 +58,22 @@
         name="theta_l"    
         valueReference="4"  
         description="Load angle"                        
-        causality="output" 
-        initial="exact">
-      <Real start="0"/>
+        causality="output">
+      <Real/>
     </ScalarVariable>
     <ScalarVariable 
         name="omega_l"    
         valueReference="5"  
         description="Load angular velocity"             
-        causality="output" 
-        initial="exact">
-      <Real start="0"/>
+        causality="output">
+      <Real/>
     </ScalarVariable>
     <ScalarVariable 
         name="tau_l"      
         valueReference="6"  
         description="Load torque"                       
-        causality="input">
+        causality="input"
+        initial="approx">
       <Real start="0"/>
     </ScalarVariable>
 
@@ -91,7 +90,8 @@
         name="gear"
         valueReference="8" 
         description="Gear (0 = neutral, 1..14 = increasingly higher gear)"
-        causality="input">
+        causality="input"
+        initial="approx">
       <Integer start="1"/>
     </ScalarVariable>
 

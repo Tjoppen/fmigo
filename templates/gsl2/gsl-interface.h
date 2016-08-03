@@ -79,7 +79,7 @@ typedef struct cgsl_model{
  */
 cgsl_model* cgsl_model_default_alloc(
         int n_variables,            /** Number of variables */
-        double *x0,                 /** Initial values. If NULL, initialize model->x to all zeroes instead */
+        const double *x0,           /** Initial values. If NULL, initialize model->x to all zeroes instead */
         void *parameters,           /** User pointer */
         ode_function_ptr function,  /** ODE function */
         ode_jacobian_ptr jacobian,  /** Jacobian */

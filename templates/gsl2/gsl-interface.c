@@ -147,7 +147,7 @@ void cgsl_model_default_free(cgsl_model *model) {
     free(model);
 }
 
-cgsl_model* cgsl_model_default_alloc(int n_variables, double *x0, void *parameters,
+cgsl_model* cgsl_model_default_alloc(int n_variables, const double *x0, void *parameters,
         ode_function_ptr function, ode_jacobian_ptr jacobian,
         pre_post_step_ptr pre_step, pre_post_step_ptr post_step, size_t sz) {
 

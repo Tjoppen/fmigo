@@ -138,6 +138,11 @@ cgsl_simulation cgsl_init_simulation(
   sim.save                   = save;
   sim.print                  = print;
 
+  //call post_step() so the initial values get synced outside the FMU
+  if (sim.model->post_step) {
+      sim.model->post_step(sim.t, sim.h, sim.model->x, sim.model->parameters);
+  }
+
   return sim;
 
 }

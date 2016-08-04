@@ -60,7 +60,8 @@ cgsl_model  *  init_exp_filter(cgsl_model *exp_model){
 int main() {
     FILE *file = fopen("s.m", "w+");
     cgsl_model *exp_model  = init_exp_model( 1 );
-    cgsl_model *exp_filter = init_exp_filter( exp_model );
+    //cgsl_model *exp_filter = init_exp_filter( exp_model );
+    cgsl_model *exp_filter = cgsl_automatic_filter_alloc( exp_model );
     cgsl_model *epce_model = cgsl_epce_model_init( exp_model, exp_filter );
 
     cgsl_simulation  sim = cgsl_init_simulation(  epce_model,

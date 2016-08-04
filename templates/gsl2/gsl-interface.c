@@ -402,3 +402,39 @@ cgsl_model * cgsl_epce_model_init( cgsl_model  *m, cgsl_model *f){
 
   return (cgsl_model*)model;
 }
+
+static int cgsl_automatic_filter_function (double t, const double y[], double dydt[], void * params) {
+
+    cgsl_model *m = params;
+    int x;
+
+    for (x = 0; x < m->n_variables; x++) {
+        dydt[x] = y[x];
+    }
+
+    return GSL_SUCCESS;
+}
+
+static int cgsl_automatic_filter_jacobian (double t, const double y[], double * dfdy, double dfdt[], void * params) {
+
+    cgsl_model *m = params;
+    int x;
+
+    gsl_matrix_view dfdy_mat = gsl_matrix_view_array (dfdy, m->n_variables, m->n_variables);
+    gsl_matrix_set_identity(&dfdy_mat.matrix);
+
+    for (x = 0; x < m->n_variables; x++) {
+        dfdt[x] = 0.0;
+    }
+
+    return GSL_SUCCESS;
+}
+
+cgsl_model * cgsl_automatic_filter_alloc( cgsl_model *m ) {
+
+    return cgsl_model_default_alloc(m->n_variables, NULL, m,
+        cgsl_automatic_filter_function, cgsl_automatic_filter_jacobian,
+        NULL, NULL, 0
+    );
+
+}

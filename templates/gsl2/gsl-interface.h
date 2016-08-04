@@ -185,4 +185,13 @@ void cgsl_simulation_set_variable_step( cgsl_simulation * s );
 
 cgsl_model * cgsl_epce_model_init( cgsl_model  *m, cgsl_model *f);
 
+/**
+ * Allocate an EPCE filter for the given model. The generated filter is simply:
+ *
+ *  zdot = x
+ *
+ * The corresponding Jacobian is the identity matrix.
+ */
+cgsl_model * cgsl_automatic_filter_alloc( cgsl_model *m );
+
 #endif

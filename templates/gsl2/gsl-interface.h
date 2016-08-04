@@ -183,7 +183,17 @@ void cgsl_save_data( struct cgsl_simulation * sim );
 void cgsl_simulation_set_fixed_step( cgsl_simulation * s, double h );
 void cgsl_simulation_set_variable_step( cgsl_simulation * s );
 
-cgsl_model * cgsl_epce_model_init( cgsl_model  *m, cgsl_model *f);
+typedef int (*epce_post_step_ptr) (
+    int n,                          /** Number of variables */
+    const double outputs[],         /** Regular outputs, y = g(x) */
+    const double filtered_outputs[],/** Filtered outputs, zdot = 1/h(g(x) - z(i-1)), y = <z> */
+    void * params                   /** User pointer */
+);
+
+cgsl_model * cgsl_epce_model_init(
+        cgsl_model  *m, cgsl_model *f,
+        epce_post_step_ptr epce_post_step, void *epce_post_step_params
+);
 
 /**
  * Allocate an EPCE filter for the given model. The generated filter is simply:

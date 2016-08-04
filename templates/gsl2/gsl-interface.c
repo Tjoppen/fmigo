@@ -260,6 +260,12 @@ typedef struct cgsl_epce_model {
                                  * TODO: replace with circular buffer for longer averaging
                                  */
   double dt;                    /** current timestep */
+
+  epce_post_step_ptr epce_post_step;
+  void *epce_post_step_params;
+  double *outputs;
+  double *filtered_outputs;
+
 } cgsl_epce_model;
 
 static int cgsl_epce_model_eval (double t, const double y[], double dydt[], void * params){
@@ -356,6 +362,19 @@ static int cgsl_epce_model_post_step (double t, double dt, const double y[], voi
     p->filter->post_step(t, dt, y + p->model->n_variables, p->filter->parameters);
   }
 
+  if (p->epce_post_step) {
+    int x;
+
+    p->filter->function(t, y, p->outputs, p->filter->parameters);
+
+    //TODO: circular buffer
+    for (x = 0; x < p->filter->n_variables; x++) {
+        p->filtered_outputs[x] = 0.5*(p->z_prev[x] + y[p->model->n_variables + x]);
+    }
+
+    p->epce_post_step(p->filter->n_variables, p->outputs, p->filtered_outputs, p->epce_post_step_params);
+  }
+
   return GSL_SUCCESS;
 
 }
@@ -372,10 +391,13 @@ static void cgsl_epce_model_free(cgsl_model *m) {
     }
 
     free(model->z_prev);
+    free(model->outputs);
+    free(model->filtered_outputs);
     cgsl_model_default_free(m);
 }
 
-cgsl_model * cgsl_epce_model_init( cgsl_model  *m, cgsl_model *f){
+cgsl_model * cgsl_epce_model_init( cgsl_model  *m, cgsl_model *f,
+        epce_post_step_ptr epce_post_step, void *epce_post_step_params){
 
   cgsl_epce_model *model = (cgsl_epce_model*)cgsl_model_default_alloc(
           m->n_variables + f->n_variables,
@@ -393,6 +415,10 @@ cgsl_model * cgsl_epce_model_init( cgsl_model  *m, cgsl_model *f){
   model->filter                 = f;
   model->z_prev                 = calloc(f->n_variables, sizeof(double));
   model->e_model.free           = cgsl_epce_model_free;
+  model->epce_post_step         = epce_post_step;
+  model->epce_post_step_params  = epce_post_step_params;
+  model->outputs                = calloc(f->n_variables, sizeof(double));
+  model->filtered_outputs       = calloc(f->n_variables, sizeof(double));
 
   //copy initial values
   memcpy(model->e_model.x,                  m->x, m->n_variables * sizeof(m->x[0]));

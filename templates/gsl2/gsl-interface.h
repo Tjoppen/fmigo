@@ -196,12 +196,16 @@ cgsl_model * cgsl_epce_model_init(
 );
 
 /**
- * Allocate an EPCE filter for the given model. The generated filter is simply:
+ * Allocate an EPCE filtered model for the given model with the default filter:
  *
  *  zdot = x
  *
  * The corresponding Jacobian is the identity matrix.
  */
-cgsl_model * cgsl_automatic_filter_alloc( cgsl_model *m );
+cgsl_model * cgsl_epce_default_model_init(
+        cgsl_model  *m,
+        epce_post_step_ptr epce_post_step,
+        void *epce_post_step_params
+);
 
 #endif

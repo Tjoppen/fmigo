@@ -456,11 +456,15 @@ static int cgsl_automatic_filter_jacobian (double t, const double y[], double * 
     return GSL_SUCCESS;
 }
 
-cgsl_model * cgsl_automatic_filter_alloc( cgsl_model *m ) {
+cgsl_model * cgsl_epce_default_model_init(
+        cgsl_model  *m,
+        epce_post_step_ptr epce_post_step,
+        void *epce_post_step_params) {
 
-    return cgsl_model_default_alloc(m->n_variables, NULL, m,
+    cgsl_model *f = cgsl_model_default_alloc(m->n_variables, NULL, m,
         cgsl_automatic_filter_function, cgsl_automatic_filter_jacobian,
         NULL, NULL, 0
     );
 
+    return cgsl_epce_model_init(m, f, epce_post_step, epce_post_step_params);
 }

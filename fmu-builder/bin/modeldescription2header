@@ -21,18 +21,22 @@ fmiVersion = root.get('fmiVersion')
 # Get model identifier.
 fmuType = "cs"
 modelIdentifier = "modelIdentifier"
+providesDirectionalDerivative = False
 
 if fmiVersion == "1.0":
     modelIdentifier = root.get('modelIdentifier')
+    providesDirectionalDerivative = root.get('providesDirectionalDerivative') == "true"
 elif fmiVersion == "2.0":
     me = root.find('ModelExchange')
     cs = root.find('CoSimulation')
     if cs != None:
         fmuType = "cs"
         modelIdentifier = cs.get('modelIdentifier')
+        providesDirectionalDerivative = cs.get('providesDirectionalDerivative') == "true"
     elif me != None:
         fmuType = me
         modelIdentifier = me.get('modelIdentifier')
+        providesDirectionalDerivative = me.get('providesDirectionalDerivative') == "true"
     else:
         warning('FMU is neither ModelExchange or CoSimulation')
         exit(1)
@@ -85,6 +89,7 @@ print('''#ifndef MODELDESCRIPTION_H
 #define MODEL_IDENTIFIER %s
 #define MODEL_GUID "%s"
 %s
+#define HAVE_DIRECTIONAL_DERIVATIVE %i
 #define NUMBER_OF_REALS %i
 #define NUMBER_OF_INTEGERS %i
 #define NUMBER_OF_BOOLEANS %i
@@ -94,6 +99,7 @@ print('''#ifndef MODELDESCRIPTION_H
     modelIdentifier,
     root.get('guid'),
     '#define FMI_COSIMULATION' if fmuType == 'cs' else '',
+    1 if providesDirectionalDerivative else 0,
     len(reals),
     len(ints),
     len(bools),

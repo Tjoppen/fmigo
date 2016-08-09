@@ -28,7 +28,7 @@ parser.add_argument('-i','--includedir',
                     default='')
 parser.add_argument('-t','--templatedir',
                     action='append',
-                    help='Directories to pull template code from, to avoid copy-pasting it all over the place.')
+                    help='Directories to pull template code from, to avoid copy-pasting it all over the place. May also be a filename')
 args = parser.parse_args()
 link_libraries = args.link.split(",")
 definitions = " -".join(args.definitions.split(","))
@@ -80,7 +80,10 @@ with open(path,'w') as f:
     dirs = [pjoin(cwd,"sources")]
     dirs.extend([pjoin(cwd,td) for td in args.templatedir])
     for dir in dirs:
-        source_files.extend([ pjoin(dir,s).replace('\\','/') for s in os.listdir(dir) if os.path.isfile(pjoin(dir,s))])
+        if os.path.isfile(dir):
+            source_files.append(dir)
+        else:
+            source_files.extend([ pjoin(dir,s).replace('\\','/') for s in os.listdir(dir) if os.path.isfile(pjoin(dir,s))])
 
     # Check if there were any files
     if not len(source_files):

@@ -43,7 +43,7 @@
     </ScalarVariable>
 
     <ScalarVariable name="filter_length"
-                    valueReference="99"
+                    valueReference="98"
                     description="Length of EPCE FIR filter (0 = disable)"
                     causality="parameter"
                     variability="fixed">

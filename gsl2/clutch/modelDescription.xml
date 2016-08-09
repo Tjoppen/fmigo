@@ -31,6 +31,14 @@
     <ScalarVariable name="gamma"            valueReference="4"  description="damping constant for the body"         causality="parameter" variability="fixed"><Real start="1"/></ScalarVariable>
     <ScalarVariable name="clutch_damping"   valueReference="5"  description="internal clutch damping constant"      causality="parameter" variability="fixed"><Real start="1"/></ScalarVariable>
 
+    <ScalarVariable name="filter_length"
+                    valueReference="98"
+                    description="Length of EPCE FIR filter (0 = disable)"
+                    causality="parameter"
+                    variability="fixed">
+        <Integer start="0"/>
+    </ScalarVariable>
+
     <!-- inputs -->
     <ScalarVariable name="v_in"             valueReference="6"  description="external driving velocity"             causality="input" initial="exact"><Real start="0"/></ScalarVariable>
     <ScalarVariable name="force_in"         valueReference="7"  description="driving force"                         causality="input" initial="exact"><Real start="0"/></ScalarVariable>

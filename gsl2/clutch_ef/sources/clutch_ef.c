@@ -170,9 +170,13 @@ static double fclutch_dphi_derivative( double dphi ) {
 }
 
 
-static void sync_out(state_t *s) {
-  s->md.v1 = s->simulation.model->x[1];
-  s->md.v2 = s->simulation.model->x[3];
+static int epce_post_step(int n, const double outputs[], void * params) {
+    state_t *s = params;
+
+    s->md.v1 = outputs[1];
+    s->md.v2 = outputs[3];
+
+    return GSL_SUCCESS;
 }
 
 static void clutch_init(state_t *s) {
@@ -185,10 +189,14 @@ static void clutch_init(state_t *s) {
 
 //    s->simulation = cgsl_init_simulation( 4, initials, s, clutch, jac_clutch, s->md.integrator_type, 1e-5, 0, 0, 0, NULL );
   s->simulation = cgsl_init_simulation(
-    cgsl_model_default_alloc(4, initials, s, clutch, jac_clutch, NULL, NULL, 0),
+    cgsl_epce_default_model_init(
+        cgsl_model_default_alloc(4, initials, s, clutch, jac_clutch, NULL, NULL, 0),
+        s->md.filter_length,
+        epce_post_step,
+        s
+    ),
     rkf45, 1e-5, 0, 0, 0, NULL
   );
-  sync_out(s);
 }
 
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
@@ -198,7 +206,6 @@ static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real comm
   }
   
   cgsl_step_to( &s->simulation, currentCommunicationPoint, communicationStepSize );
-  sync_out(s);
 }
 
 

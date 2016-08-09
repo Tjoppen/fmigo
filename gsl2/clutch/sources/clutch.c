@@ -177,22 +177,32 @@ static double fclutch_dphi_derivative( double dphi ) {
 }
 
 
-static void sync_out(state_t *s) {
-    s->md.v = s->simulation.model->x[1];
+static int epce_post_step(int n, const double outputs[], void * params) {
+    state_t *s = params;
+    double v = flip * s->md.v_in;
+
+    s->md.v            = outputs[1];
+    s->md.force_clutch = fclutch( outputs[ 2 ], ( outputs[ 1 ] - v ), s->md.clutch_damping );
+
+    return GSL_SUCCESS;
 }
+
 
 static void clutch_init(state_t *s) {
     const double initials[3] = {s->md.x0, s->md.v0, s->md.dx0};
     s->simulation = cgsl_init_simulation(
-        cgsl_model_default_alloc(3, initials, s, clutch, jac_clutch, NULL, NULL, 0),
+        cgsl_epce_default_model_init(
+            cgsl_model_default_alloc(3, initials, s, clutch, jac_clutch, NULL, NULL, 0),
+            s->md.filter_length,
+            epce_post_step,
+            s
+        ),
         rkf45, 1e-5, 0, 0, 0, NULL
     );
-    sync_out(s);
 }
 
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
     cgsl_step_to( &s->simulation, currentCommunicationPoint, communicationStepSize );
-    sync_out(s);
 }
 
 

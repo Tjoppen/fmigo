@@ -266,6 +266,12 @@ typedef struct cgsl_epce_model {
                                  */
   double dt;                    /** current timestep */
 
+  int filter_length;            /** EPCE filter length.
+                                 * 0: No filtering applied (y = g(x))
+                                 * 1: Use latest z only
+                                 * 2: Use average of z and z_prev
+                                 */
+
   epce_post_step_ptr epce_post_step;
   void *epce_post_step_params;
   double *outputs;
@@ -377,7 +383,16 @@ static int cgsl_epce_model_post_step (double t, double dt, const double y[], voi
         p->filtered_outputs[x] = 0.5*(p->z_prev[x] + y[p->model->n_variables + x]);
     }
 
-    p->epce_post_step(p->filter->n_variables, p->outputs, p->filtered_outputs, p->epce_post_step_params);
+    if (p->filter_length == 2) {
+        //y = (z + z_prev) / 2)
+        p->epce_post_step(p->filter->n_variables, p->filtered_outputs,       p->epce_post_step_params);
+    } else if (p->filter_length == 1) {
+        //y = z
+        p->epce_post_step(p->filter->n_variables, &y[p->model->n_variables], p->epce_post_step_params);
+    } else {
+        //y = g(x)
+        p->epce_post_step(p->filter->n_variables, p->outputs,                p->epce_post_step_params);
+    }
   }
 
   return GSL_SUCCESS;
@@ -402,7 +417,9 @@ static void cgsl_epce_model_free(cgsl_model *m) {
 }
 
 cgsl_model * cgsl_epce_model_init( cgsl_model  *m, cgsl_model *f,
-        epce_post_step_ptr epce_post_step, void *epce_post_step_params){
+        int filter_length,
+        epce_post_step_ptr epce_post_step,
+        void *epce_post_step_params){
 
   cgsl_epce_model *model = (cgsl_epce_model*)cgsl_model_default_alloc(
           m->n_variables + f->n_variables,
@@ -420,6 +437,7 @@ cgsl_model * cgsl_epce_model_init( cgsl_model  *m, cgsl_model *f,
   model->filter                 = f;
   model->z_prev                 = calloc(f->n_variables, sizeof(double));
   model->e_model.free           = cgsl_epce_model_free;
+  model->filter_length          = filter_length;
   model->epce_post_step         = epce_post_step;
   model->epce_post_step_params  = epce_post_step_params;
   model->outputs                = calloc(f->n_variables, sizeof(double));
@@ -463,6 +481,7 @@ static int cgsl_automatic_filter_jacobian (double t, const double y[], double * 
 
 cgsl_model * cgsl_epce_default_model_init(
         cgsl_model  *m,
+        int filter_length,
         epce_post_step_ptr epce_post_step,
         void *epce_post_step_params) {
 
@@ -471,5 +490,5 @@ cgsl_model * cgsl_epce_default_model_init(
         NULL, NULL, 0
     );
 
-    return cgsl_epce_model_init(m, f, epce_post_step, epce_post_step_params);
+    return cgsl_epce_model_init(m, f, filter_length, epce_post_step, epce_post_step_params);
 }

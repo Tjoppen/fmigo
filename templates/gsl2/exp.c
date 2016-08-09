@@ -60,13 +60,12 @@ cgsl_model  *  init_exp_filter(cgsl_model *exp_model){
 static int epce_post_step (
         int n,
         const double outputs[],
-        const double filtered_outputs[],
         void * params) {
 
     int x;
 
     for (x = 0; x < n; x++) {
-        fprintf(stderr, "%i: %f vs %f\n", x, outputs[x], filtered_outputs[x]);
+        fprintf(stderr, "%i: %f\n", x, outputs[x]);
     }
 
     return GSL_SUCCESS;
@@ -80,6 +79,7 @@ int main() {
 
     cgsl_model *epce_model = cgsl_epce_default_model_init(
             init_exp_model( 1 ),
+            2,
             epce_post_step,
             NULL
     );

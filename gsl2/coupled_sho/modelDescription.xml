@@ -52,13 +52,22 @@
     <ScalarVariable name="force_c"  valueReference="10" description="value of coupling force at last step."     causality="output"><Real /></ScalarVariable>
     <ScalarVariable name="x"        valueReference="11" description="position"                                  causality="output"><Real /></ScalarVariable>
     <ScalarVariable name="v"        valueReference="12" description="velocity"                                  causality="output"><Real /></ScalarVariable>
+
+    <ScalarVariable name="dump_data"
+                    valueReference="97"
+                    description="Dump data to sho.m?"
+                    causality="parameter"
+                    variability="fixed">
+        <Boolean start="false"/>
+    </ScalarVariable>
+
 </ModelVariables>
 
 <ModelStructure>
   <Outputs>
-    <Unknown index="11"/>
     <Unknown index="12"/>
     <Unknown index="13"/>
+    <Unknown index="14"/>
   </Outputs>
   <Derivatives/>
   <DiscreteStates/>

@@ -92,8 +92,16 @@ static int epce_post_step(int n, const double outputs[], void * params) {
 
 static void coupled_sho_init(state_t *s) {
     const double initials[3] = {s->md.xstart, s->md.vstart, s->md.dxstart};
+
     s->simulation.momega2 = s->md.mu *s->md.omega * s->md.omega;
     s->simulation.mzeta_cw = s->md.zeta_c * s->md.omega;
+
+    FILE *f = NULL;
+
+    if (s->md.dump_data) {
+        f = fopen("sho.m", "w");
+    }
+
     s->simulation.sim = cgsl_init_simulation(
         cgsl_epce_default_model_init(
             cgsl_model_default_alloc(3, initials, s, coupled_sho, jac_coupled_sho, NULL, NULL, 0),
@@ -101,7 +109,7 @@ static void coupled_sho_init(state_t *s) {
             epce_post_step,
             s
         ),
-        rkf45, 1e-5, 0, 0, 0, NULL
+        rkf45, 1e-5, 0, 0, s->md.dump_data, f
     );
 }
 

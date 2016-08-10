@@ -62,6 +62,15 @@
         causality="parameter">
       <Real start="1"/>
     </ScalarVariable>
+
+    <ScalarVariable name="filter_length"
+                    valueReference="98"
+                    description="Length of EPCE FIR filter (0 = disable)"
+                    causality="parameter"
+                    variability="fixed">
+        <Integer start="0"/>
+    </ScalarVariable>
+
 </ModelVariables>
 
 <ModelStructure>

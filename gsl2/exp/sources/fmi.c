@@ -10,12 +10,9 @@
 cgsl_model  *  init_exp_model(double x0);
 cgsl_model  *  init_exp_filter(cgsl_model *exp_model);
 
-static int epce_post_step (
-        int n,
-        const double outputs[],
-        void * params) {
-
+static int epce_post_step (int n, const double outputs[], void * params) {
     state_t *s = params;
+
     s->md.x    = outputs[0];
     s->md.logx = outputs[1];
 

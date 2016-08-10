@@ -80,9 +80,14 @@ static int jac_coupled_sho (double t, const double x[], double *dfdx, double dfd
   return GSL_SUCCESS;
 }
 
-static void sync_out(state_t *s) {
-    s->md.x = s->simulation.sim.model->x[0];
-    s->md.v = s->simulation.sim.model->x[1];
+static int epce_post_step(int n, const double outputs[], void * params) {
+    state_t *s = params;
+
+    s->md.x = outputs[0];
+    s->md.v = outputs[1];
+    s->md.force_c =   s->simulation.mzeta_cw * ( outputs[ 1 ] - s->md.v0 )  + s->simulation.momega2 * outputs[ 2 ];
+
+    return GSL_SUCCESS;
 }
 
 static void coupled_sho_init(state_t *s) {
@@ -90,10 +95,14 @@ static void coupled_sho_init(state_t *s) {
     s->simulation.momega2 = s->md.mu *s->md.omega * s->md.omega;
     s->simulation.mzeta_cw = s->md.zeta_c * s->md.omega;
     s->simulation.sim = cgsl_init_simulation(
-        cgsl_model_default_alloc(3, initials, s, coupled_sho, jac_coupled_sho, NULL, NULL, 0),
+        cgsl_epce_default_model_init(
+            cgsl_model_default_alloc(3, initials, s, coupled_sho, jac_coupled_sho, NULL, NULL, 0),
+            s->md.filter_length,
+            epce_post_step,
+            s
+        ),
         rkf45, 1e-5, 0, 0, 0, NULL
     );
-    sync_out(s);
 }
 
 static void coupled_sho_free(coupled_sho_simulation css) {
@@ -102,7 +111,6 @@ static void coupled_sho_free(coupled_sho_simulation css) {
 
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
     cgsl_step_to( &s->simulation.sim, currentCommunicationPoint, communicationStepSize );
-    sync_out(s);
 }
 
 //gcc -g coupled_sho.c ../../../templates/gsl2/gsl-interface.c -DCONSOLE -I../../../templates/gsl2 -I../../../templates/fmi2 -lgsl -lgslcblas -lm -Wall

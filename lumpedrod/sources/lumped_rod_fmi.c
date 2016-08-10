@@ -13,7 +13,7 @@
 
 #include "fmuTemplate.h"
 
-static char filename [] = "lumped_rod.dat";
+//static char filename [] = "lumped_rod.dat";
 static FILE * data_file;
 
 static void lumped_rod_sim_free_a( lumped_rod_sim  sim    ){

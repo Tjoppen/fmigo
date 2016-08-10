@@ -70,24 +70,31 @@ jac_mass_force (double t, const double x[], double *dfdx, double dfdt[], void *p
   return GSL_SUCCESS;
 }
 
-static void sync_out(state_t *s) {
-    s->md.x  = s->simulation.model->x[0];
-    s->md.v  = s->simulation.model->x[1];
-    s->md.dx = s->simulation.model->x[2];
+static int epce_post_step(int n, const double outputs[], void * params) {
+    state_t *s = params;
+
+    s->md.x  = outputs[0];
+    s->md.v  = outputs[1];
+    s->md.dx = outputs[2];
+
+    return GSL_SUCCESS;
 }
 
 static void mass_force_init(state_t *s) {
     const double initials[3] = {s->md.x, s->md.v};
     s->simulation = cgsl_init_simulation(
-        cgsl_model_default_alloc(3, initials, s, mass_force, jac_mass_force, NULL, NULL, 0),
+        cgsl_epce_default_model_init(
+            cgsl_model_default_alloc(3, initials, s, mass_force, jac_mass_force, NULL, NULL, 0),
+            s->md.filter_length,
+            epce_post_step,
+            s
+        ),
         rkf45, 1e-5, 0, 0, 0, NULL
     );
-    sync_out(s);
 }
 
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
     cgsl_step_to( &s->simulation, currentCommunicationPoint, communicationStepSize );
-    sync_out(s);
 }
 
 //gcc -g mass_force_fe.c ../../../templates/gsl2/gsl-interface.c -DCONSOLE -I../../../templates/gsl2 -I../../../templates/fmi2 -lgsl -lgslcblas -lm -Wall

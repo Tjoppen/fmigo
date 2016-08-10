@@ -31,6 +31,14 @@
     <!-- internal parameter -->
     <ScalarVariable name="zeta"     valueReference="4"  description="internal damping constant"                 causality="parameter" variability="fixed"><Real start="1"/></ScalarVariable>
 
+    <ScalarVariable name="filter_length"
+                    valueReference="98"
+                    description="Length of EPCE FIR filter (0 = disable)"
+                    causality="parameter"
+                    variability="fixed">
+        <Integer start="0"/>
+    </ScalarVariable>
+
     <!-- inputs -->
     <ScalarVariable name="v0"       valueReference="5"  description="external driving velocity"                 causality="input" initial="exact"><Real start="0"/></ScalarVariable>
     <ScalarVariable name="force"    valueReference="6"  description="driving force"                             causality="input" initial="exact"><Real start="0"/></ScalarVariable>

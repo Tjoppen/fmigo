@@ -7,9 +7,13 @@ set -e
 MD2HDR="`pwd`/../fmu-builder/bin/modeldescription2header"
 FMUBUILDER="`pwd`/../fmu-builder/bin/fmu-builder -t `pwd`/templates/fmi2/ -i `pwd`/../FMILibrary-2.0.1/ThirdParty/FMI/default"
 
+# Warnings during compilation may go unnoticed without -Werror, leading to
+# hard-to-debug problems
+export CFLAGS="-Wall -Werror -O3"
+
 #Getting GSL to run on Windows is too much of a hassle right now
 #TODO: use msys2?
-if [ $WIN = 0 ]
+if [[ $WIN -ne 1 ]]
 then
 
     #New GSL interface
@@ -27,7 +31,7 @@ then
         pushd $d
             rm -f ${NAME}.fmu
             python ${MD2HDR} modelDescription.xml > sources/modelDescription.h
-            CFLAGS="-Wall -O3" python ${FMUBUILDER} ${GSL}
+            python ${FMUBUILDER} ${GSL}
         popd
     done
 fi
@@ -47,6 +51,6 @@ for d in \
     pushd $d
         rm -f ${NAME}.fmu
         python ${MD2HDR} modelDescription.xml > sources/modelDescription.h
-        CFLAGS="-Wall -O3" python ${FMUBUILDER}
+        python ${FMUBUILDER}
     popd
 done

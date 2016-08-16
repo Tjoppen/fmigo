@@ -3,8 +3,10 @@
 
 typedef struct {
     cgsl_simulation sim;
-    fmi2Real momega2;
-    fmi2Real mzeta_cw;
+    fmi2Real momega2_c;     //mu*omega^2_c
+    fmi2Real ozeta_c;       //omega_c*zeta_c
+    fmi2Real omega2_i;     //omega^2_i
+    fmi2Real ozeta_i;       //omega_i*zeta_i
 } coupled_sho_simulation;
 
 #define SIMULATION_TYPE coupled_sho_simulation
@@ -32,11 +34,11 @@ static int coupled_sho (double t, const double x[], double dxdt[], void * params
   /** compute the coupling force: NOTE THE SIGN!
    *  This is the force *applied* to the coupled system
    */
-  s->md.force_c =   s->simulation.mzeta_cw * ( x[ 1 ] - s->md.v0 )  + s->simulation.momega2 * x[ 2 ];
+  s->md.force_c =   s->simulation.ozeta_c * ( x[ 1 ] - s->md.v0 )  + s->simulation.momega2_c * x[ 2 ];
 
   dxdt[ 0 ]  = x[ 1 ];
   /** internal dynamics */ 
-  dxdt[ 1 ] = - ( x[ 0 ] - s->md.x0 ) - s->md.zeta * x[ 1 ];
+  dxdt[ 1 ] = -s->simulation.omega2_i * ( x[ 0 ] - s->md.x0 ) - s->simulation.ozeta_i * x[ 1 ];
   /** coupling */ 
   dxdt[ 1 ] -= s->md.force_c;
   /** additional driver */ 
@@ -63,9 +65,9 @@ static int jac_coupled_sho (double t, const double x[], double *dfdx, double dfd
   gsl_matrix_set (J, 0, 2, 0.0 ); 
 
   /** second row */
-  gsl_matrix_set (J, 1, 0, -1 );
-  gsl_matrix_set (J, 1, 1, - ( s->md.zeta + s->simulation.mzeta_cw ) );
-  gsl_matrix_set (J, 1, 2, - s->simulation.momega2);
+  gsl_matrix_set (J, 1, 0, - s->simulation.omega2_i );
+  gsl_matrix_set (J, 1, 1, - ( s->simulation.ozeta_i + s->simulation.ozeta_c ) );
+  gsl_matrix_set (J, 1, 2, - s->simulation.momega2_c);
 
   /** third row */
   gsl_matrix_set (J, 2, 0, 0.0 );
@@ -85,7 +87,8 @@ static int epce_post_step(int n, const double outputs[], void * params) {
 
     s->md.x = outputs[0];
     s->md.v = outputs[1];
-    s->md.force_c =   s->simulation.mzeta_cw * ( outputs[ 1 ] - s->md.v0 )  + s->simulation.momega2 * outputs[ 2 ];
+    s->md.force_c    = s->simulation.ozeta_c * ( outputs[ 1 ] - s->md.v0 )  + s->simulation.momega2_c * outputs[ 2 ];
+    s->md.iterations = s->simulation.sim.iterations;
 
     return GSL_SUCCESS;
 }
@@ -93,8 +96,10 @@ static int epce_post_step(int n, const double outputs[], void * params) {
 static void coupled_sho_init(state_t *s) {
     const double initials[3] = {s->md.xstart, s->md.vstart, s->md.dxstart};
 
-    s->simulation.momega2 = s->md.mu *s->md.omega * s->md.omega;
-    s->simulation.mzeta_cw = s->md.zeta_c * s->md.omega;
+    s->simulation.momega2_c = s->md.mu * s->md.omega_c * s->md.omega_c;
+    s->simulation.ozeta_c   =            s->md.zeta_c  * s->md.omega_c;
+    s->simulation.omega2_i  =            s->md.omega_i * s->md.omega_i;
+    s->simulation.ozeta_i   =            s->md.zeta_i  * s->md.omega_i;
 
     FILE *f = NULL;
 

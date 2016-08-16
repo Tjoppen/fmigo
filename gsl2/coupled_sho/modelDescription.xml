@@ -24,12 +24,20 @@
 <ModelVariables>
     <!-- parameters for coupling -->
     <ScalarVariable name="mu"       valueReference="0"  description="mass ratio wrt outside"                    causality="parameter" variability="fixed"><Real start="1"/></ScalarVariable>
-    <ScalarVariable name="omega"    valueReference="1"  description="(normalized) spring constant from outside" causality="parameter" variability="fixed"><Real start="1"/></ScalarVariable>
+    <ScalarVariable name="omega_c"  valueReference="1"  description="(normalized) spring constant from outside" causality="parameter" variability="fixed"><Real start="1"/></ScalarVariable>
     <ScalarVariable name="zeta_c"   valueReference="2"  description="damping constant of coupling"              causality="parameter" variability="fixed"><Real start="1"/></ScalarVariable>
     <ScalarVariable name="x0"       valueReference="3"  description="reference position for the spring"         causality="parameter" variability="fixed"><Real start="1"/></ScalarVariable>
 
     <!-- internal parameter -->
-    <ScalarVariable name="zeta"     valueReference="4"  description="internal damping constant"                 causality="parameter" variability="fixed"><Real start="1"/></ScalarVariable>
+    <ScalarVariable name="zeta_i"   valueReference="4"  description="internal damping constant"                 causality="parameter" variability="fixed"><Real start="1"/></ScalarVariable>
+
+    <ScalarVariable name="omega_i"
+                    valueReference="95"
+                    description=""
+                    causality="parameter"
+                    variability="fixed">
+        <Real start="1"/>
+    </ScalarVariable>
 
     <ScalarVariable name="filter_length"
                     valueReference="98"
@@ -53,6 +61,14 @@
     <ScalarVariable name="x"        valueReference="11" description="position"                                  causality="output"><Real /></ScalarVariable>
     <ScalarVariable name="v"        valueReference="12" description="velocity"                                  causality="output"><Real /></ScalarVariable>
 
+    <!-- Number of iterations is exposed as a Real since the master doesn't support dumping integers to CSV yet -->
+    <ScalarVariable name="iterations"
+                    valueReference="96"
+                    description="Number of iterations done in last step"
+                    causality="output">
+        <Real/>
+    </ScalarVariable>
+
     <ScalarVariable name="dump_data"
                     valueReference="97"
                     description="Dump data to sho.m?"
@@ -65,9 +81,10 @@
 
 <ModelStructure>
   <Outputs>
-    <Unknown index="12"/>
     <Unknown index="13"/>
     <Unknown index="14"/>
+    <Unknown index="15"/>
+    <Unknown index="16"/>
   </Outputs>
   <Derivatives/>
   <DiscreteStates/>

@@ -113,7 +113,8 @@ typedef struct cgsl_simulation {
   int n;		      /** number of time steps taken */
   int save;		      /** persistence to file */
   int print;		      /** verbose on stderr */
-  
+
+  int iterations;             /** Number of iterations done by last call to cgsl_step_to() */
 } cgsl_simulation;
 
 /*****************************

@@ -54,6 +54,7 @@ int cgsl_step_to(void * _s,  double comm_point, double comm_step ) {
 
   s->t  = comm_point;		/* start point */
   s->t1 = comm_point + comm_step; /* end point */
+  s->iterations = 0;
   
   if (s->model->pre_step) {
     s->model->pre_step(comm_point, comm_step, s->model->x, s->model->parameters);
@@ -66,6 +67,7 @@ int cgsl_step_to(void * _s,  double comm_point, double comm_step ) {
   while ( s->t < s->t1)
   {
     int status =  cgsl_step( s );
+    s->iterations++;
 
     // integreate  all variables
     

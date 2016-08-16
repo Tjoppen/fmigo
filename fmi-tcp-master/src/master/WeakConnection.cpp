@@ -8,6 +8,7 @@
 #include <math.h>
 #include "master/WeakConnection.h"
 #include "master/FMIClient.h"
+#include <typeinfo>
 
 using namespace std;
 

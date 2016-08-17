@@ -43,6 +43,7 @@ SET(MASTER_SRCS
     src/master/parseargs.cpp
     src/master/StrongMaster.cpp
     ${FMITCP_SRCS}
+    src/master/control.pb.cc
 )
 SET(MASTER_HEADERS
     include/master/FMIClient.h
@@ -51,6 +52,7 @@ SET(MASTER_HEADERS
     include/common/common.h
     include/common/url_parser.h
     ${FMITCP_HEADERS}
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/master/control.pb.h
 )
 
 if(WIN32)
@@ -106,6 +108,7 @@ IF(WIN32)
         ${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib/lapack_blas_windows/libquadmath-0.dll
         DESTINATION bin)
     INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../3dparty/zeromq/4.2.0-master/cl32-11/libzmq.dll DESTINATION bin)
+    set(PROTOC ${PROTOBUF_BIN_DIR}/protoc)
 ELSE(WIN32)
     SET(LINUXLIBS
         fmilib
@@ -129,25 +132,26 @@ ELSE(WIN32)
     set(CMAKE_CXX_COMPILER mpicxx)
     target_link_libraries(${MPI_SERVER_NAME} ${LINUXLIBS})
     target_link_libraries(${MPI_MASTER_NAME} ${LINUXLIBS})
+
+    add_custom_target(libprotobuf)  #fake target
+    set(PROTOC protoc)
 ENDIF(WIN32)
 
 # Compile proto
-IF(WIN32)
-    add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.pb.cc
-        COMMAND ${PROTOBUF_BIN_DIR}/protoc --cpp_out=. fmitcp.proto
-        WORKING_DIRECTORY   ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp
-        DEPENDS libprotobuf ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.proto)
-ELSE(WIN32)
-    add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.pb.cc
-        COMMAND protoc --cpp_out=. fmitcp.proto
-        WORKING_DIRECTORY   ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp
-        DEPENDS             ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.proto)
-ENDIF(WIN32)
+add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.pb.cc
+    COMMAND ${PROTOC} --cpp_out=. fmitcp.proto
+    WORKING_DIRECTORY   ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp
+    DEPENDS libprotobuf ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.proto)
 
-add_dependencies(${TCP_MASTER_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.pb.h)
+add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/src/master/control.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/src/master/control.pb.cc
+    COMMAND ${PROTOC} --cpp_out=. control.proto
+    WORKING_DIRECTORY   ${CMAKE_CURRENT_SOURCE_DIR}/src/master
+    DEPENDS libprotobuf ${CMAKE_CURRENT_SOURCE_DIR}/src/master/control.proto)
+
+add_dependencies(${TCP_MASTER_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/src/master/control.pb.h)
 add_dependencies(${TCP_SERVER_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.pb.h)
 if(NOT WIN32)
-    add_dependencies(${MPI_MASTER_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.pb.h)
+    add_dependencies(${MPI_MASTER_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/src/master/control.pb.h)
     add_dependencies(${MPI_SERVER_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.pb.h)
 endif()
 

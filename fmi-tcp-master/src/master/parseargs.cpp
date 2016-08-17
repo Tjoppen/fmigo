@@ -115,7 +115,9 @@ int fmitcp_master::parseArguments( int argc,
                     string *hdf5Filename,
                     string *fieldnameFilename,
                     bool *holonomic,
-                    double *compliance
+                    double *compliance,
+                    int *command_port,
+                    int *results_port
         ) {
     int index, c;
     opterr = 0;
@@ -129,7 +131,7 @@ int fmitcp_master::parseArguments( int argc,
 
     vector<char*> argv2 = make_char_vector(argvstore);
 
-    while ((c = getopt (argv2.size(), argv2.data(), "xrl:vqht:c:d:s:o:p:f:m:g:w:C:j:5:F:NM:a:")) != -1){
+    while ((c = getopt (argv2.size(), argv2.data(), "xrl:vqht:c:d:s:o:p:f:m:g:w:C:j:5:F:NM:a:z:")) != -1){
         int n, skip, l, cont, i, numScanned, stop, vis;
         deque<string> parts;
         if (optarg) parts = split(optarg, ':');
@@ -414,6 +416,15 @@ int fmitcp_master::parseArguments( int argc,
 
         case 'a':
             add_args(argvstore, argv2, optarg, optind);
+            break;
+
+        case 'z':
+            if (parts.size() != 2) {
+                fprintf(stderr, "-z must have exactly two parts (got %s which has %li parts)\n", optarg, parts.size());
+                return 1;
+            }
+            *command_port = atoi(parts[0].c_str());
+            *results_port = atoi(parts[1].c_str());
             break;
 
         case '?':

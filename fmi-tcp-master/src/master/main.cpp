@@ -4,9 +4,8 @@
 #include <fmitcp/Logger.h>
 #ifdef USE_MPI
 #include <mpi.h>
-#else
-#include <zmq.hpp>
 #endif
+#include <zmq.hpp>
 #include <fmitcp/serialize.h>
 #include <stdlib.h>
 #include <signal.h>
@@ -25,6 +24,7 @@
 #include <unistd.h>
 #endif
 #include <fstream>
+#include "control.pb.h"
 
 using namespace fmitcp_master;
 using namespace fmitcp;
@@ -379,14 +379,18 @@ int main(int argc, char *argv[] ) {
     string hdf5Filename;
     string fieldnameFilename;
     bool holonomic = true;
+    int command_port = 0, results_port = 0;
 
     if (parseArguments(
             argc, argv, &fmuURIs, &connections, &params, &endTime, &timeStep,
             &loglevel, &csv_separator, &outFilePath, &quietMode, &fileFormat,
             &method, &realtimeMode, &printXML, &stepOrder, &fmuVisibilities,
-            &scs, &connconf, &hdf5Filename, &fieldnameFilename, &holonomic, &compliance)) {
+            &scs, &connconf, &hdf5Filename, &fieldnameFilename, &holonomic, &compliance,
+            &command_port, &results_port)) {
         return 1;
     }
+
+    bool zmqControl = command_port > 0 && results_port > 0;
 
     if (printXML) {
         fprintf(stderr, "XML mode not implemented\n");
@@ -399,6 +403,19 @@ int main(int argc, char *argv[] ) {
 
     if (outFilePath != DEFAULT_OUTFILE) {
         fprintf(stderr, "WARNING: -o not implemented (output always goes to stdout)\n");
+    }
+
+    zmq::context_t context(1);
+
+    zmq::socket_t rep_socket(context, ZMQ_REP);
+    zmq::socket_t push_socket(context, ZMQ_PUSH);
+
+    if (zmqControl) {
+        char addr[128];
+        snprintf(addr, sizeof(addr), "tcp://*:%i", command_port);
+        rep_socket.bind(addr);
+        snprintf(addr, sizeof(addr), "tcp://*:%i", results_port);
+        push_socket.bind(addr);
     }
 
 #ifdef USE_MPI
@@ -414,11 +431,10 @@ int main(int argc, char *argv[] ) {
 
     vector<FMIClient*> clients = setupClients(world_size-1);
 #else
-    zmq::context_t context(1);
     //without this the maximum number of clients tops out at 300 on Linux,
     //around 63 on Windows (according to Web searches)
 #ifdef ZMQ_MAX_SOCKETS
-    zmq_ctx_set((void *)context, ZMQ_MAX_SOCKETS, fmuURIs.size());
+    zmq_ctx_set((void *)context, ZMQ_MAX_SOCKETS, fmuURIs.size() + (zmqControl ? 2 : 0));
 #endif
     vector<FMIClient*> clients = setupClients(fmuURIs, context);
 #endif
@@ -497,7 +513,64 @@ int main(int argc, char *argv[] ) {
 #endif
 
     //run
-    while (endTime < 0 || t < endTime) {
+    bool paused = false, running = true;
+    while ((endTime < 0 || t < endTime) && running) {
+        if (zmqControl) {
+            zmq::message_t msg;
+
+            //paused means we do blocking polls to avoid wasting CPU time
+            while (rep_socket.recv(&msg, paused ? 0 : ZMQ_NOBLOCK) && running) {
+                //got something - make sure it's a control_message with correct
+                //version and command set
+                control_proto::control_message ctrl;
+
+                if (    ctrl.ParseFromArray(msg.data(), msg.size()) &&
+                        ctrl.has_version() &&
+                        ctrl.version() == 1 &&
+                        ctrl.has_command()) {
+                    switch (ctrl.command()) {
+                    case control_proto::control_message::command_pause:
+                        paused = true;
+                        break;
+                    case control_proto::control_message::command_unpause:
+                        paused = false;
+                        break;
+                    case control_proto::control_message::command_stop:
+                        running = false;
+                        break;
+                    case control_proto::control_message::command_state:
+                        break;
+                    }
+
+                    //always reply with state
+                    control_proto::state_message state;
+                    state.set_version(1);
+
+                    if (!running) {
+                        state.set_state(control_proto::state_message::state_exiting);
+                    } else if (paused) {
+                        state.set_state(control_proto::state_message::state_paused);
+                    } else {
+                        state.set_state(control_proto::state_message::state_running);
+                    }
+
+                    string str = state.SerializeAsString();
+                    zmq::message_t rep(str.length());
+                    memcpy(rep.data(), str.data(), str.length());
+                    rep_socket.send(rep);
+                }
+            }
+        }
+
+        if (!running) {
+            //termination requested
+            break;
+        }
+
+        if (paused) {
+            continue;
+        }
+
 #ifndef WIN32
         //HDF5
         columnofs = 0;

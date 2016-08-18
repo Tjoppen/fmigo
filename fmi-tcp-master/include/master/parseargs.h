@@ -111,7 +111,8 @@ int parseArguments( int argc,
                     bool *holonomic,
                     double *compliance,
                     int *command_port,
-                    int *results_port
+                    int *results_port,
+                    bool *paused
                     );
 }
 

@@ -34,10 +34,15 @@ message results_message {
     optional double         t       =   3; //time of current communication point
     optional double         t_end   =   4; //final communication point, if set
     optional double         dt      =   5; //current communication time step
-    optional values_real    reals   =   6;
-    optional values_int     ints    =   7;
-    optional values_bool    bools   =   8;
-    optional values_string  strings =   9;
+    repeated fmu_results    results =   6; //inputs/outputs from each FMU
+}
+
+message fmu_results {
+    optional int32          fmu_id  =   1;
+    optional values_real    reals   =   2;
+    optional values_int     ints    =   3;
+    optional values_bool    bools   =   4;
+    optional values_string  strings =   5;
 }
 
 message values_real {

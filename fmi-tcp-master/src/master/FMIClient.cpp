@@ -336,6 +336,8 @@ string FMIClient::getSpaceSeparatedFieldNames(string prefix) const {
 }
 
 void FMIClient::sendGetX(const SendGetXType& typeRefs) {
+    clearGetValues();
+
     for (auto it = typeRefs.begin(); it != typeRefs.end(); it++) {
         if (it->second.size() > 0) {
             switch (it->first) {
@@ -391,3 +393,11 @@ void FMIClient::sendSetX(const SendSetXType& typeRefsValues) {
     }
 }
 //send(it->first, fmi2_import_set_real(0, 0, it->second.first, it->second.second));
+
+void FMIClient::clearGetValues() {
+    m_getRealValues.clear();
+    m_getIntegerValues.clear();
+    m_getBooleanValues.clear();
+    m_getStringValues.clear();
+    m_getDirectionalDerivativeValues.clear();
+}

@@ -16,6 +16,7 @@ using namespace h5;
 
 int main()
 {
+
   vector<int>  x({1,2,3,4,5,6,7,7});
   vector<double>  y({1,2,3,4,5,6,7,7});
   
@@ -29,7 +30,11 @@ int main()
   g.close();
   
   dest.close();
+  #if 0 
 
+#endif
+  
+  //print_type_list();
   
   return 0;
 }

@@ -10,7 +10,7 @@ then
     octave --persist --eval "d=load('sho.m'); d2=load('out.csv'); plot(d(:,1),d(:,2:end),'x-'); legend('position','velocity','dx','z(position)','z(velocity)','z(dx)'); hold on; plot(d2(:,1),d2(:,[3,4]),'ko-')"
 fi
 
-if [ 1 == 1 ]
+if [ 1 == 0 ]
 then
     OMEGAS=$(seq 0.1 0.1 10|sed -e 's/,/./g')
     #"0.1 0.3 1 3 10 30"
@@ -66,4 +66,37 @@ then
         : -np 1 fmi-mpi-server coupled_sho.fmu > out.csv
     echo done running fmi
     octave --no-gui -q --persist --eval "d=load('out.csv'); plot(d(:,1),d(:,[5,9,13,17]),'.-')"
+fi
+
+if [ 1 == 1 ]
+then
+    for N in 2 4 8 16
+    do
+        N1=$(bc <<< "$N - 1")
+        echo $N1
+
+        omega=$N
+        # Time step = pi/(10*N)
+        dt=$(python <<< "print(0.3 / $N)")
+        # Pulse length = 1 second
+        pulse_length=$(python <<< "print(int(1 / $dt))")
+
+        FMUS=": -np 1 fmi-mpi-server ../../impulse/impulse.fmu"
+        CONNS="-c 0,1,1,5"
+        PARAMS="-p i,0,4,1:i,0,6,${pulse_length}"
+        for i in $(seq 1 $N)
+        do
+            i2=$(bc <<< "$i + 1")
+            if [ $i -lt $N ]
+            then
+                CONNS="${CONNS} -c $i,12,$i2,5:$i2,10,$i,6"
+            fi
+            PARAMS="${PARAMS} -p i,$i,98,2 -p $i,0,1:$i,1,${omega}:$i,2,1:$i,3,0:$i,4,0:$i,95,0:$i,7,0:$i,8,0:$i,9,0"
+            FMUS="${FMUS} : -np 1 fmi-mpi-server coupled_sho.fmu"
+        done
+
+        mpiexec -np 1 fmi-mpi-master -m jacobi -t 20 -d $dt ${CONNS} ${PARAMS} ${FMUS} > out-${N}.csv
+    done
+
+    octave --no-gui -q --persist --eval "d=load('out-16.csv'); plot(d(:,1),[d(:,3),d(:,7:4:end)],'.-')"
 fi

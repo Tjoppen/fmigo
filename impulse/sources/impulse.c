@@ -2,6 +2,7 @@
 
 typedef struct {
     int current_step;
+    int missed_initial_impulse;
 } impulse_simulation;
 
 #define SIMULATION_TYPE impulse_simulation
@@ -12,7 +13,7 @@ typedef struct {
 #define PULSE_TYPE_THETA 0
 #define PULSE_TYPE_OMEGA 1
 
-static void pulse_for_current_step(state_t *s) {
+static void pulse_for_current_step(state_t *s, fmi2Real communicationStepSize) {
     if (s->md.pulse_type == PULSE_TYPE_THETA) {
         if (s->simulation.current_step >= s->md.pulse_start &&
             s->simulation.current_step <  s->md.pulse_start + s->md.pulse_length) {
@@ -21,6 +22,27 @@ static void pulse_for_current_step(state_t *s) {
             s->md.theta = s->md.dc_offset;
         }
         s->md.omega = 0;
+
+        if (s->simulation.current_step == s->md.pulse_start - 1 ||
+                s->simulation.missed_initial_impulse > 0) {
+            if (communicationStepSize > 0) {
+                s->md.omega += s->md.pulse_amplitude / communicationStepSize;
+                s->simulation.missed_initial_impulse = 0;
+            } else {
+                //defer..
+                s->simulation.missed_initial_impulse++;
+            }
+        }
+
+        if (s->simulation.current_step ==  s->md.pulse_start + s->md.pulse_length - 1 ||
+                s->simulation.missed_initial_impulse < 0) {
+            if (communicationStepSize > 0) {
+                s->md.omega -= s->md.pulse_amplitude / communicationStepSize;
+                s->simulation.missed_initial_impulse = 0;
+            } else {
+                s->simulation.missed_initial_impulse--;
+            }
+        }
     } else {    //PULSE_TYPE_OMEGA
         if (s->simulation.current_step >= s->md.pulse_start &&
             s->simulation.current_step <  s->md.pulse_start + s->md.pulse_length) {
@@ -32,7 +54,7 @@ static void pulse_for_current_step(state_t *s) {
 }
 
 static void impulse_init(state_t *s) {
-    pulse_for_current_step(s);
+    pulse_for_current_step(s, 0);
 }
 
 //returns partial derivative of vr with respect to wrt
@@ -50,7 +72,7 @@ static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real comm
     }
 
     s->simulation.current_step++;
-    pulse_for_current_step(s);
+    pulse_for_current_step(s, communicationStepSize);
 }
 
 // include code that implements the FMI based on the above definitions

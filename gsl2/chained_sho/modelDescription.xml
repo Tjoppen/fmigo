@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <fmiModelDescription
   fmiVersion="2.0"
-  description="Normalized chained simple harmonic oscillator"
+  description="Chained simple harmonic oscillator"
   modelName="chained_sho"
   guid="{a80afadc-ff4e-4990-b8de-3ef3c88baaaa}"
   numberOfEventIndicators="0">
@@ -23,7 +23,13 @@
 
 <ModelVariables>
     <!-- parameters for coupling -->
-    <ScalarVariable name="mass"       valueReference="0"  description="mass"                    causality="parameter" variability="fixed"><Real start="1"/></ScalarVariable>
+    <ScalarVariable name="mass"
+                    valueReference="0"
+                    description="mass"
+                    causality="parameter"
+                    variability="fixed">
+        <Real start="1"/>
+    </ScalarVariable>
     <ScalarVariable name="k_c"
                     valueReference="1"
                     description="coupling spring constant"
@@ -36,13 +42,15 @@
                     description="damping constant of coupling (in physical units)"
                     causality="parameter"
                     variability="fixed">
-    <Real start="1"/></ScalarVariable>
+      <Real start="1"/>
+    </ScalarVariable>
     <ScalarVariable name="x0"
                     valueReference="3"
                     description="reference position for the internal spring"
                     causality="parameter"
                     variability="fixed">
-    <Real start="1"/></ScalarVariable>
+      <Real start="0"/>
+    </ScalarVariable>
 
     <!-- internal parameter -->
     <ScalarVariable name="damping_i"
@@ -50,7 +58,8 @@
                     description="internal damping constant in physical units"
                     causality="parameter"
                     variability="fixed">
-    <Real start="1"/></ScalarVariable>
+      <Real start="1"/>
+    </ScalarVariable>
 
     <ScalarVariable name="k_i"
                     valueReference="95"
@@ -73,7 +82,8 @@
                     valueReference="5"
                     description="external driving velocity"
                     causality="input" initial="exact">
-    <Real start="0"/></ScalarVariable>
+      <Real start="0"/>
+    </ScalarVariable>
     <ScalarVariable name="force"
                     valueReference="6"
                     description="driving force"
@@ -88,18 +98,19 @@
                     description="initial position"
                     causality="parameter"
                     variability="fixed">
-      <Real start="1"/>
+      <Real start="0"/>
     </ScalarVariable>
     <ScalarVariable name="vstart"
                     valueReference="8"
                     description="initial velocity"
                     causality="parameter" variability="fixed">
-    <Real start="1"/></ScalarVariable>
+      <Real start="0"/>
+    </ScalarVariable>
     <ScalarVariable name="dxstart"
                     valueReference="9"
                     description="(estimated) angle difference"
                     causality="parameter" variability="fixed">
-      <Real start="1"/>
+      <Real start="0"/>
     </ScalarVariable>
 
     <!-- outputs -->
@@ -107,7 +118,8 @@
                     valueReference="10"
                     description="value of coupling force at last step."
                     causality="output">
-    <Real /></ScalarVariable>
+      <Real />
+    </ScalarVariable>
     <ScalarVariable name="x"
                     valueReference="11"
                     description="position of the internal mass"

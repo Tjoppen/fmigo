@@ -1,10 +1,9 @@
 #include "modelDescription.h"
 #include "gsl-interface.h"
 
-
 #define SIMULATION_TYPE cgsl_simulation
 #define SIMULATION_INIT chained_sho_init
-#define SIMULATION_FREE cgsl_simulation_free
+#define SIMULATION_FREE cgsl_free_simulation
 
 #include "fmuTemplate.h"
 
@@ -36,7 +35,7 @@ static int chained_sho (double t, const double x[], double dxdt[], void * params
   dxdt[ 1 ] = imass *  ( force_i - s->md.force_c  + s->md.force );
 
   /** integrate angle difference */
-  dxdt[ 2 ] = x[ 1 ] - s->md.v0;
+  dxdt[ 2 ] = x[ 1 ] - s->md.v_c;
 
   return GSL_SUCCESS;
 
@@ -47,8 +46,7 @@ static int chained_sho (double t, const double x[], double dxdt[], void * params
 static int jac_chained_sho (double t, const double x[], double *dfdx, double dfdt[], void *params)
 {
   state_t *s  = (state_t*)params;
-
-  XXXXX DO ME XXXXX
+  double imass = 1.0 / s->md.mass;
 
   gsl_matrix_view dfdx_mat = gsl_matrix_view_array (dfdx, 3, 3);
   gsl_matrix * J = &dfdx_mat.matrix; 
@@ -59,9 +57,9 @@ static int jac_chained_sho (double t, const double x[], double *dfdx, double dfd
   gsl_matrix_set (J, 0, 2, 0.0 ); 
 
   /** second row */
-  gsl_matrix_set (J, 1, 0, - s->simulation.omega2_i );
-  gsl_matrix_set (J, 1, 1, - ( s->simulation.ozeta_i + s->simulation.ozeta_c ) );
-  gsl_matrix_set (J, 1, 2, - s->simulation.momega2_c);
+  gsl_matrix_set (J, 1, 0, -imass * s->md.k_i );
+  gsl_matrix_set (J, 1, 1, -imass * ( s->md.damping_i + s->md.damping_c ) );
+  gsl_matrix_set (J, 1, 2, -imass * s->md.k_c );
 
   /** third row */
   gsl_matrix_set (J, 2, 0, 0.0 );
@@ -82,7 +80,7 @@ static int epce_post_step(int n, const double outputs[], void * params) {
     s->md.x = outputs[0];
     s->md.v = outputs[1];
     s->md.force_c    = s->md.damping_c * ( outputs[ 1 ] - s->md.v_c )  + s->md.k_c * outputs[ 2 ];
-    s->md.steps = s->simulation.sim.iterations;
+    s->md.steps = s->simulation.iterations;
 
     return GSL_SUCCESS;
 }
@@ -96,7 +94,7 @@ static void chained_sho_init(state_t *s) {
         f = fopen("sho.m", "w");
     }
 
-    s->simulation.sim = cgsl_init_simulation(
+    s->simulation = cgsl_init_simulation(
         cgsl_epce_default_model_init(
             cgsl_model_default_alloc(3, initials, s, chained_sho, jac_chained_sho, NULL, NULL, 0),
             s->md.filter_length,
@@ -109,7 +107,7 @@ static void chained_sho_init(state_t *s) {
 
 
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
-    cgsl_step_to( &s->simulation.sim, currentCommunicationPoint, communicationStepSize );
+    cgsl_step_to( &s->simulation, currentCommunicationPoint, communicationStepSize );
 }
 
 //gcc -g chained_sho.c ../../../templates/gsl2/gsl-interface.c -DCONSOLE -I../../../templates/gsl2 -I../../../templates/fmi2 -lgsl -lgslcblas -lm -Wall
@@ -133,12 +131,12 @@ int main(void) {
         }
     };
     chained_sho_init(&s);
-    s.simulation.sim.file = fopen( "foo.m", "w+" );
-    s.simulation.sim.save = 1;
-    s.simulation.sim.print = 1;
+    s.simulation.file = fopen( "foo.m", "w+" );
+    s.simulation.save = 1;
+    s.simulation.print = 1;
 
-    cgsl_step_to( &s.simulation.sim, 0.0, 10.0 );
-    cgsl_free_simulation(s.simulation.sim);
+    cgsl_step_to( &s.simulation, 0.0, 10.0 );
+    cgsl_free(s.simulation);
     return 0;
 }
 #endif

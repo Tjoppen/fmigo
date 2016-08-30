@@ -38,6 +38,7 @@ then
 fi
 
 for d in \
+    typeconvtest\
     impulse\
     lumpedrod\
     kinematictruck/body\

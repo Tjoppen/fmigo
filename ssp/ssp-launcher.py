@@ -251,7 +251,7 @@ for fr,to1 in connectionmultimap.items():
         t = mds[to[0]]
         tv = t[to[1]]
 
-        connstr = '%s,%i,%i,%i,%i' % (fv['type'], fr[0], fv['vr'], to[0], tv['vr'])
+        connstr = '%s,%i,%i,%s,%i,%i' % (fv['type'], fr[0], fv['vr'], tv['type'], to[0], tv['vr'])
         flatconns.extend(['-c', connstr])
 
 servers = []

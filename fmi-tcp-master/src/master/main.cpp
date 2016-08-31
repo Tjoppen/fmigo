@@ -393,11 +393,56 @@ static void handleZmqControl(zmq::socket_t& rep_socket, bool *paused, bool *runn
     }
 }
 
-template<typename RFType, typename From> void addVectorToRepeatedField(RFType* rf, const vector<From>& from) {
+template<typename RFType, typename From> void addVectorToRepeatedField(RFType* rf, const From& from) {
     for (auto f : from) {
         *rf->Add() = f;
     }
 }
+
+static void printOutputs(double t, BaseMaster *master, vector<FMIClient*>& clients) {
+    vector<vector<variable> > clientOutputs;
+
+    for (auto client : clients) {
+        vector<variable> vars = client->getOutputs();
+        SendGetXType getX;
+
+        for (auto var : vars) {
+            getX[var.type].push_back(var.vr);
+        }
+
+        client->sendGetX(getX);
+        clientOutputs.push_back(vars);
+    }
+
+    master->wait();
+
+    printf("%f", t);
+    for (size_t x = 0; x < clients.size(); x++) {
+        FMIClient *client = clients[x];
+        for (auto out : clientOutputs[x]) {
+            switch (out.type) {
+            case fmi2_base_type_real:
+                printf(",%f", client->m_getRealValues.front());
+                client->m_getRealValues.pop_front();
+                break;
+            case fmi2_base_type_int:
+                printf(",%i", client->m_getIntegerValues.front());
+                client->m_getIntegerValues.pop_front();
+                break;
+            case fmi2_base_type_bool:
+                printf(",%i", client->m_getBooleanValues.front());
+                client->m_getBooleanValues.pop_front();
+                break;
+            /*case fmi2_base_type_str:
+             * TODO: string escaping
+                printf(",\"%s\"", client->m_getStringValues.front().c_str());
+                client->m_getStringValues.pop_front();
+                break;*/
+            }
+        }
+    }
+}
+
 
 static void pushResults(int step, double t, double endTime, double timeStep, zmq::socket_t& push_socket, BaseMaster *master, vector<FMIClient*>& clients, bool pushEverything) {
     //collect data
@@ -673,28 +718,9 @@ int main(int argc, char *argv[] ) {
             }
         }
 
-        //get outputs
-        for (auto it = clients.begin(); it != clients.end(); it++) {
-            master->send(*it, fmi2_import_get_real(0, 0, (*it)->getRealOutputValueReferences()));
-        }
-        
-        PRINT_HDF5_DELTA("get_outputs");
-
-        master->wait();
-        
-        PRINT_HDF5_DELTA("get_outputs_wait");
-
         if (!zmqControl) {
-            //print as CSV
-            printf("%f", t);
-            for (auto it = clients.begin(); it != clients.end(); it++) {
-                for (auto it2 = (*it)->m_getRealValues.begin(); it2 != (*it)->m_getRealValues.end(); it2++) {
-                    printf("%c%f", csv_separator, *it2);
-                }
-            }
+            printOutputs(t, master, clients);
         }
-
-        PRINT_HDF5_DELTA("print_csv");
 
         master->runIteration(t, timeStep);
 

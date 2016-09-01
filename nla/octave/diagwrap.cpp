@@ -4,8 +4,26 @@
 #include <octave/ov-struct.h>
 #endif
 
-#include <diag.cpp>
+#define SIZE( x )  sizeof( x ) / sizeof( x[ 0 ] )
+#include <banded.h>
 #include "diag4utils.h"
+
+#include "nonsmooth_clutch.cpp"
+
+
+
+/// fairly safe copy
+void array_to_oct( double * x, ColumnVector & X ){
+  memcpy(X.fortran_vec(),  x,   X.length() * sizeof( double ) );
+}
+
+/// less safe copy
+void oct_to_array( ColumnVector & X, double *x ) {
+  memcpy(x, X.fortran_vec(),    X.length() * sizeof( double ) );
+}
+
+
+
 
 /**
  *  Read diagonals from a matrix whose columns are the bands
@@ -84,7 +102,6 @@ DEFUN_DLD( band_solve, args, nargout, "solve the linear system"){
   
   oct_to_val(X, x);
   M->solve( x, 0 );
-  
   
   val_to_oct( x, X );
 
@@ -455,15 +472,15 @@ DEFUN_DLD( clutch_matrix, args, nargout , "Create the clutch matrix") {
   ColumnVector L( clutch.M.size() );
   ColumnVector U( clutch.M.size() );
   ColumnVector Z( clutch.M.size() );
-  ColumnVector X( clutch.x.size() );
-  ColumnVector V( clutch.v.size() );
-  ColumnVector g( clutch.g.size() );
+  ColumnVector X( SIZE( clutch.x ) );
+  ColumnVector V( SIZE( clutch.v ) );
+  ColumnVector g(  clutch.g.size() );
   val_to_oct( clutch.rhs, R);
   val_to_oct( clutch.lower, L);
   val_to_oct( clutch.upper, U);
   val_to_oct( clutch.z, Z);
-  val_to_oct( clutch.x, X);
-  val_to_oct( clutch.v, V);
+  array_to_oct( clutch.x, X);
+  array_to_oct( clutch.v, V);
   val_to_oct( clutch.g, g);
 
   retval(0) = st;

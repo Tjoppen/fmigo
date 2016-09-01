@@ -1,16 +1,19 @@
 h = 1/100;
-N = 400;
-mass = [1;1;1;1];
+N = 10000;
+mass = [5;5;5;5000];
 G = [1,-1, 0, 0; 0, 1, -1, 0];	#basic spring constraints
-K = diag([1,1]);
+
+K = diag([ 539, 4.3927e4]);
+
 compliances = 1e-8 * [1;1;1;1;1];
-x = [1;0; 0;0];
-v = [0;0; 0;0];
+
+x = [0;0; 0;0];
+v = [8;0; 0;4];
 theta = 2;
 gamma = 1/ ( 1 + 4 * theta );
 mu = 1;
 force = 1e10;
-torque_in = 1;
+torque_in = 100;
 torque_out = 0;
 lo = [-0.5, -0.5];
 up = [ 0.5,  0.5];
@@ -21,7 +24,7 @@ J = [
     -1  ,  1 , 0,  0; ...
      0  ,  1 ,-1,  0; ...
      0  , -1 , 1,  0; ...
-     0  ,  0 , 1, -1;
+     0  ,  0 , 1, -1;		# velocity constraint
 ];
 
 
@@ -49,6 +52,7 @@ T = h * (0:N-1)';
 alpha = 4 * gamma / ( h * h );
 ee =  alpha * inv( K ); 
 
+if ( 0 )
 iM = inv( [ diag(mass), -G'; G, ee ] );
 
 torque = h * [ torque_in; 0 ; 0; torque_out];
@@ -61,6 +65,7 @@ for i = 2:N
   V = [V; v'];
   Z = [ Z; z(5:end)];
 endfor
+endif
 
 x = X(1, :)';
 v = V(1, :)';
@@ -83,6 +88,7 @@ lower( start + 4 ) = 0;
 lower( end ) = -mu * force;
 upper( end ) =  mu * force;
 
+if ( 0 )
 for i = 2:N
   ## for the springs
   g  = [ x(1)-x(2); x(2)-x(3)];
@@ -97,7 +103,7 @@ for i = 2:N
 	  gamma * ( -( 4/h ) * g1 + J * v ) 
 	];
   q( end ) = 0;
-  fprintf(stderr(), "step = %d\n", i);
+#  fprintf(stderr(), "step = %d\n", i);
   z   = boxed_keller( MBIG, q, lower, upper);
   v = z(1:4);
   x += h * v ; 
@@ -106,8 +112,13 @@ for i = 2:N
   Z1 = [ Z1; z(5:end)];
 endfor
 
+endif
 
-M0 = [ diag(mass) + (1/ alpha )  * G' * K * G  ];
+## main matrix with no bounds, using mass modification for springs. 
+M0 = [ diag(mass) + ( h*h / 4  ) * (1+ 4 * theta )  * G' * K * G  ];
+## hard clutch constraint
+GG = [0,0,1,-1];
+M0 = [M0, -GG'; GG, 0];
 iM0 = inv ( M0 );
 
 x = X(1, :)';
@@ -118,8 +129,10 @@ KK = h * h * K / 4;
 torque = h * [ torque_in; 0 ; 0; torque_out];
 for i = 2:N
   g = [ x(1)-x(2); x(2)-x(3)];
-  v   = iM0 * [ mass.*v  + torque - h * G'  * g  + G' * KK * G * v];
-  x += h * v ; 
+  v   = iM0 * [ mass.*v  + torque - h * G' * K * g ...
+		+ ( h * h / 4 ) *  G' * K * G * v; 0];
+  v = v(1:4);
+  x += h * v; 
   X0 = [X0; x'];
   V0 = [V0; v'];
 endfor
@@ -127,6 +140,12 @@ endfor
 
 ## here for the real clutch model 
 figure(1)
-plot(T, X);#, T, X0);
-legend('one', 'two', 'three', 'four')
-title('Spook')
+plot(T, log10( abs( [diff(V0, 1, 2), V0(:,1)-V0(:,end)] ) + eps ) );#, T, X0);
+legend('1', '2', '3', 'end to end');
+title('log of differences')
+figure(2)
+tt = find( T < 4 );
+last = tt(end);
+plot(T(1:last), V0(1:last, :));
+legend('1', '2', '3', '4')
+title('velocities')

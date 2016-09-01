@@ -92,6 +92,8 @@
       <Real start="0"/>
     </ScalarVariable>
 
+
+
     <!-- variables which are not reported but must be initialized -->
     <ScalarVariable name="xstart"
                     valueReference="7"
@@ -148,7 +150,13 @@
                     variability="fixed">
         <Boolean start="false"/>
     </ScalarVariable>
-
+    <ScalarVariable name="e_force"
+                    valueReference="196"
+                    description="additional driving force"
+                    causality="input"
+                    initial="exact">
+      <Real start="0"/>
+    </ScalarVariable>
 </ModelVariables>
 
 <ModelStructure>

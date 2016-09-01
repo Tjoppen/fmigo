@@ -22,4 +22,5 @@ fi
 (cd ${FMUS_DIR} && ./build.sh)
 (cd articles/work-reports       && ./run_tests.sh)
 (cd fmu-examples/co_simulation  && ./run_tests.sh)
+(cd ${FMUS_DIR}/typeconvtest    && ./test_typeconv.sh)
 echo All tests OK

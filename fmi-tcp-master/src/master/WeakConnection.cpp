@@ -6,6 +6,7 @@
  */
 
 #include <math.h>
+#include <typeinfo>
 #include "master/WeakConnection.h"
 #include "master/FMIClient.h"
 

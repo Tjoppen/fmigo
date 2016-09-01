@@ -31,8 +31,9 @@ static int chained_sho (double t, const double x[], double dxdt[], void * params
   double force_i = -s->md.k_i * ( x[ 0 ] - s->md.x0 ) - s->md.damping_i * x[ 1 ];
 
   dxdt[ 0 ]  = x[ 1 ];
+
   /** dynamics */ 
-  dxdt[ 1 ] = imass *  ( force_i - s->md.force_c  + s->md.force );
+  dxdt[ 1 ] = imass *  ( force_i - s->md.force_c  + s->md.force + s->md.e_force);
 
   /** integrate angle difference */
   dxdt[ 2 ] = x[ 1 ] - s->md.v_c;

@@ -30,13 +30,12 @@
 
 
 
-#include<string>
-#include<vector>
+#include <string>
+#include <vector>
 #include <valarray>
 #include <typeinfo>
 #include <string.h>
 #include <hdf5.h>
-#include <H5Fpublic.h>
 #include <iostream>
 
 #ifdef _MSC_VER
@@ -186,7 +185,7 @@ namespace h5 {
     const H5::PredType   & predicate;
     const H5::DataType   type;
     const std::string    name;
-    const int          type_c;
+    const size_t        type_c;
     const unsigned char type_size;
   };
 
@@ -714,6 +713,8 @@ namespace h5 {
     
   };
 
+  void print_type_list ( );
+  
 
 }
 

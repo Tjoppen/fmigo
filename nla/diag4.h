@@ -156,6 +156,10 @@ struct qp_diag4 {
     return active[ i ];
   }
 
+  inline void set_active( ){
+    active = true;
+  }
+  
 ///
 /// self-explanatory: for LCP solver: variable based, not  block  based.
 ///

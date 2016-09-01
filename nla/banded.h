@@ -158,14 +158,14 @@ struct band_diag : public qp_diag4 {
     for( size_t i = 1; i < limit; ++i ){
       lower_element_raw( k, k  - i  ) = 0;
     }
-    /// nix the diagonal
+    /// Fix the diagonal. 
     ( * data[ 0 ] )[ k ] = double(1);
     
     return;
     
   }
 
-  /// Copy the coloum below the diagonal in a buffer
+  /// Copy the *factored* coloum below the diagonal in a buffer
   inline void get_current_lower_column( size_t j, Real * c) const {
 
     if ( j < size() ){
@@ -186,7 +186,7 @@ struct band_diag : public qp_diag4 {
     return;
   }
   
-  /// Copy the coloum below the diagonal in a buffer
+  /// Copy the original coloum below the diagonal in a buffer
   inline void get_current_lower_column_original ( size_t j, Real * c) const {
 
     if ( j < size() ){
@@ -207,11 +207,14 @@ struct band_diag : public qp_diag4 {
     return;
   }
 
+  ///
+  /// Utility for the factorization which is right looking.
+  ///
   inline void update_column( size_t j ){
 
     if ( j < size() ) {
       size_t limit = col_bandwidth( j );
-      double d = diag_element( j ); // diagonal element
+      double d = diag_element( j ); 
     
       for ( size_t i = 1; i < limit; ++i ){
 
@@ -225,17 +228,23 @@ struct band_diag : public qp_diag4 {
      
   }
 
+  ///
+  ///  Utility: makes the code simpler to read. 
+  ///  Note that the main diagonal contains 1/D in the LDLT factorization. 
+  ///
   inline void update_diagonal( size_t j ){
 
     ( *data[ 0 ] )[ j ] = ( double ) 1.0  / ( *data[ 0 ] )[ j ];
+
     return;
        
   }
    
 
   /// 
-  /// Here we update column k after having processed column j.  This will
-  /// touch the elements in k which are less than k-j below the diagonal
+  /// Here we update column k after having processed column j.  This is at
+  /// most a rank K update where K is the bandwidth.  This will touch the
+  /// elements in k which are less than k-j below the diagonal
   ///
   inline void rank_update_column( size_t j, size_t k, double *cj, double d ){
 
@@ -261,44 +270,46 @@ struct band_diag : public qp_diag4 {
   /// we walk along the columns.  In each column j we solve for b[ j ] and
   /// then update the b vector below it.  After that we multiply b[ j ]
   /// with the inverse diagonal element.
-  ///
-  /// Bounds are checked when we reach 
   /// 
-
   inline void forward_elimination( std::valarray<double> & x ){
-    /// Stop one before the end
+
+    /// Walk down the rows, stop one before the end
     for( size_t i = 0; i < size() - 1; ++i ){
       size_t limit  = col_bandwidth( i );
-
+      ///  Walk along column to the left of the diagonal
       for ( size_t j = 1; j < limit; ++j ){
-
         x[ i + j ] -= x[ i ] * ( *data[ j ] )[ i ];
-
       }
-
+      /// Update with D inverse
       x[ i ] *= active[ i ]  * ( *data[ 0 ] )[ i ];
-      
     }
 
+    /// Wrap up last element: only D inverse
     x[ size() - 1 ] *= active[ size() - 1 ] * ( *data[ 0 ] )[ size() - 1 ];
+
     return;
     
   }
 
   inline void back_substitution( std::valarray<double> & x ){
-    /// Start one before the end
+    /// Start one before the end down to 0.
     for ( size_t i = size() - 2; i != (size_t)-1; --i  ){
+
       size_t limit = col_bandwidth( i );
 
       for( size_t j = 1; j < limit; ++j ){
         x[ i ] -= ( *data[ j ] )[ i ] * x[ i + j ];
       }
+
       x[ i ] *= active[ i ];
       
     }
   }
 
 
+  ///
+  /// Reset the  data to the original. 
+  ///
   inline void sync(){
     for ( size_t i = 0; i < bandwidth(); ++i ){
       memcpy(
@@ -315,17 +326,20 @@ struct band_diag : public qp_diag4 {
 
   }
 
-/// will mask the result
+///
+/// TODO: apparently unused.
+///
   inline virtual Real keep_it ( const int & left_set, const size_t& i ) const {
     return Real(   ( left_set == ALL ) || ( left_set == FREE &&  active[ i ] )  || ( left_set == TIGHT &&  ! active[ i ] ) ) ;
   }
+
   ////
-  //// Implementation of pure virtuals in the base class.
-  //// Silly enough, the masking of the right set is done in the base class
-  //// already 
+  //// Implementation of pure virtuals in the base class.  Silly enough,
+  //// all masking is done in the base class already and unused here.
+  //// TODO: clean this up.
   ////
   inline virtual void multiply( const std::valarray<Real>& x, std::valarray<Real>& y, double alpha = 0.0, double beta = 1.0,
-                         int  left_set = ALL, int /* right_set */  = ALL ) {
+                                int  /* left_set */ = ALL, int /* right_set */  = ALL ) {
     ( alpha == 0.0 )?  y = 0 : y = alpha * y ;
 
     /// Everything above and including the diagonal, moving along bands
@@ -353,7 +367,12 @@ struct band_diag : public qp_diag4 {
   /// We perform a rank-k update where k here is the bandwidth so that the
   /// matrix is updated on the right and below the current point. 
   ///
-  ///  The start variable is systematically ignored.
+  ///  The start variable is systematically ignored at this time, meaning
+  ///  that we factor the entire matrix. 
+  ///  TODO: fix this to skip the part which does not need refactorization,
+  ///  i.e., all rows before start.  The issue here is to recompute the
+  ///  the parts of the rank updates from above start row which affect
+  ///  stuff below it, taking the masks into account. 
   /// 
   inline virtual void factor( int start = -1){
     
@@ -398,7 +417,7 @@ struct band_diag : public qp_diag4 {
 
 
   ///
-  /// As declared in base class
+  /// As declared in base class.  
   ///
   inline virtual void solve( std::valarray<double> & b, size_t /* variable */){
     factor();
@@ -406,19 +425,23 @@ struct band_diag : public qp_diag4 {
     back_substitution  ( b );
     
     for ( size_t i  = 0; i < b.size(); ++i ){
-      b[ i ] *= negated[ i ];
+      b[ i ] *= negated[ i ];   /// accounts for bisymmetric case. 
     }
 
     return;
 
   }
   
-  /// needed by the base class
+  ///
+  /// Needed by the base class.
+  /// TODO: this is a duplication of previous code: diag_element
   inline virtual double  get_diagonal_element ( size_t i ) const {
     return negated[ i ] * ( * ( original->data[ 0 ]  ) ) [ i ];
   }
   
+  ///
   /// Fetch the column  'variable', both below and above the diagonal
+  ///
   inline virtual void get_column( std::valarray<Real> & v, size_t variable  ){
 
     v = 0;

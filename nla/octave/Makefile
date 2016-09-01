@@ -1,14 +1,14 @@
-DEPS = Makefile ../diag.cpp ../diag4.h ../diag4qp.h ../Makefile
+DEPS = Makefile  ../diag4.h ../diag4qp.h ../Makefile ../nonsmooth_clutch.h ../nonsmooth_clutch.cpp
 
 LOADLIBES = -lm
-CXXFLAGS = -g -std=c++11  -I/home/claude/vtb/scania-vtb/new-git/umit/nla/
-CFLAGS = -g
+CXXFLAGS = -g -std=c++11  -I/home/claude/vtb/umit/nla/
+FLAGS = -g
+
+diagwrap.oct:diagwrap.cpp  $(DEPS)
+	export CXXFLAGS="$(CXXFLAGS)" ; mkoctfile  -g -O -Wcpp $(LDFLAGS) $<
 
 %.oct: %.cpp  $(DEPS)
-	export CXXFLAGS="${CXXFLAGS}"; mkoctfile  -g -Wcpp $<
-
-
-
+	export CXXFLAGS="$(CXXFLAGS)" ; mkoctfile  -g -O -Wcpp $(LDFLAGS) $<
 
 %:%.cpp $(DEPS)
 	$(CXX) $(CXXFLAGS)  -g   $< -o $@

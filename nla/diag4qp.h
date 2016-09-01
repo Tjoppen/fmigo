@@ -344,8 +344,16 @@ struct diag4qp {
                                 const std::valarray<Real> & lo, const std::valarray<Real> & up,
                                 std::valarray<Real> &  z ){
 
-    idx[ (lo == -inf ) && ( up == inf ) ] = EQ;
-    idx[ (lo != -inf ) || ( up != inf ) ] = FREE;
+    
+    //idx = FREE;
+    //idx[ (lo == -inf ) && ( up == inf ) ] = EQ;
+
+    for ( size_t i = 0; i < idx.size(); ++i){
+      if ( ( lo[ i ] == -inf ) && ( up[ i ] == inf )  )
+        idx[ i ] = EQ;
+      else
+        idx[ i ] = FREE;
+    }
 
     M->active = true;
     M->dirty = true;
@@ -422,7 +430,7 @@ struct diag4qp {
   size_t get_at_bound() {
     size_t at_bound = 0;
     
-    for( size_t i ; i < idx.size(); i += 2 ){
+    for (size_t i = 0; i < idx.size(); i += 2) {
       at_bound +=  ( size_t )  ( idx[ i ] >  FREE );
     }
     return at_bound;

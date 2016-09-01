@@ -90,7 +90,7 @@ void StrongMaster::runIteration(double t, double dt) {
             fprintf(stderr, "VR %i = %f\n", vrs[j], client->m_getRealValues[j]);
         }*/
 
-        client->setConnectorValues(vrs, client->m_getRealValues);
+        client->setConnectorValues(vrs, vector<double>(client->m_getRealValues.begin(), client->m_getRealValues.end()));
     }
 
     //update constraints since connector values changed
@@ -148,7 +148,7 @@ void StrongMaster::runIteration(double t, double dt) {
     for (int i=0; i<saveLoadClients.size(); i++){
         FMIClient *client = saveLoadClients[i];
         vector<int> vrs = client->getStrongConnectorValueReferences();
-        client->setConnectorFutureVelocities(vrs, client->m_getRealValues);
+        client->setConnectorFutureVelocities(vrs, vector<double>(client->m_getRealValues.begin(), client->m_getRealValues.end()));
     }
 
     //restore

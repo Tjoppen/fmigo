@@ -9,6 +9,7 @@
 #include <typeinfo>
 #include "master/WeakConnection.h"
 #include "master/FMIClient.h"
+#include <typeinfo>
 
 using namespace std;
 
@@ -117,7 +118,7 @@ template<typename T> void doit(
         InputRefsValuesType& refValues,
         WeakConnection& wc,
         map<FMIClient*, size_t>& valueOfs,
-        const vector<T>& values,
+        const deque<T>& values,
         MultiValue (WeakConnection::*convert)(T) const)
 {
     size_t ofs = valueOfs[wc.from];

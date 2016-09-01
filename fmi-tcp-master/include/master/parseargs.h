@@ -109,7 +109,10 @@ int parseArguments( int argc,
                     std::string *hdf5Filename,
                     std::string *fieldnameFilename,
                     bool *holonomic,
-                    double *compliance
+                    double *compliance,
+                    int *command_port,
+                    int *results_port,
+                    bool *paused
                     );
 }
 

@@ -144,6 +144,25 @@ variable_map FMIClient::getVariables() const {
     return ret;
 }
 
+vector<variable> FMIClient::getOutputs() const {
+    vector<variable> ret;
+
+    size_t sz = fmi2_import_get_variable_list_size(m_fmi2Outputs);
+    for (size_t x = 0; x < sz; x++) {
+        fmi2_import_variable_t *var = fmi2_import_get_variable(m_fmi2Outputs, x);
+        string name = fmi2_import_get_variable_name(var);
+
+        variable var2;
+        var2.vr = fmi2_import_get_variable_vr(var);
+        var2.type = fmi2_import_get_variable_base_type(var);
+        var2.causality = fmi2_import_get_causality(var);
+
+        ret.push_back(var2);
+    }
+
+    return ret;
+}
+
 bool FMIClient::hasCapability(fmi2_capabilities_enu_t cap) const {
     return fmi2_import_get_capability(m_fmi2Instance, cap) != 0;
 }
@@ -180,19 +199,19 @@ void FMIClient::on_fmi2_import_set_real_res(int mid, fmitcp_proto::fmi2_status_t
 
 void FMIClient::on_fmi2_import_get_real_res(int mid, const vector<double>& values, fmitcp_proto::fmi2_status_t status){
     // Store result
-    m_getRealValues = values;
+    m_getRealValues = deque<double>(values.begin(), values.end());
 };
 
 void FMIClient::on_fmi2_import_get_integer_res(int mid, const vector<int>& values, fmitcp_proto::fmi2_status_t status) {
-    m_getIntegerValues = values;
+    m_getIntegerValues = deque<int>(values.begin(), values.end());;
 }
 
 void FMIClient::on_fmi2_import_get_boolean_res(int mid, const vector<bool>& values, fmitcp_proto::fmi2_status_t status) {
-    m_getBooleanValues = values;
+    m_getBooleanValues = deque<bool>(values.begin(), values.end());;
 }
 
 void FMIClient::on_fmi2_import_get_string_res(int mid, const vector<string>& values, fmitcp_proto::fmi2_status_t status) {
-    m_getStringValues = values;
+    m_getStringValues = deque<string>(values.begin(), values.end());;
 }
 
 void FMIClient::on_fmi2_import_get_fmu_state_res(int mid, int stateId, fmitcp_proto::fmi2_status_t status){
@@ -336,6 +355,8 @@ string FMIClient::getSpaceSeparatedFieldNames(string prefix) const {
 }
 
 void FMIClient::sendGetX(const SendGetXType& typeRefs) {
+    clearGetValues();
+
     for (auto it = typeRefs.begin(); it != typeRefs.end(); it++) {
         if (it->second.size() > 0) {
             switch (it->first) {
@@ -391,3 +412,11 @@ void FMIClient::sendSetX(const SendSetXType& typeRefsValues) {
     }
 }
 //send(it->first, fmi2_import_set_real(0, 0, it->second.first, it->second.second));
+
+void FMIClient::clearGetValues() {
+    m_getRealValues.clear();
+    m_getIntegerValues.clear();
+    m_getBooleanValues.clear();
+    m_getStringValues.clear();
+    m_getDirectionalDerivativeValues.clear();
+}

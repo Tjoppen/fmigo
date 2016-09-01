@@ -47,18 +47,21 @@ namespace fmitcp_master {
         BaseMaster * m_master;
 
         /// Last fetched result from getX
-        std::vector<double>      m_getRealValues;
-        std::vector<int>         m_getIntegerValues;
-        std::vector<bool>        m_getBooleanValues;
-        std::vector<std::string> m_getStringValues;
+        std::deque<double>      m_getRealValues;
+        std::deque<int>         m_getIntegerValues;
+        std::deque<bool>        m_getBooleanValues;
+        std::deque<std::string> m_getStringValues;
 
         /// Values returned from calls to fmiGetDirectionalDerivative()
         std::deque<std::vector<double> > m_getDirectionalDerivativeValues;
+
+        void clearGetValues();
 
         jm_log_level_enu_t m_loglevel;
 
         std::string getModelName() const;
         variable_map getVariables() const;
+        std::vector<variable> getOutputs() const;   //outputs in the same order as specified in the modelDescription
 
 #ifdef USE_MPI
         FMIClient(int world_rank, int id);

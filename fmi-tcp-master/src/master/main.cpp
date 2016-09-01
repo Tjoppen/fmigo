@@ -4,9 +4,8 @@
 #include <fmitcp/Logger.h>
 #ifdef USE_MPI
 #include <mpi.h>
-#else
-#include <zmq.hpp>
 #endif
+#include <zmq.hpp>
 #include <fmitcp/serialize.h>
 #include <stdlib.h>
 #include <signal.h>
@@ -25,6 +24,7 @@
 #include <unistd.h>
 #endif
 #include <fstream>
+#include "control.pb.h"
 
 using namespace fmitcp_master;
 using namespace fmitcp;
@@ -346,6 +346,156 @@ static string getFieldnames(vector<FMIClient*> clients) {
     return oss.str();
 }
 
+static void handleZmqControl(zmq::socket_t& rep_socket, bool *paused, bool *running) {
+    zmq::message_t msg;
+
+    //paused means we do blocking polls to avoid wasting CPU time
+    while (rep_socket.recv(&msg, (*paused) ? 0 : ZMQ_NOBLOCK) && *running) {
+        //got something - make sure it's a control_message with correct
+        //version and command set
+        control_proto::control_message ctrl;
+
+        if (    ctrl.ParseFromArray(msg.data(), msg.size()) &&
+                ctrl.has_version() &&
+                ctrl.version() == 1 &&
+                ctrl.has_command()) {
+            switch (ctrl.command()) {
+            case control_proto::control_message::command_pause:
+                *paused = true;
+                break;
+            case control_proto::control_message::command_unpause:
+                *paused = false;
+                break;
+            case control_proto::control_message::command_stop:
+                *running = false;
+                break;
+            case control_proto::control_message::command_state:
+                break;
+            }
+
+            //always reply with state
+            control_proto::state_message state;
+            state.set_version(1);
+
+            if (!*running) {
+                state.set_state(control_proto::state_message::state_exiting);
+            } else if (*paused) {
+                state.set_state(control_proto::state_message::state_paused);
+            } else {
+                state.set_state(control_proto::state_message::state_running);
+            }
+
+            string str = state.SerializeAsString();
+            zmq::message_t rep(str.length());
+            memcpy(rep.data(), str.data(), str.length());
+            rep_socket.send(rep);
+        }
+    }
+}
+
+template<typename RFType, typename From> void addVectorToRepeatedField(RFType* rf, const From& from) {
+    for (auto f : from) {
+        *rf->Add() = f;
+    }
+}
+
+static void printOutputs(double t, BaseMaster *master, vector<FMIClient*>& clients) {
+    vector<vector<variable> > clientOutputs;
+
+    for (auto client : clients) {
+        vector<variable> vars = client->getOutputs();
+        SendGetXType getX;
+
+        for (auto var : vars) {
+            getX[var.type].push_back(var.vr);
+        }
+
+        client->sendGetX(getX);
+        clientOutputs.push_back(vars);
+    }
+
+    master->wait();
+
+    printf("%f", t);
+    for (size_t x = 0; x < clients.size(); x++) {
+        FMIClient *client = clients[x];
+        for (auto out : clientOutputs[x]) {
+            switch (out.type) {
+            case fmi2_base_type_real:
+                printf(",%f", client->m_getRealValues.front());
+                client->m_getRealValues.pop_front();
+                break;
+            case fmi2_base_type_int:
+                printf(",%i", client->m_getIntegerValues.front());
+                client->m_getIntegerValues.pop_front();
+                break;
+            case fmi2_base_type_bool:
+                printf(",%i", client->m_getBooleanValues.front());
+                client->m_getBooleanValues.pop_front();
+                break;
+            /*case fmi2_base_type_str:
+             * TODO: string escaping
+                printf(",\"%s\"", client->m_getStringValues.front().c_str());
+                client->m_getStringValues.pop_front();
+                break;*/
+            }
+        }
+    }
+}
+
+
+static void pushResults(int step, double t, double endTime, double timeStep, zmq::socket_t& push_socket, BaseMaster *master, vector<FMIClient*>& clients, bool pushEverything) {
+    //collect data
+    control_proto::results_message results;
+    map<FMIClient*, SendGetXType> clientVariables;
+
+    results.set_version(1);
+    results.set_step(step);
+    results.set_t(t);
+    results.set_t_end(endTime);
+    results.set_dt(timeStep);
+
+    for (auto client : clients) {
+        variable_map vars = client->getVariables();
+        SendGetXType getVariables;
+
+        //figure out what values we need to fetch from the FMU
+        for (auto var : vars) {
+            //only put in values which are
+            if (    pushEverything ||
+                    var.second.causality == fmi2_causality_enu_input ||
+                    var.second.causality == fmi2_causality_enu_output) {
+                getVariables[var.second.type].push_back(var.second.vr);
+            }
+        }
+
+        client->sendGetX(getVariables);
+        clientVariables[client] = getVariables;
+    }
+
+    master->wait();
+
+    for (auto cv : clientVariables) {
+        control_proto::fmu_results *fmu_res = results.add_results();
+
+        fmu_res->set_fmu_id(cv.first->getId());
+
+        addVectorToRepeatedField(fmu_res->mutable_reals()->mutable_vrs(),       cv.second[fmi2_base_type_real]);
+        addVectorToRepeatedField(fmu_res->mutable_reals()->mutable_values(),    cv.first->m_getRealValues);
+        addVectorToRepeatedField(fmu_res->mutable_ints()->mutable_vrs(),        cv.second[fmi2_base_type_int]);
+        addVectorToRepeatedField(fmu_res->mutable_ints()->mutable_values(),     cv.first->m_getIntegerValues);
+        addVectorToRepeatedField(fmu_res->mutable_bools()->mutable_vrs(),       cv.second[fmi2_base_type_bool]);
+        addVectorToRepeatedField(fmu_res->mutable_bools()->mutable_values(),    cv.first->m_getBooleanValues);
+        addVectorToRepeatedField(fmu_res->mutable_strings()->mutable_vrs(),     cv.second[fmi2_base_type_str]);
+        addVectorToRepeatedField(fmu_res->mutable_strings()->mutable_values(),  cv.first->m_getStringValues);
+    }
+
+    string str = results.SerializeAsString();
+    zmq::message_t rep(str.length());
+    memcpy(rep.data(), str.data(), str.length());
+    push_socket.send(rep);
+}
+
 int main(int argc, char *argv[] ) {
 #ifdef USE_MPI
     fprintf(stderr, "MPI enabled\n");
@@ -379,14 +529,19 @@ int main(int argc, char *argv[] ) {
     string hdf5Filename;
     string fieldnameFilename;
     bool holonomic = true;
+    int command_port = 0, results_port = 0;
+    bool paused = false, running = true;
 
     if (parseArguments(
             argc, argv, &fmuURIs, &connections, &params, &endTime, &timeStep,
             &loglevel, &csv_separator, &outFilePath, &quietMode, &fileFormat,
             &method, &realtimeMode, &printXML, &stepOrder, &fmuVisibilities,
-            &scs, &connconf, &hdf5Filename, &fieldnameFilename, &holonomic, &compliance)) {
+            &scs, &connconf, &hdf5Filename, &fieldnameFilename, &holonomic, &compliance,
+            &command_port, &results_port, &paused)) {
         return 1;
     }
+
+    bool zmqControl = command_port > 0 && results_port > 0;
 
     if (printXML) {
         fprintf(stderr, "XML mode not implemented\n");
@@ -399,6 +554,20 @@ int main(int argc, char *argv[] ) {
 
     if (outFilePath != DEFAULT_OUTFILE) {
         fprintf(stderr, "WARNING: -o not implemented (output always goes to stdout)\n");
+    }
+
+    zmq::context_t context(1);
+
+    zmq::socket_t rep_socket(context, ZMQ_REP);
+    zmq::socket_t push_socket(context, ZMQ_PUSH);
+
+    if (zmqControl) {
+        fprintf(stderr, "Init zmq control on ports %i and %i\n", command_port, results_port);
+        char addr[128];
+        snprintf(addr, sizeof(addr), "tcp://*:%i", command_port);
+        rep_socket.bind(addr);
+        snprintf(addr, sizeof(addr), "tcp://*:%i", results_port);
+        push_socket.bind(addr);
     }
 
 #ifdef USE_MPI
@@ -414,11 +583,10 @@ int main(int argc, char *argv[] ) {
 
     vector<FMIClient*> clients = setupClients(world_size-1);
 #else
-    zmq::context_t context(1);
     //without this the maximum number of clients tops out at 300 on Linux,
     //around 63 on Windows (according to Web searches)
 #ifdef ZMQ_MAX_SOCKETS
-    zmq_ctx_set((void *)context, ZMQ_MAX_SOCKETS, fmuURIs.size());
+    zmq_ctx_set((void *)context, ZMQ_MAX_SOCKETS, fmuURIs.size() + (zmqControl ? 2 : 0));
 #endif
     vector<FMIClient*> clients = setupClients(fmuURIs, context);
 #endif
@@ -496,8 +664,27 @@ int main(int argc, char *argv[] ) {
     gettimeofday(&tl1, NULL);
 #endif
 
+    int step = 0;
+
+    if (zmqControl) {
+        pushResults(step, t, endTime, timeStep, push_socket, master, clients, true);
+    }
+
     //run
-    while (endTime < 0 || t < endTime) {
+    while ((endTime < 0 || t < endTime) && running) {
+        if (zmqControl) {
+            handleZmqControl(rep_socket, &paused, &running);
+        }
+
+        if (!running) {
+            //termination requested
+            break;
+        }
+
+        if (paused) {
+            continue;
+        }
+
 #ifndef WIN32
         //HDF5
         columnofs = 0;
@@ -531,31 +718,20 @@ int main(int argc, char *argv[] ) {
             }
         }
 
-        //get outputs
-        for (auto it = clients.begin(); it != clients.end(); it++) {
-            master->send(*it, fmi2_import_get_real(0, 0, (*it)->getRealOutputValueReferences()));
+        if (!zmqControl) {
+            printOutputs(t, master, clients);
         }
-        
-        PRINT_HDF5_DELTA("get_outputs");
-
-        master->wait();
-        
-        PRINT_HDF5_DELTA("get_outputs_wait");
-
-        //print as CSV
-        printf("%f", t);
-        for (auto it = clients.begin(); it != clients.end(); it++) {
-            for (auto it2 = (*it)->m_getRealValues.begin(); it2 != (*it)->m_getRealValues.end(); it2++) {
-                printf("%c%f", csv_separator, *it2);
-            }
-        }
-
-        PRINT_HDF5_DELTA("print_csv");
 
         master->runIteration(t, timeStep);
-        
-        printf("\n");
+
         t += timeStep;
+        step++;
+
+        if (zmqControl) {
+            pushResults(step, t, endTime, timeStep, push_socket, master, clients, false);
+        } else {
+            printf("\n");
+        }
 
 #ifndef WIN32
         //HDF5

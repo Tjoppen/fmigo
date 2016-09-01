@@ -20,9 +20,23 @@ template<typename T, typename R> vector<T> values_to_vector(R *r) {
     return values;
 }
 
+//fmi_status_t and jm_status_enu_t have different "ok" values
+static bool statusIsOK(fmitcp_proto::jm_status_enu_t jm) {
+    return jm == fmitcp_proto::jm_status_success;
+}
+
+static bool statusIsOK(fmitcp_proto::fmi2_status_t fmi2) {
+    return fmi2 == fmitcp_proto::fmi2_status_ok;
+}
+
 template<typename T, typename R> void handle_get_value_res(Client *c, Logger logger, void (Client::*callback)(int,const vector<T>&,fmitcp_proto::fmi2_status_t), R *r) {
     std::vector<T> values = values_to_vector<T>(r);
     logger.log(Logger::LOG_NETWORK,"< %s(mid=%d,values=...,status=%d)\n",r->GetTypeName().c_str(), r->message_id(), r->status());
+    if (!statusIsOK(r->status())) {
+        fprintf(stderr, "FMI call %s failed with status=%d\nMaybe a connection or <Output> was specified incorrectly?",
+            r->GetTypeName().c_str(), r->status());
+        exit(1);
+    }
     (c->*callback)(r->message_id(),values,r->status());
 }
 
@@ -40,11 +54,18 @@ void Client::clientData(const char* data, long size){
 
     m_logger.log(Logger::LOG_DEBUG,"Client parse status: %d (%i byte in)\n", status, size);
 
-#define NORMAL_CASE(type) {\
+//useful for providing hints in case of failure
+#define CHECK_WITH_STR(type, str) {\
         type##_res * r = res.mutable_##type##_res();\
         m_logger.log(Logger::LOG_NETWORK,"< "#type"_res(mid=%d,status=%d)\n",r->message_id(),r->status());\
+        if (!statusIsOK(r->status())) {\
+            fprintf(stderr, "FMI call "#type"() failed with status=%d\n" str, r->status());\
+            exit(1);\
+        }\
         on_##type##_res(r->message_id(),r->status());\
     }
+
+#define NORMAL_CASE(type) CHECK_WITH_STR(type, "")
 #define NOSTAT_CASE(type) {\
         type##_res * r = res.mutable_##type##_res();\
         m_logger.log(Logger::LOG_NETWORK,"< "#type"_res(mid=%d)\n",r->message_id());\
@@ -154,10 +175,11 @@ void Client::clientData(const char* data, long size){
         break;
     }
     case fmitcp_message_Type_type_fmi2_import_set_debug_logging_res:            NORMAL_CASE(fmi2_import_set_debug_logging); break;
-    case fmitcp_message_Type_type_fmi2_import_set_real_res:                     NORMAL_CASE(fmi2_import_set_real); break;
-    case fmitcp_message_Type_type_fmi2_import_set_integer_res:                  NORMAL_CASE(fmi2_import_set_integer); break;
-    case fmitcp_message_Type_type_fmi2_import_set_boolean_res:                  NORMAL_CASE(fmi2_import_set_boolean); break;
-    case fmitcp_message_Type_type_fmi2_import_set_string_res:                   NORMAL_CASE(fmi2_import_set_string); break;
+#define SETX_HINT "Maybe a parameter or a connection was specified incorrectly?\n"
+    case fmitcp_message_Type_type_fmi2_import_set_real_res:                     CHECK_WITH_STR(fmi2_import_set_real, SETX_HINT); break;
+    case fmitcp_message_Type_type_fmi2_import_set_integer_res:                  CHECK_WITH_STR(fmi2_import_set_integer, SETX_HINT); break;
+    case fmitcp_message_Type_type_fmi2_import_set_boolean_res:                  CHECK_WITH_STR(fmi2_import_set_boolean, SETX_HINT); break;
+    case fmitcp_message_Type_type_fmi2_import_set_string_res:                   CHECK_WITH_STR(fmi2_import_set_string, SETX_HINT); break;
     case fmitcp_message_Type_type_fmi2_import_get_real_res:
         handle_get_value_res(this, m_logger, &Client::on_fmi2_import_get_real_res, res.mutable_fmi2_import_get_real_res());
         break;

@@ -7,7 +7,7 @@
 
 int main(){
 
-  double x[] = {
+  double x1[] = {
     0.00000,
     0.11111,
     0.22222,
@@ -29,12 +29,14 @@ int main(){
     0.10000,
     0.00000
   };
+  double x[ size( x1 )  / sizeof( x1[ 0 ] ) ]
 
   int N = sizeof( x ) / sizeof( x[ 0 ] ) ;
 
   double v[ N ]; 
 
   memset( v, 0,  sizeof( x ) );
+  memset( x, 0,  sizeof( x ) );
 
 
   lumped_rod_sim_parameters p = {
@@ -61,7 +63,7 @@ int main(){
     {
       N, 			/* number of elements */
       100,			/* total mass*/
-      1e3,			/* stiffness */
+      1e-3,			/* compliance */
       1,			/* relaxation rate in unit of steps */
       0,
       0,

@@ -2,7 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <assert.h>
 #include "lumped_rod.h"
+#include "safealloc.h"
 
 /** to allow simpler copy paste in store/restore functions */ 
 #define COPY_FWD( a , b )  a  = b
@@ -24,12 +26,18 @@
 
 void lumped_rod_alloc( lumped_rod * rod ) {
   
+  assert( rod );
+  assert( rod->n );
+  
   rod->mass  = rod->rod_mass  / ( double ) rod->n;
   
-  rod->state.x            = ( double * ) calloc(    rod->n    ,    sizeof( double ) );		
-  rod->state.v            = ( double * ) calloc(    rod->n    ,    sizeof( double ) );		
-  rod->state.a            = ( double * ) malloc(    rod->n    *    sizeof( double ) );		
-  rod->state.torsion      = ( double * ) malloc( ( rod->n - 1 )  * sizeof( double ) );		
+  CALLOC( double, rod->state.x       , rod->n);
+  CALLOC( double, rod->state.v       , rod->n);
+  CALLOC( double, rod->state.a       , rod->n);
+  CALLOC( double, rod->state.torsion, rod->n);
+//  rod->state.v            = ( double * ) calloc(    rod->n    ,    sizeof( double ) );		
+ // rod->state.a            = ( double * ) malloc(    rod->n    *    sizeof( double ) );		
+ // rod->state.torsion      = ( double * ) malloc( ( rod->n - 1 )  * sizeof( double ) );		
 
   return ;
 
@@ -38,10 +46,10 @@ void lumped_rod_alloc( lumped_rod * rod ) {
 /** WARNING:  no error checking */
 void lumped_rod_free( lumped_rod rod ){
 
-  free( rod.state.x           );
-  free( rod.state.v           );
-  free( rod.state.a           );
-  free( rod.state.torsion     );
+  FREE( rod.state.x           );
+  FREE( rod.state.v           );
+  FREE( rod.state.a           );
+  FREE( rod.state.torsion     );
 
   return;
 
@@ -55,7 +63,7 @@ lumped_rod_sim lumped_rod_sim_alloc( int n ) {
 
   lumped_rod_sim sim;
   
-  sim.z       = (double * ) malloc( ( 2 * n - 1 ) * sizeof( double ) );
+  MALLOC( double, sim.z, 2 * n - 1 ); 
 
   return sim;
 
@@ -131,10 +139,7 @@ tri_matrix build_rod_matrix( lumped_rod  rod, double step) {
   int i;
 
   
-  if ( n == 0  ){ 
-    fprintf(stderr, "N = 0!\n" );
-    abort();
-  }
+  assert( n );
 
   m = tri_matrix_alloc( 2 * n - 1 );
 
@@ -324,6 +329,8 @@ void lumped_rod_sim_mobility( lumped_rod_sim * sim, double  * mob ){
  *   Step forward in time.  
  */
 void rod_sim_do_step( lumped_rod_sim * sim, int n ){
+
+  assert( sim );
   
   double h_inv = 1.0  / sim->state.step;
   int i, j ; 
@@ -340,6 +347,7 @@ void rod_sim_do_step( lumped_rod_sim * sim, int n ){
       sim->rod.state.x[ i ] +=   sim->state.step * sim->rod.state.v[ i ]; 
     }
 
+    
     for ( i = 0; i < sim->rod.n -1 ; ++i ){
       sim->rod.state.torsion[ i ] = sim->z[ 2 * i + 1 ] * h_inv ;
     }

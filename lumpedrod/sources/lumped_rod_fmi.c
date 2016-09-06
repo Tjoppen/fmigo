@@ -1,5 +1,6 @@
 #include "lumped_rod.h"
 #include <math.h>
+#include <assert.h>
 #include "modelDescription.h"
 
 #define WRITE_TO_FILE 0
@@ -14,7 +15,9 @@
 #include "fmuTemplate.h"
 
 //static char filename [] = "lumped_rod.dat";
+#if WRITE_TO_FILE
 static FILE * data_file;
+#endif
 
 static void lumped_rod_sim_free_a( lumped_rod_sim  sim    ){
 
@@ -45,6 +48,8 @@ static void lumped_rod_fmi_sync_out( lumped_rod_sim * sim, state_t *s){
 
 static void lumped_rod_fmi_sync_in( lumped_rod_sim * sim, state_t *s){
   
+  assert( s );
+  assert( sim );
   sim->state.state.driver_f1         =  s->md.tau1;
   sim->state.state.driver_fN         =  s->md.tau2;
   sim->state.state.driver_v1         =  s->md.omega_drive1;
@@ -135,18 +140,23 @@ static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReferen
 
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
   /*  Copy the input variable from the state vector */
+  assert( s );
   lumped_rod_fmi_sync_in(&s->simulation, s);
 
+  assert( s->simulation.state.step );
   int n = ( int ) ceil( communicationStepSize / s->simulation.state.step );
   /* Execute the simulation */
   rod_sim_do_step(&s->simulation , n );
   /* Copy state variables to ouputs */
   lumped_rod_fmi_sync_out(&s->simulation, s);
+#if WRITE_TO_FILE
+  {
   int i;
   for ( i = 0; i < s->md.n_elements; ++i ){
     fprintf(data_file, " %f ", s->simulation.rod.state.x[ i ] );
   }
-  fprintf(data_file, "\n");
+  }
+#endif 
 }
 
 // include code that implements the FMI based on the above definitions

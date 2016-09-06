@@ -95,7 +95,7 @@ then
             FMUS="${FMUS} : -np 1 fmi-mpi-server coupled_sho.fmu"
         done
 
-        mpiexec -np 1 fmi-mpi-master -m jacobi -t 20 -d $dt ${CONNS} ${PARAMS} ${FMUS} > out-${N}.csv
+        mpiexec -np 1 fmi-mpi-master -m gs -t 20 -d $dt ${CONNS} ${PARAMS} ${FMUS} > out-${N}.csv
     done
 
     octave --no-gui -q --persist --eval "d=load('out-16.csv'); plot(d(:,1),[d(:,3),d(:,7:4:end)],'.-')"

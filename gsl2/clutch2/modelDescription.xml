@@ -8,12 +8,12 @@
                  position difference between this module and the coupled
                  one is estimated by integrating the velocity difference
                  internally."
-    modelName="clutch"
+    modelName="clutch2"
     guid="{6985712a-2b8e-4ebb-9b6c-05d89b0ec1c8}"
     numberOfEventIndicators="0">
 
   <CoSimulation
-      modelIdentifier="two plates clutch with piecewise linear force law"
+      modelIdentifier="clutch2"
       canHandleVariableCommunicationStepSize="true"
       canGetAndSetFMUstate="true"
       providesDirectionalDerivative="false"/>
@@ -107,17 +107,17 @@
     </ScalarVariable>
      <ScalarVariable 
         name="integrate_dx_e"            
-        valueReference="7"  
+        valueReference="8"  
         description="whether or not engine-side coupling angle difference is integrated"         
         causality="parameter" 
         variability="fixed">
-      <Real start="0"/>
+      <Boolean start="false"/>
     </ScalarVariable>
 
     <!-- index="0"-->
     <ScalarVariable 
         name="k_sc"             
-        valueReference="8"  
+        valueReference="9"  
         description="coupling spring, shaft side"
         causality="parameter" 
         variability="fixed">
@@ -126,7 +126,7 @@
     <!-- index="0"-->
     <ScalarVariable 
         name="gamma_sc"            
-        valueReference="9"  
+        valueReference="10"  
         description="coupling damping constant, shaft side"         
         causality="parameter" 
         variability="fixed">
@@ -134,18 +134,18 @@
     </ScalarVariable>   
     <ScalarVariable 
         name="integrate_dx_s"            
-        valueReference="7"  
+        valueReference="11"  
         description="whether or not shaft-side coupling angle difference is integrated"         
         causality="parameter" 
         variability="fixed">
-      <Real start="0"/>
+      <Boolean start="false"/>
     </ScalarVariable>
     <!-- internal parameters -->
 
     <!-- index="0"-->
     <ScalarVariable 
         name="mass_e"             
-        valueReference="10"  
+        valueReference="12"  
         description="mass engine-side plate"                                  
         causality="parameter" 
         variability="fixed">
@@ -154,7 +154,7 @@
     <!-- index="0"-->
     <ScalarVariable 
         name="gamma_e"            
-        valueReference="11"  
+        valueReference="13"  
         description="damping constant, engine side"         
         causality="parameter" 
         variability="fixed">
@@ -164,7 +164,7 @@
     <!-- index="0"-->
     <ScalarVariable 
         name="mass_s"             
-        valueReference="12"  
+        valueReference="14"  
         description="mass shaft-side plate"                                  
         causality="parameter" 
         variability="fixed">
@@ -173,7 +173,7 @@
     <!-- index="0"-->
     <ScalarVariable 
         name="gamma_s"            
-        valueReference="13"  
+        valueReference="15"  
         description="damping constant, shaft-side"         
         causality="parameter" 
         variability="fixed">
@@ -183,7 +183,7 @@
     <!-- index="0"-->
     <ScalarVariable 
         name="clutch_damping"   
-        valueReference="14"  
+        valueReference="16"  
         description="internal clutch damping constant"      
         causality="parameter" 
         variability="fixed">
@@ -196,7 +196,7 @@
     <!-- index="0"-->
     <ScalarVariable 
         name="x_in_e"
-        valueReference="15"  
+        valueReference="17"  
         description="external displacement engine-side"             
         causality="input" initial="exact">
       <Real start="0"/>
@@ -205,7 +205,7 @@
     <!-- index="0"-->
     <ScalarVariable 
         name="v_in_e"
-        valueReference="15"  
+        valueReference="18"  
         description="external driving velocity engine-side"             
         causality="input" initial="exact">
       <Real start="0"/>
@@ -214,7 +214,7 @@
     <!-- index="0"-->
     <ScalarVariable 
         name="force_in_e"         
-        valueReference="16"  
+        valueReference="19"  
         description="driving force, engine-side"
         causality="input" initial="exact">
       <Real start="0"/>
@@ -223,7 +223,7 @@
     <!-- index="0"-->
     <ScalarVariable 
         name="force_in_ex"         
-        valueReference="17"  
+        valueReference="20"  
         description="additional driving force, engine-side"
         causality="input" initial="exact">
       <Real start="0"/>
@@ -233,7 +233,7 @@
     <!-- index="0"-->
     <ScalarVariable 
         name="x_in_s"
-        valueReference="15"  
+        valueReference="21"  
         description="external displacement shaft-side"             
         causality="input" initial="exact">
       <Real start="0"/>
@@ -241,7 +241,7 @@
     <!-- index="0"-->
  <ScalarVariable 
         name="v_in_s"
-        valueReference="18"  
+        valueReference="22"  
         description="external driving velocity shaft-side"             
         causality="input" initial="exact">
       <Real start="0"/>
@@ -249,7 +249,7 @@
     <!-- index="0"-->
     <ScalarVariable 
         name="force_in_s"         
-        valueReference="19"  
+        valueReference="23"  
         description="driving force, shaft-side"
         causality="input" initial="exact">
       <Real start="0"/>
@@ -258,7 +258,7 @@
     <!-- index="0"-->
     <ScalarVariable 
         name="force_in_sx"         
-        valueReference="20"  
+        valueReference="24"  
         description="additional driving force, shaft-side"
         causality="input" initial="exact">
       <Real start="0"/>
@@ -267,7 +267,7 @@
     <!-- index="0"-->
     <ScalarVariable 
         name="clutch_position"         
-        valueReference="21"  
+        valueReference="25"  
         description="how hard the clutch is engaged (only 0 or 1 for now)"
         causality="input" initial="exact">
       <Real start="0"/>
@@ -279,7 +279,7 @@
     <!-- index="0"-->
     <ScalarVariable 
         name="x_e"                
-        valueReference="22"  
+        valueReference="26"  
         description="position of engine-side plate"                              
         causality="output">
       <Real />
@@ -287,7 +287,7 @@
     <!-- index="0"-->
     <ScalarVariable 
         name="v_e"                
-        valueReference="23"  
+        valueReference="27"  
         description="velocity of engine-side plate"
         causality="output">
       <Real />
@@ -295,7 +295,7 @@
     <!-- index="0"-->
     <ScalarVariable 
         name="a_e"                
-        valueReference="24"  
+        valueReference="28"  
         description="acceleration of engine-side plate"
         causality="output">
       <Real />
@@ -303,7 +303,7 @@
     <!-- index="0"-->
     <ScalarVariable 
         name="force_e"
-        valueReference="25"  
+        valueReference="29"  
         description="coupling torque of engine-side plate"
         causality="output">
       <Real />
@@ -312,7 +312,7 @@
     <!-- index="0"-->
     <ScalarVariable 
         name="x_s"                
-        valueReference="26"  
+        valueReference="30"  
         description="position of shaft-side plate"                              
         causality="output">
       <Real />
@@ -320,7 +320,7 @@
     <!-- index="0"-->
     <ScalarVariable 
         name="v_s"
-        valueReference="27"  
+        valueReference="31"  
         description="velocity of shaft-side plate"
         causality="output">
       <Real />
@@ -328,7 +328,7 @@
     <!-- index="0"-->
     <ScalarVariable 
         name="a_s"                
-        valueReference="28"  
+        valueReference="32"  
         description="acceleration of shaft-side plate"
         causality="output">
       <Real />
@@ -336,7 +336,7 @@
     <!-- index="0"-->
     <ScalarVariable 
         name="force_s"
-        valueReference="29"  
+        valueReference="33"  
         description="coupling torque of shaft-side plate"
         causality="output">
       <Real />
@@ -360,8 +360,14 @@
   
   <ModelStructure>
     <Outputs>
-      <Unknown index="10"/>
-      <Unknown index="11"/>
+      <Unknown index="27"/>
+      <Unknown index="28"/>
+      <Unknown index="29"/>
+      <Unknown index="30"/>
+      <Unknown index="31"/>
+      <Unknown index="32"/>
+      <Unknown index="33"/>
+      <Unknown index="34"/>
     </Outputs>
     <Derivatives/>
     <DiscreteStates/>

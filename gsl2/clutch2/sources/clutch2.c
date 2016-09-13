@@ -11,9 +11,7 @@
  *  The force function from the clutch
  */
 static double fclutch( double dphi, double domega, double clutch_damping ); 
-static double fclutch_dphi_derivative( double dphi );
-
-const static double flip = -1;
+//static double fclutch_dphi_derivative( double dphi );
 
 /*  
     Two (rotational) bodies connected via a piecewise linear clutch model. 
@@ -28,32 +26,45 @@ const static double flip = -1;
     Variables are listed as: 
     x_e    : position engine plate
     v_e    : velocity engine plate
-    dx_e   : angle difference estimate between engine plate and outside coupling
-
     x_s    : position shaft plate
     v_s    : velocity shaft plate
+    dx_e   : angle difference estimate between engine plate and outside coupling
     dx_s   : angle difference estimate between shaft plate and outside coupling
 
 */
 
-int clutch (double t, const double x[], double dxdt[], void * params){
-
-  state_t *s = (state_t*)params;
-
-  double force_clutch =  s->md.clutch_position * fclutch( x[ 0 ] - x[ 3 ], x[ 1 ] - x[ 4 ], s->md.clutch_damping );
-
-  /** Second order dynamics */
-  dxdt[ 0 ]  = x[ 1 ];
+static void compute_forces(state_t *s, const double x[], double *force_e, double *force_s) {
+  int dx_s_idx = s->md.integrate_dx_e ? 5 : 4;
 
   /** compute the coupling force: NOTE THE SIGN!
    *  This is the force *applied* to the coupled system
    */
-  s->md.force_e =   s->md.gamma_ec * ( x[ 1 ] - s->md.v_in_e );
+  *force_e =   s->md.gamma_ec * ( x[ 1 ] - s->md.v_in_e );
   if ( s->md.integrate_dx_e )
-    s->md.force_e +=  s->md.k_ec *  x[ 2 ];
+    *force_e +=  s->md.k_ec *  x[ 4 ];
   else
-    s->md.force_e +=  s->md.k_ec *  ( x[ 2 ] - s->md.x_in_e );
-										   
+    *force_e +=  s->md.k_ec *  ( x[ 0 ] - s->md.x_in_e );
+
+  *force_s =   s->md.gamma_sc * ( x[ 3 ] - s->md.v_in_s );
+  if ( s->md.integrate_dx_s )
+    *force_s +=  s->md.k_sc *  x[ dx_s_idx ];
+  else
+    *force_s +=  s->md.k_sc *  ( x[ 2 ] - s->md.x_in_s );
+}
+
+int clutch (double t, const double x[], double dxdt[], void * params){
+
+  state_t *s = (state_t*)params;
+  
+  /** the index of dx_s depends on whether we're integrating dx_e or not */
+  int dx_s_idx = s->md.integrate_dx_e ? 5 : 4;
+
+  double force_clutch =  s->md.clutch_position * fclutch( x[ 0 ] - x[ 2 ], x[ 1 ] - x[ 3 ], s->md.clutch_damping );
+  double force_e, force_s;
+  compute_forces(s, x, &force_e, &force_s);
+
+  /** Second order dynamics */
+  dxdt[ 0 ]  = x[ 1 ];
 
   /** internal dynamics */ 
   dxdt[ 1 ]  = -s->md.gamma_e * x[ 1 ];		
@@ -66,39 +77,28 @@ int clutch (double t, const double x[], double dxdt[], void * params){
   dxdt[ 1 ] -= force_e;
   dxdt[ 1 ] /= s->md.mass_e;
  
-  /** angle difference */
-  if ( s->md.integrate_dx_e )
-    dxdt[ 2 ] = x[ 1 ] - s->md.v_in_e;
-
-
-  
   /** shaft-side plate */
 
-  dxdt[ 3 ]  = x[ 4 ];
-  /** compute the coupling force: NOTE THE SIGN!
-   *  This is the force *applied* to the coupled system
-   */
-  s->md.force_s =   s->md.gamma_sc * ( x[ 4 ] - s->md.v_in_s );
-  if ( s->md.integrate_dx_s )
-    s->md.force_s +=  s->md.k_sc *  x[ 5 ];
-  else
-    s->md.force_e +=  s->md.k_sc *  ( x[ 3 ] - s->md.x_in_s );
+  dxdt[ 2 ]  = x[ 3 ];
   
   /** internal dynamics */ 
-  dxdt[ 4 ]  = -s->md.gamma_s * x[ 4 ];		
+  dxdt[ 3 ]  = -s->md.gamma_s * x[ 3 ];
   /** coupling */ 
-  dxdt[ 4 ] +=  force_clutch;
+  dxdt[ 3 ] +=  force_clutch;
   /** counter torque from next module */ 
-  dxdt[ 4 ] += s->md.force_in_s;
+  dxdt[ 3 ] += s->md.force_in_s;
   /** additional driver */ 
-  dxdt[ 4 ] += s->md.force_in_sx;
-  dxdt[ 4 ] -= s->md.force_s;
-  dxdt[ 4 ] /= s->md.mass_s;
+  dxdt[ 3 ] += s->md.force_in_sx;
+  dxdt[ 3 ] -= force_s;
+  dxdt[ 3 ] /= s->md.mass_s;
  
  
   /** angle difference */
+  if ( s->md.integrate_dx_e )
+    dxdt[ 4 ]        = x[ 1 ] - s->md.v_in_e;
   if ( s->md.integrate_dx_s )
-    dxdt[ 5 ] = x[ 4 ] - s->md.v_in_s;
+    dxdt[ dx_s_idx ] = x[ 3 ] - s->md.v_in_s;
+
 
   return GSL_SUCCESS;
 
@@ -110,12 +110,12 @@ int clutch (double t, const double x[], double dxdt[], void * params){
 int jac_clutch (double t, const double x[], double *dfdx, double dfdt[], void *params)
 {
   
-  state_t *s = (state_t*)params;
+  /*state_t *s = (state_t*)params;
   gsl_matrix_view dfdx_mat = gsl_matrix_view_array (dfdx, 3, 3);
-  gsl_matrix * J = &dfdx_mat.matrix; 
+  gsl_matrix * J = &dfdx_mat.matrix; */
 
 
-  return GSL_SUCCESS;
+  return GSL_FAILURE;
 }
 
 /**
@@ -164,6 +164,7 @@ static double fclutch( double dphi, double domega, double clutch_damping ) {
 
 }
 
+#if 0
 static double fclutch_dphi_derivative( double dphi ) {
   
   //Scania's clutch curve
@@ -202,35 +203,44 @@ static double fclutch_dphi_derivative( double dphi ) {
   return df; 
 
 }
+#endif
 
 
-/** TODO */
 static int epce_post_step(int n, const double outputs[], void * params) {
-/**
-   state_t *s = params;
-   double v = flip * s->md.v_in;
 
-   s->md.v            = outputs[1];
-   s->md.force_clutch = fclutch( outputs[ 2 ], ( outputs[ 1 ] - v ), s->md.clutch_damping );
-*/
+  state_t *s = params;
+
+  s->md.x_e = outputs[ 0 ];
+  s->md.v_e = outputs[ 1 ];
+  s->md.a_e = 0;
+  s->md.x_s = outputs[ 2 ];
+  s->md.v_s = outputs[ 3 ];
+  s->md.a_s = 0;
+  compute_forces(s, outputs, &s->md.force_e, &s->md.force_s);
 
   return GSL_SUCCESS;
 }
 
 
 static void clutch_init(state_t *s) {
-  const double initials[] = {
+  /** system size and layout depends on which dx's are integrated */
+  int N = 4 + s->md.integrate_dx_e + s->md.integrate_dx_s;
+  double initials[] = {
     s->md.x0_e,
     s->md.v0_e,
-    s->md.dx0_e,
     s->md.x0_s,
     s->md.v0_s,
+    s->md.dx0_e,
     s->md.dx0_s
   };
 
+  if (!s->md.integrate_dx_e) {
+    initials[4] = s->md.dx0_s;
+  }
+
   s->simulation = cgsl_init_simulation(
     cgsl_epce_default_model_init(
-      cgsl_model_default_alloc(sizeof(initials)/sizeof(initials[0]), initials, s, clutch, jac_clutch, NULL, NULL, 0),
+      cgsl_model_default_alloc(N, initials, s, clutch, jac_clutch, NULL, NULL, 0),
       s->md.filter_length,
       epce_post_step,
       s

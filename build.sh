@@ -17,6 +17,7 @@ then
 
     #New GSL interface
     for d in \
+        gsl2/clutch2\
         gsl2/chained_sho\
         gsl2/exp\
         gsl2/clutch_ef\

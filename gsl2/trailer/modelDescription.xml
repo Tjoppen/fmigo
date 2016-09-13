@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fmiModelDescription
+    fmiVersion="2.0"
+    description="A simple one dimensional trailer model.  The variable `x' is
+                 the position of the trailer along the road which has local
+                 elevation angle `alpha'.
+                 
+                 The connection to other modules is via either a torque on
+                 a shaft or a driving velocity input.
+
+                 There is a gear ratio from the input shaft to the wheel
+                 rotation.  
+
+                 Control can be applied via a brake.
+                "
+    modelName="clutch"
+    guid="{ca64d56e-cc83-44bb-ad78-afbe219a947c}"
+    numberOfEventIndicators="0">
+
+  <CoSimulation
+      modelIdentifier="two plates clutch with piecewise linear force law"
+      canHandleVariableCommunicationStepSize="true"
+      canGetAndSetFMUstate="true"
+      providesDirectionalDerivative="false"/>
+
+  <LogCategories>
+    <Category name="logAll"/>
+    <Category name="logError"/>
+    <Category name="logFmiCall"/>
+    <Category name="logEvent"/>
+  </LogCategories>
+
+  <DefaultExperiment startTime="0" stopTime="10" stepSize="0.1"/>
+
+  <ModelVariables>
+    <!-- parameters and initial conditions --> 
+    <!-- index="0"-->
+    <ScalarVariable
+        name="x0_e"               
+        valueReference="0"  
+        description="initial position of engine-side plate"                      
+        causality="parameter" 
+        variability="fixed">
+      <Real start="0"/>
+    </ScalarVariable>
+
+
+    <!-- inputs -->
+    <!-- index="0"-->
+    <ScalarVariable 
+        name="x_in_e"
+        valueReference="15"  
+        description="external displacement engine-side"             
+        causality="input" initial="exact">
+      <Real start="0"/>
+    </ScalarVariable>
+    
+    <!-- outputs -->
+    <!-- index="0"-->
+    <ScalarVariable 
+        name="x_e"                
+        valueReference="22"  
+        description="position of engine-side plate"                              
+        causality="output">
+      <Real />
+    </ScalarVariable>
+    
+    <!-- index="0"-->
+    <ScalarVariable 
+        name="filter_length"
+        valueReference="98"
+        description="Length of EPCE FIR filter (0 = disable)"
+        causality="parameter"
+        variability="fixed">
+      <Integer start="0"/>
+    </ScalarVariable>
+
+  </ModelVariables>
+
+  
+  <ModelStructure>
+    <Outputs>
+      <Unknown index="10"/>
+      <Unknown index="11"/>
+    </Outputs>
+    <Derivatives/>
+    <DiscreteStates/>
+    <InitialUnknowns />
+  </ModelStructure>
+
+</fmiModelDescription>

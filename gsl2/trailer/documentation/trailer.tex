@@ -1,0 +1,147 @@
+%%%%%%%%%%%%% preamble for all tex documents  %%%%
+%%%%%%%%%%%%% current style defaults to scrartcl  but that could be changed
+%%%%%%%%%%%%% with a script or by hand   
+%%%%%%%%%%%%%
+\documentclass[10pt,notitlepage,abstracton]{scrartcl}
+\usepackage[a4, center, dvips]{crop}
+\setlength{\linewidth}{\textwidth}
+\usepackage{scrpage2}
+\usepackage[sort,numbers]{natbib}
+\usepackage{amsmath}
+\usepackage{amscd}
+\usepackage{amsthm}
+\usepackage{amsfonts}
+\usepackage{amsbsy}
+\usepackage{amsxtra}
+\usepackage{amssymb}
+\usepackage[draft]{fixme}
+\usepackage[utf8]{inputenc}
+\usepackage{float}
+\usepackage{url}
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage[ruled, section]{algorithm}
+\usepackage{algpseudocode}
+\usepackage{multirow}
+\usepackage{tabularx}
+\usepackage{subfigure}
+\usepackage{tikz}
+\usepackage{pgfplots,pgfplotstable}
+\usepackage{gnuplot-lua-tikz}
+\usepackage[normalem]{ulem}
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{plain}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{example}{Example}[section]
+\theoremstyle{plain}
+\newtheorem*{remark}{Remark}
+\newtheorem*{note}{Note}
+\newtheorem{case}{Case}
+\makeatletter
+\renewcommand{\labelitemi}{$\m@th\triangleright$}
+\renewcommand{\labelitemii}{$\m@th\cdot$}
+\renewcommand{\labelitemiii}{\emdash}
+\renewcommand{\labelitemiv}{\emdash\emdash}
+\makeatother
+\include{notation-macros}
+\usepackage[scrpage]{svninfo} 
+%%%%  not sure what to make of revision info right now
+\title{Trailer model}
+\author{Claude Lacoursi{\`{e}}re \\
+  HPC2N/UMIT, Ume{\aa} University\\
+  SE-901 87, Ume{\aa}, Sweden\\
+  \texttt{claude@hpc2n.umu.se}
+}
+\begin{document}
+\svnInfo $Id$
+\maketitle{}
+\svnId
+\begin{abstract}
+
+\end{abstract}
+
+\section{Introduction}
+\label{sec:introduction}
+
+This is a simple model for a ``trailer'', a point mass moving along a
+straight line but with variable elevation.   This is intended to perform
+simple stability tests for cosimulation algorithms, especially for the case
+where different simulations involve objects of different masses. 
+
+\section{The model}
+\label{sec:model}
+
+We represent the trailer as a point mass $m$ moving in a straight line. Even
+though we are considering the trailer to have both vertical and
+longitudinal motion, we take $x\in\R$ as the distance traveled along the road
+which has variable grade $\alpha(x)$.  
+
+
+The trailer is powered via a shaft with angle and angular speed
+$\idx{\phi}{i},\idx{\omega}{i}$.  This shaft goes is connected to the axle
+with a gear with ratio $\idx{r}{d}$ from the differential.  Assuming no
+slip, the speed of the point mass is related to that of the wheel via
+$\dot{x} = \idx{r}{w}\idx{\omega}{w}$.
+
+The relevant portion of the gravity force is
+\begin{equation}
+  \label{eq:1}
+  \idx{f}{g} = - m g \sin(\alpha ( x ) ).
+\end{equation}
+A drag force for air resistance is introduced as
+\begin{equation}
+  \label{eq:2}
+  \idx{f}{d} = - \sign(\dot{x}) \frac{1}{2}\rho A C_{d} \dot{x}^{2},  
+\end{equation}
+rolling resistance is then
+\begin{equation}
+  \label{eq:3}
+ \idx{f}{r} = - \sign(\dot{x})(c_{r_{1}}\abs{\dot{x}} + c_{r_{0}}) m g \cos(\alpha(x))
+\end{equation}
+and a braking force
+\begin{equation}
+  \label{eq:4}
+  \idx{f}{b} = - r \mu m g \cos(\alpha(x)), \text{ where }   r\in[0,1].
+\end{equation}
+As for the input forces, we either accept a torque directly in which case
+\begin{equation}
+  \label{eq:5}
+  \idx{f}{d} = \frac{1}{\idx{r}{d}\idx{r}{w}}\idx{\tau}{i}, 
+\end{equation}
+or we use a coupling spring with
+\begin{equation}
+  \label{eq:6}
+  \begin{split}
+    \idx{f}{d} &= \frac{1}{\idx{r}{w}} \left( -\idx{k}{i} \delta -
+      \idx{\gamma}{i}( \frac{\idx{r}{d}\dot{x}}{\idx{r}{w}} - \idx{\omega}{i}
+      )
+    \right) \\
+    \dot{\delta} &= \frac{\idx{r}{d}\dot{x}}{\idx{r}{w}} - \idx{\omega}{i}
+  \end{split}
+\end{equation}
+The 
+
+
+
+
+
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+\section*{Acknowledgments}
+\label{sec:acknowledgments}
+
+
+\bibliographystyle{plainnat}  
+\bibliography{lde-bib}
+\end{document}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: t
+%%% End: 

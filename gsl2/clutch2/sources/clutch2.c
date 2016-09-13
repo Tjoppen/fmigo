@@ -219,7 +219,7 @@ static int epce_post_step(int n, const double outputs[], void * params) {
 
 
 static void clutch_init(state_t *s) {
-  const double initials[3] = {
+  const double initials[] = {
     s->md.x0_e,
     s->md.v0_e,
     s->md.dx0_e,
@@ -228,8 +228,6 @@ static void clutch_init(state_t *s) {
     s->md.dx0_s
   };
 
-
-    
   s->simulation = cgsl_init_simulation(
     cgsl_epce_default_model_init(
       cgsl_model_default_alloc(sizeof(initials)/sizeof(initials[0]), initials, s, clutch, jac_clutch, NULL, NULL, 0),

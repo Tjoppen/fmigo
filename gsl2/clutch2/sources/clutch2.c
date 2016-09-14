@@ -2,21 +2,33 @@
 
 #include "modelDescription.h"
 #include "gsl-interface.h"
+#include <memory.h>
 
 typedef struct {
   cgsl_simulation sim;
-  int last_gear;    /** for detecting when the gear changes */
-  double delta_phi; /** angle difference at gear change, for preventing
-                     *  "springing" when changing gears */
+  int last_gear;      /** for detecting when the gear changes */
+  double delta_phi;   /** angle difference at gear change, for preventing
+                       *  "springing" when changing gears */
+  double x_backup[12];/** state backup for fmi2GetFMUstate()/fmi2SetFMUstate() */
 } clutchgear_simulation;
 
 static void clutchgear_free(clutchgear_simulation simulation) {
   cgsl_free_simulation(simulation.sim);
 }
 
+static void clutchgear_get(clutchgear_simulation *s) {
+  memcpy(s->x_backup, s->sim.model->x, s->sim.model->n_variables * sizeof(s->sim.model->x[0]));
+}
+
+static void clutchgear_set(clutchgear_simulation *s) {
+  memcpy(s->sim.model->x, s->x_backup, s->sim.model->n_variables * sizeof(s->sim.model->x[0]));
+}
+
 #define SIMULATION_TYPE clutchgear_simulation
 #define SIMULATION_INIT clutch_init
 #define SIMULATION_FREE clutchgear_free
+#define SIMULATION_GET  clutchgear_get
+#define SIMULATION_SET  clutchgear_set
 
 #include "fmuTemplate.h"
 
@@ -264,13 +276,18 @@ static double fclutch_dphi_derivative( double dphi ) {
 static int epce_post_step(int n, const double outputs[], void * params) {
 
   state_t *s = params;
+  double dxdt[6];
+
+  //compute accelerations. we need them for Server::computeNumericalJacobian()
+  clutch(0, outputs, dxdt, params);
 
   s->md.x_e = outputs[ 0 ];
   s->md.v_e = outputs[ 1 ];
-  s->md.a_e = 0;
+  s->md.a_e = dxdt[ 1 ];
   s->md.x_s = outputs[ 2 ];
   s->md.v_s = outputs[ 3 ];
-  s->md.a_s = 0;
+  s->md.a_s = dxdt[ 3 ];
+
   compute_forces(s, outputs, &s->md.force_e, &s->md.force_s, NULL);
 
   return GSL_SUCCESS;

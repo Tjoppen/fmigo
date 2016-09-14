@@ -1,11 +1,53 @@
+//TODO: add some kind of flag that switches this one between a clutch and a gearbox, to reduce the amount of code needed
+
 #include "modelDescription.h"
 #include "gsl-interface.h"
 
-#define SIMULATION_TYPE cgsl_simulation
+typedef struct {
+  cgsl_simulation sim;
+  int last_gear;    /** for detecting when the gear changes */
+  double delta_phi; /** angle difference at gear change, for preventing
+                     *  "springing" when changing gears */
+} clutchgear_simulation;
+
+static void clutchgear_free(clutchgear_simulation simulation) {
+  cgsl_free_simulation(simulation.sim);
+}
+
+#define SIMULATION_TYPE clutchgear_simulation
 #define SIMULATION_INIT clutch_init
-#define SIMULATION_FREE cgsl_free_simulation
+#define SIMULATION_FREE clutchgear_free
 
 #include "fmuTemplate.h"
+
+static const double gear_ratios[] = {
+   0,
+   13.0,
+   10.0,
+   9.0,
+   7.0,
+   5.0,
+   4.6,
+   3.7,
+   3.0,
+   2.4,
+   1.9,
+   1.5,
+   1.2,
+   1.0,
+   0.8
+};
+
+static double gear2ratio(state_t *s) {
+  if (s->md.gear < 0) {
+    return -gear_ratios[1];
+  } else {
+    int i = s->md.gear;
+    int n = sizeof(gear_ratios)/sizeof(gear_ratios[0]);
+    if (i >= n) i = n-1;
+    return gear_ratios[i];
+  }
+}
 
 /**
  *  The force function from the clutch
@@ -33,7 +75,7 @@ static double fclutch( double dphi, double domega, double clutch_damping );
 
 */
 
-static void compute_forces(state_t *s, const double x[], double *force_e, double *force_s) {
+static void compute_forces(state_t *s, const double x[], double *force_e, double *force_s, double *force_clutch) {
   int dx_s_idx = s->md.integrate_dx_e ? 5 : 4;
 
   /** compute the coupling force: NOTE THE SIGN!
@@ -50,6 +92,20 @@ static void compute_forces(state_t *s, const double x[], double *force_e, double
     *force_s +=  s->md.k_sc *  x[ dx_s_idx ];
   else
     *force_s +=  s->md.k_sc *  ( x[ 2 ] - s->md.x_in_s );
+
+  if (force_clutch) {
+    if (s->md.is_gearbox) {
+      if (s->md.gear == 0) {
+        // neutral
+        *force_clutch = 0;
+      } else {
+        double ratio = gear2ratio(s);
+        *force_clutch = s->md.gear_k * (x[ 0 ] - ratio*x[ 2 ] + s->simulation.delta_phi) + s->md.gear_d * (x[ 1 ] - ratio*x[ 3 ]);
+      }
+    } else {
+      *force_clutch =  s->md.clutch_position * fclutch( x[ 0 ] - x[ 2 ], x[ 1 ] - x[ 3 ], s->md.clutch_damping );
+    }
+  }
 }
 
 int clutch (double t, const double x[], double dxdt[], void * params){
@@ -59,9 +115,8 @@ int clutch (double t, const double x[], double dxdt[], void * params){
   /** the index of dx_s depends on whether we're integrating dx_e or not */
   int dx_s_idx = s->md.integrate_dx_e ? 5 : 4;
 
-  double force_clutch =  s->md.clutch_position * fclutch( x[ 0 ] - x[ 2 ], x[ 1 ] - x[ 3 ], s->md.clutch_damping );
-  double force_e, force_s;
-  compute_forces(s, x, &force_e, &force_s);
+  double force_e, force_s, force_clutch;
+  compute_forces(s, x, &force_e, &force_s, &force_clutch);
 
   /** Second order dynamics */
   dxdt[ 0 ]  = x[ 1 ];
@@ -216,7 +271,7 @@ static int epce_post_step(int n, const double outputs[], void * params) {
   s->md.x_s = outputs[ 2 ];
   s->md.v_s = outputs[ 3 ];
   s->md.a_s = 0;
-  compute_forces(s, outputs, &s->md.force_e, &s->md.force_s);
+  compute_forces(s, outputs, &s->md.force_e, &s->md.force_s, NULL);
 
   return GSL_SUCCESS;
 }
@@ -238,7 +293,7 @@ static void clutch_init(state_t *s) {
     initials[4] = s->md.dx0_s;
   }
 
-  s->simulation = cgsl_init_simulation(
+  s->simulation.sim = cgsl_init_simulation(
     cgsl_epce_default_model_init(
       cgsl_model_default_alloc(N, initials, s, clutch, jac_clutch, NULL, NULL, 0),
       s->md.filter_length,
@@ -247,10 +302,20 @@ static void clutch_init(state_t *s) {
       ),
     rkf45, 1e-5, 0, 0, 0, NULL
     );
+  s->simulation.last_gear = s->md.gear;
+  s->simulation.delta_phi = 0;
 }
 
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
+  if (s->md.is_gearbox && s->md.gear != s->simulation.last_gear) {
+    /** gear changed - compute impact that keeps things sane */
+    double ratio = gear2ratio(s);
+    s->simulation.delta_phi = ratio*s->simulation.sim.model->x[ 2 ] - s->simulation.sim.model->x[ 0 ];
+  }
+
   cgsl_step_to( &s->simulation, currentCommunicationPoint, communicationStepSize );
+
+  s->simulation.last_gear = s->md.gear;
 }
 
 

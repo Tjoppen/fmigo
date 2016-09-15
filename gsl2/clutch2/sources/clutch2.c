@@ -138,7 +138,7 @@ int clutch (double t, const double x[], double dxdt[], void * params){
   /** coupling */ 
   dxdt[ 1 ] += -force_clutch;
   /** counter torque from next module */ 
-  dxdt[ 1 ] += -s->md.force_in_e;
+  dxdt[ 1 ] += s->md.force_in_e;
   /** additional driver */ 
   dxdt[ 1 ] += s->md.force_in_ex;
   dxdt[ 1 ] -= force_e;

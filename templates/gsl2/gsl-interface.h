@@ -59,6 +59,7 @@ typedef int (* pre_post_step_ptr ) (double t, double dt, const double y[], void 
 typedef struct cgsl_model{
   int n_variables;
   double *x;  	        /** state variables */
+  double *x_backup;     /** for get/set FMU state */
   void * parameters;
 
   /** Definition of the dynamical system: this assumes an *explicit* ODE */
@@ -69,6 +70,13 @@ typedef struct cgsl_model{
   /** Pre/post step functions */
   pre_post_step_ptr pre_step;
   pre_post_step_ptr post_step;
+
+  /** Get/set FMU state
+   * Used to copy/retreive internal state to/from temporary storage inside the model
+   * params: Opaque pointer
+   */
+  void (* get_state) (struct cgsl_model *model);
+  void (* set_state) (struct cgsl_model *model);
 
   /** Destructor */
   void (* free) (struct cgsl_model * model);
@@ -183,6 +191,10 @@ void cgsl_save_data( struct cgsl_simulation * sim );
 /** \TODO: make this a toggle */
 void cgsl_simulation_set_fixed_step( cgsl_simulation * s, double h );
 void cgsl_simulation_set_variable_step( cgsl_simulation * s );
+
+/** Get/set FMU state */
+void cgsl_simulation_get( cgsl_simulation *s );
+void cgsl_simulation_set( cgsl_simulation *s );
 
 typedef int (*epce_post_step_ptr) (
     int n,                          /** Number of variables */

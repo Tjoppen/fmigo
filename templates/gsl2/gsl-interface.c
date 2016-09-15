@@ -151,7 +151,16 @@ cgsl_simulation cgsl_init_simulation(
 
 void cgsl_model_default_free(cgsl_model *model) {
     free(model->x);
+    free(model->x_backup);
     free(model);
+}
+
+static void cgsl_model_default_get_state(cgsl_model *model) {
+  memcpy(model->x_backup, model->x, model->n_variables * sizeof(model->x[0]));
+}
+
+static void cgsl_model_default_set_state(cgsl_model *model) {
+  memcpy(model->x, model->x_backup, model->n_variables * sizeof(model->x[0]));
 }
 
 cgsl_model* cgsl_model_default_alloc(int n_variables, const double *x0, void *parameters,
@@ -167,6 +176,7 @@ cgsl_model* cgsl_model_default_alloc(int n_variables, const double *x0, void *pa
 
     m->n_variables = n_variables;
     m->x           = calloc( n_variables, sizeof(double));
+    m->x_backup    = calloc( n_variables, sizeof(double));
 
     if (x0) {
         memcpy(m->x, x0, n_variables * sizeof(double));
@@ -178,6 +188,8 @@ cgsl_model* cgsl_model_default_alloc(int n_variables, const double *x0, void *pa
     m->pre_step    = pre_step;
     m->post_step   = post_step;
     m->free        = cgsl_model_default_free;
+    m->get_state   = cgsl_model_default_get_state;
+    m->set_state   = cgsl_model_default_set_state;
 
     return m;
 
@@ -255,6 +267,18 @@ void cgsl_simulation_set_variable_step( cgsl_simulation * s ) {
   return;
 }
 
+void cgsl_simulation_get( cgsl_simulation *s ) {
+  if (s->model->get_state) {
+    s->model->get_state(s->model);
+  }
+}
+
+void cgsl_simulation_set( cgsl_simulation *s ) {
+  if (s->model->set_state) {
+    s->model->set_state(s->model);
+  }
+}
+
 
 
 
@@ -266,6 +290,7 @@ typedef struct cgsl_epce_model {
   double *z_prev;               /** z values of previous step, copied in pre_step 
                                  * TODO: replace with circular buffer for longer averaging
                                  */
+  double *z_prev_backup;        /** for get/set FMU state */
   double dt;                    /** current timestep */
 
   int filter_length;            /** EPCE filter length.
@@ -413,9 +438,40 @@ static void cgsl_epce_model_free(cgsl_model *m) {
     }
 
     free(model->z_prev);
+    free(model->z_prev_backup);
     free(model->outputs);
     free(model->filtered_outputs);
     cgsl_model_default_free(m);
+}
+
+static void cgsl_epce_model_get_state(cgsl_model *model) {
+  cgsl_epce_model *m = (cgsl_epce_model*)model;
+
+  if (m->model->get_state) {
+    m->model->get_state(m->model);
+  }
+
+  if (m->filter->get_state) {
+    m->filter->get_state(m->filter);
+  }
+
+  cgsl_model_default_get_state(model);
+  memcpy(m->z_prev_backup, m->z_prev, m->filter->n_variables * sizeof(m->z_prev[0]));
+}
+
+static void cgsl_epce_model_set_state(cgsl_model *model) {
+  cgsl_epce_model *m = (cgsl_epce_model*)model;
+
+  if (m->model->set_state) {
+    m->model->set_state(m->model);
+  }
+
+  if (m->filter->set_state) {
+    m->filter->set_state(m->filter);
+  }
+
+  cgsl_model_default_set_state(model);
+  memcpy(m->z_prev, m->z_prev_backup, m->filter->n_variables * sizeof(m->z_prev[0]));
 }
 
 cgsl_model * cgsl_epce_model_init( cgsl_model  *m, cgsl_model *f,
@@ -438,7 +494,10 @@ cgsl_model * cgsl_epce_model_init( cgsl_model  *m, cgsl_model *f,
   model->model                  = m;
   model->filter                 = f;
   model->z_prev                 = calloc(f->n_variables, sizeof(double));
+  model->z_prev_backup          = calloc(f->n_variables, sizeof(double));
   model->e_model.free           = cgsl_epce_model_free;
+  model->e_model.get_state      = cgsl_epce_model_get_state;
+  model->e_model.set_state      = cgsl_epce_model_set_state;
   model->filter_length          = filter_length;
   model->epce_post_step         = epce_post_step;
   model->epce_post_step_params  = epce_post_step_params;

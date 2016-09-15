@@ -9,7 +9,6 @@ typedef struct {
   int last_gear;      /** for detecting when the gear changes */
   double delta_phi;   /** angle difference at gear change, for preventing
                        *  "springing" when changing gears */
-  double x_backup[12];/** state backup for fmi2GetFMUstate()/fmi2SetFMUstate() */
 } clutchgear_simulation;
 
 static void clutchgear_free(clutchgear_simulation simulation) {
@@ -17,11 +16,11 @@ static void clutchgear_free(clutchgear_simulation simulation) {
 }
 
 static void clutchgear_get(clutchgear_simulation *s) {
-  memcpy(s->x_backup, s->sim.model->x, s->sim.model->n_variables * sizeof(s->sim.model->x[0]));
+  cgsl_simulation_get(&s->sim);
 }
 
 static void clutchgear_set(clutchgear_simulation *s) {
-  memcpy(s->sim.model->x, s->x_backup, s->sim.model->n_variables * sizeof(s->sim.model->x[0]));
+  cgsl_simulation_set(&s->sim);
 }
 
 #define SIMULATION_TYPE clutchgear_simulation

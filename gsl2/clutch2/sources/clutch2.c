@@ -317,19 +317,22 @@ static void clutch_init(state_t *s) {
       epce_post_step,
       s
       ),
-    rkf45, 1e-5, 0, 0, 0, NULL
+    rkf45, 1e-5, 0, 0, s->md.octave_output, s->md.octave_output ? fopen("clutch2.m", "w") : NULL
     );
   s->simulation.last_gear = s->md.gear;
   s->simulation.delta_phi = 0;
 }
 
-static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
+#define NEW_DOSTEP //to get noSetFMUStatePriorToCurrentPoint
+static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
   if (s->md.is_gearbox && s->md.gear != s->simulation.last_gear) {
     /** gear changed - compute impact that keeps things sane */
     double ratio = gear2ratio(s);
     s->simulation.delta_phi = ratio*s->simulation.sim.model->x[ 2 ] - s->simulation.sim.model->x[ 0 ];
   }
 
+  //don't dump tentative steps
+  s->simulation.sim.print = noSetFMUStatePriorToCurrentPoint;
   cgsl_step_to( &s->simulation, currentCommunicationPoint, communicationStepSize );
 
   s->simulation.last_gear = s->md.gear;

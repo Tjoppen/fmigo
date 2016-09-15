@@ -508,7 +508,11 @@ fmi2Status fmi2DoStep(fmi2Component cc, fmi2Real currentCommunicationPoint,
         return fmi2Error;
     }
 
+#ifdef NEW_DOSTEP
+    doStep(&comp->s, currentCommunicationPoint, communicationStepSize, noSetFMUStatePriorToCurrentPoint);
+#else
     doStep(&comp->s, currentCommunicationPoint, communicationStepSize);
+#endif
     return fmi2OK;
 }
 

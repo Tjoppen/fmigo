@@ -192,7 +192,8 @@ static double fclutch( double dphi, double domega, double clutch_damping ) {
   
   //Scania's clutch curve
   static const double b[] = { -0.087266462599716474, -0.052359877559829883, 0.0, 0.09599310885968812, 0.17453292519943295 };
-  static const double c[] = { -1000, -30, 0, 50, 3500 };
+//  static const double c[] = { -1000, -30, 0, 50, 3500 };
+  static const double c[] = { -100, -30, 0, 50, 350 };
   size_t N = sizeof( c ) / sizeof( c[ 0 ] );
   size_t END = N-1;
     
@@ -342,25 +343,26 @@ static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real comm
 #ifdef CONSOLE
 int main(){
 
-  FILE * f = fopen("data.m", "w+");
+//  FILE * f = fopen("data.m", "w+");
 
-  state_t s = {{
-      8.0, 			/* init position */
-      4.0, 			/* init velocity */
-      0.0, 			/* init angle difference*/
-      10.0, 			/* mass */
-      2.0,			/* damping */
-      10.0,			/* clutch damping */
-      15.0,			/* init angular velocity */
-      10,				/* input force */
-    }};
+  state_t s;
+  
+  s.md = defaults;
+  s.md.v0_e = 50;
+  s.md.clutch_damping = 0;
+  s.md.gamma_e = 0.0;
+  s.md.gamma_s = 0.0;
+  s.md.mass_e = 1.0;
+  s.md.mass_s = 100.0;
+//  s.md.force_in_e = 20;
+ // s.md.force_in_s = -20;
 
   clutch_init(&s);
-  s.simulation.file = fopen( "s.m", "w+" );
-  s.simulation.save = 1;
-  s.simulation.print = 1;
-  cgsl_step_to( &s.simulation, 0.0, 10.0 );
-  cgsl_free_simulation(s.simulation);
+  s.simulation.sim.file = fopen( "s.m", "w+" );
+  s.simulation.sim.save = 1;
+  s.simulation.sim.print = 1;
+  cgsl_step_to( &s.simulation.sim, 0.0, 100.0 );
+  cgsl_free_simulation(s.simulation.sim);
 
   return 0;
 }

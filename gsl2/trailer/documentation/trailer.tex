@@ -1,11 +1,12 @@
 %%%%%%%%%%%%% preamble for all tex documents  %%%%
 %%%%%%%%%%%%% current style defaults to scrartcl  but that could be changed
 %%%%%%%%%%%%% with a script or by hand   
-%%%%%%%%%%%%%
+%%%%%%%%%%%%% 
 \documentclass[10pt,notitlepage,abstracton]{scrartcl}
 \usepackage[a4, center, dvips]{crop}
 \setlength{\linewidth}{\textwidth}
 \usepackage{scrpage2}
+\usepackage{hhline}
 \usepackage[sort,numbers]{natbib}
 \usepackage{amsmath}
 \usepackage{amscd}
@@ -49,7 +50,7 @@
 \makeatother
 \include{notation-macros}
 \usepackage[scrpage]{svninfo} 
-%%%%  not sure what to make of revision info right now
+%%%% not sure what to make of revision info right now
 \title{Trailer model}
 \author{Claude Lacoursi{\`{e}}re \\
   HPC2N/UMIT, Ume{\aa} University\\
@@ -83,47 +84,130 @@ which has variable grade $\alpha(x)$.
 
 The trailer is powered via a shaft with angle and angular speed
 $\idx{\phi}{i},\idx{\omega}{i}$.  This shaft goes is connected to the axle
-with a gear with ratio $\idx{r}{d}$ from the differential.  Assuming no
+with a gear with ratio $r_{d}$ from the differential.  Assuming no
 slip, the speed of the point mass is related to that of the wheel via
-$\dot{x} = \idx{r}{w}\idx{\omega}{w}$.
+$\dot{x} = r_{w}\idx{\omega}{w}$.
 
 The relevant portion of the gravity force is
 \begin{equation}
   \label{eq:1}
-  \idx{f}{g} = - m g \sin(\alpha ( x ) ).
+  f_{g} = - m g \sin(\alpha ( x ) ).
 \end{equation}
 A drag force for air resistance is introduced as
 \begin{equation}
   \label{eq:2}
-  \idx{f}{d} = - \sign(\dot{x}) \frac{1}{2}\rho A C_{d} \dot{x}^{2},  
+  f_{d} = - \sign(\dot{x}) \frac{1}{2}\rho A C_{d} \dot{x}^{2},  
 \end{equation}
 rolling resistance is then
 \begin{equation}
   \label{eq:3}
- \idx{f}{r} = - \sign(\dot{x})(c_{r_{1}}\abs{\dot{x}} + c_{r_{0}}) m g \cos(\alpha(x))
+  f_{r} = - \sign(\dot{x})(c_{r_{1}}\abs{\dot{x}} + c_{r_{0}}) m g \cos(\alpha(x))
 \end{equation}
 and a braking force
 \begin{equation}
   \label{eq:4}
-  \idx{f}{b} = - r \mu m g \cos(\alpha(x)), \text{ where }   r\in[0,1].
+  f_{b} = - r \mu m g \cos(\alpha(x)), \text{ where }   r\in[0,1].
 \end{equation}
 As for the input forces, we either accept a torque directly in which case
 \begin{equation}
   \label{eq:5}
-  \idx{f}{d} = \frac{1}{\idx{r}{d}\idx{r}{w}}\idx{\tau}{i}, 
+  f_{c} = \frac{1}{r_{w}r_{d}}\tau_{i}
 \end{equation}
 or we use a coupling spring with
 \begin{equation}
   \label{eq:6}
   \begin{split}
-    \idx{f}{d} &= \frac{1}{\idx{r}{w}} \left( -\idx{k}{i} \delta -
-      \idx{\gamma}{i}( \frac{\idx{r}{d}\dot{x}}{\idx{r}{w}} - \idx{\omega}{i}
-      )
-    \right) \\
-    \dot{\delta} &= \frac{\idx{r}{d}\dot{x}}{\idx{r}{w}} - \idx{\omega}{i}
+    f_{i} &= \frac{1}{r_{w}} \left( -k \delta -
+      \gamma( \frac{\dot{x}}{r_{d}r_{w}} - \bar{\omega}_{i} ) \right) \\
+    \dot{\delta} &= \frac{\dot{x}}{r_{d}r_{w}} - \bar{\omega}_{i}. 
   \end{split}
 \end{equation}
-The 
+For the case of displacement-displacement coupling, we use 
+\begin{equation}
+  \label{eq:8}
+    f_{i} = \frac{1}{r_{w}} \left( -k (\frac{x}{r_{d}r_{w}} - \bar{\phi}_{i})  -
+      \gamma( \frac{\dot{x}}{r_{d}r_{w}} - \bar{\omega}_{i} ) \right) 
+\end{equation}
+
+
+
+The equations motion are then, allowing for one further external force $f_{e}$, 
+\begin{equation}
+  \label{eq:7}
+  m\ddot{x} = f_{d} + f_{g} + f_{r} + f_{b} + f_{c} + f_{e}. 
+\end{equation}
+
+
+\section{Parameters, inputs and outputs}
+\label{sec:param-inputs-outp}
+
+The list of parameters is as follows.  Note that the default values are
+worthless but they have been chosen so the module does not crash if the
+user forgets to set them.  All units are assumed to be in MKS units. 
+
+
+
+\begin{tabularx}{1.0\linewidth}[H]{ ||X|c|c|c|c|c|| }
+  \hhline{|======|}
+  Name & Symbol & Variable & Value ref. & Range & Default \\
+  \hhline{|======|}
+  Initial position & $x_{0}$ & \texttt{x\_0} & xx  & $(-\infty,\infty)$ & 0 \\ \hline
+  Initial velocity & $v_{0}$ & \texttt{v\_0} & xx  & $(-\infty,\infty)$ & 0 \\ \hline
+  Mass  & $m$ & mass & 12 & $(0,\infty]$ & 1 Kg \\ \hline
+  Wheel radius &$r_{w}$& x & 12 &  $(0,\infty]$  &1 m \\ \hline
+  Differential gear ratio & $r_{g}$ &x & 12 & $(0,\infty]$ & 1 \\ \hline
+  Air density & $\rho$ &x & 12 & $(0,\infty]$ & $1.2$Kg/$\text{m}^{3}$ \\ \hline
+  Surface area & $A$&x & 12  & $[0,\infty]$ & $1\text{m}^{2}$ \\ \hline
+  Drag coefficient & $C_{d}$ &x & 12 & $[0,\infty]$ & $1$ \\ \hline
+  Gravitational \newline acceleration & $g$ &x & 12 & $(-\infty, \infty)$ & $9.8$ m/$\text{s}^{2}$ \\ \hline
+  Static rolling \newline resistance & $c_{r_{1}}$ &x & 12 & $(-\infty, \infty)$ & $9.8$ m/$\text{s}^{2}$ \\ \hline
+  Kinetic rolling \newline resistance & $c_{r_{1}}$ &x & 12 & $(-\infty, \infty)$ & $9.8$ m/$\text{s}^{2}$ \\ \hline
+  Static tire friction & $\mu$ &x & 12 & $(-\infty, \infty)$ & $9.8$ m/$\text{s}^{2}$ \\ \hline
+  Coupling spring \newline constant & $k$ &x & 12 & $[0,\infty]$ &  N/m \\ \hline
+  Coupling damping \newline constant & $\gamma$ &x & 12 & $[0,\infty]$ & N$\cdot$ s/m \\\hline 
+  Integrator &  &x & 12 &  & integer \\\hline 
+  \hhline{|======|}
+  EPCE filter &  &x & 12 & $[0,1,3,\ldots]$ & steps \\ \hhline{|======|}
+\end{tabularx}
+
+
+The initial values which must be set. 
+
+
+
+Output variables. 
+
+
+\begin{tabularx}{1.0\linewidth}[H]{ ||X|c|c|c|c|| }
+  \hhline{|=====|}
+  Name & Symbol & Variable & Value ref. & Range  \\
+  \hhline{|=====|}
+  Position &  $x$ & \texttt{x} & XX & \\ \hline
+  Velocity &  $v=\dot{x}$ & \texttt{v} & XX & \\ \hline
+  Acceleration &  $a=\ddot{x}$ & \texttt{a} & XX & \\ \hline
+  Coupling force  & $f_{c}$ &\texttt{f\_c} & 12 &  \\ \hline
+  Directional derivatives& $\inlfracpd{a}{f_{i}}$ & & 12 &  \\ 
+ \hhline{|====|}
+\end{tabularx}
+
+Input variables.
+
+\begin{tabularx}{1.0\linewidth}[H]{ ||X|c|c|c|c|| }
+  \hhline{|=====|}
+  Name & Symbol & Variable & Value ref. & Range  \\
+  \hhline{|=====|}
+  Input torque &  $\tau_{i}$ & \texttt{tau\_i} & XX & \\ \hline
+  Extra input torque &  $\tau_{e}$ & \texttt{tau\_e} & XX & \\ \hline
+  Input angle &  $\phi_{i}$ & \texttt{phi\_i} & XX & \\ \hline
+  Input velocity &  $\omega_{i}$ & \texttt{omega\_i} & XX & \\ \hline
+  Slope & $\alpha$ &\texttt{alpha} & 12 &  \\ \hline
+  Extra force & $f_{c}$ &\texttt{f\_c} & 12 &  \\ \hline
+  Brake position & $r$ & \emph{brake}& 12 &  \\ 
+ \hhline{|====|}
+\end{tabularx}
+
+
+
 
 
 

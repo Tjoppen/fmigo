@@ -1,0 +1,230 @@
+%%%%%%%%%%%%% preamble for all tex documents  %%%%
+%%%%%%%%%%%%% current style defaults to scrartcl  but that could be changed
+%%%%%%%%%%%%% with a script or by hand   
+%%%%%%%%%%%%%
+\documentclass[10pt,notitlepage,abstracton]{scrartcl}
+\usepackage[a4, center, dvips]{crop}
+\setlength{\linewidth}{\textwidth}
+\usepackage{scrpage2}
+\usepackage[sort,numbers]{natbib}
+\usepackage{amsmath}
+\usepackage{amscd}
+\usepackage{amsthm}
+\usepackage{amsfonts}
+\usepackage{amsbsy}
+\usepackage{amsxtra}
+\usepackage{amssymb}
+\usepackage[draft]{fixme}
+\usepackage[utf8]{inputenc}
+\usepackage{float}
+\usepackage{url}
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage[ruled, section]{algorithm}
+\usepackage{algpseudocode}
+\usepackage{multirow}
+\usepackage{tabularx}
+\usepackage{subfigure}
+\usepackage{tikz}
+\usepackage{pgfplots,pgfplotstable}
+\usepackage{gnuplot-lua-tikz}
+\usepackage[normalem]{ulem}
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{plain}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{example}{Example}[section]
+\theoremstyle{plain}
+\newtheorem*{remark}{Remark}
+\newtheorem*{note}{Note}
+\newtheorem{case}{Case}
+\makeatletter
+\renewcommand{\labelitemi}{$\m@th\triangleright$}
+\renewcommand{\labelitemii}{$\m@th\cdot$}
+\renewcommand{\labelitemiii}{\emdash}
+\renewcommand{\labelitemiv}{\emdash\emdash}
+\makeatother
+\include{notation-macros}
+\usepackage[scrpage]{svninfo} 
+%%%%  not sure what to make of revision info right now
+\title{Simple FMUs for clutches and gears}
+\author{Claude Lacoursi{\`{e}}re \\
+  HPC2N/UMIT, Ume{\aa} University\\
+  SE-901 87, Ume{\aa}, Sweden\\
+  \texttt{claude@hpc2n.umu.se}
+}
+\begin{document}
+\svnInfo $Id$
+\maketitle{}
+\svnId
+\begin{abstract}
+
+\end{abstract}
+
+\section{Introduction}
+\label{sec:introduction}
+
+This module models a clutch and a gear box with two rotational bodies
+connected to each other by a piecewise linear force law.  The force can be
+set to zero via a control parameter to simulate engagement and
+disengagement.
+
+The bodies themselves are connected to other modules via either
+force-velocity, force-displacements, or displacements-displacement
+couplings, depending on the chosen configuration.  All combinations are
+supported.
+
+The module can also compute the effective mobility so that it can be used
+in a kinematic coupling configuration. 
+
+\section{Internal forces}
+\label{sec:internal}
+
+We first consider internal forces between the two bodies.   
+
+The case of the
+gear with ratio $\alpha$ is a spring of the form
+\begin{equation}
+  \label{eq:1}
+  f_{g} = 
+  - K_{g}(\idx{\phi}{1} - \alpha\idx{\phi}{2})
+\pm D_{g}(\idx{\omega}{1}  - \alpha\idx{\omega}{2}).
+\end{equation}
+This is the force on body $1$, and so $-f_{g}$ is applied to body $2$.
+The reason for the first spring term is to avoid numerical slipping which
+is important for the case of displacement coupling.  Because of this, we
+the angles are reset when the gear.  
+
+As for the clutch, we use a piecewise linear force law when it is engaged.
+This models the small amount of flexibility necessary to absorb vibration
+from the engine.  An ideal clutch should have a nonsmooth force law however
+so that an arbitrary amount of torque could be delivered once fully
+engaged, up to the slipping point.  This is not covered here.  The force
+law is then
+\begin{equation}
+  \label{eq:2}
+  f_{c} =
+  \begin{cases}
+     -K_{c_{1}} (\idx{\phi}{1} - \alpha\idx{\phi}{2})
+     -D_{c_{1}}(\idx{\omega}{1}  - \alpha\idx{\omega}{2})  & \text{ for }
+    \idx{\phi}{1}-\idx{\phi}{2}
+    \in[\;\underline{\delta\phi},\overline{\delta\phi}\;] \\[0.5em]
+     -K_{c_{2}} (\idx{\phi}{1} - \alpha\idx{\phi}{2})
+     -D_{c_{2}}(\idx{\omega}{1}  - \alpha\idx{\omega}{2})  & \text{ for }
+    \idx{\phi}{1}-\idx{\phi}{2}
+    >\overline{\delta\phi} \\[0.5em]
+     -K_{c_{3}} (\idx{\phi}{1} - \alpha\idx{\phi}{2})
+     -D_{c_{3}}(\idx{\omega}{1}  - \alpha\idx{\omega}{2})  & \text{ for }
+    \idx{\phi}{1}-\idx{\phi}{2}
+    <\underline{\delta\phi}
+  \end{cases}
+\end{equation}
+An example curve is shown below.   At present time, the clutch curve is set
+directly in the source code and cannot be changed dynamically.
+
+
+\pgfplotsset{every axis plot post/.append style={mark=none}}%standard value no mark
+\pgfplotsset{ every mark/.append style={solid} }
+\pgfplotsset{scaled y ticks=manual:{$10^{3}$}{\pgfmathparse{#1/1000}}}
+\begin{tikzpicture}
+  \begin{axis}[
+    yticklabel style={%aligns the y ticks numbers automatically :-)
+    /pgf/number format/fixed,
+  %  /pgf/number format/precision=1,
+  %  /pgf/number format/fixed zerofill,
+  %  scaled y ticks=true
+  }, 
+  xticklabel style={%aligns the y ticks numbers automatically :-)
+    /pgf/number format/fixed,
+    /pgf/number format/precision=1,
+    /pgf/number format/fixed zerofill
+  },  
+  xlabel=$\delta\phi$, ylabel=$\tau$, 
+  xtick={-0.1, 0, 0.1, 0.2}]
+  \addplot +[teal,line width=3pt] table {./clutch.dat};
+  \end{axis}
+\end{tikzpicture}
+
+\section{Couplings}
+\label{sec:couplings}
+
+Several options are provided for coupling.  In the first case, we receive a
+velocity from another module, and report a force back.  The force law is
+linear
+\begin{equation}
+  \label{eq:4}
+  \idxsub{f}{i}{p} = - \idxsub{K}{i}{p}\idx{\delta\phi}{i} -
+  \idxsub{D}{i}{p}(\idx{v}{i} -
+  \idx{\bar{v}}{e,i}), \text{ where } i = 1,2.
+\end{equation}
+In both cases, $-\idxsub{f}{i}{p}$ are reported as output to the respective
+coupled module $(e,i)$.  
+
+The module can also receive forces $\idxsub{f}{i}{e}$ at either port. Two
+separate inputs are provided for the force.
+
+The force inputs can be used for the case of kinematic couplings where a
+global solver is responsible to compute pairwise forces necessary to
+maintain algebraic conditions describing joints. 
+
+\section{Equations of motion}
+\label{sec:equations-motion-1}
+
+Now that we have the forces, the equations of motion are simply
+\begin{equation}
+  \label{eq:5}
+  \begin{split}
+    \idx{\mathcal{J}}{1}\idx{\dot{\omega}}{1} & = c_{g}f_{g} + c_{c}f_{c} +
+    \idxsub{f}{1}{p} + \idxsub{f}{1}{e} \\
+    \idx{\mathcal{J}}{2}\idx{\dot{\omega}}{2} & = -c_{c}f_{g} + -c_{c}f_{c} +
+    \idxsub{f}{2}{p} + \idxsub{f}{2}{e} \\
+    \idx{\delta\dot{\phi}}{1} & \idx{\omega}{1} - \idx{\bar{\omega}}{e,1} \\
+    \idx{\delta\dot{\phi}}{2} & \idx{\omega}{2} - \idx{\bar{\omega}}{e,2} 
+  \end{split}
+\end{equation}
+and $\idx{\bar{\omega}}{e,i}$ are the current estimated values of the
+angular velocities of the coupled system.   We also provide an option to
+set
+\begin{equation}
+  \label{eq:6}
+  \idx{\delta\phi}{i}  = \idx{\phi}{i} - \idx{\bar{\phi}}{e,i}
+\end{equation}
+for displacement-displacement coupling.
+
+
+
+\section{Other outputs}
+\label{sec:other-outputs}
+
+This module can report two types of directional derivatives.  The first one
+simply reports
+\begin{equation}
+  \label{eq:7}
+  \fracpd{\idx{\dot{\omega}}{i}}{\idx{f}{e,i}} =
+  \frac{1}{\idx{\mathcal{J}}{i}}. 
+\end{equation}
+The second one however reports the effective mobility over a communication
+step, i.e., the numerical derivative
+\begin{equation}
+  \label{eq:8}
+  \fracpd{\idxsub{\dot{\omega}}{i}{k+1}}{\idxsub{f}{e,i}{k}}, 
+\end{equation}
+where $k$ is the discrete time step.   This is needed for semi-implicit
+time stepping used for kinematic couplings. 
+
+
+
+\bibliographystyle{plainnat}  
+\bibliography{lde-bib}
+
+
+
+\end{document}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: t
+%%% End: 

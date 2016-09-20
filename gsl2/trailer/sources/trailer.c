@@ -7,99 +7,62 @@
 
 #include "fmuTemplate.h"
 
-/**
- *  The force function from the clutch
- */
-static double fclutch( double dphi, double domega, double clutch_damping ); 
-static double fclutch_dphi_derivative( double dphi );
-
 const static double flip = -1;
 
 /*  
-    Two (rotational) bodies connected via a piecewise linear clutch model. 
+    One translational body driven by a rotational variable.  
+
+    This represents a trailer moving on a road with variable gradient,
+    driven by a shaft, via a differential with gear ratio r_d, via a
+    wheel of radius r_w. 
+
     
-    Each body is coupled via force or velocity (or even position) with the
-    outside.  
-
-    Additional external forces are provided for each of the bodies. 
-
-    For the case of velocity coupling, the angle difference is integrated. 
-
     Variables are listed as: 
-    x_e    : position engine plate
-    v_e    : velocity engine plate
-    dx_e   : angle difference estimate between engine plate and outside coupling
+    x    : position of trailer along road (parametric)
+    v    : speed of truck
+    dphi : angle difference estimate between the input shaft and the
+    differential 
 
-    x_s    : position shaft plate
-    v_s    : velocity shaft plate
-    dx_s   : angle difference estimate between shaft plate and outside coupling
 
  */
 
-int clutch (double t, const double x[], double dxdt[], void * params){
+#define SIGNUM( x ) 
+
+int trailer (double t, const double x[], double dxdt[], void * params){
 
   state_t *s = (state_t*)params;
 
-  double force_clutch =  s->md.clutch_position * fclutch( x[ 0 ] - x[ 3 ], x[ 1 ] - x[ 4 ], s->md.clutch_damping );
+  /* gravity */
+  double force = - s->md.mass * s->md.g * sin( s->md.alpha );
 
-  /** Second order dynamics */
-  dxdt[ 0 ]  = x[ 1 ];
+  /* drag */
+  force += 
+    - ( (x > 0) ? 1 : ( (x < 0) ? -1 : 0) ) *
+    0.5 * s->md.rho  * s->md.A * s->md.c_d * x[ 1 ] * x[ 1 ];
 
-  /** compute the coupling force: NOTE THE SIGN!
-   *  This is the force *applied* to the coupled system
-   */
-  s->md.force_e =   s->md.gamma_ec * ( x[ 1 ] - s->md.v_in_e );
-  if ( s->md.integrate_dx_e )
-    s->md.force_e +=  s->md.k_ec *  x[ 2 ];
+  /* brake */ 
+  force +=
+    - s->md.brake * s->md.mu * s->md.g * cos( s->md.alpha );
+
+  /* any additional force */
+  force += s->md.force_in;
+
+  s->md.torque_e =   s->md.gamma_c * ( x[ 1 ] / s->md->r_d / s->md->r_w - s->md.omega_in );
+  
+  if ( s->md.integrate_d_omega )
+    s->md.torque_e +=  s->md.k_c *  x[ 2 ];
   else
-    s->md.force_e +=  s->md.k_ec *  ( x[ 2 ] - s->md.x_in_e );
+    s->md.torque_e +=  s->md.k_c *  ( x[ 2 ] - s->md.phi_in );
+
+  /* coupling force */
 										   
-
-  /** internal dynamics */ 
-  dxdt[ 1 ]  = -s->md.gamma_e * x[ 1 ];		
-  /** coupling */ 
-  dxdt[ 1 ] += -force_clutch;
-  /** counter torque from next module */ 
-  dxdt[ 1 ] += -s->md.force_in_e;
-  /** additional driver */ 
-  dxdt[ 1 ] += s->md.force_in_ex;
-  dxdt[ 1 ] -= force_e;
-  dxdt[ 1 ] /= s->md.mass_e;
+  dxdt[ 1 ]  = ( 1.0 / s->md.mass ) * ( force - s->md.torque_e / s->md.r_w );
  
   /** angle difference */
   if ( s->md.integrate_dx_e )
-    dxdt[ 2 ] = x[ 1 ] - s->md.v_in_e;
-
+    dxdt[ 2 ] = x[ 1 ] - s->md.omega_in;
 
   
-  /** shaft-side plate */
-
-  dxdt[ 3 ]  = x[ 4 ];
-  /** compute the coupling force: NOTE THE SIGN!
-   *  This is the force *applied* to the coupled system
-   */
-  s->md.force_s =   s->md.gamma_sc * ( x[ 4 ] - s->md.v_in_s );
-  if ( s->md.integrate_dx_s )
-    s->md.force_s +=  s->md.k_sc *  x[ 5 ];
-  else
-    s->md.force_e +=  s->md.k_sc *  ( x[ 3 ] - s->md.x_in_s );
-  
-  /** internal dynamics */ 
-  dxdt[ 4 ]  = -s->md.gamma_s * x[ 4 ];		
-  /** coupling */ 
-  dxdt[ 4 ] +=  force_clutch;
-  /** counter torque from next module */ 
-  dxdt[ 4 ] += s->md.force_in_s;
-  /** additional driver */ 
-  dxdt[ 4 ] += s->md.force_in_sx;
-  dxdt[ 4 ] -= s->md.force_s;
-  dxdt[ 4 ] /= s->md.mass_s;
- 
- 
-  /** angle difference */
-  if ( s->md.integrate_dx_s )
-    dxdt[ 5 ] = x[ 4 ] - s->md.v_in_s;
-
   return GSL_SUCCESS;
 
 }
@@ -107,7 +70,7 @@ int clutch (double t, const double x[], double dxdt[], void * params){
 
 
   /** TODO */
-int jac_clutch (double t, const double x[], double *dfdx, double dfdt[], void *params)
+int jac_trailer (double t, const double x[], double *dfdx, double dfdt[], void *params)
 {
   
   state_t *s = (state_t*)params;
@@ -118,90 +81,7 @@ int jac_clutch (double t, const double x[], double *dfdx, double dfdt[], void *p
   return GSL_SUCCESS;
 }
 
-/**
- *  Parameters should be read from a file but that's quicker to setup.
- *  These numbers were provided by Scania.
- */
-static double fclutch( double dphi, double domega, double clutch_damping ) {
-  
-  //Scania's clutch curve
-  static const double b[] = { -0.087266462599716474, -0.052359877559829883, 0.0, 0.09599310885968812, 0.17453292519943295 };
-  static const double c[] = { -1000, -30, 0, 50, 3500 };
-  size_t N = sizeof( c ) / sizeof( c[ 0 ] );
-  size_t END = N-1;
-    
-  /** look up internal torque based on dphi
-      if too low (< -b[ 0 ]) then c[ 0 ]
-      if too high (> b[ 4 ]) then c[ 4 ]
-      else lerp between two values in c
-  */
 
-  double tc = c[ 0 ]; //clutch torque
-
-  if (dphi <= b[ 0 ]) {
-    tc = (dphi - b[ 0 ]) / 0.034906585039886591 *  970.0 + c[ 0 ];
-  } else if ( dphi >= b[ END ] ) {
-    tc = ( dphi - b[ END ] ) / 0.078539816339744828 * 3450.0 + c[ END ];
-  } else {
-    int i;
-    for (i = 0; i < END; ++i) {
-      if (dphi >= b[ i ] && dphi <= b[ i+1 ]) {
-	double k = (dphi - b[ i ]) / (b[ i+1 ] - b[ i ]);
-	tc = (1-k) * c[ i ] + k * c[ i+1 ];
-	break;
-      }
-    }
-    if (i >= END ) {
-      //too high (shouldn't happen)
-      tc = c[ END ];
-    }
-  }
-
-  //add damping. 
-  tc += clutch_damping * domega;
-
-  return tc; 
-
-}
-
-static double fclutch_dphi_derivative( double dphi ) {
-  
-  //Scania's clutch curve
-  static const double b[] = { -0.087266462599716474, -0.052359877559829883, 0.0, 0.09599310885968812, 0.17453292519943295 };
-  static const double c[] = { -1000, -30, 0, 50, 3500 };
-  size_t N = sizeof( c ) / sizeof( c[ 0 ] );
-  size_t END = N-1;
-    
-  /** look up internal torque based on dphi
-      if too low (< -b[ 0 ]) then c[ 0 ]
-      if too high (> b[ 4 ]) then c[ 4 ]
-      else lerp between two values in c
-  */
-
-  double df = 0;		// clutch derivative
-
-  if (dphi <= b[ 0 ]) {
-    df =  1.0 / 0.034906585039886591 *  970.0 ;
-  } else if ( dphi >= b[ END ] ) {
-    df =  1.0 / 0.078539816339744828 * 3450.0 ;
-  } else {
-    int i;
-    for (i = 0; i < END; ++i) {
-      if (dphi >= b[ i ] && dphi <= b[ i+1 ]) {
-	double k =  1.0  / (b[ i+1 ] - b[ i ]);
-	df = k * ( c[ i + 1 ] -  c[ i ] );
-	break;
-      }
-    }
-    if (i >= END ) {
-      //too high (shouldn't happen)
-      df = 0;
-    }
-  }
-
-  return df; 
-
-}
 
 
 /** TODO */
@@ -218,7 +98,7 @@ static int epce_post_step(int n, const double outputs[], void * params) {
 }
 
 
-static void clutch_init(state_t *s) {
+static void trailer_init(state_t *s) {
     const double initials[3] = {s->md.x0_e,
 				s->md.v0_e,
 				s->md.dx0};
@@ -241,7 +121,7 @@ static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real comm
 }
 
 
-//gcc -g clutch.c ../../../templates/gsl2/gsl-interface.c -DCONSOLE -I../../../templates/gsl2 -I../../../templates/fmi2 -lgsl -lgslcblas -lm -Wall
+//gcc -g trailer.c ../../../templates/gsl2/gsl-interface.c -DCONSOLE -I../../../templates/gsl2 -I../../../templates/fmi2 -lgsl -lgslcblas -lm -Wall
 #ifdef CONSOLE
 int main(){
 

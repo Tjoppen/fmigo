@@ -36,39 +36,215 @@
     <!-- parameters and initial conditions --> 
     <!-- index="0"-->
     <ScalarVariable
-        name="x0_e"               
-        valueReference="0"  
-        description="initial position of engine-side plate"                      
-        causality="parameter" 
+        name="x0"
+        valueReference="XXX"
+        description="initial position"
+        causality="parameter"
         variability="fixed">
       <Real start="0"/>
     </ScalarVariable>
-
-
-    <!-- inputs -->
-    <!-- index="0"-->
-    <ScalarVariable 
-        name="x_in_e"
-        valueReference="15"  
-        description="external displacement engine-side"             
-        causality="input" initial="exact">
+    <ScalarVariable
+        name="v0"
+        valueReference="XXX"
+        description="initial velocity"
+        causality="parameter"
+        variability="fixed">
       <Real start="0"/>
     </ScalarVariable>
+    <ScalarVariable
+        name="mass"
+        valueReference="XXX"
+        description="total mass of the trailer"
+        causality="parameter"
+        variability="fixed">
+      <Real start="0"/>
+    </ScalarVariable>   
     
+    <ScalarVariable
+        name="area"
+        valueReference="XXX"
+        description="surface area for drag resistance"
+        causality="parameter"
+        variability="fixed">
+      <Real start="0"/>
+    </ScalarVariable>   
+    <ScalarVariable
+        name="c_d"
+        valueReference="XXX"
+        description="drag coefficient"
+        causality="parameter"
+        variability="fixed">
+      <Real start="0"/>
+    </ScalarVariable>   
+    <ScalarVariable
+        name="rho"
+        valueReference="XXX"
+        description="air density"
+        causality="parameter"
+        variability="fixed">
+      <Real start="0"/>
+    </ScalarVariable>   
+    <ScalarVariable
+        name="r_w"
+        valueReference="XXX"
+        description="radius of the wheel"
+        causality="parameter"
+        variability="fixed">
+      <Real start="0"/>
+    </ScalarVariable>   
+        <ScalarVariable
+        name="r_g"
+        valueReference="XXX"
+        description="differential gear ratio"
+        causality="parameter"
+        variability="fixed">
+      <Real start="0"/>
+    </ScalarVariable>   
+    <ScalarVariable
+        name="g"
+        valueReference="XXX"
+        description="gravitational acceleration"
+        causality="parameter"
+        variability="fixed">
+      <Real start="0"/>
+    </ScalarVariable>   
+    <ScalarVariable
+        name="c_r_1"
+        valueReference="XXX"
+        description="static rolling resistance"
+        causality="parameter"
+        variability="fixed">
+      <Real start="0"/>
+    </ScalarVariable>   
+        <ScalarVariable
+        name="c_r_2"
+        valueReference="XXX"
+        description="kinetic rolling resistance"
+        causality="parameter"
+        variability="fixed">
+      <Real start="0"/>
+    </ScalarVariable>   
+    <ScalarVariable
+        name="k"
+        valueReference="XXX"
+        description="coupling spring constant"
+        causality="parameter"
+        variability="fixed">
+      <Real start="0"/>
+    </ScalarVariable>   
+        <ScalarVariable
+        name="gamma"
+        valueReference="XXX"
+        description="damping of coupling spring"
+        causality="parameter"
+        variability="fixed">
+      <Real start="0"/>
+    </ScalarVariable>   
+    <ScalarVariable
+        name="mu"
+        valueReference="XXX"
+        description="friction coefficient between wheel and road"
+        causality="parameter"
+        variability="fixed">
+      <Real start="0"/>
+    </ScalarVariable>   
+    <ScalarVariable
+        name="integrator"
+        valueReference="XXX"
+        description="which integrator to use"
+        causality="parameter"
+        variability="fixed">
+      <Real start="0"/>
+    </ScalarVariable>   
+
+    
+    <!-- inputs -->
+    <!-- index="0"-->
+
+    <ScalarVariable 
+        name="phi_i"
+        valueReference="XXX"
+        description="external input displacement"
+        causality="input"
+        initial="exact">
+      <Real start="0"/>
+    </ScalarVariable>
+    <ScalarVariable 
+        name="omega_i"
+        valueReference="XXX"
+        description="external input velocity"
+        causality="input"
+        initial="exact">
+      <Real start="0"/>
+    </ScalarVariable>   
+    <ScalarVariable 
+        name="tau_d"
+        valueReference="XXX"
+        description="external driving torque"
+        causality="input"
+        initial="exact">
+      <Real start="0"/>
+    </ScalarVariable>   
+    <ScalarVariable 
+        name="alpha"
+        valueReference="XXX"
+        description="road angle"
+        causality="input"
+        initial="exact">
+      <Real start="0"/>
+    </ScalarVariable>   
+    <ScalarVariable 
+        name="brake"
+        valueReference="XXX"
+        description="position of the brake within 0 and 1"
+        causality="input"
+        initial="exact">
+      <Real start="0"/>
+    </ScalarVariable>   
+
     <!-- outputs -->
     <!-- index="0"-->
     <ScalarVariable 
-        name="x_e"                
-        valueReference="22"  
-        description="position of engine-side plate"                              
+        name="x"
+        valueReference="XXX"
+        description="position of trailer along the road"
+        causality="output">
+      <Real />
+    </ScalarVariable>   
+    <ScalarVariable 
+        name="v"
+        valueReference="XXX"
+        description="velocity of trailer"
         causality="output">
       <Real />
     </ScalarVariable>
-    
+    <ScalarVariable 
+        name="a"
+        valueReference="XXX"
+        description="acceleration of trailer. NOTE: this is a dummy so that
+                     we can compute directional derivatives."
+        causality="output">
+      <Real />
+    </ScalarVariable>
+    <ScalarVariable 
+        name="f_c"
+        valueReference="XXX"
+        description="output coupling force"
+        causality="output">
+      <Real />
+    </ScalarVariable>
+    <ScalarVariable 
+        name="x"
+        valueReference="XXX"
+        description="position of engine-side plate"
+        causality="output">
+      <Real />
+    </ScalarVariable>
+
     <!-- index="0"-->
     <ScalarVariable 
         name="filter_length"
-        valueReference="98"
+        valueReference="XXX"
         description="Length of EPCE FIR filter (0 = disable)"
         causality="parameter"
         variability="fixed">

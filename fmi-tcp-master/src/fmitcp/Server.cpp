@@ -1187,7 +1187,7 @@ vector<fmi2_real_t> Server::computeNumericalJacobian(
     vector<fmi2_real_t> dz;
     fmi2_FMU_state_t state;
     double t = currentCommunicationPoint + communicationStepSize;
-    double dt = communicationStepSize;
+    double dt = 1e-3 * communicationStepSize;
 
     fmi2_import_get_fmu_state(m_fmi2Instance, &state);
 

@@ -1,6 +1,6 @@
 \begin{tikzpicture}[gnuplot]
 %% generated with GNUPLOT 5.0p4 (Lua 5.3; terminal rev. 99, script rev. 100)
-%% Tue Sep 13 15:40:18 2016
+%% Wed Sep 21 18:40:01 2016
 \path (0.000,0.000) rectangle (8.000,6.000);
 \gpfill{rgb color={1.000,1.000,1.000}} (1.688,0.985)--(7.446,0.985)--(7.446,5.074)--(1.688,5.074)--cycle;
 \gpcolor{color=gp lt color border}

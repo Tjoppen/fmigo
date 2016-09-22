@@ -1,19 +1,15 @@
 #!/usr/bin/python2
-
+# -*- coding: utf-8 -*-
 import sys, platform, tempfile, os, subprocess, zipfile, argparse, shutil, re
 import xml.etree.ElementTree as e
 from os.path import join as pjoin
 
 # Parse command line arguments
 parser = argparse.ArgumentParser(
-    description='Compile an FMU using CMake.',
+    description='Generate CMakeLists.txt to build an FMU',
     epilog="""It is assumed that the current directory contains an XML file called "modelDescription.xml" and a directory "sources" containing .c and .h files.
-Built by Stefan Hedman at UMIT Research Lab 2013."""
+Built by Tomas Härdin at UMIT Research Lab 2016."""
     )
-parser.add_argument('-o','--outdir',
-                    type=str,
-                    help='Where the FMU file will be saved. Default is current directory.',
-                    default='.')
 parser.add_argument('-l','--link',
                     type=str,
                     help='Libraries to link with, separated with commas.',
@@ -34,7 +30,7 @@ link_libraries = args.link.split(",")
 definitions = " -".join(args.definitions.split(","))
 if len(definitions):
     definitions = "-"+definitions
-include_directories = args.includedir.split(',')
+include_directories = set(args.includedir.split(','))
 
 # For logging errors and messages
 def log(m):
@@ -49,8 +45,6 @@ fmiVersion = root.get('fmiVersion')
 
 # Get FMU type (co-simulation or model exchange)
 fmuType = "cs"
-
-print (fmiVersion)
 
 # Get model identifier.
 modelIdentifier = "modelIdentifier"
@@ -68,9 +62,7 @@ is_64bits = sys.maxsize > 2**32
 # 'win32' seems to be the proper name for all Windows FMUs since FMILibrary-2.0.1
 arch = 'win32' if system.lower() == 'windows' else system.lower()+( "64" if is_64bits else "32")
 
-# Create temp dir for the cmake file
-d = tempfile.mkdtemp()
-path = pjoin(d,"CMakeLists.txt")
+path = "CMakeLists.txt"
 
 with open(path,'w') as f:
 
@@ -94,72 +86,43 @@ with open(path,'w') as f:
         log("No C files found in 'sources/'. Exiting...")
         exit(1)
 
-    tmpsourcesdir = pjoin(d,'sources')
-    os.mkdir(tmpsourcesdir)
-    print('Source files:')
-    for source_file in source_files:
-        print('\t'+source_file)
-        shutil.copyfile(source_file, pjoin(tmpsourcesdir,os.path.basename(source_file)))
-
     # Create a CMakeLists.txt
+    include_directories.update([d if os.path.isdir(d) else os.path.dirname(d) for d in args.templatedir])
+    source_files        = ["${CMAKE_CURRENT_SOURCE_DIR}/"+os.path.relpath(s) for s in source_files]
+    include_directories = [os.path.relpath(i) for i in include_directories]
+    files = "SET(SRCS\n    " + "\n    ".join(source_files) + "\n)"
+
     cmakestuff = """CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+# We have multiple FMUs with the same name, but in different directories
+cmake_policy(SET CMP0002 OLD)
 SET(ARCH "%s" CACHE STRING "Architecture: linux64, linux32, win32...")
 SET(TARGET %s)
-FILE(GLOB SRCS    sources/*.c sources/*.cpp)
-FILE(GLOB HEADERS sources/*.h sources/*.hpp)
+%s
 ADD_DEFINITIONS( %s )
 ADD_LIBRARY(${TARGET} SHARED ${SRCS} ${HEADERS})
-INCLUDE_DIRECTORIES(%s)
+INCLUDE_DIRECTORIES(
+    %s
+)
 SET_TARGET_PROPERTIES(${TARGET} PROPERTIES PREFIX "")
-SET_TARGET_PROPERTIES(${TARGET} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/binaries/${ARCH}")
-TARGET_LINK_LIBRARIES( ${TARGET} %s )""" % (arch, modelIdentifier, definitions, " ".join(include_directories), " ".join(link_libraries) )
+SET_TARGET_PROPERTIES(${TARGET} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/binaries/${ARCH}")
+TARGET_LINK_LIBRARIES( ${TARGET} %s )
+
+# There doesn't seem to be a way to repack an FMU in case it is deleted.
+# A post-build command is good enough for now.
+add_custom_command(TARGET ${TARGET} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E echo Packing ${TARGET}.fmu
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/fmu
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/fmu/sources
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_BINARY_DIR}/binaries ${CMAKE_CURRENT_BINARY_DIR}/fmu/binaries
+    COMMAND ${CMAKE_COMMAND} -E copy ${SRCS} ${CMAKE_CURRENT_BINARY_DIR}/fmu/sources
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml ${CMAKE_CURRENT_BINARY_DIR}/fmu
+    # Later: COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt ${CMAKE_CURRENT_BINARY_DIR}/fmu
+    COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR}/fmu ${CMAKE_COMMAND} -E tar cfv ${CMAKE_CURRENT_SOURCE_DIR}/${TARGET}.fmu --format=zip ${CMAKE_CURRENT_BINARY_DIR}/fmu/*
+    MAIN_DEPENDENCY ${TARGET}
+)
+""" % (arch, modelIdentifier, files, definitions, "\n    ".join(include_directories), " ".join(link_libraries) )
+
     f.write( cmakestuff )
     f.close()
-    print("\nCreated CMakeLists.txt (%s):\n" % (path))
-    print( cmakestuff)
-    print("");
-
-    # Run CMake
-    print("Running CMake...\n");
-    os.chdir(d)
-    if subprocess.call(["cmake", "."]) == 0:
-        print("\nRunning make...\n");
-        if subprocess.call(["cmake","--build","."]) == 0:
-
-            # Zip everything needed in FMU
-            # If the Zip file already exists, try updating it with any new files we might have
-            outpath = pjoin(cwd,args.outdir,"%s.fmu" % (modelIdentifier))
-            print('Writing/updating ' + outpath)
-            existed = os.path.exists(outpath)
-            changed = False
-
-            with zipfile.ZipFile(outpath, 'a', zipfile.ZIP_DEFLATED) as myzip:
-                def write_if_new(filename, arcname=''):
-                    global changed
-                    if arcname == '': arcname = filename
-                    if arcname in myzip.namelist():
-                        print('\tSkipped %s' % (arcname))
-                    else:
-                        myzip.write(filename, arcname)
-                        print('\t  Added %s' % (arcname))
-                        changed = True
-
-                if system == 'Windows':
-                    write_if_new(pjoin('Debug',modelIdentifier+'.dll'),pjoin('binaries',arch,modelIdentifier+'.dll'))
-                elif system == 'Darwin':
-                    write_if_new(pjoin('binaries',arch,modelIdentifier+".dylib"))
-                else:
-                    write_if_new(pjoin('binaries',arch,modelIdentifier+".so"))
-                os.chdir(cwd)
-                write_if_new('modelDescription.xml')
-                sources = [pjoin(d,"sources",s) for s in os.listdir(pjoin(d,"sources")) if os.path.isfile(pjoin(d,"sources",s))]
-                for s in sources:
-                    write_if_new(s, pjoin('sources', os.path.basename(s)).replace('\\','/'))
-
-            print(outpath + (" created." if not existed else " updated." if changed else " not changed."));
-        else:
-            log("Make failed.")
-            exit(1)
-    else:
-        log("CMake failed.")
-        exit(1)
+    print("Created %s" % (path))
+    # Done!

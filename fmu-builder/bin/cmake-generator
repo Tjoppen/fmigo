@@ -117,7 +117,7 @@ add_custom_command(TARGET ${TARGET} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy ${SRCS} ${CMAKE_CURRENT_BINARY_DIR}/fmu/sources
     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml ${CMAKE_CURRENT_BINARY_DIR}/fmu
     # Later: COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt ${CMAKE_CURRENT_BINARY_DIR}/fmu
-    COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR}/fmu ${CMAKE_COMMAND} -E tar cfv ${CMAKE_CURRENT_SOURCE_DIR}/${TARGET}.fmu --format=zip ${CMAKE_CURRENT_BINARY_DIR}/fmu/*
+    COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR}/fmu ${CMAKE_COMMAND} -E tar cf ${CMAKE_CURRENT_SOURCE_DIR}/${TARGET}.fmu --format=zip ${CMAKE_CURRENT_BINARY_DIR}/fmu/*
     MAIN_DEPENDENCY ${TARGET}
 )
 """ % (arch, modelIdentifier, files, definitions, "\n    ".join(include_directories), " ".join(link_libraries) )

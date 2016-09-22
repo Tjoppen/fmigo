@@ -116,3 +116,5 @@ if (WIN32)
     add_dependencies(fmi-tcp-master jsoncpp-ext protobuf-ext hdf5-ext)
     add_dependencies(fmi-mpi-master jsoncpp-ext protobuf-ext hdf5-ext)
 endif ()
+
+add_subdirectory(umit-fmus)

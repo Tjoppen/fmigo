@@ -19,7 +19,6 @@ else
     ulimit -n 2048  #should be some value greater than 2*max(Nseq), probably a power of two too
 fi
 
-(cd ${FMUS_DIR} && ./build.sh)
 (cd articles/work-reports       && ./run_tests.sh)
 (cd fmu-examples/co_simulation  && ./run_tests.sh)
 (cd ${FMUS_DIR}/typeconvtest    && ./test_typeconv.sh)

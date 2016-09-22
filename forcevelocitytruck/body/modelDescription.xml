@@ -25,9 +25,14 @@
   <ScalarVariable name="theta"      valueReference="0"  description="Angle"                     causality="input" initial="approx"><Real start="0"/></ScalarVariable>
   <ScalarVariable name="omega"      valueReference="1"  description="Angular velocity"          causality="input" initial="approx"><Real start="0"/></ScalarVariable>
   <ScalarVariable name="tau"        valueReference="2"  description="Torque"                    causality="output"><Real/></ScalarVariable>
-  <ScalarVariable name="jinv"       valueReference="3"  description="Inverse moment of inertia" causality="parameter" variability="fixed"><Real start="0.0001"/></ScalarVariable>
+  <ScalarVariable name="jinv"       valueReference="3"
+                  description="Inverse moment of inertia"
+                  causality="parameter" variability="fixed"><Real
+                  start="0.0001"/></ScalarVariable>
   <ScalarVariable name="kc"         valueReference="4"  description="Coupling spring constant"  causality="parameter" variability="fixed"><Real start="5000"/></ScalarVariable>
-  <ScalarVariable name="dc"         valueReference="5"  description="Coupling spring damping"   causality="parameter" variability="fixed"><Real start="250"/></ScalarVariable>
+  <ScalarVariable name="dc"         valueReference="5"
+                  description="Coupling spring damping"
+                  causality="parameter" variability="fixed"><Real start="250"/></ScalarVariable>
   <ScalarVariable name="d"          valueReference="6"  description="Drag"                      causality="parameter" variability="fixed"><Real start="10"/></ScalarVariable>
 </ModelVariables>
 

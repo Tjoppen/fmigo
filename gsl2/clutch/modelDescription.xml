@@ -1,61 +1,128 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <fmiModelDescription
-  fmiVersion="2.0"
-  description="Force-velocity clutch with GSL integrator"
-  modelName="clutch"
-  guid="{5ef23f51-b93d-46d4-aad9-c45a9cc44121}"
-  numberOfEventIndicators="0">
+    fmiVersion="2.0"
+    description="Force-velocity clutch with GSL integrator"
+    modelName="clutch"
+    guid="{5ef23f51-b93d-46d4-aad9-c45a9cc44121}"
+    numberOfEventIndicators="0">
 
-<CoSimulation
-  modelIdentifier="clutch"
-  canHandleVariableCommunicationStepSize="true"
-  canGetAndSetFMUstate="true"
-  providesDirectionalDerivative="false"/>
+  <CoSimulation
+      modelIdentifier="clutch"
+      canHandleVariableCommunicationStepSize="true"
+      canGetAndSetFMUstate="true"
+      providesDirectionalDerivative="false"/>
 
-<LogCategories>
-  <Category name="logAll"/>
-  <Category name="logError"/>
-  <Category name="logFmiCall"/>
-  <Category name="logEvent"/>
-</LogCategories>
+  <LogCategories>
+    <Category name="logAll"/>
+    <Category name="logError"/>
+    <Category name="logFmiCall"/>
+    <Category name="logEvent"/>
+  </LogCategories>
 
-<DefaultExperiment startTime="0" stopTime="10" stepSize="0.1"/>
+  <DefaultExperiment startTime="0" stopTime="10" stepSize="0.1"/>
 
-<ModelVariables>
-    <ScalarVariable name="x0"               valueReference="0"  description="initial position"                      causality="parameter" variability="fixed"><Real start="0"/></ScalarVariable>
-    <ScalarVariable name="v0"               valueReference="1"  description="initial velocity"                      causality="parameter" variability="fixed"><Real start="0"/></ScalarVariable>
-    <ScalarVariable name="dx0"              valueReference="2"  description="initial angle difference"              causality="parameter" variability="fixed"><Real start="0"/></ScalarVariable>
+  <ModelVariables>
+    <ScalarVariable
+        name="x0"               
+        valueReference="0"  
+        description="initial position"                      
+        causality="parameter" 
+        variability="fixed">
+      <Real start="0"/>
+    </ScalarVariable>
+    <ScalarVariable 
+        name="v0"               
+        valueReference="1"  
+        description="initial velocity"                      
+        causality="parameter" 
+        variability="fixed">
+      <Real start="0"/>
+    </ScalarVariable>
+    <ScalarVariable 
+        name="dx0"              
+        valueReference="2"  
+        description="initial angle difference"              
+        causality="parameter" 
+        variability="fixed">
+      <Real start="0"/>
+    </ScalarVariable>
 
     <!-- internal parameter -->
-    <ScalarVariable name="mass"             valueReference="3"  description="mass"                                  causality="parameter" variability="fixed"><Real start="1"/></ScalarVariable>
-    <ScalarVariable name="gamma"            valueReference="4"  description="damping constant for the body"         causality="parameter" variability="fixed"><Real start="1"/></ScalarVariable>
-    <ScalarVariable name="clutch_damping"   valueReference="5"  description="internal clutch damping constant"      causality="parameter" variability="fixed"><Real start="1"/></ScalarVariable>
+    <ScalarVariable 
+        name="mass"             
+        valueReference="3"  
+        description="mass"                                  
+        causality="parameter" 
+        variability="fixed">
+      <Real start="1"/>
+    </ScalarVariable>
+    <ScalarVariable 
+        name="gamma"            
+        valueReference="4"  
+        description="damping constant for the body"         
+        causality="parameter" 
+        variability="fixed">
+      <Real start="1"/>
+    </ScalarVariable>
+    <ScalarVariable 
+        name="clutch_damping"   
+        valueReference="5"  
+        description="internal clutch damping constant"      
+        causality="parameter" 
+        variability="fixed">
+      <Real start="1"/>
+    </ScalarVariable>
 
-    <ScalarVariable name="filter_length"
-                    valueReference="98"
-                    description="Length of EPCE FIR filter (0 = disable)"
-                    causality="parameter"
-                    variability="fixed">
-        <Integer start="0"/>
+    <ScalarVariable 
+        name="filter_length"
+        valueReference="98"
+        description="Length of EPCE FIR filter (0 = disable)"
+        causality="parameter"
+        variability="fixed">
+      <Integer start="0"/>
     </ScalarVariable>
 
     <!-- inputs -->
-    <ScalarVariable name="v_in"             valueReference="6"  description="external driving velocity"             causality="input" initial="exact"><Real start="0"/></ScalarVariable>
-    <ScalarVariable name="force_in"         valueReference="7"  description="driving force"                         causality="input" initial="exact"><Real start="0"/></ScalarVariable>
+    <ScalarVariable 
+        name="v_in"             
+        valueReference="6"  
+        description="external driving velocity"             
+        causality="input" initial="exact">
+      <Real start="0"/>
+    </ScalarVariable>
+    <ScalarVariable 
+        name="force_in"         
+        valueReference="7"  
+        description="driving force"                         
+        causality="input" initial="exact">
+      <Real start="0"/>
+    </ScalarVariable>
 
     <!-- outputs -->
-    <ScalarVariable name="v"                valueReference="8"  description="velocity"                              causality="output"><Real /></ScalarVariable>
-    <ScalarVariable name="force_clutch"     valueReference="9"  description="value of coupling force at last step"  causality="output"><Real /></ScalarVariable>
-</ModelVariables>
+    <ScalarVariable 
+        name="v"                
+        valueReference="8"  
+        description="velocity"                              
+        causality="output">
+      <Real />
+    </ScalarVariable>
+    <ScalarVariable 
+        name="force_clutch"     
+        valueReference="9"  
+        description="value of coupling force at last step"  
+        causality="output">
+      <Real />
+    </ScalarVariable>
+  </ModelVariables>
 
-<ModelStructure>
-  <Outputs>
-    <Unknown index="10"/>
-    <Unknown index="11"/>
-  </Outputs>
-  <Derivatives/>
-  <DiscreteStates/>
-  <InitialUnknowns />
-</ModelStructure>
+  <ModelStructure>
+    <Outputs>
+      <Unknown index="10"/>
+      <Unknown index="11"/>
+    </Outputs>
+    <Derivatives/>
+    <DiscreteStates/>
+    <InitialUnknowns />
+  </ModelStructure>
 
 </fmiModelDescription>

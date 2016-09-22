@@ -181,8 +181,8 @@ Now that we have the forces, the equations of motion are simply
     \idxsub{f}{1}{p} + \idxsub{f}{1}{e} \\
     \idx{\mathcal{J}}{2}\idx{\dot{\omega}}{2} & = -c_{c}f_{g} + -c_{c}f_{c} +
     \idxsub{f}{2}{p} + \idxsub{f}{2}{e} \\
-    \idx{\delta\dot{\phi}}{1} & \idx{\omega}{1} - \idx{\bar{\omega}}{e,1} \\
-    \idx{\delta\dot{\phi}}{2} & \idx{\omega}{2} - \idx{\bar{\omega}}{e,2} 
+    \idx{\delta\dot{\phi}}{1} &= \idx{\omega}{1} - \idx{\bar{\omega}}{e,1} \\
+    \idx{\delta\dot{\phi}}{2} & =\idx{\omega}{2} - \idx{\bar{\omega}}{e,2} 
   \end{split}
 \end{equation}
 and $\idx{\bar{\omega}}{e,i}$ are the current estimated values of the
@@ -203,18 +203,70 @@ This module can report two types of directional derivatives.  The first one
 simply reports
 \begin{equation}
   \label{eq:7}
-  \fracpd{\idx{\dot{\omega}}{i}}{\idx{f}{e,i}} =
-  \frac{1}{\idx{\mathcal{J}}{i}}. 
+  \fracpd{\idx{\dot{\omega}}{e,i}}{\idx{f}{e,i}} =
+  \frac{1}{\idx{\mathcal{J}}{e,i}}. 
 \end{equation}
 The second one however reports the effective mobility over a communication
-step, i.e., the numerical derivative
+step, i.e., the numerical derivative 
 \begin{equation}
   \label{eq:8}
-  \fracpd{\idxsub{\dot{\omega}}{i}{k+1}}{\idxsub{f}{e,i}{k}}, 
+  \mathcal{J}^{-1} = \fracpd{\idxsub{\dot{\omega}}{e,i}{k+1}}{\idxsub{f}{e,i}{k}} =
+  \frac{1}{h}\frac{
+    \idxsub{\bar{\omega}}{i,e}{k+1} -\idxsub{{\omega}}{i,e}{k+1}
+  }{\delta \idx{f}{e,i}}, 
 \end{equation}
-where $k$ is the discrete time step.   This is needed for semi-implicit
-time stepping used for kinematic couplings. 
+where $k$ is the discrete time step, as this is needed for semi-implicit
+time stepping used for kinematic couplings.  Here, quantities
+$\idxsub{\omega}{e,i}{k+1}$ are the values obtained after integrating by a
+small time $h$ for a given net force $f$, and values
+$\idxsub{\bar{\omega}}{i,e}{k+1}$ are obtained after integrating by a small
+time $h$ with input $f + \delta \idx{f}{e,i}$.  
 
+The expression in Eqn.~\eqref{eq:8} is to be understood column-wise so that
+\begin{equation}
+  \label{eq:3}
+  \begin{split}
+    \mathcal{J}^{-1}_{{\bullet,e}} &= \frac{1}{h\norm{\delta \idx{f}{e}}}
+    \begin{bmatrix}
+      \idxsub{\bar{\omega}}{e}{k+1} -\idxsub{{\omega}}{e}{k+1} \\
+      \idxsub{\bar{\omega}}{i}{k+1} -\idxsub{{\omega}}{i}{k+1} 
+    \end{bmatrix}  
+    \text{ and } \\
+    \mathcal{J}^{-1}_{{\bullet,i}} &= \frac{1}{h\norm{\delta \idx{f}{i}}}
+    \begin{bmatrix}
+      \idxsub{\bar{\omega}}{e}{k+1} -\idxsub{{\omega}}{e}{k+1} \\
+      \idxsub{\bar{\omega}}{i}{k+1} -\idxsub{{\omega}}{i}{k+1} 
+    \end{bmatrix}  
+  \end{split}
+\end{equation}
+
+
+\begin{anfxnote}{data!}
+  Should have data here which shows how the mobility values differ when
+  different steps are used.  Also, this would show that the overall
+  mobility matrix does depend on the spring constants.  
+
+
+  Experiments to perform on the clutch. 
+  \begin{itemize}
+  \item  With all $0$ as init condition, show how mobility changes as a
+    function of step and demonstrate convergence. 
+  \item Show variations with strength of input and output springs 
+  \item Show that low stiffness leads to either negative mobility or
+    off-diagonal terms. 
+  \item Show that the converged values are correct, i.e., with increasing
+    stiffness, the system behaves as a whole. 
+  \item Redo these experiments so that they are in the 4 different regimes,
+    or rewrite the dynamics accordingly.  Easier to do last? 
+  \end{itemize}
+
+
+  For the gears, just run standard experiments.  Figure out why, oh why, we
+  can get correct values with standard stepping matrices. 
+
+  Add plots of the dynamics of the clutch to show model limitations. 
+
+\end{anfxnote}
 
 
 \bibliographystyle{plainnat}  

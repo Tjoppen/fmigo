@@ -4,8 +4,7 @@ LOADLIBES = -lm
 CXXFLAGS = -g -std=c++11  
 FLAGS = -g
 
-clutchcurve.oct:clutchcurve.cpp  $(DEPS)
-	export CXXFLAGS="$(CXXFLAGS)" ; mkoctfile  -g -O -Wcpp $(LDFLAGS) $<
+all: fclutch.oct
 
 %.oct: %.cpp  $(DEPS)
 	export CXXFLAGS="$(CXXFLAGS)" ; mkoctfile  -g -O -Wcpp $(LDFLAGS) $<

@@ -1,15 +1,34 @@
+#  -p 0,26,-200 \
 
 
 # kinematic coupling of two clutches in a row
-mpirun -np 1 fmi-mpi-master -t 1 \
-  -p 0,21,10 -p 0,6,100000 -p 0,7,100 -p b,0,8,true \
-  -C shaft,0,1,34,35,36,26,0,1,2,3 \
-  -p b,0,97,true \
-  -p i,0,98,2 -p 0,13,1:0,15,1 -p 0,28,1  :\
-  -np 1 fmi-mpi-server clutch2.fmu :\
-  -np 1 fmi-mpi-server ../../kinematictruck/body/body.fmu > out.csv
 
-octave --no-gui --persist --eval "d=load('clutch2.m'); d2=load('out.csv'); plot(d(:,1),d(:,2:end)); axis([0,1,-2,18]); hold on; plot(d2(:,1),d2(:,[2,3,6,7]),'k-'); plot(d2(:,1),d2(:,[9,10]),'rx-')"
+mpirun -np 1 fmi-mpi-master -t 10 \
+  -p 0,21,10 -p 0,6,100000 -p 0,7,100 -p b,0,8,true \
+  -p b,0,97,true \
+  -C shaft,0,1,34,35,36,26,0,1,2,3 \
+  -p i,0,98,2 -p 0,13,0:0,15,0 -p 0,12,1:0,14,1 -p 0,28,1  \
+  -p 1,4,1 \
+  : -np 1 fmi-mpi-server clutch2.fmu \
+  : -np 1 fmi-mpi-server ../../kinematictruck/body/body.fmu > out.csv
+
+octave --no-gui --persist --eval "
+d=load('clutch2.m');
+d2=load('out.csv');
+%plot(d(:,1),d(:,2:end));
+%axis([0,1,-2,20]);
+hold on;
+plot(d2(:,1),d2(:,[2,3,6,7]),'k-');
+plot(d2(:,1),d2(:,[10,11]),'rx-')
+
+%velocities
+%figure(1)
+%plot(d2(:,1),d2(:,[3,7,11]))
+
+%angles
+%figure(2)
+%plot(d2(:,1),d2(:,[3,7,11]-1))
+"
 
 exit 0
 

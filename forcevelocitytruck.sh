@@ -18,7 +18,7 @@ run_forcevelocity() {
 			-c 0,0,1,0:0,1,1,1:1,2,0,3 -c 1,4,2,0:1,5,2,1:2,2,1,6 -c 1,5,0,6 :\
                         -np 1 ${SERVER} ${FMUS_DIR}/kinematictruck/engine/engine.fmu :\
                         -np 1 ${SERVER} ${FMUS_DIR}/forcevelocitytruck/gearbox/gearbox.fmu :\
-                        -np 1 ${SERVER} ${FMUS_DIR}/forcevelocitytruck/body/body.fmu  > out.csv
+                        -np 1 ${SERVER} ${FMUS_DIR}/forcevelocitytruck/fvbody/fvbody.fmu  > out.csv
 
                 handle_forcevelocity forcevelocity/out-$method-$DT2-$GAIN2.csv
             #done

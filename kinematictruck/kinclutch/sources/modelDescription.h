@@ -2,7 +2,7 @@
 #define MODELDESCRIPTION_H
 #include "FMI2/fmi2Functions.h" //for fmi2Real etc.
 
-#define MODEL_IDENTIFIER clutch
+#define MODEL_IDENTIFIER kinclutch
 #define MODEL_GUID "{5f71ee8b-047f-4780-a809-cca8f9efe480}"
 #define FMI_COSIMULATION
 #define HAVE_DIRECTIONAL_DERIVATIVE 1

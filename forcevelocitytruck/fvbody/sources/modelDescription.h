@@ -2,7 +2,7 @@
 #define MODELDESCRIPTION_H
 #include "FMI2/fmi2Functions.h" //for fmi2Real etc.
 
-#define MODEL_IDENTIFIER body
+#define MODEL_IDENTIFIER fvbody
 #define MODEL_GUID "{cd4d8666-fd68-4809-b9bb-5b62a55cab84}"
 #define FMI_COSIMULATION
 #define HAVE_DIRECTIONAL_DERIVATIVE 0

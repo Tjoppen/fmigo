@@ -21,8 +21,8 @@ FMUS="
     kinematictruck/body
     kinematictruck/engine
     kinematictruck/gearbox2
-    kinematictruck/clutch
-    forcevelocitytruck/body
+    kinematictruck/kinclutch
+    forcevelocitytruck/fvbody
     forcevelocitytruck/gearbox
 "
 

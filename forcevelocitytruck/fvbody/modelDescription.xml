@@ -2,12 +2,12 @@
 <fmiModelDescription
   fmiVersion="2.0"
   description="Moving body with driveshaft"
-  modelName="body"
+  modelName="fvbody"
   guid="{cd4d8666-fd68-4809-b9bb-5b62a55cab84}"
   numberOfEventIndicators="0">
 
 <CoSimulation
-  modelIdentifier="body"
+  modelIdentifier="fvbody"
   canHandleVariableCommunicationStepSize="false"
   canGetAndSetFMUstate="true"
   providesDirectionalDerivative="false"/>

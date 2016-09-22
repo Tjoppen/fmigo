@@ -2,12 +2,12 @@
 <fmiModelDescription
     fmiVersion="2.0"
     description="Kinematic clutch"
-    modelName="clutch"
+    modelName="kinclutch"
     guid="{5f71ee8b-047f-4780-a809-cca8f9efe480}"
     numberOfEventIndicators="0">
 
   <CoSimulation
-      modelIdentifier="clutch"
+      modelIdentifier="kinclutch"
       canHandleVariableCommunicationStepSize="false"
       canGetAndSetFMUstate="true"
       providesDirectionalDerivative="true"/>

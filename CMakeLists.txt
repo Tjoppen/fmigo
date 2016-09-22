@@ -1,0 +1,23 @@
+cmake_minimum_required(VERSION 2.8)
+
+#Getting GSL to run on Windows is too much of a hassle right now
+#TODO: use msys2?
+if (NOT WIN32)
+    add_subdirectory(gsl2/clutch2)
+    add_subdirectory(gsl2/chained_sho)
+    add_subdirectory(gsl2/exp)
+    add_subdirectory(gsl2/clutch_ef)
+    add_subdirectory(gsl2/clutch)
+    add_subdirectory(gsl2/coupled_sho)
+    add_subdirectory(gsl2/mass_force)
+    add_subdirectory(gsl2/mass_force_fe)
+endif ()
+add_subdirectory(typeconvtest)
+add_subdirectory(impulse)
+add_subdirectory(lumpedrod)
+add_subdirectory(kinematictruck/body)
+add_subdirectory(kinematictruck/engine)
+add_subdirectory(kinematictruck/gearbox2)
+add_subdirectory(kinematictruck/kinclutch)
+add_subdirectory(forcevelocitytruck/fvbody)
+add_subdirectory(forcevelocitytruck/gearbox)

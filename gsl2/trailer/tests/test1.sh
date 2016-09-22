@@ -1,15 +1,15 @@
 #!/bin/bash
 set -e
 
-MD2HDR="`pwd`/../../../../fmu-builder/bin/modeldescription2header"
-FMUBUILDER="`pwd`/../../../../fmu-builder/bin/fmu-builder -t `pwd`/templates/fmi2/ -i `pwd`/../../../../FMILibrary-2.0.1/ThirdParty/FMI/default"
+MD2HDR="`pwd`/../fmu-builder/bin/modeldescription2header"
+FMUBUILDER="`pwd`/../fmu-builder/bin/fmu-builder -t `pwd`/templates/fmi2/ -i `pwd`/../FMILibrary-2.0.1/ThirdParty/FMI/default"
 
 # GSL FMUs
 for d in \
-    gsl/clutch_ef\
+    gsl2/trailer\
 ;do
     echo Building $d
-    GSL="-t `pwd`/templates/gsl/ -l gsl,gslcblas,m"
+    GSL="-t `pwd`/templates/gsl2/ -l gsl,gslcblas,m"
     NAME=`sed -e 's/.*\///' <<< $d`
     pushd $d
         rm -f ${NAME}.fmu

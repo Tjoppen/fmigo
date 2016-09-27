@@ -195,7 +195,7 @@ Control can be applied via a brake.
     <ScalarVariable 
         name="phi_i"
         valueReference="18"
-        description="external input displacement"
+        description="external input displacement angle on differential"
         causality="input"
         initial="exact">
       <Real start="0"/>
@@ -204,7 +204,7 @@ Control can be applied via a brake.
     <ScalarVariable 
         name="omega_i"
         valueReference="19"
-        description="external input velocity"
+        description="external input velocity on differential"
         causality="input"
         initial="exact">
       <Real start="0"/>
@@ -214,7 +214,7 @@ Control can be applied via a brake.
     <ScalarVariable 
         name="tau_d"
         valueReference="20"
-        description="external driving torque"
+        description="external driving torque on differential"
         causality="input"
         initial="exact">
       <Real start="0"/>
@@ -223,7 +223,7 @@ Control can be applied via a brake.
     <ScalarVariable 
         name="tau_e"
         valueReference="21"
-        description="extra external driving torque"
+        description="extra external driving torque on differential"
         causality="input"
         initial="exact">
       <Real start="0"/>
@@ -237,6 +237,7 @@ Control can be applied via a brake.
         initial="exact">
       <Real start="0"/>
     </ScalarVariable>   
+
     <!-- index="23"-->
     <ScalarVariable 
         name="brake"
@@ -247,6 +248,38 @@ Control can be applied via a brake.
       <Real start="0"/>
     </ScalarVariable>   
 
+    <!-- index="XXX"-->
+    <ScalarVariable 
+        name="x_in"
+        valueReference="1001"
+        description="input coupling displacement"
+        causality="input"
+        initial="exact">
+      <Real start="0"/>
+    </ScalarVariable>   
+
+    <!-- index="XXX"-->
+    <ScalarVariable 
+        name="v_in"
+        valueReference="1002"
+        description="input coupling speed"
+        causality="input"
+        initial="exact">
+      <Real start="0"/>
+    </ScalarVariable>   
+
+    <!-- index="XXX"-->
+    <ScalarVariable 
+        name="f_in"
+        valueReference="1003"
+        description="input coupling force"
+        causality="input"
+        initial="exact">
+      <Real start="0"/>
+    </ScalarVariable>   
+
+
+    
     <!-- outputs -->
     <!-- index="24"-->
     <ScalarVariable 
@@ -273,15 +306,27 @@ Control can be applied via a brake.
         causality="output">
       <Real />
     </ScalarVariable>
+
     <!-- index="27"-->
     <ScalarVariable 
-        name="f_c"
+        name="tau_c"
         valueReference="27"
+        description="output coupling torque"
+        causality="output">
+      <Real />
+    </ScalarVariable>
+
+    <!-- index="28"-->
+    <ScalarVariable 
+        name="f_c"
+        valueReference="28"
         description="output coupling force"
         causality="output">
       <Real />
     </ScalarVariable>
-    <!-- index="28"-->
+
+    
+    <!-- index="29"-->
     <ScalarVariable 
         name="filter_length"
         valueReference="98"

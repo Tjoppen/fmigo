@@ -23,6 +23,7 @@ const static double flip = -1;
     v    : speed of truck
     dphi : angle difference estimate between the input shaft and the
     differential 
+    dx   : position difference between attached load
 
 
 */
@@ -52,22 +53,22 @@ int trailer (double t, const double x[], double dxdt[], void * params){
   /* any additional force */
   force += s->md.tau_e / s->md.r_w;
 
-  s->md.tau_e =   s->md.gamma * ( x[ 1 ] / s->md.r_g / s->md.r_w -
-  s->md.omega_i );
+  /* coupling torque */
+  s->md.tau_c =   s->md.gamma * ( x[ 1 ] / s->md.r_g / s->md.r_w - s->md.omega_i );
   
-  if ( s->md.integrate_d_omega )
-    s->md.tau_e +=  s->md.k *  x[ 2 ];
-  else
-    s->md.tau_e +=  s->md.k *  ( x[ 2 ] - s->md.phi_i );
+  if ( s->md.integrate_d_omega ) { 
+    s->md.tau_c +=  s->md.k *  x[ 2 ];
+    dxdt[ 2 ] = x[ 1 ] / s->md.r_g / s->md.r_w - s->md.omega_i;
+  }
+  else{
+    s->md.tau_c +=  s->md.k *  ( x[ 0 ] / s->md.r_g / s->md.r_w - s->md.phi_i );
+    dxdt[ 2 ] = 0;
+  }
 
-  /* coupling force */
-										   
-  dxdt[ 1 ]  = ( 1.0 / s->md.mass ) * ( force - s->md.tau_e / s->md.r_w );
+  /* total acceleration */
+  dxdt[ 1 ]  = ( 1.0 / s->md.mass ) * ( force - s->md.tau_c / s->md.r_w );
+  dxdt[ 0 ]  = x[ 1 ];
  
-  /** angle difference */
-  if ( s->md.integrate_dx_e )
-    dxdt[ 2 ] = x[ 1 ] - s->md.omega_i;
-
   
   return GSL_SUCCESS;
 
@@ -80,7 +81,7 @@ int jac_trailer (double t, const double x[], double *dfdx, double dfdt[], void *
 {
   
   state_t *s = (state_t*)params;
-  gsl_matrix_view dfdx_mat = gsl_matrix_view_array (dfdx, 2, 2);
+  gsl_matrix_view dfdx_mat = gsl_matrix_view_array (dfdx, 3, 3);
   gsl_matrix * J = &dfdx_mat.matrix; 
 
 
@@ -92,14 +93,10 @@ int jac_trailer (double t, const double x[], double *dfdx, double dfdt[], void *
 
 /** TODO: this is the sync out function */
 static int epce_post_step(int n, const double outputs[], void * params) {
-/**
-   state_t *s = params;
-   double v = flip * s->md.v_in;
-
-
+  state_t *s = ( state_t * ) params;
+   s->md.x            = outputs[0];
    s->md.v            = outputs[1];
-   s->md.force_clutch = fclutch( outputs[ 2 ], ( outputs[ 1 ] - v ), s->md.clutch_damping );
-*/
+   s->md.a            = 0;	/* could make another call to trailer(...) to get the correct value here. */
 
   return GSL_SUCCESS;
 }
@@ -108,7 +105,8 @@ static int epce_post_step(int n, const double outputs[], void * params) {
 static void trailer_init(state_t *s) {
 
   const double initials[] = {s->md.x0,
-			     s->md.v0
+			     s->md.v0,
+			     0.0
   };
 
 
@@ -129,49 +127,39 @@ static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real comm
 }
 
 
-//gcc -g trailer.c ../../../templates/gsl2/gsl-interface.c -DCONSOLE -I../../../templates/gsl2 -I../../../templates/fmi2 -lgsl -lgslcblas -lm -Wall
 #ifdef CONSOLE
 int main(){
 
-  size_t N = 1000;
-  double start = -0.2;
-  double end   =  0.2;
-  FILE * f = fopen("data.m", "w+");
-  double dx = ( end - start ) / ( double ) N;
-  double  x;
-  double  y;
-  size_t i;
-
-
-  fclose( f );
-
   state_t s = {{
-      8.0, 			/* init position */
+      0.0, 			/* init position */
       4.0, 			/* init velocity */
       10.0, 			/* mass */
-      2.0,			/* area */
-      10.0,			/* drag coeff c_d*/
-      15.0,			/* rho*/
       10,			/* wheel radius r_w*/
       1,			/* differential gear ratio */
+      2.0,			/* area */
+      1.0,			/* rho*/
+      1.0,			/* drag coeff c_d*/
       10,			/* gravity */
-      1,			/* c_r_1 rolling resistance */
-      1,			/* c_r_2 rolling resistance */
-      1000,			/* coupling spring constant  */
-      10,			/* coupling damping constant  */
+      0.2,			/* c_r_1 rolling resistance */
+      0.4,			/* c_r_2 rolling resistance */
       1,			/* friction coeff*/
-      rk4,		/* which method*/
-      0,		/* coupling displacement */
-      0,		/* coupling speed*/
-      0,		/* torque input */
-      0,		/* road elevation */
+      1e4,			/* coupling spring constant  */
+      1e2,			/* coupling damping constant  */
+      rkf45,		/* which method*/
+      1,		/* integrate input speed on differential*/
+      1,		/* coupling speed for load*/
+      0,		/* differential input displacement */
+      10,		/* differential input speed */
+      0,		/* torque input on differential*/
+      0,		/* extra torque input on differential*/
+      0,		/* road elevation angle */
       0,		/* brake position */
     }};
   trailer_init(&s);
   s.simulation.file = fopen( "s.m", "w+" );
   s.simulation.save = 1;
   s.simulation.print = 1;
-  cgsl_step_to( &s.simulation, 0.0, 10.0 );
+  cgsl_step_to( &s.simulation, 0.0, 8.0 );
   cgsl_free_simulation(s.simulation);
 
   return 0;

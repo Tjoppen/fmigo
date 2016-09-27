@@ -2,15 +2,15 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 SET(ARCH "linux64" CACHE STRING "Architecture: linux64, linux32, win32...")
 SET(TARGET lumpedrod)
 SET(SRCS
-    ${CMAKE_CURRENT_SOURCE_DIR}/sources/lumped_rod.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/sources/tridiag_ldlt.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/sources/lumped_rod.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/sources/tridiag_ldlt.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/sources/safealloc.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/sources/lumped_rod_fmi.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../templates/fmi2/fmuTemplate_impl.h
     ${CMAKE_CURRENT_SOURCE_DIR}/../templates/fmi2/fmuTemplate.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/../templates/fmi2/fmuTemplate_impl.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/sources/lumped_rod.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/sources/lumped_rod.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/sources/lumped_rod_fmi.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/sources/safealloc.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/sources/tridiag_ldlt.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/sources/tridiag_ldlt.h
 )
 ADD_CUSTOM_COMMAND(
   OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h

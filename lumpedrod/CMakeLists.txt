@@ -14,7 +14,7 @@ SET(SRCS
 )
 ADD_CUSTOM_COMMAND(
   OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
-  COMMAND python2 ${CMAKE_CURRENT_SOURCE_DIR}/../../fmu-builder/bin/modeldescription2header
+  COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/../../fmu-builder/bin/modeldescription2header
     ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml >
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml )

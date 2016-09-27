@@ -21,8 +21,8 @@ ADD_DEFINITIONS(  )
 ADD_LIBRARY(${TARGET} SHARED ${SRCS})
 INCLUDE_DIRECTORIES(
     ../../../FMILibrary-2.0.1/ThirdParty/FMI/default
-    ../../templates/gsl2
     ../../templates/fmi2
+    ../../templates/gsl2
 )
 SET_TARGET_PROPERTIES(${TARGET} PROPERTIES PREFIX "")
 SET_TARGET_PROPERTIES(${TARGET} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/binaries/${ARCH}")

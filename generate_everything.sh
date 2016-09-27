@@ -1,7 +1,7 @@
 set -e
 
 MD2HDR="`pwd`/../fmu-builder/bin/modeldescription2header"
-GENERATOR="`pwd`/../fmu-builder/bin/cmake-generator -t `pwd`/templates/fmi2/ -i `pwd`/../FMILibrary-2.0.1/ThirdParty/FMI/default"
+GENERATOR="`pwd`/../fmu-builder/bin/cmake-generator -t `pwd`/templates/fmi2/ -i `pwd`/../FMILibrary-2.0.1/ThirdParty/FMI/default -m ${MD2HDR}"
 
 GSLFMUS="
     gsl2/clutch2
@@ -43,7 +43,7 @@ export CFLAGS="-Wall -Werror -O3"
 for d in $GSLFMUS
 do
     echo "    add_subdirectory($d)" >> CMakeLists.txt
-    GSL="-t `pwd`/templates/gsl2/gsl-interface.c -t `pwd`/templates/gsl2/gsl-interface.h -l gsl,gslcblas,m"
+    GSL="-t `pwd`/templates/gsl2/gsl-interface.c -t `pwd`/templates/gsl2/gsl-interface.h -l gsl,gslcblas,m -c"
     pushd $d
         python ${MD2HDR} modelDescription.xml > sources/modelDescription.h
         python ${GENERATOR} ${GSL}

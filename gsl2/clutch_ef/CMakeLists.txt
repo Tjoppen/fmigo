@@ -4,21 +4,35 @@ SET(TARGET clutch_ef)
 SET(SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/clutch_ef.c
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/fmi2/fmuTemplate.h
     ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/fmi2/fmuTemplate_impl.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/fmi2/fmuTemplate.h
     ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/gsl2/gsl-interface.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/gsl2/gsl-interface.h
 )
+ADD_CUSTOM_COMMAND(
+  OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
+  COMMAND python2 ${CMAKE_CURRENT_SOURCE_DIR}/../../../fmu-builder/bin/modeldescription2header
+    ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml >
+    ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
+  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml )
+
 ADD_DEFINITIONS(  )
-ADD_LIBRARY(${TARGET} SHARED ${SRCS} ${HEADERS})
+ADD_LIBRARY(${TARGET} SHARED ${SRCS})
 INCLUDE_DIRECTORIES(
     ../../../FMILibrary-2.0.1/ThirdParty/FMI/default
-    ../../templates/fmi2
     ../../templates/gsl2
+    ../../templates/fmi2
 )
 SET_TARGET_PROPERTIES(${TARGET} PROPERTIES PREFIX "")
 SET_TARGET_PROPERTIES(${TARGET} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/binaries/${ARCH}")
-TARGET_LINK_LIBRARIES( ${TARGET} gsl gslcblas m )
+SET(LIBS gsl gslcblas m)
+TARGET_LINK_LIBRARIES( ${TARGET} ${LIBS} )
+
+
+ADD_EXECUTABLE(${TARGET}_c ${SRCS})
+SET_TARGET_PROPERTIES(${TARGET}_c PROPERTIES COMPILE_DEFINITIONS CONSOLE)
+TARGET_LINK_LIBRARIES( ${TARGET}_c ${LIBS} )
+
 
 # There doesn't seem to be a way to repack an FMU in case it is deleted.
 # A post-build command is good enough for now.

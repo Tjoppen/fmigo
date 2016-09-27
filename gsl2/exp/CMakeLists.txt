@@ -2,20 +2,20 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 SET(ARCH "linux64" CACHE STRING "Architecture: linux64, linux32, win32...")
 SET(TARGET exp)
 SET(SRCS
+    ${CMAKE_CURRENT_SOURCE_DIR}/sources/exp.c
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/fmi.c
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/sources/exp.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/fmi2/fmuTemplate_impl.h
     ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/fmi2/fmuTemplate.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/fmi2/fmuTemplate_impl.h
     ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/gsl2/gsl-interface.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/gsl2/gsl-interface.h
 )
 ADD_DEFINITIONS(  )
 ADD_LIBRARY(${TARGET} SHARED ${SRCS} ${HEADERS})
 INCLUDE_DIRECTORIES(
-    ../../../FMILibrary-2.0.1/ThirdParty/FMI/default
     ../../templates/gsl2
     ../../templates/fmi2
+    ../../../FMILibrary-2.0.1/ThirdParty/FMI/default
 )
 SET_TARGET_PROPERTIES(${TARGET} PROPERTIES PREFIX "")
 SET_TARGET_PROPERTIES(${TARGET} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/binaries/${ARCH}")

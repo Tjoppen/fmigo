@@ -1,5 +1,6 @@
 #include "modelDescription.h"
 #include "gsl-interface.h"
+#include <math.h>
 
 #define SIMULATION_TYPE cgsl_simulation
 #define SIMULATION_INIT trailer_init
@@ -13,7 +14,7 @@ const static double flip = -1;
     One translational body driven by a rotational variable.  
 
     This represents a trailer moving on a road with variable gradient,
-    driven by a shaft, via a differential with gear ratio r_d, via a
+    driven by a shaft, via a differential with gear ratio r_g, via a
     wheel of radius r_w. 
 
     
@@ -35,10 +36,10 @@ int trailer (double t, const double x[], double dxdt[], void * params){
   /* gravity */
   double force = - s->md.mass * s->md.g * sin( s->md.alpha );
 
-  double sgnv = SIGNUM( x[ 1 ] )
+  double sgnv = SIGNUM( x[ 1 ] );
   /* drag */
   force += 
-    -  sgnv *  abs_v * 0.5 * s->md.rho  * s->md.A * s->md.c_d * x[ 1 ] * x[ 1 ];
+    -  sgnv *   0.5 * s->md.rho  * s->md.area * s->md.c_d * x[ 1 ] * x[ 1 ];
 
   /* brake */ 
   force +=
@@ -49,22 +50,23 @@ int trailer (double t, const double x[], double dxdt[], void * params){
     - sgnv * ( s->md.c_r_1 * fabs( x[ 1 ] ) + s->md.c_r_0 ) * s->md.mass * s->md.g * cos( s->md.alpha );
 
   /* any additional force */
-  force += s->md.force_in;
+  force += s->md.tau_e / s->md.r_w;
 
-  s->md.torque_e =   s->md.gamma_c * ( x[ 1 ] / s->md->r_d / s->md->r_w - s->md.omega_in );
+  s->md.tau_e =   s->md.gamma * ( x[ 1 ] / s->md.r_g / s->md.r_w -
+  s->md.omega_i );
   
   if ( s->md.integrate_d_omega )
-    s->md.torque_e +=  s->md.k_c *  x[ 2 ];
+    s->md.tau_e +=  s->md.k *  x[ 2 ];
   else
-    s->md.torque_e +=  s->md.k_c *  ( x[ 2 ] - s->md.phi_in );
+    s->md.tau_e +=  s->md.k *  ( x[ 2 ] - s->md.phi_i );
 
   /* coupling force */
 										   
-  dxdt[ 1 ]  = ( 1.0 / s->md.mass ) * ( force - s->md.torque_e / s->md.r_w );
+  dxdt[ 1 ]  = ( 1.0 / s->md.mass ) * ( force - s->md.tau_e / s->md.r_w );
  
   /** angle difference */
   if ( s->md.integrate_dx_e )
-    dxdt[ 2 ] = x[ 1 ] - s->md.omega_in;
+    dxdt[ 2 ] = x[ 1 ] - s->md.omega_i;
 
   
   return GSL_SUCCESS;

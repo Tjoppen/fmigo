@@ -1,120 +1,120 @@
-k_coupling_1 = 1e5;
-d_coupling_1 = 100;
-j1_inv = 1;
-j2_inv = 1 / 1;
-j3_inv = 1 / 1e4;
-k_coupling_2 = 1e4;
-d_coupling_2 = 1e2;
-#j2_inv = 1 / ( 1/j2_inv + 1/ j3_inv );
-omega_in = 10;
-c_damping = 1;
-b = [ -0.087266462599716474; -0.052359877559829883; 0.0; 0.09599310885968812; 0.17453292519943295 ];
-c = [ -1000; -30; 0; 50; 3500 ];
-K = diff( c ) ./ diff( b );
+%% 
+%% Fairly realistic configuration with stiff couplings to the outside, small
+%% inertia on the clutch plates, and moderately heavy load of 10 tons
+%%
+%%  Initial conditions are 10 rads per second from the driver.
+%% 
+%%
+experiment1 = struct( ...
+		      'omega_in' , 10, ...
+		      'k_coupling_1' , 1e8, ...
+		      'd_coupling_1' , 1e4, ...
+		      'j1_inv' , 1 / 4, ...
+		      'j2_inv' , 1/ 8, ...
+		      'j3_inv' , 1 / 1e4, ...
+		      'k_coupling_2' , 1e8, ...
+		      'd_coupling_2' , 1e3, ...
+		      'c_damping' , 1e4, ...
+		      'x0', [ 0;0;0;0;0;0;0] ...
+		    );
 
-simclutch = @(t, x ) [ ... 
-		       x( 2 );  ... 
-		       j1_inv * ( - d_coupling_1 * ( x( 2 ) - omega_in ) - k_coupling_1 *  x( 3 ) ... 
-				  - fclutch( x( 1 ) - x( 4 ), x( 2 ) - x( 5 ), c_damping ) ); ...
-		       x( 2 ) - omega_in; ...
-		       x( 5 ); ...
-		       j2_inv * ( + fclutch( x( 1 ) - x( 4 ), x( 2 ) - x( 5 ), c_damping  ) -k_coupling_2 * ( x( 4 ) - x( 6 ) ) ... 
-				  - d_coupling_2 * ( x( 5 ) - x( 7 ) )  ); ...
-		       x( 7 ); ... 
-		       j3_inv * (  k_coupling_2 * ( x( 4 ) - x( 6 ) ) + d_coupling_2 * ( x( 5 ) - x( 7 ) )  );
-		     ];
-
-if 0 
-
-A1 =  ...
-[ ... 
-  0, 1,  0, 0, 0, 0; ...
-  -K(1), -d_coupling_1-c_damping, K(1), c_damping, 0, 0; ...
-  0, 0, 0, 1, 0, 0; ...
-  K(1), c_damping,  -K(1)-k_coupling_2, -c_damping-d_coupling_2, k_coupling_2, d_coupling_2; ...
-  0, 0, 0, 0, 0, 1;...
-  0, 0, k_coupling_2, d_coupling_2, -k_coupling_2, -d_coupling_2; ...
-];
-  
-A1(2, :) *= j1_inv;
-A1(4, :) *= j2_inv;
-A1(6, :) *= j3_inv;
-
-A2 = A1;
-A2( 2, 1 ) =  -j1_inv * K(2);
-A2( 2, 4 ) =   j1_inv * K(2);
-A2( 4, 1 ) =   j2_inv *  K(2);
-A2( 4, 4 ) =  -j2_inv *  ( K(2) + k_coupling_2 ); 
-
-A3 = A1;
-A3( 2, 1 ) =  -j1_inv * K(3);
-A3( 2, 4 ) =   j1_inv * K(3);
-A3( 4, 1 ) =   j2_inv *  K(3);
-A3( 4, 4 ) =  -j2_inv *  ( K(3) + k_coupling_2 ); 
-
-A4 = A1;
-A4( 2, 1 ) =  -j1_inv * K(4);
-A4( 2, 4 ) =   j1_inv * K(4);
-A4( 4, 1 ) =   j2_inv *  K(4);
-A4( 4, 4 ) =  -j2_inv *  ( K(4) + k_coupling_2 ); 
-
-M = {A1, A2, A3, A4};
-R = {A1, A2, A3, A4};
-T = cell();
-
-IA  = eye(size(A1));
-h = 1e-3;
-E = [];
-for i = 1:length(M)
-  a0 = h * M{i};
-  a = a0;
-  r = IA;
-  for k=1:5
-    r += a / factorial( k );
-    a = a * a0;
-  endfor
-  R{ i } = r;
-  E = [E, eigs( r ) ];
-#  T{end+1} = M{i} \ ( r - IA );
-endfor
-
-else 
+experiment2 = struct( ...
+		      'omega_in' , 10, ... 
+		      'k_coupling_1' , 0*1e6, ...
+		      'd_coupling_1' , 0*1e4, ...
+		      'j1_inv' , 1/10, ...
+		      'j2_inv' , 1/10, ...
+		      'j3_inv' , 1 / 1e-2, ...
+		      'k_coupling_2' , 1e4, ...
+		      'd_coupling_2' , 1*1e4, ...
+		      'c_damping' , 10, ...
+		      'x0', [ 0;15;0;0;0;0;0] ...
+		    );
+ee = experiment1;
 
 
 
 simclutch = @(t, x ) [ ... 
 		       x( 2 );  ... 
-		       j1_inv * ( - d_coupling_1 * ( x( 2 ) - omega_in ) - k_coupling_1 *  x( 3 ) ... 
-				  - fclutch( x( 1 ) - x( 4 ), x( 2 ) - x( 5 ), c_damping ) ); ...
-		       x( 2 ) - omega_in; ...
+		       ee.j1_inv * ( - ee.d_coupling_1 * ( x( 2 ) - ee.omega_in ) - ee.k_coupling_1 *  x( 3 ) ... 
+				     - fclutch( x( 1 ) - x( 4 ), x( 2 ) - x( 5 ), ee.c_damping ) ); ...
+		       x( 2 ) - ee.omega_in; ...
 		       x( 5 ); ...
-		       j2_inv * ( + fclutch( x( 1 ) - x( 4 ), x( 2 ) - x( 5 ), c_damping  ) -k_coupling_2 * ( x( 4 ) - x( 6 ) ) ... 
-				  - d_coupling_2 * ( x( 5 ) - x( 7 ) )  ); ...
+		       ee.j2_inv * ( + fclutch( x( 1 ) - x( 4 ), x( 2 ) - x( 5 ), ee.c_damping  ) -ee.k_coupling_2 * ( x( 4 ) - x( 6 ) ) ... 
+				     - ee.d_coupling_2 * ( x( 5 ) - x( 7 ) )  ); ...
 		       x( 7 ); ... 
-		       j3_inv * (  k_coupling_2 * ( x( 4 ) - x( 6 ) ) + d_coupling_2 * ( x( 5 ) - x( 7 ) )  );
+		       ee.j3_inv * (  ee.k_coupling_2 * ( x( 4 ) - x( 6 ) ) + ee.d_coupling_2 * ( x( 5 ) - x( 7 ) )  );
 		     ];
 
+jphi      = @(x) fclutch_dphi_derivative  ( x( 1 ) - x( 4 ), x( 2 ) - x( 5 )) ; 
+%jomega    = @(x) fclutch_domega_derivative( x( 1 ) - x( 4 ), x( 2 ) - x( 5 ), ee.c_damping ) ; 
 
-vopt = odeset ('RelTol', 1e-6, 'AbsTol', 1e-6, 'NormControl', 'on', 'InitialStep', 1e-2, 'MaxStep', 0.1);
-sol = ode78( simclutch, [0, 10 ], [ 0;0;0;0;0;0;0], vopt );
+jacobian = @(t, x) [ ... 
+		     0, 1,  0, 0, 0, 0, 0; ...
+		     ee.j1_inv * [ -jphi( x ), -ee.d_coupling_1-ee.c_damping, -ee.k_coupling_1,  jphi( x ), +ee.c_damping, 0, 0]; ...
+		     0, 1,  0, 0, 0, 0, 0; ...
+		     0, 0, 0, 0, 1, 0, 0; ...
+		     ee.j2_inv*[jphi( x ), ee.c_damping, 0, -jphi( x )-ee.k_coupling_2, -ee.c_damping-ee.d_coupling_2, ee.k_coupling_2, +ee.c_damping]; ...
+		     0, 0, 0, 0, 0, 0, 1;
+		     ee.j3_inv*[0, 0, 0, ee.k_coupling_2, ee.d_coupling_2, -ee.k_coupling_2, -ee.d_coupling_2] ]; 
 
+%% if 0
+%%  % get different values using Jacobian evaluated in the different regimes. 
+%%   M = {A1, A2, A3, A4};
+%%   R = {A1, A2, A3, A4};
+%%   T = cell();
 
-figure(1)
+%%   IA  = eye(size(A1));
+%%   h = 1e-3;
+%%   E = [];
+%%   for i = 1:length(M)
+%%     a0 = h * M{i};
+%%     a = a0;
+%%     r = IA;
+%%     for k=1:5
+%%       r += a / factorial( k );
+%%       a = a * a0;
+%%     end
+%%     R{ i } = r;
+%%     E = [E, eigs( r ) ];
+%% 				%  T{end+1} = M{i} \ ( r - IA );
+%%   end
+
+%% end
+
+vopt = odeset ('RelTol', 1e-6, 'AbsTol', 1e-6, 'NormControl', 'on', 'InitialStep', 1e-2, 'MaxStep', 0.1, ...
+	       'Jacobian', jacobian);
+%sol = ode45( simclutch, [0, 1 ], ee.x0,  vopt );
+[T, X] = ode23s( simclutch, [0, 0.5 ], ee.x0,  vopt );
+%sol = ode23s( simclutch, [0, 10 ], ee.x0,  vopt );
+%sol = ode15s( simclutch, [0, 10 ], ee.x0,  vopt );
+%sol  = struct('x', T, 'y', X);
+%sol = odebwe( simclutch, [0, 10 ], ee.x0,  vopt );
+if ( size( sol.x, 2 ) ~= 1  )
+  sol.x = sol.x';
+  sol.y = sol.y';
+end
+if ( 0 )
+figure(1);
 H =  plot(sol.x, [sol.y(:,1)-sol.y(:, 4), sol.y(:,2)-sol.y(:,5), sol.y(:, 7)] );
-set(findall(H, '-property', 'linewidth'), 'linewidth', 3);
-legend("x1-x2", "v1-v2","v3", "location", "northwest")
-
+set(findall(H, '-property', 'linewidth'), 'linewidth', 2);
+legend('x1-x2', 'v1-v2','v3', 'location', 'northeast');
 
 figure(2);
-H = plot(sol.y(:, 1) - sol.y(:, 4 ), sol.y(:, 5), '.-')
-set(findall(H, '-property', 'linewidth'), 'linewidth', 3);
-title("phase plot: angle difference  vs speed")
-xlabel("dx");
-ylabel("v2");
+H = plot(sol.y(:, 1) - sol.y(:, 4 ), sol.y(:, 5), '.-');
+set(findall(H, '-property', 'linewidth'), 'linewidth', 2);
+title('phase plot: angle difference  vs speed');
+xlabel('dx');
+ylabel('v2');
 
 figure(3);
 H = plot(sol.x, sol.y(:, 1) - sol.y(:, 4 ) );
-set(findall(H, '-property', 'linewidth'), 'linewidth', 3);
-title("Angle differences")
+set(findall(H, '-property', 'linewidth'), 'linewidth', 2);
+title('Angle differences');
 
+figure(4);
+H = plot(sol.x, sol.y(:, [2,5,7]));
+legend('v1', 'v2','v3');
+title('Velocities');
+set(findall(H, '-property', 'linewidth'), 'linewidth', 2);
 endif

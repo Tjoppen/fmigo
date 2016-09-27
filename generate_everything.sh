@@ -12,6 +12,7 @@ GSLFMUS="
     gsl2/coupled_sho
     gsl2/mass_force
     gsl2/mass_force_fe
+    gsl2/trailer
 "
 
 FMUS="

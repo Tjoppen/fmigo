@@ -4,14 +4,14 @@ SET(TARGET kinclutch)
 SET(SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/clutch.c
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/fmi2/fmuTemplate_impl.h
     ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/fmi2/fmuTemplate.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/fmi2/fmuTemplate_impl.h
 )
 ADD_DEFINITIONS(  )
 ADD_LIBRARY(${TARGET} SHARED ${SRCS} ${HEADERS})
 INCLUDE_DIRECTORIES(
-    ../../../FMILibrary-2.0.1/ThirdParty/FMI/default
     ../../templates/fmi2
+    ../../../FMILibrary-2.0.1/ThirdParty/FMI/default
 )
 SET_TARGET_PROPERTIES(${TARGET} PROPERTIES PREFIX "")
 SET_TARGET_PROPERTIES(${TARGET} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/binaries/${ARCH}")

@@ -4,8 +4,8 @@ SET(TARGET chained_sho)
 SET(SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/chained_sho.c
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/fmi2/fmuTemplate_impl.h
     ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/fmi2/fmuTemplate.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/fmi2/fmuTemplate_impl.h
     ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/gsl2/gsl-interface.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/gsl2/gsl-interface.h
 )

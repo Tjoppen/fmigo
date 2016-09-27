@@ -117,7 +117,7 @@ Control can be applied via a brake.
     </ScalarVariable>   
     <!-- index="10"-->
     <ScalarVariable
-        name="c_r_1"
+        name="c_r_0"
         valueReference="10"
         description="static rolling resistance"
         causality="parameter"
@@ -126,7 +126,7 @@ Control can be applied via a brake.
     </ScalarVariable>   
     <!-- index="11"-->
     <ScalarVariable
-        name="c_r_2"
+        name="c_r_1"
         valueReference="11"
         description="kinetic rolling resistance"
         causality="parameter"
@@ -171,91 +171,117 @@ Control can be applied via a brake.
       <Real start="0"/>
     </ScalarVariable>   
 
-    
-    <!-- inputs -->
     <!-- index="16"-->
+    <ScalarVariable
+        name="integrate_dx_e"
+        valueReference="16"
+        description="integrate position difference with output coupling"
+        causality="parameter"
+        variability="fixed">
+      <Real start="0"/>
+    </ScalarVariable>   
+ 
+    <!-- index="17"-->
+    <ScalarVariable
+        name="integrate_d_omega"
+        valueReference="17"
+        description="integrate angle difference for force velocity coupling"
+        causality="parameter"
+        variability="fixed">
+      <Real start="0"/>
+    </ScalarVariable>      
+    <!-- inputs -->
+    <!-- index="18"-->
     <ScalarVariable 
         name="phi_i"
-        valueReference="16"
+        valueReference="18"
         description="external input displacement"
         causality="input"
         initial="exact">
       <Real start="0"/>
     </ScalarVariable>
-    <!-- index="17"-->
+    <!-- index="19"-->
     <ScalarVariable 
         name="omega_i"
-        valueReference="17"
+        valueReference="19"
         description="external input velocity"
         causality="input"
         initial="exact">
       <Real start="0"/>
     </ScalarVariable>   
 
-    <!-- index="18"-->
+    <!-- index="20"-->
     <ScalarVariable 
         name="tau_d"
-        valueReference="18"
+        valueReference="20"
         description="external driving torque"
         causality="input"
         initial="exact">
       <Real start="0"/>
     </ScalarVariable>   
-    <!-- index="19"-->
+    <!-- index="21"-->
     <ScalarVariable 
         name="tau_e"
-        valueReference="19"
+        valueReference="21"
         description="extra external driving torque"
         causality="input"
         initial="exact">
       <Real start="0"/>
     </ScalarVariable>   
-    <!-- index="20"-->
+    <!-- index="22"-->
     <ScalarVariable 
         name="alpha"
-        valueReference="20"
+        valueReference="22"
         description="road angle"
         causality="input"
         initial="exact">
       <Real start="0"/>
     </ScalarVariable>   
-
+    <!-- index="23"-->
+    <ScalarVariable 
+        name="brake"
+        valueReference="23"
+        description="brake position"
+        causality="input"
+        initial="exact">
+      <Real start="0"/>
+    </ScalarVariable>   
 
     <!-- outputs -->
-    <!-- index="21"-->
+    <!-- index="24"-->
     <ScalarVariable 
         name="x"
-        valueReference="21"
+        valueReference="24"
         description="position of trailer along the road"
         causality="output">
       <Real />
     </ScalarVariable>   
-    <!-- index="22"-->
+    <!-- index="25"-->
     <ScalarVariable 
         name="v"
-        valueReference="22"
+        valueReference="25"
         description="velocity of trailer"
         causality="output">
       <Real />
     </ScalarVariable>
-    <!-- index="23"-->
+    <!-- index="26"-->
     <ScalarVariable 
         name="a"
-        valueReference="23"
+        valueReference="26"
         description="acceleration of trailer. NOTE: this is a dummy so that
                      we can compute directional derivatives."
         causality="output">
       <Real />
     </ScalarVariable>
-    <!-- index="24"-->
+    <!-- index="27"-->
     <ScalarVariable 
         name="f_c"
-        valueReference="24"
+        valueReference="27"
         description="output coupling force"
         causality="output">
       <Real />
     </ScalarVariable>
-    <!-- index="25"-->
+    <!-- index="28"-->
     <ScalarVariable 
         name="filter_length"
         valueReference="98"

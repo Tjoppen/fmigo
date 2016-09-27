@@ -4,16 +4,16 @@ SET(TARGET coupled_sho)
 SET(SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/coupled_sho.c
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/fmi2/fmuTemplate_impl.h
     ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/fmi2/fmuTemplate.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/fmi2/fmuTemplate_impl.h
     ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/gsl2/gsl-interface.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/gsl2/gsl-interface.h
 )
 ADD_DEFINITIONS(  )
 ADD_LIBRARY(${TARGET} SHARED ${SRCS} ${HEADERS})
 INCLUDE_DIRECTORIES(
-    ../../../FMILibrary-2.0.1/ThirdParty/FMI/default
     ../../templates/gsl2
+    ../../../FMILibrary-2.0.1/ThirdParty/FMI/default
     ../../templates/fmi2
 )
 SET_TARGET_PROPERTIES(${TARGET} PROPERTIES PREFIX "")

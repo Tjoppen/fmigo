@@ -4,8 +4,8 @@ SET(TARGET clutch_ef)
 SET(SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/clutch_ef.c
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/fmi2/fmuTemplate_impl.h
     ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/fmi2/fmuTemplate.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/fmi2/fmuTemplate_impl.h
     ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/gsl2/gsl-interface.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/gsl2/gsl-interface.h
 )
@@ -13,8 +13,8 @@ ADD_DEFINITIONS(  )
 ADD_LIBRARY(${TARGET} SHARED ${SRCS} ${HEADERS})
 INCLUDE_DIRECTORIES(
     ../../../FMILibrary-2.0.1/ThirdParty/FMI/default
-    ../../templates/gsl2
     ../../templates/fmi2
+    ../../templates/gsl2
 )
 SET_TARGET_PROPERTIES(${TARGET} PROPERTIES PREFIX "")
 SET_TARGET_PROPERTIES(${TARGET} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/binaries/${ARCH}")

@@ -4,16 +4,20 @@
 #include <octave/ov-struct.h>
 #endif
 
+static const double scania_dx[]     = { -0.087266462599716474, -0.052359877559829883, 0.0, 0.09599310885968812, 0.17453292519943295 };
+static const double scania_torque[] = { -1000, -30, 0, 50, 3500 };
+
+
 /**
  *  Parameters should be read from a file but that's quicker to setup.
  *  These numbers were provided by Scania.
  */
-static double fclutch( double dphi, double domega, double clutch_damping ) {
+static double fclutch( double dphi, double domega, double clutch_damping,
+                       const double b[] = scania_dx, const double c[] = scania_torque,
+                       size_t N = sizeof( scania_dx ) / sizeof( scania_dx[ 0 ] ) ) {
   
   //Scania's clutch curve
-  static const double b[] = { -0.087266462599716474, -0.052359877559829883, 0.0, 0.09599310885968812, 0.17453292519943295 };
-  static const double c[] = { -100, -30, 0, 50, 350 };
-  size_t N = sizeof( c ) / sizeof( c[ 0 ] );
+
   size_t END = N-1;
     
   /** look up internal torque based on dphi
@@ -25,9 +29,9 @@ static double fclutch( double dphi, double domega, double clutch_damping ) {
   double tc = c[ 0 ]; //clutch torque
 
   if (dphi <= b[ 0 ]) {
-    tc = (dphi - b[ 0 ]) / 0.034906585039886591 *  970.0 + c[ 0 ];
+    tc = (dphi - b[ 0 ]) / ( b[ 1 ] - b[ 0 ] ) *  ( c[ 1 ] - c[ 0 ] ) + c[ 0 ];
   } else if ( dphi >= b[ END ] ) {
-    tc = ( dphi - b[ END ] ) / 0.078539816339744828 * 3450.0 + c[ END ];
+    tc = ( dphi - b[ END ] ) / ( b[ END ] - b[ END - 1 ] ) * ( c[ END ] - c[ END - 1 ] ) + c[ END ];
   } else {
     int i;
     for (i = 0; i < END; ++i) {
@@ -74,9 +78,9 @@ static double fclutch_dphi_derivative( double dphi, double domega ) {
   double df = 0;		// clutch derivative
 
   if (dphi <= b[ 0 ]) {
-    df =  1.0 / 0.034906585039886591 *  970.0 ;
+    df = 1.0 / ( b[ 1 ] - b[ 0 ] ) *  ( c[ 1 ] - c[ 0 ] );
   } else if ( dphi >= b[ END ] ) {
-    df =  1.0 / 0.078539816339744828 * 3450.0 ;
+    df = 1.0 / ( b[ END ] - b[ END - 1 ] ) * ( c[ END ] - c[ END - 1 ] ) ;
   } else {
     int i;
     for (i = 0; i < END; ++i) {

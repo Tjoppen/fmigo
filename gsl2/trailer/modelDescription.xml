@@ -117,7 +117,7 @@ Control can be applied via a brake.
     </ScalarVariable>   
     <!-- index="10"-->
     <ScalarVariable
-        name="c_r_0"
+        name="c_r_1"
         valueReference="10"
         description="static rolling resistance"
         causality="parameter"
@@ -126,7 +126,7 @@ Control can be applied via a brake.
     </ScalarVariable>   
     <!-- index="11"-->
     <ScalarVariable
-        name="c_r_1"
+        name="c_r_2"
         valueReference="11"
         description="kinetic rolling resistance"
         causality="parameter"
@@ -183,7 +183,7 @@ Control can be applied via a brake.
  
     <!-- index="17"-->
     <ScalarVariable
-        name="integrate_d_omega"
+        name="integrate_dw"
         valueReference="17"
         description="integrate angle difference for force velocity coupling"
         causality="parameter"
@@ -193,7 +193,7 @@ Control can be applied via a brake.
 
     <!-- index="18"-->
     <ScalarVariable
-        name="integrate_dx_e"
+        name="integrate_dx"
         valueReference="18"
         description="integrate position difference with output coupling"
         causality="parameter"
@@ -325,8 +325,7 @@ Control can be applied via a brake.
     <ScalarVariable 
         name="a"
         valueReference="31"
-        description="acceleration of trailer. NOTE: this is a dummy so that
-                     we can compute directional derivatives."
+        description="acceleration of trailer"
         causality="output">
       <Real />
     </ScalarVariable>

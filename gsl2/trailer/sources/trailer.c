@@ -54,7 +54,7 @@ int trailer (double t, const double x[], double dxdt[], void * params){
 
   /* rolling resistance */
   force += 
-    - sgnv * ( s->md.c_r_1 * fabs( x[ 1 ] ) + s->md.c_r_0 ) * s->md.mass * s->md.g * cos( s->md.angle );
+    - sgnv * ( s->md.c_r_2 * fabs( x[ 1 ] ) + s->md.c_r_1 ) * s->md.mass * s->md.g * cos( s->md.angle );
 
   /* any additional force */
   force += s->md.tau_e / s->md.r_w;
@@ -64,7 +64,7 @@ int trailer (double t, const double x[], double dxdt[], void * params){
   /* coupling torque */
   s->md.tau_c =   s->md.gamma_d * ( x[ 1 ] / s->md.r_g / s->md.r_w - s->md.omega_i );
   
-  if ( s->md.integrate_d_omega ) { 
+  if ( s->md.integrate_dw ) { 
     s->md.tau_c +=  s->md.k_d *  x[ 2 ];
     dxdt[ 2 ] = x[ 1 ] / s->md.r_g / s->md.r_w - s->md.omega_i;
   }
@@ -76,7 +76,7 @@ int trailer (double t, const double x[], double dxdt[], void * params){
   /* coupling force */
   s->md.f_c =   s->md.gamma_t * ( x[ 1 ] - s->md.v_in );
   
-  if ( s->md.integrate_dx_e) { 
+  if ( s->md.integrate_dx) { 
     s->md.f_c +=  s->md.k_t *  x[ 3 ];
     dxdt[ 3 ] = x[ 1 ] -  s->md.v_in;
   }
@@ -169,8 +169,8 @@ int main(){
       1.0,			/* rho*/
       1.0,			/* drag coeff c_d*/
       10,			/* gravity */
-      0.0,			/* c_r_0 rolling resistance */
       0.0,			/* c_r_1 rolling resistance */
+      0.0,			/* c_r_2 rolling resistance */
       1,			/* friction coeff*/
       0e4,			/* coupling spring constant  differential*/
       0e3,			/* coupling damping constant differential */

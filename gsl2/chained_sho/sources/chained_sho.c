@@ -113,9 +113,9 @@ static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real comm
 
 //gcc -g chained_sho.c ../../../templates/gsl2/gsl-interface.c -DCONSOLE -I../../../templates/gsl2 -I../../../templates/fmi2 -lgsl -lgslcblas -lm -Wall
 #ifdef CONSOLE
+int main(void) {
 #if 0 
 TODO : revise this to adapt to a fully dimensional model
-int main(void) {
     state_t s = {
         {
             1.0,
@@ -138,9 +138,9 @@ int main(void) {
 
     cgsl_step_to( &s.simulation, 0.0, 10.0 );
     cgsl_free(s.simulation);
+#endif
     return 0;
 }
-#endif
 #else
 
 // include code that implements the FMI based on the above definitions

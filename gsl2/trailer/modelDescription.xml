@@ -144,18 +144,18 @@ Control can be applied via a brake.
     </ScalarVariable>   
     <!-- index="13"-->
     <ScalarVariable
-        name="k"
+        name="k_d"
         valueReference="13"
-        description="coupling spring constant"
+        description="coupling spring constant on differential side"
         causality="parameter"
         variability="fixed">
       <Real start="0"/>
     </ScalarVariable>   
     <!-- index="14"-->
     <ScalarVariable
-        name="gamma"
+        name="gamma_d"
         valueReference="14"
-        description="damping of coupling spring"
+        description="damping of coupling spring on differential side"
         causality="parameter"
         variability="fixed">
       <Real start="0"/>
@@ -163,23 +163,23 @@ Control can be applied via a brake.
 
     <!-- index="15"-->
     <ScalarVariable
-        name="integrator"
+        name="k_t"
         valueReference="15"
-        description="which integrator to use"
+        description="coupling spring constant on trailer side"
+        causality="parameter"
+        variability="fixed">
+      <Real start="0"/>
+    </ScalarVariable>   
+    <!-- index="16"-->
+    <ScalarVariable
+        name="gamma_t"
+        valueReference="16"
+        description="damping of coupling spring on trailer side"
         causality="parameter"
         variability="fixed">
       <Real start="0"/>
     </ScalarVariable>   
 
-    <!-- index="16"-->
-    <ScalarVariable
-        name="integrate_dx_e"
-        valueReference="16"
-        description="integrate position difference with output coupling"
-        causality="parameter"
-        variability="fixed">
-      <Real start="0"/>
-    </ScalarVariable>   
  
     <!-- index="17"-->
     <ScalarVariable
@@ -190,88 +190,112 @@ Control can be applied via a brake.
         variability="fixed">
       <Real start="0"/>
     </ScalarVariable>      
-    <!-- inputs -->
+
     <!-- index="18"-->
+    <ScalarVariable
+        name="integrate_dx_e"
+        valueReference="18"
+        description="integrate position difference with output coupling"
+        causality="parameter"
+        variability="fixed">
+      <Real start="0"/>
+    </ScalarVariable>   
+
+
+    <!-- index="19"-->
+    <ScalarVariable
+        name="integrator"
+        valueReference="19"
+        description="which integrator to use"
+        causality="parameter"
+        variability="fixed">
+      <Real start="0"/>
+    </ScalarVariable>   
+
+
+    
+    <!-- inputs -->
+    <!-- index="20"-->
     <ScalarVariable 
         name="phi_i"
-        valueReference="18"
+        valueReference="20"
         description="external input displacement angle on differential"
         causality="input"
         initial="exact">
       <Real start="0"/>
     </ScalarVariable>
-    <!-- index="19"-->
+    <!-- index="21"-->
     <ScalarVariable 
         name="omega_i"
-        valueReference="19"
+        valueReference="21"
         description="external input velocity on differential"
         causality="input"
         initial="exact">
       <Real start="0"/>
     </ScalarVariable>   
 
-    <!-- index="20"-->
+    <!-- index="22"-->
     <ScalarVariable 
         name="tau_d"
-        valueReference="20"
+        valueReference="22"
         description="external driving torque on differential"
         causality="input"
         initial="exact">
       <Real start="0"/>
     </ScalarVariable>   
-    <!-- index="21"-->
+    <!-- index="23"-->
     <ScalarVariable 
         name="tau_e"
-        valueReference="21"
+        valueReference="23"
         description="extra external driving torque on differential"
         causality="input"
         initial="exact">
       <Real start="0"/>
     </ScalarVariable>   
-    <!-- index="22"-->
+    <!-- index="24"-->
     <ScalarVariable 
-        name="alpha"
-        valueReference="22"
-        description="road angle"
+        name="angle"
+        valueReference="24"
+        description="road angle in radians"
         causality="input"
         initial="exact">
       <Real start="0"/>
     </ScalarVariable>   
 
-    <!-- index="23"-->
+    <!-- index="25"-->
     <ScalarVariable 
         name="brake"
-        valueReference="23"
+        valueReference="25"
         description="brake position"
         causality="input"
         initial="exact">
       <Real start="0"/>
     </ScalarVariable>   
 
-    <!-- index="XXX"-->
+    <!-- index="26"-->
     <ScalarVariable 
         name="x_in"
-        valueReference="1001"
+        valueReference="26"
         description="input coupling displacement"
         causality="input"
         initial="exact">
       <Real start="0"/>
     </ScalarVariable>   
 
-    <!-- index="XXX"-->
+    <!-- index="27"-->
     <ScalarVariable 
         name="v_in"
-        valueReference="1002"
+        valueReference="27"
         description="input coupling speed"
         causality="input"
         initial="exact">
       <Real start="0"/>
     </ScalarVariable>   
 
-    <!-- index="XXX"-->
+    <!-- index="28"-->
     <ScalarVariable 
         name="f_in"
-        valueReference="1003"
+        valueReference="28"
         description="input coupling force"
         causality="input"
         initial="exact">
@@ -281,52 +305,80 @@ Control can be applied via a brake.
 
     
     <!-- outputs -->
-    <!-- index="24"-->
+    <!-- index="29"-->
     <ScalarVariable 
         name="x"
-        valueReference="24"
+        valueReference="29"
         description="position of trailer along the road"
         causality="output">
       <Real />
     </ScalarVariable>   
-    <!-- index="25"-->
+    <!-- index="30"-->
     <ScalarVariable 
         name="v"
-        valueReference="25"
+        valueReference="30"
         description="velocity of trailer"
         causality="output">
       <Real />
     </ScalarVariable>
-    <!-- index="26"-->
+    <!-- index="31"-->
     <ScalarVariable 
         name="a"
-        valueReference="26"
+        valueReference="31"
         description="acceleration of trailer. NOTE: this is a dummy so that
                      we can compute directional derivatives."
         causality="output">
       <Real />
     </ScalarVariable>
 
-    <!-- index="27"-->
+    <!-- index="32"-->
+    <ScalarVariable 
+        name="phi"
+        valueReference="32"
+        description="angle of differential, computed from x"
+        causality="output">
+      <Real />
+    </ScalarVariable>
+ 
+    <!-- index="33"-->
+    <ScalarVariable 
+        name="omega"
+        valueReference="33"
+        description="angular speed of differential, computed from v"
+        causality="output">
+      <Real />
+    </ScalarVariable>   
+
+    <!-- index="34"-->
+    <ScalarVariable 
+        name="alpha"
+        valueReference="34"
+        description="angular acceleration of differential, computed from v"
+        causality="output">
+      <Real />
+    </ScalarVariable>   
+    
+
+    <!-- index="35"-->
     <ScalarVariable 
         name="tau_c"
-        valueReference="27"
+        valueReference="35"
         description="output coupling torque"
         causality="output">
       <Real />
     </ScalarVariable>
 
-    <!-- index="28"-->
+    <!-- index="36"-->
     <ScalarVariable 
         name="f_c"
-        valueReference="28"
+        valueReference="36"
         description="output coupling force"
         causality="output">
       <Real />
     </ScalarVariable>
 
     
-    <!-- index="29"-->
+    <!-- index="37"-->
     <ScalarVariable 
         name="filter_length"
         valueReference="98"
@@ -349,10 +401,14 @@ Currently used by the master only to print output values.
 
   <ModelStructure>
     <Outputs>
-      <Unknown index="21"/> <!-- position       -->
-      <Unknown index="22"/> <!-- velocity       -->
-      <Unknown index="23"/> <!-- acceleration   -->
-      <Unknown index="24"/> <!-- coupling force -->
+      <Unknown index="29"/> <!-- position       -->
+      <Unknown index="30"/> <!-- velocity       -->
+      <Unknown index="31"/> <!-- acceleration   -->
+      <Unknown index="32"/> <!-- angle -->
+      <Unknown index="33"/> <!-- angular speed-->
+      <Unknown index="34"/> <!-- angular acceleration-->
+      <Unknown index="35"/> <!-- coupling torque -->
+      <Unknown index="36"/> <!-- coupling force -->
     </Outputs>
     <Derivatives/>
     <DiscreteStates/>

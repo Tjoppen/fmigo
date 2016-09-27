@@ -25,6 +25,13 @@ parser.add_argument('-i','--includedir',
 parser.add_argument('-t','--templatedir',
                     action='append',
                     help='Directories to pull template code from, to avoid copy-pasting it all over the place. May also be a filename')
+parser.add_argument('-m','--md2hdr',
+                    type=str,
+                    help='Location of modeldescription2header')
+parser.add_argument('-c','--console',
+                    action='store_true',
+                    default=False,
+                    help='Generate CONSOLE target')
 args = parser.parse_args()
 link_libraries = args.link.split(",")
 definitions = " -".join(args.definitions.split(","))
@@ -91,19 +98,35 @@ with open(path,'w') as f:
     source_files        = ["${CMAKE_CURRENT_SOURCE_DIR}/"+os.path.relpath(s) for s in source_files]
     include_directories = [os.path.relpath(i) for i in include_directories]
     files = "SET(SRCS\n    " + "\n    ".join(source_files) + "\n)"
+    md2hdr = os.path.relpath(args.md2hdr)
+    console = """
+ADD_EXECUTABLE(${TARGET}_c ${SRCS})
+SET_TARGET_PROPERTIES(${TARGET}_c PROPERTIES COMPILE_DEFINITIONS CONSOLE)
+TARGET_LINK_LIBRARIES( ${TARGET}_c ${LIBS} )
+"""
 
     cmakestuff = """CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 SET(ARCH "%s" CACHE STRING "Architecture: linux64, linux32, win32...")
 SET(TARGET %s)
 %s
+ADD_CUSTOM_COMMAND(
+  OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
+  COMMAND python2 ${CMAKE_CURRENT_SOURCE_DIR}/%s
+    ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml >
+    ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
+  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml )
+
 ADD_DEFINITIONS( %s )
-ADD_LIBRARY(${TARGET} SHARED ${SRCS} ${HEADERS})
+ADD_LIBRARY(${TARGET} SHARED ${SRCS})
 INCLUDE_DIRECTORIES(
     %s
 )
 SET_TARGET_PROPERTIES(${TARGET} PROPERTIES PREFIX "")
 SET_TARGET_PROPERTIES(${TARGET} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/binaries/${ARCH}")
-TARGET_LINK_LIBRARIES( ${TARGET} %s )
+SET(LIBS %s)
+TARGET_LINK_LIBRARIES( ${TARGET} ${LIBS} )
+
+%s
 
 # There doesn't seem to be a way to repack an FMU in case it is deleted.
 # A post-build command is good enough for now.
@@ -132,7 +155,7 @@ else ()
         MAIN_DEPENDENCY ${TARGET}
     )
 endif ()
-""" % (arch, modelIdentifier, files, definitions, "\n    ".join(include_directories), " ".join(link_libraries) )
+""" % (arch, modelIdentifier, files, md2hdr, definitions, "\n    ".join(include_directories), " ".join(link_libraries), console if args.console else "" )
 
     f.write( cmakestuff )
     f.close()

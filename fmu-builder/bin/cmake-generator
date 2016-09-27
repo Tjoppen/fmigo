@@ -101,7 +101,9 @@ with open(path,'w') as f:
           include_directories.append(d2)
 
     source_files        = ["${CMAKE_CURRENT_SOURCE_DIR}/"+os.path.relpath(s) for s in source_files]
+    source_files.sort()
     include_directories = [os.path.relpath(i) for i in include_directories]
+    include_directories.sort()
     files = "SET(SRCS\n    " + "\n    ".join(source_files) + "\n)"
     md2hdr = os.path.relpath(args.md2hdr)
     console = """

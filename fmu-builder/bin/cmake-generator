@@ -37,7 +37,7 @@ link_libraries = args.link.split(",")
 definitions = " -".join(args.definitions.split(","))
 if len(definitions):
     definitions = "-"+definitions
-include_directories = set(args.includedir.split(','))
+include_directories = args.includedir.split(',')
 
 # For logging errors and messages
 def log(m):
@@ -94,7 +94,12 @@ with open(path,'w') as f:
         exit(1)
 
     # Create a CMakeLists.txt
-    include_directories.update([d if os.path.isdir(d) else os.path.dirname(d) for d in args.templatedir])
+    for d in args.templatedir:
+        # Behave like a predictable set()
+        d2 = d if os.path.isdir(d) else os.path.dirname(d)
+        if not d2 in include_directories:
+          include_directories.append(d2)
+
     source_files        = ["${CMAKE_CURRENT_SOURCE_DIR}/"+os.path.relpath(s) for s in source_files]
     include_directories = [os.path.relpath(i) for i in include_directories]
     files = "SET(SRCS\n    " + "\n    ".join(source_files) + "\n)"

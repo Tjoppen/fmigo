@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
 import sys, platform, tempfile, os, subprocess, zipfile, argparse, shutil, re
 import xml.etree.ElementTree as e
@@ -82,7 +82,7 @@ with open(path,'w') as f:
         if os.path.isfile(dir):
             source_files.append(dir)
         else:
-            source_files.extend([ pjoin(dir,s).replace('\\','/')
+            source_files.extend([ pjoin(dir,s)
                 for s in os.listdir(dir)
                 if os.path.isfile(pjoin(dir,s))
                 and os.path.splitext(s)[1] in ['.c','.cpp','.h','.hpp']
@@ -100,12 +100,12 @@ with open(path,'w') as f:
         if not d2 in include_directories:
           include_directories.append(d2)
 
-    source_files        = ["${CMAKE_CURRENT_SOURCE_DIR}/"+os.path.relpath(s) for s in source_files]
+    source_files        = ["${CMAKE_CURRENT_SOURCE_DIR}/"+os.path.relpath(s).replace('\\','/') for s in source_files]
     source_files.sort()
-    include_directories = [os.path.relpath(i) for i in include_directories]
+    include_directories = [os.path.relpath(i).replace('\\','/') for i in include_directories]
     include_directories.sort()
     files = "SET(SRCS\n    " + "\n    ".join(source_files) + "\n)"
-    md2hdr = os.path.relpath(args.md2hdr)
+    md2hdr = os.path.relpath(args.md2hdr).replace('\\','/')
     console = """
 ADD_EXECUTABLE(${TARGET}_c ${SRCS})
 SET_TARGET_PROPERTIES(${TARGET}_c PROPERTIES COMPILE_DEFINITIONS CONSOLE)
@@ -118,7 +118,7 @@ SET(TARGET %s)
 %s
 ADD_CUSTOM_COMMAND(
   OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
-  COMMAND python2 ${CMAKE_CURRENT_SOURCE_DIR}/%s
+  COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/%s
     ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml >
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml )

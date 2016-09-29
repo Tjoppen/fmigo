@@ -67,8 +67,6 @@ elif fmiVersion == "2.0":
 system = platform.system()
 is_64bits = sys.maxsize > 2**32
 # 'win32' seems to be the proper name for all Windows FMUs since FMILibrary-2.0.1
-arch = 'win32' if system.lower() == 'windows' else system.lower()+( "64" if is_64bits else "32")
-
 path = "CMakeLists.txt"
 
 with open(path,'w') as f:
@@ -120,7 +118,7 @@ TARGET_LINK_LIBRARIES( ${TARGET}_c ${LIBS} )
 """
 
     cmakestuff = """CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
-SET(ARCH "%s" CACHE STRING "Architecture: linux64, linux32, win32...")
+SET(ARCH "linux64" CACHE STRING "Architecture: linux64, linux32, win32...")
 SET(TARGET %s)
 %s
 ADD_CUSTOM_COMMAND(
@@ -146,6 +144,7 @@ TARGET_LINK_LIBRARIES( ${TARGET} ${LIBS} )
 # A post-build command is good enough for now.
 # Having to have a separate series of commands for Windows is also not optimal
 if (WIN32)
+    set(CMAKE_SHARED_LINKER_FLAGS "/SAFESEH:NO")
     add_custom_command(TARGET ${TARGET} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E echo Packing ${TARGET}.fmu
         COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/fmu/sources
@@ -169,7 +168,7 @@ else ()
         MAIN_DEPENDENCY ${TARGET}
     )
 endif ()
-""" % (arch, modelIdentifier, files, md2hdr, definitions, "\n    ".join(include_directories), " ".join(link_libraries), libmextra, console if args.console else "" )
+""" % (modelIdentifier, files, md2hdr, definitions, "\n    ".join(include_directories), " ".join(link_libraries), libmextra, console if args.console else "" )
 
     f.write( cmakestuff )
     f.close()

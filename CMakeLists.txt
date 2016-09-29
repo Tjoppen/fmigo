@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 2.8)
 if (WIN32)
     link_directories(${CMAKE_CURRENT_SOURCE_DIR}/wingsl/lib)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/wingsl/include)
-    set(CMAKE_SHARED_LINKER_FLAGS "/SAFESEH:NO")
 endif ()
 
 add_subdirectory(gsl2/clutch2)

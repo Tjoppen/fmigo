@@ -9,9 +9,11 @@
 #include "fmuTemplate.h"
 
 
-#include <alloca.h>
-#if defined(_WIN32) 
+#if defined(_WIN32)
+#include <malloc.h>
 #define alloca _alloca
+#else
+#include <alloca.h>
 #endif 
 
 const static double flip = -1;

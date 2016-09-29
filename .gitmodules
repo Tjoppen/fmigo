@@ -1,0 +1,3 @@
+[submodule "wingsl"]
+	path = wingsl
+	url = git@mimmi.math.umu.se:vtb/wingsl.git

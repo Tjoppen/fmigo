@@ -41,7 +41,6 @@ TARGET_LINK_LIBRARIES( ${TARGET}_c ${LIBS} )
 # A post-build command is good enough for now.
 # Having to have a separate series of commands for Windows is also not optimal
 if (WIN32)
-    set(CMAKE_SHARED_LINKER_FLAGS "/SAFESEH:NO")
     add_custom_command(TARGET ${TARGET} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E echo Packing ${TARGET}.fmu
         COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/fmu/sources

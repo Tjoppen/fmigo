@@ -24,15 +24,15 @@ typedef struct {
     fmi2Real rho; //VR=7
     fmi2Real c_d; //VR=8
     fmi2Real g; //VR=9
-    fmi2Real c_r_0; //VR=10
-    fmi2Real c_r_1; //VR=11
+    fmi2Real c_r_1; //VR=10
+    fmi2Real c_r_2; //VR=11
     fmi2Real mu; //VR=12
     fmi2Real k_d; //VR=13
     fmi2Real gamma_d; //VR=14
     fmi2Real k_t; //VR=15
     fmi2Real gamma_t; //VR=16
-    fmi2Real integrate_d_omega; //VR=17
-    fmi2Real integrate_dx_e; //VR=18
+    fmi2Real integrate_dw; //VR=17
+    fmi2Real integrate_dx; //VR=18
     fmi2Real integrator; //VR=19
     fmi2Real phi_i; //VR=20
     fmi2Real omega_i; //VR=21
@@ -67,15 +67,15 @@ static const modelDescription_t defaults = {
     0.0, //rho
     0.0, //c_d
     0.0, //g
-    0.0, //c_r_0
     0.0, //c_r_1
+    0.0, //c_r_2
     0.0, //mu
     0.0, //k_d
     0.0, //gamma_d
     0.0, //k_t
     0.0, //gamma_t
-    0.0, //integrate_d_omega
-    0.0, //integrate_dx_e
+    0.0, //integrate_dw
+    0.0, //integrate_dx
     0.0, //integrator
     0.0, //phi_i
     0.0, //omega_i
@@ -108,15 +108,15 @@ static const modelDescription_t defaults = {
 #define VR_RHO 7
 #define VR_C_D 8
 #define VR_G 9
-#define VR_C_R_0 10
-#define VR_C_R_1 11
+#define VR_C_R_1 10
+#define VR_C_R_2 11
 #define VR_MU 12
 #define VR_K_D 13
 #define VR_GAMMA_D 14
 #define VR_K_T 15
 #define VR_GAMMA_T 16
-#define VR_INTEGRATE_D_OMEGA 17
-#define VR_INTEGRATE_DX_E 18
+#define VR_INTEGRATE_DW 17
+#define VR_INTEGRATE_DX 18
 #define VR_INTEGRATOR 19
 #define VR_PHI_I 20
 #define VR_OMEGA_I 21
@@ -156,15 +156,15 @@ static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2
         case 7: value[i] = md->rho; break;
         case 8: value[i] = md->c_d; break;
         case 9: value[i] = md->g; break;
-        case 10: value[i] = md->c_r_0; break;
-        case 11: value[i] = md->c_r_1; break;
+        case 10: value[i] = md->c_r_1; break;
+        case 11: value[i] = md->c_r_2; break;
         case 12: value[i] = md->mu; break;
         case 13: value[i] = md->k_d; break;
         case 14: value[i] = md->gamma_d; break;
         case 15: value[i] = md->k_t; break;
         case 16: value[i] = md->gamma_t; break;
-        case 17: value[i] = md->integrate_d_omega; break;
-        case 18: value[i] = md->integrate_dx_e; break;
+        case 17: value[i] = md->integrate_dw; break;
+        case 18: value[i] = md->integrate_dx; break;
         case 19: value[i] = md->integrator; break;
         case 20: value[i] = md->phi_i; break;
         case 21: value[i] = md->omega_i; break;
@@ -202,15 +202,15 @@ static fmi2Status generated_fmi2SetReal(modelDescription_t *md, const fmi2ValueR
         case 7: md->rho = value[i]; break;
         case 8: md->c_d = value[i]; break;
         case 9: md->g = value[i]; break;
-        case 10: md->c_r_0 = value[i]; break;
-        case 11: md->c_r_1 = value[i]; break;
+        case 10: md->c_r_1 = value[i]; break;
+        case 11: md->c_r_2 = value[i]; break;
         case 12: md->mu = value[i]; break;
         case 13: md->k_d = value[i]; break;
         case 14: md->gamma_d = value[i]; break;
         case 15: md->k_t = value[i]; break;
         case 16: md->gamma_t = value[i]; break;
-        case 17: md->integrate_d_omega = value[i]; break;
-        case 18: md->integrate_dx_e = value[i]; break;
+        case 17: md->integrate_dw = value[i]; break;
+        case 18: md->integrate_dx = value[i]; break;
         case 19: md->integrator = value[i]; break;
         case 20: md->phi_i = value[i]; break;
         case 21: md->omega_i = value[i]; break;

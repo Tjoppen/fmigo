@@ -30,9 +30,11 @@ FMUS="
 cat <<END>CMakeLists.txt
 cmake_minimum_required(VERSION 2.8)
 
-#Getting GSL to run on Windows is too much of a hassle right now
-#TODO: use msys2?
-if (NOT WIN32)
+if (WIN32)
+    link_directories(\${CMAKE_CURRENT_SOURCE_DIR}/wingsl)
+    set(CMAKE_SHARED_LINKER_FLAGS "/SAFESEH:NO")
+endif ()
+
 END
 
 # Warnings during compilation may go unnoticed without -Werror, leading to
@@ -42,15 +44,13 @@ export CFLAGS="-Wall -Werror -O3"
 #New GSL interface
 for d in $GSLFMUS
 do
-    echo "    add_subdirectory($d)" >> CMakeLists.txt
+    echo "add_subdirectory($d)" >> CMakeLists.txt
     GSL="-t `pwd`/templates/gsl2/gsl-interface.c -t `pwd`/templates/gsl2/gsl-interface.h -l gsl,gslcblas,m -c"
     pushd $d
         python ${MD2HDR} modelDescription.xml > sources/modelDescription.h
         python ${GENERATOR} ${GSL}
     popd
 done
-
-echo "endif ()" >> CMakeLists.txt
 
 for d in $FMUS
 do

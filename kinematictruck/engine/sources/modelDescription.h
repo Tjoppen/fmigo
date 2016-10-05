@@ -40,7 +40,7 @@ static const modelDescription_t defaults = {
     0.25, //jinv
     1.0, //d
     0.0, //omega_l
-    38.8888888889, //omega_l0
+    38.888888888888886, //omega_l0
     20.0, //kp
     1350.0, //tau_max
     0.0, //beta

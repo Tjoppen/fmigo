@@ -5,4 +5,12 @@
 slprj/
 nbproject/
 *.fmu
-
+*.log
+*.aux
+*.bbl
+*.blg
+*.rel
+*.a
+*.oct
+*.o
+*#

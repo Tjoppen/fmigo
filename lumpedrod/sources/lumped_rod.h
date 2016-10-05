@@ -47,14 +47,18 @@ extern "C" {
 				    by default however */
     double driver_stiffness1;	/** This is for the case when we have a
 				    driver at point 1 */
-    double driver_relaxation1;	
+    double driver_damping1;	
     double driver_stiffnessN;	/** This is for the case when we have a
 				    driver at point N */
-    double driver_relaxationN;	
+    double driver_dampingN;	
     double driver_sign1;
     double driver_signN;
     double mass;		/* element mass: this is computed during
                                  * initialization */
+    int integrate_dx1;          /* integrate angle difference on input
+				   velocity driver for first element. */
+    int integrate_dxN;          /* integrate angle difference on input
+				   velocity driver for last element. */
   
     double mobility[ 4 ];	/** rod's mobility wrt forcing at each
 				 * end: this is derived from parameters
@@ -87,15 +91,19 @@ extern "C" {
     double dx1;			/* integrated angle difference on first point */
     double dxN;			/* integrated angle difference between last
 				 * point and external driver. */
+
+    /** the following are inputs for the case of kinematic coupling */
     double f1;			/* force/torque on first point */
     double fN;			/* force/torque on last point */
 
 
     
-    /** Driving forces and velocities */
+    /** Force-velocity coupling forces and velocities */
     double driver_f1;		/* force/torque on first point */
     double driver_fN;		/* force/torque on last point */
+    double driver_x1;		/* driving displacement on first point */
     double driver_v1;		/* driving velocity on first point */
+    double driver_xN;		/* driving displacement on last point */
     double driver_vN;		/* driving velocity on last point */
 
   } lumped_rod_state;
@@ -134,10 +142,20 @@ extern "C" {
     double * z;	                   /** buffer for solution: contains velocities and multipliers*/
     double gamma_x;                  /** stabilization factor for constraint violations */
     double gamma_v;                  /** stabilization factor for velocities */
-    double gamma_driver_x1;          /** stabilization factor for constraint * velocities */
+
+    /* these will be initialized to the values suitable for the spook stepper */
+    double gamma_driver_x1;          
     double gamma_driver_v1;          
     double gamma_driver_xN;         
     double gamma_driver_vN;        
+
+    double polarity_driver_x1;
+    double polarity_driver_xN;
+    
+
+    int  integrate_v1;
+    int  integrate_v2;
+    
     /** backup for store/restore */
     lumped_rod_sim_parameters state_backup; 
   

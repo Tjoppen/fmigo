@@ -1,0 +1,156 @@
+#ifndef MODELDESCRIPTION_H
+#define MODELDESCRIPTION_H
+#include "FMI2/fmi2Functions.h" //for fmi2Real etc.
+
+#define MODEL_IDENTIFIER engine2
+#define MODEL_GUID "{cbbffdc6-77a2-4783-bdc5-e23a26787c3f}"
+#define FMI_COSIMULATION
+#define HAVE_DIRECTIONAL_DERIVATIVE 0
+#define NUMBER_OF_REALS 11
+#define NUMBER_OF_INTEGERS 1
+#define NUMBER_OF_BOOLEANS 0
+#define NUMBER_OF_STATES 0
+#define NUMBER_OF_EVENT_INDICATORS 0
+
+
+#define HAVE_MODELDESCRIPTION_STRUCT
+typedef struct {
+    fmi2Real theta; //VR=1
+    fmi2Real omega; //VR=2
+    fmi2Real tau_coupling; //VR=3
+    fmi2Real theta0; //VR=4
+    fmi2Real omega0; //VR=5
+    fmi2Real kp; //VR=6
+    fmi2Real tau_max; //VR=7
+    fmi2Real omega_target; //VR=8
+    fmi2Real jinv; //VR=9
+    fmi2Real k1; //VR=10
+    fmi2Real k2; //VR=11
+    fmi2Integer filter_length; //VR=98
+
+} modelDescription_t;
+
+
+#define HAVE_DEFAULTS
+static const modelDescription_t defaults = {
+    0, //theta
+    0, //omega
+    0.0, //tau_coupling
+    0.0, //theta0
+    0.0, //omega0
+    20.0, //kp
+    1350.0, //tau_max
+    38.8888888889, //omega_target
+    0.25, //jinv
+    1.0, //k1
+    0.1, //k2
+    0, //filter_length
+
+};
+
+
+#define VR_THETA 1
+#define VR_OMEGA 2
+#define VR_TAU_COUPLING 3
+#define VR_THETA0 4
+#define VR_OMEGA0 5
+#define VR_KP 6
+#define VR_TAU_MAX 7
+#define VR_OMEGA_TARGET 8
+#define VR_JINV 9
+#define VR_K1 10
+#define VR_K2 11
+#define VR_FILTER_LENGTH 98
+
+
+//the following getters and setters are static to avoid getting linking errors if this file is included in more than one place
+
+#define HAVE_GENERATED_GETTERS_SETTERS  //for letting the template know that we have our own getters and setters
+
+
+static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Real value[]) {
+    int i;
+    for (i = 0; i < nvr; i++) {
+        switch (vr[i]) {
+        case 1: value[i] = md->theta; break;
+        case 2: value[i] = md->omega; break;
+        case 3: value[i] = md->tau_coupling; break;
+        case 4: value[i] = md->theta0; break;
+        case 5: value[i] = md->omega0; break;
+        case 6: value[i] = md->kp; break;
+        case 7: value[i] = md->tau_max; break;
+        case 8: value[i] = md->omega_target; break;
+        case 9: value[i] = md->jinv; break;
+        case 10: value[i] = md->k1; break;
+        case 11: value[i] = md->k2; break;
+        default: return fmi2Error;
+        }
+    }
+    return fmi2OK;
+}
+
+static fmi2Status generated_fmi2SetReal(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Real value[]) {
+    int i;
+    for (i = 0; i < nvr; i++) {
+        switch (vr[i]) {
+        case 1: md->theta = value[i]; break;
+        case 2: md->omega = value[i]; break;
+        case 3: md->tau_coupling = value[i]; break;
+        case 4: md->theta0 = value[i]; break;
+        case 5: md->omega0 = value[i]; break;
+        case 6: md->kp = value[i]; break;
+        case 7: md->tau_max = value[i]; break;
+        case 8: md->omega_target = value[i]; break;
+        case 9: md->jinv = value[i]; break;
+        case 10: md->k1 = value[i]; break;
+        case 11: md->k2 = value[i]; break;
+        default: return fmi2Error;
+        }
+    }
+    return fmi2OK;
+}
+
+static fmi2Status generated_fmi2GetInteger(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Integer value[]) {
+    int i;
+    for (i = 0; i < nvr; i++) {
+        switch (vr[i]) {
+        case 98: value[i] = md->filter_length; break;
+        default: return fmi2Error;
+        }
+    }
+    return fmi2OK;
+}
+
+static fmi2Status generated_fmi2SetInteger(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Integer value[]) {
+    int i;
+    for (i = 0; i < nvr; i++) {
+        switch (vr[i]) {
+        case 98: md->filter_length = value[i]; break;
+        default: return fmi2Error;
+        }
+    }
+    return fmi2OK;
+}
+
+static fmi2Status generated_fmi2GetBoolean(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Boolean value[]) {
+    int i;
+    for (i = 0; i < nvr; i++) {
+        switch (vr[i]) {
+
+        default: return fmi2Error;
+        }
+    }
+    return fmi2OK;
+}
+
+static fmi2Status generated_fmi2SetBoolean(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Boolean value[]) {
+    int i;
+    for (i = 0; i < nvr; i++) {
+        switch (vr[i]) {
+
+        default: return fmi2Error;
+        }
+    }
+    return fmi2OK;
+}
+#endif //MODELDESCRIPTION_H

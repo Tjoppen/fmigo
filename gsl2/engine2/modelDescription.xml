@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fmiModelDescription
+    fmiVersion="2.0"
+    description="GSL engine with multiple coupling possibilities"
+    modelName="engine2"
+    guid="{cbbffdc6-77a2-4783-bdc5-e23a26787c3f}"
+    numberOfEventIndicators="0">
+
+  <CoSimulation
+      modelIdentifier="engine2"
+      canHandleVariableCommunicationStepSize="true"
+      canGetAndSetFMUstate="true"
+      providesDirectionalDerivative="false"/>
+
+  <LogCategories>
+    <Category name="logAll"/>
+    <Category name="logError"/>
+    <Category name="logFmiCall"/>
+    <Category name="logEvent"/>
+  </LogCategories>
+
+  <DefaultExperiment startTime="0" stopTime="10" stepSize="0.1"/>
+
+  <ModelVariables>
+    <!-- outputs -->
+    <ScalarVariable
+        name="theta"
+        valueReference="1"
+        description="angle"
+        causality="output">
+      <Real />
+    </ScalarVariable>
+    <ScalarVariable
+        name="omega"
+        valueReference="2"
+        description="angular velocity"
+        causality="output">
+      <Real />
+    </ScalarVariable>
+
+    <!-- inputs -->
+    <ScalarVariable
+        name="tau_coupling"
+        valueReference="3"
+        description="coupling torque"
+        causality="input"
+        initial="exact">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <!-- parameters -->
+    <ScalarVariable
+        name="theta0"
+        valueReference="4"
+        description="initial angle"
+        causality="parameter"
+        variability="fixed">
+      <Real start="0"/>
+    </ScalarVariable>
+    <ScalarVariable
+        name="omega0"
+        valueReference="5"
+        description="initial angular velocity"
+        causality="parameter"
+        variability="fixed">
+      <Real start="0"/>
+    </ScalarVariable>
+    <ScalarVariable
+        name="kp"
+        valueReference="6"
+        description="P controller gain"
+        causality="parameter"
+        variability="fixed">
+      <Real start="20"/>
+    </ScalarVariable>
+    <ScalarVariable
+        name="tau_max"
+        valueReference="7"
+        description="Maximum torque"
+        causality="parameter"
+        variability="fixed">
+      <Real start="1350"/>
+    </ScalarVariable>
+    <ScalarVariable
+        name="omega_target"
+        valueReference="8"
+        description="target angular velocity"
+        causality="parameter"
+        variability="fixed">
+      <Real start="38.88888888888888888"/>
+    </ScalarVariable>
+    <ScalarVariable
+        name="jinv"
+        valueReference="9"
+        description="inverse moment of inertia"
+        causality="parameter"
+        variability="fixed">
+      <Real start="0.25"/>
+    </ScalarVariable>
+    <ScalarVariable
+        name="k1"
+        valueReference="10"
+        description="drag coefficient (applied to omega)"
+        causality="parameter"
+        variability="fixed">
+      <Real start="1"/>
+    </ScalarVariable>
+    <ScalarVariable
+        name="k2"
+        valueReference="11"
+        description="drag coefficient (applied to omega*abs(omega))"
+        causality="parameter"
+        variability="fixed">
+      <Real start="0.1"/>
+    </ScalarVariable>
+
+    <ScalarVariable
+        name="filter_length"
+        valueReference="98"
+        description="Length of EPCE FIR filter (0 = disable)"
+        causality="parameter"
+        variability="fixed">
+      <Integer start="0"/>
+    </ScalarVariable>
+  </ModelVariables>
+
+  <ModelStructure>
+    <Outputs>
+      <Unknown index="1"/>
+      <Unknown index="2"/>
+    </Outputs>
+    <Derivatives/>
+    <DiscreteStates/>
+    <InitialUnknowns />
+  </ModelStructure>
+
+</fmiModelDescription>

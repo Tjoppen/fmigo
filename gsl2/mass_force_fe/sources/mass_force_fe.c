@@ -52,6 +52,7 @@ jac_mass_force (double t, const double x[], double *dfdx, double dfdt[], void *p
   /** first row */
   gsl_matrix_set (J, 0, 0, 0.0); 
   gsl_matrix_set (J, 0, 1, 1.0 ); /* position/velocity */
+  gsl_matrix_set (J, 0, 2, 0.0);
 
   /** second row */
   gsl_matrix_set (J, 1, 0, -s->md.coupling_spring);

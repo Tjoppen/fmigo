@@ -73,7 +73,7 @@ int jac_clutch (double t, const double x[], double *dfdx, double dfdt[], void *p
 
   /** second row */
   gsl_matrix_set (J, 1, 0, 0 ); 
-  gsl_matrix_set (J, 0, 1, -( s->md.clutch_damping + s->md.gamma ) / s->md.mass ); 
+  gsl_matrix_set (J, 1, 1, -( s->md.clutch_damping + s->md.gamma ) / s->md.mass );
   gsl_matrix_set (J, 1, 2, -fclutch_dphi_derivative( x[ 2 ] )  / s->md.mass );
 
 

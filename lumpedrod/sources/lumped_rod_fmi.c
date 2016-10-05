@@ -30,9 +30,11 @@ static void lumped_rod_sim_free_a( lumped_rod_sim  sim    ){
 static void lumped_rod_fmi_sync_out( lumped_rod_sim * sim, state_t *s){
   
   s->md.theta1  = sim->state.state.x1;
-  s->md.theta2  = sim->state.state.xN;
   s->md.omega1  = sim->state.state.v1;
+
+  s->md.theta2  = sim->state.state.xN;
   s->md.omega2  = sim->state.state.vN;
+
   s->md.alpha1  = sim->state.state.a1;
   s->md.alpha2  = sim->state.state.aN;
 
@@ -50,9 +52,14 @@ static void lumped_rod_fmi_sync_in( lumped_rod_sim * sim, state_t *s){
   
   assert( s );
   assert( sim );
+
   sim->state.state.driver_f1         =  s->md.tau1;
   sim->state.state.driver_fN         =  s->md.tau2;
+
+  sim->state.state.driver_x1         =  s->md.theta_drive1;
   sim->state.state.driver_v1         =  s->md.omega_drive1;
+
+  sim->state.state.driver_xN         =  s->md.theta_drive2;
   sim->state.state.driver_vN         =  s->md.omega_drive2;
 
   return;
@@ -86,7 +93,7 @@ static void setStartValues(state_t *s) {
     }, 
     {
       s->md.n_elements, //VR=0
-      s->md.J0, //VR=14
+      s->md.J, //VR=14
       s->md.compliance, //VR=15
       s->md.D, //VR=16
       s->md.K_drive1, //VR=17
@@ -97,6 +104,7 @@ static void setStartValues(state_t *s) {
       s->md.driver_sign2 // VR=27
     }
   };
+
   s->simulation = lumped_rod_sim_create( p ); 
 
 #if WRITE_TO_FILE

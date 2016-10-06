@@ -5,8 +5,8 @@
 #define MODEL_IDENTIFIER engine2
 #define MODEL_GUID "{cbbffdc6-77a2-4783-bdc5-e23a26787c3f}"
 #define FMI_COSIMULATION
-#define HAVE_DIRECTIONAL_DERIVATIVE 0
-#define NUMBER_OF_REALS 11
+#define HAVE_DIRECTIONAL_DERIVATIVE 1
+#define NUMBER_OF_REALS 12
 #define NUMBER_OF_INTEGERS 1
 #define NUMBER_OF_BOOLEANS 0
 #define NUMBER_OF_STATES 0
@@ -17,15 +17,16 @@
 typedef struct {
     fmi2Real theta; //VR=1
     fmi2Real omega; //VR=2
-    fmi2Real tau_coupling; //VR=3
-    fmi2Real theta0; //VR=4
-    fmi2Real omega0; //VR=5
-    fmi2Real kp; //VR=6
-    fmi2Real tau_max; //VR=7
-    fmi2Real omega_target; //VR=8
-    fmi2Real jinv; //VR=9
-    fmi2Real k1; //VR=10
-    fmi2Real k2; //VR=11
+    fmi2Real alpha; //VR=3
+    fmi2Real tau_coupling; //VR=4
+    fmi2Real theta0; //VR=5
+    fmi2Real omega0; //VR=6
+    fmi2Real kp; //VR=7
+    fmi2Real tau_max; //VR=8
+    fmi2Real omega_target; //VR=9
+    fmi2Real jinv; //VR=10
+    fmi2Real k1; //VR=11
+    fmi2Real k2; //VR=12
     fmi2Integer filter_length; //VR=98
 
 } modelDescription_t;
@@ -35,6 +36,7 @@ typedef struct {
 static const modelDescription_t defaults = {
     0, //theta
     0, //omega
+    0, //alpha
     0.0, //tau_coupling
     0.0, //theta0
     0.0, //omega0
@@ -51,15 +53,16 @@ static const modelDescription_t defaults = {
 
 #define VR_THETA 1
 #define VR_OMEGA 2
-#define VR_TAU_COUPLING 3
-#define VR_THETA0 4
-#define VR_OMEGA0 5
-#define VR_KP 6
-#define VR_TAU_MAX 7
-#define VR_OMEGA_TARGET 8
-#define VR_JINV 9
-#define VR_K1 10
-#define VR_K2 11
+#define VR_ALPHA 3
+#define VR_TAU_COUPLING 4
+#define VR_THETA0 5
+#define VR_OMEGA0 6
+#define VR_KP 7
+#define VR_TAU_MAX 8
+#define VR_OMEGA_TARGET 9
+#define VR_JINV 10
+#define VR_K1 11
+#define VR_K2 12
 #define VR_FILTER_LENGTH 98
 
 
@@ -74,15 +77,16 @@ static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2
         switch (vr[i]) {
         case 1: value[i] = md->theta; break;
         case 2: value[i] = md->omega; break;
-        case 3: value[i] = md->tau_coupling; break;
-        case 4: value[i] = md->theta0; break;
-        case 5: value[i] = md->omega0; break;
-        case 6: value[i] = md->kp; break;
-        case 7: value[i] = md->tau_max; break;
-        case 8: value[i] = md->omega_target; break;
-        case 9: value[i] = md->jinv; break;
-        case 10: value[i] = md->k1; break;
-        case 11: value[i] = md->k2; break;
+        case 3: value[i] = md->alpha; break;
+        case 4: value[i] = md->tau_coupling; break;
+        case 5: value[i] = md->theta0; break;
+        case 6: value[i] = md->omega0; break;
+        case 7: value[i] = md->kp; break;
+        case 8: value[i] = md->tau_max; break;
+        case 9: value[i] = md->omega_target; break;
+        case 10: value[i] = md->jinv; break;
+        case 11: value[i] = md->k1; break;
+        case 12: value[i] = md->k2; break;
         default: return fmi2Error;
         }
     }
@@ -95,15 +99,16 @@ static fmi2Status generated_fmi2SetReal(modelDescription_t *md, const fmi2ValueR
         switch (vr[i]) {
         case 1: md->theta = value[i]; break;
         case 2: md->omega = value[i]; break;
-        case 3: md->tau_coupling = value[i]; break;
-        case 4: md->theta0 = value[i]; break;
-        case 5: md->omega0 = value[i]; break;
-        case 6: md->kp = value[i]; break;
-        case 7: md->tau_max = value[i]; break;
-        case 8: md->omega_target = value[i]; break;
-        case 9: md->jinv = value[i]; break;
-        case 10: md->k1 = value[i]; break;
-        case 11: md->k2 = value[i]; break;
+        case 3: md->alpha = value[i]; break;
+        case 4: md->tau_coupling = value[i]; break;
+        case 5: md->theta0 = value[i]; break;
+        case 6: md->omega0 = value[i]; break;
+        case 7: md->kp = value[i]; break;
+        case 8: md->tau_max = value[i]; break;
+        case 9: md->omega_target = value[i]; break;
+        case 10: md->jinv = value[i]; break;
+        case 11: md->k1 = value[i]; break;
+        case 12: md->k2 = value[i]; break;
         default: return fmi2Error;
         }
     }

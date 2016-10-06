@@ -292,7 +292,7 @@ void Solver::solve(bool holonomic, int printDebugInfo){
     Ax.reserve(nz1);
 
     if(printDebugInfo)
-        printf("n=%d, nz=%d\n",n, nz);
+        fprintf(stderr, "n=%d, nz=%d\n",n, nz);
 
     // Triplet form to column form
     int status = umfpack_di_triplet_to_col (n, n, nz, aSrow.data(), aScol.data(), aSval.data(), Ap.data(), Ai.data(), Ax.data(), (int *) NULL) ;

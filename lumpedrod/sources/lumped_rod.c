@@ -132,8 +132,8 @@ tri_matrix build_rod_matrix( lumped_rod  rod, double step) {
   double gamma = 1.0 /  ( 1.0 + 4.0 * rod.relaxation_rate );
   double compliance = - rod.compliance * ( 4.0  * gamma / step / step ) /  ( double ) rod.n  ; 
 
-  double stiffness1 =  rod.driver_stiffness1 * ( 1  + 4 * rod.driver_relaxation1 ) * step * step /  4 ;
-  double stiffnessN =  rod.driver_stiffnessN * ( 1  + 4 * rod.driver_relaxationN ) * step * step /  4 ;
+  double stiffness1 =  rod.driver_stiffness1 * ( 1  + 4 * rod.driver_damping1 ) * step * step /  4 ;
+  double stiffnessN =  rod.driver_stiffnessN * ( 1  + 4 * rod.driver_dampingN ) * step * step /  4 ;
 
 
   int i;
@@ -200,7 +200,7 @@ lumped_rod_sim lumped_rod_sim_create( lumped_rod_sim_parameters p) {
 
   lumped_rod_alloc( & sim.state_backup.rod ); /* for store / restore */
 
-  lumped_sim_set_timestep( &sim, sim->state.step );
+  lumped_sim_set_timestep( &sim, sim.state.step );
 
   lumped_rod_initialize(   sim.rod , sim.state.state.x1, sim.state.state.xN, sim.state.state.v1, sim.state.state.vN );
 
@@ -216,10 +216,10 @@ void lumped_sim_set_timestep ( lumped_rod_sim * sim, double step){
   sim->gamma_v =   ( double ) 1.0  /  (  1.0  +  4.0  * sim->rod.relaxation_rate );
   sim->gamma_x = - ( double ) 4.0  * sim->gamma_v   /  sim->state.step  ;
 
-  sim->gamma_driver_v1 =   ( double ) 1.0  /  (  1.0  +  4.0  * sim->rod.driver_relaxation1 );
+  sim->gamma_driver_v1 =   ( double ) 1.0  /  (  1.0  +  4.0  * sim->rod.driver_damping1 );
   sim->gamma_driver_x1 = - ( double ) 4.0  * sim->gamma_driver_v1   /  sim->state.step  ;
 
-  sim->gamma_driver_vN =   ( double ) 1.0  /  (  1.0  +  4.0  * sim->rod.driver_relaxationN );
+  sim->gamma_driver_vN =   ( double ) 1.0  /  (  1.0  +  4.0  * sim->rod.driver_dampingN );
   sim->gamma_driver_xN = - ( double ) 4.0  * sim->gamma_driver_vN   /  sim->state.step  ;
 
   sim->m = build_rod_matrix( sim->rod, sim->state.step) ;
@@ -279,24 +279,24 @@ void build_rod_rhs( lumped_rod_sim * sim ){
 
   /* drivers with force-velocity couplings */
 
-  if ( sim->state.integrate_dx1 ) {
-    sim->state.state.dx1 += sim->state.step * ( sim->rod.state.v[ 0 ] -  sim->state.state.drivers_v1 );
+  if ( sim->rod.integrate_dx1 ) {
+    sim->state.state.dx1 += sim->state.step * ( sim->rod.state.v[ 0 ] -  sim->state.state.driver_v1 );
     tmp = sim->state.state.dx1;
   } else {
-    tmp = sim->state.x[ 0 ] - sim->state.state.theta_drive1;
+    tmp = sim->rod.state.x[ 0 ] - sim->state.state.driver_x1;
   }
 
-  sim->state.driver_f1 = sim->rod.driver_stiffness1  * tmp  +
-    sim->state.driver_damping1 * ( sim->rod.state.v[ 0 ] - sim->rod.driver_v1 ) ;
+  sim->state.state.driver_f1 = sim->rod.driver_stiffness1  * tmp  +
+    sim->rod.driver_damping1 * ( sim->rod.state.v[ 0 ] - sim->rod.state.driver_v1 ) ;
   
-  sim->z[ 0 ]           += - sim->rod.driver_sign1 * sim->state.driver_f1;
+  sim->z[ 0 ]           += - sim->rod.driver_sign1 * sim->state.state.driver_f1;
   
 
   if ( sim->state.integrate_dxN ) {
-    sim->state.state.dxN += sim->state.step * ( sim->rod.state.v[ sim->m.n - 1 ] -  sim->state.state.drivers_vN );
+    sim->state.state.dxN += sim->state.step * ( sim->rod.state.v[ sim->m.n - 1 ] -  sim->state.state.driver_vN );
     tmp = sim->state.state.dxN;
   } else {
-    tmp = sim->state.x[ sim->m.n - 1 ] - sim->state.state.theta_driveN;
+    tmp = sim->state.x[ sim->m.n - 1 ] - sim->state.state.driver_xN;
   }
 
 
@@ -445,3 +445,15 @@ void lumped_rod_sim_restore ( lumped_rod_sim  * sim ){
   lumped_rod_copy( & ( sim->state_backup.rod ),  & ( sim->rod ) );
   return;
 }
+
+
+#ifdef CONSOLE
+
+int main(){
+
+  
+
+  return 0;
+}
+
+#endif

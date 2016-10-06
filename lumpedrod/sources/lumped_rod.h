@@ -12,6 +12,12 @@
 extern "C" {
 #endif
 
+  struct lumped_rod_kinematics; // only kinematics
+  struct lumped_rod;            // physical properties + instance of kinematic states
+  struct lumped_rod_state ;     // this is the state visible to the outside
+  struct lumped_rod_sim_parameters; // bucked for the simulation: contains a rod and a rod_state
+  struct lumped_rod_sim;
+  
 
   /** kinematic state of the rod */
   typedef struct lumped_rod_kinematics{

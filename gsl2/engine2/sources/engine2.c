@@ -4,6 +4,9 @@
 #define SIMULATION_TYPE cgsl_simulation
 #define SIMULATION_INIT engine2_init
 #define SIMULATION_FREE cgsl_free_simulation
+#define SIMULATION_GET  cgsl_simulation_get   //TODO: some kind of error if these aren't defined
+#define SIMULATION_SET  cgsl_simulation_set
+
 
 #include "fmuTemplate.h"
 
@@ -24,6 +27,7 @@ int engine2 (double t, const double x[], double dxdt[], void * params) {
                             - s->md.k1 * x[ 1 ]
                             - s->md.k2 * x[ 1 ] * abs(x[ 1 ])
                             + s->md.tau_coupling);
+  //fprintf(stderr, "forces: %f - %f - %f + %f @ t = %f, x = %f\n", s->md.tau_max * beta(s, x[ 1 ]), s->md.k1 * x[ 1 ], s->md.k2 * x[ 1 ] * abs(x[ 1 ]), s->md.tau_coupling, t, x[0]);
 
   return GSL_SUCCESS;
 
@@ -58,9 +62,13 @@ int jac_engine2 (double t, const double x[], double *dfdx, double dfdt[], void *
 
 static int sync_out(int n, const double outputs[], void * params) {
   state_t *s = params;
+  double dxdt[2];
+
+  engine2(0, outputs, dxdt, params);
 
   s->md.theta = outputs[ 0 ];
   s->md.omega = outputs[ 1 ];
+  s->md.alpha = dxdt[ 1 ];
 
   return GSL_SUCCESS;
 }
@@ -77,10 +85,24 @@ static void engine2_init(state_t *s) {
     ),
     rkf45, 1e-5, 0, 0, 0, NULL
   );
+  s->simulation.file = fopen( "s.m", "w+" );
+  s->simulation.print = 1;
+
 }
 
-static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
-    cgsl_step_to( &s->simulation, currentCommunicationPoint, communicationStepSize );
+static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
+  if (vr == VR_ALPHA && wrt == VR_TAU_COUPLING) {
+    *partial = s->md.jinv;
+    return fmi2OK;
+  }
+  return fmi2Error;
+}
+
+#define NEW_DOSTEP //to get noSetFMUStatePriorToCurrentPoint
+static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
+  //don't dump tentative steps
+  s->simulation.print = noSetFMUStatePriorToCurrentPoint;
+  cgsl_step_to( &s->simulation, currentCommunicationPoint, communicationStepSize );
 }
 
 

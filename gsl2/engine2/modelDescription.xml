@@ -10,7 +10,7 @@
       modelIdentifier="engine2"
       canHandleVariableCommunicationStepSize="true"
       canGetAndSetFMUstate="true"
-      providesDirectionalDerivative="false"/>
+      providesDirectionalDerivative="true"/>
 
   <LogCategories>
     <Category name="logAll"/>
@@ -37,11 +37,18 @@
         causality="output">
       <Real />
     </ScalarVariable>
+    <ScalarVariable
+        name="alpha"
+        valueReference="3"
+        description="angular acceleration"
+        causality="output">
+      <Real />
+    </ScalarVariable>
 
     <!-- inputs -->
     <ScalarVariable
         name="tau_coupling"
-        valueReference="3"
+        valueReference="4"
         description="coupling torque"
         causality="input"
         initial="exact">
@@ -51,7 +58,7 @@
     <!-- parameters -->
     <ScalarVariable
         name="theta0"
-        valueReference="4"
+        valueReference="5"
         description="initial angle"
         causality="parameter"
         variability="fixed">
@@ -59,7 +66,7 @@
     </ScalarVariable>
     <ScalarVariable
         name="omega0"
-        valueReference="5"
+        valueReference="6"
         description="initial angular velocity"
         causality="parameter"
         variability="fixed">
@@ -67,7 +74,7 @@
     </ScalarVariable>
     <ScalarVariable
         name="kp"
-        valueReference="6"
+        valueReference="7"
         description="P controller gain"
         causality="parameter"
         variability="fixed">
@@ -75,7 +82,7 @@
     </ScalarVariable>
     <ScalarVariable
         name="tau_max"
-        valueReference="7"
+        valueReference="8"
         description="Maximum torque"
         causality="parameter"
         variability="fixed">
@@ -83,7 +90,7 @@
     </ScalarVariable>
     <ScalarVariable
         name="omega_target"
-        valueReference="8"
+        valueReference="9"
         description="target angular velocity"
         causality="parameter"
         variability="fixed">
@@ -91,7 +98,7 @@
     </ScalarVariable>
     <ScalarVariable
         name="jinv"
-        valueReference="9"
+        valueReference="10"
         description="inverse moment of inertia"
         causality="parameter"
         variability="fixed">
@@ -99,7 +106,7 @@
     </ScalarVariable>
     <ScalarVariable
         name="k1"
-        valueReference="10"
+        valueReference="11"
         description="drag coefficient (applied to omega)"
         causality="parameter"
         variability="fixed">
@@ -107,7 +114,7 @@
     </ScalarVariable>
     <ScalarVariable
         name="k2"
-        valueReference="11"
+        valueReference="12"
         description="drag coefficient (applied to omega*abs(omega))"
         causality="parameter"
         variability="fixed">
@@ -128,6 +135,7 @@
     <Outputs>
       <Unknown index="1"/>
       <Unknown index="2"/>
+      <Unknown index="3"/>
     </Outputs>
     <Derivatives/>
     <DiscreteStates/>

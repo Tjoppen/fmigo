@@ -323,6 +323,30 @@ static void clutch_init(state_t *s) {
   s->simulation.delta_phi = 0;
 }
 
+static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
+  if (vr == VR_A_E) {
+    if (wrt == VR_FORCE_IN_E || wrt == VR_FORCE_IN_EX) {
+        *partial = 1.0/s->md.mass_e;
+        return fmi2OK;
+    }
+    if (wrt == VR_FORCE_IN_S || wrt == VR_FORCE_IN_SX) {
+        *partial = 0;
+        return fmi2OK;
+    }
+  }
+  if (vr == VR_A_S) {
+    if (wrt == VR_FORCE_IN_E || wrt == VR_FORCE_IN_EX) {
+        *partial = 0;
+        return fmi2OK;
+    }
+    if (wrt == VR_FORCE_IN_S || wrt == VR_FORCE_IN_SX) {
+        *partial = 1.0/s->md.mass_e;
+        return fmi2OK;
+    }
+  }
+  return fmi2Error;
+}
+
 #define NEW_DOSTEP //to get noSetFMUStatePriorToCurrentPoint
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
   if (s->md.is_gearbox && s->md.gear != s->simulation.last_gear) {

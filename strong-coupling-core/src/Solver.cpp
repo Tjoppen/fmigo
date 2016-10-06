@@ -85,6 +85,7 @@ vector<Equation*> Solver::getEquations(){
 }
 
 void Solver::setSpookParams(double relaxation, double compliance, double timeStep){
+  
     m_a = 4/(1+4*relaxation)/timeStep;
     m_b = 1/(1+4*relaxation);
     m_epsilon = 4 * compliance / (timeStep*timeStep * (1 + 4*relaxation));
@@ -175,13 +176,13 @@ void Solver::solve(bool holonomic, int printDebugInfo){
     rhs.reserve(numRows);
     for(i=0; i<neq; ++i){
         Equation * eq = eqs[i];
-        double  Z = eq->getFutureVelocity() - eq->getVelocity(),
+        double  Z = eq->getFutureVelocity(), // - eq->getVelocity(),
                 GW = eq->getVelocity(),
                 g = eq->getViolation();
         if (holonomic) {
-            rhs[i] = -m_a * g - m_b * GW - Z; // RHS = -a*g -b*G*W -Z
+            rhs[i] = -m_a * g + m_b * GW - Z; // RHS = -a*g + b*G*W -Z
         } else {
-            rhs[i] =          - m_b * GW - Z; //nonholonomic
+            rhs[i] =           - Z; //nonholonomic
         }
     }
 

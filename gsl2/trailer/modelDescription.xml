@@ -59,7 +59,7 @@ Control can be applied via a brake.
         description="total mass of the trailer"
         causality="parameter"
         variability="fixed">
-      <Real start="0"/>
+      <Real start="10000"/>
     </ScalarVariable>   
     <!-- index="4"-->
     <ScalarVariable
@@ -68,7 +68,7 @@ Control can be applied via a brake.
         description="radius of the wheel"
         causality="parameter"
         variability="fixed">
-      <Real start="0"/>
+      <Real start="0.5"/>
     </ScalarVariable>   
    <!-- index="5"-->
     <ScalarVariable
@@ -77,7 +77,7 @@ Control can be applied via a brake.
         description="differential gear ratio"
         causality="parameter"
         variability="fixed">
-      <Real start="0"/>
+      <Real start="1"/>
     </ScalarVariable>   
     <!-- index="6"-->
     <ScalarVariable
@@ -86,7 +86,7 @@ Control can be applied via a brake.
         description="surface area for drag resistance"
         causality="parameter"
         variability="fixed">
-      <Real start="0"/>
+      <Real start="10"/>
     </ScalarVariable>   
     <!-- index="7"-->
     <ScalarVariable
@@ -95,7 +95,7 @@ Control can be applied via a brake.
         description="air density"
         causality="parameter"
         variability="fixed">
-      <Real start="0"/>
+      <Real start="0.001"/>
     </ScalarVariable>   
     <!-- index="8"-->
     <ScalarVariable
@@ -104,7 +104,7 @@ Control can be applied via a brake.
         description="drag coefficient"
         causality="parameter"
         variability="fixed">
-      <Real start="0"/>
+      <Real start="0.5"/>
     </ScalarVariable>   
     <!-- index="9"-->
     <ScalarVariable
@@ -113,7 +113,7 @@ Control can be applied via a brake.
         description="gravitational acceleration"
         causality="parameter"
         variability="fixed">
-      <Real start="0"/>
+      <Real start="9.82"/>
     </ScalarVariable>   
     <!-- index="10"-->
     <ScalarVariable
@@ -188,7 +188,7 @@ Control can be applied via a brake.
         description="integrate angle difference for force velocity coupling"
         causality="parameter"
         variability="fixed">
-      <Real start="0"/>
+      <Boolean start="false"/>
     </ScalarVariable>      
 
     <!-- index="18"-->
@@ -198,7 +198,7 @@ Control can be applied via a brake.
         description="integrate position difference with output coupling"
         causality="parameter"
         variability="fixed">
-      <Real start="0"/>
+      <Boolean start="false"/>
     </ScalarVariable>   
 
 

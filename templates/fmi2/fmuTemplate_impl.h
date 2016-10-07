@@ -447,21 +447,39 @@ fmi2Status fmi2SetString (fmi2Component c, const fmi2ValueReference vr[], size_t
 }
 
 fmi2Status fmi2GetFMUstate (fmi2Component c, fmi2FMUstate* FMUstate) {
+#if CAN_GET_SET_FMU_STATE
     ModelInstance *comp = (ModelInstance *)c;
     *FMUstate = comp->functions->allocateMemory(1, sizeof(comp->s));
-#ifdef SIMULATION_GET
+
+#ifdef SIMULATION_TYPE
+#ifndef SIMULATION_GET
+//assume GSL
+#define SIMULATION_GET cgsl_simulation_get
+#endif
     SIMULATION_GET( &(( ModelInstance *) c)->s.simulation );
 #endif
     memcpy(*FMUstate, &comp->s, sizeof(comp->s));
     return fmi2OK;
+#else
+    return fmi2Error;
+#endif
 }
 fmi2Status fmi2SetFMUstate (fmi2Component c, fmi2FMUstate FMUstate) {
+#if CAN_GET_SET_FMU_STATE
     ModelInstance *comp = (ModelInstance *)c;
     memcpy(&comp->s, FMUstate, sizeof(comp->s));
-#ifdef SIMULATION_SET
+
+#ifdef SIMULATION_TYPE
+#ifndef SIMULATION_SET
+//assume GSL
+#define SIMULATION_SET  cgsl_simulation_set
+#endif
     SIMULATION_SET( &(( ModelInstance *) c)->s.simulation );
 #endif
     return fmi2OK;
+#else
+    return fmi2Error;
+#endif
 }
 fmi2Status fmi2FreeFMUstate(fmi2Component c, fmi2FMUstate* FMUstate) {
     ModelInstance *comp = (ModelInstance *)c;

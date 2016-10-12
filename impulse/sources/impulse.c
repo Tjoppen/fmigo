@@ -7,11 +7,19 @@ typedef struct {
 
 #define SIMULATION_TYPE impulse_simulation
 #define SIMULATION_INIT impulse_init
+#define SIMULATION_GET impulse_get
+#define SIMULATION_SET impulse_set
 
 #include "fmuTemplate.h"
 
 #define PULSE_TYPE_THETA 0
 #define PULSE_TYPE_OMEGA 1
+
+static void impulse_get(impulse_simulation *s) {
+}
+
+static void impulse_set(impulse_simulation *s) {
+}
 
 static void pulse_for_current_step(state_t *s, fmi2Real communicationStepSize) {
     if (s->md.pulse_type == PULSE_TYPE_THETA) {

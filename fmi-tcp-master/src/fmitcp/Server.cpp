@@ -5,6 +5,10 @@
 #include "common.h"
 #include "fmitcp.pb.h"
 #include <FMI2/fmi2_xml_variable.h>
+#ifndef WIN32
+//no unistd.h on Windows IIRC
+#include <unistd.h>
+#endif
 
 using namespace fmitcp;
 
@@ -32,6 +36,14 @@ Server::Server(string fmuPath, bool debugLogging, jm_log_level_enu_t logLevel, s
     m_fmuParsed = true;
     return;
   }
+
+#ifndef WIN32
+  //better message for non-existing FMUs
+  if (access(m_fmuPath.c_str(), F_OK) == -1) {
+    m_logger.log(Logger::LOG_ERROR, "FMU does not exist: %s\n", m_fmuPath.c_str());
+    exit(1);
+  }
+#endif
 
   // Parse FMU
   // JM callbacks

@@ -7,8 +7,8 @@
 #define FMI_COSIMULATION
 #define HAVE_DIRECTIONAL_DERIVATIVE 0
 #define CAN_GET_SET_FMU_STATE 1
-#define NUMBER_OF_REALS 15
-#define NUMBER_OF_INTEGERS 1
+#define NUMBER_OF_REALS 14
+#define NUMBER_OF_INTEGERS 2
 #define NUMBER_OF_BOOLEANS 1
 #define NUMBER_OF_STATES 0
 #define NUMBER_OF_EVENT_INDICATORS 0
@@ -29,8 +29,8 @@ typedef struct {
     fmi2Real force_c; //VR=10
     fmi2Real x; //VR=11
     fmi2Real v; //VR=12
-    fmi2Real iterations; //VR=96
     fmi2Real omega_i; //VR=95
+    fmi2Integer iterations; //VR=96
     fmi2Integer filter_length; //VR=98
     fmi2Boolean dump_data; //VR=97
 } modelDescription_t;
@@ -51,8 +51,8 @@ static const modelDescription_t defaults = {
     0, //force_c
     0, //x
     0, //v
-    0, //iterations
     1.0, //omega_i
+    0, //iterations
     0, //filter_length
     0, //dump_data
 };
@@ -71,8 +71,8 @@ static const modelDescription_t defaults = {
 #define VR_FORCE_C 10
 #define VR_X 11
 #define VR_V 12
-#define VR_ITERATIONS 96
 #define VR_OMEGA_I 95
+#define VR_ITERATIONS 96
 #define VR_FILTER_LENGTH 98
 #define VR_DUMP_DATA 97
 
@@ -98,7 +98,6 @@ static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2
         case 10: value[i] = md->force_c; break;
         case 11: value[i] = md->x; break;
         case 12: value[i] = md->v; break;
-        case 96: value[i] = md->iterations; break;
         case 95: value[i] = md->omega_i; break;
         default: return fmi2Error;
         }
@@ -123,7 +122,6 @@ static fmi2Status generated_fmi2SetReal(modelDescription_t *md, const fmi2ValueR
         case 10: md->force_c = value[i]; break;
         case 11: md->x = value[i]; break;
         case 12: md->v = value[i]; break;
-        case 96: md->iterations = value[i]; break;
         case 95: md->omega_i = value[i]; break;
         default: return fmi2Error;
         }
@@ -135,6 +133,7 @@ static fmi2Status generated_fmi2GetInteger(const modelDescription_t *md, const f
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
+        case 96: value[i] = md->iterations; break;
         case 98: value[i] = md->filter_length; break;
         default: return fmi2Error;
         }
@@ -146,6 +145,7 @@ static fmi2Status generated_fmi2SetInteger(modelDescription_t *md, const fmi2Val
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
+        case 96: md->iterations = value[i]; break;
         case 98: md->filter_length = value[i]; break;
         default: return fmi2Error;
         }

@@ -11,7 +11,7 @@ import shutil
 
 if len(sys.argv) < 2:
     #TODO: we probably want to know which of TCP and MPI is wanted
-    print 'USAGE: %s ssp-file' % sys.argv[0]
+    print('USAGE: %s ssp-file' % sys.argv[0])
     exit(1)
 
 RESOURCE_DIR='resources'
@@ -21,7 +21,7 @@ MODELDESCRIPTION='modelDescription.xml'
 
 ns = {'ssd': 'http://www.pmsf.net/xsd/SystemStructureDescriptionDraft'}
 d = tempfile.mkdtemp(prefix='ssp')
-print d
+print(d)
 
 fmus = []
 systems = []
@@ -31,7 +31,7 @@ systems = []
 def add_multimap_value(multimap, key, value):
     if key in multimap:
         if value in multimap[key]:
-            print str((key,value)) + ' already exists in ' + str(multimap)
+            print( str((key,value)) + ' already exists in ' + str(multimap))
             exit(1)
         multimap[key].add(value)
     else:
@@ -68,8 +68,9 @@ class FMU:
                 while True:
                     #print 'key = ' + str(key) + ', sys = ' + sys.name
                     if not key in sys.connections:
-                        print 'No connection %s in system %s' % (str(key), self.system.name)
-                        exit(1)
+                        print( 'No connection %s in system %s' % (str(key), self.system.name))
+                        break
+                        # exit(1)
 
                     key = sys.connections[key]
                     if key[0] == '':
@@ -94,14 +95,14 @@ class FMU:
                         sys = sys.children[key[0]]
                         key = ('', key[1])
                     else:
-                        print 'Key %s not found in system %s' % (str(key), sys.name)
-                        print sys.fmus
-                        print sys.children
+                        print('Key %s not found in system %s' % (str(key), sys.name))
+                        print (sys.fmus)
+                        print (sys.children)
                         exit(1)
 
                     ttl -= 1
                     if ttl <= 0:
-                        print 'SSP contains a loop!'
+                        print ('SSP contains a loop!')
                         exit(1)
 
 class System:
@@ -122,7 +123,7 @@ class System:
         #tree.register_namespace('ssd', 'http://www.pmsf.net/xsd/SystemStructureDescriptionDraft')
         sys = tree.getroot().findall('ssd:System', ns)
         if len(sys) != 1:
-            print 'Must have exactly one System'
+            print( 'Must have exactly one System')
             exit(1)
         s = sys[0]
 
@@ -141,7 +142,7 @@ class System:
             elif conn.attrib[CAUSALITY] == 'output':
                 self.outputs[conn.attrib['name']] = conn
             else:
-                print 'Unknown causality: ' + conn.attrib[CAUSALITY]
+                print('Unknown causality: ' + conn.attrib[CAUSALITY])
                 exit(1)
 
         # Bi-directional
@@ -177,7 +178,7 @@ class System:
                     self,
                 )
             else:
-                print 'unknown type: ' + t
+                print('unknown type: ' + t)
                 exit(1)
 
     def get_name(self):
@@ -215,7 +216,7 @@ for fmu in fmus:
     svs = {}
     for sv in tree.getroot().find('ModelVariables').findall('ScalarVariable'):
         if sv.attrib['name'] in svs:
-            print fmu.path + ' contains multiple variables named "' + sc.attrib['name'] + '"!'
+            print(fmu.path + ' contains multiple variables named "' + sc.attrib['name'] + '"!')
             exit(1)
 
         if not CAUSALITY in sv.attrib:
@@ -227,8 +228,9 @@ for fmu in fmus:
         elif sv.find('Integer') != None: t = 'i'
         elif sv.find('Boolean') != None: t = 'b'
         elif sv.find('Enum')    != None: t = 'e'
+        elif sv.find('String')  != None: t = 's'
         else:
-            print fmu.path + ' variable "' + sc.attrib['name'] + '" has unknown type'
+            print(fmu.path + ' variable "' + sv.attrib['name'] + '" has unknown type')
             exit(1)
 
         svs[sv.attrib['name']] = {
@@ -243,7 +245,9 @@ for fmu in fmus:
 
 # Build command line
 flatconns = []
-for fr,to1 in connectionmultimap.items():
+for key in connectionmultimap.keys():
+    fr = key
+    to1 = connectionmultimap[key]  
     for to in to1:
         #print str((fr,to)) + ' vs ' + str(mds[fr[0]])
         f = mds[fr[0]]
@@ -258,14 +262,17 @@ servers = []
 for fmu in fmus:
     servers.extend([':','-np','1','fmi-mpi-server',fmu.path])
 
-args = ['mpirun','-np','1','fmi-mpi-master'] + flatconns + servers
-#print args
-ret = subprocess.call(args)
+argFileContent = flatconns
+with open('commandLine.txt', 'w') as cf :
+    cf.write(" ".join(argFileContent))
+args = ['mpiexec','-np','1','fmi-mpi-master','-t','9.9','-d','0.1','-a', 'commandLine.txt'] + servers
+print(" ".join(args))
+ret = subprocess.call(args, cwd=d+'/resources')
 
 if ret == 0:
     shutil.rmtree(d)
 else:
-    print 'An error occured. Check ' + d
+    print('An error occured. Check ' + d)
 
 exit(ret)
 

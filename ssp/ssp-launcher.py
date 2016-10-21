@@ -262,17 +262,19 @@ servers = []
 for fmu in fmus:
     servers.extend([':','-np','1','fmi-mpi-server',fmu.path])
 
-argFileContent = flatconns
-with open('commandLine.txt', 'w') as cf :
-    cf.write(" ".join(argFileContent))
-args = ['mpiexec','-np','1','fmi-mpi-master','-t','9.9','-d','0.1','-a', 'commandLine.txt'] + servers
-print(" ".join(args))
-ret = subprocess.call(args, cwd=d+'/resources')
+#read connections and parameters from stdin, since they can be quite many
+#stdin because we want to avoid leaving useless files on the filesystem
+args = ['mpiexec','-np','1','fmi-mpi-master','-t','9.9','-d','0.1','-a','-'] + servers
+print(" ".join(args) + " <<< " + '"' + " ".join(flatconns) + '"')
+
+#pipe arguments to master, leave stdout and stderr alone
+p = subprocess.Popen(args, stdin=subprocess.PIPE)
+p.communicate(input=" ".join(flatconns))
+ret = p.returncode  #ret can be None
 
 if ret == 0:
     shutil.rmtree(d)
 else:
-    print('An error occured. Check ' + d)
+    print('An error occured (returncode = ' + str(ret) + '). Check ' + d)
 
 exit(ret)
-

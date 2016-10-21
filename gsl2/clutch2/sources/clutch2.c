@@ -31,6 +31,11 @@ static void clutchgear_set(clutchgear_simulation *s) {
 
 #include "fmuTemplate.h"
 
+
+static const double clutch_dphi  [] = { -0.087266462599716474, -0.052359877559829883, 0.0, 0.09599310885968812, 0.17453292519943295 };
+static const double clutch_torque[] = { -1000, -30, 0, 50, 3500 };
+static const size_t N_segments      = sizeof( clutch_torque ) / sizeof( clutch_torque[ 0 ] );
+
 static const double gear_ratios[] = {
    0,
    13.0,
@@ -64,7 +69,7 @@ static double gear2ratio(state_t *s) {
  *  The force function from the clutch
  */
 static double fclutch( double dphi, double domega, double clutch_damping ); 
-//static double fclutch_dphi_derivative( double dphi );
+static double fclutch_dphi_derivative( double dphi );
 
 /*  
     Two (rotational) bodies connected via a piecewise linear clutch model. 
@@ -118,6 +123,7 @@ static void compute_forces(state_t *s, const double x[], double *force_e, double
     }
   }
 }
+
 
 int clutch (double t, const double x[], double dxdt[], void * params){
 
@@ -176,12 +182,33 @@ int clutch (double t, const double x[], double dxdt[], void * params){
 int jac_clutch (double t, const double x[], double *dfdx, double dfdt[], void *params)
 {
   
-  /*state_t *s = (state_t*)params;
-  gsl_matrix_view dfdx_mat = gsl_matrix_view_array (dfdx, 3, 3);
-  gsl_matrix * J = &dfdx_mat.matrix; */
+  state_t *s = (state_t*)params;
+  gsl_matrix_view dfdx_mat = gsl_matrix_view_array (dfdx, 4, 4);
+  gsl_matrix * J = &dfdx_mat.matrix; 
+    
+  /* second order dynamics  on first variable */
+  gsl_matrix_set (J, 0, 0, 0.0);
+  gsl_matrix_set (J, 0, 1, 1.0);
+  gsl_matrix_set (J, 0, 2, 0.0);
+  gsl_matrix_set (J, 0, 3, 0.0);
+   
+  /* Integration of the angle */
+  gsl_matrix_set (J, 2, 0, 0.0);
+  gsl_matrix_set (J, 2, 1, 0.0);
+  gsl_matrix_set (J, 2, 2, 0.0);
+  gsl_matrix_set (J, 2, 3, 1.0);  
 
+  gsl_matrix_set (J, 1, 0, 0.0);
+  gsl_matrix_set (J, 1, 1, 0.0);
+  gsl_matrix_set (J, 1, 2, 0.0);
+  gsl_matrix_set (J, 1, 3, 0.0);
+  
+  gsl_matrix_set (J, 3, 0, 0.0);
+  gsl_matrix_set (J, 3, 1, 0.0);
+  gsl_matrix_set (J, 3, 2, 0.0);
+  gsl_matrix_set (J, 3, 3, 0.0); 
 
-  return GSL_FAILURE;
+  return GSL_SUCCESS;
 }
 
 /**
@@ -192,8 +219,7 @@ static double fclutch( double dphi, double domega, double clutch_damping ) {
   
   //Scania's clutch curve
   static const double b[] = { -0.087266462599716474, -0.052359877559829883, 0.0, 0.09599310885968812, 0.17453292519943295 };
-//  static const double c[] = { -1000, -30, 0, 50, 3500 };
-  static const double c[] = { -100, -30, 0, 50, 350 };
+  static const double c[] = { -1000, -30, 0, 50, 3500 };
   size_t N = sizeof( c ) / sizeof( c[ 0 ] );
   size_t END = N-1;
     
@@ -206,9 +232,9 @@ static double fclutch( double dphi, double domega, double clutch_damping ) {
   double tc = c[ 0 ]; //clutch torque
 
   if (dphi <= b[ 0 ]) {
-    tc = (dphi - b[ 0 ]) / 0.034906585039886591 *  970.0 + c[ 0 ];
+    tc = ( c[ 1 ] - c[ 0 ] ) * (dphi - b[ 0 ]) / ( b[ 0 ] - b[ 1 ] ) + c[ 0 ];
   } else if ( dphi >= b[ END ] ) {
-    tc = ( dphi - b[ END ] ) / 0.078539816339744828 * 3450.0 + c[ END ];
+    tc = ( c[ END ] - c[ END - 1 ] ) * ( dphi - b[ END ] ) / ( b[ END ] - b[ END - 1 ] ) + c[ END ];
   } else {
     int i;
     for (i = 0; i < END; ++i) {
@@ -231,7 +257,6 @@ static double fclutch( double dphi, double domega, double clutch_damping ) {
 
 }
 
-#if 0
 static double fclutch_dphi_derivative( double dphi ) {
   
   //Scania's clutch curve
@@ -249,9 +274,9 @@ static double fclutch_dphi_derivative( double dphi ) {
   double df = 0;		// clutch derivative
 
   if (dphi <= b[ 0 ]) {
-    df =  1.0 / 0.034906585039886591 *  970.0 ;
+    df =  ( c[ 1 ] - c[ 0 ] ) / ( b[ 1 ] - b[ 0 ] ); 
   } else if ( dphi >= b[ END ] ) {
-    df =  1.0 / 0.078539816339744828 * 3450.0 ;
+    df =  ( c[ END ] - c[ END - 1 ] ) / ( b[ END ] - b[ END - 1 ] );
   } else {
     int i;
     for (i = 0; i < END; ++i) {
@@ -270,7 +295,6 @@ static double fclutch_dphi_derivative( double dphi ) {
   return df; 
 
 }
-#endif
 
 
 static int epce_post_step(int n, const double outputs[], void * params) {

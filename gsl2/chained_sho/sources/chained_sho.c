@@ -7,9 +7,10 @@
 
 #include "fmuTemplate.h"
 
-/*  The simple forced harmonic oscillator with an external coupling: 
+/*  The simple forced harmonic oscillator with an external coupling:
 
-    m * x'' + damping_i * x'  + k_i * x = -  k_c *  dx  - damping_c * ( x' - x0' )
+    m * x'' + damping_i * x'  + k_i * x = -  k_c *  dx  - damping_c * ( x'
+    - x0' )  + force_c + force
     dx' = x' - x0';
     
     dx is the estimated angle difference. 

@@ -198,8 +198,43 @@
       <Real start="0"/>
     </ScalarVariable> 
 
-    <ScalarVariable name="step"          
+
+
+    <ScalarVariable name="driver_sign1"       
                     valueReference="23"
+                    description="polarity on input torque 1"
+                    causality="parameter"
+                    variability="fixed">
+      <Real start="1"/>
+    </ScalarVariable>
+
+    <ScalarVariable name="driver_sign2"       
+                    valueReference="24"
+                    description="polarity on input torque 2"
+                    causality="parameter"
+                    variability="fixed">
+      <Real start="1"/>
+    </ScalarVariable>
+
+    <ScalarVariable name="integrate_dt1"       
+                    valueReference="25"
+                    description="integrate angle difference on driver for
+                                 first element"
+                    causality="parameter"
+                    variability="fixed">
+      <Real start="1"/>
+    </ScalarVariable>
+     <ScalarVariable name="integrate_dt2"       
+                    valueReference="26"
+                    description="integrate angle difference on driver for
+                                 last element"
+                    causality="parameter"
+                    variability="fixed">
+      <Real start="1"/>
+    </ScalarVariable>   
+
+    <ScalarVariable name="step"          
+                    valueReference="27"
                     description="Initial time step.  If this is set to 0, the communication time is used"
                     causality="parameter"
                     variability="fixed">
@@ -207,7 +242,7 @@
     </ScalarVariable>
 
     <ScalarVariable name="n_elements"       
-                    valueReference="24"
+                    valueReference="28"
                     description="Number of lumped elements in the rod"
                     causality="parameter"
                     variability="fixed">
@@ -216,69 +251,37 @@
     
 
     <ScalarVariable name="theta01"       
-                    valueReference="25"
-                    description="Initial value of angle"
+                    valueReference="29"
+                    description="Initial value of first angle"
                     causality="parameter"
                     variability="fixed">
       <Real start="0"/>
     </ScalarVariable>
 
     <ScalarVariable name="theta02"       
-                    valueReference="26"
-                    description="Initial value of angle"
+                    valueReference="30"
+                    description="Initial value of last"
                     causality="parameter"
                     variability="fixed">
       <Real start="0"/>
     </ScalarVariable>
 
     <ScalarVariable name="omega01"       
-                    valueReference="27"
-                    description="Initial value of angle"
+                    valueReference="31"
+                    description="Initial value of first angular speed."
                     causality="parameter"
                     variability="fixed">
       <Real start="0"/>
     </ScalarVariable>
 
     <ScalarVariable name="omega02"       
-                    valueReference="28"
-                    description="Initial value of angle"
+                    valueReference="32"
+                    description="Initial value of first angular speed."
                     causality="parameter"
                     variability="fixed">
       <Real start="0"/>
     </ScalarVariable>
 
-    <ScalarVariable name="driver_sign1"       
-                    valueReference="29"
-                    description="polarity on input torque 1"
-                    causality="parameter"
-                    variability="fixed">
-      <Real start="1"/>
-    </ScalarVariable>
-
-    <ScalarVariable name="driver_sign2"       
-                    valueReference="30"
-                    description="polarity on input torque 2"
-                    causality="parameter"
-                    variability="fixed">
-      <Real start="1"/>
-    </ScalarVariable>
-
-    <ScalarVariable name="integrate_dt1"       
-                    valueReference="31"
-                    description="integrate angle difference on driver for
-                                 first element"
-                    causality="parameter"
-                    variability="fixed">
-      <Real start="1"/>
-    </ScalarVariable>
-     <ScalarVariable name="integrate_dt2"       
-                    valueReference="32"
-                    description="integrate angle difference on driver for
-                                 last element"
-                    causality="parameter"
-                    variability="fixed">
-      <Real start="1"/>
-    </ScalarVariable>   
 
   </ModelVariables>
 

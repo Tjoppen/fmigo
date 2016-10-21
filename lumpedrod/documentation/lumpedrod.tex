@@ -102,7 +102,8 @@ and coordinate $\theta$, coupled with spring-damper forces
 \begin{equation}
   \label{eq:1}
   \idx{\tau}{i,i+1} = -K(\idx{\theta}{i}-\idx{\theta}{i+1}) -
-  \gamma(\idx{\omega}{i}-\idx{\omega}{i+1}), \text{ and } \idx{\tau}{i+1,i} -
+  \gamma(\idx{\omega}{i}-\idx{\omega}{i+1}), \text{ and } \idx{\tau}{i+1,i}
+  = -
   \idx{\tau}{i,i+1}. 
 \end{equation}
 We are particularly interested in the case where $K$ is arbitrarily large,
@@ -116,7 +117,7 @@ adding input spring-dampers at either end which produce forces according to
 \begin{equation}
   \label{eq:2}
   \idx{\tau}{c,i} = 
--\idx{K}{c}(\idx{\theta}{i}- \idx{\bar{\omega}}{c,i})
+-\idx{K}{c}(\idx{\theta}{i}- \idx{\bar{\theta}}{c,i})
 -\idx{\gamma}{c}(\idx{\omega}{i}- \idx{\bar{\omega}}{c,i})
 \end{equation}
 where $(\bar{\cdot})$ are either last known quantities, or extrapolations.
@@ -146,41 +147,52 @@ interactions as
   \begin{split}
     \bar{G} & =
     \begin{bmatrix}
-      1 &  0  & 0 & \ldots &     \\
-      -1 &  1  & 0 &  \ldots    &\\
-      0 &  -1  & 1 &   \vdots   &\\
-      \vdots & \ldots  & \ddots &\ddots  &    \\
-      0 & \ldots  & \ldots &  -1 & 1  \\
+      1 &  -1  & 0 & 0 &  \cdots \\
+      0 &   \phantom{-}1  & -1 & 0 &  \cdots \\
+      \vdots &   0  &  \ddots & \ddots &  \ddots \\
+      \vdots &   \vdots  &  \vdots &   1 & -1  \\
     \end{bmatrix}. 
   \end{split}
 \end{equation}
 Given its form, the implication here is that $G\theta = 0$ is the unique
-rest configuration.  Henceforth, quantities without superscripts are
-understood to be vectors or matrices.  We can therefore associate a
-potential energy
+rest configuration, where
+\begin{equation}
+  \label{eq:6}
+  \theta =
+  \begin{bmatrix}
+    \idx{\theta}{1},\idx{\theta}{2}, \ldots, \idx{\theta}{n}
+  \end{bmatrix}^{T}. 
+\end{equation}
+Henceforth, quantities without superscripts are understood to be vectors or
+matrices.  We can therefore associate a potential energy
 \begin{equation}
   \label{eq:4}
-  U  = \frac{K}{2}\theta \bar{G}^{T}\bar{G}\theta. 
+  U  = \frac{1}{2}\theta^{T} \bar{G}^{T}K\bar{G}\theta. 
 \end{equation}
 If we include the external forces due drivers, again, anticipating
 very high stiffness, we need two additional rows so that
 \begin{equation}
   \label{eq:32}
-  G  =
-  \begin{bmatrix}
-    1 &  0  & 0 & \ldots &     \\
-    -1 &  1  & 0 &  \ldots    &\\
-    0 &  -1  & 1 &   \vdots   &\\
-    \vdots & \ldots  & \ddots &\ddots  &    \\
-    0 & \ldots  & \ldots &  -1 & 1  \\
-    0 & \ldots  & \ldots &  0 & 1 
-  \end{bmatrix}
+    G = \begin{bmatrix}
+      1 &  0  & 0 & 0 &  \cdots \\
+      1 &  -1  & 0 & 0 &  \cdots \\
+      0 &   \phantom{-}1  & -1 & 0 &  \cdots \\
+      \vdots &   0  &  \ddots & \ddots &  \ddots \\
+      \vdots &   \vdots  &  \ddots &   1 & -1  \\
+      \vdots &   \vdots  &  \vdots &   0 & \phantom{-}1
+    \end{bmatrix}. 
 \end{equation}
 Under infinite stiffness, these additional rows impose the constraint
 \begin{equation}
   \label{eq:5}
 \idx{\omega}{i} = \idx{\bar{\omega}}{e,i}. 
 \end{equation}
+\begin{anfxnote}{no nonholonomic coupling now}
+  The form of the matrix in Eqn.~\eqref{eq:32} isn't implemented as an
+  option yet meaning that it isn't possible to drive the rod with a hard
+  kinematic driver.  The reason being that we would need a special flag to
+  choose which form the system matrix takes.  
+\end{anfxnote}
 This can also be modified to include the case of displacement-displacement
 coupling as described further below, as well as the case of high but finite
 stiffness for coupling. 
@@ -191,7 +203,7 @@ discrete time $k$ we arrive at
   \label{eq:18}
   \begin{split}
     \begin{bmatrix}
-      M & -G^{T} \\
+      \mathcal{J} & -G^{T} \\
       G & \tilde{K}^{-1}
     \end{bmatrix}
     \begin{bmatrix}
@@ -200,40 +212,68 @@ discrete time $k$ we arrive at
     \end{bmatrix}
     &=
     \begin{bmatrix}
-      M\omega_{k} + hf \\
-      -\frac{4}{h}\gamma Gx_{k}  + \gamma Gv_{k}
+      \mathcal{J}\omega_{k} + h\tau \\
+      -\frac{4}{h}\gamma G\theta_{k}  + \gamma G\omega_{k}
     \end{bmatrix} \\
-    x_{k+1} &= x_{k} + hv_{k}
+    \theta_{k+1} &= \theta_{k} + h\omega_{k}
   \end{split}
 \end{equation}
-where $M$ is the (diagonal) mass matrix and 
+where $\mathcal{J}$ is the (diagonal) inertia matrix and 
 \begin{equation}
   \label{eq:19}
   \begin{split}
-    \rho &= \frac{1}{1 + 4 \tau / h } \text{ and $\tau$ is a relaxation
+    \gamma &= \frac{1}{1 + 4 \rho / h } \text{ and $\rho$ is a relaxation
       rate } \\
-    \tilde{K} & = \frac{h^{2}\idx{K}{i}}{4\rho}
+    \tilde{K} & = \frac{h^{2}\idx{K}{i}}{4\gamma}
   \end{split}
 \end{equation}
-The $\tau$ parameter has units of inverse time and describes a relaxation
-rate, i.e., damping, and $\tau/h$ is the number of steps it takes to loose
-half the excitation amplitude locally.  When this is set to $\tau/h= 2$,
+The $\rho$ parameter has units of inverse time and describes a relaxation
+rate, i.e., damping, and $\rho/h$ is the number of steps it takes to loose
+half the excitation amplitude locally.  When this is set to $\rho/h= 2$,
 the energy dissipates rapidly, and this provides unconditional stability
 via numerical damping.
-However, as soon as we reach $\tau/h < 1/10$ or so, we have natural
+However, as soon as we reach $\rho/h < 1/10$ or so, we have natural
 damping.  
 
 We can of course eliminate the Lagrange multipliers $\lambda$ and solve
 instead 
 \begin{equation}
   \label{eq:22}
-  \left[ M + G^{T}\tilde{K}G \right]v_{k+1} = Mv_{k} + hf -
-  \frac{4\gamma}{h}G^{T}\tilde{K}Gx_{k} + \gamma G^{T}\tilde{K}Gv_{k}. 
+  \left[ \mathcal{J} + G^{T}\tilde{K}G \right]\omega_{k+1} =
+  \mathcal{J}\omega_{k} + h\tau -
+  \frac{4\gamma}{h}G^{T}\tilde{K}G\theta_{k} + \gamma G^{T}\tilde{K}G\omega_{k}. 
 \end{equation}
 where $\tilde{K}$ is defined as before in Eqn.~\eqref{eq:19}.  This
 requires finite $K$ however.  But we can mix the two methods and treat the
 external forcing terms using the relevant part of Eqn.~\eqref{eq:22} and
 the rest with Eqn.~\eqref{eq:18}.  
+
+\section{Coupling details}
+\label{sec:coupling-details}
+
+Coupling to other simulations comes in various forms.  A pure torque
+coupling simply adds $h\idx{\tau}{i,c}$ to the RHS in  Eqn.~\eqref{eq:18}.
+A velocity or displacement coupling adds
+$\frac{h^{2}}{4\gamma}\idx{K}{i,c}$ to the diagonal as well as
+\begin{equation}
+  \label{eq:7}
+  h\idx{\tau}{i,c} = -h\idx{K}{i,c}(\idx{\theta}{i}-\idx{\bar{\theta}}{i,c}) +
+  \frac{h^{2}}{4}(\idx{\omega}{i}-\idx{\bar{\omega}}{i})
+\end{equation}
+or
+\begin{equation}
+  \label{eq:8}
+  h\idx{\tau}{i,c} = -\idx{K}{i,c}\delta\idx{\theta}{i} + \frac{h^{2}}{4}(\idx{\omega}{i}-\idx{\bar{\omega}}{i})
+\end{equation}
+on the RHS of Eqn.~\eqref{eq:18}.     For the latter case, we update
+$\delta\idx{\theta}{i}$ with
+\begin{equation}
+  \label{eq:10}
+  \delta\idxsub{\theta}{i}{k+1} = \delta\idxsub{\theta}{i}{k} +
+  h(\idxsub{\omega}{i}{k+1}-\idx{\bar{\omega}}{i,c}).
+\end{equation}
+
+
 
 \renewcommand{\arraystretch}{1.5}
 
@@ -285,7 +325,7 @@ Parameters.
                 &\texttt{J} & 16 &&\\ \hline
   Compliance & $K^{-1}$
                 &\texttt{compliance} & 17 &&\\ \hline
-  Damping rate & $\tau/h$
+  Damping rate & $\rho/h$
                 &\texttt{D} & 18 &&\\ \hline
   First driving spring & $\idx{K}{c,1}$
                 &\texttt{K\_drive1} & 19 &&\\ \hline

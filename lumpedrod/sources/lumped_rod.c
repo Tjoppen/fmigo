@@ -6,6 +6,7 @@
 #include "lumped_rod.h"
 #include "safealloc.h"
 
+
 /** to allow simpler copy paste in store/restore functions */ 
 #define COPY_FWD( a , b )  a  = b
 #define COPY_BCK( a , b )  b  = a
@@ -24,7 +25,8 @@
  *  No initialization is done here.  
 */
 
-void lumped_rod_alloc( lumped_rod * rod ) {
+
+static void lumped_rod_alloc( lumped_rod * rod ) {
   
   assert( rod );
   assert( rod->n );
@@ -35,16 +37,13 @@ void lumped_rod_alloc( lumped_rod * rod ) {
   CALLOC( double, rod->state.v       , rod->n);
   CALLOC( double, rod->state.a       , rod->n);
   CALLOC( double, rod->state.torsion, rod->n);
-//  rod->state.v            = ( double * ) calloc(    rod->n    ,    sizeof( double ) );		
- // rod->state.a            = ( double * ) malloc(    rod->n    *    sizeof( double ) );		
- // rod->state.torsion      = ( double * ) malloc( ( rod->n - 1 )  * sizeof( double ) );		
 
   return ;
 
 }
 
 /** WARNING:  no error checking */
-void lumped_rod_free( lumped_rod rod ){
+static void lumped_rod_free( lumped_rod rod ){
 
   FREE( rod.state.x           );
   FREE( rod.state.v           );
@@ -55,20 +54,49 @@ void lumped_rod_free( lumped_rod rod ){
 
 }
 
+/**  
+     The rod can be forced at the first and last particle.  The mobility
+     here is the 2x2 matrix of reaction forces given unit impulses at the
+     two signals.  
 
-/** WARNING:  no error checking 
-    We need space for n masses and n-1 constraints.
+     The output matrix is assumed to be row major
 */
-lumped_rod_sim lumped_rod_sim_alloc( int n ) {
+static void lumped_rod_sim_get_mobility( lumped_rod_sim * sim, double  * mob ){
 
-  lumped_rod_sim sim;
+  /* unit force on first mass */
+  memset( sim->z, 0, sim->matrix.n * sizeof( double ) );
+  sim->z[ 0 ] = ( double ) 1.0; 
+  tri_solve( &sim->matrix, sim->z );
+
+  /* collect results */ 
+  mob[ 0 ] = sim->z[ 0 ];
+  mob[ 1 ] = sim->z[ sim->matrix.n - 1 ];
+
+  /* unit force on the last mass */
+  memset( sim->z, 0, sim->matrix.n * sizeof( double ) );
+  sim->z[ sim->matrix.n - 1  ] = ( double ) 1.0; 
+  tri_solve( &sim->matrix, sim->z );
   
-  MALLOC( double, sim.z, 2 * n - 1 ); 
-
-  return sim;
+  /* collect results */ 
+  mob[ 2 ] = sim->z[ 0 ];
+  mob[ 3 ] = sim->z[ sim->matrix.n - 1 ];
 
 }
 
+
+static void lumped_rod_initialize( lumped_rod rod, lumped_rod_init_conditions  initial){
+
+  /** no need to initialize acceleration or torsion */
+  double dx =  ( initial.xN - initial.x1 )  / ( double )  ( rod.n - 1 );
+  double dv =  ( initial.vN - initial.v1 )  / ( double )  ( rod.n - 1 );
+  int i; 
+
+  for ( i = 0; i < rod.n; ++i ){
+    rod.state.x[ i ]  =  initial.x1 + ( ( double ) i ) * dx ; 
+    rod.state.v[ i ]  =  initial.v1 + ( ( double ) i ) * dv ; 
+  }
+
+}
 
 /**
 
@@ -124,25 +152,25 @@ lumped_rod_sim lumped_rod_sim_alloc( int n ) {
    The RHS is then modified to include   h * K * ( dx1 - h * dv / 4 );
 
 */
-
-tri_matrix build_rod_matrix( lumped_rod  rod, double step) { 
+static tri_matrix build_rod_matrix( lumped_rod  rod, lumped_rod_coupling_parameters p, double step) { 
 
   int n = rod.n;
   tri_matrix m; 		/* matrix  */
   double gamma = 1.0 /  ( 1.0 + 4.0 * rod.relaxation_rate );
   double compliance = - rod.compliance * ( 4.0  * gamma / step / step ) /  ( double ) rod.n  ; 
+  double stiffness1 = 0; 
+  double stiffnessN = 0; 
 
-  double stiffness1 =  rod.driver_stiffness1 * ( 1  + 4 * rod.driver_damping1 ) * step * step /  4 ;
-  double stiffnessN =  rod.driver_stiffnessN * ( 1  + 4 * rod.driver_dampingN ) * step * step /  4 ;
-
+  if ( p.coupling_stiffness1 > 0 )
+    stiffness1 =  p.coupling_stiffness1 * ( 1.0  + 4.0 * p.coupling_damping1 / p.coupling_stiffness1 / step ) * step * step /  4.0 ;
+  if ( p.coupling_stiffnessN > 0 )
+    stiffnessN =  p.coupling_stiffnessN * ( 1.0  + 4.0 * p.coupling_dampingN / p.coupling_stiffnessN / step ) * step * step /  4.0 ;
 
   int i;
 
-  
   assert( n );
 
   m = tri_matrix_alloc( 2 * n - 1 );
-
 
   for( i = 0; i < m.n; i+= 2 ){
     m.diag[ i ] =  rod.mass;
@@ -162,182 +190,80 @@ tri_matrix build_rod_matrix( lumped_rod  rod, double step) {
     m.sub[   2 * i - 1   ] =   - 1.0;
   }
   
-
   tri_factor( &m );			/** this only has to be factored
-					 *  once unless we introduce
-					 *  nonlinear elasticity */
-
+					 *  once unless we change the time step.
+					 */
   return m;
   
 }
 
 
-/**
-   This does almost all the work.  The one assumption is that the lumped_rod
-   struct has a valid value for rod_mass, N,   and compliance.  Everything
-   else is derived from that. 
-*/
-lumped_rod_sim lumped_rod_sim_create( lumped_rod_sim_parameters p) {
-  lumped_rod_sim sim = lumped_rod_sim_alloc( p.rod.n );
-  sim.state = p;
-  sim.rod      =  sim.state.rod;
 
-  if ( sim.rod.driver_sign1 >= 0 ){
-    sim.rod.driver_sign1 =  1.0;
-  } else {
-    sim.rod.driver_sign1 = -1.0;
-  }
-
-  if ( sim.rod.driver_signN >= 0 ){
-    sim.rod.driver_signN =  1.0;
-  } else {
-    sim.rod.driver_signN = -1.0;
-  }
-
-  lumped_rod_alloc( &sim.rod );
-  
-  sim.state_backup = p;
-
-  lumped_rod_alloc( & sim.state_backup.rod ); /* for store / restore */
-
-  lumped_sim_set_timestep( &sim, sim.state.step );
-
-  lumped_rod_initialize(   sim.rod , sim.state.state.x1, sim.state.state.xN, sim.state.state.v1, sim.state.state.vN );
-
-  
-  return sim;
-}
-
-
-
-void lumped_sim_set_timestep ( lumped_rod_sim * sim, double step){
-
-  sim->state.step = step;
-  sim->gamma_v =   ( double ) 1.0  /  (  1.0  +  4.0  * sim->rod.relaxation_rate );
-  sim->gamma_x = - ( double ) 4.0  * sim->gamma_v   /  sim->state.step  ;
-
-  sim->gamma_driver_v1 =   ( double ) 1.0  /  (  1.0  +  4.0  * sim->rod.driver_damping1 );
-  sim->gamma_driver_x1 = - ( double ) 4.0  * sim->gamma_driver_v1   /  sim->state.step  ;
-
-  sim->gamma_driver_vN =   ( double ) 1.0  /  (  1.0  +  4.0  * sim->rod.driver_dampingN );
-  sim->gamma_driver_xN = - ( double ) 4.0  * sim->gamma_driver_vN   /  sim->state.step  ;
-
-  sim->m = build_rod_matrix( sim->rod, sim->state.step) ;
-  lumped_rod_sim_mobility( sim, sim->rod.mobility );
-
-}
-
-
-
-
-void lumped_rod_sim_free( lumped_rod_sim   sim ) {
-
-   lumped_rod_free( sim.rod      );
-  lumped_rod_free( sim.state_backup.rod );
-  tri_matrix_free( sim.m );
-  free ( sim.z );
-
-  return;
-  
-}
-
-void lumped_rod_initialize( lumped_rod rod, double x1, double xN, double v1, double vN){
-
-  /** no need to initialize acceleration or torsion */
-  double dx =  ( xN - x1 )  / ( double )  rod.n;
-  double dv =  ( vN - v1 )  / ( double )  rod.n;
-  int i; 
-
-  for ( i = 0; i < rod.n; ++i ){
-    rod.state.x[ i ]  =  x1 + ( ( double ) i ) * dx ; 
-    rod.state.v[ i ]  =  v1 + ( ( double ) i ) * dv ; 
-  }
-
-}
-
-
-/** This is the standard for spook
+/** 
+ *  This is the standard for spook. 
+ * 
+ *
  */
-void build_rod_rhs( lumped_rod_sim * sim ){
+static void build_rod_rhs( lumped_rod_sim * sim ){
 
   int i;
   double tmp;
   for ( i = 0; i < sim->rod.n - 1 ; ++i ) {
 
-    sim->z[ 2 * i ] = sim->rod.mass * sim->rod.state.v[ i ]; 
+    sim->z[ 2 * i ] = sim->rod.mass * sim->rod.state.v[ i ]; /* mass term */
 
     sim->z[ 2 * i  + 1 ] =
-      sim->gamma_x * ( sim->rod.state.x[  i  ] - sim->rod.state.x[ i + 1 ] )
-      + sim->gamma_v * ( sim->rod.state.v[  i  ] - sim->rod.state.v[ i + 1 ] );
+      + sim->gamma_x * ( sim->rod.state.x[  i  ] - sim->rod.state.x[ i + 1 ] ) /* constraint violation */
+      + sim->gamma_v * ( sim->rod.state.v[  i  ] - sim->rod.state.v[ i + 1 ] ); /* relative velocity */
   }
 
-  sim->z[ sim->m.n  - 1 ] = sim->rod.mass * sim->rod.state.v[ sim->rod.n -1 ]; 
+  sim->z[ sim->matrix.n  - 1 ] = sim->rod.mass * sim->rod.state.v[ sim->rod.n -1 ]; /* deal with the last mass */
 
   /* forces at the end */
-  sim->z[  0          ]  +=  sim->state.step * sim->state.state.driver_f1;
-  sim->z[ sim->m.n - 1]  +=  sim->state.step * sim->state.state.driver_fN;
+  sim->z[  0               ]  +=  sim->step * sim->coupling_states.f1;
+  sim->z[ sim->matrix.n - 1]  +=  sim->step * sim->coupling_states.fN;
 
   /* drivers with force-velocity couplings */
 
-  if ( sim->rod.integrate_dx1 ) {
-    sim->state.state.dx1 += sim->state.step * ( sim->rod.state.v[ 0 ] -  sim->state.state.driver_v1 );
-    tmp = sim->state.state.dx1;
+  /** Driver on first particle */
+  if ( sim->coupling_parameters.integrate_dx1 ) {
+    sim->coupling_states.dx1 += sim->step * ( sim->rod.state.v[ 0 ] -  sim->coupling_states.coupling_v1 );
+    tmp = sim->coupling_states.dx1;
   } else {
-    tmp = sim->rod.state.x[ 0 ] - sim->state.state.driver_x1;
+    tmp = sim->rod.state.x[ 0 ] - sim->coupling_states.coupling_x1;
   }
 
-  sim->state.state.driver_f1 = sim->rod.driver_stiffness1  * tmp  +
-    sim->rod.driver_damping1 * ( sim->rod.state.v[ 0 ] - sim->rod.state.driver_v1 ) ;
+  /** compute the output force */ 
+  sim->coupling_states.coupling_f1 = sim->coupling_parameters.coupling_stiffness1  * tmp  +
+    sim->coupling_parameters.coupling_damping1 * ( sim->rod.state.v[ 0 ] - sim->coupling_states.coupling_v1 ) ;
   
-  sim->z[ 0 ]           += - sim->rod.driver_sign1 * sim->state.state.driver_f1;
-  
+  /** RHS contribution: not same as output force because we are doing implicit integration here. */
+  sim->z[ 0 ] +=  ( 
+    - sim->step * sim->coupling_parameters.coupling_stiffness1
+    * ( tmp - sim->step * ( sim->rod.state.v[ 0 ] - sim->coupling_states.coupling_v1 ) / 4.0 )
+    ) ;
 
-  if ( sim->state.integrate_dxN ) {
-    sim->state.state.dxN += sim->state.step * ( sim->rod.state.v[ sim->m.n - 1 ] -  sim->state.state.driver_vN );
-    tmp = sim->state.state.dxN;
+  /** Driver on last particle */
+  
+  if ( sim->coupling_parameters.integrate_dxN ) {
+    sim->coupling_states.dxN += sim->step * ( sim->rod.state.v[ sim->rod.n - 1 ] -  sim->coupling_states.coupling_vN );
+    tmp = sim->coupling_states.dxN;
   } else {
-    tmp = sim->state.x[ sim->m.n - 1 ] - sim->state.state.driver_xN;
+    tmp = sim->rod.state.x[ sim->rod.n - 1 ] - sim->coupling_states.coupling_xN;
   }
 
+  /** compute the output */ 
 
-  sim->z[ sim->m.n -1 ] += - sim->state.step * sim->rod.driver_stiffnessN  *
-    ( sim->state.state.dxN - sim->state.step * sim->state.state.driver_vN ) / 4.0 ;
-
-}
-
-
-
-
-
-/**  
-     The rod can be forced at the first and last particle.  The mobility
-     here is the 2x2 matrix of reaction forces given unit impulses at the
-     two signals.  
-
-     The output matrix is assumed to be row major
-*/
-void lumped_rod_sim_mobility( lumped_rod_sim * sim, double  * mob ){
-
-  /* unit force on first mass */
-  memset( sim->z, 0, sim->m.n * sizeof( double ) );
-  sim->z[ 0 ] = ( double ) 1.0; 
-  tri_solve( &sim->m, sim->z );
-
-  /* collect results */ 
-  mob[ 0 ] = sim->z[ 0 ];
-  mob[ 1 ] = sim->z[ sim->m.n - 1 ];
-
-  /* unit force on the last mass */
-  memset( sim->z, 0, sim->m.n * sizeof( double ) );
-  sim->z[ sim->m.n - 1  ] = ( double ) 1.0; 
-  tri_solve( &sim->m, sim->z );
+  sim->coupling_states.coupling_fN = sim->coupling_parameters.coupling_stiffnessN  * tmp  +
+    sim->coupling_parameters.coupling_dampingN * ( sim->rod.state.v[ sim->rod.n - 1 ] - sim->coupling_states.coupling_vN ) ;
   
-  /* collect results */ 
-  mob[ 2 ] = sim->z[ 0 ];
-  mob[ 3 ] = sim->z[ sim->m.n - 1 ];
-
+  /** RHS contribution: not same as output force because we are doing implicit integration here. */
+  sim->z[ sim->matrix.n -1 ] +=  ( 
+    - sim->step * sim->coupling_parameters.coupling_stiffnessN
+    * ( tmp - sim->step * ( sim->rod.state.v[ sim->rod.n - 1 ] - sim->coupling_states.coupling_vN ) / 4.0 )
+    );
+  
 }
-
 
 /**
  *   Step forward in time.  
@@ -346,19 +272,19 @@ void rod_sim_do_step( lumped_rod_sim * sim, int n ){
 
   assert( sim );
   
-  double h_inv = 1.0  / sim->state.step;
+  double h_inv = 1.0  / sim->step;
   int i, j ; 
 
   for ( j = 0; j < n; ++j  ){
 
     build_rod_rhs( sim );
 
-    tri_solve( &sim->m, sim->z );
+    tri_solve( &sim->matrix, sim->z );
   
     for ( i = 0; i < sim->rod.n; ++i ){
       sim->rod.state.a[ i ]  = ( sim->z[ 2 * i ] - sim->rod.state.v[ i ] ) * h_inv; 
       sim->rod.state.v[ i ]  =   sim->z[ 2 * i ]; 
-      sim->rod.state.x[ i ] +=   sim->state.step * sim->rod.state.v[ i ]; 
+      sim->rod.state.x[ i ] +=   sim->step * sim->rod.state.v[ i ]; 
     }
 
     
@@ -371,50 +297,22 @@ void rod_sim_do_step( lumped_rod_sim * sim, int n ){
       Publish variables.
   */
 
-  sim->state.state.f1 = sim->rod.state.torsion[ 0              ];
-  sim->state.state.fN = sim->rod.state.torsion[ sim->rod.n - 2 ];
-  sim->state.state.x1 = sim->rod.state.x      [ 0              ];
-  sim->state.state.xN = sim->rod.state.x      [ sim->rod.n - 2 ];
-  sim->state.state.v1 = sim->rod.state.v      [ 0              ];
-  sim->state.state.vN = sim->rod.state.v      [ sim->rod.n - 2 ];
-  sim->state.state.a1 = sim->rod.state.a      [ 0              ];
-  sim->state.state.aN = sim->rod.state.a      [ sim->rod.n - 2 ];
+  /* the internal torsion should be the reaction force but we're reporting
+   * the coupling spring force instead */
+  
+  //  sim->coupling_states.coupling_f1 = sim->rod.state.torsion[ 0              ];
+  //  sim->coupling_states.coupling_fN = sim->rod.state.torsion[ sim->rod.n - 2 ];
+  sim->coupling_states.x1 = sim->rod.state.x      [ 0              ];
+  sim->coupling_states.xN = sim->rod.state.x      [ sim->rod.n - 2 ];
+  sim->coupling_states.v1 = sim->rod.state.v      [ 0              ];
+  sim->coupling_states.vN = sim->rod.state.v      [ sim->rod.n - 2 ];
+  sim->coupling_states.a1 = sim->rod.state.a      [ 0              ];
+  sim->coupling_states.aN = sim->rod.state.a      [ sim->rod.n - 2 ];
 
-  sim->state.state.dx1 += sim->state.step * ( sim->rod.state.v[ 0              ] - sim->state.state.driver_v1 );
-  sim->state.state.dxN += sim->state.step * ( sim->rod.state.v[ sim->rod.n - 1 ] - sim->state.state.driver_vN );
-
-}
-
-
-
-/** set the positions at the ends */
-void lumped_sim_set_velocity ( lumped_rod_sim * sim, double v, int j ){
-
-  if ( j == 1 ) { 
-    sim->rod.state.v[ sim->rod.n - 1  ] = v;
-    sim->state.state.vN = v;
-  }
-  else {
-    sim->rod.state.v[ 0 ] = v; 
-    sim->state.state.v1 = v;
-  }
+  sim->coupling_states.dx1 += sim->step * ( sim->rod.state.v[ 0              ] - sim->coupling_states.coupling_v1 );
+  sim->coupling_states.dxN += sim->step * ( sim->rod.state.v[ sim->rod.n - 1 ] - sim->coupling_states.coupling_vN );
 
 }
-
-/** set the positions at the ends */
-void lumped_sim_set_position ( lumped_rod_sim * sim, double x, int j ){
-
-  if ( j == 1 ) { 
-    sim->rod.state.x[ sim->rod.n - 1  ] = x;
-    sim->state.state.xN = x;
-  }
-  else {
-    sim->rod.state.x[ 0 ] = x; 
-    sim->state.state.x1 = x;
-  }
-
-}
-
 
 /**
    We don't want to copy the ponters!  
@@ -437,21 +335,149 @@ void   lumped_rod_copy( lumped_rod * src, lumped_rod  * dest ){
 }
 
 void lumped_rod_sim_store ( lumped_rod_sim  * sim ){
-  lumped_rod_copy(  & sim->rod,  & sim->state_backup.rod );
+  lumped_rod_copy(  & sim->rod,  & sim->rod_backup );
   return;
 }
 
 void lumped_rod_sim_restore ( lumped_rod_sim  * sim ){
-  lumped_rod_copy( & ( sim->state_backup.rod ),  & ( sim->rod ) );
+  lumped_rod_copy( & ( sim->rod_backup ),  & ( sim->rod ) );
   return;
 }
+
+
+/**
+   This does almost all the work.  The one assumption is that the lumped_rod
+   struct has a valid value for rod_mass, N,   and compliance.  Everything
+   else is derived from that. 
+*/
+lumped_rod_sim lumped_rod_sim_initialize( lumped_rod_sim sim, lumped_rod_init_conditions initial) {
+
+  MALLOC( double, sim.z, 2 * sim.rod.n - 1 ); 
+  sim.rod_backup = sim.rod;
+  lumped_rod_alloc( &sim.rod );
+  lumped_rod_alloc( & sim.rod_backup ); /* for store / restore */
+
+  if ( sim.coupling_parameters.coupling_sign1 >= 0 ){
+    sim.coupling_parameters.coupling_sign1 =  1.0;
+  } else {
+    sim.coupling_parameters.coupling_sign1 = -1.0;
+  }
+
+  if ( sim.coupling_parameters.coupling_signN >= 0 ){
+    sim.coupling_parameters.coupling_signN =  1.0;
+  } else {
+    sim.coupling_parameters.coupling_signN = -1.0;
+  }
+
+  lumped_rod_coupling_states c = sim.coupling_states;
+  
+  sim.coupling_states_backup = c;
+  lumped_sim_set_timestep( &sim, sim.step );
+  lumped_rod_initialize(   sim.rod , initial );
+
+  return sim;
+}
+
+
+
+void lumped_sim_set_timestep ( lumped_rod_sim * sim, double step){
+
+  sim->step = step;
+  sim->gamma_v =   ( double ) 1.0  /  (  1.0  +  4.0  * sim->rod.relaxation_rate );
+  sim->gamma_x = - ( double ) 4.0  * sim->gamma_v   /  sim->step  ;
+
+  sim->matrix = build_rod_matrix( sim->rod, sim->coupling_parameters, sim->step) ;
+  lumped_rod_sim_get_mobility( sim, sim->rod.mobility );
+
+}
+
+void lumped_rod_sim_free( lumped_rod_sim   sim ) {
+
+  lumped_rod_free( sim.rod      );
+  lumped_rod_free( sim.rod_backup );
+  tri_matrix_free( sim.matrix );
+  free ( sim.z );
+
+  return;
+  
+}
+
+
 
 
 #ifdef CONSOLE
 
 int main(){
 
+  lumped_rod_sim sim = {
+    1.0 / 10.0, 		/* step */
+    {				/* rod */
+      25, 			/* num elements */
+      5, 			/* mass */
+      1e-3,			/* global compliance */
+      0				/* relaxation */
+    }, 
+    {				/* coupling parameters */
+      0,			/* stiffness */
+      0,			/* damping */
+      0,			/* stiffness */
+      0,			/* damping */
+      1,			/* coupling sign */
+      1,			/* coupling sign */
+      0,			/* integrate dx */
+      0				/* integrate dx */
+    }, 
+    {				/* coupling states: ouputs */
+      0,			/* x */
+      0,			/* v */
+      0,			/* a */
+      0,			/* dx */
+      0,			/* x */
+      0,			/* v */
+      0,			/* a */
+      0,			/* dx */
+      /* force output*/
+      0, 			/* coupling_f1 */
+      /* force output*/
+      0, 			/* coupling_fN */
+      /* force inputs */ 
+      0,			/* force in*/
+      0,			/* force in */
+      /* velocity displacement couplings */
+      0, 			/* coupling_x1 */
+      0, 			/* coupling_v1 */
+      0, 			/* coupling_xN */
+      0 			/* coupling_vN */
+    }, 
+  };
+
+  lumped_rod_init_conditions init = {
+    -1.0,
+    0.000,
+    1.000,
+    0.0
+  };
+
+  int print = 1;
+  int N = 2000;
   
+  sim = lumped_rod_sim_initialize(sim, init );
+  
+  for ( int j = 0; j < N; ++j ){
+    rod_sim_do_step( &sim, 1);
+    if ( print ){
+    for ( int i = 0; i < sim.rod.n; ++i ) {
+      fprintf( stderr, "%6.4f " , i, sim.rod.state.x[ i ] );
+    }
+    fprintf(stderr, "\n");
+    }
+  }
+  
+  lumped_rod_sim_store( & sim );
+  lumped_rod_sim_restore( & sim );
+  
+  lumped_rod_sim_free( sim ) ;
+
 
   return 0;
 }

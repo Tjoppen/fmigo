@@ -126,7 +126,7 @@ endif(MSVC)
 
 IF(CMAKE_COMPILER_IS_GNUCC)
    SET(SAVED_C_DEFAULT_FLAGS "${CMAKE_C_FLAGS}")
-   SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c89 -pedantic -Wall -Wno-unused-function")
+   SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pedantic -Wall -Wno-unused-function")
    if(NOT MSYS)
 	include(CheckCCompilerFlag)
 	CHECK_C_COMPILER_FLAG("-fvisibility=hidden" SUPPORT_VISIBILITY)
@@ -175,7 +175,12 @@ if(NOT FMILIB_STATIC_LIB_ONLY)
 	add_definitions(-DFMILIB_BUILDING_LIBRARY)
 endif()
 
-add_subdirectory(ThirdParty/c99_snprintf)
+include(CheckSymbolExists)
+CHECK_SYMBOL_EXISTS(vsnprintf stdio.h HAVE_VSNPRINTF)
+if(NOT ${HAVE_VSNPRINTF})
+    set(C99SNPRINTF_LIB c99snprintf)
+    add_subdirectory(ThirdParty/c99_snprintf)
+endif(NOT ${HAVE_VSNPRINTF})
 
 SET(CMAKE_MODULE_PATH ${FMILIBRARYHOME}/Config.cmake)
 
@@ -196,11 +201,11 @@ set(FMILIB_FMI_PLATFORM_DOC "FMI platform defines the subdirectory within FMU wh
 set(FMILIB_FMI_PLATFORM ”unknown” CACHE STRING ${FMILIB_FMI_PLATFORM_DOC})
 if(FMILIB_FMI_PLATFORM MATCHES ”unknown”)
 	if(CMAKE_HOST_WIN32) #Set to true when the host system is Windows and on cygwin.
-		if(CMAKE_CL_64)
-		set(FMI_PLATFORM win64)
-		else(CMAKE_CL_64)
-		set(FMI_PLATFORM win32)
-		endif(CMAKE_CL_64)
+		if(CMAKE_SIZEOF_VOID_P EQUAL 4)
+			set(FMI_PLATFORM win32)
+		else(CMAKE_SIZEOF_VOID_P EQUAL 4)
+			set(FMI_PLATFORM win64)
+		endif(CMAKE_SIZEOF_VOID_P EQUAL 4)
 	elseif(CMAKE_HOST_APPLE) #Set to true when the host system is Apple OSX. 
 		if(CMAKE_SIZEOF_VOID_P EQUAL 4)
 			set(FMI_PLATFORM darwin32)
@@ -223,7 +228,6 @@ else()
 	set(FMI_PLATFORM ${FMILIB_FMI_PLATFORM})
 endif()
 
-include(CheckSymbolExists)
 CHECK_SYMBOL_EXISTS(va_copy stdarg.h HAVE_VA_COPY)
 CHECK_SYMBOL_EXISTS(__va_copy stdarg.h HAVE___VA_COPY)
 
@@ -232,7 +236,7 @@ configure_file (
   "${FMILibrary_BINARY_DIR}/fmilib_config.h"
   ) 
 
-set(FMILIB_SHARED_SUBLIBS ${FMIXML_LIBRARIES} ${FMIZIP_LIBRARIES} ${FMICAPI_LIBRARIES} expat minizip zlib c99snprintf)
+set(FMILIB_SHARED_SUBLIBS ${FMIXML_LIBRARIES} ${FMIZIP_LIBRARIES} ${FMICAPI_LIBRARIES} expat minizip zlib ${C99SNPRINTF_LIB})
 set(FMILIB_SUBLIBS ${FMIIMPORT_LIBRARIES} ${JMUTIL_LIBRARIES} ${FMILIB_SHARED_SUBLIBS})
 set(FMILIB_SHARED_SRC ${FMIIMPORTSOURCE} ${JMUTILSOURCE} ${FMIIMPORTHEADERS})
 

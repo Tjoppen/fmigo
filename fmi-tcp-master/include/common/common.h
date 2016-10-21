@@ -6,7 +6,11 @@
 #ifdef WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+//Microsoft has implemented snprintf() starting with Visual Studio 2015
+//for older versions we need to use sprintf_s()
+#if _MSC_VER < 1900
 #define snprintf sprintf_s
+#endif
 #endif
 
 #include <string>

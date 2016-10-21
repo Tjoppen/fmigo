@@ -89,6 +89,10 @@ static void add_args(vector<string>& argvstore, vector<char*>& argv2, string fil
         add_args_internal(std::cin, argvstore, argv2, position);
     } else {
         ifstream ifs(filename.c_str());
+        if (!ifs) {
+            fprintf(stderr, "Couldn't open %s to parse more arguments!\n", filename.c_str());
+            exit(1);
+        }
         add_args_internal(ifs, argvstore, argv2, position);
     }
 }

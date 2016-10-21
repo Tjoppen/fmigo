@@ -138,12 +138,11 @@
       <Real />
     </ScalarVariable>
 
-    <!-- Number of iterations is exposed as a Real since the master doesn't support dumping integers to CSV yet -->
     <ScalarVariable name="iterations"
                     valueReference="96"
                     description="Number of iterations done in last step"
                     causality="output">
-      <Real/>
+      <Integer/>
     </ScalarVariable>
 
     <ScalarVariable name="dump_data"

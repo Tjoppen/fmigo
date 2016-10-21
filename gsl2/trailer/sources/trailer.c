@@ -59,6 +59,7 @@ int trailer (double t, const double x[], double dxdt[], void * params){
     - sgnv * ( s->md.c_r_2 * fabs( x[ 1 ] ) + s->md.c_r_1 ) * s->md.mass * s->md.g * cos( s->md.angle );
 
   /* any additional force */
+  force += s->md.tau_d / s->md.r_w;
   force += s->md.tau_e / s->md.r_w;
 
   force += s->md.f_in;

@@ -6,9 +6,10 @@
 #define MODEL_GUID "{ca64d56e-cc83-44bb-ad78-afbe219a947c}"
 #define FMI_COSIMULATION
 #define HAVE_DIRECTIONAL_DERIVATIVE 0
-#define NUMBER_OF_REALS 36
+#define CAN_GET_SET_FMU_STATE 1
+#define NUMBER_OF_REALS 34
 #define NUMBER_OF_INTEGERS 1
-#define NUMBER_OF_BOOLEANS 0
+#define NUMBER_OF_BOOLEANS 2
 #define NUMBER_OF_STATES 0
 #define NUMBER_OF_EVENT_INDICATORS 0
 
@@ -31,8 +32,6 @@ typedef struct {
     fmi2Real gamma_d; //VR=14
     fmi2Real k_t; //VR=15
     fmi2Real gamma_t; //VR=16
-    fmi2Real integrate_dw; //VR=17
-    fmi2Real integrate_dx; //VR=18
     fmi2Real integrator; //VR=19
     fmi2Real phi_i; //VR=20
     fmi2Real omega_i; //VR=21
@@ -52,7 +51,8 @@ typedef struct {
     fmi2Real tau_c; //VR=35
     fmi2Real f_c; //VR=36
     fmi2Integer filter_length; //VR=98
-
+    fmi2Boolean integrate_dw; //VR=17
+    fmi2Boolean integrate_dx; //VR=18
 } modelDescription_t;
 
 
@@ -60,13 +60,13 @@ typedef struct {
 static const modelDescription_t defaults = {
     0.0, //x0
     0.0, //v0
-    0.0, //mass
-    0.0, //r_w
-    0.0, //r_g
-    0.0, //area
-    0.0, //rho
-    0.0, //c_d
-    0.0, //g
+    10000.0, //mass
+    0.5, //r_w
+    1.0, //r_g
+    10.0, //area
+    0.001, //rho
+    0.5, //c_d
+    9.82, //g
     0.0, //c_r_1
     0.0, //c_r_2
     0.0, //mu
@@ -74,8 +74,6 @@ static const modelDescription_t defaults = {
     0.0, //gamma_d
     0.0, //k_t
     0.0, //gamma_t
-    0.0, //integrate_dw
-    0.0, //integrate_dx
     0.0, //integrator
     0.0, //phi_i
     0.0, //omega_i
@@ -95,7 +93,8 @@ static const modelDescription_t defaults = {
     0, //tau_c
     0, //f_c
     0, //filter_length
-
+    0, //integrate_dw
+    0, //integrate_dx
 };
 
 
@@ -115,8 +114,6 @@ static const modelDescription_t defaults = {
 #define VR_GAMMA_D 14
 #define VR_K_T 15
 #define VR_GAMMA_T 16
-#define VR_INTEGRATE_DW 17
-#define VR_INTEGRATE_DX 18
 #define VR_INTEGRATOR 19
 #define VR_PHI_I 20
 #define VR_OMEGA_I 21
@@ -136,7 +133,8 @@ static const modelDescription_t defaults = {
 #define VR_TAU_C 35
 #define VR_F_C 36
 #define VR_FILTER_LENGTH 98
-
+#define VR_INTEGRATE_DW 17
+#define VR_INTEGRATE_DX 18
 
 //the following getters and setters are static to avoid getting linking errors if this file is included in more than one place
 
@@ -163,8 +161,6 @@ static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2
         case 14: value[i] = md->gamma_d; break;
         case 15: value[i] = md->k_t; break;
         case 16: value[i] = md->gamma_t; break;
-        case 17: value[i] = md->integrate_dw; break;
-        case 18: value[i] = md->integrate_dx; break;
         case 19: value[i] = md->integrator; break;
         case 20: value[i] = md->phi_i; break;
         case 21: value[i] = md->omega_i; break;
@@ -209,8 +205,6 @@ static fmi2Status generated_fmi2SetReal(modelDescription_t *md, const fmi2ValueR
         case 14: md->gamma_d = value[i]; break;
         case 15: md->k_t = value[i]; break;
         case 16: md->gamma_t = value[i]; break;
-        case 17: md->integrate_dw = value[i]; break;
-        case 18: md->integrate_dx = value[i]; break;
         case 19: md->integrator = value[i]; break;
         case 20: md->phi_i = value[i]; break;
         case 21: md->omega_i = value[i]; break;
@@ -261,7 +255,8 @@ static fmi2Status generated_fmi2GetBoolean(const modelDescription_t *md, const f
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-
+        case 17: value[i] = md->integrate_dw; break;
+        case 18: value[i] = md->integrate_dx; break;
         default: return fmi2Error;
         }
     }
@@ -272,7 +267,8 @@ static fmi2Status generated_fmi2SetBoolean(modelDescription_t *md, const fmi2Val
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-
+        case 17: md->integrate_dw = value[i]; break;
+        case 18: md->integrate_dx = value[i]; break;
         default: return fmi2Error;
         }
     }

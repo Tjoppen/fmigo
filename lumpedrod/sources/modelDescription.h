@@ -66,9 +66,7 @@ static const modelDescription_t defaults = {
     0.0, //out_torque2
     0.0, //tau1
     0.0, //tau2
-    0.0, //theta_drive1
     0.0, //omega_drive1
-    0.0, //theta_drive2
     0.0, //omega_drive2
     10.0, //J0
     0.0001, //compliance
@@ -84,8 +82,6 @@ static const modelDescription_t defaults = {
     0.0, //omega02
     1.0, //driver_sign1
     1.0, //driver_sign2
-    1.0, //integrate_dt1
-    1.0, //integrate_dt2
     10, //n_elements
 
 };
@@ -147,26 +143,22 @@ static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2
         case 9: value[i] = md->out_torque2; break;
         case 10: value[i] = md->tau1; break;
         case 11: value[i] = md->tau2; break;
-        case 12: value[i] = md->theta_drive1; break;
-        case 13: value[i] = md->omega_drive1; break;
-        case 14: value[i] = md->theta_drive2; break;
-        case 15: value[i] = md->omega_drive2; break;
-        case 16: value[i] = md->J0; break;
-        case 17: value[i] = md->compliance; break;
-        case 18: value[i] = md->D; break;
-        case 19: value[i] = md->K_drive1; break;
-        case 20: value[i] = md->D_drive1; break;
-        case 21: value[i] = md->K_drive2; break;
-        case 22: value[i] = md->D_drive2; break;
-        case 23: value[i] = md->step; break;
-        case 25: value[i] = md->theta01; break;
-        case 26: value[i] = md->theta02; break;
-        case 27: value[i] = md->omega01; break;
-        case 28: value[i] = md->omega02; break;
-        case 29: value[i] = md->driver_sign1; break;
-        case 30: value[i] = md->driver_sign2; break;
-        case 31: value[i] = md->integrate_dt1; break;
-        case 32: value[i] = md->integrate_dt2; break;
+        case 12: value[i] = md->omega_drive1; break;
+        case 13: value[i] = md->omega_drive2; break;
+        case 14: value[i] = md->J0; break;
+        case 15: value[i] = md->compliance; break;
+        case 16: value[i] = md->D; break;
+        case 17: value[i] = md->K_drive1; break;
+        case 18: value[i] = md->D_drive1; break;
+        case 19: value[i] = md->K_drive2; break;
+        case 20: value[i] = md->D_drive2; break;
+        case 21: value[i] = md->step; break;
+        case 22: value[i] = md->theta01; break;
+        case 23: value[i] = md->theta02; break;
+        case 24: value[i] = md->omega01; break;
+        case 25: value[i] = md->omega02; break;
+        case 26: value[i] = md->driver_sign1; break;
+        case 27: value[i] = md->driver_sign2; break;
         default: return fmi2Error;
         }
     }
@@ -219,7 +211,7 @@ static fmi2Status generated_fmi2GetInteger(const modelDescription_t *md, const f
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case 24: value[i] = md->n_elements; break;
+        case 0: value[i] = md->n_elements; break;
         default: return fmi2Error;
         }
     }
@@ -230,7 +222,7 @@ static fmi2Status generated_fmi2SetInteger(modelDescription_t *md, const fmi2Val
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case 24: md->n_elements = value[i]; break;
+        case 0: md->n_elements = value[i]; break;
         default: return fmi2Error;
         }
     }

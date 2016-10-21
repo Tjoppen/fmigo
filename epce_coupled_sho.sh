@@ -68,7 +68,7 @@ then
     octave --no-gui -q --persist --eval "d=load('out.csv'); plot(d(:,1),d(:,[5,9,13,17]),'.-')"
 fi
 
-if [ 1 == 1 ]
+if [ 0 == 1 ]
 then
     for N in 2 4 8 16
     do
@@ -99,4 +99,49 @@ then
     done
 
     octave --no-gui -q --persist --eval "d=load('out-16.csv'); plot(d(:,1),[d(:,3),d(:,7:4:end)],'.-')"
+fi
+
+if [ 1 == 1 ]
+then
+    for N in 2 4 8 16 32 64 128
+    do
+        N1=$(bc <<< "$N - 1")
+        echo $N1
+
+        # The filter damps everything so there's no reflection
+        filter_length=0
+        omega=$N
+
+        # Can be 1.0/N for gs, must be 0.5/N or smaller for jacobi
+        dt=$(python <<< "print(0.5 / $N)")
+        mu=1
+        zeta=1
+
+        # Pulse length = 10 second
+        pulse_length=$(python <<< "print(int(10 / $dt))")
+
+        FMUS=": -np 1 fmi-mpi-server ../../impulse/impulse.fmu"
+        CONNS="-c 0,1,1,5"
+        PARAMS="-p i,0,4,1:i,0,6,${pulse_length}"
+        for i in $(seq 1 $N)
+        do
+            i2=$(bc <<< "$i + 1")
+            if [ $i -lt $N ]
+            then
+                CONNS="${CONNS} -c $i,12,$i2,5:$i2,10,$i,6"
+            fi
+            PARAMS="${PARAMS} -p i,$i,98,${filter_length} -p $i,0,${mu}:$i,1,${omega}:$i,2,${zeta}:$i,3,0:"
+
+            # No internal dynamics
+            PARAMS="${PARAMS} -p $i,4,0:$i,95,0:$i,7,0:$i,8,0:$i,9,0"
+            FMUS="${FMUS} : -np 1 fmi-mpi-server coupled_sho.fmu"
+        done
+
+        mpiexec -np 1 fmi-mpi-master -m jacobi -t 20 -d $dt ${CONNS} ${PARAMS} ${FMUS} > out-${N}.csv
+    done
+
+    #octave --no-gui -q --persist --eval "d=load('out-128.csv'); plot(d(:,1),[d(:,3),d(:,7:4:end)],'.-')"
+    #octave --no-gui -q --persist --eval "d=load('out-$N.csv'); surf([d(:,3),d(:,7:4:end)]); shading flat"
+    #counts the number of iterations
+    #N=2.^(1:7); its=[]; for n=N; d=load(sprintf('out-%i.csv', n)); s=sum(sum(d(:,8:4:end))); its(size(its,2)+1)=s; endfor
 fi

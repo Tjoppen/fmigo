@@ -364,7 +364,7 @@ static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReferen
         return fmi2OK;
     }
     if (wrt == VR_FORCE_IN_S || wrt == VR_FORCE_IN_SX) {
-        *partial = 1.0/s->md.mass_e;
+        *partial = 1.0/s->md.mass_s;
         return fmi2OK;
     }
   }

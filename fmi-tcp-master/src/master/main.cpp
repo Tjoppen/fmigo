@@ -641,7 +641,7 @@ int main(int argc, char *argv[] ) {
     //send user-defined parameters
     sendUserParams(master, clients, params);
 
-    master->block(clients, fmi2_import_initialize_slave(0, 0, true, relativeTolerance, startTime, endTime >= 0, endTime));
+    master->sendWait(clients, fmi2_import_initialize_slave(0, 0, true, relativeTolerance, startTime, endTime >= 0, endTime));
 
     double t = startTime;
 #ifdef WIN32

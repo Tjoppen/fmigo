@@ -55,7 +55,7 @@ public:
             it->first->sendSetX(it->second);
         }
 
-        block(m_clients, fmi2_import_do_step(0, 0, t, dt, true));
+        sendWait(m_clients, fmi2_import_do_step(0, 0, t, dt, true));
     }
 };
 
@@ -88,7 +88,7 @@ public:
             wait();
             const SendSetXType refValues = getInputWeakRefsAndValues(m_weakConnections, client);
             client->sendSetX(refValues);
-            block(client, fmi2_import_do_step(0, 0, t, dt, true));
+            sendWait(client, fmi2_import_do_step(0, 0, t, dt, true));
         }
         //fprintf(stderr, "\n\n");
     }

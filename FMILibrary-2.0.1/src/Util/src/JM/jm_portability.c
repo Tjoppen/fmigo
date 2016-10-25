@@ -132,6 +132,7 @@ const char* jm_get_system_temp_dir() {
 
 #ifdef WIN32
 #include <io.h> //for _mktemp
+#include <errno.h>
 #include <direct.h>
 #define MKDIR(dir) _mkdir(dir)
 #else

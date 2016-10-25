@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 2.8)
 #suppress warning about libexpat.a
 cmake_policy(SET CMP0058 OLD)
 
+option(BUILD_FMUS "Build example FMUs in umit-fmus/?" ON)
+
 # Download/install protobuf, umfpack as needed
 if(WIN32)
     add_definitions(-D_SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS) # required by protobuf-ext
@@ -140,4 +142,7 @@ if (WIN32)
     add_dependencies(fmi-mpi-master jsoncpp-ext protobuf-ext hdf5-ext)
 endif ()
 
-add_subdirectory(umit-fmus)
+if (BUILD_FMUS)
+    add_subdirectory(umit-fmus)
+endif ()
+

@@ -247,12 +247,12 @@ char* jm_mk_temp_dir(jm_callbacks* cb, const char* systemTempDir, const char* te
 		jm_log_fatal(cb,module, "Canonical name for the temporary files directory is too long (system limit for path length is %d)", FILENAME_MAX);
 		return 0;
 	}
-	tmpPath = (char*)cb->malloc(len + 7);
+	tmpPath = (char*)cb->malloc(len + 9);
 	if(!tmpPath) {
 		jm_log_fatal(cb, module,"Could not allocate memory");
 		return 0;
 	}
-	sprintf(tmpPath,"%s%sXXXXXX",tmpDir,tempPrefix);/*safe*/
+	sprintf(tmpPath,"%s%sXXXXXXXX",tmpDir,tempPrefix);/*safe*/
 
 #ifdef WIN32
 	//no mkdtemp() on Windows
@@ -263,13 +263,18 @@ char* jm_mk_temp_dir(jm_callbacks* cb, const char* systemTempDir, const char* te
 			cb->free(tmpPath);
 			return 0;
 		}
-		if(jm_mkdir(cb,tmpPath) != jm_status_success && errno != EEXIST) {
+
+		jm_status_enu_t ret = jm_mkdir(cb,tmpPath);
+		if(ret != jm_status_success && errno != EEXIST) {
 			cb->free(tmpPath);
 			return 0;
+		} else if (ret == jm_status_success) {
+			//done
+			break;
 		}
 
 		//EEXIST -> try again with a different name
-		sprintf(tmpPath,"%s%sXXXXXX",tmpDir,tempPrefix);
+		sprintf(tmpPath,"%s%sXXXXXXXX",tmpDir,tempPrefix);
 	}
 #else
 	if(!mkdtemp(tmpPath)) {

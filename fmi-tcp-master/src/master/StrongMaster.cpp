@@ -40,7 +40,7 @@ void StrongMaster::getDirectionalDerivative(FMIClient *client, Vec3 seedVec, vec
         seed.push_back(seedVec.z());
     }
 
-    block(client, fmi2_import_get_directional_derivative(0, 0, accelerationRefs, forceRefs, seed));
+    sendWait(client, fmi2_import_get_directional_derivative(0, 0, accelerationRefs, forceRefs, seed));
 }
 
 void StrongMaster::runIteration(double t, double dt) {
@@ -280,7 +280,7 @@ void StrongMaster::runIteration(double t, double dt) {
     //do actual step
     //noSetFMUStatePriorToCurrentPoint = true
     //In other words: do the step, commit the results (basically, we're not going back)
-    block(m_clients, fmi2_import_do_step(0, 0, t, dt, true));
+    sendWait(m_clients, fmi2_import_do_step(0, 0, t, dt, true));
     PRINT_HDF5_DELTA("do_step");
 }
 

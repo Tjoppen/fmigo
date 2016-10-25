@@ -15,6 +15,10 @@
 # The script is KNOWN NOT TO WORK WITH 2.8.3 and below (ExternalProject 
 # interface changes). CMake 2.8.4 and 2.8.5 are not tested.
 cmake_minimum_required (VERSION 2.8.6 FATAL_ERROR)
+# Shut CMake 3.5.x up about a bunch of things
+cmake_policy(SET CMP0022 OLD)
+cmake_policy(SET CMP0026 OLD)
+cmake_policy(SET CMP0046 OLD)
 
 # Prohibit in-source build
 IF("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")

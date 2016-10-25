@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
 
+#suppress warning about libexpat.a
+cmake_policy(SET CMP0058 OLD)
+
 # Download/install protobuf, umfpack as needed
 if(WIN32)
     add_definitions(-D_SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS) # required by protobuf-ext

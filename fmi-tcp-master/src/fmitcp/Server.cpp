@@ -56,17 +56,9 @@ Server::Server(string fmuPath, bool debugLogging, jm_log_level_enu_t logLevel, s
   m_jmCallbacks.context = 0;
   // working directory
   char* dir;
-  //This loop is needed because sometimes fmi_import_mk_temp_dir() fails.
-  //I'm not entirely sure why yet, but it might be that two fmi-tcp-servers
-  //started at the same time end up getting the same path from mktemp()
-  for (int x = 10;; x--) {
-      if ((dir = fmi_import_mk_temp_dir(&m_jmCallbacks, NULL, "fmitcp_"))) {
-          break;
-      }
-      if (x == 0) {
-          fprintf(stderr, "fmi_import_mk_temp_dir() failed after several attempts - giving up\n");
-          exit(1);
-      }
+  if (!(dir = fmi_import_mk_temp_dir(&m_jmCallbacks, NULL, "fmitcp_"))) {
+    fprintf(stderr, "fmi_import_mk_temp_dir() failed\n");
+    exit(1);
   }
   m_workingDir = dir; // convert to std::string
   free(dir);

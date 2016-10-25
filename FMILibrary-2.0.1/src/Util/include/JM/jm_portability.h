@@ -68,15 +68,6 @@ jm_status_enu_t jm_portability_set_current_working_directory(const char* cwd);
 const char* jm_get_system_temp_dir();
 
 /** 
-	\brief Create a unique file name 
-	\param tmplt File name template ending with XXXXXX.
-	\return A pointer to the modified template. The function returns NULL if 
-	template is badly formed or no more unique names can be created from the given template.
-*/
-char* jm_mktemp(char* tmplt);
-
-
-/** 
 	\brief Get absolute path to an existing directory
 	\param cb - callbacks for memory allocation and logging. Default callbacks are used if this parameter is NULL.
 	\param dir - path to a directory (relative or absolute).

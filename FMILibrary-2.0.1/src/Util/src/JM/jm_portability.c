@@ -131,17 +131,7 @@ const char* jm_get_system_temp_dir() {
 }
 
 #ifdef WIN32
-#include <io.h>
-#define mktemp _mktemp
-#else
-char* mktemp(char*);
-#endif
- 
-char* jm_mktemp(char* tmplt) {
-	return mktemp(tmplt);
-}
-
-#ifdef WIN32
+#include <io.h> //for _mktemp
 #include <direct.h>
 #define MKDIR(dir) _mkdir(dir)
 #else
@@ -263,15 +253,30 @@ char* jm_mk_temp_dir(jm_callbacks* cb, const char* systemTempDir, const char* te
 	}
 	sprintf(tmpPath,"%s%sXXXXXX",tmpDir,tempPrefix);/*safe*/
 
-	if(!jm_mktemp(tmpPath)) {
-		jm_log_fatal(cb, module,"Could not create a unique temporary directory name");
+#ifdef WIN32
+	//no mkdtemp() on Windows
+	//keep going until we succeed or get some error which isn't EEXIST
+	for (;;) {
+		if(!_mktemp(tmpPath)) {
+			jm_log_fatal(cb, module,"Could not create a unique temporary directory name");
+			cb->free(tmpPath);
+			return 0;
+		}
+		if(jm_mkdir(cb,tmpPath) != jm_status_success && errno != EEXIST) {
+			cb->free(tmpPath);
+			return 0;
+		}
+
+		//EEXIST -> try again with a different name
+		sprintf(tmpPath,"%s%sXXXXXX",tmpDir,tempPrefix);
+	}
+#else
+	if(!mkdtemp(tmpPath)) {
+		jm_log_fatal(cb, module,"Could not create a unique temporary directory");
 		cb->free(tmpPath);
 		return 0;
 	}
-	if(jm_mkdir(cb,tmpPath) != jm_status_success) {
-		cb->free(tmpPath);
-		return 0;
-	}
+#endif
 	return tmpPath;
 }
 

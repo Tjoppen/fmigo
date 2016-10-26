@@ -5,6 +5,10 @@
 #include "common.h"
 #include "fmitcp.pb.h"
 #include <FMI2/fmi2_xml_variable.h>
+#ifndef WIN32
+//no unistd.h on Windows IIRC
+#include <unistd.h>
+#endif
 
 using namespace fmitcp;
 
@@ -33,6 +37,14 @@ Server::Server(string fmuPath, bool debugLogging, jm_log_level_enu_t logLevel, s
     return;
   }
 
+#ifndef WIN32
+  //better message for non-existing FMUs
+  if (access(m_fmuPath.c_str(), F_OK) == -1) {
+    m_logger.log(Logger::LOG_ERROR, "FMU does not exist: %s\n", m_fmuPath.c_str());
+    exit(1);
+  }
+#endif
+
   // Parse FMU
   // JM callbacks
   m_jmCallbacks.malloc = malloc;
@@ -44,17 +56,9 @@ Server::Server(string fmuPath, bool debugLogging, jm_log_level_enu_t logLevel, s
   m_jmCallbacks.context = 0;
   // working directory
   char* dir;
-  //This loop is needed because sometimes fmi_import_mk_temp_dir() fails.
-  //I'm not entirely sure why yet, but it might be that two fmi-tcp-servers
-  //started at the same time end up getting the same path from mktemp()
-  for (int x = 10;; x--) {
-      if ((dir = fmi_import_mk_temp_dir(&m_jmCallbacks, NULL, "fmitcp_"))) {
-          break;
-      }
-      if (x == 0) {
-          fprintf(stderr, "fmi_import_mk_temp_dir() failed after several attempts - giving up\n");
-          exit(1);
-      }
+  if (!(dir = fmi_import_mk_temp_dir(&m_jmCallbacks, NULL, "fmitcp_"))) {
+    fprintf(stderr, "fmi_import_mk_temp_dir() failed\n");
+    exit(1);
   }
   m_workingDir = dir; // convert to std::string
   free(dir);

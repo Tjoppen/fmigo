@@ -1,7 +1,26 @@
 cmake_minimum_required(VERSION 2.8)
 
+#suppress warning about libexpat.a
+cmake_policy(SET CMP0058 OLD)
+
+option(BUILD_FMUS "Build example FMUs in umit-fmus/?" ON)
+
 # Download/install protobuf, umfpack as needed
 if(WIN32)
+    add_definitions(-D_SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS) # required by protobuf-ext
+
+    if (MSVC14)
+        set(PROTOBUF_PROJECTS_DIR "msvc2015")
+        set(MSVC_TOOLCHAIN_VERSION "/p:VisualStudioVersion=14.0")
+    elseif (MSV12)
+        set(PROTOBUF_PROJECTS_DIR "msvc2013")
+        set(MSVC_TOOLCHAIN_VERSION "/p:VisualStudioVersion=12.0")
+    else (MSVC14)
+        # Assume there is only one toolchain installed and it is compatible with MSVC12
+        set(MSVC_TOOLCHAIN_VERSION "")
+        set(PROTOBUF_PROJECTS_DIR "msvc2013")
+    endif (MSVC14)
+
     include(ExternalProject)
 
     set(PROTOBUF_URL "https://github.com/google/protobuf/releases/download/v2.6.1/protobuf-2.6.1.zip")
@@ -14,9 +33,15 @@ if(WIN32)
         PREFIX "${PROTOBUF_PREFIX}"
         URL ${PROTOBUF_URL}
         URL_MD5 ${PROTOBUF_MD5}
-        CONFIGURE_COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/msvc2013/protobuf-2.6.1 ${PROTOBUF_DIR}
+        CONFIGURE_COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/${PROTOBUF_PROJECTS_DIR}/protobuf-2.6.1 ${PROTOBUF_DIR}
         BINARY_DIR "${PROTOBUF_DIR}/vsprojects"
-        BUILD_COMMAND msbuild protobuf.sln  /p:Configuration=${CMAKE_BUILD_TYPE}
+        # Only build required libs because test fails with MSVC14
+        # BUILD_COMMAND msbuild protobuf.sln /p:Configuration=${CMAKE_BUILD_TYPE} ${MSVC_TOOLCHAIN_VERSION}
+        BUILD_COMMAND msbuild libprotobuf.vcxproj /p:Configuration=${CMAKE_BUILD_TYPE} ${MSVC_TOOLCHAIN_VERSION}
+              COMMAND msbuild libprotoc.vcxproj /p:Configuration=${CMAKE_BUILD_TYPE} ${MSVC_TOOLCHAIN_VERSION}
+              COMMAND msbuild protoc.vcxproj /p:Configuration=${CMAKE_BUILD_TYPE} ${MSVC_TOOLCHAIN_VERSION}
+        # BUILD_COMMAND msbuild libprotoc.vcxproj /p:Configuration=${CMAKE_BUILD_TYPE} ${MSVC_TOOLCHAIN_VERSION}
+        # BUILD_COMMAND msbuild protoc.vcxproj /p:Configuration=${CMAKE_BUILD_TYPE} ${MSVC_TOOLCHAIN_VERSION}
         INSTALL_COMMAND ""
     )
 
@@ -52,7 +77,7 @@ if(WIN32)
         PREFIX ${JSONCPP_DIR}
         URL ${JSONCPP_URL}
         URL_MD5 ${JSONCPP_MD5}
-        BUILD_COMMAND msbuild jsoncpp.sln  /p:Configuration=${CMAKE_BUILD_TYPE}
+        BUILD_COMMAND msbuild jsoncpp.sln /p:Configuration=${CMAKE_BUILD_TYPE} ${MSVC_TOOLCHAIN_VERSION}
         INSTALL_COMMAND ""
     )
 
@@ -62,15 +87,15 @@ if(WIN32)
     set(HDF5_DIR "${CMAKE_CURRENT_BINARY_DIR}/hdf5")
     ExternalProject_Add(hdf5-ext
         PREFIX  ${HDF5_DIR}
-        URL     "http://www.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8.16/src/hdf5-1.8.16.zip"
-        URL_MD5 "5b50cdb2c0df1e0c3addaa24270393bb"
-        CONFIGURE_COMMAND ${CMAKE_COMMAND}         ${HDF5_DIR}/src/hdf5-ext -G ${CMAKE_GENERATOR}
-        BUILD_COMMAND     ${CMAKE_COMMAND} -E chdir ${HDF5_DIR}/src/hdf5-ext-build msbuild HDF5.sln /p:Configuration=${CMAKE_BUILD_TYPE}
+        URL     "http://www.hdfgroup.org/ftp/HDF5/current/src/CMake-hdf5-1.8.17.zip"
+        URL_MD5 "8cc32abfbe9cc8815386372783301257"
+        CONFIGURE_COMMAND ${CMAKE_COMMAND}          ${HDF5_DIR}/src/hdf5-ext/hdf5-1.8.17 -G ${CMAKE_GENERATOR}
+        BUILD_COMMAND     ${CMAKE_COMMAND} -E chdir ${HDF5_DIR}/src/hdf5-ext-build msbuild HDF5.sln /p:Configuration=${CMAKE_BUILD_TYPE} ${MSVC_TOOLCHAIN_VERSION}
         INSTALL_COMMAND   ""
     )
 
-    include_directories(${HDF5_DIR}/src/hdf5-ext/src)
-    include_directories(${HDF5_DIR}/src/hdf5-ext/hl/src)
+    include_directories(${HDF5_DIR}/src/hdf5-ext/hdf5-1.8.17/src)
+    include_directories(${HDF5_DIR}/src/hdf5-ext/hdf5-1.8.17/hl/src)
     include_directories(${HDF5_DIR}/src/hdf5-ext-build)
     link_directories(${HDF5_DIR}/src/hdf5-ext-build/bin/${CMAKE_BUILD_TYPE})
 
@@ -117,4 +142,7 @@ if (WIN32)
     add_dependencies(fmi-mpi-master jsoncpp-ext protobuf-ext hdf5-ext)
 endif ()
 
-add_subdirectory(umit-fmus)
+if (BUILD_FMUS)
+    add_subdirectory(umit-fmus)
+endif ()
+

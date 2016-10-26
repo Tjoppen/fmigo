@@ -142,17 +142,21 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.pb.h ${C
     COMMAND ${PROTOC} --cpp_out=. fmitcp.proto
     WORKING_DIRECTORY   ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp
     DEPENDS libprotobuf ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.proto)
+#can't depend on the generated files themselves because CMake is awful. create a custom target instead
+add_custom_target(fmitcp_pb DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.pb.cc)
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/src/master/control.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/src/master/control.pb.cc
     COMMAND ${PROTOC} --cpp_out=. control.proto
     WORKING_DIRECTORY   ${CMAKE_CURRENT_SOURCE_DIR}/src/master
     DEPENDS libprotobuf ${CMAKE_CURRENT_SOURCE_DIR}/src/master/control.proto)
+#same here
+add_custom_target(control_pb DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/master/control.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/src/master/control.pb.cc)
 
-add_dependencies(${TCP_MASTER_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/src/master/control.pb.h)
-add_dependencies(${TCP_SERVER_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.pb.h)
+add_dependencies(${TCP_MASTER_NAME} fmitcp_pb control_pb)
+add_dependencies(${TCP_SERVER_NAME} fmitcp_pb)
 if(NOT WIN32)
-    add_dependencies(${MPI_MASTER_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/src/master/control.pb.h)
-    add_dependencies(${MPI_SERVER_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.pb.h)
+    add_dependencies(${MPI_MASTER_NAME} fmitcp_pb control_pb)
+    add_dependencies(${MPI_SERVER_NAME} fmitcp_pb)
 endif()
 
 # TODO: Server manpage?

@@ -54,14 +54,14 @@ namespace fmitcp_master {
             fmu->sendMessage(str);
         }
 
-        //like send() except it blocks
-        void block(std::vector<FMIClient*> fmus, std::string str) {
+        //send() followed by wait() (blocking)
+        void sendWait(std::vector<FMIClient*> fmus, std::string str) {
             send(fmus, str);
             wait();
         }
 
-        //like block() but only for one FMU
-        void block(FMIClient *fmu, std::string str) {
+        //like sendWait() but only for one FMU (blocking)
+        void sendWait(FMIClient *fmu, std::string str) {
             send(fmu, str);
             wait();
         }

@@ -19,7 +19,7 @@ else
     ulimit -n 2048  #should be some value greater than 2*max(Nseq), probably a power of two too
 fi
 
-(cd articles/work-reports       && ./run_tests.sh)
-(cd fmu-examples/co_simulation  && ./run_tests.sh)
-(cd ${FMUS_DIR}/typeconvtest    && ./test_typeconv.sh)
+(cd articles/work-reports       && ( ./run_tests.sh  || ( echo "failed tests in work-reports" && return -1 ) ) )
+(cd fmu-examples/co_simulation  && ( ./run_tests.sh ||  ( echo "failted test in co_simulation" && return -1 ) ) )
+(cd ${FMUS_DIR}/typeconvtest    && ( ./test_typeconv.sh ||  ( echo "failed tests in typeconvtest" && return -1 ) ) )
 echo All tests OK

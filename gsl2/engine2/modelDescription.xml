@@ -24,31 +24,52 @@
   <ModelVariables>
     <!-- outputs -->
     <ScalarVariable
-        name="theta"
+        name="theta_out"
         valueReference="1"
         description="angle"
         causality="output">
       <Real />
     </ScalarVariable>
     <ScalarVariable
-        name="omega"
+        name="omega_out"
         valueReference="2"
         description="angular velocity"
         causality="output">
       <Real />
     </ScalarVariable>
     <ScalarVariable
-        name="alpha"
+        name="alpha_out"
         valueReference="3"
         description="angular acceleration"
+        causality="output">
+      <Real />
+    </ScalarVariable>
+    <ScalarVariable
+        name="tau_out"
+        valueReference="4"
+        description="output torque (from coupling spring)"
         causality="output">
       <Real />
     </ScalarVariable>
 
     <!-- inputs -->
     <ScalarVariable
-        name="tau_coupling"
-        valueReference="4"
+        name="theta_in"
+        valueReference="5"
+        description="angle input (for coupling)"
+        causality="output">
+      <Real />
+    </ScalarVariable>
+    <ScalarVariable
+        name="omega_in"
+        valueReference="6"
+        description="angular velocity input (for coupling)"
+        causality="output">
+      <Real />
+    </ScalarVariable>
+    <ScalarVariable
+        name="tau_in"
+        valueReference="7"
         description="coupling torque"
         causality="input"
         initial="exact">
@@ -58,7 +79,7 @@
     <!-- parameters -->
     <ScalarVariable
         name="theta0"
-        valueReference="5"
+        valueReference="8"
         description="initial angle"
         causality="parameter"
         variability="fixed">
@@ -66,7 +87,7 @@
     </ScalarVariable>
     <ScalarVariable
         name="omega0"
-        valueReference="6"
+        valueReference="9"
         description="initial angular velocity"
         causality="parameter"
         variability="fixed">
@@ -74,7 +95,7 @@
     </ScalarVariable>
     <ScalarVariable
         name="kp"
-        valueReference="7"
+        valueReference="10"
         description="P controller gain"
         causality="parameter"
         variability="fixed">
@@ -82,7 +103,7 @@
     </ScalarVariable>
     <ScalarVariable
         name="tau_max"
-        valueReference="8"
+        valueReference="11"
         description="Maximum torque"
         causality="parameter"
         variability="fixed">
@@ -90,7 +111,7 @@
     </ScalarVariable>
     <ScalarVariable
         name="omega_target"
-        valueReference="9"
+        valueReference="12"
         description="target angular velocity"
         causality="parameter"
         variability="fixed">
@@ -98,7 +119,7 @@
     </ScalarVariable>
     <ScalarVariable
         name="jinv"
-        valueReference="10"
+        valueReference="13"
         description="inverse moment of inertia"
         causality="parameter"
         variability="fixed">
@@ -106,7 +127,7 @@
     </ScalarVariable>
     <ScalarVariable
         name="k1"
-        valueReference="11"
+        valueReference="14"
         description="drag coefficient (applied to omega)"
         causality="parameter"
         variability="fixed">
@@ -114,11 +135,35 @@
     </ScalarVariable>
     <ScalarVariable
         name="k2"
-        valueReference="12"
+        valueReference="15"
         description="drag coefficient (applied to omega*abs(omega))"
         causality="parameter"
         variability="fixed">
       <Real start="0.1"/>
+    </ScalarVariable>
+    <ScalarVariable
+        name="k_in"
+        valueReference="16"
+        description="coupling spring constant"
+        causality="parameter"
+        variability="fixed">
+      <Real start="0"/>
+    </ScalarVariable>
+    <ScalarVariable
+        name="d_in"
+        valueReference="17"
+        description="coupling damping constant"
+        causality="parameter"
+        variability="fixed">
+      <Real start="0"/>
+    </ScalarVariable>
+    <ScalarVariable
+        name="integrate_dtheta"
+        valueReference="18"
+        description="derive substitute theta_in by integrating omega_in"
+        causality="parameter"
+        variability="fixed">
+      <Boolean start="false"/>
     </ScalarVariable>
 
     <ScalarVariable
@@ -136,6 +181,7 @@
       <Unknown index="1"/>
       <Unknown index="2"/>
       <Unknown index="3"/>
+      <Unknown index="4"/>
     </Outputs>
     <Derivatives/>
     <DiscreteStates/>

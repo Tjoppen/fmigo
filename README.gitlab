@@ -1,0 +1,26 @@
+To set up this project with GitLab CI, docker is needed. Getting the required
+docker image to build automagically is too much hassle for now, so it needs to
+be built manually on each runner. Run
+
+ docker build -t umit/ubuntu:1 .
+
+in this directory and register the runner after that as you normally would with
+GitLab CI. The image build process will also output the image's public RSA key,
+which should be copy-pasted to a Gitlab user with guest (read-only) access to
+the repo. Look for output that looks like this:
+
+  Step 8 : RUN cat ~/.ssh/id_rsa.pub
+   ---> Running in c1f0906ead98
+  ssh-rsa AAAAB3Nza[..snip..]4fhL8f gitlab-ci@87503d09d967
+   ---> 417a6b5a4793
+  Removing intermediate container c1f0906ead98
+  Successfully built 417a6b5a4793
+
+and copy the entire ssh-rsa line into Gitlab. This is needed since Gitlab CI
+doesn't copy submodules into the build, meaning they have to be fetched from
+inside the docker container. This may change in the future.
+
+In the future we might use something like dind (docker-in-docker) or
+docker sockets to have a separate "makeimage" build step that builds the images
+as needed (since docker caches images).
+

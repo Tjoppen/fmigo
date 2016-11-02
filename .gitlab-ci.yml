@@ -1,0 +1,42 @@
+---
+image: umit/ubuntu:1
+stages:
+  - build
+  - test
+
+before_script:
+  # Accept mimmi's public key, download required submodules.
+  # We need to do this because Gitlab CI doesn't yet copy the submodules
+  # into the build for us.
+  - echo "mimmi.math.umu.se ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCwPGabkLBOnkVMnGDezLttyBnKf3t5nTRdoimQhNdVC+jbiqzue/+9cnHmFMrZcdf8qGfOlH5MzqFrWh0Es3yHSyIxDRhdKNB1UblkG+VafAi94uOeH+ho6bb/QNAKAKrEtMbHgAHLsVufVlSPpYY2GvKw8yQ53K3qviZrCLmd4GSxsV3elu3EPspyJ4KDU9ZJDAdkfP9iY7LlbAj/EGKYzG0uX7rmuC7EULVSEzvbFoHxSwDkrDuSiwicaZoBvqkEfyYvyvZqa2OU813RSFh5DjHXPkh+oKBG/Yn79b951AKuLCRSBhYmtbY42wVduPoQfEHE+prfwBE6Lv69ZhiN" >> ~/.ssh/known_hosts
+  - git submodule init
+  - git submodule update --recursive
+
+umit:
+  stage: build
+  script:
+    - mkdir -p build
+    - cd build
+    - cmake .. -G Ninja
+    - ninja install
+  artifacts:
+    paths:
+      - build/install/bin/*
+      #- umit-fmus/*/*.fmu
+  tags:
+    - linux
+    - docker
+
+test:
+  stage: test
+  script:
+    # Re-build FMUs
+    # This wouldn't be needed if we could mark all .fmu files as artifacts
+    - mkdir umit-fmus/build
+    - cd umit-fmus/build
+    - cmake .. -G Ninja
+    - ninja
+    - cd ../..
+    - bash run_tests.sh
+  dependencies:
+    - umit

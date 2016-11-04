@@ -58,7 +58,7 @@ class FMU:
         '''
         for conn in self.connectors:
             # Look at inputs, work back toward outputs
-            if conn.attrib[CAUSALITY] == 'input':
+            if conn.attrib[self.system.kindKey] == 'input':
                 global fmus, systems
                 ttl = len(fmus) + len(systems)
                 sys = self.system
@@ -121,15 +121,25 @@ class System:
         #print tree.getroot()
         
         #tree.register_namespace('ssd', 'http://www.pmsf.net/xsd/SystemStructureDescriptionDraft')
+        if 'version' in tree.getroot().attrib:
+            self.version = tree.getroot().attrib['version']
+        else:
+            self.version = 'Draft20150721'
+            printf('WARNING: version not set in root, assuming ' + self.version)
+
+        #'causality' changed to 'kind' on 2015-10-21
+        self.kindKey = 'kind' if self.version != 'Draft20151021' else 'causality'
+
         sys = tree.getroot().findall('ssd:System', ns)
         if len(sys) != 1:
             print( 'Must have exactly one System')
             exit(1)
         s = sys[0]
 
-        connectors  = s.find('ssd:Connectors',  ns).findall('ssd:Connector',  ns)
-        connections = s.find('ssd:Connections', ns).findall('ssd:Connection', ns)
-        components  = s.find('ssd:Elements',    ns).findall('ssd:Component',  ns)
+        #spec allows these to not exist
+        connectors  = s.find('ssd:Connectors',  ns).findall('ssd:Connector',  ns) if s.find('ssd:Connectors',  ns)  != None else []
+        connections = s.find('ssd:Connections', ns).findall('ssd:Connection', ns) if s.find('ssd:Connections',  ns) != None else []
+        components  = s.find('ssd:Elements',    ns).findall('ssd:Component',  ns) if s.find('ssd:Elements',  ns)    != None else []
 
         self.name = s.attrib['name']
         #print self.name + ', parent=' + (parent.name if parent != None else 'None')
@@ -137,12 +147,14 @@ class System:
         self.inputs  = {}
         self.outputs = {}
         for conn in connectors:
-            if conn.attrib[CAUSALITY] == 'input':
+            if conn.attrib[self.kindKey] == 'input':
                 self.inputs[conn.attrib['name']] = conn
-            elif conn.attrib[CAUSALITY] == 'output':
+            elif conn.attrib[self.kindKey] == 'output':
                 self.outputs[conn.attrib['name']] = conn
+            elif conn.attrib[self.kindKey] in ['parameter', 'calculatedParameter', 'inout']:
+                print('WARNING: Unimplemented connector kind: ' + conn.attrib[self.kindKey])
             else:
-                print('Unknown causality: ' + conn.attrib[CAUSALITY])
+                print('Unknown connector kind: ' + conn.attrib[self.kindKey])
                 exit(1)
 
         # Bi-directional

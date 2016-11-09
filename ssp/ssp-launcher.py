@@ -110,10 +110,9 @@ class System:
     A System is a tree of Systems and FMUs
     In each System there are Connections between 
     '''
-    def __init__(self, d, filename, parent=None):
-        global systems
-        systems.append(self)
 
+    @classmethod
+    def fromfile(cls, d, filename, parent=None):
         path = os.path.join(d, filename)
         #print 'parse_ssd: ' + path
         tree = ET.parse(path)
@@ -122,30 +121,41 @@ class System:
         
         #tree.register_namespace('ssd', 'http://www.pmsf.net/xsd/SystemStructureDescriptionDraft')
         if 'version' in tree.getroot().attrib:
-            self.version = tree.getroot().attrib['version']
+            version = tree.getroot().attrib['version']
         else:
-            self.version = 'Draft20150721'
+            version = 'Draft20150721'
             printf('WARNING: version not set in root, assuming ' + self.version)
-
-        #'causality' changed to 'kind' on 2015-10-21
-        self.kindKey = 'kind' if self.version != 'Draft20151021' else 'causality'
 
         sys = tree.getroot().findall('ssd:System', ns)
         if len(sys) != 1:
             print( 'Must have exactly one System')
             exit(1)
         s = sys[0]
+        return cls(s, version, parent)
+
+    @classmethod
+    def fromxml(cls, s, version, parent):
+        return cls(s, version, parent)
+
+    def __init__(self, s, version, parent):
+        global systems
+        systems.append(self)
+
+        self.version = version
+        self.name = s.attrib['name']
+        self.parent = parent
+        self.inputs  = {}
+        self.outputs = {}
+
+        #'causality' changed to 'kind' on 2015-10-21
+        self.kindKey = 'kind' if self.version != 'Draft20151021' else 'causality'
 
         #spec allows these to not exist
         connectors  = s.find('ssd:Connectors',  ns).findall('ssd:Connector',  ns) if s.find('ssd:Connectors',  ns)  != None else []
         connections = s.find('ssd:Connections', ns).findall('ssd:Connection', ns) if s.find('ssd:Connections',  ns) != None else []
         components  = s.find('ssd:Elements',    ns).findall('ssd:Component',  ns) if s.find('ssd:Elements',  ns)    != None else []
+        subsystems  = s.find('ssd:Elements',    ns).findall('ssd:System',     ns) if s.find('ssd:Elements',  ns)    != None else []
 
-        self.name = s.attrib['name']
-        #print self.name + ', parent=' + (parent.name if parent != None else 'None')
-        self.parent = parent
-        self.inputs  = {}
-        self.outputs = {}
         for conn in connectors:
             if conn.attrib[self.kindKey] == 'input':
                 self.inputs[conn.attrib['name']] = conn
@@ -178,7 +188,7 @@ class System:
 
             if t == 'application/x-ssp-package':
                 d2 = os.path.join(d, os.path.splitext(comp.attrib['source'])[0])
-                child = System(d2, SSD_NAME, self)
+                child = System.fromfile(d2, SSD_NAME, self)
                 #print 'Added subsystem ' + child.name
                 self.children[comp.attrib['name']] = child
             elif t == 'application/x-fmu-sharedlibrary':
@@ -192,6 +202,10 @@ class System:
             else:
                 print('unknown type: ' + t)
                 exit(1)
+
+        for subsystem in subsystems:
+            ss = System.fromxml(subsystem, self.version, self)
+            self.children[subsystem.attrib['name']] = ss
 
     def get_name(self):
         return self.parent.get_name() + '::' + self.name if self.parent != None else self.name
@@ -214,7 +228,7 @@ def unzip_ssp(dest_dir, ssp_filename):
                 z.extract(MODELDESCRIPTION, d)
 
 unzip_ssp(d, sys.argv[1])
-root = System(d, SSD_NAME)
+root = System.fromfile(d, SSD_NAME)
 
 # Figure out connections, parse modelDescriptions
 connectionmultimap = {} # Multimap of outputs to inputs

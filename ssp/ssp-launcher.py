@@ -90,14 +90,14 @@ class FMU:
                         key = (fmu.id, key[1])
                         add_multimap_value(connectionmultimap, key, value)
                         break
-                    elif key[0] in sys.children:
+                    elif key[0] in sys.subsystems:
                         #print 'down'
-                        sys = sys.children[key[0]]
+                        sys = sys.subsystems[key[0]]
                         key = ('', key[1])
                     else:
                         print('Key %s not found in system %s' % (str(key), sys.name))
                         print (sys.fmus)
-                        print (sys.children)
+                        print (sys.subsystems)
                         exit(1)
 
                     ttl -= 1
@@ -179,7 +179,7 @@ class System:
 
         #print self.connections
 
-        self.children = {}
+        self.subsystems = {}
         self.fmus     = {}
         for comp in components:
             #print comp
@@ -190,7 +190,7 @@ class System:
                 d2 = os.path.join(d, os.path.splitext(comp.attrib['source'])[0])
                 child = System.fromfile(d2, SSD_NAME, self)
                 #print 'Added subsystem ' + child.name
-                self.children[comp.attrib['name']] = child
+                self.subsystems[comp.attrib['name']] = child
             elif t == 'application/x-fmu-sharedlibrary':
                 pass #print 
                 self.fmus[comp.attrib['name']] = FMU(
@@ -205,7 +205,7 @@ class System:
 
         for subsystem in subsystems:
             ss = System.fromxml(subsystem, self.version, self)
-            self.children[subsystem.attrib['name']] = ss
+            self.subsystems[subsystem.attrib['name']] = ss
 
     def get_name(self):
         return self.parent.get_name() + '::' + self.name if self.parent != None else self.name

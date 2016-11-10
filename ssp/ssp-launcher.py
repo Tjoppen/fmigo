@@ -105,6 +105,36 @@ class FMU:
                         print ('SSP contains a loop!')
                         exit(1)
 
+class SystemStructure:
+    def __init__(self, root):
+        units  = root.find('ssd:Units',  ns).findall('ssd:Unit',  ns) if root.find('ssd:Units',  ns)  != None else []
+
+        # Units keyed on name. Like {name: {'units': (units,), 'factor': 1, 'offset': 0}}
+        self.unitsbyname = {}
+
+        # Units keyed on units. Like {(units,): {name: {'factor': 1, 'offset': 0}}}
+        self.unitsbyunits = {}
+
+        for u in units:
+            name = u.attrib['name']
+            bu = u.find('ssd:BaseUnit', ns)
+            key = tuple([int(bu.attrib[n]) if n in bu.attrib else 0 for n in ['kg','m','s','A','K','mol','cd','rad']])
+
+            #want factor and offset
+            factor = float(bu.attrib['factor']) if 'factor' in bu.attrib else 1
+            offset = float(bu.attrib['offset']) if 'offset' in bu.attrib else 0
+
+            #put in the right spots
+            self.unitsbyname[name] = {'units': key, 'factor': factor, 'offset': offset}
+
+            if not key in self.unitsbyunits:
+                self.unitsbyunits[key] = {}
+
+            self.unitsbyunits[key][name] = {'factor': factor, 'offset': offset}
+
+        #print('unitsbyname: '+str(self.unitsbyname))
+        #print('unitsbyunits: '+str(self.unitsbyunits))
+
 class System:
     '''
     A System is a tree of Systems and FMUs
@@ -126,24 +156,27 @@ class System:
             version = 'Draft20150721'
             printf('WARNING: version not set in root, assuming ' + self.version)
 
+        structure = SystemStructure(tree.getroot())
+
         sys = tree.getroot().findall('ssd:System', ns)
         if len(sys) != 1:
             print( 'Must have exactly one System')
             exit(1)
         s = sys[0]
-        return cls(s, version, parent)
+        return cls(s, version, parent, structure)
 
     @classmethod
     def fromxml(cls, s, version, parent):
-        return cls(s, version, parent)
+        return cls(s, version, parent, parent.structure)
 
-    def __init__(self, s, version, parent):
+    def __init__(self, s, version, parent, structure):
         global systems
         systems.append(self)
 
         self.version = version
         self.name = s.attrib['name']
         self.parent = parent
+        self.structure = structure
         self.inputs  = {}
         self.outputs = {}
 

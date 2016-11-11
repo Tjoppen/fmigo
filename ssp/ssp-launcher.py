@@ -19,12 +19,17 @@ SSD_NAME='SystemStructure.ssd'
 CAUSALITY='causality'
 MODELDESCRIPTION='modelDescription.xml'
 
-ns = {'ssd': 'http://www.pmsf.net/xsd/SystemStructureDescriptionDraft'}
+ns = {
+    'ssd': 'http://www.pmsf.net/xsd/SystemStructureDescriptionDraft',
+    'ssv': 'http://www.pmsf.net/xsd/SystemStructureParameterValuesDraft',
+    'ssm': 'http://www.pmsf.net/xsd/SystemStructureParameterMappingDraft',
+}
 d = tempfile.mkdtemp(prefix='ssp')
 print(d)
 
 fmus = []
 systems = []
+parameters = {}
 
 # Adds (key,value) to given multimap.
 # Each (key,value) may appear only once.
@@ -106,6 +111,42 @@ def traverse(startsystem, startkey, target_kind, use_sigdictrefs):
 
 def find_elements(s, first, second):
     return s.find(first,  ns).findall(second,  ns) if s.find(first,  ns)  != None else []
+
+def parse_parameter_bindings(path, baseprefix, parameterbindings):
+    for pb in parameterbindings:
+        prefix = baseprefix
+        if 'prefix' in pb.attrib:
+            prefix = prefix + pb.attrib['prefix']
+
+        print('prefix: '+prefix)
+        pvs = pb.findall('ssd:ParameterValues', ns)
+
+        if 'source' in pb.attrib:
+            if len(pvs) != 0:
+                print('ParameterBindings must have source or ParameterValues, not both')
+                exit(1)
+
+            #read from file
+            tree = ET.parse(os.path.join(path, pb.attrib['source']))
+            pvs = find_elements(tree.getroot(), 'ssv:Parameters', 'ssv:Parameter')
+            print('Parsed %i params' % len(pvs))
+        else:
+            if len(pvs) == 0:
+                print('ParameterBindings missing both source and ParameterValues')
+                exit(1)
+
+            #don't know whether it's ParameterValues -> Parameters -> Parameter or just ParameterValues -> Parameter
+            #the spec doesn't help
+            print('Parsing ParameterValues is TODO, for lack of examples or complete schema as of 2016-11-11')
+            exit(1)
+
+        #deal with any ssm
+        pm = pb.find('ssd:ParameterMapping', ns)
+        if pm != None:
+            print("found ParameterMapping, but can't handle it yet")
+
+        print('TODO: parse pvs into actual parameters')
+        exit(1)
 
 class FMU:
     def __init__(self, name, path, connectors, system):
@@ -198,16 +239,17 @@ class System:
             print( 'Must have exactly one System')
             exit(1)
         s = sys[0]
-        return cls(s, version, parent, structure)
+        return cls(d, s, version, parent, structure)
 
     @classmethod
-    def fromxml(cls, s, version, parent):
-        return cls(s, version, parent, parent.structure)
+    def fromxml(cls, d, s, version, parent):
+        return cls(d, s, version, parent, parent.structure)
 
-    def __init__(self, s, version, parent, structure):
+    def __init__(self, d, s, version, parent, structure):
         global systems
         systems.append(self)
 
+        self.d = d
         self.version = version
         self.name = s.attrib['name']
         self.parent = parent
@@ -225,6 +267,7 @@ class System:
         subsystems  = find_elements(s, 'ssd:Elements',              'ssd:System')
         signaldicts = find_elements(s, 'ssd:SignalDictionaries',    'ssd:SignalDictionary')
         sigdictrefs = find_elements(s, 'ssd:Elements',              'ssd:SignalDictionaryReference')
+        params      = find_elements(s, 'ssd:ParameterBindings',     'ssd:ParameterBinding')
 
         for conn in connectors:
             if conn.attrib[self.kindKey] == 'input':
@@ -255,6 +298,9 @@ class System:
             #print comp
             t = comp.attrib['type']
             #print t
+
+            cparams = find_elements(comp, 'ssd:ParameterBindings', 'ssd:ParameterBinding')
+            parse_parameter_bindings(self.d, self.get_name() + '.' + comp.attrib['name'] + '.', cparams)
 
             if t == 'application/x-ssp-package':
                 d2 = os.path.join(d, os.path.splitext(comp.attrib['source'])[0])
@@ -295,8 +341,10 @@ class System:
             self.sigdictrefs[sdr.attrib['name']] = (sdr.attrib['dictionary'], drs)
         #print('SignalDictionaryReference: ' + str(self.sigdictrefs))
 
+        parse_parameter_bindings(self.d, self.get_name() + '.', params)
+
         for subsystem in subsystems:
-            ss = System.fromxml(subsystem, self.version, self)
+            ss = System.fromxml(d, subsystem, self.version, self)
             self.subsystems[subsystem.attrib['name']] = ss
 
     def find_signal_dictionary(self, dictionary_name):
@@ -345,7 +393,7 @@ class System:
             subsystem.resolve_dictionary_inputs()
 
     def get_name(self):
-        return self.parent.get_name() + '::' + self.name if self.parent != None else self.name
+        return self.parent.get_name() + '.' + self.name if self.parent != None else self.name
 
 def unzip_ssp(dest_dir, ssp_filename):
     #print 'unzip_ssp: ' + dest_dir + ' ' + ssp_filename

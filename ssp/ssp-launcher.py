@@ -104,6 +104,9 @@ def traverse(startsystem, startkey, target_kind, use_sigdictrefs):
             print ('SSP contains a loop!')
             exit(1)
 
+def find_elements(s, first, second):
+    return s.find(first,  ns).findall(second,  ns) if s.find(first,  ns)  != None else []
+
 class FMU:
     def __init__(self, name, path, connectors, system):
         self.name = name
@@ -216,12 +219,12 @@ class System:
         self.kindKey = 'kind' if self.version != 'Draft20151021' else 'causality'
 
         #spec allows these to not exist
-        connectors  = s.find('ssd:Connectors',  ns).findall('ssd:Connector',  ns) if s.find('ssd:Connectors',  ns)  != None else []
-        connections = s.find('ssd:Connections', ns).findall('ssd:Connection', ns) if s.find('ssd:Connections',  ns) != None else []
-        components  = s.find('ssd:Elements',    ns).findall('ssd:Component',  ns) if s.find('ssd:Elements',  ns)    != None else []
-        subsystems  = s.find('ssd:Elements',    ns).findall('ssd:System',     ns) if s.find('ssd:Elements',  ns)    != None else []
-        signaldicts = s.find('ssd:SignalDictionaries',  ns).findall('ssd:SignalDictionary',         ns) if s.find('ssd:SignalDictionaries', ns) != None else []
-        sigdictrefs = s.find('ssd:Elements',            ns).findall('ssd:SignalDictionaryReference',ns) if s.find('ssd:Elements',           ns) != None else []
+        connectors  = find_elements(s, 'ssd:Connectors',            'ssd:Connector')
+        connections = find_elements(s, 'ssd:Connections',           'ssd:Connection')
+        components  = find_elements(s, 'ssd:Elements',              'ssd:Component')
+        subsystems  = find_elements(s, 'ssd:Elements',              'ssd:System')
+        signaldicts = find_elements(s, 'ssd:SignalDictionaries',    'ssd:SignalDictionary')
+        sigdictrefs = find_elements(s, 'ssd:Elements',              'ssd:SignalDictionaryReference')
 
         for conn in connectors:
             if conn.attrib[self.kindKey] == 'input':

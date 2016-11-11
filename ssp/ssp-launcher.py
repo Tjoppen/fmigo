@@ -37,11 +37,82 @@ def add_multimap_value(multimap, key, value):
     else:
         multimap[key] = set([value])
 
+def traverse(startsystem, startkey, target_kind, use_sigdictrefs):
+    global fmus, systems
+    ttl = len(fmus) + len(systems)
+    sys = startsystem
+    key = startkey
+
+    #TODO: deal with unit conversion
+    factor = 1
+    offset = 0
+    #print('%s.%s (unit=%s)' % (self.get_name(), conn.attrib['name'], str(unit)))
+
+    while True:
+        #print 'key = ' + str(key) + ', sys = ' + sys.name
+        if not key in sys.connections:
+            print( 'No connection %s in system %s' % (str(key), sys.name))
+            return None, None
+            # exit(1)
+
+        #print('sys.sigdictrefs: ' + str(sys.sigdictrefs))
+        key = sys.connections[key]
+        if key[0] == '':
+            # Connection leads to parent node
+            if sys.parent == None:
+                # Can't go any further - issue a warning and move on
+                print ('WARNING: ' + str(startkey) + ' takes data from ' +
+                       key[1] + ' of root system, which no output connects to - skipping')
+                return None, None
+
+            #print 'up'
+            key = (sys.name, key[1])
+            sys = sys.parent
+        elif key[0] in sys.fmus:
+            fmu = sys.fmus[key[0]]
+
+            #correct kind?
+            if fmu.connectors[key[1]].attrib[sys.kindKey] == target_kind:
+                return fmu, key[1]
+            else:
+                return None, None
+        elif key[0] in sys.subsystems:
+            #print 'down'
+            sys = sys.subsystems[key[0]]
+            key = ('', key[1])
+        elif use_sigdictrefs and key[0] in sys.sigdictrefs and key[1] in sys.sigdictrefs[key[0]][1]:
+            #we're pointed to a signal dictionary
+            #find the corresponding output
+            d = sys.sigdictrefs[key[0]]
+            dictionary_name = d[0]
+            signaldict = sys.find_signal_dictionary(dictionary_name)
+            de = signaldict[key[1]]
+
+            if de[1] == None:
+                print('SignalDictionary "%" has no output signal connected to it' % dictionary_name)
+                exit(1)
+
+            return de[1], de[2]
+        else:
+            print('Key %s of kind %s not found in system %s' % (str(key), target_kind, sys.name))
+            print (sys.fmus)
+            print (sys.subsystems)
+            exit(1)
+
+        ttl -= 1
+        if ttl <= 0:
+            print ('SSP contains a loop!')
+            exit(1)
+
 class FMU:
     def __init__(self, name, path, connectors, system):
         self.name = name
         self.path = path
-        self.connectors = connectors
+        self.connectors = {}
+
+        for conn in connectors:
+            self.connectors[conn.attrib['name']] = conn
+
         self.system = system
 
         global fmus
@@ -56,54 +127,15 @@ class FMU:
         '''
         Adds connections for this FMU to other FMUs in the System tree to the given connections multimap
         '''
-        for conn in self.connectors:
+        for name,conn in self.connectors.iteritems():
             # Look at inputs, work back toward outputs
             if conn.attrib[self.system.kindKey] == 'input':
-                global fmus, systems
-                ttl = len(fmus) + len(systems)
-                sys = self.system
-                key = (self.name, conn.attrib['name'])
-                #print self.get_name() + '.' + conn.attrib['name']
-
-                while True:
-                    #print 'key = ' + str(key) + ', sys = ' + sys.name
-                    if not key in sys.connections:
-                        print( 'No connection %s in system %s' % (str(key), self.system.name))
-                        break
-                        # exit(1)
-
-                    key = sys.connections[key]
-                    if key[0] == '':
-                        # Connection leads to parent node
-                        if sys.parent == None:
-                            # Can't go any further - issue a warning and move on
-                            print ('WARNING: ' + self.get_name() + '.' + conn.attrib['name'] + ' takes data from ' +
-                                   key[1] + ' of root system, which no output connects to - skipping')
-                            break
-
-                        #print 'up'
-                        key = (sys.name, key[1])
-                        sys = sys.parent
-                    elif key[0] in sys.fmus:
-                        fmu = sys.fmus[key[0]]
-                        value = (self.id, conn.attrib['name'])
-                        key = (fmu.id, key[1])
-                        add_multimap_value(connectionmultimap, key, value)
-                        break
-                    elif key[0] in sys.subsystems:
-                        #print 'down'
-                        sys = sys.subsystems[key[0]]
-                        key = ('', key[1])
-                    else:
-                        print('Key %s not found in system %s' % (str(key), sys.name))
-                        print (sys.fmus)
-                        print (sys.subsystems)
-                        exit(1)
-
-                    ttl -= 1
-                    if ttl <= 0:
-                        print ('SSP contains a loop!')
-                        exit(1)
+                fmu, fmu_variable = traverse(self.system, (self.name, name), 'output', True)
+                if fmu != None:
+                    unit = conn[0].attrib['unit'] if len(conn) > 0 else None
+                    key = (fmu.id, fmu_variable)
+                    value = (self.id, name)
+                    add_multimap_value(connectionmultimap, key, value)
 
 class SystemStructure:
     def __init__(self, root):
@@ -188,6 +220,8 @@ class System:
         connections = s.find('ssd:Connections', ns).findall('ssd:Connection', ns) if s.find('ssd:Connections',  ns) != None else []
         components  = s.find('ssd:Elements',    ns).findall('ssd:Component',  ns) if s.find('ssd:Elements',  ns)    != None else []
         subsystems  = s.find('ssd:Elements',    ns).findall('ssd:System',     ns) if s.find('ssd:Elements',  ns)    != None else []
+        signaldicts = s.find('ssd:SignalDictionaries',  ns).findall('ssd:SignalDictionary',         ns) if s.find('ssd:SignalDictionaries', ns) != None else []
+        sigdictrefs = s.find('ssd:Elements',            ns).findall('ssd:SignalDictionaryReference',ns) if s.find('ssd:Elements',           ns) != None else []
 
         for conn in connectors:
             if conn.attrib[self.kindKey] == 'input':
@@ -236,9 +270,76 @@ class System:
                 print('unknown type: ' + t)
                 exit(1)
 
+        self.signaldicts = {}
+        for sigdict in signaldicts:
+            des = {}
+            for de in sigdict.findall('ssd:DictionaryEntry', ns):
+                #NOTE: de[0].tag is the type of the entry, but we don't really need it
+                #the second and third entry in the tuple are the FMU and connector on which the signal source is available
+                des[de.attrib['name']] = (de[0].attrib['unit'], None, '')
+            self.signaldicts[sigdict.attrib['name']] = des
+        #print('SignalDictionaries: ' + str(self.signaldicts))
+
+        self.sigdictrefs = {}
+        for sdr in sigdictrefs:
+            drs = {}
+            conns = sdr.find('ssd:Connectors', ns).findall('ssd:Connector') if sdr.find('ssd:Connectors', ns) != None else []
+            for conn in conns:
+                if conn.attrib['kind'] != 'inout':
+                    print('Only inout connectors supports in SignalDictionaryReferences for now')
+                    exit(1)
+                drs[conn.attrib['name']] = conn[0].attrib['unit']
+            self.sigdictrefs[sdr.attrib['name']] = (sdr.attrib['dictionary'], drs)
+        #print('SignalDictionaryReference: ' + str(self.sigdictrefs))
+
         for subsystem in subsystems:
             ss = System.fromxml(subsystem, self.version, self)
             self.subsystems[subsystem.attrib['name']] = ss
+
+    def find_signal_dictionary(self, dictionary_name):
+        sys = self
+        while True:
+            if dictionary_name in sys.signaldicts:
+                #print('found the actual dict in system ' + sys.name)
+                return sys.signaldicts[dictionary_name]
+
+            sys = sys.parent
+
+            if sys == None:
+                #we're assuming that dictionaries exist somewhere straight up in the hierarchy, never in a sibling/child system
+                #this may change if we find a counterexample in the wild
+                print('Failed to find SignalDictionary "%s" starting at System "%s"' % (dictionary_name, self.name))
+                exit(1)
+
+    def resolve_dictionary_inputs(self):
+        #for each signal dictionary, find where it is referenced and if that reference is connected to by an output
+        #this because multiple inputs can connect to a dictionary, but only one output can be connected
+        for name,(dictionary_name,drs) in self.sigdictrefs.iteritems():
+            #print('name: ' + name)
+            #print('dict: ' + dictionary)
+            #print('drs: ' + str(drs))
+
+            for key,unit in drs.iteritems():
+                #print('traversing from ' + str((name, key)))
+                fmu, fmu_variable = traverse(self, (name, key), 'output', False)
+
+                if fmu != None:
+                    #found it!
+                    #now find the actual signal dictionary so everyone can find the output
+                    #print(str((dictionary_name, key)) + ' <-- ' + str((fmu.id,fmu_variable)))
+
+                    signaldict = self.find_signal_dictionary(dictionary_name)
+                    de = signaldict[key]
+
+                    if de[1] != None:
+                        print('Dictionary %s has more than one output connected to %s' % (dictionary_name, key))
+                        exit(1)
+
+                    #put the FMU and variable name in the dict
+                    signaldict[key] = (de[0], fmu, fmu_variable)
+
+        for name,subsystem in self.subsystems.iteritems():
+            subsystem.resolve_dictionary_inputs()
 
     def get_name(self):
         return self.parent.get_name() + '::' + self.name if self.parent != None else self.name
@@ -262,6 +363,8 @@ def unzip_ssp(dest_dir, ssp_filename):
 
 unzip_ssp(d, sys.argv[1])
 root = System.fromfile(d, SSD_NAME)
+
+root.resolve_dictionary_inputs()
 
 # Figure out connections, parse modelDescriptions
 connectionmultimap = {} # Multimap of outputs to inputs

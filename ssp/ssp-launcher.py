@@ -118,7 +118,7 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
         if 'prefix' in pb.attrib:
             prefix = prefix + pb.attrib['prefix']
 
-        print('prefix: '+prefix)
+        #print('prefix: '+prefix)
         pvs = pb.findall('ssd:ParameterValues', ns)
 
         if 'source' in pb.attrib:
@@ -129,7 +129,7 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
             #read from file
             tree = ET.parse(os.path.join(path, pb.attrib['source']))
             pvs = find_elements(tree.getroot(), 'ssv:Parameters', 'ssv:Parameter')
-            print('Parsed %i params' % len(pvs))
+            #print('Parsed %i params' % len(pvs))
         else:
             if len(pvs) == 0:
                 print('ParameterBindings missing both source and ParameterValues')
@@ -140,13 +140,78 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
             print('Parsing ParameterValues is TODO, for lack of examples or complete schema as of 2016-11-11')
             exit(1)
 
+        for pv in pvs:
+            r = pv.find('ssv:Real', ns)
+            i = pv.find('ssv:Integer', ns)
+            b = pv.find('ssv:Boolean', ns)
+            s = pv.find('ssv:String', ns)
+            e = pv.find('ssv:Enumeration', ns)
+            name = prefix+pv.attrib['name']
+
+            if r != None:
+                if 'unit' in r.attrib:
+                    print('Not dealing with parameters with units yet')
+                    exit(1)
+
+                parameters[name] = {
+                    'type': 'r',
+                    'value': float(r.attrib['value']),
+                }
+            elif i != None:
+                parameters[name] = {
+                    'type': 'i',
+                    'value': int(i.attrib['value']),
+                }
+            elif b != None:
+                parameters[name] = {
+                    'type': 'b',
+                    'value': b.attrib['value'], #keep booleans as-is
+                }
+            elif s != None:
+                parameters[name] = {
+                    'type': 's',
+                    'value': s.attrib['value'],
+                }
+            elif e != None:
+                print('Enumerations not supported')
+                exit(1)
+            else:
+                print('Unsupported parameter type: ' + str(pv[0].tag))
+                exit(1)
+
+
         #deal with any ssm
         pm = pb.find('ssd:ParameterMapping', ns)
         if pm != None:
-            print("found ParameterMapping, but can't handle it yet")
+            if not 'source' in pm.attrib:
+                print('"source" not set in ParameterMapping. In-line PMs not supported yet')
+                exit(1)
 
-        print('TODO: parse pvs into actual parameters')
-        exit(1)
+            tree = ET.parse(os.path.join(path, pm.attrib['source']))
+            mes = tree.getroot().findall('ssm:MappingEntry', ns)
+
+            for me in mes:
+                source = prefix+me.attrib['source']
+                target = prefix+me.attrib['target']
+
+                p = parameters[source]
+                del parameters[source]
+
+                lt = me.find('ssm:LinearTransformation', ns)
+                if lt != None:
+                    factor = float(lt.attrib['factor'])
+                    offset = float(lt.attrib['offset'])
+
+                    if p['type'] != 'r':
+                        print('LinearTransformation only supported in Real')
+                        exit(1)
+
+                    p['value'] = p['value'] * factor + offset
+                elif len(me) > 0:
+                    print("Found MappingEntry with sub-element which isn't LinearTransformation, which is not yet supported")
+                    exit(1)
+
+                parameters[target] = p
 
 class FMU:
     def __init__(self, name, path, connectors, system):
@@ -299,9 +364,6 @@ class System:
             t = comp.attrib['type']
             #print t
 
-            cparams = find_elements(comp, 'ssd:ParameterBindings', 'ssd:ParameterBinding')
-            parse_parameter_bindings(self.d, self.get_name() + '.' + comp.attrib['name'] + '.', cparams)
-
             if t == 'application/x-ssp-package':
                 d2 = os.path.join(d, os.path.splitext(comp.attrib['source'])[0])
                 child = System.fromfile(d2, SSD_NAME, self)
@@ -318,6 +380,10 @@ class System:
             else:
                 print('unknown type: ' + t)
                 exit(1)
+
+            #parse parameters after subsystems so their values get overriden properly
+            cparams = find_elements(comp, 'ssd:ParameterBindings', 'ssd:ParameterBinding')
+            parse_parameter_bindings(self.d, self.get_name() + '.' + comp.attrib['name'] + '.', cparams)
 
         self.signaldicts = {}
         for sigdict in signaldicts:
@@ -341,11 +407,12 @@ class System:
             self.sigdictrefs[sdr.attrib['name']] = (sdr.attrib['dictionary'], drs)
         #print('SignalDictionaryReference: ' + str(self.sigdictrefs))
 
-        parse_parameter_bindings(self.d, self.get_name() + '.', params)
-
         for subsystem in subsystems:
             ss = System.fromxml(d, subsystem, self.version, self)
             self.subsystems[subsystem.attrib['name']] = ss
+
+        #parse parameters after subsystems so their values get overriden properly
+        parse_parameter_bindings(self.d, self.get_name() + '.', params)
 
     def find_signal_dictionary(self, dictionary_name):
         sys = self
@@ -416,6 +483,12 @@ unzip_ssp(d, sys.argv[1])
 root = System.fromfile(d, SSD_NAME)
 
 root.resolve_dictionary_inputs()
+
+for key,value in parameters.iteritems():
+    parts = key.split('.')
+    fmuname = '.'.join(parts[0:-1])
+    paramname = parts[-1]
+    #print(fmuname+': '+paramname+'='+str(value))
 
 # Figure out connections, parse modelDescriptions
 connectionmultimap = {} # Multimap of outputs to inputs

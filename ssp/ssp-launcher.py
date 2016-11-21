@@ -77,7 +77,7 @@ def traverse(startsystem, startkey, target_kind, use_sigdictrefs):
             fmu = sys.fmus[key[0]]
 
             #correct kind?
-            if fmu.connectors[key[1]].attrib[sys.kindKey] == target_kind:
+            if fmu.connectors[key[1]]['kind'] == target_kind:
                 return fmu, key[1]
             else:
                 return None, None
@@ -109,29 +109,51 @@ def traverse(startsystem, startkey, target_kind, use_sigdictrefs):
             print ('SSP contains a loop!')
             exit(1)
 
+def get_attrib(s, name, default=None):
+    if name in s.attrib:
+        ret = s.attrib[name]
+        del s.attrib[name]
+        return ret
+    else:
+        if default == None:
+            print('get_attrib(): missing required attribute ' + name)
+            exit(1)
+        return default
+
+def remove_if_empty(parent, node):
+    #remove if all attributes and subnodes have been dealt with
+    if node != None and len(node.attrib) == 0 and len(node) == 0:
+        parent.remove(node)
+
 def find_elements(s, first, second):
-    return s.find(first,  ns).findall(second,  ns) if s.find(first,  ns)  != None else []
+    a = s.find(first,  ns)
+    return a, a.findall(second,  ns) if a != None else []
 
 def parse_parameter_bindings(path, baseprefix, parameterbindings):
-    for pb in parameterbindings:
-        prefix = baseprefix
-        if 'prefix' in pb.attrib:
-            prefix = prefix + pb.attrib['prefix']
+    for pb in parameterbindings[1]:
+        prefix = baseprefix + get_attrib(pb, 'prefix', '')
 
         #print('prefix: '+prefix)
-        pvs = pb.findall('ssd:ParameterValues', ns)
+        pvs = (pb, pb.findall('ssd:ParameterValues', ns))
+
+        x_ssp_parameter_set = 'application/x-ssp-parameter-set'
+        t = get_attrib(pb, 'type', x_ssp_parameter_set)
+        if t != x_ssp_parameter_set:
+            print('Expected ' + x_ssp_parameter_set + ', got ' + t)
+            exit(1)
 
         if 'source' in pb.attrib:
-            if len(pvs) != 0:
+            if len(pvs[1]) != 0:
                 print('ParameterBindings must have source or ParameterValues, not both')
                 exit(1)
 
             #read from file
-            tree = ET.parse(os.path.join(path, pb.attrib['source']))
+            #TODO: print unhandled XML in ParameterSet
+            tree = ET.parse(os.path.join(path, get_attrib(pb, 'source')))
             pvs = find_elements(tree.getroot(), 'ssv:Parameters', 'ssv:Parameter')
             #print('Parsed %i params' % len(pvs))
         else:
-            if len(pvs) == 0:
+            if len(pvs[1]) == 0:
                 print('ParameterBindings missing both source and ParameterValues')
                 exit(1)
 
@@ -140,7 +162,7 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
             print('Parsing ParameterValues is TODO, for lack of examples or complete schema as of 2016-11-11')
             exit(1)
 
-        for pv in pvs:
+        for pv in pvs[1]:
             r = pv.find('ssv:Real', ns)
             i = pv.find('ssv:Integer', ns)
             b = pv.find('ssv:Boolean', ns)
@@ -179,6 +201,7 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
                 print('Unsupported parameter type: ' + str(pv[0].tag))
                 exit(1)
 
+            remove_if_empty(pvs[0], pv)
 
         #deal with any ssm
         pm = pb.find('ssd:ParameterMapping', ns)
@@ -187,7 +210,14 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
                 print('"source" not set in ParameterMapping. In-line PMs not supported yet')
                 exit(1)
 
-            tree = ET.parse(os.path.join(path, pm.attrib['source']))
+            x_ssp_parameter_mapping = 'application/x-ssp-parameter-mapping'
+            t = get_attrib(pm, 'type', x_ssp_parameter_mapping)
+            if t != x_ssp_parameter_mapping:
+                print('Expected ' + x_ssp_parameter_mapping + ', got ' + t)
+                exit(1)
+
+            #TODO: print unhandled XML in ParameterMapping too
+            tree = ET.parse(os.path.join(path, get_attrib(pm, 'source')))
             mes = tree.getroot().findall('ssm:MappingEntry', ns)
 
             for me in mes:
@@ -213,14 +243,34 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
 
                 parameters[target] = p
 
+            remove_if_empty(pb, pm)
+
+        remove_if_empty(parameterbindings[0], pb)
+
 class FMU:
     def __init__(self, name, path, connectors, system):
         self.name = name
         self.path = path
         self.connectors = {}
 
-        for conn in connectors:
-            self.connectors[conn.attrib['name']] = conn
+        for conn in connectors[1]:
+            name = get_attrib(conn, 'name')
+            kind = get_attrib(conn, 'kind')
+            unit = None
+
+            if len(conn) > 0:
+                if len(conn) > 1:
+                    print('More then one sub-element of Connector - bailing out')
+                    exit(1)
+                unit = get_attrib(conn[0], 'unit')
+                remove_if_empty(conn, conn[0])
+
+            remove_if_empty(connectors[0], conn)
+
+            self.connectors[name] = {
+                'kind': kind,
+                'unit': unit,
+            }
 
         self.system = system
 
@@ -238,17 +288,20 @@ class FMU:
         '''
         for name,conn in self.connectors.iteritems():
             # Look at inputs, work back toward outputs
-            if conn.attrib[self.system.kindKey] == 'input':
+            if conn['kind'] == 'input':
                 fmu, fmu_variable = traverse(self.system, (self.name, name), 'output', True)
                 if fmu != None:
-                    unit = conn[0].attrib['unit'] if len(conn) > 0 else None
                     key = (fmu.id, fmu_variable)
                     value = (self.id, name)
                     add_multimap_value(connectionmultimap, key, value)
 
 class SystemStructure:
     def __init__(self, root):
-        units  = root.find('ssd:Units',  ns).findall('ssd:Unit',  ns) if root.find('ssd:Units',  ns)  != None else []
+        units = find_elements(root, 'ssd:Units', 'ssd:Unit')
+        self.name = get_attrib(root, 'name')
+
+        #not sure what to use schemaLocation for, or if we should even require it
+        self.schemaLocation = get_attrib(root, '{http://www.w3.org/2001/XMLSchema-instance}schemaLocation')
 
         # Units keyed on name. Like {name: {'units': (units,), 'factor': 1, 'offset': 0}}
         self.unitsbyname = {}
@@ -256,14 +309,14 @@ class SystemStructure:
         # Units keyed on units. Like {(units,): {name: {'factor': 1, 'offset': 0}}}
         self.unitsbyunits = {}
 
-        for u in units:
-            name = u.attrib['name']
+        for u in units[1]:
+            name = get_attrib(u, 'name')
             bu = u.find('ssd:BaseUnit', ns)
-            key = tuple([int(bu.attrib[n]) if n in bu.attrib else 0 for n in ['kg','m','s','A','K','mol','cd','rad']])
+            key = tuple([int(get_attrib(bu, n, '0')) for n in ['kg','m','s','A','K','mol','cd','rad']])
 
             #want factor and offset
-            factor = float(bu.attrib['factor']) if 'factor' in bu.attrib else 1
-            offset = float(bu.attrib['offset']) if 'offset' in bu.attrib else 0
+            factor = float(get_attrib(bu, 'factor', '1'))
+            offset = float(get_attrib(bu, 'offset', '0'))
 
             #put in the right spots
             self.unitsbyname[name] = {'units': key, 'factor': factor, 'offset': offset}
@@ -272,6 +325,9 @@ class SystemStructure:
                 self.unitsbyunits[key] = {}
 
             self.unitsbyunits[key][name] = {'factor': factor, 'offset': offset}
+            remove_if_empty(u, bu)
+            remove_if_empty(units[0], u)
+        remove_if_empty(root, units[0])
 
         #print('unitsbyname: '+str(self.unitsbyname))
         #print('unitsbyunits: '+str(self.unitsbyunits))
@@ -285,14 +341,13 @@ class System:
     @classmethod
     def fromfile(cls, d, filename, parent=None):
         path = os.path.join(d, filename)
-        #print 'parse_ssd: ' + path
+
+        #parse XML, delete all attribs and element we know how to deal with
+        #print residual, indicating things we don't yet support
         tree = ET.parse(path)
-        #print tree
-        #print tree.getroot()
-        
-        #tree.register_namespace('ssd', 'http://www.pmsf.net/xsd/SystemStructureDescriptionDraft')
+
         if 'version' in tree.getroot().attrib:
-            version = tree.getroot().attrib['version']
+            version = get_attrib(tree.getroot(), 'version')
         else:
             version = 'Draft20150721'
             printf('WARNING: version not set in root, assuming ' + self.version)
@@ -304,7 +359,13 @@ class System:
             print( 'Must have exactly one System')
             exit(1)
         s = sys[0]
-        return cls(d, s, version, parent, structure)
+        ret = cls(d, s, version, parent, structure)
+        remove_if_empty(tree.getroot(), s)
+
+        if len(tree.getroot()) > 0 or len(tree.getroot().attrib) > 0:
+            print('WARNING: Residual XML: '+ET.tostring(tree.getroot()))
+
+        return ret
 
     @classmethod
     def fromxml(cls, d, s, version, parent):
@@ -316,7 +377,8 @@ class System:
 
         self.d = d
         self.version = version
-        self.name = s.attrib['name']
+        self.name = get_attrib(s, 'name')
+        self.description = get_attrib(s, 'description', '')
         self.parent = parent
         self.structure = structure
         self.inputs  = {}
@@ -333,86 +395,116 @@ class System:
         signaldicts = find_elements(s, 'ssd:SignalDictionaries',    'ssd:SignalDictionary')
         sigdictrefs = find_elements(s, 'ssd:Elements',              'ssd:SignalDictionaryReference')
         params      = find_elements(s, 'ssd:ParameterBindings',     'ssd:ParameterBinding')
+        elements    = s.find('ssd:Elements', ns)
 
-        for conn in connectors:
-            if conn.attrib[self.kindKey] == 'input':
-                self.inputs[conn.attrib['name']] = conn
-            elif conn.attrib[self.kindKey] == 'output':
-                self.outputs[conn.attrib['name']] = conn
-            elif conn.attrib[self.kindKey] in ['parameter', 'calculatedParameter', 'inout']:
-                print('WARNING: Unimplemented connector kind: ' + conn.attrib[self.kindKey])
+        for conn in connectors[1]:
+            kind = get_attrib(conn, self.kindKey)
+            name = get_attrib(conn, 'name')
+
+            #TODO: self.inputs and self.output aren't actually taken into account in traverse()
+            if kind == 'input':
+                self.inputs[name] = conn
+            elif kind == 'output':
+                self.outputs[name] = conn
+            elif kind in ['parameter', 'calculatedParameter', 'inout']:
+                print('WARNING: Unimplemented connector kind: ' + kind)
             else:
-                print('Unknown connector kind: ' + conn.attrib[self.kindKey])
+                print('Unknown connector kind: ' + kind)
                 exit(1)
+
+            if len(conn) > 0:
+                print("WARNING: Connection %s in system %s has type information, which isn't handled yet" % (name, self.name))
+                #remove_if_empty(conn, conn[0])
+            remove_if_empty(connectors[0], conn)
+        remove_if_empty(s, connectors[0])
 
         # Bi-directional
         self.connections = {}
-        for conn in connections:
-            a = (conn.attrib['startElement'] if 'startElement' in conn.attrib else '',
-                 conn.attrib['startConnector'])
-            b = (conn.attrib['endElement']   if 'endElement'   in conn.attrib else '',
-                 conn.attrib['endConnector'])
+        for conn in connections[1]:
+            a = (get_attrib(conn, 'startElement', ''), get_attrib(conn, 'startConnector'))
+            b = (get_attrib(conn, 'endElement', ''),   get_attrib(conn, 'endConnector'))
             self.connections[a] = b
             self.connections[b] = a
+            remove_if_empty(connections[0], conn)
+        remove_if_empty(s, connections[0])
 
         #print self.connections
 
         self.subsystems = {}
         self.fmus     = {}
-        for comp in components:
+        for comp in components[1]:
             #print comp
-            t = comp.attrib['type']
+            t    = get_attrib(comp, 'type')
+            name = get_attrib(comp, 'name')
             #print t
 
             if t == 'application/x-ssp-package':
-                d2 = os.path.join(d, os.path.splitext(comp.attrib['source'])[0])
+                d2 = os.path.join(d, os.path.splitext(get_attrib(comp, 'source'))[0])
                 child = System.fromfile(d2, SSD_NAME, self)
                 #print 'Added subsystem ' + child.name
-                self.subsystems[comp.attrib['name']] = child
+                self.subsystems[name] = child
             elif t == 'application/x-fmu-sharedlibrary':
-                pass #print 
-                self.fmus[comp.attrib['name']] = FMU(
-                    comp.attrib['name'],
-                    os.path.join(d, comp.attrib['source']),
-                    comp.find('ssd:Connectors', ns).findall('ssd:Connector', ns),
+                source = os.path.join(d, get_attrib(comp, 'source'))
+                connectors = find_elements(comp, 'ssd:Connectors', 'ssd:Connector')
+                self.fmus[name] = FMU(
+                    name,
+                    source,
+                    connectors,
                     self,
                 )
+                remove_if_empty(comp, connectors[0])
             else:
                 print('unknown type: ' + t)
                 exit(1)
 
             #parse parameters after subsystems so their values get overriden properly
             cparams = find_elements(comp, 'ssd:ParameterBindings', 'ssd:ParameterBinding')
-            parse_parameter_bindings(self.d, self.get_name() + '.' + comp.attrib['name'] + '.', cparams)
+            parse_parameter_bindings(self.d, self.get_name() + '.' + name + '.', cparams)
+            remove_if_empty(comp, cparams[0])
+            remove_if_empty(components[0], comp)
 
         self.signaldicts = {}
-        for sigdict in signaldicts:
+        for sigdict in signaldicts[1]:
             des = {}
             for de in sigdict.findall('ssd:DictionaryEntry', ns):
                 #NOTE: de[0].tag is the type of the entry, but we don't really need it
                 #the second and third entry in the tuple are the FMU and connector on which the signal source is available
-                des[de.attrib['name']] = (de[0].attrib['unit'], None, '')
-            self.signaldicts[sigdict.attrib['name']] = des
+                des[get_attrib(de, 'name')] = (get_attrib(de[0], 'unit'), None, '')
+                remove_if_empty(de, de[0])
+                remove_if_empty(sigdict, de)
+            self.signaldicts[get_attrib(sigdict, 'name')] = des
+            remove_if_empty(signaldicts[0], sigdict)
+        remove_if_empty(s, signaldicts[0])
         #print('SignalDictionaries: ' + str(self.signaldicts))
 
         self.sigdictrefs = {}
-        for sdr in sigdictrefs:
+        for sdr in sigdictrefs[1]:
             drs = {}
-            conns = sdr.find('ssd:Connectors', ns).findall('ssd:Connector') if sdr.find('ssd:Connectors', ns) != None else []
-            for conn in conns:
-                if conn.attrib['kind'] != 'inout':
+            conns = find_elements(sdr, 'ssd:Connectors', 'ssd:Connector')
+            for conn in conns[1]:
+                if get_attrib(conn, 'kind') != 'inout':
                     print('Only inout connectors supports in SignalDictionaryReferences for now')
                     exit(1)
-                drs[conn.attrib['name']] = conn[0].attrib['unit']
-            self.sigdictrefs[sdr.attrib['name']] = (sdr.attrib['dictionary'], drs)
+                drs[get_attrib(conn, 'name')] = get_attrib(conn[0], 'unit')
+                remove_if_empty(conn, conn[0])
+                remove_if_empty(conns[0], conn)
+            self.sigdictrefs[get_attrib(sdr, 'name')] = (get_attrib(sdr, 'dictionary'), drs)
+            remove_if_empty(sdr, conns[0])
+            remove_if_empty(sigdictrefs[0], sdr)
         #print('SignalDictionaryReference: ' + str(self.sigdictrefs))
 
-        for subsystem in subsystems:
+        for subsystem in subsystems[1]:
             ss = System.fromxml(d, subsystem, self.version, self)
-            self.subsystems[subsystem.attrib['name']] = ss
+            self.subsystems[ss.name] = ss
+            remove_if_empty(subsystems[0], subsystem)
+
+        #NOTE: Component, System and SignalDictionaryReference are all subnodes of Elements
+        #Only delete it once
+        remove_if_empty(s, elements)
 
         #parse parameters after subsystems so their values get overriden properly
         parse_parameter_bindings(self.d, self.get_name() + '.', params)
+        remove_if_empty(s, params[0])
 
     def find_signal_dictionary(self, dictionary_name):
         sys = self

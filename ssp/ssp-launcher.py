@@ -94,7 +94,7 @@ def traverse(startsystem, startkey, target_kind, use_sigdictrefs):
             de = signaldict[key[1]]
 
             if de[1] == None:
-                print('SignalDictionary "%" has no output signal connected to it' % dictionary_name)
+                print('SignalDictionary "%s" has no output signal connected to it' % dictionary_name)
                 exit(1)
 
             return de[1], de[2]

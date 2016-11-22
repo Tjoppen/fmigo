@@ -15,7 +15,7 @@ int main(int argc, char *argv[]) {
 
     //parse arguments
     bool debugLogging = false;
-    jm_log_level_enu_t log_level = jm_log_level_nothing;
+    jm_log_level_enu_t log_level = jm_log_level_error;
     string fmuPath = "";
     string hdf5Filename;
     int filter_depth = 0;

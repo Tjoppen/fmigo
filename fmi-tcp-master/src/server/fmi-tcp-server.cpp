@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
 
   int port = 3000;
   bool debugLogging = false;
-  jm_log_level_enu_t log_level = jm_log_level_nothing;
+  jm_log_level_enu_t log_level = jm_log_level_error;
   string hostName = "localhost", fmuPath = "";
   string hdf5Filename;
   int filter_depth = 0;

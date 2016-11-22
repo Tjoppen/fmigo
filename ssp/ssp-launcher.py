@@ -576,16 +576,12 @@ root = System.fromfile(d, SSD_NAME)
 
 root.resolve_dictionary_inputs()
 
-for key,value in parameters.iteritems():
-    parts = key.split('.')
-    fmuname = '.'.join(parts[0:-1])
-    paramname = parts[-1]
-    #print(fmuname+': '+paramname+'='+str(value))
-
 # Figure out connections, parse modelDescriptions
 connectionmultimap = {} # Multimap of outputs to inputs
 mds = []
+fmumap = {}  #maps fmu names to IDs
 for fmu in fmus:
+    fmumap[fmu.get_name()] = fmu.id
     fmu.connect(connectionmultimap)
 
     # Parse modelDescription, turn variable list into map
@@ -593,13 +589,24 @@ for fmu in fmus:
 
     svs = {}
     for sv in tree.getroot().find('ModelVariables').findall('ScalarVariable'):
-        if sv.attrib['name'] in svs:
-            print(fmu.path + ' contains multiple variables named "' + sc.attrib['name'] + '"!')
+        name = sv.attrib['name']
+        if name in svs:
+            print(fmu.path + ' contains multiple variables named "' + name + '"!')
             exit(1)
 
+        causality = ''
+
         if not CAUSALITY in sv.attrib:
-            # Not an input or output. Probably a parameter
-            continue
+            if 'variability' in sv.attrib and sv.attrib['variability'] == 'parameter':
+                #this happens with SampleSystemSubSystemDictionary.ssp
+                print(('WARNING: Found variable %s without causality and variability="parameter". ' % name)+
+                      'This violates the spec. Treating as a parameter')
+                causality = 'parameter'
+            else:
+                print('WARNING: FMU %s has variable %s without causality - ignoring' % (fmu.get_name(), name))
+                continue
+        else:
+            causality = sv.attrib[CAUSALITY]
 
         t = ''
         if sv.find('Real')      != None: t = 'r'
@@ -608,15 +615,33 @@ for fmu in fmus:
         elif sv.find('Enum')    != None: t = 'e'
         elif sv.find('String')  != None: t = 's'
         else:
-            print(fmu.path + ' variable "' + sv.attrib['name'] + '" has unknown type')
+            print(fmu.path + ' variable "' + name + '" has unknown type')
             exit(1)
 
-        svs[sv.attrib['name']] = {
+        svs[name] = {
             'vr': int(sv.attrib['valueReference']),
-            CAUSALITY: sv.attrib[CAUSALITY],
+            CAUSALITY: causality,
             'type': t,
         }
     mds.append(svs)
+
+flatparams = []
+for key,value in parameters.iteritems():
+    parts = key.split('.')
+    fmuname = '.'.join(parts[0:-1])
+    paramname = parts[-1]
+    if fmuname in fmumap:
+        fmu = fmus[fmumap[fmuname]]
+        if paramname in mds[fmu.id]:
+            p = mds[fmu.id][paramname]
+            if p[CAUSALITY] == 'input' or p[CAUSALITY] == 'parameter':
+                flatparams.extend(['-p','%s,%i,%i,%s' % (value['type'], fmu.id, p['vr'], value['value'])])
+            else:
+                print('WARNING: FMU %s, tried to set variable %s which is neither an input nor a parameter' % (fmuname, paramname))
+        else:
+            print('WARNING: FMU %s has no variable called %s' % (fmuname, paramname))
+    else:
+        print('WARNING: No FMU called %s for parameter %s' % (fmuname, paramname))
 
 #print connections
 #print mds
@@ -643,7 +668,7 @@ for fmu in fmus:
 #read connections and parameters from stdin, since they can be quite many
 #stdin because we want to avoid leaving useless files on the filesystem
 args = ['mpiexec','-np','1','fmi-mpi-master','-t','9.9','-d','0.1','-a','-'] + servers
-print(" ".join(args) + " <<< " + '"' + " ".join(flatconns) + '"')
+print(" ".join(args) + " <<< " + '"' + " ".join(flatconns+flatparams) + '"')
 
 #pipe arguments to master, leave stdout and stderr alone
 p = subprocess.Popen(args, stdin=subprocess.PIPE)

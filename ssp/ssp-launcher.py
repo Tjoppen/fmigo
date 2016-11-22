@@ -19,12 +19,17 @@ SSD_NAME='SystemStructure.ssd'
 CAUSALITY='causality'
 MODELDESCRIPTION='modelDescription.xml'
 
-ns = {'ssd': 'http://www.pmsf.net/xsd/SystemStructureDescriptionDraft'}
+ns = {
+    'ssd': 'http://www.pmsf.net/xsd/SystemStructureDescriptionDraft',
+    'ssv': 'http://www.pmsf.net/xsd/SystemStructureParameterValuesDraft',
+    'ssm': 'http://www.pmsf.net/xsd/SystemStructureParameterMappingDraft',
+}
 d = tempfile.mkdtemp(prefix='ssp')
 print(d)
 
 fmus = []
 systems = []
+parameters = {}
 
 # Adds (key,value) to given multimap.
 # Each (key,value) may appear only once.
@@ -37,11 +42,236 @@ def add_multimap_value(multimap, key, value):
     else:
         multimap[key] = set([value])
 
+def traverse(startsystem, startkey, target_kind, use_sigdictrefs):
+    global fmus, systems
+    ttl = len(fmus) + len(systems)
+    sys = startsystem
+    key = startkey
+
+    #TODO: deal with unit conversion
+    factor = 1
+    offset = 0
+    #print('%s.%s (unit=%s)' % (self.get_name(), conn.attrib['name'], str(unit)))
+
+    while True:
+        #print 'key = ' + str(key) + ', sys = ' + sys.name
+        if not key in sys.connections:
+            print( 'No connection %s in system %s' % (str(key), sys.name))
+            return None, None
+            # exit(1)
+
+        #print('sys.sigdictrefs: ' + str(sys.sigdictrefs))
+        key = sys.connections[key]
+        if key[0] == '':
+            # Connection leads to parent node
+            if sys.parent == None:
+                # Can't go any further - issue a warning and move on
+                print ('WARNING: ' + str(startkey) + ' takes data from ' +
+                       key[1] + ' of root system, which no output connects to - skipping')
+                return None, None
+
+            #print 'up'
+            key = (sys.name, key[1])
+            sys = sys.parent
+        elif key[0] in sys.fmus:
+            fmu = sys.fmus[key[0]]
+
+            #correct kind?
+            if fmu.connectors[key[1]]['kind'] == target_kind:
+                return fmu, key[1]
+            else:
+                return None, None
+        elif key[0] in sys.subsystems:
+            #print 'down'
+            sys = sys.subsystems[key[0]]
+            key = ('', key[1])
+        elif use_sigdictrefs and key[0] in sys.sigdictrefs and key[1] in sys.sigdictrefs[key[0]][1]:
+            #we're pointed to a signal dictionary
+            #find the corresponding output
+            d = sys.sigdictrefs[key[0]]
+            dictionary_name = d[0]
+            signaldict = sys.find_signal_dictionary(dictionary_name)
+            de = signaldict[key[1]]
+
+            if de[1] == None:
+                print('SignalDictionary "%s" has no output signal connected to it' % dictionary_name)
+                exit(1)
+
+            return de[1], de[2]
+        else:
+            print('Key %s of kind %s not found in system %s' % (str(key), target_kind, sys.name))
+            print (sys.fmus)
+            print (sys.subsystems)
+            exit(1)
+
+        ttl -= 1
+        if ttl <= 0:
+            print ('SSP contains a loop!')
+            exit(1)
+
+def get_attrib(s, name, default=None):
+    if name in s.attrib:
+        ret = s.attrib[name]
+        del s.attrib[name]
+        return ret
+    else:
+        if default == None:
+            print('get_attrib(): missing required attribute ' + name)
+            exit(1)
+        return default
+
+def remove_if_empty(parent, node):
+    #remove if all attributes and subnodes have been dealt with
+    if node != None and len(node.attrib) == 0 and len(node) == 0:
+        parent.remove(node)
+
+def find_elements(s, first, second):
+    a = s.find(first,  ns)
+    return a, a.findall(second,  ns) if a != None else []
+
+def parse_parameter_bindings(path, baseprefix, parameterbindings):
+    for pb in parameterbindings[1]:
+        prefix = baseprefix + get_attrib(pb, 'prefix', '')
+
+        #print('prefix: '+prefix)
+        pvs = (pb, pb.findall('ssd:ParameterValues', ns))
+
+        x_ssp_parameter_set = 'application/x-ssp-parameter-set'
+        t = get_attrib(pb, 'type', x_ssp_parameter_set)
+        if t != x_ssp_parameter_set:
+            print('Expected ' + x_ssp_parameter_set + ', got ' + t)
+            exit(1)
+
+        if 'source' in pb.attrib:
+            if len(pvs[1]) != 0:
+                print('ParameterBindings must have source or ParameterValues, not both')
+                exit(1)
+
+            #read from file
+            #TODO: print unhandled XML in ParameterSet
+            tree = ET.parse(os.path.join(path, get_attrib(pb, 'source')))
+            pvs = find_elements(tree.getroot(), 'ssv:Parameters', 'ssv:Parameter')
+            #print('Parsed %i params' % len(pvs))
+        else:
+            if len(pvs[1]) == 0:
+                print('ParameterBindings missing both source and ParameterValues')
+                exit(1)
+
+            #don't know whether it's ParameterValues -> Parameters -> Parameter or just ParameterValues -> Parameter
+            #the spec doesn't help
+            print('Parsing ParameterValues is TODO, for lack of examples or complete schema as of 2016-11-11')
+            exit(1)
+
+        for pv in pvs[1]:
+            r = pv.find('ssv:Real', ns)
+            i = pv.find('ssv:Integer', ns)
+            b = pv.find('ssv:Boolean', ns)
+            s = pv.find('ssv:String', ns)
+            e = pv.find('ssv:Enumeration', ns)
+            name = prefix+pv.attrib['name']
+
+            if r != None:
+                if 'unit' in r.attrib:
+                    print('Not dealing with parameters with units yet')
+                    exit(1)
+
+                parameters[name] = {
+                    'type': 'r',
+                    'value': float(r.attrib['value']),
+                }
+            elif i != None:
+                parameters[name] = {
+                    'type': 'i',
+                    'value': int(i.attrib['value']),
+                }
+            elif b != None:
+                parameters[name] = {
+                    'type': 'b',
+                    'value': b.attrib['value'], #keep booleans as-is
+                }
+            elif s != None:
+                parameters[name] = {
+                    'type': 's',
+                    'value': s.attrib['value'],
+                }
+            elif e != None:
+                print('Enumerations not supported')
+                exit(1)
+            else:
+                print('Unsupported parameter type: ' + str(pv[0].tag))
+                exit(1)
+
+            remove_if_empty(pvs[0], pv)
+
+        #deal with any ssm
+        pm = pb.find('ssd:ParameterMapping', ns)
+        if pm != None:
+            if not 'source' in pm.attrib:
+                print('"source" not set in ParameterMapping. In-line PMs not supported yet')
+                exit(1)
+
+            x_ssp_parameter_mapping = 'application/x-ssp-parameter-mapping'
+            t = get_attrib(pm, 'type', x_ssp_parameter_mapping)
+            if t != x_ssp_parameter_mapping:
+                print('Expected ' + x_ssp_parameter_mapping + ', got ' + t)
+                exit(1)
+
+            #TODO: print unhandled XML in ParameterMapping too
+            tree = ET.parse(os.path.join(path, get_attrib(pm, 'source')))
+            mes = tree.getroot().findall('ssm:MappingEntry', ns)
+
+            for me in mes:
+                source = prefix+me.attrib['source']
+                target = prefix+me.attrib['target']
+
+                p = parameters[source]
+                del parameters[source]
+
+                lt = me.find('ssm:LinearTransformation', ns)
+                if lt != None:
+                    factor = float(lt.attrib['factor'])
+                    offset = float(lt.attrib['offset'])
+
+                    if p['type'] != 'r':
+                        print('LinearTransformation only supported in Real')
+                        exit(1)
+
+                    p['value'] = p['value'] * factor + offset
+                elif len(me) > 0:
+                    print("Found MappingEntry with sub-element which isn't LinearTransformation, which is not yet supported")
+                    exit(1)
+
+                parameters[target] = p
+
+            remove_if_empty(pb, pm)
+
+        remove_if_empty(parameterbindings[0], pb)
+
 class FMU:
     def __init__(self, name, path, connectors, system):
         self.name = name
         self.path = path
-        self.connectors = connectors
+        self.connectors = {}
+
+        for conn in connectors[1]:
+            name = get_attrib(conn, 'name')
+            kind = get_attrib(conn, 'kind')
+            unit = None
+
+            if len(conn) > 0:
+                if len(conn) > 1:
+                    print('More then one sub-element of Connector - bailing out')
+                    exit(1)
+                unit = get_attrib(conn[0], 'unit')
+                remove_if_empty(conn, conn[0])
+
+            remove_if_empty(connectors[0], conn)
+
+            self.connectors[name] = {
+                'kind': kind,
+                'unit': unit,
+            }
+
         self.system = system
 
         global fmus
@@ -56,133 +286,273 @@ class FMU:
         '''
         Adds connections for this FMU to other FMUs in the System tree to the given connections multimap
         '''
-        for conn in self.connectors:
+        for name,conn in self.connectors.iteritems():
             # Look at inputs, work back toward outputs
-            if conn.attrib[CAUSALITY] == 'input':
-                global fmus, systems
-                ttl = len(fmus) + len(systems)
-                sys = self.system
-                key = (self.name, conn.attrib['name'])
-                #print self.get_name() + '.' + conn.attrib['name']
+            if conn['kind'] == 'input':
+                fmu, fmu_variable = traverse(self.system, (self.name, name), 'output', True)
+                if fmu != None:
+                    key = (fmu.id, fmu_variable)
+                    value = (self.id, name)
+                    add_multimap_value(connectionmultimap, key, value)
 
-                while True:
-                    #print 'key = ' + str(key) + ', sys = ' + sys.name
-                    if not key in sys.connections:
-                        print( 'No connection %s in system %s' % (str(key), self.system.name))
-                        break
-                        # exit(1)
+class SystemStructure:
+    def __init__(self, root):
+        units = find_elements(root, 'ssd:Units', 'ssd:Unit')
+        self.name = get_attrib(root, 'name')
 
-                    key = sys.connections[key]
-                    if key[0] == '':
-                        # Connection leads to parent node
-                        if sys.parent == None:
-                            # Can't go any further - issue a warning and move on
-                            print ('WARNING: ' + self.get_name() + '.' + conn.attrib['name'] + ' takes data from ' +
-                                   key[1] + ' of root system, which no output connects to - skipping')
-                            break
+        #not sure what to use schemaLocation for, or if we should even require it
+        self.schemaLocation = get_attrib(root, '{http://www.w3.org/2001/XMLSchema-instance}schemaLocation')
 
-                        #print 'up'
-                        key = (sys.name, key[1])
-                        sys = sys.parent
-                    elif key[0] in sys.fmus:
-                        fmu = sys.fmus[key[0]]
-                        value = (self.id, conn.attrib['name'])
-                        key = (fmu.id, key[1])
-                        add_multimap_value(connectionmultimap, key, value)
-                        break
-                    elif key[0] in sys.children:
-                        #print 'down'
-                        sys = sys.children[key[0]]
-                        key = ('', key[1])
-                    else:
-                        print('Key %s not found in system %s' % (str(key), sys.name))
-                        print (sys.fmus)
-                        print (sys.children)
-                        exit(1)
+        # Units keyed on name. Like {name: {'units': (units,), 'factor': 1, 'offset': 0}}
+        self.unitsbyname = {}
 
-                    ttl -= 1
-                    if ttl <= 0:
-                        print ('SSP contains a loop!')
-                        exit(1)
+        # Units keyed on units. Like {(units,): {name: {'factor': 1, 'offset': 0}}}
+        self.unitsbyunits = {}
+
+        for u in units[1]:
+            name = get_attrib(u, 'name')
+            bu = u.find('ssd:BaseUnit', ns)
+            key = tuple([int(get_attrib(bu, n, '0')) for n in ['kg','m','s','A','K','mol','cd','rad']])
+
+            #want factor and offset
+            factor = float(get_attrib(bu, 'factor', '1'))
+            offset = float(get_attrib(bu, 'offset', '0'))
+
+            #put in the right spots
+            self.unitsbyname[name] = {'units': key, 'factor': factor, 'offset': offset}
+
+            if not key in self.unitsbyunits:
+                self.unitsbyunits[key] = {}
+
+            self.unitsbyunits[key][name] = {'factor': factor, 'offset': offset}
+            remove_if_empty(u, bu)
+            remove_if_empty(units[0], u)
+        remove_if_empty(root, units[0])
+
+        #print('unitsbyname: '+str(self.unitsbyname))
+        #print('unitsbyunits: '+str(self.unitsbyunits))
 
 class System:
     '''
     A System is a tree of Systems and FMUs
     In each System there are Connections between 
     '''
-    def __init__(self, d, filename, parent=None):
-        global systems
-        systems.append(self)
 
+    @classmethod
+    def fromfile(cls, d, filename, parent=None):
         path = os.path.join(d, filename)
-        #print 'parse_ssd: ' + path
+
+        #parse XML, delete all attribs and element we know how to deal with
+        #print residual, indicating things we don't yet support
         tree = ET.parse(path)
-        #print tree
-        #print tree.getroot()
-        
-        #tree.register_namespace('ssd', 'http://www.pmsf.net/xsd/SystemStructureDescriptionDraft')
+
+        if 'version' in tree.getroot().attrib:
+            version = get_attrib(tree.getroot(), 'version')
+        else:
+            version = 'Draft20150721'
+            printf('WARNING: version not set in root, assuming ' + self.version)
+
+        structure = SystemStructure(tree.getroot())
+
         sys = tree.getroot().findall('ssd:System', ns)
         if len(sys) != 1:
             print( 'Must have exactly one System')
             exit(1)
         s = sys[0]
+        ret = cls(d, s, version, parent, structure)
+        remove_if_empty(tree.getroot(), s)
 
-        connectors  = s.find('ssd:Connectors',  ns).findall('ssd:Connector',  ns)
-        connections = s.find('ssd:Connections', ns).findall('ssd:Connection', ns)
-        components  = s.find('ssd:Elements',    ns).findall('ssd:Component',  ns)
+        if len(tree.getroot()) > 0 or len(tree.getroot().attrib) > 0:
+            print('WARNING: Residual XML: '+ET.tostring(tree.getroot()))
 
-        self.name = s.attrib['name']
-        #print self.name + ', parent=' + (parent.name if parent != None else 'None')
+        return ret
+
+    @classmethod
+    def fromxml(cls, d, s, version, parent):
+        return cls(d, s, version, parent, parent.structure)
+
+    def __init__(self, d, s, version, parent, structure):
+        global systems
+        systems.append(self)
+
+        self.d = d
+        self.version = version
+        self.name = get_attrib(s, 'name')
+        self.description = get_attrib(s, 'description', '')
         self.parent = parent
+        self.structure = structure
         self.inputs  = {}
         self.outputs = {}
-        for conn in connectors:
-            if conn.attrib[CAUSALITY] == 'input':
-                self.inputs[conn.attrib['name']] = conn
-            elif conn.attrib[CAUSALITY] == 'output':
-                self.outputs[conn.attrib['name']] = conn
+
+        #'causality' changed to 'kind' on 2015-10-21
+        self.kindKey = 'kind' if self.version != 'Draft20151021' else 'causality'
+
+        #spec allows these to not exist
+        connectors  = find_elements(s, 'ssd:Connectors',            'ssd:Connector')
+        connections = find_elements(s, 'ssd:Connections',           'ssd:Connection')
+        components  = find_elements(s, 'ssd:Elements',              'ssd:Component')
+        subsystems  = find_elements(s, 'ssd:Elements',              'ssd:System')
+        signaldicts = find_elements(s, 'ssd:SignalDictionaries',    'ssd:SignalDictionary')
+        sigdictrefs = find_elements(s, 'ssd:Elements',              'ssd:SignalDictionaryReference')
+        params      = find_elements(s, 'ssd:ParameterBindings',     'ssd:ParameterBinding')
+        elements    = s.find('ssd:Elements', ns)
+
+        for conn in connectors[1]:
+            kind = get_attrib(conn, self.kindKey)
+            name = get_attrib(conn, 'name')
+
+            #TODO: self.inputs and self.output aren't actually taken into account in traverse()
+            if kind == 'input':
+                self.inputs[name] = conn
+            elif kind == 'output':
+                self.outputs[name] = conn
+            elif kind in ['parameter', 'calculatedParameter', 'inout']:
+                print('WARNING: Unimplemented connector kind: ' + kind)
             else:
-                print('Unknown causality: ' + conn.attrib[CAUSALITY])
+                print('Unknown connector kind: ' + kind)
                 exit(1)
+
+            if len(conn) > 0:
+                print("WARNING: Connection %s in system %s has type information, which isn't handled yet" % (name, self.name))
+                #remove_if_empty(conn, conn[0])
+            remove_if_empty(connectors[0], conn)
+        remove_if_empty(s, connectors[0])
 
         # Bi-directional
         self.connections = {}
-        for conn in connections:
-            a = (conn.attrib['startElement'] if 'startElement' in conn.attrib else '',
-                 conn.attrib['startConnector'])
-            b = (conn.attrib['endElement']   if 'endElement'   in conn.attrib else '',
-                 conn.attrib['endConnector'])
+        for conn in connections[1]:
+            a = (get_attrib(conn, 'startElement', ''), get_attrib(conn, 'startConnector'))
+            b = (get_attrib(conn, 'endElement', ''),   get_attrib(conn, 'endConnector'))
             self.connections[a] = b
             self.connections[b] = a
+            remove_if_empty(connections[0], conn)
+        remove_if_empty(s, connections[0])
 
         #print self.connections
 
-        self.children = {}
+        self.subsystems = {}
         self.fmus     = {}
-        for comp in components:
+        for comp in components[1]:
             #print comp
-            t = comp.attrib['type']
+            t    = get_attrib(comp, 'type')
+            name = get_attrib(comp, 'name')
             #print t
 
             if t == 'application/x-ssp-package':
-                d2 = os.path.join(d, os.path.splitext(comp.attrib['source'])[0])
-                child = System(d2, SSD_NAME, self)
+                d2 = os.path.join(d, os.path.splitext(get_attrib(comp, 'source'))[0])
+                child = System.fromfile(d2, SSD_NAME, self)
                 #print 'Added subsystem ' + child.name
-                self.children[comp.attrib['name']] = child
+                self.subsystems[name] = child
             elif t == 'application/x-fmu-sharedlibrary':
-                pass #print 
-                self.fmus[comp.attrib['name']] = FMU(
-                    comp.attrib['name'],
-                    os.path.join(d, comp.attrib['source']),
-                    comp.find('ssd:Connectors', ns).findall('ssd:Connector', ns),
+                source = os.path.join(d, get_attrib(comp, 'source'))
+                connectors = find_elements(comp, 'ssd:Connectors', 'ssd:Connector')
+                self.fmus[name] = FMU(
+                    name,
+                    source,
+                    connectors,
                     self,
                 )
+                remove_if_empty(comp, connectors[0])
             else:
                 print('unknown type: ' + t)
                 exit(1)
 
+            #parse parameters after subsystems so their values get overriden properly
+            cparams = find_elements(comp, 'ssd:ParameterBindings', 'ssd:ParameterBinding')
+            parse_parameter_bindings(self.d, self.get_name() + '.' + name + '.', cparams)
+            remove_if_empty(comp, cparams[0])
+            remove_if_empty(components[0], comp)
+
+        self.signaldicts = {}
+        for sigdict in signaldicts[1]:
+            des = {}
+            for de in sigdict.findall('ssd:DictionaryEntry', ns):
+                #NOTE: de[0].tag is the type of the entry, but we don't really need it
+                #the second and third entry in the tuple are the FMU and connector on which the signal source is available
+                des[get_attrib(de, 'name')] = (get_attrib(de[0], 'unit'), None, '')
+                remove_if_empty(de, de[0])
+                remove_if_empty(sigdict, de)
+            self.signaldicts[get_attrib(sigdict, 'name')] = des
+            remove_if_empty(signaldicts[0], sigdict)
+        remove_if_empty(s, signaldicts[0])
+        #print('SignalDictionaries: ' + str(self.signaldicts))
+
+        self.sigdictrefs = {}
+        for sdr in sigdictrefs[1]:
+            drs = {}
+            conns = find_elements(sdr, 'ssd:Connectors', 'ssd:Connector')
+            for conn in conns[1]:
+                if get_attrib(conn, 'kind') != 'inout':
+                    print('Only inout connectors supports in SignalDictionaryReferences for now')
+                    exit(1)
+                drs[get_attrib(conn, 'name')] = get_attrib(conn[0], 'unit')
+                remove_if_empty(conn, conn[0])
+                remove_if_empty(conns[0], conn)
+            self.sigdictrefs[get_attrib(sdr, 'name')] = (get_attrib(sdr, 'dictionary'), drs)
+            remove_if_empty(sdr, conns[0])
+            remove_if_empty(sigdictrefs[0], sdr)
+        #print('SignalDictionaryReference: ' + str(self.sigdictrefs))
+
+        for subsystem in subsystems[1]:
+            ss = System.fromxml(d, subsystem, self.version, self)
+            self.subsystems[ss.name] = ss
+            remove_if_empty(subsystems[0], subsystem)
+
+        #NOTE: Component, System and SignalDictionaryReference are all subnodes of Elements
+        #Only delete it once
+        remove_if_empty(s, elements)
+
+        #parse parameters after subsystems so their values get overriden properly
+        parse_parameter_bindings(self.d, self.get_name() + '.', params)
+        remove_if_empty(s, params[0])
+
+    def find_signal_dictionary(self, dictionary_name):
+        sys = self
+        while True:
+            if dictionary_name in sys.signaldicts:
+                #print('found the actual dict in system ' + sys.name)
+                return sys.signaldicts[dictionary_name]
+
+            sys = sys.parent
+
+            if sys == None:
+                #we're assuming that dictionaries exist somewhere straight up in the hierarchy, never in a sibling/child system
+                #this may change if we find a counterexample in the wild
+                print('Failed to find SignalDictionary "%s" starting at System "%s"' % (dictionary_name, self.name))
+                exit(1)
+
+    def resolve_dictionary_inputs(self):
+        #for each signal dictionary, find where it is referenced and if that reference is connected to by an output
+        #this because multiple inputs can connect to a dictionary, but only one output can be connected
+        for name,(dictionary_name,drs) in self.sigdictrefs.iteritems():
+            #print('name: ' + name)
+            #print('dict: ' + dictionary)
+            #print('drs: ' + str(drs))
+
+            for key,unit in drs.iteritems():
+                #print('traversing from ' + str((name, key)))
+                fmu, fmu_variable = traverse(self, (name, key), 'output', False)
+
+                if fmu != None:
+                    #found it!
+                    #now find the actual signal dictionary so everyone can find the output
+                    #print(str((dictionary_name, key)) + ' <-- ' + str((fmu.id,fmu_variable)))
+
+                    signaldict = self.find_signal_dictionary(dictionary_name)
+                    de = signaldict[key]
+
+                    if de[1] != None:
+                        print('Dictionary %s has more than one output connected to %s' % (dictionary_name, key))
+                        exit(1)
+
+                    #put the FMU and variable name in the dict
+                    signaldict[key] = (de[0], fmu, fmu_variable)
+
+        for name,subsystem in self.subsystems.iteritems():
+            subsystem.resolve_dictionary_inputs()
+
     def get_name(self):
-        return self.parent.get_name() + '::' + self.name if self.parent != None else self.name
+        return self.parent.get_name() + '.' + self.name if self.parent != None else self.name
 
 def unzip_ssp(dest_dir, ssp_filename):
     #print 'unzip_ssp: ' + dest_dir + ' ' + ssp_filename
@@ -202,12 +572,16 @@ def unzip_ssp(dest_dir, ssp_filename):
                 z.extract(MODELDESCRIPTION, d)
 
 unzip_ssp(d, sys.argv[1])
-root = System(d, SSD_NAME)
+root = System.fromfile(d, SSD_NAME)
+
+root.resolve_dictionary_inputs()
 
 # Figure out connections, parse modelDescriptions
 connectionmultimap = {} # Multimap of outputs to inputs
 mds = []
+fmumap = {}  #maps fmu names to IDs
 for fmu in fmus:
+    fmumap[fmu.get_name()] = fmu.id
     fmu.connect(connectionmultimap)
 
     # Parse modelDescription, turn variable list into map
@@ -215,13 +589,24 @@ for fmu in fmus:
 
     svs = {}
     for sv in tree.getroot().find('ModelVariables').findall('ScalarVariable'):
-        if sv.attrib['name'] in svs:
-            print(fmu.path + ' contains multiple variables named "' + sc.attrib['name'] + '"!')
+        name = sv.attrib['name']
+        if name in svs:
+            print(fmu.path + ' contains multiple variables named "' + name + '"!')
             exit(1)
 
+        causality = ''
+
         if not CAUSALITY in sv.attrib:
-            # Not an input or output. Probably a parameter
-            continue
+            if 'variability' in sv.attrib and sv.attrib['variability'] == 'parameter':
+                #this happens with SampleSystemSubSystemDictionary.ssp
+                print(('WARNING: Found variable %s without causality and variability="parameter". ' % name)+
+                      'This violates the spec. Treating as a parameter')
+                causality = 'parameter'
+            else:
+                print('WARNING: FMU %s has variable %s without causality - ignoring' % (fmu.get_name(), name))
+                continue
+        else:
+            causality = sv.attrib[CAUSALITY]
 
         t = ''
         if sv.find('Real')      != None: t = 'r'
@@ -230,15 +615,33 @@ for fmu in fmus:
         elif sv.find('Enum')    != None: t = 'e'
         elif sv.find('String')  != None: t = 's'
         else:
-            print(fmu.path + ' variable "' + sv.attrib['name'] + '" has unknown type')
+            print(fmu.path + ' variable "' + name + '" has unknown type')
             exit(1)
 
-        svs[sv.attrib['name']] = {
+        svs[name] = {
             'vr': int(sv.attrib['valueReference']),
-            CAUSALITY: sv.attrib[CAUSALITY],
+            CAUSALITY: causality,
             'type': t,
         }
     mds.append(svs)
+
+flatparams = []
+for key,value in parameters.iteritems():
+    parts = key.split('.')
+    fmuname = '.'.join(parts[0:-1])
+    paramname = parts[-1]
+    if fmuname in fmumap:
+        fmu = fmus[fmumap[fmuname]]
+        if paramname in mds[fmu.id]:
+            p = mds[fmu.id][paramname]
+            if p[CAUSALITY] == 'input' or p[CAUSALITY] == 'parameter':
+                flatparams.extend(['-p','%s,%i,%i,%s' % (value['type'], fmu.id, p['vr'], value['value'])])
+            else:
+                print('WARNING: FMU %s, tried to set variable %s which is neither an input nor a parameter' % (fmuname, paramname))
+        else:
+            print('WARNING: FMU %s has no variable called %s' % (fmuname, paramname))
+    else:
+        print('WARNING: No FMU called %s for parameter %s' % (fmuname, paramname))
 
 #print connections
 #print mds
@@ -265,7 +668,7 @@ for fmu in fmus:
 #read connections and parameters from stdin, since they can be quite many
 #stdin because we want to avoid leaving useless files on the filesystem
 args = ['mpiexec','-np','1','fmi-mpi-master','-t','9.9','-d','0.1','-a','-'] + servers
-print(" ".join(args) + " <<< " + '"' + " ".join(flatconns) + '"')
+print(" ".join(args) + " <<< " + '"' + " ".join(flatconns+flatparams) + '"')
 
 #pipe arguments to master, leave stdout and stderr alone
 p = subprocess.Popen(args, stdin=subprocess.PIPE)

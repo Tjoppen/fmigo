@@ -145,10 +145,13 @@ fmi2Component fmi2Instantiate(fmi2String instanceName, fmi2Type fmuType, fmi2Str
         int i;
         comp->instanceName = functions->allocateMemory(1 + strlen(instanceName), sizeof(char));
 
-        // set all categories to on or off. fmi2SetDebugLogging should be called to choose specific categories.
+        // UMIT: log errors only, if logging is on. We don't have to enable all of them,
+        // to quote the spec: "Which LogCategories the FMU sets is unspecified."
+        // fmi2SetDebugLogging should be called to choose specific categories.
         for (i = 0; i < NUMBER_OF_CATEGORIES; i++) {
-            comp->logCategories[i] = loggingOn;
+            comp->logCategories[i] = 0;
         }
+        comp->logCategories[LOG_ERROR] = loggingOn;
     }
     if (!comp || !comp->instanceName) {
 

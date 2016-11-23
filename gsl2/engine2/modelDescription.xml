@@ -57,22 +57,21 @@
         name="theta_in"
         valueReference="5"
         description="angle input (for coupling)"
-        causality="output">
-      <Real />
+        causality="input">
+      <Real start="0"/>
     </ScalarVariable>
     <ScalarVariable
         name="omega_in"
         valueReference="6"
         description="angular velocity input (for coupling)"
-        causality="output">
-      <Real />
+        causality="input">
+      <Real start="0"/>
     </ScalarVariable>
     <ScalarVariable
         name="tau_in"
         valueReference="7"
         description="coupling torque"
-        causality="input"
-        initial="exact">
+        causality="input">
       <Real start="0"/>
     </ScalarVariable>
 

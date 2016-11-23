@@ -32,7 +32,7 @@ test:
   script:
     # Re-build FMUs
     # This wouldn't be needed if we could mark all .fmu files as artifacts
-    - mkdir umit-fmus/build
+    - mkdir -p umit-fmus/build
     - cd umit-fmus/build
     - cmake .. -G Ninja
     - ninja

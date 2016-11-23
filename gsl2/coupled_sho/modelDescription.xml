@@ -84,13 +84,13 @@
     <ScalarVariable name="v0"
                     valueReference="5"  
                     description="external driving velocity"                 
-                    causality="input" initial="exact">
+                    causality="input">
       <Real start="0"/>
     </ScalarVariable>
     <ScalarVariable name="force"    
                     valueReference="6"  
                     description="driving force"                             
-                    causality="input" initial="exact">
+                    causality="input">
       <Real start="0"/>
     </ScalarVariable>
 

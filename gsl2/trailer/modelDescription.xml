@@ -220,8 +220,7 @@ Control can be applied via a brake.
         name="phi_i"
         valueReference="20"
         description="external input displacement angle on differential"
-        causality="input"
-        initial="exact">
+        causality="input">
       <Real start="0"/>
     </ScalarVariable>
     <!-- index="21"-->
@@ -229,8 +228,7 @@ Control can be applied via a brake.
         name="omega_i"
         valueReference="21"
         description="external input velocity on differential"
-        causality="input"
-        initial="exact">
+        causality="input">
       <Real start="0"/>
     </ScalarVariable>   
 
@@ -239,8 +237,7 @@ Control can be applied via a brake.
         name="tau_d"
         valueReference="22"
         description="external driving torque on differential"
-        causality="input"
-        initial="exact">
+        causality="input">
       <Real start="0"/>
     </ScalarVariable>   
     <!-- index="23"-->
@@ -248,8 +245,7 @@ Control can be applied via a brake.
         name="tau_e"
         valueReference="23"
         description="extra external driving torque on differential"
-        causality="input"
-        initial="exact">
+        causality="input">
       <Real start="0"/>
     </ScalarVariable>   
     <!-- index="24"-->
@@ -257,8 +253,7 @@ Control can be applied via a brake.
         name="angle"
         valueReference="24"
         description="road angle in radians"
-        causality="input"
-        initial="exact">
+        causality="input">
       <Real start="0"/>
     </ScalarVariable>   
 
@@ -267,8 +262,7 @@ Control can be applied via a brake.
         name="brake"
         valueReference="25"
         description="brake position"
-        causality="input"
-        initial="exact">
+        causality="input">
       <Real start="0"/>
     </ScalarVariable>   
 
@@ -277,8 +271,7 @@ Control can be applied via a brake.
         name="x_in"
         valueReference="26"
         description="input coupling displacement"
-        causality="input"
-        initial="exact">
+        causality="input">
       <Real start="0"/>
     </ScalarVariable>   
 
@@ -287,8 +280,7 @@ Control can be applied via a brake.
         name="v_in"
         valueReference="27"
         description="input coupling speed"
-        causality="input"
-        initial="exact">
+        causality="input">
       <Real start="0"/>
     </ScalarVariable>   
 
@@ -297,8 +289,7 @@ Control can be applied via a brake.
         name="f_in"
         valueReference="28"
         description="input coupling force"
-        causality="input"
-        initial="exact">
+        causality="input">
       <Real start="0"/>
     </ScalarVariable>   
 

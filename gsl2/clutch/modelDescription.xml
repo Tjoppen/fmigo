@@ -87,14 +87,14 @@
         name="v_in"             
         valueReference="6"  
         description="external driving velocity"             
-        causality="input" initial="exact">
+        causality="input">
       <Real start="0"/>
     </ScalarVariable>
     <ScalarVariable 
         name="force_in"         
         valueReference="7"  
         description="driving force"                         
-        causality="input" initial="exact">
+        causality="input">
       <Real start="0"/>
     </ScalarVariable>
 

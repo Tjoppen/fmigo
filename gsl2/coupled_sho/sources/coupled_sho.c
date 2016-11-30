@@ -12,6 +12,9 @@ typedef struct {
 #define SIMULATION_TYPE coupled_sho_simulation
 #define SIMULATION_INIT coupled_sho_init
 #define SIMULATION_FREE coupled_sho_free
+//fix compiler warning when casting coupled_sho_simulation* to cgsl_simulation*
+#define SIMULATION_GET(x) cgsl_simulation_get((cgsl_simulation*)(x))
+#define SIMULATION_SET(x) cgsl_simulation_set((cgsl_simulation*)(x))
 
 #include "fmuTemplate.h"
 

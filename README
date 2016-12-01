@@ -57,13 +57,12 @@ Things to do:
 In no particular order, some items might be deleted
 
 -- SPP integration
-
+         -> done
 -- FMI/X:
    -- support for
-                  -- shared memory
                   -- MPI
                   -- TCP/IP
-                  -- UDP
+                  
     -- check performance on high performance switches, clusters, etc.
     -- Abisko for TCP/IP and MPI
 

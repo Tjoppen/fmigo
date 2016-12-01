@@ -21,6 +21,13 @@ struct MultiValue {
     int i;
     bool b;
     std::string s;
+
+    MultiValue() : r(0), i(0), b(false) {
+    }
+
+    bool operator==(const MultiValue& a) const {
+        return r==a.r && i==a.i && b==a.b && s==a.s;
+    }
 };
 
 class WeakConnection {

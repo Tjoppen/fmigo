@@ -19,18 +19,13 @@ namespace fmitcp_master {
 
 //aka parallel stepper
 class JacobiMaster : public BaseMaster {
-protected:
-    vector<WeakConnection> m_weakConnections;
-    OutputRefsType clientWeakRefs;
-
 public:
     JacobiMaster(vector<FMIClient*> clients, vector<WeakConnection> weakConnections) :
-            BaseMaster(clients), m_weakConnections(weakConnections) {
+            BaseMaster(clients, weakConnections) {
         fprintf(stderr, "JacobiMaster\n");
     }
 
     void prepare() {
-        clientWeakRefs = getOutputWeakRefs(m_weakConnections);
     }
 
     void runIteration(double t, double dt) {
@@ -61,12 +56,11 @@ public:
 
 //aka serial stepper
 class GaussSeidelMaster : public BaseMaster {
-    vector<WeakConnection> m_weakConnections;
     map<FMIClient*, OutputRefsType> clientGetXs;  //one OutputRefsType for each client
     std::vector<int> stepOrder;
 public:
     GaussSeidelMaster(vector<FMIClient*> clients, vector<WeakConnection> weakConnections, std::vector<int> stepOrder) :
-        BaseMaster(clients), m_weakConnections(weakConnections), stepOrder(stepOrder) {
+        BaseMaster(clients, weakConnections), stepOrder(stepOrder) {
         fprintf(stderr, "GSMaster\n");
     }
 

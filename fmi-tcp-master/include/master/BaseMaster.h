@@ -9,18 +9,29 @@
 #define BASEMASTER_H_
 
 #include "FMIClient.h"
+#ifdef USE_GPL
+#include <gsl/gsl_multiroots.h>
+#endif
 
 namespace fmitcp_master {
     class BaseMaster {
     protected:
         std::vector<FMIClient*> m_clients;
+        std::vector<WeakConnection> m_weakConnections;
+        OutputRefsType clientWeakRefs;
+
+        InputRefsValuesType initialNonReals;  //for loop solver
 
     public:
         //number of pending requests sent to clients
         size_t getNumPendingRequests() const;
 
-        explicit BaseMaster(std::vector<FMIClient*> clients);
+        explicit BaseMaster(std::vector<FMIClient*> clients, std::vector<WeakConnection> weakConnections);
         virtual ~BaseMaster();
+#ifdef USE_GPL
+        static int loop_residual_f(const gsl_vector *x, void *params, gsl_vector *f);
+#endif
+        void solveLoops();
         virtual void prepare() {};
         virtual void runIteration(double t, double dt) = 0;
 

@@ -122,7 +122,8 @@ int fmitcp_master::parseArguments( int argc,
                     double *compliance,
                     int *command_port,
                     int *results_port,
-                    bool *paused
+                    bool *paused,
+                    bool *solveLoops
         ) {
     int index, c;
     opterr = 0;
@@ -136,7 +137,7 @@ int fmitcp_master::parseArguments( int argc,
 
     vector<char*> argv2 = make_char_vector(argvstore);
 
-    while ((c = getopt (argv2.size(), argv2.data(), "xrl:vqht:c:d:s:o:p:f:m:g:w:C:j:5:F:NM:a:z:Z")) != -1){
+    while ((c = getopt (argv2.size(), argv2.data(), "xrl:vqht:c:d:s:o:p:f:m:g:w:C:j:5:F:NM:a:z:ZL")) != -1){
         int n, skip, l, cont, i, numScanned, stop, vis;
         deque<string> parts;
         if (optarg) parts = split(optarg, ':');
@@ -435,6 +436,10 @@ int fmitcp_master::parseArguments( int argc,
         case 'Z':
             fprintf(stderr, "Starting master in paused state\n");
             *paused = true;
+            break;
+
+        case 'L':
+            *solveLoops = true;
             break;
 
         case '?':

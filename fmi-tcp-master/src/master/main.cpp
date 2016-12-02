@@ -641,7 +641,8 @@ int main(int argc, char *argv[] ) {
     //send user-defined parameters
     sendUserParams(master, clients, params);
 
-    master->sendWait(clients, fmi2_import_initialize_slave(0, 0, true, relativeTolerance, startTime, endTime >= 0, endTime));
+    master->send(clients, fmi2_import_setup_experiment(0, 0, true, relativeTolerance, startTime, endTime >= 0, endTime));
+    master->send(clients, fmi2_import_enter_initialization_mode(0, 0));
 
     double t = startTime;
 #ifdef WIN32
@@ -655,6 +656,9 @@ int main(int argc, char *argv[] ) {
 
     //prepare solver and all that
     master->prepare();
+
+    master->send(clients, fmi2_import_exit_initialization_mode(0, 0));
+    master->wait();
 
 #ifndef WIN32
     //HDF5

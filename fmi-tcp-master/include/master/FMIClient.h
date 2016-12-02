@@ -120,10 +120,10 @@ namespace fmitcp_master {
         // --- These methods overrides Client methods. Most of them just passes the result to the Master ---
 
         void on_fmi2_import_instantiate_res                     (int mid, fmitcp_proto::jm_status_enu_t status);
-        void on_fmi2_import_initialize_slave_res                (int mid, fmitcp_proto::fmi2_status_t status);
-        void on_fmi2_import_terminate_slave_res                 (int mid, fmitcp_proto::fmi2_status_t status);
-        //void on_fmi2_import_reset_slave_res                     (int mid, fmitcp_proto::fmi2_status_t status);
-        void on_fmi2_import_free_slave_instance_res             (int mid);
+        void on_fmi2_import_exit_initialization_mode_res        (int mid, fmitcp_proto::fmi2_status_t status);
+        void on_fmi2_import_terminate_res                       (int mid, fmitcp_proto::fmi2_status_t status);
+        //void on_fmi2_import_reset_res                           (int mid, fmitcp_proto::fmi2_status_t status);
+        void on_fmi2_import_free_instance_res                   (int mid);
         //void on_fmi2_import_set_real_input_derivatives_res      (int mid, fmitcp_proto::fmi2_status_t status);
         //void on_fmi2_import_get_real_output_derivatives_res     (int mid, fmitcp_proto::fmi2_status_t status, const vector<double>& values);
         //void on_fmi2_import_cancel_step_res                     (int mid, fmitcp_proto::fmi2_status_t status);
@@ -133,8 +133,6 @@ namespace fmitcp_master {
         //void on_fmi2_import_get_integer_status_res              (int mid, int value);
         //void on_fmi2_import_get_boolean_status_res              (int mid, bool value);
         //void on_fmi2_import_get_string_status_res               (int mid, string value);
-        //void on_fmi2_import_instantiate_model_res               (int mid, fmitcp_proto::jm_status_enu_t status);
-        //void on_fmi2_import_free_model_instance_res             (int mid);
         //void on_fmi2_import_set_time_res                        (int mid, fmitcp_proto::fmi2_status_t status);
         //void on_fmi2_import_set_continuous_states_res           (int mid, fmitcp_proto::fmi2_status_t status);
         //void on_fmi2_import_completed_integrator_step_res       (int mid, bool callEventUpdate, fmitcp_proto::fmi2_status_t status);

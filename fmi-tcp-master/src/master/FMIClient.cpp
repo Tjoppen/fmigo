@@ -38,8 +38,8 @@ FMIClient::FMIClient(zmq::context_t &context, int id, string host, long port) : 
 
 FMIClient::~FMIClient() {
   //tell remove FMU to free itself
-  sendMessageBlocking(fmi2_import_terminate_slave(0,0));
-  sendMessageBlocking(fmi2_import_free_slave_instance(0,0));
+  sendMessageBlocking(fmi2_import_terminate(0,0));
+  sendMessageBlocking(fmi2_import_free_instance(0,0));
 
   // free the FMIL instances used for parsing the xml file.
   if(m_fmi2Instance!=NULL)  fmi2_import_free(m_fmi2Instance);
@@ -171,16 +171,16 @@ void FMIClient::on_fmi2_import_instantiate_res(int mid, fmitcp_proto::jm_status_
     m_master->onSlaveInstantiated(this);
 };
 
-void FMIClient::on_fmi2_import_initialize_slave_res(int mid, fmitcp_proto::fmi2_status_t status){
+void FMIClient::on_fmi2_import_exit_initialization_mode_res(int mid, fmitcp_proto::fmi2_status_t status){
     m_initialized = true; // Todo check the status
     m_master->onSlaveInitialized(this);
 };
 
-void FMIClient::on_fmi2_import_terminate_slave_res(int mid, fmitcp_proto::fmi2_status_t status){
+void FMIClient::on_fmi2_import_terminate_res(int mid, fmitcp_proto::fmi2_status_t status){
     m_master->onSlaveTerminated(this);
 };
 
-void FMIClient::on_fmi2_import_free_slave_instance_res(int mid){
+void FMIClient::on_fmi2_import_free_instance_res(int mid){
     m_master->onSlaveFreed(this);
 };
 
@@ -250,8 +250,6 @@ void FMIClient::on_fmi2_import_get_directional_derivative_res(int mid, const vec
 //void on_fmi2_import_get_integer_status_res              (int mid, int value);
 //void on_fmi2_import_get_boolean_status_res              (int mid, bool value);
 //void on_fmi2_import_get_string_status_res               (int mid, string value);
-//void on_fmi2_import_instantiate_model_res               (int mid, fmitcp_proto::jm_status_enu_t status);
-//void on_fmi2_import_free_model_instance_res             (int mid);
 //void on_fmi2_import_set_time_res                        (int mid, fmitcp_proto::fmi2_status_t status);
 //void on_fmi2_import_set_continuous_states_res           (int mid, fmitcp_proto::fmi2_status_t status);
 //void on_fmi2_import_completed_integrator_step_res       (int mid, bool callEventUpdate, fmitcp_proto::fmi2_status_t status);

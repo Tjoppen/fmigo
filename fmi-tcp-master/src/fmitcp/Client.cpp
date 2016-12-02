@@ -75,10 +75,12 @@ void Client::clientData(const char* data, long size){
     // Check type and run the corresponding event handler
     switch (type) {
     case fmitcp_message_Type_type_fmi2_import_instantiate_res:                  NORMAL_CASE(fmi2_import_instantiate); break;
-    case fmitcp_message_Type_type_fmi2_import_initialize_slave_res:             NORMAL_CASE(fmi2_import_initialize_slave); break;
-    case fmitcp_message_Type_type_fmi2_import_terminate_slave_res:              NORMAL_CASE(fmi2_import_terminate_slave); break;
-    case fmitcp_message_Type_type_fmi2_import_reset_slave_res:                  NORMAL_CASE(fmi2_import_reset_slave); break;
-    case fmitcp_message_Type_type_fmi2_import_free_slave_instance_res:          NOSTAT_CASE(fmi2_import_free_slave_instance); break;
+    case fmitcp_message_Type_type_fmi2_import_free_instance_res:                NOSTAT_CASE(fmi2_import_free_instance); break;
+    case fmitcp_message_Type_type_fmi2_import_setup_experiment_res:             NORMAL_CASE(fmi2_import_setup_experiment); break;
+    case fmitcp_message_Type_type_fmi2_import_enter_initialization_mode_res:    NORMAL_CASE(fmi2_import_enter_initialization_mode); break;
+    case fmitcp_message_Type_type_fmi2_import_exit_initialization_mode_res:     NORMAL_CASE(fmi2_import_exit_initialization_mode); break;
+    case fmitcp_message_Type_type_fmi2_import_terminate_res:                    NORMAL_CASE(fmi2_import_terminate); break;
+    case fmitcp_message_Type_type_fmi2_import_reset_res:                        NORMAL_CASE(fmi2_import_reset); break;
     case fmitcp_message_Type_type_fmi2_import_set_real_input_derivatives_res:   NORMAL_CASE(fmi2_import_set_real_input_derivatives); break;
     case fmitcp_message_Type_type_fmi2_import_get_real_output_derivatives_res: {
         fmi2_import_get_real_output_derivatives_res * r = res.mutable_fmi2_import_get_real_output_derivatives_res();
@@ -124,8 +126,6 @@ void Client::clientData(const char* data, long size){
 
         break;
     }
-    case fmitcp_message_Type_type_fmi2_import_instantiate_model_res:            NORMAL_CASE(fmi2_import_instantiate_model); break;
-    case fmitcp_message_Type_type_fmi2_import_free_model_instance_res:          NOSTAT_CASE(fmi2_import_free_model_instance); break;
     case fmitcp_message_Type_type_fmi2_import_set_time_res:                     NORMAL_CASE(fmi2_import_set_time); break;
     case fmitcp_message_Type_type_fmi2_import_set_continuous_states_res:        NORMAL_CASE(fmi2_import_set_continuous_states); break;
     case fmitcp_message_Type_type_fmi2_import_completed_integrator_step_res: {
@@ -160,10 +160,6 @@ void Client::clientData(const char* data, long size){
         break;
     }
     case fmitcp_message_Type_type_fmi2_import_get_nominal_continuous_states_res: {
-        m_logger.log(Logger::LOG_NETWORK,"This command is TODO\n");
-        break;
-    }
-    case fmitcp_message_Type_type_fmi2_import_terminate_res: {
         m_logger.log(Logger::LOG_NETWORK,"This command is TODO\n");
         break;
     }

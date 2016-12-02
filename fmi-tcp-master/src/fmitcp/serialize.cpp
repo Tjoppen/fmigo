@@ -20,13 +20,28 @@ std::string fmitcp::serialize::fmi2_import_instantiate2(int message_id, bool vis
   return m.SerializeAsString();
 }
 
-std::string fmitcp::serialize::fmi2_import_initialize_slave(int message_id, int fmuId, bool toleranceDefined, double tolerance, double startTime,
+//implementation for all messages to FMI function that take no arguments (void)
+#define FMU_VOID_REQ_IMPL(name)\
+std::string fmitcp::serialize::name(int message_id, int fmuId){\
+    fmitcp_message m;\
+    m.set_type(fmitcp_message_Type_type_##name## _req);\
+\
+    name##_req * req = m.mutable_##name##_req();\
+    req->set_message_id(message_id);\
+    req->set_fmuid(fmuId);\
+\
+    return m.SerializeAsString();\
+}
+
+FMU_VOID_REQ_IMPL(fmi2_import_free_instance)
+
+std::string fmitcp::serialize::fmi2_import_setup_experiment(int message_id, int fmuId, bool toleranceDefined, double tolerance, double startTime,
     bool stopTimeDefined, double stopTime) {
     // Construct message
     fmitcp_message m;
-    m.set_type(fmitcp_message_Type_type_fmi2_import_initialize_slave_req);
+    m.set_type(fmitcp_message_Type_type_fmi2_import_setup_experiment_req);
 
-    fmi2_import_initialize_slave_req * req = m.mutable_fmi2_import_initialize_slave_req();
+    fmi2_import_setup_experiment_req * req = m.mutable_fmi2_import_setup_experiment_req();
     req->set_message_id(message_id);
     req->set_fmuid(fmuId);
     req->set_tolerancedefined(toleranceDefined);
@@ -38,39 +53,10 @@ std::string fmitcp::serialize::fmi2_import_initialize_slave(int message_id, int 
     return m.SerializeAsString();
 }
 
-std::string fmitcp::serialize::fmi2_import_terminate_slave(int message_id, int fmuId){
-    fmitcp_message m;
-    m.set_type(fmitcp_message_Type_type_fmi2_import_terminate_slave_req);
-
-    fmi2_import_terminate_slave_req * req = m.mutable_fmi2_import_terminate_slave_req();
-    req->set_message_id(message_id);
-    req->set_fmuid(fmuId);
-
-    return m.SerializeAsString();
-}
-
-std::string fmitcp::serialize::fmi2_import_reset_slave(int message_id, int fmuId){
-    fmitcp_message m;
-    m.set_type(fmitcp_message_Type_type_fmi2_import_reset_slave_req);
-
-    fmi2_import_reset_slave_req * req = m.mutable_fmi2_import_reset_slave_req();
-    req->set_message_id(message_id);
-    req->set_fmuid(fmuId);
-
-
-    return m.SerializeAsString();
-}
-
-std::string fmitcp::serialize::fmi2_import_free_slave_instance(int message_id,int fmuId){
-    fmitcp_message m;
-    m.set_type(fmitcp_message_Type_type_fmi2_import_free_slave_instance_req);
-
-    fmi2_import_free_slave_instance_req * req = m.mutable_fmi2_import_free_slave_instance_req();
-    req->set_message_id(message_id);
-    req->set_fmuid(fmuId);
-
-    return m.SerializeAsString();
-}
+FMU_VOID_REQ_IMPL(fmi2_import_enter_initialization_mode)
+FMU_VOID_REQ_IMPL(fmi2_import_exit_initialization_mode)
+FMU_VOID_REQ_IMPL(fmi2_import_terminate)
+FMU_VOID_REQ_IMPL(fmi2_import_reset)
 
 std::string fmitcp::serialize::fmi2_import_set_real_input_derivatives(int message_id, int fmuId,
                                                     std::vector<int> valueRefs,
@@ -99,16 +85,7 @@ std::string fmitcp::serialize::fmi2_import_get_real_output_derivatives(int messa
     return m.SerializeAsString();
 }
 
-std::string fmitcp::serialize::fmi2_import_cancel_step(int message_id, int fmuId){
-    fmitcp_message m;
-    m.set_type(fmitcp_message_Type_type_fmi2_import_cancel_step_req);
-
-    fmi2_import_cancel_step_req * req = m.mutable_fmi2_import_cancel_step_req();
-    req->set_message_id(message_id);
-    req->set_fmuid(fmuId);
-
-    return m.SerializeAsString();
-}
+FMU_VOID_REQ_IMPL(fmi2_import_cancel_step)
 
 std::string fmitcp::serialize::fmi2_import_do_step(int message_id,
                                  int fmuId,
@@ -196,17 +173,7 @@ std::string fmitcp::serialize::fmi2_import_get_string_status(int message_id, int
     return m.SerializeAsString();
 }
 
-std::string fmitcp::serialize::fmi2_import_get_version(int message_id, int fmuId){
-    // Construct message
-    fmitcp_message m;
-    m.set_type(fmitcp_message_Type_type_fmi2_import_get_version_req);
-
-    fmi2_import_get_version_req * req = m.mutable_fmi2_import_get_version_req();
-    req->set_message_id(message_id);
-    req->set_fmuid(fmuId);
-
-    return m.SerializeAsString();
-}
+FMU_VOID_REQ_IMPL(fmi2_import_get_version)
 
 std::string fmitcp::serialize::fmi2_import_set_debug_logging(int message_id, int fmuId, bool loggingOn, const std::vector<string> categories){
     // Construct message
@@ -337,16 +304,7 @@ std::string fmitcp::serialize::fmi2_import_get_string (int message_id, int fmuId
     return m.SerializeAsString();
 }
 
-std::string fmitcp::serialize::fmi2_import_get_fmu_state(int message_id, int fmuId){
-    fmitcp_message m;
-    m.set_type(fmitcp_message_Type_type_fmi2_import_get_fmu_state_req);
-
-    fmi2_import_get_fmu_state_req * req = m.mutable_fmi2_import_get_fmu_state_req();
-    req->set_message_id(message_id);
-    req->set_fmuid(fmuId);
-
-    return m.SerializeAsString();
-}
+FMU_VOID_REQ_IMPL(fmi2_import_get_fmu_state)
 
 std::string fmitcp::serialize::fmi2_import_set_fmu_state(int message_id, int fmuId, int stateId){
     fmitcp_message m;
@@ -392,14 +350,4 @@ std::string fmitcp::serialize::fmi2_import_get_directional_derivative(int messag
     return m.SerializeAsString();
 }
 
-
-std::string fmitcp::serialize::get_xml(int message_id, int fmuId){
-    fmitcp_message m;
-    m.set_type(fmitcp_message_Type_type_get_xml_req);
-
-    get_xml_req * req = m.mutable_get_xml_req();
-    req->set_message_id(message_id);
-    req->set_fmuid(fmuId);
-
-    return m.SerializeAsString();
-}
+FMU_VOID_REQ_IMPL(get_xml)

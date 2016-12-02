@@ -11,23 +11,11 @@ typedef struct {
                        *  "springing" when changing gears */
 } clutchgear_simulation;
 
-static void clutchgear_free(clutchgear_simulation simulation) {
-  cgsl_free_simulation(simulation.sim);
-}
-
-static void clutchgear_get(clutchgear_simulation *s) {
-  cgsl_simulation_get(&s->sim);
-}
-
-static void clutchgear_set(clutchgear_simulation *s) {
-  cgsl_simulation_set(&s->sim);
-}
-
 #define SIMULATION_TYPE clutchgear_simulation
 #define SIMULATION_INIT clutch_init
-#define SIMULATION_FREE clutchgear_free
-#define SIMULATION_GET  clutchgear_get
-#define SIMULATION_SET  clutchgear_set
+#define SIMULATION_FREE(s) cgsl_free_simulation((s).sim)
+#define SIMULATION_GET(s)  cgsl_simulation_get(&(s)->sim);
+#define SIMULATION_SET(s)  cgsl_simulation_set(&(s)->sim);
 
 #include "fmuTemplate.h"
 

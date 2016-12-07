@@ -224,7 +224,6 @@ string Server::clientData(const char *data, size_t size) {
     if (!m_sendDummyResponses) {
       // instantiate FMU
       status = fmi2_import_instantiate(m_fmi2Instance, m_instanceName, fmi2_cosimulation, m_resourcePath.c_str(), visible);
-      setStartValues();
     }
 
     // Create response message
@@ -272,6 +271,7 @@ string Server::clientData(const char *data, size_t size) {
     fmi2_status_t status = fmi2_status_ok;
     if (!m_sendDummyResponses) {
       status = fmi2_import_enter_initialization_mode(m_fmi2Instance);
+      setStartValues();
     }
 
     // Create response message

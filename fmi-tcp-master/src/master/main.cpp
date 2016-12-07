@@ -636,13 +636,11 @@ int main(int argc, char *argv[] ) {
         master->send(clients[x], fmi2_import_instantiate2(0, x < fmuVisibilities.size() ? fmuVisibilities[x] : false));
     }
 
-    //TODO: send initial values parsed from XML
+    master->send(clients, fmi2_import_setup_experiment(0, 0, true, relativeTolerance, startTime, endTime >= 0, endTime));
+    master->send(clients, fmi2_import_enter_initialization_mode(0, 0));
 
     //send user-defined parameters
     sendUserParams(master, clients, params);
-
-    master->send(clients, fmi2_import_setup_experiment(0, 0, true, relativeTolerance, startTime, endTime >= 0, endTime));
-    master->send(clients, fmi2_import_enter_initialization_mode(0, 0));
 
     double t = startTime;
 #ifdef WIN32

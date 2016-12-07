@@ -81,6 +81,17 @@ int jac_engine2 (double t, const double x[], double *dfdx, double dfdt[], void *
   return GSL_SUCCESS;
 }
 
+#define HAVE_INITIALIZATION_MODE
+static int get_initial_states_size(state_t *s) {
+  return 3;
+}
+
+static void get_initial_states(state_t *s, double *initials) {
+  initials[0] = s->md.theta0;
+  initials[1] = s->md.omega0;
+  initials[2] = 0;
+}
+
 static int sync_out(int n, const double outputs[], void * params) {
   state_t *s = params;
   double dxdt[3];
@@ -97,10 +108,13 @@ static int sync_out(int n, const double outputs[], void * params) {
 
 
 static void engine2_init(state_t *s) {
-  const double initials[3] = {s->md.theta0, s->md.omega0, 0};
+
+  double initials[3];
+  get_initial_states(s, initials);
+
   s->simulation = cgsl_init_simulation(
     cgsl_epce_default_model_init(
-      cgsl_model_default_alloc(sizeof(initials)/sizeof(initials[0]), initials, s, engine2, jac_engine2, NULL, NULL, 0),
+      cgsl_model_default_alloc(get_initial_states_size(s), initials, s, engine2, jac_engine2, NULL, NULL, 0),
       s->md.filter_length,
       sync_out,
       s

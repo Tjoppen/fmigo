@@ -62,8 +62,8 @@ static fmi2Boolean invalidState(ModelInstance *comp, const char *f, int statesEx
     if (!comp)
         return fmi2True;
     if (!(comp->s.state & statesExpected)) {
+        FILTERED_LOG(comp, fmi2Error, LOG_ERROR, "%s: Illegal call sequence. got %i, expected %i", f, comp->s.state, statesExpected)
         comp->s.state = modelError;
-        FILTERED_LOG(comp, fmi2Error, LOG_ERROR, "%s: Illegal call sequence.", f)
         return fmi2True;
     }
     return fmi2False;
@@ -373,6 +373,7 @@ fmi2Status fmi2SetReal (fmi2Component c, const fmi2ValueReference vr[], size_t n
 #ifndef HAVE_GENERATED_GETTERS_SETTERS
     int i;
 #endif
+    fmi2Status ret;
     ModelInstance *comp = (ModelInstance *)c;
     if (invalidState(comp, "fmi2SetReal", modelInstantiated|modelInitializationMode|modelInitialized|modelStepping))
         return fmi2Error;
@@ -382,7 +383,7 @@ fmi2Status fmi2SetReal (fmi2Component c, const fmi2ValueReference vr[], size_t n
         return fmi2Error;
     FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2SetReal: nvr = %d", nvr)
 #ifdef HAVE_GENERATED_GETTERS_SETTERS
-    return generated_fmi2SetReal(&comp->s.md, vr, nvr, value);
+    ret = generated_fmi2SetReal(&comp->s.md, vr, nvr, value);
 #else
     for (i = 0; i < nvr; i++) {
         if (vrOutOfRange(comp, "fmi2SetReal", vr[i], NUMBER_OF_REALS))
@@ -390,8 +391,20 @@ fmi2Status fmi2SetReal (fmi2Component c, const fmi2ValueReference vr[], size_t n
         FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2SetReal: #r%d# = %.16g", vr[i], value[i])
         comp->s.r[vr[i]] = value[i];
     }
-    return fmi2OK;
+    ret = fmi2OK;
 #endif
+#ifdef HAVE_INITIALIZATION_MODE
+    //we could do something similar in other modes too
+    //we just have to be careful what we use for states going into sync_out()
+    if (comp->s.state == modelInitializationMode) {
+        int N = get_initial_states_size(&comp->s);
+        double *initials = calloc(N, sizeof(double));
+        get_initial_states(&comp->s, initials);
+        sync_out(N, initials, &comp->s);
+        free(initials);
+    }
+#endif
+    return ret;
 }
 
 fmi2Status fmi2SetInteger(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, const fmi2Integer value[]) {

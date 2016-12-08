@@ -422,7 +422,7 @@ message fmi2_import_initialize_model_res {
 message fmi2_import_get_derivatives_req {
     required int32 message_id = 1;
     required int32 fmuId = 2;
-    required int32 nx = 3;
+    required int32 nDerivatives = 3;
 }
 message fmi2_import_get_derivatives_res {
     required int32 message_id = 1;
@@ -472,10 +472,11 @@ message fmi2_import_completed_event_iteration_res {
 message fmi2_import_get_continuous_states_req {
     required int32 message_id = 1;
     required int32 fmuId = 2;
+    required int32 nx = 3;
 }
 message fmi2_import_get_continuous_states_res {
     required int32 message_id = 1;
-    repeated double states = 2 [packed=true];
+    repeated double x = 2 [packed=true];
     required fmi2_status_t status = 3;
 }
 

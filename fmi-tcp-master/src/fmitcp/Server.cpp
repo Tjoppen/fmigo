@@ -655,7 +655,7 @@ string Server::clientData(const char *data, size_t size) {
       status = fmi2_import_set_continuous_states(m_fmi2Instance, x, r->nx());
     }
 
-    // Create message
+    // Create response
     SERVER_NORMAL_RESPONSE(set_continuous_states);
     
     sendResponse = false;
@@ -667,7 +667,29 @@ string Server::clientData(const char *data, size_t size) {
     sendResponse = false;
   } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_get_derivatives_req){
     // TODO
-    sendResponse = false;
+    // Unpack message
+    fmitcp_proto::fmi2_import_get_derivatives_req * r = req.mutable_fmi2_import_get_derivatives_req();
+    m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_derivatives_req(mid=%d,fmuId=%d,nx=%d)\n",r->message_id(), r->fmuid(), r->nx());
+
+    fmi2_status_t status = fmi2_status_ok;
+    fmi2_real_t derivatives[r->nx()]; 
+
+    if (!m_sendDummyResponses) {
+      status = fmi2_import_get_derivatives(m_fmi2Instance, derivatives, r->nx());
+    }
+
+    //Create response
+    fmitcp_proto::fmi2_import_get_derivatives_res * response = res.mutable_fmi2_import_get_derivatives_res();
+    res.set_type(fmitcp_proto::fmitcp_message_Type_type_fmi2_import_get_derivatives_res);
+    response->set_message_id(r->message_id());
+    response->set_status(fmi2StatusToProtofmi2Status(status));
+    for(int i = 0; i< r->nx();i++)
+      response->add_derivatives(derivatives[i]);
+
+    m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_get_derivatives_res(mid=%d,derivatives=%s)\n",response->message_id(),response->derivatives());
+                                                                                                                                                            
+    
+     sendResponse = false;
   } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_get_event_indicators_req){
     // TODO
     sendResponse = false;

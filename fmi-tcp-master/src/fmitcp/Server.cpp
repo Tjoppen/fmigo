@@ -631,19 +631,33 @@ string Server::clientData(const char *data, size_t size) {
     // TODO
     // Unpack message
     fmitcp_proto::fmi2_import_set_time_req * r = req.mutable_fmi2_import_set_time_req();
-
     m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_set_time_req(mid=%d,fmuId=%d,time=%f)\n",r->message_id(), r->fmuid(), r->time());
-
-    
 
     fmi2_status_t status = fmi2_status_ok;
     if (!m_sendDummyResponses) {
       status = fmi2_import_set_time(m_fmi2Instance, r->time());
     }
 
+    // Create message
     SERVER_NORMAL_RESPONSE(set_time);
 } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_set_continuous_states_req){
     // TODO
+    // Unpack message
+    fmitcp_proto::fmi2_import_set_continuous_states_req * r = req.mutable_fmi2_import_set_continuous_states_req();
+    m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_set_continuous_states_req(mid=%d,fmuId=%d,x=%f)\n",r->message_id(), r->fmuid(), r->x());
+
+    fmi2_status_t status = fmi2_status_ok;
+    fmi2_real_t x[r->nx()]; 
+    for(int i; i<r->nx();i++)
+      x[i] = r->x(i);
+
+    if (!m_sendDummyResponses) {
+      status = fmi2_import_set_continuous_states(m_fmi2Instance, x, r->nx());
+    }
+
+    // Create message
+    SERVER_NORMAL_RESPONSE(set_continuous_states);
+    
     sendResponse = false;
   } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_completed_integrator_step_req){
     // TODO

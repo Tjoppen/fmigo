@@ -384,6 +384,7 @@ message fmi2_import_set_continuous_states_req {
     required int32 message_id = 1;
     required int32 fmuId = 2;
     repeated double x = 3 [packed=true];
+    required int32 nx = 4;
 }
 message fmi2_import_set_continuous_states_res {
     required int32 message_id = 1;

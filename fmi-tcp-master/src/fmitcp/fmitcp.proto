@@ -435,10 +435,11 @@ message fmi2_import_get_derivatives_res {
 message fmi2_import_get_event_indicators_req {
     required int32 message_id = 1;
     required int32 fmuId = 2;
+    required int32 nz = 3;
 }
 message fmi2_import_get_event_indicators_res {
     required int32 message_id = 1;
-    repeated double eventIndicators = 2 [packed=true];
+    repeated double z = 2 [packed=true];
     required fmi2_status_t status = 3;
 }
 

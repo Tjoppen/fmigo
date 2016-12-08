@@ -211,6 +211,16 @@ string Server::clientData(const char *data, size_t size) {
   fmitcp_proto::fmitcp_message res;
   bool sendResponse = true;
 
+#define SERVER_NORMAL_RESPONSE(type)                                    \
+    {                                                                   \
+      /* Create response */                                             \
+      fmitcp_proto::fmi2_import_##type##_res * response = res.mutable_fmi2_import_##type##_res(); \
+      res.set_type(fmitcp_proto::fmitcp_message_Type_type_fmi2_import_##type##_res); \
+      response->set_message_id(r->message_id());                        \
+      response->set_status(fmi2StatusToProtofmi2Status(status));        \
+      m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_"#type"_res(mid=%d,status=%s)\n",response->message_id(),response->status()); \
+    } 
+
   if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_instantiate_req) {
 
     // Unpack message
@@ -619,8 +629,20 @@ string Server::clientData(const char *data, size_t size) {
 
   } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_set_time_req){
     // TODO
-    sendResponse = false;
-  } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_set_continuous_states_req){
+    // Unpack message
+    fmitcp_proto::fmi2_import_set_time_req * r = req.mutable_fmi2_import_set_time_req();
+
+    m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_set_time_req(mid=%d,fmuId=%d,time=%f)\n",r->message_id(), r->fmuid(), r->time());
+
+    
+
+    fmi2_status_t status = fmi2_status_ok;
+    if (!m_sendDummyResponses) {
+      status = fmi2_import_set_time(m_fmi2Instance, r->time());
+    }
+
+    SERVER_NORMAL_RESPONSE(set_time);
+} else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_set_continuous_states_req){
     // TODO
     sendResponse = false;
   } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_completed_integrator_step_req){

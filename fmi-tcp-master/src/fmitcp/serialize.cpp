@@ -173,7 +173,20 @@ std::string fmitcp::serialize::fmi2_import_get_string_status(int message_id, int
     return m.SerializeAsString();
 }
 
+std::string fmitcp::serialize::fmi2_import_set_time(int message_id, int fmuId, double time){
+    // Construct message
+    fmitcp_message m;
+    m.set_type(fmitcp_message_Type_type_fmi2_import_set_time_req);
+    
+    fmi2_import_set_time_req * req = m.mutable_fmi2_import_set_time_req();
+    req->set_message_id(message_id);
+    req->set_fmuid(fmuId);
+    req->set_time(time);
+
+    return m.SerializeAsString();
+}   
 FMU_VOID_REQ_IMPL(fmi2_import_get_version)
+  
 
 std::string fmitcp::serialize::fmi2_import_set_debug_logging(int message_id, int fmuId, bool loggingOn, const std::vector<string> categories){
     // Construct message

@@ -765,9 +765,6 @@ string Server::clientData(const char *data, size_t size) {
 
     m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_get_nominal_continuous_states_res(mid=%d,nominals=%s)\n",response->message_id(),response->nominal());
     sendResponse = false;
-  } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_terminate_req){
-    // TODO
-    sendResponse = false;
   } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_get_version_req) {
 
     // Unpack message

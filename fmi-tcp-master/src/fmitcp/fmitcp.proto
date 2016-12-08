@@ -485,6 +485,7 @@ message fmi2_import_get_continuous_states_res {
 message fmi2_import_get_nominal_continuous_states_req {
     required int32 message_id = 1;
     required int32 fmuId = 2;
+    required int32 nx = 3;
 }
 message fmi2_import_get_nominal_continuous_states_res {
     required int32 message_id = 1;

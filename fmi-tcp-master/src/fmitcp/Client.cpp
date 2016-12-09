@@ -147,7 +147,7 @@ void Client::clientData(const char* data, long size){
         break;
     }
     case fmitcp_message_Type_type_fmi2_import_get_derivatives_res: {
-        m_logger.log(Logger::LOG_NETWORK,"This command is TODO\n");
+        m_logger.log(Logger::LOG_NETWORK,"This command is NOT TESTED\n");
         fmi2_import_get_derivatives_res * r = res.mutable_fmi2_import_get_derivatives_res();
         m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_derivatives_res(mid=%d,derivatives=%d,status=%d)\n",r->message_id(), r->derivatives(), r->status());
         //        on_fmi2_import_get_derivatives_res(r->message_id(),repeated_to_vector<double>(r->derivatives()),r->status());
@@ -155,7 +155,7 @@ void Client::clientData(const char* data, long size){
         break;
     }
     case fmitcp_message_Type_type_fmi2_import_get_event_indicators_res: {
-        m_logger.log(Logger::LOG_NETWORK,"This command is TODO\n");
+        m_logger.log(Logger::LOG_NETWORK,"This command is NOT TESTED\n");
         fmi2_import_get_event_indicators_res * r = res.mutable_fmi2_import_get_event_indicators_res();
         m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_event_indicators_res(mid=%d,event_indicators=%d,status=%d)\n",r->message_id(), r->z(), r->status());
         
@@ -166,18 +166,18 @@ void Client::clientData(const char* data, long size){
         break;
     }
     case fmitcp_message_Type_type_fmi2_import_completed_event_iteration_res: {
-        m_logger.log(Logger::LOG_NETWORK,"This command is TODO\n");
+        m_logger.log(Logger::LOG_NETWORK,"This command is NOT TESTED\n");
         NORMAL_CASE(fmi2_import_completed_event_iteration);
         break;
     }
     case fmitcp_message_Type_type_fmi2_import_get_continuous_states_res: {
-        m_logger.log(Logger::LOG_NETWORK,"This command is TODO\n");
+        m_logger.log(Logger::LOG_NETWORK,"This command is NOT TESTED\n");
         fmi2_import_get_continuous_states_res * r = res.mutable_fmi2_import_get_continuous_states_res();
         m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_continuous_states_res(mid=%d,continuous_states=%d,states=%d)\n",r->message_id(), r->x(), r->status());
         break;
     }
     case fmitcp_message_Type_type_fmi2_import_get_nominal_continuous_states_res: {
-        m_logger.log(Logger::LOG_NETWORK,"This command is TODO\n");
+        m_logger.log(Logger::LOG_NETWORK,"This command is NOT TESTED\n");
         fmi2_import_get_nominal_continuous_states_res * r = res.mutable_fmi2_import_get_nominal_continuous_states_res();
         m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_nominal_continuous_states_res(mid=%d,continuous_states=%d,states=%d)\n",r->message_id(), r->nominal(), r->status());
         break;

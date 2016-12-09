@@ -156,6 +156,9 @@ void Client::clientData(const char* data, long size){
     }
     case fmitcp_message_Type_type_fmi2_import_get_event_indicators_res: {
         m_logger.log(Logger::LOG_NETWORK,"This command is TODO\n");
+        fmi2_import_get_event_indicators_res * r = res.mutable_fmi2_import_get_event_indicators_res();
+        m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_event_indicators_res(mid=%d,event_indicators=%d,status=%d)\n",r->message_id(), r->z(), r->status());
+        
         break;
     }
     case fmitcp_message_Type_type_fmi2_import_eventUpdate_res: {

@@ -647,12 +647,13 @@ string Server::clientData(const char *data, size_t size) {
     m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_set_continuous_states_req(mid=%d,fmuId=%d,x=%f)\n",r->message_id(), r->fmuid(), r->x());
 
     fmi2_status_t status = fmi2_status_ok;
-    fmi2_real_t x[r->nx()]; 
+    std::vector<fmi2_real_t> x;
+    x.reserve(r->nx()*sizeof(fmi2_real_t));
     for(int i; i<r->nx();i++)
       x[i] = r->x(i);
 
     if (!m_sendDummyResponses) {
-      status = fmi2_import_set_continuous_states(m_fmi2Instance, x, r->nx());
+      status = fmi2_import_set_continuous_states(m_fmi2Instance, x.data(), r->nx());
     }
 
     // Create response
@@ -672,10 +673,11 @@ string Server::clientData(const char *data, size_t size) {
     m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_derivatives_req(mid=%d,fmuId=%d,nderivatives=%d)\n",r->message_id(), r->fmuid(), r->nderivatives());
 
     fmi2_status_t status = fmi2_status_ok;
-    fmi2_real_t derivatives[r->nderivatives()]; 
+    std::vector<fmi2_real_t> derivatives;
+    derivatives.reserve(r->nderivatives()*sizeof(fmi2_real_t));
 
     if (!m_sendDummyResponses) {
-      status = fmi2_import_get_derivatives(m_fmi2Instance, derivatives, r->nderivatives());
+      status = fmi2_import_get_derivatives(m_fmi2Instance, derivatives.data(), r->nderivatives());
     }
 
     //Create response
@@ -696,10 +698,11 @@ string Server::clientData(const char *data, size_t size) {
     m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_event_indicators_req(mid=%d,fmuId=%d,nz=%d)\n",r->message_id(), r->fmuid(), r->nz());
 
     fmi2_status_t status = fmi2_status_ok;
-    fmi2_real_t z[r->nz()]; 
+    std::vector<fmi2_real_t> z;
+    z.reserve(r->nz()*sizeof(fmi2_real_t));
 
     if (!m_sendDummyResponses) {
-      status = fmi2_import_get_event_indicators(m_fmi2Instance, z, r->nz());
+      status = fmi2_import_get_event_indicators(m_fmi2Instance, z.data(), r->nz());
     }
 
     //Create response
@@ -726,10 +729,11 @@ string Server::clientData(const char *data, size_t size) {
     m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_continuous_states_req(mid=%d,fmuId=%d,nx=%d)\n",r->message_id(), r->fmuid(), r->nx());
 
     fmi2_status_t status = fmi2_status_ok;
-    fmi2_real_t x[r->nx()]; 
+    std::vector<fmi2_real_t> x;
+    x.reserve(r->nx()*sizeof(fmi2_real_t));
 
     if (!m_sendDummyResponses) {
-      status = fmi2_import_get_continuous_states(m_fmi2Instance, x, r->nx());
+      status = fmi2_import_get_continuous_states(m_fmi2Instance, x.data(), r->nx());
     }
 
     //Create response
@@ -749,10 +753,11 @@ string Server::clientData(const char *data, size_t size) {
     m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_nominal_continuous_states_req(mid=%d,fmuId=%d,nx=%d)\n",r->message_id(), r->fmuid(), r->nx());
 
     fmi2_status_t status = fmi2_status_ok;
-    fmi2_real_t nominal[r->nx()]; 
+    std::vector<fmi2_real_t> nominal;
+    nominal.reserve(r->nx()*sizeof(fmi2_real_t));
 
     if (!m_sendDummyResponses) {
-      status = fmi2_import_get_nominals_of_continuous_states(m_fmi2Instance, nominal, r->nx());
+      status = fmi2_import_get_nominals_of_continuous_states(m_fmi2Instance, nominal.data(), r->nx());
     }
 
     //Create response

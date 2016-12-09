@@ -167,6 +167,7 @@ void Client::clientData(const char* data, long size){
     }
     case fmitcp_message_Type_type_fmi2_import_completed_event_iteration_res: {
         m_logger.log(Logger::LOG_NETWORK,"This command is TODO\n");
+        NORMAL_CASE(fmi2_import_completed_event_iteration);
         break;
     }
     case fmitcp_message_Type_type_fmi2_import_get_continuous_states_res: {

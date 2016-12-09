@@ -177,6 +177,8 @@ void Client::clientData(const char* data, long size){
     }
     case fmitcp_message_Type_type_fmi2_import_get_nominal_continuous_states_res: {
         m_logger.log(Logger::LOG_NETWORK,"This command is TODO\n");
+        fmi2_import_get_nominal_continuous_states_res * r = res.mutable_fmi2_import_get_nominal_continuous_states_res();
+        m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_nominal_continuous_states_res(mid=%d,continuous_states=%d,states=%d)\n",r->message_id(), r->nominal(), r->status());
         break;
     }
     case fmitcp_message_Type_type_fmi2_import_get_version_res: {

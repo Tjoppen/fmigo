@@ -13,6 +13,13 @@ using namespace std;
 using namespace fmitcp;
 using namespace fmitcp_proto;
 
+template<typename T, typename R> vector<T> repeated_to_vector(R *repeated_vector) {
+    vector<T> values;
+    for(int i=0; i < repeated_vector().size(); i++)
+        values.push_back(repeated_vector(i));
+    return values;
+}
+
 template<typename T, typename R> vector<T> values_to_vector(R *r) {
     vector<T> values;
     for(int i=0; i<r->values_size(); i++)
@@ -141,6 +148,10 @@ void Client::clientData(const char* data, long size){
     }
     case fmitcp_message_Type_type_fmi2_import_get_derivatives_res: {
         m_logger.log(Logger::LOG_NETWORK,"This command is TODO\n");
+        fmi2_import_get_derivatives_res * r = res.mutable_fmi2_import_get_derivatives_res();
+        m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_derivatives_res(mid=%d,derivatives=%d,status=%d)\n",r->message_id(), r->derivatives(), r->status());
+        //        on_fmi2_import_get_derivatives_res(r->message_id(),repeated_to_vector<double>(r->derivatives()),r->status());
+        
         break;
     }
     case fmitcp_message_Type_type_fmi2_import_get_event_indicators_res: {

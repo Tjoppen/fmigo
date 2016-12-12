@@ -233,6 +233,8 @@ int fmitcp_master::parseArguments( int argc,
                 *method = jacobi;
             } else if(strcmp(optarg,"gs") == 0){
                 *method = gs;
+            } else if(strcmp(optarg,"me") == 0){
+                *method = me; 
             } else {
                 fprintf(stderr,"Method \"%s\" not recognized. Use \"jacobi\" or \"gs\".\n",optarg);
                 return 1;

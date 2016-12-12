@@ -59,7 +59,8 @@ enum FILEFORMAT {
 
 enum METHOD {
     jacobi,
-    gs
+    gs,
+    me
 };
 
 /**

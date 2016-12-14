@@ -12,10 +12,10 @@ message fmitcp_message {
         type_fmi2_import_set_real_input_derivatives_res = 102;
         type_fmi2_import_get_real_output_derivatives_req = 103;
         type_fmi2_import_get_real_output_derivatives_res = 104;
-        type_fmi2_import_cancel_step_req = 105;
-        type_fmi2_import_cancel_step_res = 106;
-        type_fmi2_import_do_step_req = 107;
-        type_fmi2_import_do_step_res = 108;
+        type_fmi2_import_do_step_req = 105;
+        type_fmi2_import_do_step_res = 106;
+        type_fmi2_import_cancel_step_req = 107;
+        type_fmi2_import_cancel_step_res = 108;
         type_fmi2_import_get_status_req = 109;
         type_fmi2_import_get_status_res = 110;
         type_fmi2_import_get_real_status_req = 111;
@@ -28,24 +28,25 @@ message fmitcp_message {
         type_fmi2_import_get_string_status_res = 118;
 
         // =========== FMI 2.0 (ME) Model Exchange functions ===========
-        type_fmi2_import_set_time_req = 201;
-        type_fmi2_import_set_time_res = 202;
-        type_fmi2_import_set_continuous_states_req = 203;
-        type_fmi2_import_set_continuous_states_res = 204;
-        type_fmi2_import_completed_integrator_step_req = 205;
-        type_fmi2_import_completed_integrator_step_res = 206;
-        type_fmi2_import_initialize_model_req = 207;
-        type_fmi2_import_initialize_model_res = 208;
-        type_fmi2_import_get_derivatives_req = 209;
-        type_fmi2_import_get_derivatives_res = 210;
-        type_fmi2_import_get_event_indicators_req = 211;
-        type_fmi2_import_get_event_indicators_res = 212;
-        type_fmi2_import_eventUpdate_req = 213;
-        type_fmi2_import_eventUpdate_res = 214;
-        type_fmi2_import_completed_event_iteration_req = 215;
-        type_fmi2_import_completed_event_iteration_res = 216;
-        type_fmi2_import_get_continuous_states_req = 217;
-        type_fmi2_import_get_continuous_states_res = 218;
+        
+        type_fmi2_import_enter_event_mode_req = 201;
+        type_fmi2_import_enter_event_mode_res = 202;
+        type_fmi2_import_new_discrete_states_req = 203;
+        type_fmi2_import_new_discrete_states_res = 204;
+        type_fmi2_import_enter_continuous_time_mode_req = 205;
+        type_fmi2_import_enter_continuous_time_mode_res = 206;
+        type_fmi2_import_completed_integrator_step_req = 207;
+        type_fmi2_import_completed_integrator_step_res = 208;
+        type_fmi2_import_set_time_req = 209;
+        type_fmi2_import_set_time_res = 210;
+        type_fmi2_import_set_continuous_states_req = 211;
+        type_fmi2_import_set_continuous_states_res = 212;
+        type_fmi2_import_get_event_indicators_req = 213;
+        type_fmi2_import_get_event_indicators_res = 214;
+        type_fmi2_import_get_continuous_states_req = 215;
+        type_fmi2_import_get_continuous_states_res = 216;
+        type_fmi2_import_get_derivatives_req = 217;
+        type_fmi2_import_get_derivatives_res = 218;
         type_fmi2_import_get_nominal_continuous_states_req = 219;
         type_fmi2_import_get_nominal_continuous_states_res = 220;
 
@@ -68,22 +69,22 @@ message fmitcp_message {
         type_fmi2_import_terminate_res = 316;
         type_fmi2_import_reset_req = 317;
         type_fmi2_import_reset_res = 318;
-        type_fmi2_import_set_real_req = 319;
-        type_fmi2_import_set_real_res = 320;
-        type_fmi2_import_set_integer_req = 321;
-        type_fmi2_import_set_integer_res = 322;
-        type_fmi2_import_set_boolean_req = 323;
-        type_fmi2_import_set_boolean_res = 324;
-        type_fmi2_import_set_string_req = 325;
-        type_fmi2_import_set_string_res = 326;
-        type_fmi2_import_get_real_req = 327;
-        type_fmi2_import_get_real_res = 328;
-        type_fmi2_import_get_integer_req = 329;
-        type_fmi2_import_get_integer_res = 330;
-        type_fmi2_import_get_boolean_req = 331;
-        type_fmi2_import_get_boolean_res = 332;
-        type_fmi2_import_get_string_req = 333;
-        type_fmi2_import_get_string_res = 334;
+        type_fmi2_import_get_real_req = 319;
+        type_fmi2_import_get_real_res = 320;
+        type_fmi2_import_get_integer_req = 321;
+        type_fmi2_import_get_integer_res = 322;
+        type_fmi2_import_get_boolean_req = 323;
+        type_fmi2_import_get_boolean_res = 324;
+        type_fmi2_import_get_string_req = 325;
+        type_fmi2_import_get_string_res = 326;
+        type_fmi2_import_set_real_req = 327;
+        type_fmi2_import_set_real_res = 328;
+        type_fmi2_import_set_integer_req = 329;
+        type_fmi2_import_set_integer_res = 330;
+        type_fmi2_import_set_boolean_req = 331;
+        type_fmi2_import_set_boolean_res = 332;
+        type_fmi2_import_set_string_req = 333;
+        type_fmi2_import_set_string_res = 334;
         type_fmi2_import_get_fmu_state_req = 335;
         type_fmi2_import_get_fmu_state_res = 336;
         type_fmi2_import_set_fmu_state_req = 337;
@@ -112,10 +113,10 @@ message fmitcp_message {
     optional fmi2_import_set_real_input_derivatives_res fmi2_import_set_real_input_derivatives_res = 102;
     optional fmi2_import_get_real_output_derivatives_req fmi2_import_get_real_output_derivatives_req = 103;
     optional fmi2_import_get_real_output_derivatives_res fmi2_import_get_real_output_derivatives_res = 104;
-    optional fmi2_import_cancel_step_req fmi2_import_cancel_step_req = 105;
-    optional fmi2_import_cancel_step_res fmi2_import_cancel_step_res = 106;
-    optional fmi2_import_do_step_req fmi2_import_do_step_req = 107;
-    optional fmi2_import_do_step_res fmi2_import_do_step_res = 108;
+    optional fmi2_import_do_step_req fmi2_import_do_step_req = 105;
+    optional fmi2_import_do_step_res fmi2_import_do_step_res = 106;
+    optional fmi2_import_cancel_step_req fmi2_import_cancel_step_req = 107;
+    optional fmi2_import_cancel_step_res fmi2_import_cancel_step_res = 108;
     optional fmi2_import_get_status_req fmi2_import_get_status_req = 109;
     optional fmi2_import_get_status_res fmi2_import_get_status_res = 110;
     optional fmi2_import_get_real_status_req fmi2_import_get_real_status_req = 111;
@@ -128,24 +129,24 @@ message fmitcp_message {
     optional fmi2_import_get_string_status_res fmi2_import_get_string_status_res = 118;
 
     // =========== FMI 2.0 (ME) Model Exchange functions ===========
-    optional fmi2_import_set_time_req fmi2_import_set_time_req = 201;
-    optional fmi2_import_set_time_res fmi2_import_set_time_res = 202;
-    optional fmi2_import_set_continuous_states_req fmi2_import_set_continuous_states_req = 203;
-    optional fmi2_import_set_continuous_states_res fmi2_import_set_continuous_states_res = 204;
-    optional fmi2_import_completed_integrator_step_req fmi2_import_completed_integrator_step_req = 205;
-    optional fmi2_import_completed_integrator_step_res fmi2_import_completed_integrator_step_res = 206;
-    optional fmi2_import_initialize_model_req fmi2_import_initialize_model_req = 207;
-    optional fmi2_import_initialize_model_res fmi2_import_initialize_model_res = 208;
-    optional fmi2_import_get_derivatives_req fmi2_import_get_derivatives_req = 209;
-    optional fmi2_import_get_derivatives_res fmi2_import_get_derivatives_res = 210;
-    optional fmi2_import_get_event_indicators_req fmi2_import_get_event_indicators_req = 211;
-    optional fmi2_import_get_event_indicators_res fmi2_import_get_event_indicators_res = 212;
-    optional fmi2_import_eventUpdate_req fmi2_import_eventUpdate_req = 213;
-    optional fmi2_import_eventUpdate_res fmi2_import_eventUpdate_res = 214;
-    optional fmi2_import_completed_event_iteration_req fmi2_import_completed_event_iteration_req = 215;
-    optional fmi2_import_completed_event_iteration_res fmi2_import_completed_event_iteration_res = 216;
-    optional fmi2_import_get_continuous_states_req fmi2_import_get_continuous_states_req = 217;
-    optional fmi2_import_get_continuous_states_res fmi2_import_get_continuous_states_res = 218;
+    optional fmi2_import_enter_event_mode_req fmi2_import_enter_event_mode_req = 201;
+    optional fmi2_import_enter_event_mode_res fmi2_import_enter_event_mode_res = 202;
+    optional fmi2_import_new_discrete_states_req fmi2_import_new_discrete_states_req = 203;
+    optional fmi2_import_new_discrete_states_res fmi2_import_new_discrete_states_res = 204;
+    optional fmi2_import_enter_continuous_time_mode_req fmi2_import_enter_continuous_time_mode_req = 205;
+    optional fmi2_import_enter_continuous_time_mode_res fmi2_import_enter_continuous_time_mode_res = 206;
+    optional fmi2_import_completed_integrator_step_req fmi2_import_completed_integrator_step_req = 207;
+    optional fmi2_import_completed_integrator_step_res fmi2_import_completed_integrator_step_res = 208;
+    optional fmi2_import_set_time_req fmi2_import_set_time_req = 209;
+    optional fmi2_import_set_time_res fmi2_import_set_time_res = 210;
+    optional fmi2_import_set_continuous_states_req fmi2_import_set_continuous_states_req = 211;
+    optional fmi2_import_set_continuous_states_res fmi2_import_set_continuous_states_res = 212;
+    optional fmi2_import_get_event_indicators_req fmi2_import_get_event_indicators_req = 213;
+    optional fmi2_import_get_event_indicators_res fmi2_import_get_event_indicators_res = 214;
+    optional fmi2_import_get_continuous_states_req fmi2_import_get_continuous_states_req = 215;
+    optional fmi2_import_get_continuous_states_res fmi2_import_get_continuous_states_res = 216;
+    optional fmi2_import_get_derivatives_req fmi2_import_get_derivatives_req = 217;
+    optional fmi2_import_get_derivatives_res fmi2_import_get_derivatives_res = 218;
     optional fmi2_import_get_nominal_continuous_states_req fmi2_import_get_nominal_continuous_states_req = 219;
     optional fmi2_import_get_nominal_continuous_states_res fmi2_import_get_nominal_continuous_states_res = 220;
 
@@ -168,22 +169,22 @@ message fmitcp_message {
     optional fmi2_import_terminate_res fmi2_import_terminate_res = 316;
     optional fmi2_import_reset_req fmi2_import_reset_req = 317;
     optional fmi2_import_reset_res fmi2_import_reset_res = 318;
-    optional fmi2_import_set_real_req fmi2_import_set_real_req = 319;
-    optional fmi2_import_set_real_res fmi2_import_set_real_res = 320;
-    optional fmi2_import_set_integer_req fmi2_import_set_integer_req = 321;
-    optional fmi2_import_set_integer_res fmi2_import_set_integer_res = 322;
-    optional fmi2_import_set_boolean_req fmi2_import_set_boolean_req = 323;
-    optional fmi2_import_set_boolean_res fmi2_import_set_boolean_res = 324;
-    optional fmi2_import_set_string_req fmi2_import_set_string_req = 325;
-    optional fmi2_import_set_string_res fmi2_import_set_string_res = 326;
-    optional fmi2_import_get_real_req fmi2_import_get_real_req = 327;
-    optional fmi2_import_get_real_res fmi2_import_get_real_res = 328;
-    optional fmi2_import_get_integer_req fmi2_import_get_integer_req = 329;
-    optional fmi2_import_get_integer_res fmi2_import_get_integer_res = 330;
-    optional fmi2_import_get_boolean_req fmi2_import_get_boolean_req = 331;
-    optional fmi2_import_get_boolean_res fmi2_import_get_boolean_res = 332;
-    optional fmi2_import_get_string_req fmi2_import_get_string_req = 333;
-    optional fmi2_import_get_string_res fmi2_import_get_string_res = 334;
+    optional fmi2_import_get_real_req fmi2_import_get_real_req = 319;
+    optional fmi2_import_get_real_res fmi2_import_get_real_res = 320;
+    optional fmi2_import_get_integer_req fmi2_import_get_integer_req = 321;
+    optional fmi2_import_get_integer_res fmi2_import_get_integer_res = 322;
+    optional fmi2_import_get_boolean_req fmi2_import_get_boolean_req = 323;
+    optional fmi2_import_get_boolean_res fmi2_import_get_boolean_res = 324;
+    optional fmi2_import_get_string_req fmi2_import_get_string_req = 325;
+    optional fmi2_import_get_string_res fmi2_import_get_string_res = 326;
+    optional fmi2_import_set_real_req fmi2_import_set_real_req = 327;
+    optional fmi2_import_set_real_res fmi2_import_set_real_res = 328;
+    optional fmi2_import_set_integer_req fmi2_import_set_integer_req = 329;
+    optional fmi2_import_set_integer_res fmi2_import_set_integer_res = 330;
+    optional fmi2_import_set_boolean_req fmi2_import_set_boolean_req = 331;
+    optional fmi2_import_set_boolean_res fmi2_import_set_boolean_res = 332;
+    optional fmi2_import_set_string_req fmi2_import_set_string_req = 333;
+    optional fmi2_import_set_string_res fmi2_import_set_string_res = 334;
     optional fmi2_import_get_fmu_state_req fmi2_import_get_fmu_state_req = 335;
     optional fmi2_import_get_fmu_state_res fmi2_import_get_fmu_state_res = 336;
     optional fmi2_import_set_fmu_state_req fmi2_import_set_fmu_state_req = 337;
@@ -278,17 +279,6 @@ message fmi2_import_get_real_output_derivatives_res {
     repeated double values = 3 [packed=true];
 }
 
-//fmi2_status_t     fmi2_import_cancel_step (fmi2_import_t *fmu)
-//    Wrapper for the FMI function fmiCancelStep(...)
-message fmi2_import_cancel_step_req {
-    required int32 message_id = 1;
-    required int32 fmuId = 2;
-}
-message fmi2_import_cancel_step_res {
-    required int32 message_id = 1;
-    required fmi2_status_t status = 2;
-}
-
 //fmi2_status_t     fmi2_import_do_step (fmi2_import_t *fmu, fmi2_real_t currentCommunicationPoint, fmi2_real_t communicationStepSize, fmi2_boolean_t newStep)
 //    Wrapper for the FMI function fmiDoStep(...)
 message fmi2_import_do_step_req {
@@ -299,6 +289,17 @@ message fmi2_import_do_step_req {
     required bool newStep = 5;
 }
 message fmi2_import_do_step_res {
+    required int32 message_id = 1;
+    required fmi2_status_t status = 2;
+}
+
+//fmi2_status_t     fmi2_import_cancel_step (fmi2_import_t *fmu)
+//    Wrapper for the FMI function fmiCancelStep(...)
+message fmi2_import_cancel_step_req {
+    required int32 message_id = 1;
+    required int32 fmuId = 2;
+}
+message fmi2_import_cancel_step_res {
     required int32 message_id = 1;
     required fmi2_status_t status = 2;
 }
@@ -366,6 +367,51 @@ message fmi2_import_get_string_status_res {
 
 // =========== FMI 2.0 (ME) Model Exchange functions ===========
 
+// fmi2_status_t     fmi2_import_enter_event_mode (fmi2_import_t *fmu, fmi2_real_t time)
+//    Wrapper for the FMI function fmiEnterEventMode(...)
+message fmi2_import_enter_event_mode_req {
+    required int32 message_id = 1;
+    required int32 fmuId = 2;
+}
+message fmi2_import_enter_event_mode_res {
+    required int32 message_id = 1;
+    required fmi2_status_t status = 2;
+}
+
+// fmi2_status_t     fmi2_import_new_discrete_states (fmi2_import_t *fmu, fmi2_real_t time)
+//    Wrapper for the FMI function fmiNewDiscreteStates(...)
+message fmi2_import_new_discrete_states_req {
+    required int32 message_id = 1;
+    required int32 fmuId = 2;
+}
+message fmi2_import_new_discrete_states_res {
+    required int32 message_id = 1;
+    required fmi2_status_t status = 2;
+}
+
+// fmi2_status_t     fmi2_import_enter_continuous_time_mode (fmi2_import_t *fmu, fmi2_real_t time)
+//    Wrapper for the FMI function fmiEnterContinuousTimeMode(...)
+message fmi2_import_enter_continuous_time_mode_req {
+    required int32 message_id = 1;
+    required int32 fmuId = 2;
+}
+message fmi2_import_enter_continuous_time_mode_res {
+    required int32 message_id = 1;
+    required fmi2_status_t status = 2;
+}
+
+// fmi2_status_t     fmi2_import_completed_integrator_step (fmi2_import_t *fmu, fmi2_boolean_t *callEventUpdate)
+//    Wrapper for the FMI function fmiCompletedIntegratorStep(...)
+message fmi2_import_completed_integrator_step_req {
+    required int32 message_id = 1;
+    required int32 fmuId = 2;
+}
+message fmi2_import_completed_integrator_step_res {
+    required int32 message_id = 1;
+    required bool callEventUpdate = 2;
+    required fmi2_status_t status = 3;
+}
+
 // fmi2_status_t     fmi2_import_set_time (fmi2_import_t *fmu, fmi2_real_t time)
 //    Wrapper for the FMI function fmiSetTime(...)
 message fmi2_import_set_time_req {
@@ -391,45 +437,6 @@ message fmi2_import_set_continuous_states_res {
     required fmi2_status_t status = 2;
 }
 
-// fmi2_status_t     fmi2_import_completed_integrator_step (fmi2_import_t *fmu, fmi2_boolean_t *callEventUpdate)
-//    Wrapper for the FMI function fmiCompletedIntegratorStep(...)
-message fmi2_import_completed_integrator_step_req {
-    required int32 message_id = 1;
-    required int32 fmuId = 2;
-}
-message fmi2_import_completed_integrator_step_res {
-    required int32 message_id = 1;
-    required bool callEventUpdate = 2;
-    required fmi2_status_t status = 3;
-}
-
-// fmi2_status_t     fmi2_import_initialize_model (fmi2_import_t *fmu, fmi2_boolean_t toleranceControlled, fmi2_real_t relativeTolerance, fmi2_event_info_t *eventInfo)
-//    Wrapper for the FMI function fmiInitialize(...)
-message fmi2_import_initialize_model_req {
-    required int32 message_id = 1;
-    required int32 fmuId = 2;
-    required bool toleranceControlled = 3;
-    required double relativeTolerance = 4;
-}
-message fmi2_import_initialize_model_res {
-    required int32 message_id = 1;
-    required fmi2_event_info_t eventInfo = 2;
-    required fmi2_status_t status = 3;
-}
-
-// fmi2_status_t     fmi2_import_get_derivatives (fmi2_import_t *fmu, fmi2_real_t derivatives[], size_t nx)
-//    Wrapper for the FMI function fmiGetDerivatives(...)
-message fmi2_import_get_derivatives_req {
-    required int32 message_id = 1;
-    required int32 fmuId = 2;
-    required int32 nDerivatives = 3;
-}
-message fmi2_import_get_derivatives_res {
-    required int32 message_id = 1;
-    repeated double derivatives = 2 [packed=true];
-    required fmi2_status_t status = 3;
-}
-
 // fmi2_status_t     fmi2_import_get_event_indicators (fmi2_import_t *fmu, fmi2_real_t eventIndicators[], size_t ni)
 //    Wrapper for the FMI function fmiGetEventIndicators(...)
 message fmi2_import_get_event_indicators_req {
@@ -443,30 +450,6 @@ message fmi2_import_get_event_indicators_res {
     required fmi2_status_t status = 3;
 }
 
-// fmi2_status_t     fmi2_import_eventUpdate (fmi2_import_t *fmu, fmi2_boolean_t intermediateResults, fmi2_event_info_t *eventInfo)
-//    Wrapper for the FMI function fmiEventUpdate(...)
-message fmi2_import_eventUpdate_req {
-    required int32 message_id = 1;
-    required int32 fmuId = 2;
-    required bool intermediateResults = 3;
-}
-message fmi2_import_eventUpdate_res {
-    required int32 message_id = 1;
-    required fmi2_event_info_t eventInfo = 2;
-    required fmi2_status_t status = 3;
-}
-
-// fmi2_status_t     fmi2_import_completed_event_iteration (fmi2_import_t *fmu)
-//    Wrapper for the FMI function fmiCompletedEventIteration(...)
-message fmi2_import_completed_event_iteration_req {
-    required int32 message_id = 1;
-    required int32 fmuId = 2;
-}
-message fmi2_import_completed_event_iteration_res {
-    required int32 message_id = 1;
-    required fmi2_status_t status = 2;
-}
-
 // fmi2_status_t     fmi2_import_get_continuous_states (fmi2_import_t *fmu, fmi2_real_t states[], size_t nx)
 //    Wrapper for the FMI function fmiGetContinuousStates(...)
 message fmi2_import_get_continuous_states_req {
@@ -477,6 +460,19 @@ message fmi2_import_get_continuous_states_req {
 message fmi2_import_get_continuous_states_res {
     required int32 message_id = 1;
     repeated double x = 2 [packed=true];
+    required fmi2_status_t status = 3;
+}
+
+// fmi2_status_t     fmi2_import_get_derivatives (fmi2_import_t *fmu, fmi2_real_t derivatives[], size_t nx)
+//    Wrapper for the FMI function fmiGetDerivatives(...)
+message fmi2_import_get_derivatives_req {
+    required int32 message_id = 1;
+    required int32 fmuId = 2;
+    required int32 nDerivatives = 3;
+}
+message fmi2_import_get_derivatives_res {
+    required int32 message_id = 1;
+    repeated double derivatives = 2 [packed=true];
     required fmi2_status_t status = 3;
 }
 
@@ -494,11 +490,12 @@ message fmi2_import_get_nominal_continuous_states_res {
 }
 
 
-
-
-
 // ========= FMI 2.0 CS & ME COMMON FUNCTIONS ============
 
+// const char *  fmi2_import_get_types_platform (fmi2_import_t *fmu)
+//     Wrapper for the FMI function fmiGetTypesPlatform(...)
+message char_req {}
+message char_res {}
 
 // const char *  fmi2_import_get_version (fmi2_import_t *fmu)
 //     Wrapper for the FMI function fmiGetVersion()
@@ -609,58 +606,6 @@ message fmi2_import_reset_res {
     required fmi2_status_t status = 2;
 }
 
-// fmi2_status_t     fmi2_import_set_real (fmi2_import_t *fmu, const fmi2_value_reference_t vr[], size_t nvr, const fmi2_real_t value[])
-//     Wrapper for the FMI function fmiSetReal(...)
-message fmi2_import_set_real_req {
-    required int32 message_id = 1;
-    required int32  fmuId = 2;
-    repeated int32  valueReferences = 3 [packed=true];
-    repeated double values = 4 [packed=true];
-}
-message fmi2_import_set_real_res {
-    required int32 message_id = 1;
-    required fmi2_status_t status = 2;
-}
-
-// fmi2_status_t     fmi2_import_set_integer (fmi2_import_t *fmu, const fmi2_value_reference_t vr[], size_t nvr, const fmi2_integer_t value[])
-//     Wrapper for the FMI function fmiSetInteger(...)
-message fmi2_import_set_integer_req {
-    required int32 message_id = 1;
-    required int32 fmuId = 2;
-    repeated int32 valueReferences = 3 [packed=true];
-    repeated int32 values = 4 [packed=true];
-}
-message fmi2_import_set_integer_res {
-    required int32 message_id = 1;
-    required fmi2_status_t status = 2;
-}
-
-// fmi2_status_t     fmi2_import_set_boolean (fmi2_import_t *fmu, const fmi2_value_reference_t vr[], size_t nvr, const fmi2_boolean_t value[])
-//     Wrapper for the FMI function fmiSetBoolean(...)
-message fmi2_import_set_boolean_req {
-    required int32 message_id = 1;
-    required int32 fmuId = 2;
-    repeated int32 valueReferences = 3 [packed=true];
-    repeated bool values = 4 [packed=true];
-}
-message fmi2_import_set_boolean_res {
-    required int32 message_id = 1;
-    required fmi2_status_t status = 2;
-}
-
-// fmi2_status_t     fmi2_import_set_string (fmi2_import_t *fmu, const fmi2_value_reference_t vr[], size_t nvr, const fmi2_string_t value[])
-//     Wrapper for the FMI function fmiSetString(...)
-message fmi2_import_set_string_req {
-    required int32 message_id = 1;
-    required int32  fmuId = 2;
-    repeated int32  valueReferences = 3 [packed=true];
-    repeated string values = 4;
-}
-message fmi2_import_set_string_res {
-    required int32 message_id = 1;
-    required fmi2_status_t status = 2;
-}
-
 // fmi2_status_t     fmi2_import_get_real (fmi2_import_t *fmu, const fmi2_value_reference_t vr[], size_t nvr, fmi2_real_t value[])
 //     Wrapper for the FMI function fmiGetReal(...)
 message fmi2_import_get_real_req {
@@ -713,10 +658,57 @@ message fmi2_import_get_string_res {
     required fmi2_status_t status = 3;
 }
 
-// const char *  fmi2_import_get_types_platform (fmi2_import_t *fmu)
-//     Wrapper for the FMI function fmiGetTypesPlatform(...)
-message char_req {}
-message char_res {}
+// fmi2_status_t     fmi2_import_set_real (fmi2_import_t *fmu, const fmi2_value_reference_t vr[], size_t nvr, const fmi2_real_t value[])
+//     Wrapper for the FMI function fmiSetReal(...)
+message fmi2_import_set_real_req {
+    required int32 message_id = 1;
+    required int32  fmuId = 2;
+    repeated int32  valueReferences = 3 [packed=true];
+    repeated double values = 4 [packed=true];
+}
+message fmi2_import_set_real_res {
+    required int32 message_id = 1;
+    required fmi2_status_t status = 2;
+}
+
+// fmi2_status_t     fmi2_import_set_integer (fmi2_import_t *fmu, const fmi2_value_reference_t vr[], size_t nvr, const fmi2_integer_t value[])
+//     Wrapper for the FMI function fmiSetInteger(...)
+message fmi2_import_set_integer_req {
+    required int32 message_id = 1;
+    required int32 fmuId = 2;
+    repeated int32 valueReferences = 3 [packed=true];
+    repeated int32 values = 4 [packed=true];
+}
+message fmi2_import_set_integer_res {
+    required int32 message_id = 1;
+    required fmi2_status_t status = 2;
+}
+
+// fmi2_status_t     fmi2_import_set_boolean (fmi2_import_t *fmu, const fmi2_value_reference_t vr[], size_t nvr, const fmi2_boolean_t value[])
+//     Wrapper for the FMI function fmiSetBoolean(...)
+message fmi2_import_set_boolean_req {
+    required int32 message_id = 1;
+    required int32 fmuId = 2;
+    repeated int32 valueReferences = 3 [packed=true];
+    repeated bool values = 4 [packed=true];
+}
+message fmi2_import_set_boolean_res {
+    required int32 message_id = 1;
+    required fmi2_status_t status = 2;
+}
+
+// fmi2_status_t     fmi2_import_set_string (fmi2_import_t *fmu, const fmi2_value_reference_t vr[], size_t nvr, const fmi2_string_t value[])
+//     Wrapper for the FMI function fmiSetString(...)
+message fmi2_import_set_string_req {
+    required int32 message_id = 1;
+    required int32  fmuId = 2;
+    repeated int32  valueReferences = 3 [packed=true];
+    repeated string values = 4;
+}
+message fmi2_import_set_string_res {
+    required int32 message_id = 1;
+    required fmi2_status_t status = 2;
+}
 
 // fmi2_status_t     fmi2_import_get_fmu_state (fmi2_import_t *fmu, fmi2_FMU_state_t *s)
 //     Wrapper for the FMI function fmiGetFMUstate(...)

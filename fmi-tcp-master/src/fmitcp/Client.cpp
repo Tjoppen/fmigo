@@ -234,21 +234,6 @@ void Client::clientData(const char* data, long size){
         break;
     }
 
-
-      /* Not in the standard */
-    case fmitcp_message_Type_type_fmi2_import_initialize_model_res: {
-        m_logger.log(Logger::LOG_NETWORK,"This command is TODO\n");
-        break;
-    }
-    case fmitcp_message_Type_type_fmi2_import_eventUpdate_res: {
-        m_logger.log(Logger::LOG_NETWORK,"This command is TODO\n");
-        break;
-    }
-    case fmitcp_message_Type_type_fmi2_import_completed_event_iteration_res: {
-        m_logger.log(Logger::LOG_NETWORK,"This command is NOT TESTED\n");
-        NORMAL_CASE(fmi2_import_completed_event_iteration);
-        break;
-    }
     case fmitcp_message_Type_type_get_xml_res: {
 
         get_xml_res * r = res.mutable_get_xml_res();

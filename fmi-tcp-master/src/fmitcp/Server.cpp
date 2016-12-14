@@ -811,11 +811,19 @@ string Server::clientData(const char *data, size_t size) {
     }
     m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_get_directional_derivative_res(mid=%d,status=%d,dz=%s)\n",getDirectionalDerivativesRes->message_id(),getDirectionalDerivativesRes->status(),arrayToString(dz, r->z_ref_size()).c_str());
 
-  } /* Co-simulation */
-    // TODO enterEventMode()
-    // TODO newDiscreteState()
-    // TODO enterContinuousTimeMode()
- else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_completed_integrator_step_req){
+ }
+    /* Model Exchange */
+
+  else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_enter_event_mode_req){
+    // TODO
+    sendResponse = false;
+ }else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_new_discrete_states_req){
+    // TODO
+    sendResponse = false;
+ }else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_enter_continuous_time_mode_req){
+    // TODO
+    sendResponse = false;
+ }else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_completed_integrator_step_req){
     // TODO
     sendResponse = false;
   } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_set_time_req){
@@ -950,7 +958,7 @@ string Server::clientData(const char *data, size_t size) {
     m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_get_nominal_continuous_states_res(mid=%d,nominals=%s)\n",response->message_id(),response->nominal());
     sendResponse = false;
   }
-  /* Model Exchange */
+  /* Co-simulation */
   else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_set_real_input_derivatives_req) {
 
     // Unpack message
@@ -1189,18 +1197,6 @@ string Server::clientData(const char *data, size_t size) {
     getStringStatusRes->set_value(value);
     m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_get_string_status_res(mid=%d,value=%s)\n",getStringStatusRes->message_id(),getStringStatusRes->value().c_str());
 
-  }
-  /* Not in standard */
-
-  else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_initialize_model_req){
-    // TODO
-    sendResponse = false;
-  } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_eventUpdate_req){
-    // TODO
-    sendResponse = false;
-  } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_completed_event_iteration_req){
-    // TODO
-    sendResponse = false;
   } else if(type == fmitcp_proto::fmitcp_message_Type_type_get_xml_req) {
 
     // Unpack message

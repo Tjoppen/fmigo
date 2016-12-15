@@ -241,11 +241,11 @@ enum jm_status_enu_t {
 }
 
 message fmi2_event_info_t {
-    required bool   iterationConverged = 1;
-    required bool   stateValueReferencesChanged = 2;
-    required bool   stateValuesChanged = 3;
-    required bool   terminateSimulation = 4;
-    required bool   upcomingTimeEvent = 5;
+    required bool   newDiscreteStatesNeeded = 1;
+    required bool   terminateSimulation = 2;
+    required bool   nominalsOfContinuousStatesChanged = 3;
+    required bool   valuesOfContinuousStatesChanged = 4;
+    required double nextEventTimeDefined = 5;
     required double nextEventTime = 6;
 }
 
@@ -386,12 +386,12 @@ message fmi2_import_new_discrete_states_req {
 }
 message fmi2_import_new_discrete_states_res {
     required int32 message_id = 1;
-    required bool newDiscreteStatesNeeded = 2;
     required bool terminateSimulation = 3;
     required bool nominalsOfContinuousStatesChanged = 4;
     required bool valuesOfContinuousStatesChanged = 5;
     required bool nextEventTimeDefined = 6;
     required double    nextEventTime = 7;
+    required fmi2_event_info_t eventInfo = 8;
 }
 
 // fmi2_status_t     fmi2_import_enter_continuous_time_mode (fmi2_import_t *fmu, fmi2_real_t time)

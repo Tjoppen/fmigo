@@ -210,14 +210,6 @@ string Server::clientData(const char *data, size_t size) {
 
   fmitcp_proto::fmitcp_message res;
   bool sendResponse = true;
-#define FMI2EVENTINFO_TO_PROTOEVENTINFO()                               \
-  response->set_newdiscretestatesneeded(eventInfo->newDiscreteStatesNeeded); \
-  response->set_terminatesimulation(eventInfo->terminateSimulation); \
-  response->set_nominalsofcontinuousstateschanged(eventInfo->nominalsOfContinuousStatesChanged); \
-  response->set_valuesofcontinuousstateschanged(eventInfo->valuesOfContinuousStatesChanged); \
-  response->set_nexteventtimedefined(eventInfo->nextEventTimeDefined);  \
-  response->set_nexteventtime(eventInfo->nextEventTime);
-  
   
 #define SERVER_NORMAL_MESSAGE(type)                                     \
   /* Unpack message */                                                  \
@@ -848,10 +840,10 @@ string Server::clientData(const char *data, size_t size) {
     //Create response
     fmitcp_proto::fmi2_import_new_discrete_states_res * response = res.mutable_fmi2_import_new_discrete_states_res();
     res.set_type(fmitcp_proto::fmitcp_message_Type_type_fmi2_import_new_discrete_states_res);
-    
+
+
+    response->set_allocated_eventinfo(fmi2EventInfoToProtoEventInfo(eventInfo));
     response->set_message_id(r->message_id());
-    FMI2EVENTINFO_TO_PROTOEVENTINFO();
-    //    response->set_eventinfo(eventInfo,);
 
     m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_new_discrete_states_res(mid=%d)\n",response->message_id());
     sendResponse = false;

@@ -125,18 +125,18 @@ void Client::clientData(const char* data, long size){
         m_logger.log(Logger::LOG_NETWORK,"This command is TODO\n");
         break;
     }
-    case fmitcp_message_Type_type_fmi2_import_serialized_fmu_state_size_res: {
-        m_logger.log(Logger::LOG_NETWORK,"This command is TODO\n");
-        break;
-    }
-    case fmitcp_message_Type_type_fmi2_import_serialize_fmu_state_res: {
-        m_logger.log(Logger::LOG_NETWORK,"This command is TODO\n");
-        break;
-    }
-    case fmitcp_message_Type_type_fmi2_import_de_serialize_fmu_state_res: {
-        m_logger.log(Logger::LOG_NETWORK,"This command is TODO\n");
-        break;
-    }
+    // case fmitcp_message_Type_type_fmi2_import_serialized_fmu_state_size_res: {
+    //     m_logger.log(Logger::LOG_NETWORK,"This command is TODO\n");
+    //     break;
+    // }
+    // case fmitcp_message_Type_type_fmi2_import_serialize_fmu_state_res: {
+    //     m_logger.log(Logger::LOG_NETWORK,"This command is TODO\n");
+    //     break;
+    // }
+    // case fmitcp_message_Type_type_fmi2_import_de_serialize_fmu_state_res: {
+    //     m_logger.log(Logger::LOG_NETWORK,"This command is TODO\n");
+    //     break;
+    // }
     case fmitcp_message_Type_type_fmi2_import_get_directional_derivative_res: {
         fmi2_import_get_directional_derivative_res * r = res.mutable_fmi2_import_get_directional_derivative_res();
         std::vector<double> dz;

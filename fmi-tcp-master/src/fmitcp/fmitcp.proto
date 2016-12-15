@@ -91,12 +91,12 @@ message fmitcp_message {
         type_fmi2_import_set_fmu_state_res = 338;
         type_fmi2_import_free_fmu_state_req = 339;
         type_fmi2_import_free_fmu_state_res = 340;
-        type_fmi2_import_serialized_fmu_state_size_req = 341;
-        type_fmi2_import_serialized_fmu_state_size_res = 342;
-        type_fmi2_import_serialize_fmu_state_req = 343;
-        type_fmi2_import_serialize_fmu_state_res = 344;
-        type_fmi2_import_de_serialize_fmu_state_req = 345;
-        type_fmi2_import_de_serialize_fmu_state_res = 346;
+        // type_fmi2_import_serialized_fmu_state_size_req = 341;
+        // type_fmi2_import_serialized_fmu_state_size_res = 342;
+        // type_fmi2_import_serialize_fmu_state_req = 343;
+        // type_fmi2_import_serialize_fmu_state_res = 344;
+        // type_fmi2_import_de_serialize_fmu_state_req = 345;
+        // type_fmi2_import_de_serialize_fmu_state_res = 346;
         type_fmi2_import_get_directional_derivative_req = 347;
         type_fmi2_import_get_directional_derivative_res = 348;
 

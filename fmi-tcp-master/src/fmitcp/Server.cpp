@@ -210,16 +210,32 @@ string Server::clientData(const char *data, size_t size) {
 
   fmitcp_proto::fmitcp_message res;
   bool sendResponse = true;
-
+#define FMI2EVENTINFO_TO_PROTOEVENTINFO()                               \
+  response->set_newdiscretestatesneeded(eventInfo->newDiscreteStatesNeeded); \
+  response->set_terminatesimulation(eventInfo->terminateSimulation); \
+  response->set_nominalsofcontinuousstateschanged(eventInfo->nominalsOfContinuousStatesChanged); \
+  response->set_valuesofcontinuousstateschanged(eventInfo->valuesOfContinuousStatesChanged); \
+  response->set_nexteventtimedefined(eventInfo->nextEventTimeDefined);  \
+  response->set_nexteventtime(eventInfo->nextEventTime);
+  
+  
+#define SERVER_NORMAL_MESSAGE(type)                                     \
+  /* Unpack message */                                                  \
+    fmitcp_proto::fmi2_import_##type##_req * r = req.mutable_fmi2_import_##type##_req(); \
+    m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_"#type"_req(mid=%d,fmuId=%d)\n",r->message_id(),r->fmuid()); \
+                                                                        \
+    fmi2_status_t status = fmi2_status_ok;                              \
+    if (!m_sendDummyResponses) {                                        \
+      status = fmi2_import_##type(m_fmi2Instance);                      \
+    }
+  
 #define SERVER_NORMAL_RESPONSE(type)                                    \
-    {                                                                   \
       /* Create response */                                             \
       fmitcp_proto::fmi2_import_##type##_res * response = res.mutable_fmi2_import_##type##_res(); \
       res.set_type(fmitcp_proto::fmitcp_message_Type_type_fmi2_import_##type##_res); \
       response->set_message_id(r->message_id());                        \
       response->set_status(fmi2StatusToProtofmi2Status(status));        \
-      m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_"#type"_res(mid=%d,status=%s)\n",response->message_id(),response->status()); \
-    } 
+      m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_"#type"_res(mid=%d,status=%s)\n",response->message_id(),response->status());
 
   if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_get_version_req) {
 
@@ -816,13 +832,33 @@ string Server::clientData(const char *data, size_t size) {
 
   else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_enter_event_mode_req){
     // TODO
-    sendResponse = false;
+    SERVER_NORMAL_MESSAGE(enter_event_mode);
+    SERVER_NORMAL_RESPONSE(enter_event_mode);
  }else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_new_discrete_states_req){
     // TODO
+    // Unpack message
+    fmitcp_proto::fmi2_import_new_discrete_states_req * r = req.mutable_fmi2_import_new_discrete_states_req();
+    m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_new_discrete_states_req(mid=%d,fmuId=%d)\n",r->message_id(), r->fmuid());
+
+    fmi2_event_info_t* eventInfo;
+    if (!m_sendDummyResponses) {
+      fmi2_import_new_discrete_states(m_fmi2Instance, eventInfo); 
+    }
+
+    //Create response
+    fmitcp_proto::fmi2_import_new_discrete_states_res * response = res.mutable_fmi2_import_new_discrete_states_res();
+    res.set_type(fmitcp_proto::fmitcp_message_Type_type_fmi2_import_new_discrete_states_res);
+    
+    response->set_message_id(r->message_id());
+    FMI2EVENTINFO_TO_PROTOEVENTINFO();
+    //    response->set_eventinfo(eventInfo,);
+
+    m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_new_discrete_states_res(mid=%d)\n",response->message_id());
     sendResponse = false;
  }else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_enter_continuous_time_mode_req){
     // TODO
-    sendResponse = false;
+    SERVER_NORMAL_MESSAGE(enter_continuous_time_mode);
+    SERVER_NORMAL_RESPONSE(enter_continuous_time_mode);
  }else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_completed_integrator_step_req){
     // TODO
     sendResponse = false;

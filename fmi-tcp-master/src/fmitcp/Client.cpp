@@ -146,11 +146,31 @@ void Client::clientData(const char* data, long size){
         on_fmi2_import_get_directional_derivative_res(r->message_id(),dz,r->status());
 
         break;
-    }
+    
       /* Co-simulation */
-      // TODO enter_event_mode
-      // TODO new_discrete_state 
-      // TODO enter_continuous_time_mode
+    }case fmitcp_message_Type_type_fmi2_import_enter_event_mode_res:            NORMAL_CASE(fmi2_import_enter_event_mode);
+    case fmitcp_message_Type_type_fmi2_import_new_discrete_states_res:{
+      
+        fmi2_import_new_discrete_states_res * r = res.mutable_fmi2_import_new_discrete_states_res();
+        ::fmi2_event_info_t eventInfo = protoEventInfoToFmi2EventInfo(r->eventinfo());
+        
+        m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_new_discrete_states_res(mid=%d, newDiscreteStatesNeeded=%d, terminateSimulation=%d, nominalsOfContinuousStatesChanged=%d, valuesOfContinuousStatusChanged=%d, nextEventTimeDefined=%d, nextEventTime=%f )\n",
+                     r->message_id(),
+                     eventInfo.newDiscreteStatesNeeded,
+                     eventInfo.terminateSimulation,
+                     eventInfo.nominalsOfContinuousStatesChanged,
+                     eventInfo.valuesOfContinuousStatesChanged,
+                     eventInfo.nextEventTimeDefined,
+                     eventInfo.nextEventTime
+                     );
+
+
+        on_fmi2_import_new_discrete_states_res(r->message_id(),r->eventinfo());
+
+        break;
+    
+            
+    }case fmitcp_message_Type_type_fmi2_import_enter_continuous_time_mode_res:  NORMAL_CASE(fmi2_import_enter_continuous_time_mode); break;
     case fmitcp_message_Type_type_fmi2_import_completed_integrator_step_res: {
         fmi2_import_completed_integrator_step_res * r = res.mutable_fmi2_import_completed_integrator_step_res();
         m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_completed_integrator_step_res(mid=%d,callEventUpdate=%d,status=%d)\n",r->message_id(), r->calleventupdate(), r->status());

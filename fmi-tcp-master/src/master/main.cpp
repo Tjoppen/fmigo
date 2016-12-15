@@ -508,6 +508,7 @@ int main(int argc, char *argv[] ) {
     double startTime = 0;
     double endTime = 10;
     double relativeTolerance = 0.0001;
+    double tolerance = 0.0001;
     double relaxation = 4,
            compliance = 0;
     vector<string> fmuURIs;
@@ -519,6 +520,7 @@ int main(int argc, char *argv[] ) {
     int quietMode = 0;
     FILEFORMAT fileFormat = csv;
     METHOD method = jacobi;
+    INTEGRATORTYPE integratorType;
     int realtimeMode = 0;
     int printXML = 0;
     vector<int> stepOrder;
@@ -537,7 +539,7 @@ int main(int argc, char *argv[] ) {
             &loglevel, &csv_separator, &outFilePath, &quietMode, &fileFormat,
             &method, &realtimeMode, &printXML, &stepOrder, &fmuVisibilities,
             &scs, &connconf, &hdf5Filename, &fieldnameFilename, &holonomic, &compliance,
-            &command_port, &results_port, &paused)) {
+            &command_port, &results_port, &paused, &integratorType, &tolerance)) {
         return 1;
     }
 
@@ -604,7 +606,9 @@ int main(int argc, char *argv[] ) {
     BaseMaster *master;
     string fieldnames = getFieldnames(clients);
 
-    if (scs.size()) {
+    if( method == me ){
+      master =  (BaseMaster *) new ModelExchangeStepper( clients, weakConnections/*, tolerance, integratorType*/);
+    }else if (scs.size()) {
         if (method != jacobi) {
             fprintf(stderr, "Can only do Jacobi stepping for weak connections when also doing strong coupling\n");
             return 1;

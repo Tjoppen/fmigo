@@ -63,6 +63,11 @@ enum METHOD {
     me
 };
 
+
+enum INTEGRATORTYPE{
+    cgsl,
+    bsd
+};
 /**
  * @brief Parses the command line arguments and stores in the given variable pointer targets.
  * @param argc Given by system
@@ -113,7 +118,9 @@ int parseArguments( int argc,
                     double *compliance,
                     int *command_port,
                     int *results_port,
-                    bool *paused
+                    bool *paused,
+                    enum INTEGRATORTYPE *integratorType,
+                    double * tolerance
                     );
 }
 

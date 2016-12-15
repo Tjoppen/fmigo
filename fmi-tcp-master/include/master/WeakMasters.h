@@ -93,6 +93,44 @@ public:
         //fprintf(stderr, "\n\n");
     }
 };
+ 
+//aka serial stepper
+class ModelExchangeStepper : public BaseMaster {
+    vector<WeakConnection> m_weakConnections;
+    enum INTEGRATORTYPE *m_integratorType;  
+    double m_tolerance;
+    map<FMIClient*, OutputRefsType> clientGetXs;  //one OutputRefsType for each client
+    std::vector<int> stepOrder;
+public:
+ ModelExchangeStepper(vector<FMIClient*> clients, vector<WeakConnection> weakConnections/*, double relativeTolerance, enum INTEGRATORTYPE *integratorType  */) :
+    BaseMaster(clients), m_weakConnections(weakConnections)//, m_integratorType(integratorType), m_tolerance(relativeTolerance)
+    {
+        fprintf(stderr, "ModelExchangeStepper\n");
+    }
+
+    void prepare() {
+        for (size_t x = 0; x < m_weakConnections.size(); x++) {
+            WeakConnection wc = m_weakConnections[x];
+            clientGetXs[wc.to][wc.from][wc.conn.fromType].push_back(wc.conn.fromOutputVR);
+        }
+    }
+
+    void runIteration(double t, double dt) {
+        //fprintf(stderr, "\n\n");
+        for (int o : stepOrder) {
+            FMIClient *client = m_clients[o];
+
+            for (auto it = clientGetXs[client].begin(); it != clientGetXs[client].end(); it++) {
+                it->first->sendGetX(it->second);
+            }
+            wait();
+            const SendSetXType refValues = getInputWeakRefsAndValues(m_weakConnections, client);
+            client->sendSetX(refValues);
+            sendWait(client, fmi2_import_do_step(0, 0, t, dt, true));
+        }
+        //fprintf(stderr, "\n\n");
+    }
+};
 }
 
 

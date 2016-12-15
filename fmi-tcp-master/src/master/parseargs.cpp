@@ -122,7 +122,9 @@ int fmitcp_master::parseArguments( int argc,
                     double *compliance,
                     int *command_port,
                     int *results_port,
-                    bool *paused
+                    bool *paused,
+                    enum INTEGRATORTYPE *integratorType,
+                    double *tolerance
         ) {
     int index, c;
     opterr = 0;
@@ -136,7 +138,7 @@ int fmitcp_master::parseArguments( int argc,
 
     vector<char*> argv2 = make_char_vector(argvstore);
 
-    while ((c = getopt (argv2.size(), argv2.data(), "xrl:vqht:c:d:s:o:p:f:m:g:w:C:j:5:F:NM:a:z:Z")) != -1){
+    while ((c = getopt (argv2.size(), argv2.data(), "xrl:vqhtT:c:d:s:o:p:f:m:g:w:C:j:5:F:NM:a:z:Z:i")) != -1){
         int n, skip, l, cont, i, numScanned, stop, vis;
         deque<string> parts;
         if (optarg) parts = split(optarg, ':');
@@ -439,6 +441,15 @@ int fmitcp_master::parseArguments( int argc,
             *paused = true;
             break;
 
+        case 'i':
+            if(strcmp(optarg,"cgsl") == 0){
+                *integratorType = cgsl;
+            } else if(strcmp(optarg,"bsd") == 0){
+                *integratorType = bsd;
+            }break;
+        case 'T':
+            *tolerance = atof(optarg);
+            break;
         case '?':
 
             if(isprint(optopt)){

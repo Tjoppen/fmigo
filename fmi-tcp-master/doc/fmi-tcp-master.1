@@ -4,7 +4,7 @@ fmi-tcp-master \- simulate FMUs
 .SH SYNOPSIS
 .ll +8
 .B fmi-tcp-master
-.RB [ " \-xrlvqhtcdsopfmgwCj5FNMa " ]
+.RB [ " \-xrlvqhtcdsopfmgwCj5FNMazZL " ]
 [
 .I "URLs \&..."
 ]
@@ -240,6 +240,20 @@ stdin example producing the same command line (bash style here-document):
     -c 2,1,0,6
     EOF
 
+.TP
+.B \-z [command_port:results_port]
+Set up ZMQ command (REQ/REP) and results (PUSH/PULL) ports.
+Allows controlling master and PULLing results over ZMQ.
+Messages are serialized using protobuf.
+For more information, see src/master/control.proto.
+.TP
+.B \-Z
+Start master in paused state.
+Use ZMQ "unpause" command to start simulation.
+Requires -z.
+.TP
+.B \-L
+Solve algebraic loops in initialization mode.
 .SH URLs
 Each URL specifies the address and TCP port of an FMU. The syntax is:
 

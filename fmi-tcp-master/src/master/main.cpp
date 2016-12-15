@@ -568,6 +568,9 @@ int main(int argc, char *argv[] ) {
         rep_socket.bind(addr);
         snprintf(addr, sizeof(addr), "tcp://*:%i", results_port);
         push_socket.bind(addr);
+    } else if (paused) {
+        fprintf(stderr, "-Z requires -z\n");
+        return 1;
     }
 
 #ifdef USE_MPI

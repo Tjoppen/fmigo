@@ -112,15 +112,15 @@ fmitcp_proto::fmi2_event_info_t* fmitcp::fmi2EventInfoToProtoEventInfo(fmi2_even
   return info;
 }
 
-fmi2_event_info_t* fmitcp::ProtoEventInfoToFmi2EventInfo(fmitcp_proto::fmi2_event_info_t *eventInfo)
+fmi2_event_info_t fmitcp::protoEventInfoToFmi2EventInfo(fmitcp_proto::fmi2_event_info_t eventInfo)
 {
-  fmi2_event_info_t* info;
-  info->newDiscreteStatesNeeded = eventInfo->newdiscretestatesneeded();
-  info->terminateSimulation = eventInfo->terminatesimulation();
-  info->nominalsOfContinuousStatesChanged = eventInfo->nominalsofcontinuousstateschanged();
-  info->valuesOfContinuousStatesChanged = eventInfo->valuesofcontinuousstateschanged();
-  info->nextEventTimeDefined = eventInfo->nexteventtimedefined();
-  info->nextEventTime = eventInfo->nexteventtime();
+  fmi2_event_info_t info;
+  info.newDiscreteStatesNeeded = eventInfo.newdiscretestatesneeded();
+  info.terminateSimulation = eventInfo.terminatesimulation();
+  info.nominalsOfContinuousStatesChanged = eventInfo.nominalsofcontinuousstateschanged();
+  info.valuesOfContinuousStatesChanged = eventInfo.valuesofcontinuousstateschanged();
+  info.nextEventTimeDefined = eventInfo.nexteventtimedefined();
+  info.nextEventTime = eventInfo.nexteventtime();
 
   return info;
 }

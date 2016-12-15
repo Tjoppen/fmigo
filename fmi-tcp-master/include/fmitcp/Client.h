@@ -75,6 +75,23 @@ namespace fmitcp {
         void clientData(const char* data, long size);
 
         // Response functions - to be implemented by subclass
+        
+        // =========== FMI 2.0 (CS) Co-Simulation functions ===========
+        virtual void on_fmi2_import_set_real_input_derivatives_res      (int mid, fmitcp_proto::fmi2_status_t status){}
+        virtual void on_fmi2_import_get_real_output_derivatives_res     (int mid, fmitcp_proto::fmi2_status_t status, const vector<double>& values){}
+        virtual void on_fmi2_import_do_step_res                         (int mid, fmitcp_proto::fmi2_status_t status){}
+        virtual void on_fmi2_import_cancel_step_res                     (int mid, fmitcp_proto::fmi2_status_t status){}
+        virtual void on_fmi2_import_get_status_res                      (int mid, fmitcp_proto::fmi2_status_t status){}
+        virtual void on_fmi2_import_get_real_status_res                 (int mid, double value){}
+        virtual void on_fmi2_import_get_integer_status_res              (int mid, int value){}
+        virtual void on_fmi2_import_get_boolean_status_res              (int mid, bool value){}
+        virtual void on_fmi2_import_get_string_status_res               (int mid, string value){}
+
+        
+        // =========== FMI 2.0 (ME) Model Exchange functions ===========
+        virtual void on_fmi2_import_enter_event_mode_res                (int mid, fmitcp_proto::fmi2_status_t status){}
+        virtual void on_fmi2_import_new_discrete_states_res             (int mid, fmitcp_proto::fmi2_event_info_t eventInfo){}
+        virtual void on_fmi2_import_enter_continuous_time_mode_res      (int mid, fmitcp_proto::fmi2_status_t status){}
         virtual void on_fmi2_import_instantiate_res                     (int mid, fmitcp_proto::jm_status_enu_t status){}
         virtual void on_fmi2_import_free_instance_res                   (int mid){}
         virtual void on_fmi2_import_setup_experiment_res                (int mid, fmitcp_proto::fmi2_status_t status){}
@@ -82,15 +99,6 @@ namespace fmitcp {
         virtual void on_fmi2_import_exit_initialization_mode_res        (int mid, fmitcp_proto::fmi2_status_t status){}
         virtual void on_fmi2_import_terminate_res                       (int mid, fmitcp_proto::fmi2_status_t status){}
         virtual void on_fmi2_import_reset_res                           (int mid, fmitcp_proto::fmi2_status_t status){}
-        virtual void on_fmi2_import_set_real_input_derivatives_res      (int mid, fmitcp_proto::fmi2_status_t status){}
-        virtual void on_fmi2_import_get_real_output_derivatives_res     (int mid, fmitcp_proto::fmi2_status_t status, const vector<double>& values){}
-        virtual void on_fmi2_import_cancel_step_res                     (int mid, fmitcp_proto::fmi2_status_t status){}
-        virtual void on_fmi2_import_do_step_res                         (int mid, fmitcp_proto::fmi2_status_t status){}
-        virtual void on_fmi2_import_get_status_res                      (int mid, fmitcp_proto::fmi2_status_t status){}
-        virtual void on_fmi2_import_get_real_status_res                 (int mid, double value){}
-        virtual void on_fmi2_import_get_integer_status_res              (int mid, int value){}
-        virtual void on_fmi2_import_get_boolean_status_res              (int mid, bool value){}
-        virtual void on_fmi2_import_get_string_status_res               (int mid, string value){}
         virtual void on_fmi2_import_set_time_res                        (int mid, fmitcp_proto::fmi2_status_t status){}
         virtual void on_fmi2_import_set_continuous_states_res           (int mid, fmitcp_proto::fmi2_status_t status){}
         virtual void on_fmi2_import_completed_integrator_step_res       (int mid, bool callEventUpdate, fmitcp_proto::fmi2_status_t status){}

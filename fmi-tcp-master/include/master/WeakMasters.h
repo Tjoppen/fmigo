@@ -103,7 +103,7 @@ class ModelExchangeStepper : public BaseMaster {
     std::vector<int> stepOrder;
 public:
  ModelExchangeStepper(vector<FMIClient*> clients, vector<WeakConnection> weakConnections, double relativeTolerance, enum INTEGRATORTYPE integratorType  ) :
-    BaseMaster(clients), m_weakConnections(weakConnections), m_tolerance(relativeTolerance)//, , m_integratorType(integratorType)
+    BaseMaster(clients), m_weakConnections(weakConnections), m_tolerance(relativeTolerance), m_integratorType(integratorType)
     {
         fprintf(stderr, "ModelExchangeStepper\n");
     }
@@ -131,7 +131,7 @@ public:
         //fprintf(stderr, "\n\n");
     }
 };
-}
+}// namespace fmitcp_master
 
 
 #endif /* WEAKMASTERS_H_ */

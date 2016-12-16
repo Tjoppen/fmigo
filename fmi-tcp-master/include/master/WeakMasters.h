@@ -97,13 +97,13 @@ public:
 //aka serial stepper
 class ModelExchangeStepper : public BaseMaster {
     vector<WeakConnection> m_weakConnections;
-    enum INTEGRATORTYPE *m_integratorType;  
+    enum INTEGRATORTYPE m_integratorType;  
     double m_tolerance;
     map<FMIClient*, OutputRefsType> clientGetXs;  //one OutputRefsType for each client
     std::vector<int> stepOrder;
 public:
- ModelExchangeStepper(vector<FMIClient*> clients, vector<WeakConnection> weakConnections/*, double relativeTolerance, enum INTEGRATORTYPE *integratorType  */) :
-    BaseMaster(clients), m_weakConnections(weakConnections)//, m_integratorType(integratorType), m_tolerance(relativeTolerance)
+ ModelExchangeStepper(vector<FMIClient*> clients, vector<WeakConnection> weakConnections, double relativeTolerance, enum INTEGRATORTYPE integratorType  ) :
+    BaseMaster(clients), m_weakConnections(weakConnections), m_tolerance(relativeTolerance)//, , m_integratorType(integratorType)
     {
         fprintf(stderr, "ModelExchangeStepper\n");
     }

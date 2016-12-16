@@ -607,7 +607,7 @@ int main(int argc, char *argv[] ) {
     string fieldnames = getFieldnames(clients);
 
     if( method == me ){
-      master =  (BaseMaster *) new ModelExchangeStepper( clients, weakConnections/*, tolerance, integratorType*/);
+      master =  (BaseMaster *) new ModelExchangeStepper( clients, weakConnections, tolerance, integratorType);
     }else if (scs.size()) {
         if (method != jacobi) {
             fprintf(stderr, "Can only do Jacobi stepping for weak connections when also doing strong coupling\n");

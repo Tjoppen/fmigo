@@ -530,14 +530,14 @@ int main(int argc, char *argv[] ) {
     string fieldnameFilename;
     bool holonomic = true;
     int command_port = 0, results_port = 0;
-    bool paused = false, running = true;
+    bool paused = false, running = true, solveLoops = false;
 
     if (parseArguments(
             argc, argv, &fmuURIs, &connections, &params, &endTime, &timeStep,
             &loglevel, &csv_separator, &outFilePath, &quietMode, &fileFormat,
             &method, &realtimeMode, &printXML, &stepOrder, &fmuVisibilities,
             &scs, &connconf, &hdf5Filename, &fieldnameFilename, &holonomic, &compliance,
-            &command_port, &results_port, &paused)) {
+            &command_port, &results_port, &paused, &solveLoops)) {
         return 1;
     }
 
@@ -568,6 +568,9 @@ int main(int argc, char *argv[] ) {
         rep_socket.bind(addr);
         snprintf(addr, sizeof(addr), "tcp://*:%i", results_port);
         push_socket.bind(addr);
+    } else if (paused) {
+        fprintf(stderr, "-Z requires -z\n");
+        return 1;
     }
 
 #ifdef USE_MPI
@@ -651,6 +654,11 @@ int main(int argc, char *argv[] ) {
     timeval t1;
     gettimeofday(&t1, NULL);
 #endif
+
+    if (solveLoops) {
+      //solve initial algebraic loops
+      master->solveLoops();
+    }
 
     //prepare solver and all that
     master->prepare();

@@ -49,6 +49,7 @@ SET(MASTER_HEADERS
     include/master/FMIClient.h
     include/master/StrongConnector.h
     include/master/WeakConnection.h
+    include/master/WeakMasters.h
     include/common/common.h
     include/common/url_parser.h
     ${FMITCP_HEADERS}
@@ -74,6 +75,11 @@ add_executable(${MPI_SERVER_NAME}  src/server/fmi-mpi-server.cpp  src/common/com
 add_executable(${MPI_MASTER_NAME} ${MASTER_HEADERS} ${MASTER_SRCS}                      src/common/mpi_tools.cpp )
 set_target_properties(${MPI_MASTER_NAME} PROPERTIES COMPILE_FLAGS -DUSE_MPI)
 
+if (USE_GPL)
+  set(EXTRALIBS gsl)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_GPL")
+endif ()
+
 IF(WIN32)
     SET(WINLIBS
         fmilib
@@ -92,9 +98,9 @@ IF(WIN32)
         libzmq
         ${CMAKE_THREAD_LIBS_INIT})
     if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-        set(WINLIBS ${WINLIBS} sc libumfpackd libamdd libblas libcholmodd libcolamdd libccolamdd libcamdd metisd suitesparseconfigd)
+        set(WINLIBS ${WINLIBS} ${EXTRALIBS} sc libumfpackd libamdd libblas libcholmodd libcolamdd libccolamdd libcamdd metisd suitesparseconfigd)
     else()
-        set(WINLIBS ${WINLIBS} sc libumfpack  libamd  libblas libcholmod  libcolamd  libccolamd  libcamd  metis  suitesparseconfig)
+        set(WINLIBS ${WINLIBS} ${EXTRALIBS} sc libumfpack  libamd  libblas libcholmod  libcolamd  libccolamd  libcamd  metis  suitesparseconfig)
     endif()
     include_directories($ENV{MSMPI_INC} $ENV{MSMPI_INC}x86)
     TARGET_LINK_LIBRARIES(${TCP_MASTER_NAME} ${WINLIBS})
@@ -123,7 +129,7 @@ ELSE(WIN32)
         ${Boost_SYSTEM_LIBRARY}
         ${PROTOBUF_LIBRARY}
         ${CMAKE_THREAD_LIBS_INIT})
-    TARGET_LINK_LIBRARIES(${TCP_MASTER_NAME} ${LINUXLIBS})
+    TARGET_LINK_LIBRARIES(${TCP_MASTER_NAME} ${LINUXLIBS} ${EXTRALIBS})
     TARGET_LINK_LIBRARIES(${TCP_SERVER_NAME}  ${LINUXLIBS})
 
     # MPI stuff. Linux only for now
@@ -131,7 +137,7 @@ ELSE(WIN32)
     set(CMAKE_C_COMPILER   mpicc)
     set(CMAKE_CXX_COMPILER mpicxx)
     target_link_libraries(${MPI_SERVER_NAME} ${LINUXLIBS})
-    target_link_libraries(${MPI_MASTER_NAME} ${LINUXLIBS})
+    target_link_libraries(${MPI_MASTER_NAME} ${LINUXLIBS} ${EXTRALIBS})
 
     add_custom_target(libprotobuf)  #fake target
     set(PROTOC protoc)

@@ -113,7 +113,8 @@ int parseArguments( int argc,
                     double *compliance,
                     int *command_port,
                     int *results_port,
-                    bool *paused
+                    bool *paused,
+                    bool *solveLoops
                     );
 }
 

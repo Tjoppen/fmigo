@@ -99,6 +99,9 @@ class ModelExchangeStepper : public BaseMaster {
     vector<WeakConnection> m_weakConnections;
     enum INTEGRATORTYPE m_integratorType;  
     double m_tolerance;
+    struct fmu_model{
+        int cgsl;
+    };
     map<FMIClient*, OutputRefsType> clientGetXs;  //one OutputRefsType for each client
     std::vector<int> stepOrder;
 public:

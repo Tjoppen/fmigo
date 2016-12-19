@@ -12,6 +12,7 @@
 #include "master/WeakConnection.h"
 #include "common/common.h"
 #include <fmitcp/serialize.h>
+#include "common/fmi2.h"
 #include "common/gsl_interface.h"
 using namespace fmitcp::serialize;
 
@@ -99,20 +100,57 @@ class ModelExchangeStepper : public BaseMaster {
     vector<WeakConnection> m_weakConnections;
     enum INTEGRATORTYPE m_integratorType;  
     double m_tolerance;
+    
+    typedef struct backup
+    {
+        double* x; 
+        double t;
+        unsigned long failed_steps;
+
+        FILE* result_file;
+        long size_of_file;
+
+    } backup;
+    typedef struct struct_parameters{
+
+        double* z;                    /* state event indicators */
+        int count;                    /* number of function evaluations */
+        int nz;                       /* number of event indicators, from XML file */
+        int nx;                       /* number of states, from XML file */
+        int loggingOn;                /* loggingOn == true => logging is enabled */
+        char separator;               /* not used */
+        char* resultFile;             /* path and file name of where to store result */
+        fmi2String* categories;       /* only used in setDebugLogging */
+        int nCategories;              /* only used in setDebugLogging */
+
+        //FMU fmu;
+        fmi2Component c;
+
+        fmi2Real t_start;
+        fmi2Real t_safe;
+        fmi2Real t_new;
+        fmi2Real t_crossed;
+        fmi2Real t_end;
+        fmi2EventInfo event;
+
+        backup m_backup;
+    }fmu_parameters;
     struct fmu_model{
-        int cgsl;
+      cgsl_model cgsl;
     };
     vector<cgsl_simulation> sims;
     
     map<FMIClient*, OutputRefsType> clientGetXs;  //one OutputRefsType for each client
     std::vector<int> stepOrder;
-public:
+ public:
  ModelExchangeStepper(vector<FMIClient*> clients, vector<WeakConnection> weakConnections, double relativeTolerance, enum INTEGRATORTYPE integratorType  ) :
     BaseMaster(clients), m_weakConnections(weakConnections), m_tolerance(relativeTolerance), m_integratorType(integratorType)
     {
-        fprintf(stderr, "ModelExchangeStepper\n");
+      fprintf(stderr, "ModelExchangeStepper\n");
     }
 
+    cgsl_model* init_fmu_model(){
+    }
     void prepare() {
         for (size_t x = 0; x < m_weakConnections.size(); x++) {
             WeakConnection wc = m_weakConnections[x];
@@ -132,8 +170,7 @@ public:
         step_control.id = step_control_y_new;
         step_control.start = 1e-8;
 
-
-        cgsl_model* cgsl;
+        cgsl_model* cgsl = init_fmu_model();
         cgsl_simulation sim = cgsl_init_simulation(cgsl,  /* model */
                                                    rk8pd, /* integrator: Runge-Kutta Prince Dormand pair order 7-8 */
                                                    1,     /* write to file: YES! */

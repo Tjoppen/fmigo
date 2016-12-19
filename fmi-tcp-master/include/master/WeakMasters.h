@@ -12,7 +12,7 @@
 #include "master/WeakConnection.h"
 #include "common/common.h"
 #include <fmitcp/serialize.h>
-
+#include "common/gsl_interface.h"
 using namespace fmitcp::serialize;
 
 namespace fmitcp_master {
@@ -102,6 +102,8 @@ class ModelExchangeStepper : public BaseMaster {
     struct fmu_model{
         int cgsl;
     };
+    vector<cgsl_simulation> sims;
+    
     map<FMIClient*, OutputRefsType> clientGetXs;  //one OutputRefsType for each client
     std::vector<int> stepOrder;
 public:
@@ -116,6 +118,28 @@ public:
             WeakConnection wc = m_weakConnections[x];
             clientGetXs[wc.to][wc.from][wc.conn.fromType].push_back(wc.conn.fromOutputVR);
         }
+
+        /* This is the step control which determines tolerances. */
+        cgsl_step_control_parameters step_control;
+        /* = (cgsl_step_control_parameters){ */
+        /*     .eps_rel = 1e-6,          /\* relative tolerance *\/ */
+        /*     .eps_abs = 1e-6,          /\* absolute tolerance *\/ */
+        /*     .id = step_control_y_new, /\* step control strategy *\/ */
+        /*     .start = 1e-8             /\* first step *\/ */
+        /* }; */
+        step_control.eps_rel = 1e-6;
+        step_control.eps_abs = 1e-6;
+        step_control.id = step_control_y_new;
+        step_control.start = 1e-8;
+
+
+        cgsl_model* cgsl;
+        cgsl_simulation sim = cgsl_init_simulation(cgsl,  /* model */
+                                                   rk8pd, /* integrator: Runge-Kutta Prince Dormand pair order 7-8 */
+                                                   1,     /* write to file: YES! */
+                                                   NULL,  
+                                                   step_control);
+        sims.push_back(sim);
     }
 
     void runIteration(double t, double dt) {

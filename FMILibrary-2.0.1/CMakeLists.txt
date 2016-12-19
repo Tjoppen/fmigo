@@ -18,6 +18,7 @@ cmake_minimum_required (VERSION 2.8.6 FATAL_ERROR)
 # Shut CMake 3.5.x up about a bunch of things
 cmake_policy(SET CMP0022 OLD)
 cmake_policy(SET CMP0026 OLD)
+cmake_policy(SET CMP0045 OLD)
 cmake_policy(SET CMP0046 OLD)
 
 # Prohibit in-source build
@@ -382,6 +383,6 @@ if(FMILIB_GENERATE_DOXYGEN_DOC)
 	set(DOXYFILE_STRIP_FROM_PATH "${FMILIBRARYHOME}")
 
 	SET(CMAKE_MODULE_PATH ${FMILIB_THIRDPARTYLIBS}/CMakeModules)
- 
+
 	include(UseDoxygen/UseDoxygen)
 endif(FMILIB_GENERATE_DOXYGEN_DOC)

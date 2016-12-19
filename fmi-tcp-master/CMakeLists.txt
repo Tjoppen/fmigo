@@ -121,6 +121,7 @@ ELSE(WIN32)
         hdf5
         hdf5_hl
         zmq
+        gsl
         ${Boost_FILESYSTEM_LIBRARY}
         ${Boost_SYSTEM_LIBRARY}
         ${PROTOBUF_LIBRARY}

@@ -192,7 +192,11 @@ std::string fmitcp::serialize::fmi2_import_new_discrete_states(int message_id, i
 }
 
 std::string fmitcp::serialize::fmi2_import_enter_continuous_time_mode(int message_id, int fmuId){
-    SERIALIZE_NORMAL_MESSAGE(fmi2_import_enter_event_mode); 
+    SERIALIZE_NORMAL_MESSAGE(fmi2_import_enter_continuous_time_mode);
+}
+
+std::string fmitcp::serialize::fmi2_import_completed_integrator_step(int message_id, int fmuId){
+    SERIALIZE_NORMAL_MESSAGE(fmi2_import_completed_integrator_step); 
 }
 
 std::string fmitcp::serialize::fmi2_import_set_time(int message_id, int fmuId, double time){

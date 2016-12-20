@@ -206,20 +206,25 @@ class ModelExchangeStepper : public BaseMaster {
 
         sendWait(p->client, fmi2_import_set_time(0,0,t));
 
-        double* temp;
         sendWait(p->client, fmi2_import_set_continuous_states(0,0,x,nx));
         sendWait(p->client, fmi2_import_get_derivatives(0,0,nx));
 
+        // maybe just send all three and then wait?
         return GSL_SUCCESS;
     }
 
-    cgsl_model* init_fmu_model(){
+    cgsl_model* init_fmu_model(FMIClient* client){
       fmu_parameters* p = (fmu_parameters*)malloc(sizeof(fmu_parameters));
       fmu_model* m = (fmu_model*)malloc(sizeof(fmu_model));
 
       m->model.parameters = (void*)p;
+      p->client = client;
       // TODO one result file for each fmu
       p->resultFile = getModelResultPath("resultFile");
+
+      
+      ModelDescription* md;// = p->fmu.modelDescription;         // handle to the parsed XML file
+      getDerivativesSize(getModelStructure(md));
       // done in main     sendWait(m_clients, fmi2_import_instantiate(0));
       
       // allocate memory
@@ -249,13 +254,16 @@ class ModelExchangeStepper : public BaseMaster {
         step_control.id = step_control_y_new;
         step_control.start = 1e-8;
 
-        cgsl_model* cgsl = init_fmu_model();
-        cgsl_simulation sim = cgsl_init_simulation(cgsl,  /* model */
-                                                   rk8pd, /* integrator: Runge-Kutta Prince Dormand pair order 7-8 */
-                                                   1,     /* write to file: YES! */
-                                                   NULL,  
-                                                   step_control);
-        sims.push_back(sim);
+        for(FMIClient* client: m_clients)
+          {
+            cgsl_model* cgsl = init_fmu_model(client);
+            cgsl_simulation sim = cgsl_init_simulation(cgsl,  /* model */
+                                                       rk8pd, /* integrator: Runge-Kutta Prince Dormand pair order 7-8 */
+                                                       1,     /* write to file: YES! */
+                                                       NULL,  
+                                                       step_control);
+            sims.push_back(sim);
+          }
     }
 
     void runIteration(double t, double dt) {

@@ -243,6 +243,14 @@ std::string fmi2_import_get_continuous_states(int message_id, int fmuId, int nx)
     SERIALIZE_NORMAL_MESSAGE_(fmi2_import_get_continuous_states,nx);
 }
 
+std::string fmi2_import_get_derivatives(int message_id, int fmuId, int nderivatives){
+    SERIALIZE_NORMAL_MESSAGE_(fmi2_import_get_derivatives,nderivatives);
+}
+
+std::string fmi2_import_get_nominal_continuous_states(int message_id, int fmuId, int nx){
+    SERIALIZE_NORMAL_MESSAGE_(fmi2_import_get_nominal_continuous_states,nx);
+}
+
 FMU_VOID_REQ_IMPL(fmi2_import_get_version)
   
 

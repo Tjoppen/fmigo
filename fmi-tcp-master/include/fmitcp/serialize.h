@@ -31,8 +31,8 @@ namespace fmitcp {
         std::string fmi2_import_set_continuous_states(int message_id, int fmuId, double* x, int nx);
         std::string fmi2_import_get_event_indicators(int message_id, int fmuId, int nz);
         std::string fmi2_import_get_continuous_states(int message_id, int fmuId, int nx);
-        std::string fmi2_import_get_derivatives();
-        std::string fmi2_import_get_nominal_continuous_states();
+        std::string fmi2_import_get_derivatives(int message_id, int fmuId, int nDerivatives);
+        std::string fmi2_import_get_nominal_continuous_states(int message_id, int fmuId, int nx);
 
         // ========= FMI 2.0 CS & ME COMMON FUNCTIONS ============
         std::string fmi2_import_get_version(int message_id, int fmuId);

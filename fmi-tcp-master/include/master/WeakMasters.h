@@ -14,6 +14,10 @@
 #include <fmitcp/serialize.h>
 #include "common/fmi2.h"
 #include "common/gsl_interface.h"
+#include <sys/stat.h>
+#include <sys/types.h>
+
+
 using namespace fmitcp::serialize;
 
 namespace fmitcp_master {
@@ -123,20 +127,16 @@ class ModelExchangeStepper : public BaseMaster {
         fmi2String* categories;       /* only used in setDebugLogging */
         int nCategories;              /* only used in setDebugLogging */
 
-        //FMU fmu;
-        fmi2Component c;
+        FMIClient* client;
+      //        fmi2Component c;
 
-        fmi2Real t_start;
-        fmi2Real t_safe;
-        fmi2Real t_new;
-        fmi2Real t_crossed;
-        fmi2Real t_end;
+        fmi2Real t_start, t_safe, t_new, t_crossed, t_end;
         fmi2EventInfo event;
 
         backup m_backup;
     }fmu_parameters;
     struct fmu_model{
-      cgsl_model cgsl;
+      cgsl_model model;
     };
     vector<cgsl_simulation> sims;
     
@@ -149,7 +149,86 @@ class ModelExchangeStepper : public BaseMaster {
       fprintf(stderr, "ModelExchangeStepper\n");
     }
 
+
+    char* getModelResultPath(const char* path)
+    {
+        size_t n = strlen(path);
+        char* p = (char*)malloc(n * sizeof(char));
+
+        // copy path to p, tp for destruction only.
+        void* tp = memcpy(p, path, n);
+
+        // pointer to be
+        char* name = p;
+
+        // find file name of path 'path'
+        while((p = strchr(p, '/')) != NULL)
+            name = ++p;
+
+        // remove file extension
+        if((p = strchr(name, '.')) != NULL)
+            *p = '\0';
+
+        // allocate memory for resultFile
+        size_t s = strlen(name);
+        char* resultFile = (char*)calloc(s + 10, sizeof(char));
+
+        // create the resultFile
+        sprintf(resultFile, "data/");
+
+        // if there is no directory, create it
+        mkdir(resultFile, 0700);
+
+        // add path and resultFile
+        sprintf(resultFile, "%s%s.mat", resultFile, name);
+
+        // free copy of path
+        free(tp);
+        return resultFile;
+    }
+
+    std::vector<double> doubleToVector(const double* v, int n){
+      std::vector<double> vector;
+      for(int i = 0; i < n; i++)
+        vector.push_back(v[i]);
+      return vector;
+    }
+    
+    int fmu_function(double t, double x[], double dxdt[], void* params)
+    {
+        // make local variables
+        fmu_parameters* p = (fmu_parameters*)params;
+        //        fmi2Component c = p->c; // instance of the fmu
+        int nx = p->nx;
+        /*should make sure we are in continuous state */
+
+        ++p->count; /* count function evaluations */
+
+        sendWait(p->client, fmi2_import_set_time(0,0,t));
+
+        double* temp;
+        sendWait(p->client, fmi2_import_set_continuous_states(0,0,x,nx));
+        sendWait(p->client, fmi2_import_get_derivatives(0,0,nx));
+
+        return GSL_SUCCESS;
+    }
+
     cgsl_model* init_fmu_model(){
+      fmu_parameters* p = (fmu_parameters*)malloc(sizeof(fmu_parameters));
+      fmu_model* m = (fmu_model*)malloc(sizeof(fmu_model));
+
+      m->model.parameters = (void*)p;
+      // TODO one result file for each fmu
+      p->resultFile = getModelResultPath("resultFile");
+      // done in main     sendWait(m_clients, fmi2_import_instantiate(0));
+      
+      // allocate memory
+
+      // done in main     initialization
+
+      // m->model.function = fmu_function;
+      // m->model.jacobian = NULL;
+      // m->model.free = NULL;//freeFMUModel; 
     }
     void prepare() {
         for (size_t x = 0; x < m_weakConnections.size(); x++) {

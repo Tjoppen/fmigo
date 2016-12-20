@@ -30,7 +30,7 @@ namespace fmitcp {
         std::string fmi2_import_set_time(int message_id, int fmuId, double time);
         std::string fmi2_import_set_continuous_states(int message_id, int fmuId, double* x, int nx);
         std::string fmi2_import_get_event_indicators(int message_id, int fmuId, int nz);
-        std::string fmi2_import_get_continuous_states();
+        std::string fmi2_import_get_continuous_states(int message_id, int fmuId, int nx);
         std::string fmi2_import_get_derivatives();
         std::string fmi2_import_get_nominal_continuous_states();
 

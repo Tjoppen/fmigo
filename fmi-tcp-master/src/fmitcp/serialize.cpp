@@ -7,6 +7,16 @@ using namespace std;
 std::string fmitcp::serialize::fmi2_import_instantiate(int message_id) {
     return fmi2_import_instantiate2(message_id, false);
 }
+#define SERIALIZE_NORMAL_MESSAGE_(type, extra)                           \
+    /* Contruct message */                                              \
+    fmitcp_message m;                                                   \
+    m.set_type(fmitcp_message_Type_type_##type##_req);                  \
+    type##_req * req = m.mutable_##type##_req();                        \
+    req->set_message_id(message_id);                                    \
+    req->set_fmuid(fmuId);                                              \
+    req->set_##extra(extra);                                            \
+    return m.SerializeAsString();
+
 #define SERIALIZE_NORMAL_MESSAGE(type)                                  \
     /* Contruct message */                                              \
     fmitcp_message m;                                                   \
@@ -226,15 +236,11 @@ std::string fmi2_import_set_continuous_states(int message_id, int fmuId, double*
 }
 
 std::string fmi2_import_get_event_indicators(int message_id, int fmuId, int nz){
-    fmitcp_message m;
-    m.set_type(fmitcp_message_Type_type_fmi2_import_get_event_indicators_req);
+    SERIALIZE_NORMAL_MESSAGE_(fmi2_import_get_event_indicators,nz);
+}
 
-    fmi2_import_get_event_indicators_req * req = m.mutable_fmi2_import_get_event_indicators_req();
-    req->set_message_id(message_id);
-    req->set_fmuid(fmuId);
-    req->set_nz(nz);
-
-    return m.SerializeAsString();
+std::string fmi2_import_get_continuous_states(int message_id, int fmuId, int nx){
+    SERIALIZE_NORMAL_MESSAGE_(fmi2_import_get_continuous_states,nx);
 }
 
 FMU_VOID_REQ_IMPL(fmi2_import_get_version)

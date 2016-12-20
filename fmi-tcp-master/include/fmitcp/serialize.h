@@ -23,9 +23,8 @@ namespace fmitcp {
         std::string fmi2_import_get_string_status (int message_id, int fmuId, fmitcp_proto::fmi2_status_kind_t s);
 
         // =========== FMI 2.0 (ME) Model Exchange functions ===========
-        std::string  fmi2_import_set_time(int message_id, int fmuId, double time);
-        std::string fmi2_import_set_time();
-        std::string fmi2_import_set_continuous_states();
+        std::string fmi2_import_set_time(int message_id, int fmuId, double time);
+        std::string fmi2_import_set_continuous_states(int message_id, int fmuId, double* x, int nx);
         std::string fmi2_import_completed_integrator_step();
         std::string fmi2_import_initialize_model();
         std::string fmi2_import_get_derivatives();

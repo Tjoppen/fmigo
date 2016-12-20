@@ -7,6 +7,14 @@ using namespace std;
 std::string fmitcp::serialize::fmi2_import_instantiate(int message_id) {
     return fmi2_import_instantiate2(message_id, false);
 }
+#define SERIALIZE_NORMAL_MESSAGE(type)                                  \
+    /* Contruct message */                                              \
+    fmitcp_message m;                                                   \
+    m.set_type(fmitcp_message_Type_type_##type##_req);                  \
+    type##_req * req = m.mutable_##type##_req();                        \
+    req->set_message_id(message_id);                                    \
+    req->set_fmuid(fmuId);                                              \
+    return m.SerializeAsString();
 
 std::string fmitcp::serialize::fmi2_import_instantiate2(int message_id, bool visible) {
   // Construct message
@@ -171,6 +179,20 @@ std::string fmitcp::serialize::fmi2_import_get_string_status(int message_id, int
     req->set_kind(s);
 
     return m.SerializeAsString();
+}
+
+        // =========== FMI 2.0 (ME) Model Exchange functions ===========
+
+std::string fmitcp::serialize::fmi2_import_enter_event_mode(int message_id, int fmuId){
+    SERIALIZE_NORMAL_MESSAGE(fmi2_import_enter_event_mode);
+}
+
+std::string fmitcp::serialize::fmi2_import_new_discrete_states(int message_id, int fmuId){
+    SERIALIZE_NORMAL_MESSAGE(fmi2_import_new_discrete_states); 
+}
+
+std::string fmitcp::serialize::fmi2_import_enter_continuous_time_mode(int message_id, int fmuId){
+    SERIALIZE_NORMAL_MESSAGE(fmi2_import_enter_event_mode); 
 }
 
 std::string fmitcp::serialize::fmi2_import_set_time(int message_id, int fmuId, double time){

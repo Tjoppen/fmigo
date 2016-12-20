@@ -147,7 +147,7 @@ void Client::clientData(const char* data, long size){
 
         break;
     
-      /* Co-simulation */
+      /* Model Exchange */
     }case fmitcp_message_Type_type_fmi2_import_enter_event_mode_res:            NORMAL_CASE(fmi2_import_enter_event_mode);
     case fmitcp_message_Type_type_fmi2_import_new_discrete_states_res:{
       
@@ -207,7 +207,7 @@ void Client::clientData(const char* data, long size){
         m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_nominal_continuous_states_res(mid=%d,continuous_states=%d,states=%d)\n",r->message_id(), r->nominal(), r->status());
         break;
     }
-      /* Model exchange */
+        /* Co-simulation */
     case fmitcp_message_Type_type_fmi2_import_set_real_input_derivatives_res:   NORMAL_CASE(fmi2_import_set_real_input_derivatives); break;
     case fmitcp_message_Type_type_fmi2_import_get_real_output_derivatives_res: {
         fmi2_import_get_real_output_derivatives_res * r = res.mutable_fmi2_import_get_real_output_derivatives_res();

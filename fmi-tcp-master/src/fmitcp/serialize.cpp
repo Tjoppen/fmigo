@@ -225,6 +225,18 @@ std::string fmi2_import_set_continuous_states(int message_id, int fmuId, double*
     return m.SerializeAsString();
 }
 
+std::string fmi2_import_get_event_indicators(int message_id, int fmuId, int nz){
+    fmitcp_message m;
+    m.set_type(fmitcp_message_Type_type_fmi2_import_get_event_indicators_req);
+
+    fmi2_import_get_event_indicators_req * req = m.mutable_fmi2_import_get_event_indicators_req();
+    req->set_message_id(message_id);
+    req->set_fmuid(fmuId);
+    req->set_nz(nz);
+
+    return m.SerializeAsString();
+}
+
 FMU_VOID_REQ_IMPL(fmi2_import_get_version)
   
 

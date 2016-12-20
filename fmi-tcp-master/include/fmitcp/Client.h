@@ -109,6 +109,9 @@ namespace fmitcp {
         virtual void on_fmi2_import_completed_event_iteration_res       (int mid, fmitcp_proto::fmi2_status_t status){}
         virtual void on_fmi2_import_get_continuous_states_res           (int mid, const vector<double>& states, fmitcp_proto::fmi2_status_t status){}
         virtual void on_fmi2_import_get_nominal_continuous_states_res   (int mid, const vector<double>& nominal, fmitcp_proto::fmi2_status_t status){}
+
+
+        // =========== FMI 2.0 Common functions ===========
         virtual void on_fmi2_import_get_version_res                     (int mid, string version){}
         virtual void on_fmi2_import_set_debug_logging_res               (int mid, fmitcp_proto::fmi2_status_t status){}
         virtual void on_fmi2_import_set_real_res                        (int mid, fmitcp_proto::fmi2_status_t status){}

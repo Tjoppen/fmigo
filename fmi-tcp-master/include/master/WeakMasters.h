@@ -65,7 +65,7 @@ class GaussSeidelMaster : public BaseMaster {
     std::vector<int> stepOrder;
 public:
     GaussSeidelMaster(vector<FMIClient*> clients, vector<WeakConnection> weakConnections, std::vector<int> stepOrder) :
-        BaseMaster(clients, weakConnections), stepOrder(stepOrder) {
+        BaseMaster(clients,weakConnections), stepOrder(stepOrder) {
         fprintf(stderr, "GSMaster\n");
     }
 
@@ -138,7 +138,7 @@ class ModelExchangeStepper : public BaseMaster {
     std::vector<int> stepOrder;
  public:
  ModelExchangeStepper(vector<FMIClient*> clients, vector<WeakConnection> weakConnections, double relativeTolerance, enum INTEGRATORTYPE integratorType  ) :
-    BaseMaster(clients), m_weakConnections(weakConnections), m_tolerance(relativeTolerance), m_integratorType(integratorType)
+    BaseMaster(clients,weakConnections), m_tolerance(relativeTolerance), m_integratorType(integratorType)
     {
       fprintf(stderr, "ModelExchangeStepper\n");
     }

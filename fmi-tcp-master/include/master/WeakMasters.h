@@ -121,6 +121,7 @@ class ModelExchangeStepper : public BaseMaster {
         fmi2String* categories;       /* only used in setDebugLogging */
         int nCategories;              /* only used in setDebugLogging */
 
+        BaseMaster* baseMaster;
         FMIClient* client;
       //        fmi2Component c;
 
@@ -197,10 +198,9 @@ class ModelExchangeStepper : public BaseMaster {
         /*should make sure we are in continuous state */
 
         ++p->count; /* count function evaluations */
-        //b.sendWait(p->client, fmi2_import_set_time(0,0,t));
-
-        //        sendWait(p->client, fmi2_import_set_continuous_states(0,0,x,nx));
-        //sendWait(p->client, fmi2_import_get_derivatives(0,0,nx));
+        p->baseMaster->sendWait(p->client, fmi2_import_set_time(0,0,t));
+        p->baseMaster->sendWait(p->client, fmi2_import_set_continuous_states(0,0,x,nx));
+        p->baseMaster->sendWait(p->client, fmi2_import_get_derivatives(0,0,nx));
 
         // maybe just send all three and then wait?
         return GSL_SUCCESS;
@@ -247,6 +247,7 @@ class ModelExchangeStepper : public BaseMaster {
       // TODO one result file for each fmu
       p->resultFile = getModelResultPath("resultFile");
 
+      p->baseMaster = this;
       // done in main     sendWait(m_clients, fmi2_import_instantiate(0));
       size_t dummy = client->getNumEventIndicators(); 
       allocateMemory(m);

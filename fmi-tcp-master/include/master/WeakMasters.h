@@ -222,9 +222,6 @@ class ModelExchangeStepper : public BaseMaster {
       // TODO one result file for each fmu
       p->resultFile = getModelResultPath("resultFile");
 
-      
-      ModelDescription* md;// = p->fmu.modelDescription;         // handle to the parsed XML file
-      getDerivativesSize(getModelStructure(md));
       // done in main     sendWait(m_clients, fmi2_import_instantiate(0));
       
       // allocate memory

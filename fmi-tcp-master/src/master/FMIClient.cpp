@@ -167,6 +167,14 @@ bool FMIClient::hasCapability(fmi2_capabilities_enu_t cap) const {
     return fmi2_import_get_capability(m_fmi2Instance, cap) != 0;
 }
 
+size_t FMIClient::getNumEventIndicators(void){
+    return fmi2_import_get_number_of_event_indicators(m_fmi2Instance);
+}
+ 
+size_t FMIClient::getNumContinuousStates(void){
+    return fmi2_import_get_number_of_continuous_states(m_fmi2Instance);
+}
+
 void FMIClient::on_fmi2_import_instantiate_res(int mid, fmitcp_proto::jm_status_enu_t status){
     m_master->onSlaveInstantiated(this);
 };

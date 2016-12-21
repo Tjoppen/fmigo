@@ -117,6 +117,9 @@ namespace fmitcp_master {
 
         bool hasCapability(fmi2_capabilities_enu_t cap) const;
 
+        size_t getNumEventIndicators(void);
+        size_t getNumContinuousStates(void);
+
         // --- These methods overrides Client methods. Most of them just passes the result to the Master ---
 
         void on_fmi2_import_instantiate_res                     (int mid, fmitcp_proto::jm_status_enu_t status);

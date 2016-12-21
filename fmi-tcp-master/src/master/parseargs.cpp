@@ -123,6 +123,7 @@ int fmitcp_master::parseArguments( int argc,
                     int *command_port,
                     int *results_port,
                     bool *paused,
+                    bool *solveLoops,
                     enum INTEGRATORTYPE *integratorType,
                     double *tolerance
         ) {
@@ -138,7 +139,7 @@ int fmitcp_master::parseArguments( int argc,
 
     vector<char*> argv2 = make_char_vector(argvstore);
 
-    while ((c = getopt (argv2.size(), argv2.data(), "xrl:vqhtT:c:d:s:o:p:f:m:g:w:C:j:5:F:NM:a:z:Z:i")) != -1){
+    while ((c = getopt (argv2.size(), argv2.data(), "xrl:vqhtT:c:d:s:o:p:f:m:g:w:C:j:5:F:NM:a:z:ZL:i")) != -1){
         int n, skip, l, cont, i, numScanned, stop, vis;
         deque<string> parts;
         if (optarg) parts = split(optarg, ':');
@@ -440,7 +441,6 @@ int fmitcp_master::parseArguments( int argc,
             fprintf(stderr, "Starting master in paused state\n");
             *paused = true;
             break;
-
         case 'i':
             if(strcmp(optarg,"cgsl") == 0){
                 *integratorType = cgsl;
@@ -449,6 +449,9 @@ int fmitcp_master::parseArguments( int argc,
             }break;
         case 'T':
             *tolerance = atof(optarg);
+            break;
+        case 'L':
+            *solveLoops = true;
             break;
         case '?':
 

@@ -73,7 +73,7 @@ if (USE_GPL)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_GPL")
 
   if (WIN32)
-    set(EXTRALIBS "${EXTRALIBS} gslcblas")
+    set(EXTRALIBS ${EXTRALIBS} gslcblas)
     link_directories(${CMAKE_CURRENT_SOURCE_DIR}/../umit-fmus/wingsl/lib)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../umit-fmus/wingsl/include)
     set(CMAKE_SHARED_LINKER_FLAGS "/SAFESEH:NO")

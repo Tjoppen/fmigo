@@ -194,7 +194,7 @@ class ModelExchangeStepper : public BaseMaster {
       return vector;
     }
     
-    int fmu_function(double t, double x[], double dxdt[], void* params)
+    static int fmu_function(double t, const double x[], double dxdt[], void* params)
     {
         // make local variables
         fmu_parameters* p = (fmu_parameters*)params;
@@ -203,11 +203,10 @@ class ModelExchangeStepper : public BaseMaster {
         /*should make sure we are in continuous state */
 
         ++p->count; /* count function evaluations */
+        //b.sendWait(p->client, fmi2_import_set_time(0,0,t));
 
-        sendWait(p->client, fmi2_import_set_time(0,0,t));
-
-        sendWait(p->client, fmi2_import_set_continuous_states(0,0,x,nx));
-        sendWait(p->client, fmi2_import_get_derivatives(0,0,nx));
+        //        sendWait(p->client, fmi2_import_set_continuous_states(0,0,x,nx));
+        //sendWait(p->client, fmi2_import_get_derivatives(0,0,nx));
 
         // maybe just send all three and then wait?
         return GSL_SUCCESS;
@@ -223,7 +222,7 @@ class ModelExchangeStepper : public BaseMaster {
         if(p != NULL)             return;
         if(p->z != NULL)          free(p->z);
         if(p->resultFile != NULL) free(p->resultFile);
-        if(m->model.x != NULL)          free(m->model.x);
+        if(m->model.x != NULL)    free(m->model.x);
 
         free(p);
         free(m);
@@ -244,6 +243,7 @@ class ModelExchangeStepper : public BaseMaster {
             exit(1);
         }
     }
+
     cgsl_model* init_fmu_model(FMIClient* client){
       fmu_parameters* p = (fmu_parameters*)malloc(sizeof(fmu_parameters));
       fmu_model* m = (fmu_model*)malloc(sizeof(fmu_model));
@@ -259,7 +259,8 @@ class ModelExchangeStepper : public BaseMaster {
 
       // done in main     initialization
 
-      // m->model.function = fmu_function;
+      m->model.function = fmu_function;
+
       // m->model.jacobian = NULL;
       // m->model.free = NULL;//freeFMUModel; 
     }

@@ -7,7 +7,7 @@
 
 #ifndef WEAKMASTERS_H_
 #define WEAKMASTERS_H_
-
+#define USE_GSL
 #include "master/BaseMaster.h"
 #include "master/WeakConnection.h"
 #include "common/common.h"
@@ -17,6 +17,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
 
 using namespace fmitcp::serialize;
 
@@ -226,6 +228,8 @@ class ModelExchangeStepper : public BaseMaster {
         fmu_parameters* p = getParameters(m);
         int nx = p->client->getNumContinuousStates();
         int nz = p->client->getNumEventIndicators();
+        p->nx = nx;
+        p->nz = nz;
         p->m_backup.x = (double*)calloc(nx, sizeof(double));
         m->model.x    = (double*)calloc(nx, sizeof(double));
         if(nz > 0) p->z = (double*)calloc(nz, sizeof(double));
@@ -255,8 +259,7 @@ class ModelExchangeStepper : public BaseMaster {
       // done in main     initialization
 
       m->model.function = fmu_function;
-
-      // m->model.jacobian = NULL;
+      m->model.jacobian = NULL;
       // m->model.free = NULL;//freeFMUModel; 
     }
     void prepare() {
@@ -264,7 +267,7 @@ class ModelExchangeStepper : public BaseMaster {
             WeakConnection wc = m_weakConnections[x];
             clientGetXs[wc.to][wc.from][wc.conn.fromType].push_back(wc.conn.fromOutputVR);
         }
-
+#ifdef USE_GSL
         /* This is the step control which determines tolerances. */
         cgsl_step_control_parameters step_control;
         /* = (cgsl_step_control_parameters){ */
@@ -288,10 +291,51 @@ class ModelExchangeStepper : public BaseMaster {
                                                        step_control);
             sims.push_back(sim);
           }
+#endif
+    }
+
+    void storeState(void){
+#ifdef USE_GSL
+        fmu_parameters* p;
+        for(cgsl_simulation sim : sims){
+            p = getParameters((fmu_model*)sim.model); 
+            memcpy(sim.model->x, p->m_backup.x, p->nx * sizeof(sim.model->x[0]));
+            sim.i.evolution->failed_steps = p->m_backup.failed_steps;
+            sim.t = p->m_backup.t;
+
+            // reset position in the result file
+            fseek(p->m_backup.result_file, p->m_backup.size_of_file, SEEK_SET);
+
+            // truncate the result file to have the previous result file size
+            ftruncate(fileno(p->m_backup.result_file), p->m_backup.size_of_file);
+            
+        }
+#endif
+    }
+    void restoreState(void){
+#ifdef USE_GSL
+        fmu_parameters* p;
+        for(cgsl_simulation sim : sims){
+            p = getParameters((fmu_model*)sim.model); 
+            p->baseMaster->sendWait(p->client, fmi2_import_get_continuous_states(0,0,p->nx));
+            
+            memcpy(p->m_backup.x, sim.model->x, p->nx * sizeof(sim.model->x[0]));
+
+            // if statement not needed if timestep is choosen more carefully
+            if(p->t_start == sim.t && p->nz > 0){
+              p->baseMaster->sendWait(p->client, fmi2_import_get_event_indicators(0,0, p->nz));
+            }
+            p->m_backup.failed_steps = sim.i.evolution->failed_steps;
+            p->m_backup.t = sim.t;
+            p->m_backup.size_of_file = ftell(p->m_backup.result_file);
+
+        }
+#endif
     }
 
     void runIteration(double t, double dt) {
         //fprintf(stderr, "\n\n");
+        storeState();
         for (int o : stepOrder) {
             FMIClient *client = m_clients[o];
 

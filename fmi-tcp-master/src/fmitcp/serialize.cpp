@@ -222,7 +222,7 @@ std::string fmitcp::serialize::fmi2_import_set_time(int message_id, int fmuId, d
     return m.SerializeAsString();
 }   
 
-std::string fmi2_import_set_continuous_states(int message_id, int fmuId, const double* x, int nx){
+std::string fmitcp::serialize::fmi2_import_set_continuous_states(int message_id, int fmuId, const double* x, int nx){
     fmitcp_message m;
     m.set_type(fmitcp_message_Type_type_fmi2_import_set_continuous_states_req);
 
@@ -235,19 +235,19 @@ std::string fmi2_import_set_continuous_states(int message_id, int fmuId, const d
     return m.SerializeAsString();
 }
 
-std::string fmi2_import_get_event_indicators(int message_id, int fmuId, int nz){
+std::string fmitcp::serialize::fmi2_import_get_event_indicators(int message_id, int fmuId, int nz){
     SERIALIZE_NORMAL_MESSAGE_(fmi2_import_get_event_indicators,nz);
 }
 
-std::string fmi2_import_get_continuous_states(int message_id, int fmuId, int nx){
+std::string fmitcp::serialize::fmi2_import_get_continuous_states(int message_id, int fmuId, int nx){
     SERIALIZE_NORMAL_MESSAGE_(fmi2_import_get_continuous_states,nx);
 }
 
-std::string fmi2_import_get_derivatives(int message_id, int fmuId, int nderivatives){
+std::string fmitcp::serialize::fmi2_import_get_derivatives(int message_id, int fmuId, int nderivatives){
     SERIALIZE_NORMAL_MESSAGE_(fmi2_import_get_derivatives,nderivatives);
 }
 
-std::string fmi2_import_get_nominal_continuous_states(int message_id, int fmuId, int nx){
+std::string fmitcp::serialize::fmi2_import_get_nominal_continuous_states(int message_id, int fmuId, int nx){
     SERIALIZE_NORMAL_MESSAGE_(fmi2_import_get_nominal_continuous_states,nx);
 }
 

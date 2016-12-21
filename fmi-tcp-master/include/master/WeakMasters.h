@@ -16,7 +16,7 @@
 #include "common/gsl_interface.h"
 #include <sys/stat.h>
 #include <sys/types.h>
-
+#include <stdio.h>
 
 using namespace fmitcp::serialize;
 
@@ -213,6 +213,37 @@ class ModelExchangeStepper : public BaseMaster {
         return GSL_SUCCESS;
     }
 
+    fmu_parameters* getParameters(fmu_model* m){
+        return (fmu_parameters*)(m->model.parameters);
+    }
+    void freeFMUModel(fmu_model*m){
+        if(m == NULL) return;
+
+        fmu_parameters* p = getParameters(m);
+        if(p != NULL)             return;
+        if(p->z != NULL)          free(p->z);
+        if(p->resultFile != NULL) free(p->resultFile);
+        if(m->model.x != NULL)          free(m->model.x);
+
+        free(p);
+        free(m);
+    }
+
+    void allocateMemory(fmu_model* m){
+        fmu_parameters* p = getParameters(m);
+        int nx = p->client->getNumContinuousStates();
+        int nz = p->client->getNumEventIndicators();
+        p->m_backup.x = (double*)calloc(nx, sizeof(double));
+        m->model.x    = (double*)calloc(nx, sizeof(double));
+        if(nz > 0) p->z = (double*)calloc(nz, sizeof(double));
+        else p->z = NULL;
+  
+        if((!m->model.x ) || (nz > 0 && !p->z)) {
+            freeFMUModel(m);
+            perror("WeakMaster:ModelExchange:allocateMemory ERROR -  could not allocate memory");
+            exit(1);
+        }
+    }
     cgsl_model* init_fmu_model(FMIClient* client){
       fmu_parameters* p = (fmu_parameters*)malloc(sizeof(fmu_parameters));
       fmu_model* m = (fmu_model*)malloc(sizeof(fmu_model));
@@ -223,8 +254,8 @@ class ModelExchangeStepper : public BaseMaster {
       p->resultFile = getModelResultPath("resultFile");
 
       // done in main     sendWait(m_clients, fmi2_import_instantiate(0));
-      
-      // allocate memory
+      size_t dummy = client->getNumEventIndicators(); 
+      allocateMemory(m);
 
       // done in main     initialization
 

@@ -222,7 +222,7 @@ std::string fmitcp::serialize::fmi2_import_set_time(int message_id, int fmuId, d
     return m.SerializeAsString();
 }   
 
-std::string fmi2_import_set_continuous_states(int message_id, int fmuId, double* x, int nx){
+std::string fmi2_import_set_continuous_states(int message_id, int fmuId, const double* x, int nx){
     fmitcp_message m;
     m.set_type(fmitcp_message_Type_type_fmi2_import_set_continuous_states_req);
 

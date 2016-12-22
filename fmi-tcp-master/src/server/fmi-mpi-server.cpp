@@ -35,7 +35,9 @@ int main(int argc, char *argv[]) {
 
         //let Server handle packet, send reply back to master
         std::string str = server.clientData(recv_str.c_str(), recv_str.length());
-        MPI_Send((void*)str.c_str(), str.length(), MPI_CHAR, rank, tag, MPI_COMM_WORLD);
+        if (str.length() > 0) {
+          MPI_Send((void*)str.c_str(), str.length(), MPI_CHAR, rank, tag, MPI_COMM_WORLD);
+        }
     }
 
     MPI_Finalize();

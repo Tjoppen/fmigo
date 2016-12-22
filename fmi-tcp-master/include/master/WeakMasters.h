@@ -298,7 +298,7 @@ class ModelExchangeStepper : public BaseMaster {
 #endif
     }
 
-    void storeState(void){
+    void storeStates(void){
 #ifdef USE_GSL
         fmu_parameters* p;
         for(cgsl_simulation sim : sims){
@@ -316,7 +316,7 @@ class ModelExchangeStepper : public BaseMaster {
         }
 #endif
     }
-    void restoreState(void){
+    void restoreStates(void){
 #ifdef USE_GSL
         fmu_parameters* p;
         for(cgsl_simulation sim : sims){
@@ -350,11 +350,17 @@ class ModelExchangeStepper : public BaseMaster {
         timeLoop.t_start = t;
         timeLoop.t_end = t + dt;
         
+        // set start values for the time integration
         resetIntegratorTimeVariables(timeLoop.t_end);
-        //fprintf(stderr, "\n\n");
-        storeState();
+
         // start at a new state
         sendWait(m_clients, fmi2_import_new_discrete_states(0,0));
+
+        // store the current state of all running FMUs
+        storeStates();
+
+        while( timeLoop.t_safe < timeLoop.t_end ){
+        }
         for (int o : stepOrder) {
             FMIClient *client = m_clients[o];
 

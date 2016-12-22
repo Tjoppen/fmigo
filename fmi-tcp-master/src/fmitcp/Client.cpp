@@ -46,8 +46,8 @@ static bool statusIsOK(fmitcp_proto::fmi2_status_t fmi2) {
 
 template<typename T, typename R> void handle_get_value_res(Client *c, Logger logger, void (Client::*callback)(int,const deque<T>&,fmitcp_proto::fmi2_status_t), R &r) {
     std::deque<T> values = values_to_deque<T>(r);
-    logger.log(Logger::LOG_NETWORK,"< %s(mid=%d,values=...,status=%d)\n",r.GetTypeName().c_str(), r.message_id(), r.status());
     if (!statusIsOK(r.status())) {
+        logger.log(Logger::LOG_NETWORK,"< %s(mid=%d,values=...,status=%d)\n",r.GetTypeName().c_str(), r.message_id(), r.status());
         fprintf(stderr, "FMI call %s failed with status=%d\nMaybe a connection or <Output> was specified incorrectly?",
             r.GetTypeName().c_str(), r.status());
         exit(1);

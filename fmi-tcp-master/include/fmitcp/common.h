@@ -57,6 +57,8 @@ namespace fmitcp {
         hsize_t nrecords,
         hsize_t type_size,
         const void *buf);
+
+  fmitcp_proto::fmitcp_message_Type parseType(const char* data, long size);
 }
 
 #endif

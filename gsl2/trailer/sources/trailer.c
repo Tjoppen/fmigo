@@ -154,7 +154,8 @@ static void trailer_init(state_t *s) {
 }
 
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
-  cgsl_step_to( &s->simulation, currentCommunicationPoint, communicationStepSize );
+  cgsl_step_to( &s->simulation, currentCommunicationPoint,
+  communicationStepSize );
 }
 
 

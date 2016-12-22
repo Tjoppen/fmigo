@@ -97,10 +97,10 @@ public:
  
 //aka serial stepper
 class ModelExchangeStepper : public BaseMaster {
-    vector<WeakConnection> m_weakConnections;
-    enum INTEGRATORTYPE m_integratorType;  
-    double m_tolerance;
-    
+    typedef struct TimeLoop
+    {
+        fmi2Real t_start, t_safe, t_new, t_crossed, t_end;
+    } TimeLoop;
     typedef struct backup
     {
         double* x; 
@@ -136,6 +136,10 @@ class ModelExchangeStepper : public BaseMaster {
       cgsl_model model;
     };
     vector<cgsl_simulation> sims;
+    vector<WeakConnection> m_weakConnections;
+    enum INTEGRATORTYPE m_integratorType;  
+    double m_tolerance;
+    TimeLoop timeLoop;
     
     map<FMIClient*, OutputRefsType> clientGetXs;  //one OutputRefsType for each client
     std::vector<int> stepOrder;
@@ -333,9 +337,24 @@ class ModelExchangeStepper : public BaseMaster {
 #endif
     }
 
+
+    /** resetIntegratorTimeVariables: simple function to restore values of t_ */
+    void resetIntegratorTimeVariables(double t_new)
+    {
+        timeLoop.t_safe = timeLoop.t_start;
+        timeLoop.t_crossed = timeLoop.t_end;
+        timeLoop.t_new = t_new;//min(sim->h, max(max((sim->t - prevTimeEvent)/500,0),t_end));
+    }
+
     void runIteration(double t, double dt) {
+        timeLoop.t_start = t;
+        timeLoop.t_end = t + dt;
+        
+        resetIntegratorTimeVariables(timeLoop.t_end);
         //fprintf(stderr, "\n\n");
         storeState();
+        // start at a new state
+        sendWait(m_clients, fmi2_import_new_discrete_states(0,0));
         for (int o : stepOrder) {
             FMIClient *client = m_clients[o];
 

@@ -141,13 +141,6 @@ if (WIN32)
     add_dependencies(sc suitesparse-ext)
     add_dependencies(fmi-tcp-master jsoncpp-ext protobuf-ext hdf5-ext)
     add_dependencies(fmi-mpi-master jsoncpp-ext protobuf-ext hdf5-ext)
-
-    if (USE_GPL)
-        link_directories(${CMAKE_CURRENT_SOURCE_DIR}/umit-fmus/wingsl/lib)
-        include_directories(${CMAKE_CURRENT_SOURCE_DIR}/umit-fmus/wingsl/include)
-        set(CMAKE_SHARED_LINKER_FLAGS "/SAFESEH:NO")
-        set(CMAKE_EXE_LINKER_FLAGS "/SAFESEH:NO")
-    endif ()
 endif ()
 
 if (BUILD_FMUS)

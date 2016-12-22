@@ -21,7 +21,15 @@ template<typename T, typename R> vector<T> repeated_to_vector(R *repeated_vector
 }
 
 template<typename T, typename R> vector<T> values_to_vector(R &r) {
-    vector<T> values;
+    return vector<T>(r.values().data(), &r.values().data()[r.values_size()]);
+}
+
+template<typename T, typename R> deque<T> values_to_deque(R &r) {
+    return deque<T>(r.values().data(), &r.values().data()[r.values_size()]);
+}
+
+template<> deque<string> values_to_deque<string,fmi2_import_get_string_res> (fmi2_import_get_string_res &r) {
+    deque<string> values;
     for(int i=0; i<r.values_size(); i++)
         values.push_back(r.values(i));
     return values;
@@ -36,8 +44,8 @@ static bool statusIsOK(fmitcp_proto::fmi2_status_t fmi2) {
     return fmi2 == fmitcp_proto::fmi2_status_ok;
 }
 
-template<typename T, typename R> void handle_get_value_res(Client *c, Logger logger, void (Client::*callback)(int,const vector<T>&,fmitcp_proto::fmi2_status_t), R &r) {
-    std::vector<T> values = values_to_vector<T>(r);
+template<typename T, typename R> void handle_get_value_res(Client *c, Logger logger, void (Client::*callback)(int,const deque<T>&,fmitcp_proto::fmi2_status_t), R &r) {
+    std::deque<T> values = values_to_deque<T>(r);
     logger.log(Logger::LOG_NETWORK,"< %s(mid=%d,values=...,status=%d)\n",r.GetTypeName().c_str(), r.message_id(), r.status());
     if (!statusIsOK(r.status())) {
         fprintf(stderr, "FMI call %s failed with status=%d\nMaybe a connection or <Output> was specified incorrectly?",

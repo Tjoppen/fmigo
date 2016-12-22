@@ -6,6 +6,7 @@
 #include "lumped_rod.h"
 #include "safealloc.h"
 
+//#define ROD_WRITE_OUTPUT
 
 /** to allow simpler copy paste in store/restore functions */ 
 #define COPY_FWD( a , b )  a  = b
@@ -23,7 +24,7 @@
 
 /** WARNING:  no error checking 
  *  No initialization is done here.  
-*/
+ */
 
 
 static void lumped_rod_alloc( lumped_rod * rod ) {
@@ -272,11 +273,13 @@ void rod_sim_do_step( lumped_rod_sim * sim, int n ){
 
   assert( sim );
   
+  
   double h_inv = 1.0  / sim->step;
   int i, j ; 
 
   for ( j = 0; j < n; ++j  ){
 
+    sim->time  += sim->step;
     build_rod_rhs( sim );
 
     tri_solve( &sim->matrix, sim->z );
@@ -292,6 +295,18 @@ void rod_sim_do_step( lumped_rod_sim * sim, int n ){
       sim->rod.state.torsion[ i ] = sim->z[ 2 * i + 1 ] * h_inv ;
     }
   }
+#ifdef ROD_WRITE_OUTPUT
+  {
+    FILE *f = (FILE *) sim->file;
+    int i = 0;
+    fprintf(f, "%g ", sim->time);
+    for( i = 0; i < sim->rod.n; ++ i )
+      fprintf(f, " %g ", sim->rod.state.x[ i ] );
+    for( i = 0; i < sim->rod.n; ++ i )
+      fprintf(f, " %g ", sim->rod.state.v[ i ] );
+  fputs("\n", f);
+  }
+#endif
 
   /** 
       Publish variables.
@@ -351,7 +366,7 @@ void lumped_rod_sim_restore ( lumped_rod_sim  * sim ){
    else is derived from that. 
 */
 lumped_rod_sim lumped_rod_sim_initialize( lumped_rod_sim sim, lumped_rod_init_conditions initial) {
-
+  sim.time = 0;
   MALLOC( double, sim.z, 2 * sim.rod.n - 1 ); 
   sim.rod_backup = sim.rod;
   lumped_rod_alloc( &sim.rod );
@@ -375,6 +390,9 @@ lumped_rod_sim lumped_rod_sim_initialize( lumped_rod_sim sim, lumped_rod_init_co
   lumped_sim_set_timestep( &sim, sim.step );
   lumped_rod_initialize(   sim.rod , initial );
 
+#ifdef ROD_WRITE_OUTPUT
+  sim.file = ( void * ) fopen("./rod_data.mat", "w+");
+#endif
   return sim;
 }
 
@@ -397,6 +415,9 @@ void lumped_rod_sim_free( lumped_rod_sim   sim ) {
   lumped_rod_free( sim.rod_backup );
   tri_matrix_free( sim.matrix );
   free ( sim.z );
+#ifdef ROD_WRITE_OUTPUT
+  fclose( ( FILE * ) sim.file );
+#endif
 
   return;
   
@@ -466,10 +487,10 @@ int main(){
   for ( int j = 0; j < N; ++j ){
     rod_sim_do_step( &sim, 1);
     if ( print ){
-    for ( int i = 0; i < sim.rod.n; ++i ) {
-      fprintf( stderr, "%6.4f " , i, sim.rod.state.x[ i ] );
-    }
-    fprintf(stderr, "\n");
+      for ( int i = 0; i < sim.rod.n; ++i ) {
+	fprintf( stderr, "%6.4f " , i, sim.rod.state.x[ i ] );
+      }
+      fprintf(stderr, "\n");
     }
   }
   

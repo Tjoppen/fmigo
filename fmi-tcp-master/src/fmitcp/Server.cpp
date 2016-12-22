@@ -232,7 +232,8 @@ string Server::clientData(const char *data, size_t size) {
       ret.second = response.SerializeAsString(); \
       m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_"#type"_res(mid=%d,status=%s)\n",response.message_id(),response.status());
 
-  if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_get_version_req) {
+  switch (type) {
+  case fmitcp_proto::fmitcp_message_Type_type_fmi2_import_get_version_req: {
 
     // Unpack message
     fmitcp_proto::fmi2_import_get_version_req * r = req.mutable_fmi2_import_get_version_req();
@@ -252,7 +253,7 @@ string Server::clientData(const char *data, size_t size) {
     ret.second = getVersionRes.SerializeAsString();
     m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_get_version_res(mid=%d,version=%s)\n",getVersionRes.message_id(),getVersionRes.version().c_str());
 
-  } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_set_debug_logging_req) {
+  break; } case fmitcp_proto::fmitcp_message_Type_type_fmi2_import_set_debug_logging_req: {
 
     // Unpack message
     fmitcp_proto::fmi2_import_set_debug_logging_req * r = req.mutable_fmi2_import_set_debug_logging_req();
@@ -274,7 +275,7 @@ string Server::clientData(const char *data, size_t size) {
 
     SERVER_NORMAL_RESPONSE(set_debug_logging);
 
-  } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_instantiate_req) {
+  break; } case fmitcp_proto::fmitcp_message_Type_type_fmi2_import_instantiate_req: {
 
     // Unpack message
     fmitcp_proto::fmi2_import_instantiate_req * r = req.mutable_fmi2_import_instantiate_req();
@@ -297,7 +298,7 @@ string Server::clientData(const char *data, size_t size) {
     ret.second = instantiateRes.SerializeAsString();
     m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_instantiate_res(mid=%d,status=%d)\n",messageId,instantiateRes.status());
 
-  } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_free_instance_req) {
+  break; } case fmitcp_proto::fmitcp_message_Type_type_fmi2_import_free_instance_req: {
     if (hdf5Filename.length()) {
         //dump hdf5 data
         //NOTE: this will only work if we have exactly one FMU instance on this server
@@ -330,7 +331,7 @@ string Server::clientData(const char *data, size_t size) {
     ret.second = resetRes.SerializeAsString();
     m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_free_instance_res(mid=%d)\n",messageId);
 
-  } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_setup_experiment_req) {
+  break; } case fmitcp_proto::fmitcp_message_Type_type_fmi2_import_setup_experiment_req: {
 
     // Unpack message
     fmitcp_proto::fmi2_import_setup_experiment_req * r = req.mutable_fmi2_import_setup_experiment_req();
@@ -351,7 +352,7 @@ string Server::clientData(const char *data, size_t size) {
 
     SERVER_NORMAL_RESPONSE(setup_experiment);
 
-  } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_enter_initialization_mode_req) {
+  break; } case fmitcp_proto::fmitcp_message_Type_type_fmi2_import_enter_initialization_mode_req: {
 
     // Unpack message
     fmitcp_proto::fmi2_import_enter_initialization_mode_req * r = req.mutable_fmi2_import_enter_initialization_mode_req();
@@ -368,7 +369,7 @@ string Server::clientData(const char *data, size_t size) {
 
     SERVER_NORMAL_RESPONSE(enter_initialization_mode);
 
-  } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_exit_initialization_mode_req) {
+  break; } case fmitcp_proto::fmitcp_message_Type_type_fmi2_import_exit_initialization_mode_req: {
 
     // Unpack message
     fmitcp_proto::fmi2_import_exit_initialization_mode_req * r = req.mutable_fmi2_import_exit_initialization_mode_req();
@@ -384,7 +385,7 @@ string Server::clientData(const char *data, size_t size) {
 
     SERVER_NORMAL_RESPONSE(exit_initialization_mode);
 
-  } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_terminate_req) {
+  break; } case fmitcp_proto::fmitcp_message_Type_type_fmi2_import_terminate_req: {
 
     // Unpack message
     fmitcp_proto::fmi2_import_terminate_req * r = req.mutable_fmi2_import_terminate_req();
@@ -401,7 +402,7 @@ string Server::clientData(const char *data, size_t size) {
 
     SERVER_NORMAL_RESPONSE(terminate);
 
-  } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_reset_req) {
+  break; } case fmitcp_proto::fmitcp_message_Type_type_fmi2_import_reset_req: {
 
     // Unpack message
     fmitcp_proto::fmi2_import_reset_req * r = req.mutable_fmi2_import_reset_req();
@@ -418,7 +419,7 @@ string Server::clientData(const char *data, size_t size) {
 
     SERVER_NORMAL_RESPONSE(reset);
 
-  } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_get_real_req) {
+  break; } case fmitcp_proto::fmitcp_message_Type_type_fmi2_import_get_real_req: {
 
     // Unpack message
     fmitcp_proto::fmi2_import_get_real_req * r = req.mutable_fmi2_import_get_real_req();
@@ -474,7 +475,7 @@ string Server::clientData(const char *data, size_t size) {
     ret.second = response.SerializeAsString();
     m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_get_real_res(mid=%d,status=%d,values=%s)\n",response.message_id(),response.status(),arrayToString(value, r->valuereferences_size()).c_str());
 
-  } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_get_integer_req) {
+  break; } case fmitcp_proto::fmitcp_message_Type_type_fmi2_import_get_integer_req: {
 
     // Unpack message
     fmitcp_proto::fmi2_import_get_integer_req * r = req.mutable_fmi2_import_get_integer_req();
@@ -505,7 +506,7 @@ string Server::clientData(const char *data, size_t size) {
     ret.second = response.SerializeAsString();
     m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_get_integer_res(mid=%d,status=%d,values=%s)\n",response.message_id(),response.status(),arrayToString(value, r->valuereferences_size()).c_str());
 
-  } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_get_boolean_req) {
+  break; } case fmitcp_proto::fmitcp_message_Type_type_fmi2_import_get_boolean_req: {
 
     // Unpack message
     fmitcp_proto::fmi2_import_get_boolean_req * r = req.mutable_fmi2_import_get_boolean_req();
@@ -536,7 +537,7 @@ string Server::clientData(const char *data, size_t size) {
     ret.second = response.SerializeAsString();
     m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_get_boolean_res(mid=%d,status=%d,values=%s)\n",response.message_id(),response.status(),arrayToString(value, r->valuereferences_size()).c_str());
 
-  } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_get_string_req) {
+  break; } case fmitcp_proto::fmitcp_message_Type_type_fmi2_import_get_string_req: {
 
     // Unpack message
     fmitcp_proto::fmi2_import_get_string_req * r = req.mutable_fmi2_import_get_string_req();
@@ -567,7 +568,7 @@ string Server::clientData(const char *data, size_t size) {
     ret.second = response.SerializeAsString();
     m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_get_string_res(mid=%d,status=%d,values=%s)\n",response.message_id(),response.status(),arrayToString(value, r->valuereferences_size()).c_str());
 
-  } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_set_real_req) {
+  break; } case fmitcp_proto::fmitcp_message_Type_type_fmi2_import_set_real_req: {
 
     // Unpack message
     fmitcp_proto::fmi2_import_set_real_req * r = req.mutable_fmi2_import_set_real_req();
@@ -592,7 +593,7 @@ string Server::clientData(const char *data, size_t size) {
 
     SERVER_NORMAL_RESPONSE(set_real);
 
-  } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_set_integer_req) {
+  break; } case fmitcp_proto::fmitcp_message_Type_type_fmi2_import_set_integer_req: {
 
     // Unpack message
     fmitcp_proto::fmi2_import_set_integer_req * r = req.mutable_fmi2_import_set_integer_req();
@@ -616,7 +617,7 @@ string Server::clientData(const char *data, size_t size) {
 
     SERVER_NORMAL_RESPONSE(set_integer);
 
-  } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_set_boolean_req) {
+  break; } case fmitcp_proto::fmitcp_message_Type_type_fmi2_import_set_boolean_req: {
 
     // Unpack message
     fmitcp_proto::fmi2_import_set_boolean_req * r = req.mutable_fmi2_import_set_boolean_req();
@@ -640,7 +641,7 @@ string Server::clientData(const char *data, size_t size) {
 
     SERVER_NORMAL_RESPONSE(set_boolean);
 
-  } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_set_string_req) {
+  break; } case fmitcp_proto::fmitcp_message_Type_type_fmi2_import_set_string_req: {
 
     // Unpack message
     fmitcp_proto::fmi2_import_set_string_req * r = req.mutable_fmi2_import_set_string_req();
@@ -664,7 +665,7 @@ string Server::clientData(const char *data, size_t size) {
 
     SERVER_NORMAL_RESPONSE(set_string);
 
-  } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_get_fmu_state_req){
+  break; } case fmitcp_proto::fmitcp_message_Type_type_fmi2_import_get_fmu_state_req: {
 
     // Unpack message
     fmitcp_proto::fmi2_import_get_fmu_state_req * r = req.mutable_fmi2_import_get_fmu_state_req();
@@ -687,7 +688,7 @@ string Server::clientData(const char *data, size_t size) {
     ret.second = response.SerializeAsString();
     m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_get_fmu_state_res(mid=%d,stateId=%d,status=%d)\n",response.message_id(),response.stateid(),response.status());
 
-  } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_set_fmu_state_req){
+  break; } case fmitcp_proto::fmitcp_message_Type_type_fmi2_import_set_fmu_state_req: {
 
     // Unpack message
     fmitcp_proto::fmi2_import_set_fmu_state_req * r = req.mutable_fmi2_import_set_fmu_state_req();
@@ -700,7 +701,7 @@ string Server::clientData(const char *data, size_t size) {
 
     SERVER_NORMAL_RESPONSE(set_fmu_state);
 
-  } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_free_fmu_state_req){
+  break; } case fmitcp_proto::fmitcp_message_Type_type_fmi2_import_free_fmu_state_req: {
 
     // Unpack message
     fmitcp_proto::fmi2_import_free_fmu_state_req * r = req.mutable_fmi2_import_free_fmu_state_req();
@@ -721,16 +722,16 @@ string Server::clientData(const char *data, size_t size) {
     ret.second = response.SerializeAsString();
     m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_free_fmu_state_res(mid=%d,status=%d)\n",response.message_id(),response.status());
 
-  // } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_serialized_fmu_state_size_req){
+  // break; } case fmitcp_proto::fmitcp_message_Type_type_fmi2_import_serialized_fmu_state_size_req: {
   //   // TODO
   //   sendResponse = false;
-  // } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_serialize_fmu_state_req){
+  // break; } case fmitcp_proto::fmitcp_message_Type_type_fmi2_import_serialize_fmu_state_req: {
   //   // TODO
   //   sendResponse = false;
-  // } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_de_serialize_fmu_state_req){
+  // break; } case fmitcp_proto::fmitcp_message_Type_type_fmi2_import_de_serialize_fmu_state_req: {
   //   // TODO
   //   sendResponse = false;
-  } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_get_directional_derivative_req) {
+  break; } case fmitcp_proto::fmitcp_message_Type_type_fmi2_import_get_directional_derivative_req: {
 
     // Unpack message
     fmitcp_proto::fmi2_import_get_directional_derivative_req * r = req.mutable_fmi2_import_get_directional_derivative_req();
@@ -776,14 +777,11 @@ string Server::clientData(const char *data, size_t size) {
     ret.second = response.SerializeAsString();
     m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_get_directional_derivative_res(mid=%d,status=%d,dz=%s)\n",response.message_id(),response.status(),arrayToString(dz, r->z_ref_size()).c_str());
 
- }
-    /* Model Exchange */
-
-  else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_enter_event_mode_req){
+  break; } case fmitcp_proto::fmitcp_message_Type_type_fmi2_import_enter_event_mode_req: {
     // TODO
     SERVER_NORMAL_MESSAGE(enter_event_mode);
     SERVER_NORMAL_RESPONSE(enter_event_mode);
- }else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_new_discrete_states_req){
+  break; } case fmitcp_proto::fmitcp_message_Type_type_fmi2_import_new_discrete_states_req: {
     // TODO
     // Unpack message
     fmitcp_proto::fmi2_import_new_discrete_states_req * r = req.mutable_fmi2_import_new_discrete_states_req();
@@ -802,14 +800,14 @@ string Server::clientData(const char *data, size_t size) {
     ret.second = response.SerializeAsString();
     m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_new_discrete_states_res(mid=%d)\n",response.message_id());
     sendResponse = false;
- }else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_enter_continuous_time_mode_req){
+  break; } case fmitcp_proto::fmitcp_message_Type_type_fmi2_import_enter_continuous_time_mode_req: {
     // TODO
     SERVER_NORMAL_MESSAGE(enter_continuous_time_mode);
     SERVER_NORMAL_RESPONSE(enter_continuous_time_mode);
- }else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_completed_integrator_step_req){
+  break; } case fmitcp_proto::fmitcp_message_Type_type_fmi2_import_completed_integrator_step_req: {
     // TODO
     sendResponse = false;
-  } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_set_time_req){
+  break; } case fmitcp_proto::fmitcp_message_Type_type_fmi2_import_set_time_req: {
     // TODO
     // Unpack message
     fmitcp_proto::fmi2_import_set_time_req * r = req.mutable_fmi2_import_set_time_req();
@@ -822,7 +820,7 @@ string Server::clientData(const char *data, size_t size) {
 
     // Create message
     SERVER_NORMAL_RESPONSE(set_time);
-  } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_set_continuous_states_req){
+  break; } case fmitcp_proto::fmitcp_message_Type_type_fmi2_import_set_continuous_states_req: {
     // TODO
     // Unpack message
     fmitcp_proto::fmi2_import_set_continuous_states_req * r = req.mutable_fmi2_import_set_continuous_states_req();
@@ -842,7 +840,7 @@ string Server::clientData(const char *data, size_t size) {
     SERVER_NORMAL_RESPONSE(set_continuous_states);
     
     sendResponse = false;
-  } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_get_event_indicators_req){
+  break; } case fmitcp_proto::fmitcp_message_Type_type_fmi2_import_get_event_indicators_req: {
     // TODO
     // Unpack message
     fmitcp_proto::fmi2_import_get_event_indicators_req * r = req.mutable_fmi2_import_get_event_indicators_req();
@@ -868,7 +866,7 @@ string Server::clientData(const char *data, size_t size) {
     m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_get_event_indicators_res(mid=%d,z=%s)\n",response.message_id(),response.z());
                                                                                                                                                             
     sendResponse = false;
-  } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_get_continuous_states_req){
+  break; } case fmitcp_proto::fmitcp_message_Type_type_fmi2_import_get_continuous_states_req: {
     // TODO
     // Unpack message
     fmitcp_proto::fmi2_import_get_continuous_states_req * r = req.mutable_fmi2_import_get_continuous_states_req();
@@ -893,7 +891,7 @@ string Server::clientData(const char *data, size_t size) {
     ret.second = response.SerializeAsString();
     m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_get_continuous_states_res(mid=%d,x=%s)\n",response.message_id(),response.x());
     sendResponse = false;
-  } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_get_derivatives_req){
+  break; } case fmitcp_proto::fmitcp_message_Type_type_fmi2_import_get_derivatives_req: {
     // TODO
     // Unpack message
     fmitcp_proto::fmi2_import_get_derivatives_req * r = req.mutable_fmi2_import_get_derivatives_req();
@@ -919,7 +917,7 @@ string Server::clientData(const char *data, size_t size) {
     m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_get_derivatives_res(mid=%d,derivatives=%s)\n",response.message_id(),response.derivatives());
     
      sendResponse = false;
-  } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_get_nominal_continuous_states_req){
+  break; } case fmitcp_proto::fmitcp_message_Type_type_fmi2_import_get_nominal_continuous_states_req: {
     // TODO
     // Unpack message
     fmitcp_proto::fmi2_import_get_nominal_continuous_states_req * r = req.mutable_fmi2_import_get_nominal_continuous_states_req();
@@ -944,9 +942,7 @@ string Server::clientData(const char *data, size_t size) {
     ret.second = response.SerializeAsString();
     m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_get_nominal_continuous_states_res(mid=%d,nominals=%s)\n",response.message_id(),response.nominal());
     sendResponse = false;
-  }
-  /* Co-simulation */
-  else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_set_real_input_derivatives_req) {
+  break; } case fmitcp_proto::fmitcp_message_Type_type_fmi2_import_set_real_input_derivatives_req: {
 
     // Unpack message
     fmitcp_proto::fmi2_import_set_real_input_derivatives_req * r = req.mutable_fmi2_import_set_real_input_derivatives_req();
@@ -972,7 +968,7 @@ string Server::clientData(const char *data, size_t size) {
 
     SERVER_NORMAL_RESPONSE(set_real_input_derivatives);
 
-  } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_get_real_output_derivatives_req) {
+  break; } case fmitcp_proto::fmitcp_message_Type_type_fmi2_import_get_real_output_derivatives_req: {
 
     // Unpack message
     fmitcp_proto::fmi2_import_get_real_output_derivatives_req * r = req.mutable_fmi2_import_get_real_output_derivatives_req();
@@ -1006,7 +1002,7 @@ string Server::clientData(const char *data, size_t size) {
     ret.second = response.SerializeAsString();
     m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_get_real_output_derivatives_res(mid=%d,status=%d,values=%s)\n",response.message_id(),response.status(),arrayToString(value, r->valuereferences_size()).c_str());
 
-  } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_do_step_req) {
+  break; } case fmitcp_proto::fmitcp_message_Type_type_fmi2_import_do_step_req: {
 
     // Unpack message
     fmitcp_proto::fmi2_import_do_step_req * r = req.mutable_fmi2_import_do_step_req();
@@ -1047,7 +1043,7 @@ string Server::clientData(const char *data, size_t size) {
 
     SERVER_NORMAL_RESPONSE(do_step);
 
-  } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_cancel_step_req) {
+  break; } case fmitcp_proto::fmitcp_message_Type_type_fmi2_import_cancel_step_req: {
 
     // Unpack message
     fmitcp_proto::fmi2_import_cancel_step_req * r = req.mutable_fmi2_import_cancel_step_req();
@@ -1064,7 +1060,7 @@ string Server::clientData(const char *data, size_t size) {
 
     SERVER_NORMAL_RESPONSE(cancel_step);
 
-  } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_get_status_req) {
+  break; } case fmitcp_proto::fmitcp_message_Type_type_fmi2_import_get_status_req: {
 
     // Unpack message
     fmitcp_proto::fmi2_import_get_status_req * r = req.mutable_fmi2_import_get_status_req();
@@ -1086,7 +1082,7 @@ string Server::clientData(const char *data, size_t size) {
     ret.second = response.SerializeAsString();
     m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_get_status_res(value=%d)\n",response.value());
 
-  } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_get_real_status_req) {
+  break; } case fmitcp_proto::fmitcp_message_Type_type_fmi2_import_get_real_status_req: {
 
     // Unpack message
     fmitcp_proto::fmi2_import_get_real_status_req * r = req.mutable_fmi2_import_get_real_status_req();
@@ -1108,7 +1104,7 @@ string Server::clientData(const char *data, size_t size) {
     ret.second = response.SerializeAsString();
     m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_get_real_status_res(value=%g)\n",response.value());
 
-  } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_get_integer_status_req) {
+  break; } case fmitcp_proto::fmitcp_message_Type_type_fmi2_import_get_integer_status_req: {
 
     // Unpack message
     fmitcp_proto::fmi2_import_get_integer_status_req * r = req.mutable_fmi2_import_get_integer_status_req();
@@ -1130,7 +1126,7 @@ string Server::clientData(const char *data, size_t size) {
     ret.second = response.SerializeAsString();
     m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_get_integer_status_res(value=%d)\n",response.value());
 
-  } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_get_boolean_status_req) {
+  break; } case fmitcp_proto::fmitcp_message_Type_type_fmi2_import_get_boolean_status_req: {
 
     // Unpack message
     fmitcp_proto::fmi2_import_get_boolean_status_req * r = req.mutable_fmi2_import_get_boolean_status_req();
@@ -1152,7 +1148,7 @@ string Server::clientData(const char *data, size_t size) {
     ret.second = response.SerializeAsString();
     m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_get_boolean_status_res(mid=%d,value=%d)\n",response.message_id(),response.value());
 
-  } else if(type == fmitcp_proto::fmitcp_message_Type_type_fmi2_import_get_string_status_req) {
+  break; } case fmitcp_proto::fmitcp_message_Type_type_fmi2_import_get_string_status_req: {
 
     // Unpack message
     fmitcp_proto::fmi2_import_get_string_status_req * r = req.mutable_fmi2_import_get_string_status_req();
@@ -1174,7 +1170,7 @@ string Server::clientData(const char *data, size_t size) {
     ret.second = response.SerializeAsString();
     m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_get_string_status_res(mid=%d,value=%s)\n",response.message_id(),response.value().c_str());
 
-  } else if(type == fmitcp_proto::fmitcp_message_Type_type_get_xml_req) {
+  break; } case fmitcp_proto::fmitcp_message_Type_type_get_xml_req: {
 
     // Unpack message
     fmitcp_proto::get_xml_req * r = req.mutable_get_xml_req();
@@ -1208,10 +1204,11 @@ string Server::clientData(const char *data, size_t size) {
     // only printing the first 38 characters of xml.
     m_logger.log(Logger::LOG_NETWORK,"> get_xml_res(mid=%d,logLevel=%d,xml=%.*s)\n",response.message_id(), response.loglevel(), 38, response.xml().c_str());
 
-  } else {
+  break; } default: {
     // Something is wrong.
     sendResponse = false;
     m_logger.log(Logger::LOG_ERROR,"Message type not recognized: %d.\n",type);
+    break; }
   }
 
   if (ret.second == "error") {

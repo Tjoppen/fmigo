@@ -224,7 +224,7 @@
         name="x_in_e"
         valueReference="20"
         description="external displacement engine-side"             
-        causality="input" initial="exact">
+        causality="input">
       <Real start="0"/>
     </ScalarVariable>
 
@@ -233,7 +233,7 @@
         name="v_in_e"
         valueReference="21"
         description="external driving velocity engine-side"             
-        causality="input" initial="exact">
+        causality="input">
       <Real start="0"/>
     </ScalarVariable>
 
@@ -242,7 +242,7 @@
         name="force_in_e"         
         valueReference="22"
         description="driving force, engine-side"
-        causality="input" initial="exact">
+        causality="input">
       <Real start="0"/>
     </ScalarVariable>
 
@@ -251,7 +251,7 @@
         name="force_in_ex"         
         valueReference="23"
         description="additional driving force, engine-side"
-        causality="input" initial="exact">
+        causality="input">
       <Real start="0"/>
     </ScalarVariable>
 
@@ -261,7 +261,7 @@
         name="x_in_s"
         valueReference="24"
         description="external displacement shaft-side"             
-        causality="input" initial="exact">
+        causality="input">
       <Real start="0"/>
     </ScalarVariable>
     <!-- index="0"-->
@@ -269,7 +269,7 @@
         name="v_in_s"
         valueReference="25"
         description="external driving velocity shaft-side"             
-        causality="input" initial="exact">
+        causality="input">
       <Real start="0"/>
     </ScalarVariable>
     <!-- index="0"-->
@@ -277,7 +277,7 @@
         name="force_in_s"         
         valueReference="26"
         description="driving force, shaft-side"
-        causality="input" initial="exact">
+        causality="input">
       <Real start="0"/>
     </ScalarVariable>
 
@@ -286,7 +286,7 @@
         name="force_in_sx"         
         valueReference="27"
         description="additional driving force, shaft-side"
-        causality="input" initial="exact">
+        causality="input">
       <Real start="0"/>
     </ScalarVariable>
 
@@ -295,7 +295,7 @@
         name="clutch_position"         
         valueReference="28"  
         description="how hard the clutch is engaged (only 0 or 1 for now)"
-        causality="input" initial="exact">
+        causality="input">
       <Real start="0"/>
     </ScalarVariable>
 
@@ -303,7 +303,7 @@
         name="gear"
         valueReference="29"  
         description="Gear. Reverse = -1, neutral = 0, forward = 1, 2, ..., 14"
-        causality="input" initial="exact">
+        causality="input">
       <Integer start="1"/>
     </ScalarVariable>
 

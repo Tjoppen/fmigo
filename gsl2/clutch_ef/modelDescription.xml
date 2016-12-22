@@ -149,8 +149,7 @@
         name="on_off"
         valueReference="13"
         description="clutch position.  can only be on off"
-        causality="input"
-        initial="exact">
+        causality="input">
       <Real start="1"/>
     </ScalarVariable>
 

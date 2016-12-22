@@ -26,15 +26,13 @@
     <ScalarVariable name="force"
                     valueReference="0"
                     description="driving force"
-                    causality="input"
-                    initial="exact">
+                    causality="input">
       <Real start="0"/>
     </ScalarVariable>
     <ScalarVariable name="force_c"
                     valueReference="1"
                     description="coupling force"
-                    causality="input"
-                    initial="exact">
+                    causality="input">
       <Real start="0"/>
     </ScalarVariable>
 

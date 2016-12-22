@@ -26,7 +26,9 @@ FMUS="
     kinematictruck/kinclutch
     forcevelocitytruck/fvbody
     forcevelocitytruck/gearbox
-    gsl2/road
+    loopsolvetest/add
+    loopsolvetest/sub
+    loopsolvetest/mul
 "
 
 cat <<END>CMakeLists.txt

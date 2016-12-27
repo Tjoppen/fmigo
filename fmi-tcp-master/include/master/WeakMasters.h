@@ -358,28 +358,30 @@ class ModelExchangeStepper : public BaseMaster {
     /* getStateEvent: Tries to retrieve event indicators, if successful the signbit of all
     * event indicators z are compaired with event indicators in p->z */
     fmi2Status getStateEvent(std::vector<cgsl_simulation> sims){
-      for(auto sim: sims) getStateEvent(sim);
-    }
-    fmi2Status getStateEvent(cgsl_simulation sim)
-    {
-        fmu_parameters* p = getParameters(sim.model);
-        p->stateEvent = 0;
-        if(p->nz > 0){ 
-            double z[p->nz];
-            if(p->nz > 0){
-                p->baseMaster->sendWait(p->client, fmi2_import_get_event_indicators(0,0,p->nz));
+        for(auto sim: sims) {
+            fmu_parameters* p = getParameters(sim.model);
+            p->stateEvent = 0;
+            if(p->nz > 0){ 
+                double z[p->nz];
+                if(p->nz > 0){
+                    p->baseMaster->sendWait(p->client, fmi2_import_get_event_indicators(0,0,p->nz));
+                }
+                /* compare signbit of previous state and the current
+                * return at first difference */
+                /* int i; */
+                /* for(i = 0; i < p->nz; i++) */
+                /* if(signbit(z[i]) != signbit(p->z[i])) { */
+                /*     p->event.stateEvent = 1; */
+                /*     return ; */
+                /* } */
             }
-            /* compare signbit of previous state and the current
-            * return at first difference */
-            /* int i; */
-            /* for(i = 0; i < p->nz; i++) */
-            /* if(signbit(z[i]) != signbit(p->z[i])) { */
-            /*     p->event.stateEvent = 1; */
-            /*     return ; */
-            /* } */
         }
     }
 
+    /** getSafeTime:
+     ** caluclates a "safe" time, uses the golden ratio to get
+     ** t_crossed and t_safe to converge towards same value
+     */
     double getSafeTime(cgsl_simulation sim, TimeLoop* timeLoop){
 
         // golden ratio
@@ -398,6 +400,10 @@ class ModelExchangeStepper : public BaseMaster {
 
         return timeLoop->t_new;
     }
+
+    /** hasStateEvent:
+     ** returns true if at least one simulation has an event
+     */
     bool hasStateEvent(std::vector<cgsl_simulation> sims){
       fmu_parameters* p;
       for(auto sim:sims){
@@ -409,19 +415,31 @@ class ModelExchangeStepper : public BaseMaster {
 
     }
 
+    /** step: 
+     ** run cgsl_step_to on all simulations
+     */
     void step(std::vector<cgsl_simulation> *sims, TimeLoop* timeLoop){
         for(auto sim: *sims)
             cgsl_step_to(&sim, sim.t, getSafeTime(sim, timeLoop)); 
     }
 
+    /** reduceSims:
+     ** forget about all simulations that will not reach the event
+     ** during current time step.
+     */
     void reduceSims(std::vector<cgsl_simulation> *sims){
-        for(int it = 0; it < sims.size();it++){
-          p = getParameters(sims[it].model);
+      fmu_parameters* p;
+        for(int it = 0; it < sims->size();it++){
+          p = getParameters((*sims)[it].model);
           if(!p->stateEvent)
-            sims.erase(sims.begin() + it--);
+            sims->erase(sims->begin() + it--);
         }
     }
     
+    /** findEventTime:
+     ** if there is an event, find the event and return 
+     ** the time at where the time event occured
+     */
     double findEventTime(std::vector<cgsl_simulation> sims, TimeLoop* timeLoop){
         restoreStates(&sims);
         double tol = 1e-6;
@@ -434,10 +452,10 @@ class ModelExchangeStepper : public BaseMaster {
             step(&sims, timeLoop); 
             
             getStateEvent(sims);
-            if(hasStateEvent(sims))
+            if(hasStateEvent(sims)){
                 restoreStates(&sims);
                 reduceSims(&sims);
-            else
+            }else
                 storeStates(&sims);
         }
         return timeLoop->t_crossed;

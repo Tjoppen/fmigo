@@ -346,6 +346,32 @@ class ModelExchangeStepper : public BaseMaster {
         timeLoop.t_new = t_new;//min(sim->h, max(max((sim->t - prevTimeEvent)/500,0),t_end));
     }
 
+
+    /* getStateEvent: Tries to retrieve event indicators, if successful the signbit of all
+    * event indicators z are compaired with event indicators in p->z */
+    fmi2Status getStateEvent(std::vector<cgsl_simulation> sims)
+    {
+        fmu_parameters* p;
+        for(auto sim: sims){
+            p = getParameters((fmu_model*)sim.model);
+            //p->event.stateEvent = 0;
+            if(p->nz > 0){ 
+                double z[p->nz];
+                if(p->nz > 0){
+                    p->baseMaster->sendWait(p->client, fmi2_import_get_event_indicators(0,0,p->nz));
+                }
+                /* compare signbit of previous state and the current
+                * return at first difference */
+                /* int i; */
+                /* for(i = 0; i < p->nz; i++) */
+                /* if(signbit(z[i]) != signbit(p->z[i])) { */
+                /*     p->event.stateEvent = 1; */
+                /*     return ; */
+                /* } */
+            }
+        }
+    }
+
     void runIteration(double t, double dt) {
         timeLoop.t_start = t;
         timeLoop.t_end = t + dt;
@@ -360,6 +386,11 @@ class ModelExchangeStepper : public BaseMaster {
         storeStates();
 
         while( timeLoop.t_safe < timeLoop.t_end ){
+          for(auto sim : sims){
+            cgsl_step_to(&sim, timeLoop.t_safe,timeLoop.t_new);
+            getStateEvent(sims);
+            
+          }
         }
         for (int o : stepOrder) {
             FMIClient *client = m_clients[o];

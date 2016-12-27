@@ -409,30 +409,40 @@ class ModelExchangeStepper : public BaseMaster {
 
     }
 
-    double findEventTime(std::vector<cgsl_simulation> sims, TimeLoop* timeLoop){
-        restoreStates(&sims);
-        double tol = 1e-6;
+    void step(std::vector<cgsl_simulation> *sims, TimeLoop* timeLoop){
+        for(auto sim: *sims)
+            cgsl_step_to(&sim, sim.t, getSafeTime(sim, timeLoop)); // stepTo(sim,p));
+    }
 
-        fmu_parameters* p;
+    void reduceSims(std::vector<cgsl_simulation> *sims){
         for(int it = 0; it < sims.size();it++){
           p = getParameters(sims[it].model);
           if(!p->stateEvent)
             sims.erase(sims.begin() + it--);
         }
-          
+    }
+    
+    double findEventTime(std::vector<cgsl_simulation> sims, TimeLoop* timeLoop){
+        restoreStates(&sims);
+        double tol = 1e-6;
+        fmu_parameters* p;
 
+        //remove all simulations that doesn't have an event
+        reduceSims(&sims);
+          
         while(timeLoop->t_crossed - timeLoop->t_safe > tol) {
-            for( auto sim: sims)
-                cgsl_step_to(&sim, sim.t, getSafeTime(sim, timeLoop)); // stepTo(sim,p));
+            step(&sims, timeLoop); // stepTo(sim,p));
             
             getStateEvent(sims);
             if(hasStateEvent(sims))
                 restoreStates(&sims);
+                reduceSims(&sims);
             else
                 storeStates(&sims);
         }
         return timeLoop->t_crossed;
     }
+
     void runIteration(double t, double dt) {
         timeLoop.t_start = t;
         timeLoop.t_end = t + dt;
@@ -447,13 +457,11 @@ class ModelExchangeStepper : public BaseMaster {
         storeStates(&m_sims);
 
         while( timeLoop.t_safe < timeLoop.t_end ){
-            for(auto sim : m_sims)
-                cgsl_step_to(&sim, timeLoop.t_safe,timeLoop.t_new);
+            step(&m_sims, &timeLoop); // stepTo(sim,p));
             
             if( getStateEvent(m_sims) ){
                 timeLoop.t_new = findEventTime(m_sims, &timeLoop);
-                for(auto sim : m_sims)
-                    cgsl_step_to(&sim, timeLoop.t_safe,timeLoop.t_new);
+                step(&m_sims, &timeLoop); // stepTo(sim,p));
             }
             
         }

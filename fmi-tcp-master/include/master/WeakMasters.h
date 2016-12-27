@@ -411,7 +411,7 @@ class ModelExchangeStepper : public BaseMaster {
 
     void step(std::vector<cgsl_simulation> *sims, TimeLoop* timeLoop){
         for(auto sim: *sims)
-            cgsl_step_to(&sim, sim.t, getSafeTime(sim, timeLoop)); // stepTo(sim,p));
+            cgsl_step_to(&sim, sim.t, getSafeTime(sim, timeLoop)); 
     }
 
     void reduceSims(std::vector<cgsl_simulation> *sims){
@@ -431,7 +431,7 @@ class ModelExchangeStepper : public BaseMaster {
         reduceSims(&sims);
           
         while(timeLoop->t_crossed - timeLoop->t_safe > tol) {
-            step(&sims, timeLoop); // stepTo(sim,p));
+            step(&sims, timeLoop); 
             
             getStateEvent(sims);
             if(hasStateEvent(sims))
@@ -457,11 +457,11 @@ class ModelExchangeStepper : public BaseMaster {
         storeStates(&m_sims);
 
         while( timeLoop.t_safe < timeLoop.t_end ){
-            step(&m_sims, &timeLoop); // stepTo(sim,p));
+            step(&m_sims, &timeLoop); 
             
             if( getStateEvent(m_sims) ){
                 timeLoop.t_new = findEventTime(m_sims, &timeLoop);
-                step(&m_sims, &timeLoop); // stepTo(sim,p));
+                step(&m_sims, &timeLoop); 
             }
             
         }

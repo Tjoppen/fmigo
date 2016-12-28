@@ -124,3 +124,16 @@ fmi2_event_info_t fmitcp::protoEventInfoToFmi2EventInfo(fmitcp_proto::fmi2_event
 
   return info;
 }
+
+fmitcp_proto::fmitcp_message_Type fmitcp::parseType(const char* data, long size) {
+    if (size < 2) {
+        fprintf(stderr, "Client::clientData() needs at least 2 bytes\n");
+        exit(1);
+    }
+    int t = (uint8_t)data[0] + 256*(uint8_t)data[1];
+    if (!fmitcp_proto::fmitcp_message_Type_IsValid(t)) {
+        fprintf(stderr, "Message type %i invalid\n", t);
+        exit(1);
+    }
+    return (fmitcp_proto::fmitcp_message_Type)t;
+}

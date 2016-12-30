@@ -171,30 +171,42 @@ int jac_clutch (double t, const double x[], double *dfdx, double dfdt[], void *p
 {
   
   state_t *s = (state_t*)params;
-  gsl_matrix_view dfdx_mat = gsl_matrix_view_array (dfdx, 4, 4);
+  int N = 4 + s->md.integrate_dx_e + s->md.integrate_dx_s;
+  int i, j;
+
+  gsl_matrix_view dfdx_mat = gsl_matrix_view_array (dfdx, N, N);
   gsl_matrix * J = &dfdx_mat.matrix; 
     
   /* second order dynamics  on first variable */
-  gsl_matrix_set (J, 0, 0, 0.0);
-  gsl_matrix_set (J, 0, 1, 1.0);
-  gsl_matrix_set (J, 0, 2, 0.0);
-  gsl_matrix_set (J, 0, 3, 0.0);
-   
-  /* Integration of the angle */
-  gsl_matrix_set (J, 2, 0, 0.0);
-  gsl_matrix_set (J, 2, 1, 0.0);
-  gsl_matrix_set (J, 2, 2, 0.0);
-  gsl_matrix_set (J, 2, 3, 1.0);  
+  for ( i=0; i < N; ++i  )
+    for( j = 0; j < N; ++j )
+      gsl_matrix_set (J, i, j, 0.0);
 
+  gsl_matrix_set (J, 0, 1, 1.0);
+
+  /* dynamics of the first plate */
   gsl_matrix_set (J, 1, 0, 0.0);
   gsl_matrix_set (J, 1, 1, 0.0);
   gsl_matrix_set (J, 1, 2, 0.0);
   gsl_matrix_set (J, 1, 3, 0.0);
   
+   
+  /* second order dynamics on second plate*/
+  gsl_matrix_set (J, 2, 3, 1.0);  
+
+  /*  dynamics of second plate */
   gsl_matrix_set (J, 3, 0, 0.0);
   gsl_matrix_set (J, 3, 1, 0.0);
   gsl_matrix_set (J, 3, 2, 0.0);
   gsl_matrix_set (J, 3, 3, 0.0); 
+
+  
+  i = 4;
+  if ( s->md.integrate_dx_e )
+    gsl_matrix_set(J, i++, 1, 1.0);
+  if ( s->md.integrate_dx_s )
+    gsl_matrix_set(J, i++, 3, 1.0);
+
 
   return GSL_SUCCESS;
 }
@@ -205,11 +217,9 @@ int jac_clutch (double t, const double x[], double *dfdx, double dfdt[], void *p
  */
 static double fclutch( double dphi, double domega, double clutch_damping ) {
   
-  //Scania's clutch curve
-  static const double b[] = { -0.087266462599716474, -0.052359877559829883, 0.0, 0.09599310885968812, 0.17453292519943295 };
-  static const double c[] = { -1000, -30, 0, 50, 3500 };
-  size_t N = sizeof( c ) / sizeof( c[ 0 ] );
-  size_t END = N-1;
+  const size_t N  = N_segments;
+  const size_t END = N-1;
+  double tc = clutch_torque[ 0 ]; //clutch torque
     
   /** look up internal torque based on dphi
       if too low (< -b[ 0 ]) then c[ 0 ]
@@ -217,24 +227,23 @@ static double fclutch( double dphi, double domega, double clutch_damping ) {
       else lerp between two values in c
   */
 
-  double tc = c[ 0 ]; //clutch torque
 
-  if (dphi <= b[ 0 ]) {
-    tc = ( c[ 1 ] - c[ 0 ] ) * (dphi - b[ 0 ]) / ( b[ 0 ] - b[ 1 ] ) + c[ 0 ];
-  } else if ( dphi >= b[ END ] ) {
-    tc = ( c[ END ] - c[ END - 1 ] ) * ( dphi - b[ END ] ) / ( b[ END ] - b[ END - 1 ] ) + c[ END ];
+  if (dphi <= clutch_dphi[ 0 ]) {
+    tc = ( clutch_torque[ 1 ] - clutch_torque[ 0 ] ) * (dphi - clutch_dphi[ 0 ]) / ( clutch_dphi[ 0 ] - clutch_dphi[ 1 ] ) + clutch_torque[ 0 ];
+  } else if ( dphi >= clutch_dphi[ END ] ) {
+    tc = ( clutch_torque[ END ] - clutch_torque[ END - 1 ] ) * ( dphi - clutch_dphi[ END ] ) / ( clutch_dphi[ END ] - clutch_dphi[ END - 1 ] ) + clutch_torque[ END ];
   } else {
     int i;
     for (i = 0; i < END; ++i) {
-      if (dphi >= b[ i ] && dphi <= b[ i+1 ]) {
-	double k = (dphi - b[ i ]) / (b[ i+1 ] - b[ i ]);
-	tc = (1-k) * c[ i ] + k * c[ i+1 ];
+      if (dphi >= clutch_dphi[ i ] && dphi <= clutch_dphi[ i+1 ]) {
+	double k = (dphi - clutch_dphi[ i ]) / (clutch_dphi[ i+1 ] - clutch_dphi[ i ]);
+	tc = (1-k) * clutch_torque[ i ] + k * clutch_torque[ i+1 ];
 	break;
       }
     }
     if (i >= END ) {
       //too high (shouldn't happen)
-      tc = c[ END ];
+      tc = clutch_torque[ END ];
     }
   }
 
@@ -247,36 +256,24 @@ static double fclutch( double dphi, double domega, double clutch_damping ) {
 
 static double fclutch_dphi_derivative( double dphi ) {
   
-  //Scania's clutch curve
-  static const double b[] = { -0.087266462599716474, -0.052359877559829883, 0.0, 0.09599310885968812, 0.17453292519943295 };
-  static const double c[] = { -1000, -30, 0, 50, 3500 };
-  size_t N = sizeof( c ) / sizeof( c[ 0 ] );
-  size_t END = N-1;
-    
-  /** look up internal torque based on dphi
-      if too low (< -b[ 0 ]) then c[ 0 ]
-      if too high (> b[ 4 ]) then c[ 4 ]
-      else lerp between two values in c
-  */
+  const size_t N  = N_segments;
+  const size_t END = N-1;
+  double tc = clutch_torque[ 0 ]; //clutch torque
 
   double df = 0;		// clutch derivative
 
-  if (dphi <= b[ 0 ]) {
-    df =  ( c[ 1 ] - c[ 0 ] ) / ( b[ 1 ] - b[ 0 ] ); 
-  } else if ( dphi >= b[ END ] ) {
-    df =  ( c[ END ] - c[ END - 1 ] ) / ( b[ END ] - b[ END - 1 ] );
+  if (dphi <= clutch_dphi[ 0 ]) {
+    df =  ( clutch_torque[ 1 ] - clutch_torque[ 0 ] ) / ( clutch_dphi[ 1 ] - clutch_dphi[ 0 ] ); 
+  } else if ( dphi >= clutch_dphi[ END ] ) {
+    df =  ( clutch_torque[ END ] - clutch_torque[ END - 1 ] ) / ( clutch_dphi[ END ] - clutch_dphi[ END - 1 ] );
   } else {
     int i;
     for (i = 0; i < END; ++i) {
-      if (dphi >= b[ i ] && dphi <= b[ i+1 ]) {
-	double k =  1.0  / (b[ i+1 ] - b[ i ]);
-	df = k * ( c[ i + 1 ] -  c[ i ] );
+      if (dphi >= clutch_dphi[ i ] && dphi <= clutch_dphi[ i+1 ]) {
+	double k =  1.0  / (clutch_dphi[ i+1 ] - clutch_dphi[ i ]);
+	df = k * ( clutch_torque[ i + 1 ] -  clutch_torque[ i ] );
 	break;
       }
-    }
-    if (i >= END ) {
-      //too high (shouldn't happen)
-      df = 0;
     }
   }
 

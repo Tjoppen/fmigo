@@ -141,7 +141,9 @@ extern "C" {
     
     tri_matrix  matrix;		/** system matrix */
     double *    z; /** buffer for solution: contains velocities and multipliers*/
-
+    double time;   /** keep track of global time */
+    void * file;
+    
     /** These parameters are derived from the timestep and other parameters. */
     double gamma_x;
     double gamma_v;
@@ -155,7 +157,7 @@ extern "C" {
     /** backup for store/restore */
     lumped_rod_coupling_states coupling_states_backup; 
     lumped_rod                 rod_backup; /** storage space for store/restore. */
-  
+    
   } lumped_rod_sim; 
 
 

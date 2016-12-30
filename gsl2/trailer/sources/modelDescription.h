@@ -7,7 +7,7 @@
 #define FMI_COSIMULATION
 #define HAVE_DIRECTIONAL_DERIVATIVE 0
 #define CAN_GET_SET_FMU_STATE 1
-#define NUMBER_OF_REALS 34
+#define NUMBER_OF_REALS 36
 #define NUMBER_OF_INTEGERS 1
 #define NUMBER_OF_BOOLEANS 2
 #define NUMBER_OF_STATES 0
@@ -50,6 +50,8 @@ typedef struct {
     fmi2Real alpha; //VR=34
     fmi2Real tau_c; //VR=35
     fmi2Real f_c; //VR=36
+    fmi2Real triangle_amplitude; //VR=37
+    fmi2Real triangle_wavelength; //VR=38
     fmi2Integer filter_length; //VR=98
     fmi2Boolean integrate_dw; //VR=17
     fmi2Boolean integrate_dx; //VR=18
@@ -92,6 +94,8 @@ static const modelDescription_t defaults = {
     0, //alpha
     0, //tau_c
     0, //f_c
+    0.0, //triangle_amplitude
+    5.0, //triangle_wavelength
     0, //filter_length
     0, //integrate_dw
     0, //integrate_dx
@@ -132,6 +136,8 @@ static const modelDescription_t defaults = {
 #define VR_ALPHA 34
 #define VR_TAU_C 35
 #define VR_F_C 36
+#define VR_TRIANGLE_AMPLITUDE 37
+#define VR_TRIANGLE_WAVELENGTH 38
 #define VR_FILTER_LENGTH 98
 #define VR_INTEGRATE_DW 17
 #define VR_INTEGRATE_DX 18
@@ -179,6 +185,8 @@ static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2
         case 34: value[i] = md->alpha; break;
         case 35: value[i] = md->tau_c; break;
         case 36: value[i] = md->f_c; break;
+        case 37: value[i] = md->triangle_amplitude; break;
+        case 38: value[i] = md->triangle_wavelength; break;
         default: return fmi2Error;
         }
     }
@@ -223,6 +231,8 @@ static fmi2Status generated_fmi2SetReal(modelDescription_t *md, const fmi2ValueR
         case 34: md->alpha = value[i]; break;
         case 35: md->tau_c = value[i]; break;
         case 36: md->f_c = value[i]; break;
+        case 37: md->triangle_amplitude = value[i]; break;
+        case 38: md->triangle_wavelength = value[i]; break;
         default: return fmi2Error;
         }
     }

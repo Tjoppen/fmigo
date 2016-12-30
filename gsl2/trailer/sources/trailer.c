@@ -42,8 +42,25 @@ int trailer (double t, const double x[], double dxdt[], void * params){
 
   state_t *s = (state_t*)params;
 
+  /* internal triangular road model, added on top of s->md.angle */
+  double triangle = 0;
+
+  if (s->md.triangle_amplitude > 0 && s->md.triangle_wavelength > 0) {
+    double a = s->md.triangle_amplitude;
+    double l = s->md.triangle_wavelength;
+    /* modulo and divide position to 0..1, handle negative x */
+    double xx = fmod((fmod(x[0], l) + l), l) / l;
+
+    /* derivative of triangle wave is a square wave */
+    if (xx < 0.5) {
+      triangle = -a;
+    } else {
+      triangle = a;
+    }
+  }
+
   /* gravity */
-  double force = - s->md.mass * s->md.g * sin( s->md.angle );
+  double force = - s->md.mass * s->md.g * sin( s->md.angle + triangle );
 
   double sgnv = SIGNUM( x[ 1 ] );
   /* drag */
@@ -52,11 +69,11 @@ int trailer (double t, const double x[], double dxdt[], void * params){
 
   /* brake */ 
   force +=
-    - sgnv * s->md.brake * s->md.mu * s->md.g * cos( s->md.angle );
+    - sgnv * s->md.brake * s->md.mu * s->md.g * cos( s->md.angle + triangle );
 
   /* rolling resistance */
   force += 
-    - sgnv * ( s->md.c_r_2 * fabs( x[ 1 ] ) + s->md.c_r_1 ) * s->md.mass * s->md.g * cos( s->md.angle );
+    - sgnv * ( s->md.c_r_2 * fabs( x[ 1 ] ) + s->md.c_r_1 ) * s->md.mass * s->md.g * cos( s->md.angle + triangle );
 
   /* any additional force */
   force += s->md.tau_d / s->md.r_w;

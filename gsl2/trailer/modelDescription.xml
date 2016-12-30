@@ -370,6 +370,26 @@ Control can be applied via a brake.
     
     <!-- index="37"-->
     <ScalarVariable 
+        name="triangle_amplitude"
+        valueReference="37"
+        description="Amplitude in radians of internal triangle road model /\/\/\/\ (0 = disable)"
+        causality="parameter"
+        variability="fixed">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <!-- index="38"-->
+    <ScalarVariable 
+        name="triangle_wavelength"
+        valueReference="38"
+        description="Wavelength in meters of internal triangle road model /\/\/\/\"
+        causality="parameter"
+        variability="fixed">
+      <Real start="5"/>
+    </ScalarVariable>
+
+    <!-- index="39"-->
+    <ScalarVariable 
         name="filter_length"
         valueReference="98"
         description="Length of EPCE FIR filter (0 = disable)"

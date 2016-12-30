@@ -1,5 +1,6 @@
 #include "fmitcp.pb.h"
 #include "serialize.h"
+#include <stdint.h>
 
 using namespace fmitcp_proto;
 using namespace std;

@@ -9,6 +9,7 @@
 //no unistd.h on Windows IIRC
 #include <unistd.h>
 #endif
+#include <stdint.h>
 
 using namespace fmitcp;
 

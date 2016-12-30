@@ -1,6 +1,7 @@
 #include "common.h"
 #include <vector>
 #include <string>
+#include <stdint.h>
 
 fmitcp_proto::jm_status_enu_t fmitcp::fmiJMStatusToProtoJMStatus(jm_status_enu_t status) {
   switch (status) {

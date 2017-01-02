@@ -153,10 +153,10 @@ namespace fmitcp_master {
         //void on_fmi2_import_set_integer_res                     (int mid, fmitcp_proto::fmi2_status_t status);
         //void on_fmi2_import_set_boolean_res                     (int mid, fmitcp_proto::fmi2_status_t status);
         //void on_fmi2_import_set_string_res                      (int mid, fmitcp_proto::fmi2_status_t status);
-        void on_fmi2_import_get_real_res                        (int mid, const vector<double>& values, fmitcp_proto::fmi2_status_t status);
-        void on_fmi2_import_get_integer_res                     (int mid, const vector<int>& values, fmitcp_proto::fmi2_status_t status);
-        void on_fmi2_import_get_boolean_res                     (int mid, const vector<bool>& values, fmitcp_proto::fmi2_status_t status);
-        void on_fmi2_import_get_string_res                      (int mid, const vector<string>& values, fmitcp_proto::fmi2_status_t status);
+        void on_fmi2_import_get_real_res                        (int mid, const deque<double>& values, fmitcp_proto::fmi2_status_t status);
+        void on_fmi2_import_get_integer_res                     (int mid, const deque<int>& values, fmitcp_proto::fmi2_status_t status);
+        void on_fmi2_import_get_boolean_res                     (int mid, const deque<bool>& values, fmitcp_proto::fmi2_status_t status);
+        void on_fmi2_import_get_string_res                      (int mid, const deque<string>& values, fmitcp_proto::fmi2_status_t status);
         void on_fmi2_import_get_fmu_state_res                   (int mid, int stateId, fmitcp_proto::fmi2_status_t status);
         void on_fmi2_import_set_fmu_state_res                   (int mid, fmitcp_proto::fmi2_status_t status);
         void on_fmi2_import_free_fmu_state_res                  (int mid, fmitcp_proto::fmi2_status_t status);

@@ -44,13 +44,12 @@ int main(int argc, char *argv[]) {
           exit(1);
       }
       string str = server.clientData(static_cast<char*>(msg.data()), msg.size());
-      if (str.length() == 0) {
-          fprintf(stderr, "Zero-length reply implies error - quitting\n");
-          exit(1);
+
+      if (str.length() > 0) {
+        zmq::message_t rep(str.length());
+        memcpy(rep.data(), str.data(), str.length());
+        socket.send(rep);
       }
-      zmq::message_t rep(str.length());
-      memcpy(rep.data(), str.data(), str.length());
-      socket.send(rep);
   }
 
   return EXIT_SUCCESS;

@@ -454,9 +454,20 @@ class ModelExchangeStepper : public BaseMaster {
         return timeLoop->t_crossed;
     }
 
+    int reachedEnd(double t, double* pt, int* pc){
+      double tol = 1e-6;
+      if( t - *pt < tol ) *pc++;
+      else *pc = 0;
+      *pt = t;
+      
+      return *pc == 20 ? 1:0;
+    }
+    
     void runIteration(double t, double dt) {
         timeLoop.t_start = t;
         timeLoop.t_end = t + dt;
+        double prevTimeEvent = t;
+        int prevTimeCount = 0;
         
         // set start values for the time integration
         resetIntegratorTimeVariables(timeLoop.t_end);
@@ -474,6 +485,7 @@ class ModelExchangeStepper : public BaseMaster {
                 timeLoop.t_new = findEventTime(m_sims, &timeLoop);
                 step(&m_sims, &timeLoop); 
             }
+            if(reachedEnd(timeLoop.t_new, &prevTimeEvent, &prevTimeCount)) return;
             
         }
         //fprintf(stderr, "\n\n");

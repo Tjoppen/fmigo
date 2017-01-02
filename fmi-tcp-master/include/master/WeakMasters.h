@@ -339,9 +339,9 @@ class ModelExchangeStepper : public BaseMaster {
     /** resetIntegratorTimeVariables: 
      ** restore values of t_ 
      */
-    void resetIntegratorTimeVariables(double t_new)
+    void resetIntegratorTimeVariables(double t_safe, double t_new)
     {
-        timeLoop.t_safe = timeLoop.t_start;
+        timeLoop.t_safe = t_safe;
         timeLoop.t_crossed = timeLoop.t_end;
         timeLoop.t_new = t_new;//min(sim->h, max(max((sim->t - prevTimeEvent)/500,0),t_end));
     }
@@ -463,20 +463,24 @@ class ModelExchangeStepper : public BaseMaster {
       return *pc == 20 ? 1:0;
     }
     
-    void runIteration(double t, double dt) {
-        timeLoop.t_start = t;
-        timeLoop.t_end = t + dt;
-        double prevTimeEvent = t;
-        int prevTimeCount = 0;
-        
+    void newDiscreteStatesStart(double t, double t_new){
         // set start values for the time integration
-        resetIntegratorTimeVariables(timeLoop.t_end);
+        resetIntegratorTimeVariables(t, t_new);
 
         // start at a new state
         sendWait(m_clients, fmi2_import_new_discrete_states(0,0));
 
         // store the current state of all running FMUs
         storeStates(&m_sims);
+    }
+    
+    void runIteration(double t, double dt) {
+        timeLoop.t_start = t;
+        timeLoop.t_end = t + dt;
+        double prevTimeEvent = t;
+        int prevTimeCount = 0;
+        
+        newDiscreteStatesStart(t,timeLoop.t_end);
 
         while( timeLoop.t_safe < timeLoop.t_end ){
             step(&m_sims, &timeLoop); 
@@ -485,7 +489,12 @@ class ModelExchangeStepper : public BaseMaster {
                 timeLoop.t_new = findEventTime(m_sims, &timeLoop);
                 step(&m_sims, &timeLoop); 
             }
+
+            newDiscreteStatesStart(t,timeLoop.t_end);
+            
             if(reachedEnd(timeLoop.t_new, &prevTimeEvent, &prevTimeCount)) return;
+
+            
             
         }
         //fprintf(stderr, "\n\n");

@@ -468,7 +468,10 @@ class ModelExchangeStepper : public BaseMaster {
         resetIntegratorTimeVariables(t, t_new);
 
         // start at a new state
+        sendWait(m_clients, fmi2_import_enter_event_mode(0,0));
+        // todo loop until newDiscreteStatesNeeded == false
         sendWait(m_clients, fmi2_import_new_discrete_states(0,0));
+        sendWait(m_clients, fmi2_import_enter_continuous_time_mode(0,0));
 
         // store the current state of all running FMUs
         storeStates(&m_sims);

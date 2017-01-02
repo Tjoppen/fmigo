@@ -476,17 +476,6 @@ class ModelExchangeStepper : public BaseMaster {
             }
             
         }
-        for (int o : stepOrder) {
-            FMIClient *client = m_clients[o];
-
-            for (auto it = clientGetXs[client].begin(); it != clientGetXs[client].end(); it++) {
-                it->first->sendGetX(it->second);
-            }
-            wait();
-            const SendSetXType refValues = getInputWeakRefsAndValues(m_weakConnections, client);
-            client->sendSetX(refValues);
-            sendWait(client, fmi2_import_do_step(0, 0, t, dt, true));
-        }
         //fprintf(stderr, "\n\n");
     }
 };

@@ -87,6 +87,13 @@ void Client::clientData(const char* data, long size){
         on_##type##_res(r.message_id());\
     }
 
+#define CLIENT_VALUE_CASE(type){                                        \
+    type##_res r;                                                       \
+    r.ParseFromArray(data, size);                                       \
+    m_logger.log(Logger::LOG_NETWORK,"< "#type"_res(value=%d)\n",r.value()); \
+    on_##type##_res(r.message_id(), r.value());                         \
+    }
+
 #define SETX_HINT "Maybe a parameter or a connection was specified incorrectly?\n"
     // Check type and run the corresponding event handler
     switch (type) {
@@ -167,7 +174,7 @@ void Client::clientData(const char* data, long size){
 
         break;
     
-      /* Model Exchange */
+      /* Model exchange */
     }case type_fmi2_import_enter_event_mode_res:            NORMAL_CASE(fmi2_import_enter_event_mode);
     case type_fmi2_import_new_discrete_states_res:{
       
@@ -227,7 +234,7 @@ void Client::clientData(const char* data, long size){
         m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_nominal_continuous_states_res(mid=%d,continuous_states=%d,states=%d)\n",r.message_id(), r.nominal(), r.status());
         break;
     }
-      /* Model exchange */
+      /* Co-simulation */
     case type_fmi2_import_set_real_input_derivatives_res:   NORMAL_CASE(fmi2_import_set_real_input_derivatives); break;
     case type_fmi2_import_get_real_output_derivatives_res: {
         fmi2_import_get_real_output_derivatives_res r; r.ParseFromArray(data, size);
@@ -237,42 +244,11 @@ void Client::clientData(const char* data, long size){
     }
     case type_fmi2_import_do_step_res:                      NORMAL_CASE(fmi2_import_do_step); break;
     case type_fmi2_import_cancel_step_res:                  NORMAL_CASE(fmi2_import_cancel_step); break;
-    case type_fmi2_import_get_status_res: {
-        fmi2_import_get_status_res r; r.ParseFromArray(data, size);
-        m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_status_res(value=%d)\n",r.value());
-        on_fmi2_import_get_status_res(r.message_id(), r.value());
-
-        break;
-    }
-    case type_fmi2_import_get_real_status_res: {
-        fmi2_import_get_real_status_res r; r.ParseFromArray(data, size);
-        m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_real_status_res(value=%g)\n",r.value());
-        on_fmi2_import_get_real_status_res(r.message_id(), r.value());
-
-        break;
-    }
-    case type_fmi2_import_get_integer_status_res: {
-        fmi2_import_get_integer_status_res r; r.ParseFromArray(data, size);
-        m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_integer_status_res(mid=%d,value=%d)\n",r.message_id(),r.value());
-        on_fmi2_import_get_integer_status_res(r.message_id(), r.value());
-
-        break;
-    }
-    case type_fmi2_import_get_boolean_status_res: {
-        fmi2_import_get_boolean_status_res r; r.ParseFromArray(data, size);
-        m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_boolean_status_res(value=%d)\n",r.value());
-        on_fmi2_import_get_boolean_status_res(r.message_id(), r.value());
-
-        break;
-    }
-    case type_fmi2_import_get_string_status_res: {
-        fmi2_import_get_string_status_res r; r.ParseFromArray(data, size);
-        m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_string_status_res(value=%s)\n",r.value().c_str());
-        on_fmi2_import_get_string_status_res(r.message_id(), r.value());
-
-        break;
-    }
-
+    case type_fmi2_import_get_status_res:                   CLIENT_VALUE_CASE(fmi2_import_get_status); break;
+    case type_fmi2_import_get_real_status_res:              CLIENT_VALUE_CASE(fmi2_import_get_real_status); break;
+    case type_fmi2_import_get_integer_status_res:           CLIENT_VALUE_CASE(fmi2_import_get_integer_status); break;
+    case type_fmi2_import_get_boolean_status_res:           CLIENT_VALUE_CASE(fmi2_import_get_boolean_status); break;
+    case type_fmi2_import_get_string_status_res:            CLIENT_VALUE_CASE(fmi2_import_get_string_status); break;
     case type_get_xml_res: {
 
         get_xml_res r; r.ParseFromArray(data, size);

@@ -303,50 +303,42 @@ class ModelExchangeStepper : public BaseMaster {
     }
 
     void storeStates(std::vector<cgsl_simulation> *sims){
-#ifdef USE_GSL
-      for(auto sim : *sims) storeStates(&sim);
-#endif
-    }
-    void storeStates(cgsl_simulation* sim){
-#ifdef USE_GSL
-        fmu_parameters* p = getParameters(sim->model); 
-        memcpy(sim->model->x, p->m_backup.x, p->nx * sizeof(sim->model->x[0]));
-        sim->i.evolution->failed_steps = p->m_backup.failed_steps;
-        sim->t = p->m_backup.t;
+        for(auto sim : *sims) {
+            fmu_parameters* p = getParameters(sim.model); 
+            memcpy(sim.model->x, p->m_backup.x, p->nx * sizeof(sim.model->x[0]));
+            sim.i.evolution->failed_steps = p->m_backup.failed_steps;
+            sim.t = p->m_backup.t;
 
-        // reset position in the result file
-        fseek(p->m_backup.result_file, p->m_backup.size_of_file, SEEK_SET);
+            // reset position in the result file
+            fseek(p->m_backup.result_file, p->m_backup.size_of_file, SEEK_SET);
 
-        // truncate the result file to have the previous result file size
-        ftruncate(fileno(p->m_backup.result_file), p->m_backup.size_of_file);
-
-#endif
+            // truncate the result file to have the previous result file size
+            int trunc = ftruncate(fileno(p->m_backup.result_file), p->m_backup.size_of_file);
+            if(0 > trunc )
+                perror("storeStates: ftruncate");
+        }
     }
     void restoreStates(std::vector<cgsl_simulation> *sims){
-#ifdef USE_GSL
-      for(auto sim : *sims) restoreStates(&sim);
-#endif
-    }
-    void restoreStates(cgsl_simulation *sim){
-#ifdef USE_GSL
-        fmu_parameters* p = getParameters(sim->model); 
+      for(auto sim : *sims){ 
+        fmu_parameters* p = getParameters(sim.model); 
         p->baseMaster->sendWait(p->client, fmi2_import_get_continuous_states(0,0,p->nx));
             
-        memcpy(p->m_backup.x, sim->model->x, p->nx * sizeof(sim->model->x[0]));
+        memcpy(p->m_backup.x, sim.model->x, p->nx * sizeof(sim.model->x[0]));
 
         // if statement not needed if timestep is choosen more carefully
-        if(p->t_start == sim->t && p->nz > 0){
+        if(p->t_start == sim.t && p->nz > 0){
             p->baseMaster->sendWait(p->client, fmi2_import_get_event_indicators(0,0, p->nz));
         }
-        p->m_backup.failed_steps = sim->i.evolution->failed_steps;
-        p->m_backup.t = sim->t;
+        p->m_backup.failed_steps = sim.i.evolution->failed_steps;
+        p->m_backup.t = sim.t;
         p->m_backup.size_of_file = ftell(p->m_backup.result_file);
-
-#endif
+      }
     }
 
 
-    /** resetIntegratorTimeVariables: simple function to restore values of t_ */
+    /** resetIntegratorTimeVariables: 
+     ** restore values of t_ 
+     */
     void resetIntegratorTimeVariables(double t_new)
     {
         timeLoop.t_safe = timeLoop.t_start;
@@ -355,8 +347,9 @@ class ModelExchangeStepper : public BaseMaster {
     }
 
 
-    /* getStateEvent: Tries to retrieve event indicators, if successful the signbit of all
-    * event indicators z are compaired with event indicators in p->z */
+    /** getStateEvent: Tries to retrieve event indicators, if successful the signbit of all
+     ** event indicators z are compaired with event indicators in p->z 
+     */
     fmi2Status getStateEvent(std::vector<cgsl_simulation> sims){
         for(auto sim: sims) {
             fmu_parameters* p = getParameters(sim.model);

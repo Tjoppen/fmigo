@@ -117,7 +117,7 @@ class ModelExchangeStepper : public BaseMaster {
     } backup;
     typedef struct fmu_parameters{
 
-        double* z;                    /* state event indicators */
+        std::vector<double> z;        /* state event indicators */
         int count;                    /* number of function evaluations */
         int nz;                       /* number of event indicators, from XML file */
         int nx;                       /* number of states, from XML file */
@@ -227,7 +227,6 @@ class ModelExchangeStepper : public BaseMaster {
 
         fmu_parameters* p = getParameters(m);
         if(p != NULL)             return;
-        if(p->z != NULL)          free(p->z);
         if(p->resultFile != NULL) free(p->resultFile);
         if(m->model.x != NULL)    free(m->model.x);
 
@@ -243,10 +242,8 @@ class ModelExchangeStepper : public BaseMaster {
         p->nz = nz;
         p->m_backup.x = (double*)calloc(nx, sizeof(double));
         m->model.x    = (double*)calloc(nx, sizeof(double));
-        if(nz > 0) p->z = (double*)calloc(nz, sizeof(double));
-        else p->z = NULL;
   
-        if((!m->model.x ) || (nz > 0 && !p->z)) {
+        if((!m->model.x )) {
             freeFMUModel(m);
             perror("WeakMaster:ModelExchange:allocateMemory ERROR -  could not allocate memory");
             exit(1);
@@ -305,7 +302,7 @@ class ModelExchangeStepper : public BaseMaster {
 #endif
     }
 
-    void storeStates(std::vector<cgsl_simulation> *sims){
+    void restoreStates(std::vector<cgsl_simulation> *sims){
         for(auto sim : *sims) {
             fmu_parameters* p = getParameters(sim.model); 
             memcpy(sim.model->x, p->m_backup.x, p->nx * sizeof(sim.model->x[0]));
@@ -321,7 +318,7 @@ class ModelExchangeStepper : public BaseMaster {
                 perror("storeStates: ftruncate");
         }
     }
-    void restoreStates(std::vector<cgsl_simulation> *sims){
+    void storeStates(std::vector<cgsl_simulation> *sims){
       for(auto sim : *sims){ 
         fmu_parameters* p = getParameters(sim.model); 
         p->baseMaster->sendWait(p->client, fmi2_import_get_continuous_states(0,0,p->nx));
@@ -331,6 +328,14 @@ class ModelExchangeStepper : public BaseMaster {
         // if statement not needed if timestep is choosen more carefully
         if(timeLoop.t_start == sim.t && p->nz > 0){
             p->baseMaster->sendWait(p->client, fmi2_import_get_event_indicators(0,0, p->nz));
+            
+            auto z = p->client->m_getEventIndicators[0];
+            for(int i = 0; i < z.size(); i++){
+                p->z.push_back(z[i]);
+            }
+            p->client->m_getEventIndicators.pop_back();
+              
+            
         }
         p->m_backup.failed_steps = sim.i.evolution->failed_steps;
         p->m_backup.t = sim.t;
@@ -353,7 +358,8 @@ class ModelExchangeStepper : public BaseMaster {
     /** getStateEvent: Tries to retrieve event indicators, if successful the signbit of all
      ** event indicators z are compaired with event indicators in p->z 
      */
-    fmi2Status getStateEvent(std::vector<cgsl_simulation> sims){
+    bool getStateEvent(std::vector<cgsl_simulation> sims){
+        bool ret = false;
         for(auto sim: sims) {
             fmu_parameters* p = getParameters(sim.model);
             p->stateEvent = 0;
@@ -362,16 +368,19 @@ class ModelExchangeStepper : public BaseMaster {
                 if(p->nz > 0){
                     p->baseMaster->sendWait(p->client, fmi2_import_get_event_indicators(0,0,p->nz));
                 }
-                /* compare signbit of previous state and the current
-                * return at first difference */
-                /* int i; */
-                /* for(i = 0; i < p->nz; i++) */
-                /* if(signbit(z[i]) != signbit(p->z[i])) { */
-                /*     p->event.stateEvent = 1; */
-                /*     return ; */
-                /* } */
+
+                /* compare signbit of previous state and the current */
+                for(auto z: p->client->m_getEventIndicators){
+                    for(int i = 0; i < z.size(); i++){
+                        if(signbit(z[i]) != signbit(p->z[i])) {
+                            p->stateEvent = 1;
+                            ret = true;
+                        }
+                    }
+                }
             }
         }
+        return ret;
     }
 
     /** getSafeTime:

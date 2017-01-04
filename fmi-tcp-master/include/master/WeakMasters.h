@@ -53,11 +53,15 @@ public:
         //set connection inputs, pipeline with do_step()
         const InputRefsValuesType refValues = getInputWeakRefsAndValues(m_weakConnections);
 
+        // redirect outputs to inputs
         for (auto it = refValues.begin(); it != refValues.end(); it++) {
             it->first->sendSetX(it->second);
         }
 
+        // why not wait here?? wait()
+
         sendWait(m_clients, fmi2_import_do_step(0, 0, t, dt, true));
+
     }
 };
 
@@ -123,9 +127,8 @@ class ModelExchangeStepper : public BaseMaster {
         fmi2String* categories;       /* only used in setDebugLogging */
         int nCategories;              /* only used in setDebugLogging */
 
-        BaseMaster* baseMaster;
-        FMIClient* client;
-      //        fmi2Component c;
+        BaseMaster* baseMaster;       /* BaseMaster object pointer */
+        FMIClient* client;            /* FMIClient object pointer */
 
       //fmi2Real t_start, t_end;//t_safe, t_new, t_crossed;
         fmi2EventInfo event;
@@ -413,7 +416,7 @@ class ModelExchangeStepper : public BaseMaster {
      */
     void step(std::vector<cgsl_simulation> *sims){
         for(auto sim: *sims)
-            cgsl_step_to(&sim, sim.t, getSafeTime(sim)); 
+            cgsl_step_to(&sim, sim.t, getSafeTime(sim));
     }
 
     /** reduceSims:
@@ -442,7 +445,7 @@ class ModelExchangeStepper : public BaseMaster {
         reduceSims(&sims);
           
         while(timeLoop.t_crossed - timeLoop.t_safe > tol) {
-            step(&sims); 
+            step(&sims);
             
             getStateEvent(sims);
             if(hasStateEvent(sims)){
@@ -486,11 +489,11 @@ class ModelExchangeStepper : public BaseMaster {
         newDiscreteStatesStart(t,timeLoop.t_end);
 
         while( timeLoop.t_safe < timeLoop.t_end ){
-            step(&m_sims); 
+            step(&m_sims);
             
             if( getStateEvent(m_sims) ){
                 timeLoop.t_new = findEventTime(m_sims);
-                step(&m_sims); 
+                step(&m_sims);
             }
 
             newDiscreteStatesStart(t,timeLoop.t_end);

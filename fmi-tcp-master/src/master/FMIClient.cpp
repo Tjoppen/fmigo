@@ -248,7 +248,6 @@ void FMIClient::on_fmi2_import_get_directional_derivative_res(int mid, const vec
 
 // TODO:
 
-/*
 //void on_fmi2_import_reset_slave_res                     (int mid, fmitcp_proto::fmi2_status_t status);
 //void on_fmi2_import_set_real_input_derivatives_res      (int mid, fmitcp_proto::fmi2_status_t status);
 //void on_fmi2_import_get_real_output_derivatives_res     (int mid, fmitcp_proto::fmi2_status_t status, const vector<double>& values);
@@ -263,7 +262,9 @@ void FMIClient::on_fmi2_import_get_directional_derivative_res(int mid, const vec
 //void on_fmi2_import_completed_integrator_step_res       (int mid, bool callEventUpdate, fmitcp_proto::fmi2_status_t status);
 //void on_fmi2_import_initialize_model_res                (int mid, bool iterationConverged, bool stateValueReferencesChanged, bool stateValuesChanged, bool terminateSimulation, bool upcomingTimeEvent, double nextEventTime, fmitcp_proto::fmi2_status_t status);
 //void on_fmi2_import_get_derivatives_res                 (int mid, const vector<double>& derivatives, fmitcp_proto::fmi2_status_t status);
-//void on_fmi2_import_get_event_indicators_res            (int mid, const vector<double>& eventIndicators, fmitcp_proto::fmi2_status_t status);
+void FMIClient::on_fmi2_import_get_event_indicators_res            (int mid, const vector<double>& eventIndicators, fmitcp_proto::fmi2_status_t status){
+  m_getEventIndicators.push_back(eventIndicators);
+}
 //void on_fmi2_import_eventUpdate_res                     (int mid, bool iterationConverged, bool stateValueReferencesChanged, bool stateValuesChanged, bool terminateSimulation, bool upcomingTimeEvent, double nextEventTime, fmitcp_proto::fmi2_status_t status);
 //void on_fmi2_import_completed_event_iteration_res       (int mid, fmitcp_proto::fmi2_status_t status);
 //void on_fmi2_import_get_continuous_states_res           (int mid, const vector<double>& states, fmitcp_proto::fmi2_status_t status);
@@ -273,7 +274,7 @@ void FMIClient::on_fmi2_import_get_directional_derivative_res(int mid, const vec
 //void on_fmi2_import_set_integer_res                     (int mid, fmitcp_proto::fmi2_status_t status);
 //void on_fmi2_import_set_boolean_res                     (int mid, fmitcp_proto::fmi2_status_t status);
 //void on_fmi2_import_set_string_res                      (int mid, fmitcp_proto::fmi2_status_t status);
-*/
+
 
 StrongConnector * FMIClient::createConnector(){
     StrongConnector * conn = new StrongConnector(this);

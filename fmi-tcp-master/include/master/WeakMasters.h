@@ -127,7 +127,7 @@ class ModelExchangeStepper : public BaseMaster {
         FMIClient* client;
       //        fmi2Component c;
 
-        fmi2Real t_start, t_safe, t_new, t_crossed, t_end;
+      //fmi2Real t_start, t_end;//t_safe, t_new, t_crossed;
         fmi2EventInfo event;
 
         bool stateEvent;
@@ -326,7 +326,7 @@ class ModelExchangeStepper : public BaseMaster {
         memcpy(p->m_backup.x, sim.model->x, p->nx * sizeof(sim.model->x[0]));
 
         // if statement not needed if timestep is choosen more carefully
-        if(p->t_start == sim.t && p->nz > 0){
+        if(timeLoop.t_start == sim.t && p->nz > 0){
             p->baseMaster->sendWait(p->client, fmi2_import_get_event_indicators(0,0, p->nz));
         }
         p->m_backup.failed_steps = sim.i.evolution->failed_steps;
@@ -375,7 +375,7 @@ class ModelExchangeStepper : public BaseMaster {
      ** caluclates a "safe" time, uses the golden ratio to get
      ** t_crossed and t_safe to converge towards same value
      */
-    double getSafeTime(cgsl_simulation sim, TimeLoop* timeLoop){
+    double getSafeTime(cgsl_simulation sim){
 
         // golden ratio
         double phi = (1 + sqrt(5)) / 2;
@@ -383,15 +383,15 @@ class ModelExchangeStepper : public BaseMaster {
         fmu_parameters* p = getParameters(sim.model);
         /* passed solution, need to reduce tEnd */
         if(p->stateEvent) {
-            timeLoop->t_crossed = timeLoop->t_new;
-            timeLoop->t_new = timeLoop->t_safe + (timeLoop->t_crossed - timeLoop->t_safe) / phi;
+            timeLoop.t_crossed = timeLoop.t_new;
+            timeLoop.t_new = timeLoop.t_safe + (timeLoop.t_crossed - timeLoop.t_safe) / phi;
 
         } else { // havent passed solution, increase step
-            timeLoop->t_safe = timeLoop->t_new;
-            timeLoop->t_new = timeLoop->t_crossed - (timeLoop->t_crossed - timeLoop->t_safe) / phi;
+            timeLoop.t_safe = timeLoop.t_new;
+            timeLoop.t_new = timeLoop.t_crossed - (timeLoop.t_crossed - timeLoop.t_safe) / phi;
         }
 
-        return timeLoop->t_new;
+        return timeLoop.t_new;
     }
 
     /** hasStateEvent:
@@ -411,9 +411,9 @@ class ModelExchangeStepper : public BaseMaster {
     /** step: 
      ** run cgsl_step_to on all simulations
      */
-    void step(std::vector<cgsl_simulation> *sims, TimeLoop* timeLoop){
+    void step(std::vector<cgsl_simulation> *sims){
         for(auto sim: *sims)
-            cgsl_step_to(&sim, sim.t, getSafeTime(sim, timeLoop)); 
+            cgsl_step_to(&sim, sim.t, getSafeTime(sim)); 
     }
 
     /** reduceSims:
@@ -433,7 +433,7 @@ class ModelExchangeStepper : public BaseMaster {
      ** if there is an event, find the event and return 
      ** the time at where the time event occured
      */
-    double findEventTime(std::vector<cgsl_simulation> sims, TimeLoop* timeLoop){
+    double findEventTime(std::vector<cgsl_simulation> sims){
         restoreStates(&sims);
         double tol = 1e-6;
         fmu_parameters* p;
@@ -441,8 +441,8 @@ class ModelExchangeStepper : public BaseMaster {
         //remove all simulations that doesn't have an event
         reduceSims(&sims);
           
-        while(timeLoop->t_crossed - timeLoop->t_safe > tol) {
-            step(&sims, timeLoop); 
+        while(timeLoop.t_crossed - timeLoop.t_safe > tol) {
+            step(&sims); 
             
             getStateEvent(sims);
             if(hasStateEvent(sims)){
@@ -451,7 +451,7 @@ class ModelExchangeStepper : public BaseMaster {
             }else
                 storeStates(&sims);
         }
-        return timeLoop->t_crossed;
+        return timeLoop.t_crossed;
     }
 
     int reachedEnd(double t, double* pt, int* pc){
@@ -486,11 +486,11 @@ class ModelExchangeStepper : public BaseMaster {
         newDiscreteStatesStart(t,timeLoop.t_end);
 
         while( timeLoop.t_safe < timeLoop.t_end ){
-            step(&m_sims, &timeLoop); 
+            step(&m_sims); 
             
             if( getStateEvent(m_sims) ){
-                timeLoop.t_new = findEventTime(m_sims, &timeLoop);
-                step(&m_sims, &timeLoop); 
+                timeLoop.t_new = findEventTime(m_sims);
+                step(&m_sims); 
             }
 
             newDiscreteStatesStart(t,timeLoop.t_end);

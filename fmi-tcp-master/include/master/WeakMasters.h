@@ -192,13 +192,6 @@ class ModelExchangeStepper : public BaseMaster {
         return resultFile;
     }
 
-    std::vector<double> doubleToVector(const double* v, int n){
-      std::vector<double> vector;
-      for(int i = 0; i < n; i++)
-        vector.push_back(v[i]);
-      return vector;
-    }
-    
     static int fmu_function(double t, const double x[], double dxdt[], void* params)
     {
         // make local variables

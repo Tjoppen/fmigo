@@ -467,6 +467,14 @@ class ModelExchangeStepper : public BaseMaster {
       return *pc == 20 ? 1:0;
     }
     
+    /** newDiscreteStatesStart
+     *  Should be used where a new discrete state ends
+     *  and another begins. Resets the loop variables
+     *  and store all states of the simulation
+     *
+     *  @param t The current time
+     *  @param t_new New next time
+     */
     void newDiscreteStatesStart(double t, double t_new){
         // set start values for the time integration
         resetIntegratorTimeVariables(t, t_new);

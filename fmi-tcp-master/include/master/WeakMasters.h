@@ -14,7 +14,7 @@
 #include "master/WeakConnection.h"
 #include "common/common.h"
 #include <fmitcp/serialize.h>
-#include "common/fmi2.h"
+#include <FMI2/fmi2_types.h>
 #include "common/gsl_interface.h"
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -105,7 +105,7 @@ public:
 class ModelExchangeStepper : public BaseMaster {
     typedef struct TimeLoop
     {
-        fmi2Real t_start, t_safe, t_new, t_crossed, t_end;
+        fmi2_real_t t_start, t_safe, t_new, t_crossed, t_end;
     } TimeLoop;
     typedef struct backup
     {
@@ -126,14 +126,14 @@ class ModelExchangeStepper : public BaseMaster {
         int loggingOn;                /* loggingOn == true => logging is enabled */
         char separator;               /* not used */
         char* resultFile;             /* path and file name of where to store result */
-        fmi2String* categories;       /* only used in setDebugLogging */
+        fmi2_string_t* categories;       /* only used in setDebugLogging */
         int nCategories;              /* only used in setDebugLogging */
 
         BaseMaster* baseMaster;       /* BaseMaster object pointer */
         FMIClient* client;            /* FMIClient object pointer */
 
-      //fmi2Real t_start, t_end;//t_safe, t_new, t_crossed;
-        fmi2EventInfo event;
+      //fmi2_real_t t_start, t_end;//t_safe, t_new, t_crossed;
+        fmi2_event_info_t event;
 
         bool stateEvent;
         backup m_backup;

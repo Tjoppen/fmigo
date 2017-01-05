@@ -107,7 +107,7 @@ class ModelExchangeStepper : public BaseMaster {
     } TimeLoop;
     typedef struct backup
     {
-        double* x; 
+        std::vector<double> x;
         double t;
         unsigned long failed_steps;
 
@@ -212,6 +212,8 @@ class ModelExchangeStepper : public BaseMaster {
         p->baseMaster->sendWait(p->client, fmi2_import_set_continuous_states(0,0,x,nx));
         p->baseMaster->sendWait(p->client, fmi2_import_get_derivatives(0,0,nx));
 
+        common::extract_vector(dxdt, &p->client->m_getDerivatives);
+
         // maybe just send all three and then wait?
         return GSL_SUCCESS;
     }
@@ -240,7 +242,6 @@ class ModelExchangeStepper : public BaseMaster {
         int nz = p->client->getNumEventIndicators();
         p->nx = nx;
         p->nz = nz;
-        p->m_backup.x = (double*)calloc(nx, sizeof(double));
         m->model.x    = (double*)calloc(nx, sizeof(double));
   
         if((!m->model.x )) {
@@ -305,7 +306,9 @@ class ModelExchangeStepper : public BaseMaster {
     void restoreStates(std::vector<cgsl_simulation> *sims){
         for(auto sim : *sims) {
             fmu_parameters* p = getParameters(sim.model); 
-            memcpy(sim.model->x, p->m_backup.x, p->nx * sizeof(sim.model->x[0]));
+            for(int i = 0; i < p->m_backup.x.size(); i++)
+                sim.model->x[i] = p->m_backup.x[i];
+
             sim.i.evolution->failed_steps = p->m_backup.failed_steps;
             sim.t = p->m_backup.t;
 
@@ -319,23 +322,14 @@ class ModelExchangeStepper : public BaseMaster {
         }
     }
     void storeStates(std::vector<cgsl_simulation> *sims){
-      for(auto sim : *sims){ 
-        fmu_parameters* p = getParameters(sim.model); 
-        p->baseMaster->sendWait(p->client, fmi2_import_get_continuous_states(0,0,p->nx));
-            
-        memcpy(p->m_backup.x, sim.model->x, p->nx * sizeof(sim.model->x[0]));
-
+        for(auto sim : *sims){
+            fmu_parameters* p = getParameters(sim.model);
+            p->baseMaster->sendWait(p->client, fmi2_import_get_continuous_states(0,0,p->nx));
+            common::extract_vector(&p->m_backup.x, &p->client->m_getContinuousStates);
         // if statement not needed if timestep is choosen more carefully
         if(timeLoop.t_start == sim.t && p->nz > 0){
             p->baseMaster->sendWait(p->client, fmi2_import_get_event_indicators(0,0, p->nz));
-            
-            auto z = p->client->m_getEventIndicators[0];
-            for(int i = 0; i < z.size(); i++){
-                p->z.push_back(z[i]);
-            }
-            p->client->m_getEventIndicators.pop_back();
-              
-            
+            common::extract_vector(&p->z,&p->client->m_getEventIndicators);
         }
         p->m_backup.failed_steps = sim.i.evolution->failed_steps;
         p->m_backup.t = sim.t;

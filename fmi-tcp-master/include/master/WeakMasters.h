@@ -455,6 +455,11 @@ class ModelExchangeStepper : public BaseMaster {
         return timeLoop.t_crossed;
     }
 
+    /** reachedEnd
+     *  @param t The current time
+     *  @param pt Previuous time
+     *  @param pc Count of how many times the different t - pt < toleranc
+     */
     int reachedEnd(double t, double* pt, int* pc){
       double tol = 1e-6;
       if( t - *pt < tol ) *pc++;
@@ -497,9 +502,6 @@ class ModelExchangeStepper : public BaseMaster {
             newDiscreteStatesStart(t,timeLoop.t_end);
             
             if(reachedEnd(timeLoop.t_new, &prevTimeEvent, &prevTimeCount)) return;
-
-            
-            
         }
         //fprintf(stderr, "\n\n");
     }

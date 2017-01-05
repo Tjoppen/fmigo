@@ -100,7 +100,7 @@ public:
         //fprintf(stderr, "\n\n");
     }
 };
- 
+
 //aka serial stepper
 class ModelExchangeStepper : public BaseMaster {
     typedef struct TimeLoop
@@ -143,10 +143,10 @@ class ModelExchangeStepper : public BaseMaster {
     };
     vector<cgsl_simulation> m_sims;
     vector<WeakConnection> m_weakConnections;
-    enum INTEGRATORTYPE m_integratorType;  
+    enum INTEGRATORTYPE m_integratorType;
     double m_tolerance;
     TimeLoop timeLoop;
-    
+
     map<FMIClient*, OutputRefsType> clientGetXs;  //one OutputRefsType for each client
     std::vector<int> stepOrder;
  public:
@@ -240,7 +240,7 @@ class ModelExchangeStepper : public BaseMaster {
         p->nx = nx;
         p->nz = nz;
         m->model.x    = (double*)calloc(nx, sizeof(double));
-  
+
         if((!m->model.x )) {
             freeFMUModel(m);
             perror("WeakMaster:ModelExchange:allocateMemory ERROR -  could not allocate memory");
@@ -262,7 +262,7 @@ class ModelExchangeStepper : public BaseMaster {
 
       m->model.function = fmu_function;
       m->model.jacobian = NULL;
-      // m->model.free = NULL;//freeFMUModel; 
+      // m->model.free = NULL;//freeFMUModel;
     }
     void prepare() {
         for (size_t x = 0; x < m_weakConnections.size(); x++) {
@@ -289,16 +289,22 @@ class ModelExchangeStepper : public BaseMaster {
             cgsl_simulation sim = cgsl_init_simulation(cgsl,  /* model */
                                                        rk8pd, /* integrator: Runge-Kutta Prince Dormand pair order 7-8 */
                                                        1,     /* write to file: YES! */
-                                                       NULL,  
+                                                       NULL,
                                                        step_control);
             m_sims.push_back(sim);
           }
 #endif
     }
 
+    /** restoreStates
+     *  restores all values needed by the simulations to restart
+     *  from a known safe time.
+     *
+     *  @param sims Vector of all simulations
+     */
     void restoreStates(std::vector<cgsl_simulation> *sims){
         for(auto sim : *sims) {
-            fmu_parameters* p = getParameters(sim.model); 
+            fmu_parameters* p = getParameters(sim.model);
             for(int i = 0; i < p->m_backup.x.size(); i++)
                 sim.model->x[i] = p->m_backup.x[i];
 
@@ -314,6 +320,13 @@ class ModelExchangeStepper : public BaseMaster {
                 perror("storeStates: ftruncate");
         }
     }
+
+    /** storeStates
+     *  stores all values needed by the simulations to restart
+     *  from a known safe time.
+     *
+     *  @param sims Vector of all simulations
+     */
     void storeStates(std::vector<cgsl_simulation> *sims){
         for(auto sim : *sims){
             fmu_parameters* p = getParameters(sim.model);
@@ -331,8 +344,11 @@ class ModelExchangeStepper : public BaseMaster {
     }
 
 
-    /** resetIntegratorTimeVariables: 
-     ** restore values of t_ 
+    /** resetIntegratorTimeVariables:
+     *  restore values of t_
+     *
+     *  @param t_safe A known safe time
+     *  @param t_new A new time to try to reach
      */
     void resetIntegratorTimeVariables(double t_safe, double t_new)
     {
@@ -343,14 +359,16 @@ class ModelExchangeStepper : public BaseMaster {
 
 
     /** getStateEvent: Tries to retrieve event indicators, if successful the signbit of all
-     ** event indicators z are compaired with event indicators in p->z 
+     *  event indicators z are compaired with event indicators in p->z
+     *
+     *  @param sims Vector of all simulations
      */
     bool getStateEvent(std::vector<cgsl_simulation> sims){
         bool ret = false;
         for(auto sim: sims) {
             fmu_parameters* p = getParameters(sim.model);
             p->stateEvent = 0;
-            if(p->nz > 0){ 
+            if(p->nz > 0){
                 double z[p->nz];
                 if(p->nz > 0){
                     p->baseMaster->sendWait(p->client, fmi2_import_get_event_indicators(0,0,p->nz));
@@ -371,8 +389,10 @@ class ModelExchangeStepper : public BaseMaster {
     }
 
     /** getSafeTime:
-     ** caluclates a "safe" time, uses the golden ratio to get
-     ** t_crossed and t_safe to converge towards same value
+     *  caluclates a "safe" time, uses the golden ratio to get
+     *  t_crossed and t_safe to converge towards same value
+     *
+     *  @param sim A cgsl simulation
      */
     double getSafeTime(cgsl_simulation sim){
 
@@ -395,6 +415,8 @@ class ModelExchangeStepper : public BaseMaster {
 
     /** hasStateEvent:
      ** returns true if at least one simulation has an event
+     *
+     *  @param sims Vector of all simulations
      */
     bool hasStateEvent(std::vector<cgsl_simulation> sims){
       fmu_parameters* p;
@@ -426,12 +448,12 @@ class ModelExchangeStepper : public BaseMaster {
     void reduceSims(std::vector<cgsl_simulation> *sims){
       fmu_parameters* p;
         for(int it = 0; it < sims->size();it++){
-          p = getParameters((*sims)[it].model);
+          p = getParameters((*sims)[it].model)
           if(!p->stateEvent)
             sims->erase(sims->begin() + it--);
         }
     }
-    
+
     /** findEventTime
      *  if there is an event, find the event and return
      *  the time at where the time event occured
@@ -446,10 +468,10 @@ class ModelExchangeStepper : public BaseMaster {
 
         //remove all simulations that doesn't have an event
         reduceSims(&sims);
-          
+
         while(timeLoop.t_crossed - timeLoop.t_safe > tol) {
             step(&sims);
-            
+
             getStateEvent(sims);
             if(hasStateEvent(sims)){
                 restoreStates(&sims);
@@ -470,10 +492,10 @@ class ModelExchangeStepper : public BaseMaster {
       if( t - *pt < tol ) *pc++;
       else *pc = 0;
       *pt = t;
-      
+
       return *pc == 20 ? 1:0;
     }
-    
+
     /** newDiscreteStatesStart
      *  Should be used where a new discrete state ends
      *  and another begins. Resets the loop variables
@@ -495,25 +517,25 @@ class ModelExchangeStepper : public BaseMaster {
         // store the current state of all running FMUs
         storeStates(&m_sims);
     }
-    
+
     void runIteration(double t, double dt) {
         timeLoop.t_start = t;
         timeLoop.t_end = t + dt;
         double prevTimeEvent = t;
         int prevTimeCount = 0;
-        
+
         newDiscreteStatesStart(t,timeLoop.t_end);
 
         while( timeLoop.t_safe < timeLoop.t_end ){
             step(&m_sims);
-            
+
             if( getStateEvent(m_sims) ){
                 timeLoop.t_new = findEventTime(m_sims);
                 step(&m_sims);
             }
 
             newDiscreteStatesStart(t,timeLoop.t_end);
-            
+
             if(reachedEnd(timeLoop.t_new, &prevTimeEvent, &prevTimeCount)) return;
         }
         //fprintf(stderr, "\n\n");

@@ -431,5 +431,9 @@ void FMIClient::clearGetValues() {
     m_getIntegerValues.clear();
     m_getBooleanValues.clear();
     m_getStringValues.clear();
+    m_getDerivatives.clear();
+    m_getContinuousStates.clear();
+    m_getNominalContinuousStates.clear();
+    m_getEventIndicators.clear();
     m_getDirectionalDerivativeValues.clear();
 }

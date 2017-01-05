@@ -256,13 +256,9 @@ class ModelExchangeStepper : public BaseMaster {
       p->client = client;
       // TODO one result file for each fmu
       p->resultFile = getModelResultPath("resultFile");
-
       p->baseMaster = this;
-      // done in main     sendWait(m_clients, fmi2_import_instantiate(0));
-      size_t dummy = client->getNumEventIndicators(); 
-      allocateMemory(m);
 
-      // done in main     initialization
+      allocateMemory(m);
 
       m->model.function = fmu_function;
       m->model.jacobian = NULL;

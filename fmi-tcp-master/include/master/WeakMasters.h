@@ -201,9 +201,11 @@ class ModelExchangeStepper : public BaseMaster {
         /*should make sure we are in continuous state */
 
         ++p->count; /* count function evaluations */
-        p->baseMaster->sendWait(p->client, fmi2_import_set_time(0,0,t));
-        p->baseMaster->sendWait(p->client, fmi2_import_set_continuous_states(0,0,x,nx));
-        p->baseMaster->sendWait(p->client, fmi2_import_get_derivatives(0,0,nx));
+        p->baseMaster->send(p->client, fmi2_import_set_time(0,0,t));
+        p->baseMaster->send(p->client, fmi2_import_set_continuous_states(0,0,x,nx));
+        p->baseMaster->send(p->client, fmi2_import_get_derivatives(0,0,nx));
+
+        p->baseMaster->wait();
 
         common::extract_vector(dxdt, &p->client->m_getDerivatives);
 

@@ -7,7 +7,9 @@
 
 #ifndef WEAKMASTERS_H_
 #define WEAKMASTERS_H_
-#define USE_GSL
+#ifndef USE_GPL
+#define USE_GPL
+#endif
 #include "master/BaseMaster.h"
 #include "master/WeakConnection.h"
 #include "common/common.h"
@@ -271,7 +273,7 @@ class ModelExchangeStepper : public BaseMaster {
             WeakConnection wc = m_weakConnections[x];
             clientGetXs[wc.to][wc.from][wc.conn.fromType].push_back(wc.conn.fromOutputVR);
         }
-#ifdef USE_GSL
+#ifdef USE_GPL
         /* This is the step control which determines tolerances. */
         cgsl_step_control_parameters step_control;
         /* = (cgsl_step_control_parameters){ */

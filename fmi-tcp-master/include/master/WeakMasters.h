@@ -407,17 +407,21 @@ class ModelExchangeStepper : public BaseMaster {
 
     }
 
-    /** step: 
-     ** run cgsl_step_to on all simulations
+    /** step
+     *  run cgsl_step_to on all simulations
+     *
+     *  @param sims Vector of all simulations
      */
     void step(std::vector<cgsl_simulation> *sims){
         for(auto sim: *sims)
             cgsl_step_to(&sim, sim.t, getSafeTime(sim));
     }
 
-    /** reduceSims:
-     ** forget about all simulations that will not reach the event
-     ** during current time step.
+    /** reduceSims
+     *  Forget about all simulations that will not reach the event
+     *  during current time step.
+     *
+     *  @param sims Vector of all simulations
      */
     void reduceSims(std::vector<cgsl_simulation> *sims){
       fmu_parameters* p;
@@ -428,9 +432,12 @@ class ModelExchangeStepper : public BaseMaster {
         }
     }
     
-    /** findEventTime:
-     ** if there is an event, find the event and return 
-     ** the time at where the time event occured
+    /** findEventTime
+     *  if there is an event, find the event and return
+     *  the time at where the time event occured
+     *
+     *  @param sims Vector of all simulations
+     *  @return Returns the time immediatly after the event
      */
     double findEventTime(std::vector<cgsl_simulation> sims){
         restoreStates(&sims);

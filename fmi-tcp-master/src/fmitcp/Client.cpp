@@ -173,14 +173,14 @@ void Client::clientData(const char* data, long size){
         on_fmi2_import_get_directional_derivative_res(r.message_id(),dz,r.status());
 
         break;
-    
+
       /* Model exchange */
     }case type_fmi2_import_enter_event_mode_res:            NORMAL_CASE(fmi2_import_enter_event_mode);
     case type_fmi2_import_new_discrete_states_res:{
-      
+
         fmi2_import_new_discrete_states_res r; r.ParseFromArray(data, size);
         ::fmi2_event_info_t eventInfo = protoEventInfoToFmi2EventInfo(r.eventinfo());
-        
+
         m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_new_discrete_states_res(mid=%d, newDiscreteStatesNeeded=%d, terminateSimulation=%d, nominalsOfContinuousStatesChanged=%d, valuesOfContinuousStatusChanged=%d, nextEventTimeDefined=%d, nextEventTime=%f )\n",
                      r.message_id(),
                      eventInfo.newDiscreteStatesNeeded,
@@ -195,8 +195,8 @@ void Client::clientData(const char* data, long size){
         on_fmi2_import_new_discrete_states_res(r.message_id(),r.eventinfo());
 
         break;
-    
-            
+
+
     }case type_fmi2_import_enter_continuous_time_mode_res:  NORMAL_CASE(fmi2_import_enter_continuous_time_mode); break;
     case type_fmi2_import_completed_integrator_step_res: {
         fmi2_import_completed_integrator_step_res r; r.ParseFromArray(data, size);
@@ -211,7 +211,7 @@ void Client::clientData(const char* data, long size){
         m_logger.log(Logger::LOG_NETWORK,"This command is NOT TESTED\n");
         fmi2_import_get_event_indicators_res r; r.ParseFromArray(data, size);
         m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_event_indicators_res(mid=%d,event_indicators=%d,status=%d)\n",r.message_id(), r.z(), r.status());
-        
+
         break;
     }
     case type_fmi2_import_get_continuous_states_res: {
@@ -225,7 +225,7 @@ void Client::clientData(const char* data, long size){
         fmi2_import_get_derivatives_res r; r.ParseFromArray(data, size);
         m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_derivatives_res(mid=%d,derivatives=%d,status=%d)\n",r.message_id(), r.derivatives(), r.status());
         //        on_fmi2_import_get_derivatives_res(r.message_id(),repeated_to_vector<double>(r.derivatives()),r.status());
-        
+
         break;
     }
     case type_fmi2_import_get_nominal_continuous_states_res: {

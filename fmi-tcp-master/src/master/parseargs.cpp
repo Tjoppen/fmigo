@@ -139,7 +139,7 @@ int fmitcp_master::parseArguments( int argc,
 
     vector<char*> argv2 = make_char_vector(argvstore);
 
-    while ((c = getopt (argv2.size(), argv2.data(), "xrl:vqhtT:c:d:s:o:p:f:m:g:w:C:j:5:F:NM:a:z:ZL:i")) != -1){
+    while ((c = getopt (argv2.size(), argv2.data(), "xrl:vqh:t:T:c:d:s:o:p:f:m:g:w:C:j:5:F:NM:a:z:ZL:i")) != -1){
         int n, skip, l, cont, i, numScanned, stop, vis;
         deque<string> parts;
         if (optarg) parts = split(optarg, ':');
@@ -237,9 +237,9 @@ int fmitcp_master::parseArguments( int argc,
             } else if(strcmp(optarg,"gs") == 0){
                 *method = gs;
             } else if(strcmp(optarg,"me") == 0){
-                *method = me; 
+                *method = me;
             } else {
-                fprintf(stderr,"Method \"%s\" not recognized. Use \"jacobi\" or \"gs\".\n",optarg);
+                fprintf(stderr,"Method \"%s\" not recognized. Use \"jacobi\" or \"gs\" or \"me\".\n",optarg);
                 return 1;
             }
             break;

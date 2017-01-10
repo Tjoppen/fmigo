@@ -156,14 +156,19 @@ class ModelExchangeStepper : public BaseMaster {
       fprintf(stderr, "ModelExchangeStepper\n");
     }
 
-
-    char* getModelResultPath(const char* path)
+    /** getMedelResultPath
+     *  extracts the filename of the path without extension,
+     *  creates a directory to place the result file and
+     *
+     *  @param fmuPath
+     */
+    char* getModelResultPath(const char* fmuPath)
     {
-        size_t n = strlen(path);
+        size_t n = strlen(fmuPath);
         char* p = (char*)malloc(n * sizeof(char));
 
         // copy path to p, tp for destruction only.
-        void* tp = memcpy(p, path, n);
+        void* tp = memcpy(p, fmuPath, n);
 
         // pointer to be
         char* name = p;
@@ -194,6 +199,15 @@ class ModelExchangeStepper : public BaseMaster {
         return resultFile;
     }
 
+    /** fmu_function
+     *  function needed by cgsl_simulation to get and set the current
+     *  states and derivatives
+     *
+     *  @param t Input time
+     *  @param x Input states vector
+     *  @param dxdt Output derivatives
+     *  @param params Contains model specific parameters
+     */
     static int fmu_function(double t, const double x[], double dxdt[], void* params)
     {
         // make local variables
@@ -215,13 +229,24 @@ class ModelExchangeStepper : public BaseMaster {
         return GSL_SUCCESS;
     }
 
+    /** getParameters
+     *  Extracts the parameters from the model
+     *
+     *  @param m Model
+     */
     fmu_parameters* getParameters(cgsl_model* m){
         return (fmu_parameters*)(m->parameters);
     }
     fmu_parameters* getParameters(fmu_model* m){
         return (fmu_parameters*)(m->model.parameters);
     }
-    void freeFMUModel(fmu_model*m){
+
+    /** freeFMUModel
+     *  Free all memory allocated by allacateMemory(fmu_model* m)
+     *
+     *  @param m Pointer to a fmu_model
+     */
+    void freeFMUModel(fmu_model* m){
         if(m == NULL) return;
 
         fmu_parameters* p = getParameters(m);
@@ -233,13 +258,14 @@ class ModelExchangeStepper : public BaseMaster {
         free(m);
     }
 
+    /** allocate Memory
+     *  Allocates memory needed by the fmu_model
+     *
+     *  @param m Pointer to a fmu_model
+     */
     void allocateMemory(fmu_model* m){
         fmu_parameters* p = getParameters(m);
-        int nx = p->client->getNumContinuousStates();
-        int nz = p->client->getNumEventIndicators();
-        p->nx = nx;
-        p->nz = nz;
-        m->model.x    = (double*)calloc(nx, sizeof(double));
+        m->model.x    = (double*)calloc(p->nx, sizeof(double));
 
         if((!m->model.x )) {
             freeFMUModel(m);
@@ -248,15 +274,22 @@ class ModelExchangeStepper : public BaseMaster {
         }
     }
 
+    /** init_fmu_model
+     *  Creates the fmu_model and sets the parameters
+     *
+     *  @param client A pointer to a fmi client
+     */
     cgsl_model* init_fmu_model(FMIClient* client){
-      fmu_parameters* p = (fmu_parameters*)malloc(sizeof(fmu_parameters));
-      fmu_model* m = (fmu_model*)malloc(sizeof(fmu_model));
+        fmu_parameters* p = (fmu_parameters*)malloc(sizeof(fmu_parameters));
+        fmu_model* m = (fmu_model*)malloc(sizeof(fmu_model));
 
-      m->model.parameters = (void*)p;
-      p->client = client;
-      // TODO one result file for each fmu
-      p->resultFile = getModelResultPath("resultFile");
-      p->baseMaster = this;
+        m->model.parameters = (void*)p;
+        p->client = client;
+        // TODO one result file for each fmu
+        p->resultFile = getModelResultPath("resultFile");
+        p->baseMaster = this;
+        p->nx = p->client->getNumContinuousStates();
+        p->nz = p->client->getNumEventIndicators();
 
       allocateMemory(m);
 
@@ -264,6 +297,7 @@ class ModelExchangeStepper : public BaseMaster {
       m->model.jacobian = NULL;
       // m->model.free = NULL;//freeFMUModel;
     }
+
     void prepare() {
         for (size_t x = 0; x < m_weakConnections.size(); x++) {
             WeakConnection wc = m_weakConnections[x];
@@ -272,12 +306,6 @@ class ModelExchangeStepper : public BaseMaster {
 #ifdef USE_GPL
         /* This is the step control which determines tolerances. */
         cgsl_step_control_parameters step_control;
-        /* = (cgsl_step_control_parameters){ */
-        /*     .eps_rel = 1e-6,          /\* relative tolerance *\/ */
-        /*     .eps_abs = 1e-6,          /\* absolute tolerance *\/ */
-        /*     .id = step_control_y_new, /\* step control strategy *\/ */
-        /*     .start = 1e-8             /\* first step *\/ */
-        /* }; */
         step_control.eps_rel = 1e-6;
         step_control.eps_abs = 1e-6;
         step_control.id = step_control_y_new;
@@ -448,7 +476,7 @@ class ModelExchangeStepper : public BaseMaster {
     void reduceSims(std::vector<cgsl_simulation> *sims){
       fmu_parameters* p;
         for(int it = 0; it < sims->size();it++){
-          p = getParameters((*sims)[it].model)
+          p = getParameters((*sims)[it].model);
           if(!p->stateEvent)
             sims->erase(sims->begin() + it--);
         }

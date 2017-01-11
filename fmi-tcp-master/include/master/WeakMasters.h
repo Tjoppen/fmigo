@@ -165,10 +165,11 @@ class ModelExchangeStepper : public BaseMaster {
     char* getModelResultPath(const char* fmuPath)
     {
         size_t n = strlen(fmuPath);
-        char* p = (char*)malloc(n * sizeof(char));
+        char* p = (char*)malloc((1+n) * sizeof(char));
 
         // copy path to p, tp for destruction only.
         void* tp = memcpy(p, fmuPath, n);
+        *(p+n) = '\0';
 
         // pointer to be
         char* name = p;

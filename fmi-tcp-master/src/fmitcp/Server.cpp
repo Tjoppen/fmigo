@@ -87,7 +87,7 @@ Server::Server(string fmuPath, bool debugLogging, jm_log_level_enu_t logLevel, s
     }
     // check FMU kind
     fmi2_fmu_kind_enu_t fmuType = fmi2_import_get_fmu_kind(m_fmi2Instance);
-    if(fmuType != fmi2_fmu_kind_cs && fmuType != fmi2_fmu_kind_me_and_cs) {
+    if(fmuType != fmi2_fmu_kind_cs && fmuType != fmi2_fmu_kind_me_and_cs && fmuType != fmi2_fmu_kind_me) {
       fmi2_import_free(m_fmi2Instance);
       fmi_import_free_context(m_context);
       fmi_import_rmdir(&m_jmCallbacks, m_workingDir.c_str());
@@ -212,7 +212,7 @@ string Server::clientData(const char *data, size_t size) {
   size -= 2;
 
   bool sendResponse = true;
-  
+
 #define SERVER_NORMAL_MESSAGE(type)                                     \
   /* Unpack message */                                                  \
     fmitcp_proto::fmi2_import_##type##_req r; r.ParseFromArray(data, size); \
@@ -222,7 +222,7 @@ string Server::clientData(const char *data, size_t size) {
     if (!m_sendDummyResponses) {                                        \
       status = fmi2_import_##type(m_fmi2Instance);                      \
     }
-  
+
 #define SERVER_NORMAL_RESPONSE(type)                                    \
       /* Create response */                                             \
       fmitcp_proto::fmi2_import_##type##_res response; \
@@ -789,7 +789,7 @@ string Server::clientData(const char *data, size_t size) {
 
     fmi2_event_info_t* eventInfo;
     if (!m_sendDummyResponses) {
-      fmi2_import_new_discrete_states(m_fmi2Instance, eventInfo); 
+      fmi2_import_new_discrete_states(m_fmi2Instance, eventInfo);
     }
 
     //Create response
@@ -838,7 +838,7 @@ string Server::clientData(const char *data, size_t size) {
 
     // Create response
     SERVER_NORMAL_RESPONSE(set_continuous_states);
-    
+
     sendResponse = false;
   break; } case fmitcp_proto::type_fmi2_import_get_event_indicators_req: {
     // TODO
@@ -864,7 +864,7 @@ string Server::clientData(const char *data, size_t size) {
 
     ret.second = response.SerializeAsString();
     m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_get_event_indicators_res(mid=%d,z=%s)\n",response.message_id(),response.z());
-                                                                                                                                                            
+
     sendResponse = false;
   break; } case fmitcp_proto::type_fmi2_import_get_continuous_states_req: {
     // TODO
@@ -915,7 +915,7 @@ string Server::clientData(const char *data, size_t size) {
 
     ret.second = response.SerializeAsString();
     m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_get_derivatives_res(mid=%d,derivatives=%s)\n",response.message_id(),response.derivatives());
-    
+
      sendResponse = false;
   break; } case fmitcp_proto::type_fmi2_import_get_nominal_continuous_states_req: {
     // TODO

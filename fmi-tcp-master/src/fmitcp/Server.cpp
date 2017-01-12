@@ -804,7 +804,6 @@ string Server::clientData(const char *data, size_t size) {
     ret.first = fmitcp_proto::type_fmi2_import_new_discrete_states_res;
     ret.second = response.SerializeAsString();
     m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_new_discrete_states_res(mid=%d)\n",response.message_id());
-    sendResponse = false;
   break; } case fmitcp_proto::type_fmi2_import_enter_continuous_time_mode_req: {
     // TODO
     SERVER_NORMAL_MESSAGE(enter_continuous_time_mode);
@@ -844,7 +843,6 @@ string Server::clientData(const char *data, size_t size) {
     // Create response
     SERVER_NORMAL_RESPONSE(set_continuous_states);
 
-    sendResponse = false;
   break; } case fmitcp_proto::type_fmi2_import_get_event_indicators_req: {
     // TODO
     // Unpack message
@@ -870,7 +868,6 @@ string Server::clientData(const char *data, size_t size) {
     ret.second = response.SerializeAsString();
     m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_get_event_indicators_res(mid=%d,z=%s)\n",response.message_id(),response.z());
 
-    sendResponse = false;
   break; } case fmitcp_proto::type_fmi2_import_get_continuous_states_req: {
     // TODO
     // Unpack message
@@ -895,7 +892,6 @@ string Server::clientData(const char *data, size_t size) {
 
     ret.second = response.SerializeAsString();
     m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_get_continuous_states_res(mid=%d,x=%s)\n",response.message_id(),response.x());
-    sendResponse = false;
   break; } case fmitcp_proto::type_fmi2_import_get_derivatives_req: {
     // TODO
     // Unpack message
@@ -921,7 +917,6 @@ string Server::clientData(const char *data, size_t size) {
     ret.second = response.SerializeAsString();
     m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_get_derivatives_res(mid=%d,derivatives=%s)\n",response.message_id(),response.derivatives());
 
-     sendResponse = false;
   break; } case fmitcp_proto::type_fmi2_import_get_nominal_continuous_states_req: {
     // TODO
     // Unpack message
@@ -946,7 +941,6 @@ string Server::clientData(const char *data, size_t size) {
 
     ret.second = response.SerializeAsString();
     m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_get_nominal_continuous_states_res(mid=%d,nominals=%s)\n",response.message_id(),response.nominal());
-    sendResponse = false;
   break; } case fmitcp_proto::type_fmi2_import_set_real_input_derivatives_req: {
 
     // Unpack message

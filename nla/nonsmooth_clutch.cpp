@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <iostream>
 using namespace std;
-
 #include "banded.h"
+#include "qp_solver.h"
 
 
 static const double infinity  = std::numeric_limits<Real>::infinity() ;
@@ -25,7 +25,7 @@ struct clutch_sim: public nonsmooth_clutch_params {
   nonsmooth_clutch_params saved_parameters;
   
   
-  band_diag M; // 9x9, bandwidth of 3, bisymmetric
+  banded_matrix M; // 9x9, bandwidth of 3, bisymmetric
   valarray<double> lower;       /// lower bounds for the complementarity problem
   valarray<double> upper;       /// upper bounds for the complementarity problem
   valarray<double> rhs;         /// buffer to store the RHS
@@ -34,7 +34,7 @@ struct clutch_sim: public nonsmooth_clutch_params {
   valarray<double> g;           /// constraint violations
   valarray<double> gdot;        /// constraint velocity
   
-  diag4qp QP;                    /// An instance of the QP solver.  
+  qp_solver QP;                    /// An instance of the QP solver.  
 
 
   /// straight copy of a parameter struct and initialization
@@ -110,11 +110,11 @@ struct clutch_sim: public nonsmooth_clutch_params {
 
   inline void set_limits(){
 
-    lower[ 1 ] = 0.0;              // inequality for first lower limit
-    upper[ 1 ] = infinity;         // inequality for first lower limit
+    lower[ 1 ] = 0.0;           // first lower limit
+    upper[ 1 ] = infinity;         
     
-    lower[ 2 ] = 0.0;     // inequality for first upper limit
-    upper[ 2 ] = infinity;             // inequality for first upper limit
+    lower[ 2 ] = 0.0;           // first upper limit
+    upper[ 2 ] = infinity;      // inequality for first upper limit
 
     lower[ 4 ] = 0.0;              // inequality for second lower limit
     upper[ 4 ] = infinity;         // inequality for second lower limit
@@ -158,38 +158,34 @@ struct clutch_sim: public nonsmooth_clutch_params {
     
     M[ 0 ][ 1 ] = -compliance_1 * EE;       // lower bound for first spring
     M[ 0 ][ 2 ] = -compliance_1 * EE;       // upper bound for first spring
+
     M[ 0 ][ 3 ] =  masses[ 1 ] + kk1 + kk2; // second mass including both springs
     M[ 0 ][ 3 ] +=  step * damping;
 
     M[ 0 ][ 4 ] = -compliance_2 * EE;       // lower bound for second spring
     M[ 0 ][ 5 ] = -compliance_2 * EE;       // upper bound for second spring
-    M[ 0 ][ 6 ] =  masses[ 2 ] +  kk2;      // third mass including spring
 
+    M[ 0 ][ 6 ] =  masses[ 2 ] +  kk2;      // third mass including spring
     M[ 0 ][ 6 ] +=  step * damping;
 
     M[ 0 ][ 7 ] = -plate_slip / step;       // dry friction constraint
-    M[ 0 ][ 8 ] =  masses[ 3 ];             // fourth mass: no spring
 
+    M[ 0 ][ 8 ] =  masses[ 3 ];             // fourth mass: no spring
     M[ 0 ][ 8 ] +=  step * damping;
 
     /// first two masses bound constraints
     M[ 1 ][ 0 ] =  Real( 1.0 );
-    M[ 1 ][ 1 ] =  Real( 0.0 );
     M[ 1 ][ 2 ] =  Real( 1.0 );
 
     M[ 2 ][ 0 ] =  Real(-1.0 );
     M[ 2 ][ 1 ] =  Real(-1.0 );
-    M[ 2 ][ 2 ] =  Real( 0.0 );
 
     /// this connects the second and third mass via bound constraints
     M[ 1 ][ 3 ] =  Real( 1.0 );
-    M[ 1 ][ 4 ] =  Real( 0.0 );
     M[ 1 ][ 5 ] =  Real( 1.0 );
     
     M[ 2 ][ 3 ] =  Real(-1.0 );
     M[ 2 ][ 4 ] =  Real(-1.0 );
-    M[ 2 ][ 5 ] =  Real( 0.0 );
-    M[ 2 ][ 6 ] =  Real( 0.0 );
     
     /// this connects the third and fourth mass via dry friction
     M[ 1 ][ 6 ] =  Real( 1.0 );
@@ -347,7 +343,7 @@ The symmetrized version, lower triangle only
     rhs[ 2 ] =  - ( gamma * ( ( -4.0 / step ) * g[ 1 ] + gdot[ 1 ] ) );
 
     rhs[ 4 ] =  - ( gamma * ( ( -4.0 / step ) * g[ 2 ] + gdot[ 2 ] ) );
-    rhs[ 5 ] =  - ( gamma * ( ( -4.0 / step ) * g[ 3 ] - gdot[ 3 ]) );
+    rhs[ 5 ] =  - ( gamma * ( ( -4.0 / step ) * g[ 3 ] + gdot[ 3 ]) );
     
     /// and the friction constraint
     rhs[ 7 ] =  0;
@@ -377,7 +373,8 @@ The symmetrized version, lower triangle only
   /// Move forward in time with current step. 
   void do_step( size_t n ){
 
-    M.set_active();           // Activate everything and let the solver figure out what to do
+    M.set_active();           // Activate everything and let the solver
+                              // figure out what to do
 
     for ( size_t t = 0; t < n; ++t ){
 
@@ -397,8 +394,7 @@ The symmetrized version, lower triangle only
         v[ 3 ] = z[ 8 ];     
       }
       
-      get_rhs();
-      
+      get_rhs();      
       M.set_active();           // let the solver figure out what to do
       QP.solve( rhs, lower, upper, z);
       //QP.report_stats( std::cerr , z, lower, upper);
@@ -438,7 +434,6 @@ The symmetrized version, lower triangle only
     }
 
   }
-
   ///
   /// Blind copy of everything.
   /// 
@@ -507,7 +502,6 @@ The symmetrized version, lower triangle only
 /** Now the C API for all this
  *
  */
-
 
 
 

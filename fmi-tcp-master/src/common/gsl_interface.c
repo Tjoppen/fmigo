@@ -9,14 +9,14 @@ double hypot(double x, double y) {return _hypot(x, y);}
 
 
 /**
- *  Convinently package all integrator objects in one place. 
+ *  Convinently package all integrator objects in one place.
  */
 const gsl_odeiv2_step_type * cgsl_get_integrator( int  i ) {
 
   const gsl_odeiv2_step_type * integrators [] =
     {
       gsl_odeiv2_step_rk2,	/* 0 */
-      gsl_odeiv2_step_rk4,	/* 1 */ 
+      gsl_odeiv2_step_rk4,	/* 1 */
       gsl_odeiv2_step_rkf45,	/* 2 */
       gsl_odeiv2_step_rkck,	/* 3 */
       gsl_odeiv2_step_rk8pd,	/* 4 */
@@ -35,7 +35,7 @@ const gsl_odeiv2_step_type * cgsl_get_integrator( int  i ) {
 
 /**
  * Integrate the equations by one full step.
- * Used by cgsl_step_to() 
+ * Used by cgsl_step_to()
  *
  */
 static int cgsl_step ( void * _s  ) {
@@ -60,12 +60,12 @@ int cgsl_step_to(void * _s,  double t_start, double t_end ) {
 
   cgsl_simulation * s = ( cgsl_simulation * ) _s;
 
-  int i; 
+  int i;
 
   s->t  = t_start;		/* start point */
   s->t_end = t_end;		/* end point */
   s->steps = 0;
-  
+
   ///
   /// GSL integrators return after each successful step hence the while
   /// loop.
@@ -76,21 +76,21 @@ int cgsl_step_to(void * _s,  double t_start, double t_end ) {
     s->steps++;
 
     // integreate  all variables
-    
+
     /// Diagnostics and printing below this point
     if (status != GSL_SUCCESS ){
       fprintf(stderr, "GSL integrator: bad status: %d \n", status);
       exit(-1);
     }
 
-    if ( s->print  && s->file ) { 
+    if ( s->print  && s->file ) {
       fprintf (s->file, "%.5e ", s->t );
       for ( i = 0; i < s->i.system.dimension; ++i ){
-	fprintf (s->file, "%.5e ", s->model->x[ i ]); 
+	fprintf (s->file, "%.5e ", s->model->x[ i ]);
       }
       fprintf (s->file, "\n");
     }
-    
+
   }
 
   return 0;
@@ -117,7 +117,6 @@ cgsl_simulation cgsl_init_simulation(
 
   sim.model                  = model;
   sim.i.step_type            =  cgsl_get_integrator( integrator );
-
   /** pass model definition to gsl integration structure */
   sim.i.system.function      = model->function;
   sim.i.system.jacobian      = model->jacobian;
@@ -130,7 +129,7 @@ cgsl_simulation cgsl_init_simulation(
   cgsl_get_step_control( step_control_parameters, &sim );
   sim.n                      = 0;
   sim.t                      = 0.0;
-  sim.t_end                  = 0.0; 
+  sim.t_end                  = 0.0;
   sim.data                   = ( double * ) NULL;
   sim.buffer_size            = 0;
   sim.file                   = f;
@@ -145,7 +144,7 @@ void cgsl_model_default_free(cgsl_model *model) {
     free(model);
 }
 
-  
+
 void cgsl_enable_write( cgsl_simulation * sim, int x ) {
   sim->print = x;
   return;
@@ -198,20 +197,20 @@ void  cgsl_free_simulation( cgsl_simulation sim ) {
   }
 
   return;
-  
+
 }
 
 void cgsl_simulation_set_fixed_step( cgsl_simulation * s, double h){
 
   s->h = h;
-  s->fixed_step = 1; 
+  s->fixed_step = 1;
 
   return;
 }
 
 void cgsl_simulation_set_variable_step( cgsl_simulation * s ) {
 
-  s->fixed_step = 0; 
+  s->fixed_step = 0;
 
   return;
 }
@@ -245,7 +244,7 @@ static cgsl_step_control_parameters cgsl_step_control_set_defaults(){
 static int cgsl_verify_control_parameters( cgsl_step_control_parameters * p ){
 
   int ret = 1;
-  if ( 
+  if (
   ! isnormal( p->eps_rel ) ||
   ! isnormal( p->eps_abs ) ||
   ! isnormal( p->start  )  ||
@@ -259,11 +258,11 @@ static int cgsl_verify_control_parameters( cgsl_step_control_parameters * p ){
   if ( p->id == step_control_scaled_new && p->scale_abs == (double * ) NULL  ){
     ret = 0;
   }
-  
+
   if ( ret == 0 ){
     *p = cgsl_step_control_set_defaults();
   }
-  
+
   return ret;
 }
 
@@ -276,7 +275,7 @@ void cgsl_get_step_control( cgsl_step_control_parameters p, cgsl_simulation * si
 
   sim->h = p.start;
   sim->fixed_step = 0;
-  
+
   switch( (int) p.id) {
     case   step_control_y_new:
       sim->i.control = gsl_odeiv2_control_y_new (p.eps_abs, p.eps_rel);
@@ -313,63 +312,63 @@ void cgsl_get_step_control( cgsl_step_control_parameters p, cgsl_simulation * si
  */
 
 cgsl_integrator_named_ids cgsl_integrator_list[]={
-  {rk2,	 "Runge Kutta order 2", "rk2"}, 
-  {rk4,	 "Runge Kutta order 4", "rk4"}, 
-  {rkf45,"Runge Kutta order 4 with Feldberg pair", "rkf45"}, 
-  {rkck,  "Explicit embedded Runge-Kutta Cash-Karp (4, 5) method.", "rkck"}, 
-  {rk8pd, "Runge Kutta order 8, Dormand Prince pair", "rk8pd"} , 
-  {rk1imp, "Implicit Euler first order", "rk1imp"}, 
-  {rk2imp, "Runge Kutta implicit order 2, Gauss's method", "rk2imp"}, 
+  {rk2,	 "Runge Kutta order 2", "rk2"},
+  {rk4,	 "Runge Kutta order 4", "rk4"},
+  {rkf45,"Runge Kutta order 4 with Feldberg pair", "rkf45"},
+  {rkck,  "Explicit embedded Runge-Kutta Cash-Karp (4, 5) method.", "rkck"},
+  {rk8pd, "Runge Kutta order 8, Dormand Prince pair", "rk8pd"} ,
+  {rk1imp, "Implicit Euler first order", "rk1imp"},
+  {rk2imp, "Runge Kutta implicit order 2, Gauss's method", "rk2imp"},
   {rk4imp, "Runge Kutta implicit order 4, Gauss' method", "rk4imp"},
   {bsimp, "Implicit Bulirsch-Stoer method of Bader and Deuflhard.", "bsimp"},
-  {msadams, "Linear multistep Adams method in Nordsieck form.", "msadams"}, 
-  {msbdf, "A variable-coefficient linear multistep backward differentiation formula (BDF) method in Nordsieck form.", "msbdf"}, 
+  {msadams, "Linear multistep Adams method in Nordsieck form.", "msadams"},
+  {msbdf, "A variable-coefficient linear multistep backward differentiation formula (BDF) method in Nordsieck form.", "msbdf"},
   {-1}
   };
 
 
 cgsl_integrator_named_ids cgsl_integrator_explicit_list[]={
-  {rk2,	 "Runge Kutta order 2", "rk2"}, 
-  {rk4,	 "Runge Kutta order 4", "rk4"}, 
-  {rkf45,"Runge Kutta order 4 with Feldberg pair", "rkf45"}, 
-  {rkck,  "Explicit embedded Runge-Kutta Cash-Karp (4, 5) method.", "rkck"}, 
-  {rk8pd, "Runge Kutta order 8, Dormand Prince pair", "rk8pd"} , 
-  {msadams, "Linear multistep Adams method in Nordsieck form.", "msadams"}, 
+  {rk2,	 "Runge Kutta order 2", "rk2"},
+  {rk4,	 "Runge Kutta order 4", "rk4"},
+  {rkf45,"Runge Kutta order 4 with Feldberg pair", "rkf45"},
+  {rkck,  "Explicit embedded Runge-Kutta Cash-Karp (4, 5) method.", "rkck"},
+  {rk8pd, "Runge Kutta order 8, Dormand Prince pair", "rk8pd"} ,
+  {msadams, "Linear multistep Adams method in Nordsieck form.", "msadams"},
   {-1}
   };
 
 cgsl_integrator_named_ids cgsl_integrator_implicit_list[]={
-  {rk1imp, "Implicit Euler first order", "rk1imp"}, 
-  {rk2imp, "Runge Kutta implicit order 2, Gauss's method", "rk2imp"}, 
+  {rk1imp, "Implicit Euler first order", "rk1imp"},
+  {rk2imp, "Runge Kutta implicit order 2, Gauss's method", "rk2imp"},
   {rk4imp, "Runge Kutta implicit order 4, Gauss' method", "rk4imp"},
   {bsimp, "Implicit Bulirsch-Stoer method of Bader and Deuflhard.", "bsimp"},
-  {msbdf, "A variable-coefficient linear multistep backward differentiation formula (BDF) method in Nordsieck form.", "msbdf"}, 
+  {msbdf, "A variable-coefficient linear multistep backward differentiation formula (BDF) method in Nordsieck form.", "msbdf"},
   {-1}
   };
 
 cgsl_integrator_named_ids cgsl_integrator_rk_explicit_list[]={
-  {rk2,	 "Runge Kutta order 2", "rk2"}, 
-  {rk4,	 "Runge Kutta order 4", "rk4"}, 
-  {rkf45,"Runge Kutta order 4 with Feldberg pair", "rkf45"}, 
-  {rkck,  "Explicit embedded Runge-Kutta Cash-Karp (4, 5) method.", "rkck"}, 
-  {rk8pd, "Runge Kutta order 8, Dormand Prince pair", "rk8pd"} , 
+  {rk2,	 "Runge Kutta order 2", "rk2"},
+  {rk4,	 "Runge Kutta order 4", "rk4"},
+  {rkf45,"Runge Kutta order 4 with Feldberg pair", "rkf45"},
+  {rkck,  "Explicit embedded Runge-Kutta Cash-Karp (4, 5) method.", "rkck"},
+  {rk8pd, "Runge Kutta order 8, Dormand Prince pair", "rk8pd"} ,
   {-1}
   };
 
 cgsl_integrator_named_ids cgsl_integrator_rk_implicit_list[]={
-  {rk1imp, "Implicit Euler first order", "rk1imp"}, 
-  {rk2imp, "Runge Kutta implicit order 2, Gauss's method", "rk2imp"}, 
+  {rk1imp, "Implicit Euler first order", "rk1imp"},
+  {rk2imp, "Runge Kutta implicit order 2, Gauss's method", "rk2imp"},
   {rk4imp, "Runge Kutta implicit order 4, Gauss' method", "rk4imp"},
   {-1}
   };
 
 cgsl_integrator_named_ids cgsl_integrator_ms_explicit_list[]={
-  {msadams, "Linear multistep Adams method in Nordsieck form.", "msadams"}, 
-  {msbdf, "A variable-coefficient linear multistep backward differentiation formula (BDF) method in Nordsieck form.", "msbdf"}, 
+  {msadams, "Linear multistep Adams method in Nordsieck form.", "msadams"},
+  {msbdf, "A variable-coefficient linear multistep backward differentiation formula (BDF) method in Nordsieck form.", "msbdf"},
   {-1}
   };
 
 cgsl_integrator_named_ids cgsl_integrator_ms_implicit_list[]={
-  {msbdf, "A variable-coefficient linear multistep backward differentiation formula (BDF) method in Nordsieck form.", "msbdf"}, 
+  {msbdf, "A variable-coefficient linear multistep backward differentiation formula (BDF) method in Nordsieck form.", "msbdf"},
   {-1}
 };

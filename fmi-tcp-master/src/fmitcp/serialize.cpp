@@ -1,7 +1,6 @@
 #include "fmitcp.pb.h"
 #include "serialize.h"
 #include <stdint.h>
-
 using namespace fmitcp_proto;
 using namespace std;
 
@@ -179,8 +178,10 @@ std::string fmitcp::serialize::fmi2_import_set_continuous_states(int message_id,
     fmi2_import_set_continuous_states_req req;
     req.set_message_id(message_id);
     req.set_fmuid(fmuId);
+    req.set_nx(nx);
+
     for(int i = 0; i < nx; i++)
-      req.set_x(i, x[i]);
+        req.add_x(x[i]);
 
     return pack(type_fmi2_import_set_continuous_states_req, req);
 }

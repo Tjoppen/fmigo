@@ -38,7 +38,7 @@ namespace fmitcp {
         std::string fmi2_import_get_version(int message_id, int fmuId);
         std::string fmi2_import_set_debug_logging(int message_id, int fmuId, bool loggingOn, std::vector<std::string> categories);
         std::string fmi2_import_instantiate(int message_id);               //calls fmi2_import_instantiate2() with visible=false (backward compatibility)
-        std::string fmi2_import_instantiate2(int message_id, bool visible);
+        std::string fmi2_import_instantiate2(int message_id, bool visible, int type);
         std::string fmi2_import_setup_experiment(int message_id, int fmuId, bool toleranceDefined, double tolerance, double startTime,
             bool stopTimeDefined, double stopTime);
         std::string fmi2_import_enter_initialization_mode(int message_id, int fmuId);

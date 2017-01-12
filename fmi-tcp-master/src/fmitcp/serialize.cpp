@@ -12,7 +12,7 @@ template<typename T> std::string pack(fmitcp_message_Type type, T &req) {
 }
 
 std::string fmitcp::serialize::fmi2_import_instantiate(int message_id) {
-    return fmi2_import_instantiate2(message_id, false);
+    return fmi2_import_instantiate2(message_id, false, 0);
 }
 #define SERIALIZE_NORMAL_MESSAGE_(type, extra)                          \
     /* Contruct message */                                              \
@@ -29,10 +29,11 @@ std::string fmitcp::serialize::fmi2_import_instantiate(int message_id) {
     req.set_fmuid(fmuId);                                               \
     return pack(type_##type##_req, req);
 
-std::string fmitcp::serialize::fmi2_import_instantiate2(int message_id, bool visible) {
+std::string fmitcp::serialize::fmi2_import_instantiate2(int message_id, bool visible, int type) {
   fmi2_import_instantiate_req req;
   req.set_message_id(message_id);
   req.set_visible(visible);
+  req.set_fmutype(type);
 
   return pack(type_fmi2_import_instantiate_req, req);
 }
@@ -159,7 +160,7 @@ std::string fmitcp::serialize::fmi2_import_enter_event_mode(int message_id, int 
 }
 
 std::string fmitcp::serialize::fmi2_import_new_discrete_states(int message_id, int fmuId){
-    SERIALIZE_NORMAL_MESSAGE(fmi2_import_new_discrete_states); 
+    SERIALIZE_NORMAL_MESSAGE(fmi2_import_new_discrete_states);
 }
 
 std::string fmitcp::serialize::fmi2_import_enter_continuous_time_mode(int message_id, int fmuId){
@@ -167,15 +168,15 @@ std::string fmitcp::serialize::fmi2_import_enter_continuous_time_mode(int messag
 }
 
 std::string fmitcp::serialize::fmi2_import_completed_integrator_step(int message_id, int fmuId){
-    SERIALIZE_NORMAL_MESSAGE(fmi2_import_completed_integrator_step); 
+    SERIALIZE_NORMAL_MESSAGE(fmi2_import_completed_integrator_step);
 }
 
 std::string fmitcp::serialize::fmi2_import_set_time(int message_id, int fmuId, double time){
     SERIALIZE_NORMAL_MESSAGE_(fmi2_import_set_time, time);
-}   
+}
 
 std::string fmitcp::serialize::fmi2_import_set_continuous_states(int message_id, int fmuId, const double* x, int nx){
-    fmi2_import_set_continuous_states_req req; 
+    fmi2_import_set_continuous_states_req req;
     req.set_message_id(message_id);
     req.set_fmuid(fmuId);
     for(int i = 0; i < nx; i++)
@@ -201,7 +202,7 @@ std::string fmitcp::serialize::fmi2_import_get_nominal_continuous_states(int mes
 }
 
 FMU_VOID_REQ_IMPL(fmi2_import_get_version)
-  
+
 
 std::string fmitcp::serialize::fmi2_import_set_debug_logging(int message_id, int fmuId, bool loggingOn, const std::vector<string> categories){
     fmi2_import_set_debug_logging_req req;

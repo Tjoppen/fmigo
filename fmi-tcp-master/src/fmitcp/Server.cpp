@@ -282,12 +282,17 @@ string Server::clientData(const char *data, size_t size) {
     int messageId = r.message_id();
     fmi2_boolean_t visible = r.visible();
 
+    fmi2_type_t simType;
+    simType = fmi2_cosimulation;
+    if(r.fmutype() == 2)
+      simType = fmi2_model_exchange;
+
     m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_instantiate_req(mid=%d,visible=%d)\n",messageId, visible);
 
     jm_status_enu_t status = jm_status_success;
     if (!m_sendDummyResponses) {
       // instantiate FMU
-      status = fmi2_import_instantiate(m_fmi2Instance, m_instanceName, fmi2_cosimulation, m_resourcePath.c_str(), visible);
+      status = fmi2_import_instantiate(m_fmi2Instance, m_instanceName, simType, m_resourcePath.c_str(), visible);
     }
 
     // Create response message

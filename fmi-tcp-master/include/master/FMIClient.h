@@ -40,6 +40,7 @@ namespace fmitcp_master {
         // FMI 2.0
         fmi2_import_t* m_fmi2Instance;
         fmi2_import_variable_list_t* m_fmi2Outputs;
+        fmi2_event_info_t* m_fmi2EventInfo;
 
     public:
         int m_stateId;
@@ -143,6 +144,7 @@ namespace fmitcp_master {
         //void on_fmi2_import_set_time_res                        (int mid, fmitcp_proto::fmi2_status_t status);
         //void on_fmi2_import_set_continuous_states_res           (int mid, fmitcp_proto::fmi2_status_t status);
         //void on_fmi2_import_completed_integrator_step_res       (int mid, bool callEventUpdate, fmitcp_proto::fmi2_status_t status);
+        void on_fmi2_import_new_discrete_states_res             (int mid, fmitcp_proto::fmi2_event_info_t eventInfo);
         //void on_fmi2_import_initialize_model_res                (int mid, bool iterationConverged, bool stateValueReferencesChanged, bool stateValuesChanged, bool terminateSimulation, bool upcomingTimeEvent, double nextEventTime, fmitcp_proto::fmi2_status_t status);
         void on_fmi2_import_get_derivatives_res                 (int mid, const vector<double>& derivatives, fmitcp_proto::fmi2_status_t status);
         void on_fmi2_import_get_event_indicators_res            (int mid, const vector<double>& eventIndicators, fmitcp_proto::fmi2_status_t status);

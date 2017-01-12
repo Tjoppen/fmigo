@@ -26,7 +26,7 @@ enum fmitcp_message_Type {
     type_fmi2_import_get_string_status_res = 118;
 
     // =========== FMI 2.0 (ME) Model Exchange functions ===========
-    
+
     type_fmi2_import_enter_event_mode_req = 201;
     type_fmi2_import_enter_event_mode_res = 202;
     type_fmi2_import_new_discrete_states_req = 203;
@@ -284,7 +284,7 @@ message fmi2_import_new_discrete_states_req {
 }
 message fmi2_import_new_discrete_states_res {
     required int32 message_id = 1;
-    required fmi2_event_info_t eventInfo = 2;
+    optional fmi2_event_info_t eventInfo = 2;
 }
 
 // fmi2_status_t     fmi2_import_enter_continuous_time_mode (fmi2_import_t *fmu, fmi2_real_t time)
@@ -424,6 +424,7 @@ message fmi2_import_set_debug_logging_res {
 message fmi2_import_instantiate_req {
     required int32 message_id = 1;
     optional bool  visible = 2;     //optional to maximize backward compatibility
+    optional int32 fmuType = 3;
 }
 message fmi2_import_instantiate_res {
     required int32 message_id = 1;

@@ -288,6 +288,10 @@ class ModelExchangeStepper : public BaseMaster {
         p->client = client;
         // TODO one result file for each fmu
         p->resultFile = getModelResultPath("resultFile");
+        if ( ( p->m_backup.result_file = fopen(p->resultFile, "w+") ) == NULL){
+          printf("can't open file: %s\n", p->resultFile);
+          exit(1);
+        }
         p->baseMaster = this;
         p->nx = p->client->getNumContinuousStates();
         p->nz = p->client->getNumEventIndicators();
@@ -318,7 +322,7 @@ class ModelExchangeStepper : public BaseMaster {
             cgsl_simulation sim = cgsl_init_simulation(cgsl,  /* model */
                                                        rk8pd, /* integrator: Runge-Kutta Prince Dormand pair order 7-8 */
                                                        1,     /* write to file: YES! */
-                                                       NULL,
+                                                       p->m_backup.result_file,
                                                        step_control);
             m_sims.push_back(sim);
           }
@@ -362,14 +366,14 @@ class ModelExchangeStepper : public BaseMaster {
             fmu_parameters* p = getParameters(sim.model);
             p->baseMaster->sendWait(p->client, fmi2_import_get_continuous_states(0,0,p->nx));
             common::extract_vector(&p->m_backup.x, &p->client->m_getContinuousStates);
-        // if statement not needed if timestep is choosen more carefully
-        if(timeLoop.t_start == sim.t && p->nz > 0){
-            p->baseMaster->sendWait(p->client, fmi2_import_get_event_indicators(0,0, p->nz));
-            common::extract_vector(&p->z,&p->client->m_getEventIndicators);
-        }
-        p->m_backup.failed_steps = sim.i.evolution->failed_steps;
-        p->m_backup.t = sim.t;
-        p->m_backup.size_of_file = ftell(p->m_backup.result_file);
+            // if statement not needed if timestep is choosen more carefully
+            if(timeLoop.t_start == sim.t && p->nz > 0){
+                p->baseMaster->sendWait(p->client, fmi2_import_get_event_indicators(0,0, p->nz));
+                common::extract_vector(&p->z,&p->client->m_getEventIndicators);
+            }
+            p->m_backup.failed_steps = sim.i.evolution->failed_steps;
+            p->m_backup.t = sim.t;
+            p->m_backup.size_of_file = ftell(p->m_backup.result_file);
       }
     }
 

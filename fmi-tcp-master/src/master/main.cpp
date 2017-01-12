@@ -640,7 +640,7 @@ int main(int argc, char *argv[] ) {
     //init
     for (size_t x = 0; x < clients.size(); x++) {
         //set visibility based on command line
-        master->send(clients[x], fmi2_import_instantiate2(0, x < fmuVisibilities.size() ? fmuVisibilities[x] : false));
+      master->send(clients[x], fmi2_import_instantiate2(0, x < fmuVisibilities.size() ? fmuVisibilities[x] : false, method));
     }
 
     master->send(clients, fmi2_import_setup_experiment(0, 0, true, relativeTolerance, startTime, endTime >= 0, endTime));

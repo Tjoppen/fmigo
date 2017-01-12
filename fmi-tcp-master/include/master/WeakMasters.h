@@ -291,19 +291,19 @@ class ModelExchangeStepper : public BaseMaster {
         p->baseMaster = this;
         p->nx = p->client->getNumContinuousStates();
         p->nz = p->client->getNumEventIndicators();
+        m->model.n_variables = p->nx;
 
       allocateMemory(m);
 
-      m->model.function = fmu_function;
-      m->model.jacobian = NULL;
-      // m->model.free = NULL;//freeFMUModel;
+        allocateMemory(m);
+
+        m->model.function = fmu_function;
+        m->model.jacobian = NULL;
+        m->model.free = NULL;//freeFMUModel;
+        return(cgsl_model*)m;
     }
 
     void prepare() {
-        for (size_t x = 0; x < m_weakConnections.size(); x++) {
-            WeakConnection wc = m_weakConnections[x];
-            clientGetXs[wc.to][wc.from][wc.conn.fromType].push_back(wc.conn.fromOutputVR);
-        }
 #ifdef USE_GPL
         /* This is the step control which determines tolerances. */
         cgsl_step_control_parameters step_control;
@@ -322,6 +322,7 @@ class ModelExchangeStepper : public BaseMaster {
                                                        step_control);
             m_sims.push_back(sim);
           }
+
 #endif
     }
 

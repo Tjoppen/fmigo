@@ -394,9 +394,10 @@ class ModelExchangeStepper : public BaseMaster {
      *  @param t_safe A known safe time
      *  @param t_new A new time to try to reach
      */
-    void resetIntegratorTimeVariables(double t_safe, double t_new)
+    void resetIntegratorTimeVariables(double t_new)
     {
-        timeLoop.t_safe = t_safe;
+        // all simulations should be at the same time
+        timeLoop.t_safe = m_sims[0]->t;
         timeLoop.t_crossed = timeLoop.t_end;
         timeLoop.t_new = t_new;//min(sim->h, max(max((sim->t - prevTimeEvent)/500,0),t_end));
     }
@@ -548,10 +549,9 @@ class ModelExchangeStepper : public BaseMaster {
      *  @param t The current time
      *  @param t_new New next time
      */
-    void newDiscreteStatesStart(double t, double t_new){
+    void newDiscreteStatesStart(double t_new){
         // set start values for the time integration
-        resetIntegratorTimeVariables(t, t_new);
-
+        resetIntegratorTimeVariables(t_new);
         // start at a new state
         sendWait(m_clients, fmi2_import_enter_event_mode(0,0));
         // todo loop until newDiscreteStatesNeeded == false
@@ -568,17 +568,16 @@ class ModelExchangeStepper : public BaseMaster {
         double prevTimeEvent = t;
         int prevTimeCount = 0;
 
-        newDiscreteStatesStart(t,timeLoop.t_end);
+        newDiscreteStatesStart(timeLoop.t_end);
 
         while( timeLoop.t_safe < timeLoop.t_end ){
             step(&m_sims);
-
             if( getStateEvent(m_sims) ){
                 timeLoop.t_new = findEventTime(m_sims);
                 step(&m_sims);
             }
 
-            newDiscreteStatesStart(t,timeLoop.t_end);
+            newDiscreteStatesStart(timeLoop.t_end);
 
             if(reachedEnd(timeLoop.t_new, &prevTimeEvent, &prevTimeCount)) return;
         }

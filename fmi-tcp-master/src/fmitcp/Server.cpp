@@ -792,14 +792,14 @@ string Server::clientData(const char *data, size_t size) {
     fmitcp_proto::fmi2_import_new_discrete_states_req r; r.ParseFromArray(data, size);
     m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_new_discrete_states_req(mid=%d,fmuId=%d)\n",r.message_id(), r.fmuid());
 
-    fmi2_event_info_t* eventInfo;
+    fmi2_event_info_t eventInfo;
     if (!m_sendDummyResponses) {
-      fmi2_import_new_discrete_states(m_fmi2Instance, eventInfo);
+      fmi2_import_new_discrete_states(m_fmi2Instance, &eventInfo);
     }
 
     //Create response
     fmitcp_proto::fmi2_import_new_discrete_states_res response;
-    response.set_allocated_eventinfo(fmi2EventInfoToProtoEventInfo(eventInfo));
+    response.set_allocated_eventinfo(fmi2EventInfoToProtoEventInfo(&eventInfo));
     response.set_message_id(r.message_id());
     ret.first = fmitcp_proto::type_fmi2_import_new_discrete_states_res;
     ret.second = response.SerializeAsString();

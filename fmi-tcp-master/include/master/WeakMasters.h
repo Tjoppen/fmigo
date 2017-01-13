@@ -564,6 +564,24 @@ class ModelExchangeStepper : public BaseMaster {
         storeStates(&m_sims);
     }
 
+    void printStates(void){
+      fmu_parameters* p;
+
+      for(auto sim: m_sims){
+        p = getParameters(sim->model);
+      sendWait(p->client,fmi2_import_get_continuous_states(0,0,p->nx));
+      }
+      for(auto sim: m_sims){
+        p = getParameters(sim->model);
+        std::vector<double> rep;
+
+        common::extract_vector(&rep,&p->client->m_getContinuousStates);
+        printf("\nstates\n");
+        for(auto val:rep)
+          printf("%f ",val);
+        printf("\n");
+      }
+    }
     void runIteration(double t, double dt) {
         timeLoop.t_start = t;
         timeLoop.t_end = t + dt;
@@ -571,6 +589,7 @@ class ModelExchangeStepper : public BaseMaster {
         int prevTimeCount = 0;
 
         newDiscreteStatesStart(timeLoop.t_end);
+        printStates();
 
         while( timeLoop.t_safe < timeLoop.t_end ){
             step(&m_sims);
@@ -581,9 +600,10 @@ class ModelExchangeStepper : public BaseMaster {
 
             newDiscreteStatesStart(timeLoop.t_end);
 
+            printStates();
             if(reachedEnd(timeLoop.t_new, &prevTimeEvent, &prevTimeCount)) return;
         }
-        //fprintf(stderr, "\n\n");
+
     }
 };
 }// namespace fmitcp_master

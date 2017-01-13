@@ -329,12 +329,14 @@ class ModelExchangeStepper : public BaseMaster {
         for(FMIClient* client: m_clients)
           {
             cgsl_model* cgsl = init_fmu_model(client);
-            cgsl_simulation sim = cgsl_init_simulation(cgsl,  /* model */
+            fmu_parameters* p = getParameters(cgsl);
+            cgsl_simulation* sim = (cgsl_simulation *)malloc(sizeof(cgsl_simulation));
+            *sim = cgsl_init_simulation(cgsl,  /* model */
                                                        rk8pd, /* integrator: Runge-Kutta Prince Dormand pair order 7-8 */
                                                        1,     /* write to file: YES! */
                                                        p->m_backup.result_file,
                                                        step_control);
-            m_sims.push_back(&sim);
+            m_sims.push_back(sim);
           }
 
 #endif

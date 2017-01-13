@@ -258,6 +258,14 @@ class ModelExchangeStepper : public BaseMaster {
         free(p);
         free(m);
     }
+    void freeSim(void){
+      fmu_parameters *p;
+      while(m_sims.size()){
+        freeFMUModel((fmu_model *)m_sims[0]->model);
+        free(m_sims[0]);
+        m_sims.pop_back();
+      }
+    }
 
     /** allocate Memory
      *  Allocates memory needed by the fmu_model

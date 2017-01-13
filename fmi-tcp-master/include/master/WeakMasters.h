@@ -312,6 +312,8 @@ class ModelExchangeStepper : public BaseMaster {
         m->model.function = fmu_function;
         m->model.jacobian = NULL;
         m->model.free = NULL;//freeFMUModel;
+        sendWait(p->client, fmi2_import_get_continuous_states(0,0,p->nx));
+        common::extract_vector(m->model.x,&p->client->m_getContinuousStates);
         return(cgsl_model*)m;
     }
 

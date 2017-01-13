@@ -191,7 +191,6 @@ void Client::clientData(const char* data, long size){
                      eventInfo.nextEventTime
                      );
 
-
         on_fmi2_import_new_discrete_states_res(r.message_id(),r.eventinfo());
 
         break;
@@ -217,21 +216,33 @@ void Client::clientData(const char* data, long size){
     case type_fmi2_import_get_continuous_states_res: {
         m_logger.log(Logger::LOG_NETWORK,"This command is NOT TESTED\n");
         fmi2_import_get_continuous_states_res r; r.ParseFromArray(data, size);
+        std::vector<double> x;
+        for(int i=0; i<r.x_size(); i++)
+            x.push_back(r.x(i));
         m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_continuous_states_res(mid=%d,continuous_states=%d,states=%d)\n",r.message_id(), r.x(), r.status());
+        on_fmi2_import_get_continuous_states_res(r.message_id(),x,r.status());
         break;
     }
     case type_fmi2_import_get_derivatives_res: {
         m_logger.log(Logger::LOG_NETWORK,"This command is NOT TESTED\n");
         fmi2_import_get_derivatives_res r; r.ParseFromArray(data, size);
+        std::vector<double> derivatives;
+        for(int i=0; i<r.derivatives_size(); i++)
+            derivatives.push_back(r.derivatives(i));
         m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_derivatives_res(mid=%d,derivatives=%d,status=%d)\n",r.message_id(), r.derivatives(), r.status());
         //        on_fmi2_import_get_derivatives_res(r.message_id(),repeated_to_vector<double>(r.derivatives()),r.status());
 
+        on_fmi2_import_get_derivatives_res(r.message_id(),derivatives,r.status());
         break;
     }
     case type_fmi2_import_get_nominal_continuous_states_res: {
         m_logger.log(Logger::LOG_NETWORK,"This command is NOT TESTED\n");
         fmi2_import_get_nominal_continuous_states_res r; r.ParseFromArray(data, size);
+        std::vector<double> x;
+        for(int i=0; i<r.nominal_size(); i++)
+            x.push_back(r.nominal(i));
         m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_nominal_continuous_states_res(mid=%d,continuous_states=%d,states=%d)\n",r.message_id(), r.nominal(), r.status());
+        on_fmi2_import_get_nominal_continuous_states_res(r.message_id(),x,r.status());
         break;
     }
       /* Co-simulation */

@@ -211,6 +211,11 @@ void Client::clientData(const char* data, long size){
         fmi2_import_get_event_indicators_res r; r.ParseFromArray(data, size);
         m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_event_indicators_res(mid=%d,event_indicators=%d,status=%d)\n",r.message_id(), r.z(), r.status());
 
+        std::vector<double> z;
+        for(int i=0; i<r.z_size(); i++)
+            z.push_back(r.z(i));
+
+        on_fmi2_import_get_event_indicators_res(r.message_id(),z,r.status());
         break;
     }
     case type_fmi2_import_get_continuous_states_res: {

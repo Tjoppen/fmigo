@@ -7,9 +7,6 @@
 
 #ifndef WEAKMASTERS_H_
 #define WEAKMASTERS_H_
-#ifndef USE_GPL
-#define USE_GPL
-#endif
 #include "master/BaseMaster.h"
 #include "master/WeakConnection.h"
 #include "common/common.h"
@@ -224,7 +221,7 @@ class ModelExchangeStepper : public BaseMaster {
 
         p->baseMaster->wait();
 
-        common::extract_vector(dxdt, &p->client->m_getDerivatives);
+        common::extract_vector(dxdt, p->client->m_getDerivatives);
 
         // maybe just send all three and then wait?
         return GSL_SUCCESS;
@@ -251,10 +248,11 @@ class ModelExchangeStepper : public BaseMaster {
         if(m == NULL) return;
 
         fmu_parameters* p = getParameters(m);
-        if(p != NULL)             return;
-        if(p->resultFile != NULL) free(p->resultFile);
-        if(m->model.x != NULL)    free(m->model.x);
+        if( p != NULL)             return;
+        if( p->resultFile != NULL) free(p->resultFile);
+        if( m->model.x != NULL)    free(m->model.x);
 
+        p->m_backup.x.clear();
         free(p);
         free(m);
     }
@@ -275,8 +273,9 @@ class ModelExchangeStepper : public BaseMaster {
     void allocateMemory(fmu_model* m){
         fmu_parameters* p = getParameters(m);
         m->model.x    = (double*)calloc(p->nx, sizeof(double));
+        p->m_backup.x.reserve(p->nx);
 
-        if((!m->model.x )) {
+        if((!m->model.x || p->m_backup.x.size() == 0)) {
             freeFMUModel(m);
             perror("WeakMaster:ModelExchange:allocateMemory ERROR -  could not allocate memory");
             exit(1);
@@ -313,7 +312,7 @@ class ModelExchangeStepper : public BaseMaster {
         m->model.jacobian = NULL;
         m->model.free = NULL;//freeFMUModel;
         sendWait(p->client, fmi2_import_get_continuous_states(0,0,p->nx));
-        common::extract_vector(m->model.x,&p->client->m_getContinuousStates);
+        common::extract_vector(m->model.x, p->client->m_getContinuousStates);
         return(cgsl_model*)m;
     }
 
@@ -376,12 +375,13 @@ class ModelExchangeStepper : public BaseMaster {
     void storeStates(std::vector<cgsl_simulation*> *sims){
         for(auto sim : *sims){
             fmu_parameters* p = getParameters(sim->model);
+
             p->baseMaster->sendWait(p->client, fmi2_import_get_continuous_states(0,0,p->nx));
-            common::extract_vector(&p->m_backup.x, &p->client->m_getContinuousStates);
+            common::extract_vector(p->m_backup.x, p->client->m_getContinuousStates);
             // if statement not needed if timestep is choosen more carefully
             if(timeLoop.t_start == sim->t && p->nz > 0){
                 p->baseMaster->sendWait(p->client, fmi2_import_get_event_indicators(0,0, p->nz));
-                common::extract_vector(&p->z,&p->client->m_getEventIndicators);
+                common::extract_vector(p->z, p->client->m_getEventIndicators);
             }
             p->m_backup.failed_steps = sim->i.evolution->failed_steps;
             p->m_backup.t = sim->t;
@@ -417,17 +417,15 @@ class ModelExchangeStepper : public BaseMaster {
             p->stateEvent = 0;
             if(p->nz > 0){
                 double z[p->nz];
-                if(p->nz > 0){
-                    p->baseMaster->sendWait(p->client, fmi2_import_get_event_indicators(0,0,p->nz));
-                }
+                p->baseMaster->sendWait(p->client, fmi2_import_get_event_indicators(0,0,p->nz));
 
                 /* compare signbit of previous state and the current */
-                for(auto z: p->client->m_getEventIndicators){
-                    for(int i = 0; i < z.size(); i++){
-                        if(signbit(z[i]) != signbit(p->z[i])) {
-                            p->stateEvent = 1;
-                            ret = true;
-                        }
+                common::extract_vector(z, p->client->m_getEventIndicators);
+                for(int i = 0; i < p->nz; i++){
+                  printf("zzz = %f, %f \n", z[i], p->z[i]);
+                    if(signbit(z[i]) != signbit(p->z[i])) {
+                        p->stateEvent = 1;
+                        ret = true;
                     }
                 }
             }
@@ -575,7 +573,7 @@ class ModelExchangeStepper : public BaseMaster {
         p = getParameters(sim->model);
         std::vector<double> rep;
 
-        common::extract_vector(&rep,&p->client->m_getContinuousStates);
+        common::extract_vector(rep, p->client->m_getContinuousStates);
         printf("\nstates\n");
         for(auto val:rep)
           printf("%f ",val);

@@ -253,6 +253,7 @@ class ModelExchangeStepper : public BaseMaster {
         if( m->model.x != NULL)    free(m->model.x);
 
         p->m_backup.x.clear();
+        p->z.clear();
         free(p);
         free(m);
     }
@@ -271,11 +272,15 @@ class ModelExchangeStepper : public BaseMaster {
      *  @param m Pointer to a fmu_model
      */
     void allocateMemory(fmu_model* m){
+        bool allocFail = false;
         fmu_parameters* p = getParameters(m);
         m->model.x    = (double*)calloc(p->nx, sizeof(double));
-        p->m_backup.x.reserve(p->nx);
+        try{p->m_backup.x.reserve(p->nx);}
+        catch(std::bad_alloc const &){allocFail = true;}
+        try{ p->z.reserve(p->nz);}
+        catch(std::bad_alloc const &){allocFail = true;}
 
-        if((!m->model.x || p->m_backup.x.size() == 0)) {
+        if(!m->model.x || allocFail) {
             freeFMUModel(m);
             perror("WeakMaster:ModelExchange:allocateMemory ERROR -  could not allocate memory");
             exit(1);
@@ -303,8 +308,6 @@ class ModelExchangeStepper : public BaseMaster {
         p->nx = p->client->getNumContinuousStates();
         p->nz = p->client->getNumEventIndicators();
         m->model.n_variables = p->nx;
-
-      allocateMemory(m);
 
         allocateMemory(m);
 

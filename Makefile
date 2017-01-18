@@ -25,4 +25,14 @@ run_me_test:
 	(cd ~/work/umit/build && ninja && ninja install  | grep -v Up-to-date | grep -v Linking | grep -v Install | grep -v "Set runtime")
 	pwd
 	mpiexec -np 1 $(MASTERPATH)fmi-mpi-master -t 12 -m me : -np 1 $(SERVERPATH)fmi-mpi-server $(FMUPATH)vanDerPol.fmu
-	mpiexec -np 1 $(MASTERPATH)fmi-mpi-master -t 12 -m me : -np 1 $(SERVERPATH)fmi-mpi-server $(FMUPATH)bouncingBall.fm
+	mpiexec -np 1 $(MASTERPATH)fmi-mpi-master -t 12 -m me : -np 1 $(SERVERPATH)fmi-mpi-server $(FMUPATH)bouncingBall.fmu
+
+valgrind:
+	(cd ~/work/umit/build && ninja && ninja install  | grep -v Up-to-date | grep -v Building | grep -v Install | grep -v "Set runtime") && mpiexec -np 1 $(MASTERPATH)fmi-mpi-master -t 12 -m me : -np 1 valgrind -v --leak-check=full $(SERVERPATH)fmi-mpi-server $(FMUPATH)vanDerPol.fmu
+
+
+fmudata:
+	g++ -std=c++11 ~/work/umit/fmi-tcp-master/src/common/fmu_data.cpp -o foo && ./foo
+
+fmudataval:
+	g++ -g -std=c++11 ~/work/umit/fmi-tcp-master/src/common/fmu_data.cpp -o foo && valgrind --leak-check=full ./foo

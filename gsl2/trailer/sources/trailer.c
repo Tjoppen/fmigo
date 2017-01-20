@@ -52,11 +52,12 @@ int trailer (double t, const double x[], double dxdt[], void * params){
     double xx = fmod((fmod(x[0], l) + l), l) / l;
 
     /* derivative of triangle wave is a square wave */
-    if (xx < 0.5) {
+    triangle = -a*cos(xx*2*M_PI);
+    /*if (xx < 0.5) {
       triangle = -a;
     } else {
       triangle = a;
-    }
+    }*/
   }
 
   /* gravity */

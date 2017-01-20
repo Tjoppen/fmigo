@@ -83,6 +83,7 @@ void FmuGoStorage::allocate_storage(const vector<size_t> &number_of_states,const
 
 void FmuGoStorage::print(Data & current)
     {
+        fprintf(stderr,"print tt %p\n", current);
         for(auto x: get_bounds(current)) {
                 for(size_t i = x.first; i != x.second; ++i)
                     fprintf(stderr,"%f ",current.at(i));
@@ -277,9 +278,15 @@ void FmuGoStorage::test_functions(void)
         fail = false;                                           \
         for(int i = 0; i < 3; i++)                                      \
             if(z[i] != testFmuGoStorage.get_##name##_p(2)[i]) fail = true; \
-        if(fail)                                                        \
-            fprintf(stderr,"FAILD!\n");                                 \
-        else fprintf(stderr,"OK!\n");
+                                                                        \
+        if(fail) {                                                      \
+             fprintf(stderr,"FAILD!\n");             \
+             for(int i = 0; i < 3; i++)                                      \
+                 fprintf(stderr,"%f ?= %f\n", z[i] , testFmuGoStorage.get_##name##_p(2)[i]);\
+             fprintf(stderr,"print \n");\
+             testFmuGoStorage.print(testFmuGoStorage.get_##name());\
+             fail = true;                                               \
+        } else fprintf(stderr,"OK!\n");
 
         test_get_p_storage_cpp(states);
         test_get_p_storage_cpp(derivatives);

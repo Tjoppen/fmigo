@@ -29,8 +29,13 @@ class FmuGoStorage {
  inline Data & get_backup_##name()  { return m_##name.second;}          \
  public:                                                                \
  inline Data & get_##name(){return get_current_##name();}               \
- inline double * get_##name##_p() { return get_current_##name().data() ;} \
- inline double * get_backup_##name##_p()  { return get_backup_##name().data();} \
+ inline double * get_##name##_p(size_t client_id) {                     \
+     /*need do extract the correct dataset belonging to client*/        \
+     fprintf(stderr,"got name "#name"\n");                              \
+     BoundsVector b = get_bounds(get_##name());                         \
+     return get_current_##name().data() ;                               \
+ }                                                                      \
+ inline double * get_backup_##name##_p()  { return get_backup_##name().data();}
 
 
     CREATE_DATA_HPP(states);
@@ -55,14 +60,19 @@ class FmuGoStorage {
     BoundsVector m_bounds_i;
     inline BoundsVector & get_bounds(Data &p) {
 
-        if(&p == &get_current_indicators())
+        if(&p == &get_current_indicators() || &p == &get_backup_indicators())
             return m_bounds_i;
         if(&p == &get_current_states() || &p == &get_backup_states() ||
            &p == &get_current_derivatives() || &p == &get_backup_derivatives() ||
            &p == &get_current_nominals() || &p == &get_backup_nominals())
             return m_bounds;
         fprintf(stderr,"something is wrong\n");
-        fprintf(stderr,"p = %p, \ns = %p\ni = %p\n",p,&get_current_states(),&get_current_indicators());
+        fprintf(stderr,"p = %p, \ns = %p\ni = %p\nd = %p\nn = %p\n",p,
+                &get_current_states(),
+                &get_current_indicators(),
+                &get_current_derivatives(),
+                &get_current_nominals()
+                );
         exit(66);
     }
 

@@ -85,10 +85,10 @@ void FmuGoStorage::print(Data & current)
     {
         for(auto x: get_bounds(current)) {
                 for(size_t i = x.first; i != x.second; ++i)
-                    fprintf(stdout,"%f ",current.at(i));
-                fprintf(stdout,"\n");
+                    fprintf(stderr,"%f ",current.at(i));
+                fprintf(stderr,"\n");
             }
-        fprintf(stdout,"\n");
+        fprintf(stderr,"\n");
     }
 
 /** size()
@@ -147,13 +147,16 @@ void FmuGoStorage::cycle()
      *  Makes a deep copy of the current dataset to a backup dataset
      */
 inline void FmuGoStorage::sync(){
-    get_current_states().begin();
-    get_current_states().end();
-
-        copy(m_states.first.begin(), m_states.first.end(), m_states.second.begin() );
-        copy(m_indicators.first.begin(), m_indicators.first.end(), m_indicators.second.begin() );
-        copy(m_derivatives.first.begin(), m_derivatives.first.end(), m_derivatives.second.begin() );
-    }
+    copy(get_states().begin(), get_states().end(), get_backup_states().begin() );
+    copy(get_indicators().begin(), get_indicators().end(), get_backup_indicators().begin() );
+    copy(get_derivatives().begin(), get_derivatives().end(), get_backup_derivatives().begin() );
+    get_nominals().begin();
+    get_nominals().end();
+    fprintf(stderr,"here %p\n", get_nominals());
+    get_backup_nominals().begin();
+    fprintf(stderr,"here\n");
+    copy(get_nominals().begin(), get_nominals().end(), get_backup_nominals().begin() );
+}
 
     /** test_function():
      *  test the functionality of the class
@@ -161,108 +164,125 @@ inline void FmuGoStorage::sync(){
 void FmuGoStorage::test_functions(void)
     {
 
-        fprintf(stdout,"Test of fmi_on_storage start\n");
+        fprintf(stderr,"Test of fmi_on_storage start\n");
         vector<size_t> n_states({1,2,3});
-        vector<size_t> n_indicators({1,2,3});
+        vector<size_t> n_indicators = n_states;
+        vector<size_t> n_derivatives = n_states;
+        vector<size_t> n_nominals = n_states;
         Data a,b;
 
         FmuGoStorage testFmuGoStorage(n_states,n_indicators);
-        fprintf(stderr,"Testing size()     -  ");
         bool fail = false;
 
-        for(int i = 0 ; i < n_states.size(); ++i)
-            {
-            if( n_states.at(i) != testFmuGoStorage.get_size(i,testFmuGoStorage.get_current_states()))
-                fail = true;
-            }
-
-        for(int i = 0 ; i < n_indicators.size(); ++i)
-            if( n_indicators.at(i) != testFmuGoStorage.get_size(i,testFmuGoStorage.get_current_states()))
-                fail = true;
-
-        for(int i = 0 ; i < n_states.size(); ++i)
-            if( n_states.at(i) != testFmuGoStorage.get_size(i,testFmuGoStorage.get_current_nominals()))
-                fail = true;
-
-        for(int i = 0 ; i < n_states.size(); ++i)
-            if( n_states.at(i) != testFmuGoStorage.get_size(i,testFmuGoStorage.get_current_derivatives()))
-                fail = true;
-
-        if(fail)
-            fprintf(stderr,"FAILD!\n");
+#define test_size_storage_cpp(name)\
+        fprintf(stderr,"Testing size() -- "#name"     -  ");\
+        for(int i = 0 ; i < n_##name.size(); ++i)\
+            {\
+            if( n_##name.at(i) !=\
+                testFmuGoStorage.get_size(i ,\
+                                          testFmuGoStorage.get_current_##name()))\
+                fail = true;\
+            }\
+        if(fail)\
+            fprintf(stderr,"FAILD!\n");\
         else fprintf(stderr,"OK!\n");
 
-        fprintf(stderr,"Testing push_to()  -  ");
-        testFmuGoStorage.push_to(0,testFmuGoStorage.get_current_states(),Data({2}));
-        testFmuGoStorage.push_to(2,testFmuGoStorage.get_current_states(),Data({2,3,5}));
-        a = testFmuGoStorage.get_current_states();
-        b = testFmuGoStorage.get_backup_states();
-        if(a == b) fail = true;
-        if(fail)
-            fprintf(stderr,"FAILD push to states!\n"), fail = false;
+        test_size_storage_cpp(states);
+        test_size_storage_cpp(derivatives);
+        test_size_storage_cpp(indicators);
+        test_size_storage_cpp(nominals);
 
-        testFmuGoStorage.push_to(0,testFmuGoStorage.get_current_indicators(),Data({2}));
-        testFmuGoStorage.push_to(2,testFmuGoStorage.get_current_indicators(),Data({2,3,5}));
-        a = testFmuGoStorage.get_current_indicators();
-        b = testFmuGoStorage.get_backup_indicators();
-        if(a == b) fail = true;
-        if(fail)
-            fprintf(stderr,"FAILD push to indicators!\n"), fail = false;
+#define test_push_to_storage_cpp(name)\
+        fprintf(stderr,"Testing push_to()  -  ");\
+        testFmuGoStorage.push_to(0,testFmuGoStorage.get_current_##name(),Data({2}));\
+        testFmuGoStorage.push_to(2,testFmuGoStorage.get_current_##name(),Data({2,3,5}));\
+        a = testFmuGoStorage.get_current_##name();\
+        b = testFmuGoStorage.get_backup_##name();\
+        if(a == b) fail = true;\
+        if(fail){                                                       \
+            fprintf(stderr,"FAILD push to -- "#name"!\n"); fail = false; \
+        }                                                               \
+        else fprintf(stderr,"OK!\n");
 
-        testFmuGoStorage.push_to(0,testFmuGoStorage.get_current_nominals(),Data({2}));
-        testFmuGoStorage.push_to(2,testFmuGoStorage.get_current_nominals(),Data({2,3,5}));
-        a = testFmuGoStorage.get_current_nominals();
-        b = testFmuGoStorage.get_backup_nominals();
-        if(a == b) fail = true;
-        if(fail)
-            fprintf(stderr,"FAILD push to nominals!\n"),fail = false;
+        test_push_to_storage_cpp(states);
+        test_push_to_storage_cpp(derivatives);
+        test_push_to_storage_cpp(indicators);
+        test_push_to_storage_cpp(nominals);
 
-        testFmuGoStorage.push_to(0,testFmuGoStorage.get_current_derivatives(),Data({2}));
-        testFmuGoStorage.push_to(2,testFmuGoStorage.get_current_derivatives(),Data({2,3,5}));
-        a = testFmuGoStorage.get_current_derivatives();
-        b = testFmuGoStorage.get_backup_derivatives();
-        if(a == b) fail = true;
-        if(fail)
-            fprintf(stderr,"FAILD push to derivatives!\n");
+#define test_cycle_storage_cpp_a(name)\
+        Data & name##_a = testFmuGoStorage.get_backup_##name();
+#define test_cycle_storage_cpp_b(name)\
+        Data & name##_b = testFmuGoStorage.get_backup_##name();\
+        fprintf(stderr,"Testing cycle() -- "#name" -  ");\
+        if(name##_a != name##_b)\
+            fprintf(stderr,"FAILD!\n");\
+        else fprintf(stderr,"OK!\n");
 
-        if(!fail)
-            fprintf(stdout,"OK!\n");
+        test_cycle_storage_cpp_a(states);
+        test_cycle_storage_cpp_a(derivatives);
+        test_cycle_storage_cpp_a(indicators);
+        test_cycle_storage_cpp_a(nominals);
+        testFmuGoStorage.cycle();
+        test_cycle_storage_cpp_b(states);
+        test_cycle_storage_cpp_b(derivatives);
+        test_cycle_storage_cpp_b(indicators);
+        test_cycle_storage_cpp_b(nominals);
 
         testFmuGoStorage.cycle();
-        b = testFmuGoStorage.get_backup_states();
-        fprintf(stdout,"Testing cycle()    -  ");
-        if(a != b)
-            fprintf(stderr,"FAILD!\n");
-        else fprintf(stdout,"OK!\n");
 
-        testFmuGoStorage.cycle();
-        fprintf(stderr,"Testing sync()     -  ");
+#define test_sync_storage_cpp(name)\
+        fprintf(stderr,"Testing sync() -- "#name"  -  ");\
+        a = testFmuGoStorage.get_current_##name();\
+\
+        b = testFmuGoStorage.get_backup_##name();\
+        if(a != b)\
+            fprintf(stderr,"FAILD!\n");\
+        else fprintf(stderr,"OK!\n");
+
         testFmuGoStorage.sync();
-        a = testFmuGoStorage.get_current_states();
-        b = testFmuGoStorage.get_backup_states();
-        if(a != b)
-            fprintf(stderr,"FAILD!\n");
-        else fprintf(stdout,"OK!\n");
+        test_sync_storage_cpp(states);
+        test_sync_storage_cpp(derivatives);
+        test_sync_storage_cpp(indicators);
+        test_sync_storage_cpp(nominals);
 
-        testFmuGoStorage.push_to(0,testFmuGoStorage.get_backup_states(),Data({5}));
-        testFmuGoStorage.push_to(1,testFmuGoStorage.get_backup_states(),Data({5,351}));
-        testFmuGoStorage.push_to(2,testFmuGoStorage.get_backup_states(),Data({5,684,5135}));
+
         double x[1] = {5};
         double y[2] = {5,351};
         double z[3] = {5,684,5135};
 
-        testFmuGoStorage.push_to(0,testFmuGoStorage.get_current_states(),x);
-        testFmuGoStorage.push_to(1,testFmuGoStorage.get_current_states(),y);
-        testFmuGoStorage.push_to(2,testFmuGoStorage.get_current_states(),z);
-        a = testFmuGoStorage.get_backup_states();
-        b = testFmuGoStorage.get_current_states();
-        fprintf(stdout,"Testing push_to()  -  ");
-        if(a != b) {
-            fprintf(stderr,"FAILD!\n");
-            print(testFmuGoStorage.get_current_states());
-            print(testFmuGoStorage.get_backup_states());
-        }
-        else fprintf(stdout,"OK!\n");
+#define test_push_to_p_storage_cpp(name)\
+        fprintf(stderr,"Testing push_to_p() -- "#name"  -  ");\
+        testFmuGoStorage.push_to(0,testFmuGoStorage.get_backup_##name(),Data({5}));\
+        testFmuGoStorage.push_to(1,testFmuGoStorage.get_backup_##name(),Data({5,351}));\
+        testFmuGoStorage.push_to(2,testFmuGoStorage.get_backup_##name(),Data({5,684,5135}));\
+        testFmuGoStorage.push_to(0,testFmuGoStorage.get_current_##name(),x);\
+        testFmuGoStorage.push_to(1,testFmuGoStorage.get_current_##name(),y);\
+        testFmuGoStorage.push_to(2,testFmuGoStorage.get_current_##name(),z);\
+        a = testFmuGoStorage.get_backup_##name();\
+        b = testFmuGoStorage.get_current_##name();\
+        if(a != b) {\
+            fprintf(stderr,"FAILD!\n");\
+            print(testFmuGoStorage.get_current_##name());\
+            print(testFmuGoStorage.get_backup_##name());\
+        }\
+        else fprintf(stderr,"OK!\n");
 
+        test_push_to_p_storage_cpp(states);
+        test_push_to_p_storage_cpp(nominals);
+        test_push_to_p_storage_cpp(derivatives);
+        test_push_to_p_storage_cpp(indicators);
 
+#define test_get_p_storage_cpp(name)                            \
+        fprintf(stderr,"Testing get_"#name"_p()     -  ");     \
+        fail = false;                                           \
+        for(int i = 0; i < 3; i++)                                      \
+            if(z[i] != testFmuGoStorage.get_##name##_p(2)[i]) fail = true; \
+        if(fail)                                                        \
+            fprintf(stderr,"FAILD!\n");                                 \
+        else fprintf(stderr,"OK!\n");
+
+        test_get_p_storage_cpp(states);
+        test_get_p_storage_cpp(derivatives);
+        test_get_p_storage_cpp(nominals);
+        test_get_p_storage_cpp(indicators);
     }

@@ -13,11 +13,10 @@
 #include <fmitcp/serialize.h>
 #include <FMI2/fmi2_types.h>
 #include "common/gsl_interface.h"
-#include <sys/stat.h>
-#include <sys/types.h>
+//#include <sys/stat.h>
+//#include <sys/types.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <sys/types.h>
 
 using namespace fmitcp::serialize;
 
@@ -183,14 +182,8 @@ class ModelExchangeStepper : public BaseMaster {
         size_t s = strlen(name);
         char* resultFile = (char*)calloc(s + 10, sizeof(char));
 
-        // create the resultFile
-        sprintf(resultFile, "data/");
-
-        // if there is no directory, create it
-        mkdir(resultFile, 0700);
-
         // add path and resultFile
-        sprintf(resultFile, "%s%s.mat", resultFile, name);
+        sprintf(resultFile, "data/%s.mat", name);
 
         // free copy of path
         free(tp);

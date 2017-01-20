@@ -1,6 +1,6 @@
 SERVERPATH=~/work/umit/build/install/bin/
 MASTERPATH=~/work/umit/build/install/bin/
-FMUPATH= ~/work/umit/data/
+FMUPATH=~/work/umit/data/
 
 all: build cosimulation #run
 make: FORCE
@@ -30,9 +30,23 @@ run_me_test:
 valgrind:
 	(cd ~/work/umit/build && ninja && ninja install  | grep -v Up-to-date | grep -v Building | grep -v Install | grep -v "Set runtime") && mpiexec -np 1 $(MASTERPATH)fmi-mpi-master -t 12 -m me : -np 1 valgrind -v --leak-check=full $(SERVERPATH)fmi-mpi-server $(FMUPATH)vanDerPol.fmu
 
+FLAGS=-D DEBUG
+FMUGOHPP=~/work/umit/fmi-tcp-master/src/common/fmu_go_storage.hpp
+FMUGOH=~/work/umit/fmi-tcp-master/include/common/fmu_go_storage.h
+TESTFILE=~/work/umit/fmi-tcp-master/src/common/testStorage.cpp
+LINKFILES=~/work/umit/fmi-tcp-master/src/common/fmu_go_storage.cpp $(FLAGS)
+LOOP=1 1 1 1 1 1 1 1 1
+fmugostorageLOOP: merge_hpp_with_h
+	$(foreach var,$(LOOP),g++ -std=c++11 $(TESTFILE) $(LINKFILES) -o foo && ./foo && rm foo;)
 
-fmudata:
-	g++ -std=c++11 ~/work/umit/fmi-tcp-master/src/common/fmu_data.cpp -o foo && ./foo
+fmugostorage: merge_hpp_with_h
+	g++ -std=c++11 $(TESTFILE) $(LINKFILES) -o foo && ./foo && rm foo
 
-fmudataval:
-	g++ -g -std=c++11 ~/work/umit/fmi-tcp-master/src/common/fmu_data.cpp -o foo && valgrind --leak-check=full ./foo
+fmugostorageval: merge_hpp_with_h
+	g++ -g -std=c++11 $(TESTFILE) $(LINKFILES) -o foo && valgrind --leak-check=full --show-leak-kinds=all ./foo && rm foo
+
+fmugostoragegdb: merge_hpp_with_h
+	g++ -g -std=c++11 $(TESTFILE) $(LINKFILES) -o foo && gdb -ex run ./foo && rm foo
+
+merge_hpp_with_h:
+	cp $(FMUGOH) $(FMUGOHPP)

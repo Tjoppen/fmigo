@@ -5,7 +5,7 @@
 #ifndef FMU_GO_STORAGE_HPP
 #define FMU_GO_STORAGE_HPP
 #include <iostream> // temp
-
+#include <cstring>
 #include<vector>
 
 using namespace std;
@@ -29,19 +29,16 @@ class FmuGoStorage {
  inline Data & get_backup_##name()  { return m_##name.second;}          \
  public:                                                                \
  inline Data & get_##name(){return get_current_##name();}               \
- inline double * get_##name##_p(size_t client_id) {                     \
+ inline void get_##name(double *ret, size_t client_id) {          \
      /*need do extract the correct dataset belonging to client*/        \
-     Data::iterator b = get_##name().begin();                           \
-     size_t o = get_offset(client_id,get_##name());                     \
-     size_t e = get_end(client_id,get_##name());                       \
-     fprintf(stderr,"o = %f e = %f\n",*(b+o),*(b+e));                   \
-     fprintf(stderr," size = %lu\n", Data(b + o, b + e).size()) ; \
-     Data d = Data(b + o, b + e);\
- print(d);\
-     return Data(b + o, b + e).data() ;                  \
+     size_t o = get_offset(client_id,get_##name());                    \
+     size_t e = get_end(client_id,get_##name());                    \
+     copy(get_##name().begin() + o, get_##name().begin()+e,ret);  \
  }                                                                      \
  inline double * get_backup_##name##_p()  { return get_backup_##name().data();}
 
+  //for(int i = 0; i < s;  ++i)                 \
+    //   ret[i] = get_##name().at(o+i);         \
 
     CREATE_DATA_HPP(states);
     CREATE_DATA_HPP(indicators);

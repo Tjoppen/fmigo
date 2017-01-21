@@ -72,18 +72,13 @@ void FmuGoStorage::allocate_storage(const vector<size_t> &size_vec, Data &p )
 void FmuGoStorage::allocate_storage(const vector<size_t> &number_of_states,const vector<size_t> &number_of_indicators)
     {
         allocate_storage(number_of_states, get_current_states());
-        print(get_states());
         allocate_storage(number_of_states, get_current_derivatives());
-        print(get_derivatives());
         allocate_storage(number_of_indicators, get_current_indicators());
-        print(get_indicators());
         allocate_storage(number_of_states, get_current_nominals());
-        print(get_nominals());
     }
 
 void FmuGoStorage::print(Data & current)
     {
-        fprintf(stderr,"print tt %p\n", current);
         for(auto x: get_bounds(current)) {
                 for(size_t i = x.first; i != x.second; ++i)
                     fprintf(stderr,"%f ",current.at(i));
@@ -151,11 +146,6 @@ inline void FmuGoStorage::sync(){
     copy(get_states().begin(), get_states().end(), get_backup_states().begin() );
     copy(get_indicators().begin(), get_indicators().end(), get_backup_indicators().begin() );
     copy(get_derivatives().begin(), get_derivatives().end(), get_backup_derivatives().begin() );
-    get_nominals().begin();
-    get_nominals().end();
-    fprintf(stderr,"here %p\n", get_nominals());
-    get_backup_nominals().begin();
-    fprintf(stderr,"here\n");
     copy(get_nominals().begin(), get_nominals().end(), get_backup_nominals().begin() );
 }
 
@@ -273,16 +263,18 @@ void FmuGoStorage::test_functions(void)
         test_push_to_p_storage_cpp(derivatives);
         test_push_to_p_storage_cpp(indicators);
 
+        double ret[3];
 #define test_get_p_storage_cpp(name)                            \
         fprintf(stderr,"Testing get_"#name"_p()     -  ");     \
+        testFmuGoStorage.get_##name(ret,2); \
         fail = false;                                           \
         for(int i = 0; i < 3; i++)                                      \
-            if(z[i] != testFmuGoStorage.get_##name##_p(2)[i]) fail = true; \
+            if(z[i] != ret[i]) fail = true; \
                                                                         \
         if(fail) {                                                      \
              fprintf(stderr,"FAILD!\n");             \
-             for(int i = 0; i < 3; i++)                                      \
-                 fprintf(stderr,"%f ?= %f\n", z[i] , testFmuGoStorage.get_##name##_p(2)[i]);\
+             for(int i = 0; i < 3; i++)              \
+               fprintf(stderr, "%f  ---  %f\n",z[i],ret[i]);\
              fprintf(stderr,"print \n");\
              testFmuGoStorage.print(testFmuGoStorage.get_##name());\
              fail = true;                                               \

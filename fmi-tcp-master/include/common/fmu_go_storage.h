@@ -23,22 +23,28 @@ typedef vector<Bounds> BoundsVector;
  enum STORAGE{states, indicators, derivatives, nominals};
 class FmuGoStorage {
 #define CREATE_DATA_HPP(name)                                           \
- private:                                                               \
-     Storage m_##name;   /* to store the data */                        \
- inline Data & get_current_##name() { return m_##name.first ;}          \
- inline Data & get_backup_##name()  { return m_##name.second;}          \
+    private:                                                            \
+        Storage m_##name;   /* to store the data */                     \
+    inline Data & get_current_##name() { return m_##name.first ;}       \
+    inline Data & get_backup_##name()  { return m_##name.second;}       \
  public:                                                                \
- inline Data & get_##name(){return get_current_##name();}               \
- inline void get_##name(double *ret, size_t client_id) {          \
-     /*need do extract the correct dataset belonging to client*/        \
-     size_t o = get_offset(client_id,get_##name());                    \
-     size_t e = get_end(client_id,get_##name());                    \
-     copy(get_##name().begin() + o, get_##name().begin()+e,ret);  \
- }                                                                      \
- inline double * get_backup_##name##_p()  { return get_backup_##name().data();}
-
-  //for(int i = 0; i < s;  ++i)                 \
-    //   ret[i] = get_##name().at(o+i);         \
+    inline Data & get_##name(){return get_current_##name();}            \
+    inline void get_##name(double *ret, size_t id) {                    \
+        /*need do extract the correct dataset belonging to client*/     \
+        size_t o = get_offset( id, get_##name() );                      \
+        size_t e = get_end( id, get_##name() );                         \
+        copy(get_##name().begin() + o,                                  \
+             get_##name().begin() + e,                                  \
+             ret);                                                      \
+    }                                                                   \
+    inline void get_backup_##name(double *ret, size_t id)  {            \
+        /*need do extract the correct dataset belonging to client*/     \
+        size_t o = get_offset( id, get_backup_##name() );               \
+        size_t e = get_end( id, get_backup_##name() );                  \
+        copy(get_backup_##name().begin() + o,                           \
+             get_backup_##name().begin() + e,                           \
+             ret);                                                      \
+    }
 
     CREATE_DATA_HPP(states);
     CREATE_DATA_HPP(indicators);

@@ -156,7 +156,15 @@ void FmuGoStorage::test_functions(void)
     {
 
         fprintf(stderr,"Test of fmi_on_storage start\n");
-        vector<size_t> n_states({1,2,3});
+#define first_size_storage_cpp 1 
+#define second_size_storage_cpp 2
+#define third_size_storage_cpp 10
+#define first_vec_storage_cpp {1}
+#define second_vec_storage_cpp {1,2}
+#define third_vec_storage_cpp {1,2,3,4,5,6,7,8,9,10}
+        vector<size_t> n_states({first_size_storage_cpp,
+                    second_size_storage_cpp,
+                    third_size_storage_cpp});
         vector<size_t> n_indicators = n_states;
         vector<size_t> n_derivatives = n_states;
         vector<size_t> n_nominals = n_states;
@@ -185,8 +193,8 @@ void FmuGoStorage::test_functions(void)
 
 #define test_push_to_storage_cpp(name)\
         fprintf(stderr,"Testing push_to()  -  ");\
-        testFmuGoStorage.push_to(0,testFmuGoStorage.get_current_##name(),Data({2}));\
-        testFmuGoStorage.push_to(2,testFmuGoStorage.get_current_##name(),Data({2,3,5}));\
+        testFmuGoStorage.push_to(0,testFmuGoStorage.get_current_##name(),Data(first_vec_storage_cpp));\
+        testFmuGoStorage.push_to(2,testFmuGoStorage.get_current_##name(),Data(third_vec_storage_cpp));\
         a = testFmuGoStorage.get_current_##name();\
         b = testFmuGoStorage.get_backup_##name();\
         if(a == b) fail = true;\
@@ -236,16 +244,15 @@ void FmuGoStorage::test_functions(void)
         test_sync_storage_cpp(indicators);
         test_sync_storage_cpp(nominals);
 
-
-        double x[1] = {5};
-        double y[2] = {5,351};
-        double z[3] = {5,684,5135};
+        double x[first_size_storage_cpp] = first_vec_storage_cpp;
+        double y[second_size_storage_cpp] = second_vec_storage_cpp;
+        double z[third_size_storage_cpp] = third_vec_storage_cpp;
 
 #define test_push_to_p_storage_cpp(name)\
         fprintf(stderr,"Testing push_to_p() -- "#name"  -  ");\
-        testFmuGoStorage.push_to(0,testFmuGoStorage.get_backup_##name(),Data({5}));\
-        testFmuGoStorage.push_to(1,testFmuGoStorage.get_backup_##name(),Data({5,351}));\
-        testFmuGoStorage.push_to(2,testFmuGoStorage.get_backup_##name(),Data({5,684,5135}));\
+        testFmuGoStorage.push_to(0,testFmuGoStorage.get_backup_##name(),Data(first_vec_storage_cpp));\
+        testFmuGoStorage.push_to(1,testFmuGoStorage.get_backup_##name(),Data(second_vec_storage_cpp));\
+        testFmuGoStorage.push_to(2,testFmuGoStorage.get_backup_##name(),Data(third_vec_storage_cpp));\
         testFmuGoStorage.push_to(0,testFmuGoStorage.get_current_##name(),x);\
         testFmuGoStorage.push_to(1,testFmuGoStorage.get_current_##name(),y);\
         testFmuGoStorage.push_to(2,testFmuGoStorage.get_current_##name(),z);\
@@ -263,25 +270,29 @@ void FmuGoStorage::test_functions(void)
         test_push_to_p_storage_cpp(derivatives);
         test_push_to_p_storage_cpp(indicators);
 
-        double ret[3];
-#define test_get_p_storage_cpp(name)                            \
-        fprintf(stderr,"Testing get_"#name"_p()     -  ");     \
-        testFmuGoStorage.get_##name(ret,2); \
-        fail = false;                                           \
-        for(int i = 0; i < 3; i++)                                      \
-            if(z[i] != ret[i]) fail = true; \
+        double ret[third_size_storage_cpp];
+#define test_get_p_storage_cpp(name)                                    \
+        fprintf(stderr,"Testing get_"#name"_p()     -  ");              \
+        testFmuGoStorage.get_##name(ret,2);                             \
+        fail = false;                                                   \
+        for(int i = 0; i < third_size_storage_cpp; i++)                 \
+            if(z[i] != ret[i]) fail = true;                             \
                                                                         \
         if(fail) {                                                      \
-             fprintf(stderr,"FAILD!\n");             \
-             for(int i = 0; i < 3; i++)              \
-               fprintf(stderr, "%f  ---  %f\n",z[i],ret[i]);\
-             fprintf(stderr,"print \n");\
-             testFmuGoStorage.print(testFmuGoStorage.get_##name());\
-             fail = true;                                               \
+            fprintf(stderr,"FAILD!\n");                                 \
+            for(int i = 0; i < third_size_storage_cpp; i++)             \
+                fprintf(stderr, "%f  ---  %f\n",z[i],ret[i]);           \
+            fprintf(stderr,"print \n");                                 \
+            testFmuGoStorage.print(testFmuGoStorage.get_##name());      \
+            fail = true;                                                \
         } else fprintf(stderr,"OK!\n");
 
         test_get_p_storage_cpp(states);
+        test_get_p_storage_cpp(backup_states);
         test_get_p_storage_cpp(derivatives);
+        test_get_p_storage_cpp(backup_derivatives);
         test_get_p_storage_cpp(nominals);
+        test_get_p_storage_cpp(backup_nominals);
         test_get_p_storage_cpp(indicators);
+        test_get_p_storage_cpp(backup_indicators);
     }

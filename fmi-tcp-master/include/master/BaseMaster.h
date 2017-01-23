@@ -11,13 +11,16 @@
 #include "FMIClient.h"
 #ifdef USE_GPL
 #include <gsl/gsl_multiroots.h>
+#include "common/fmu_go_storage.h"
 #endif
 
+using namespace fmu_go_storage;
 namespace fmitcp_master {
     class BaseMaster {
     protected:
         std::vector<FMIClient*> m_clients;
         std::vector<WeakConnection> m_weakConnections;
+        class FmuGoStorage m_fmuGoStorage;//(std::vector<size_t>(0));
         OutputRefsType clientWeakRefs;
 
         InputRefsValuesType initialNonReals;  //for loop solver
@@ -40,6 +43,19 @@ namespace fmitcp_master {
         void slaveDisconnected              (FMIClient* slave){}
         void slaveError                     (FMIClient* slave){exit(1);}
 
+        inline FmuGoStorage & get_storage(){return m_fmuGoStorage;}
+        void fmu_alloc(std::vector<size_t> states,std::vector<size_t> indicators){
+            get_storage().allocate_storage(states,indicators);
+        }
+        void set(int id, Data &storage, Data vec)
+        {
+            if(get_storage().size(storage) > id)
+                get_storage().push_to(id, storage, vec);
+        }
+        //void sync(){get_storage().sync();}
+        void cycle(){get_storage().cycle();}
+
+        //void freeSim(){};
 #define on(name) void name(FMIClient* slave) {}
         on(onSlaveInstantiated)
         on(onSlaveInitialized)
@@ -60,7 +76,7 @@ namespace fmitcp_master {
             }
         }
 
-        //like send() but only for one FMU
+        //like send() but only for one <FMU
         void send(FMIClient *fmu, std::string str) {
             fmu->sendMessage(str);
         }

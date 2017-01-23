@@ -610,6 +610,7 @@ int main(int argc, char *argv[] ) {
     string fieldnames = getFieldnames(clients);
 
     if( method == me ){
+
       master =  (BaseMaster *) new ModelExchangeStepper( clients, weakConnections, tolerance, integratorType);
     }else if (scs.size()) {
         if (method != jacobi) {
@@ -631,7 +632,6 @@ int main(int argc, char *argv[] ) {
         ofs << fieldnames;
         ofs << endl;
     }
-
     //hook clients to master
     for (auto it = clients.begin(); it != clients.end(); it++) {
         (*it)->m_master = master;

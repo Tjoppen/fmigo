@@ -97,7 +97,6 @@ public:
     }
 };
 
-//aka serial stepper
 class ModelExchangeStepper : public BaseMaster {
     typedef struct TimeLoop
     {
@@ -105,7 +104,8 @@ class ModelExchangeStepper : public BaseMaster {
     } TimeLoop;
     typedef struct backup
     {
-        std::vector<double> x;
+        //std::vector<double> *x;      /* states */
+        //std::vector<double> *z;      /* state event indicators */
         double t;
         unsigned long failed_steps;
 
@@ -115,7 +115,6 @@ class ModelExchangeStepper : public BaseMaster {
     } backup;
     typedef struct fmu_parameters{
 
-        std::vector<double> z;        /* state event indicators */
         int count;                    /* number of function evaluations */
         int nz;                       /* number of event indicators, from XML file */
         int nx;                       /* number of states, from XML file */
@@ -142,6 +141,7 @@ class ModelExchangeStepper : public BaseMaster {
     enum INTEGRATORTYPE m_integratorType;
     double m_tolerance;
     TimeLoop timeLoop;
+    bool reachedTheEnd = false;
 
     map<FMIClient*, OutputRefsType> clientGetXs;  //one OutputRefsType for each client
     std::vector<int> stepOrder;
@@ -210,11 +210,15 @@ class ModelExchangeStepper : public BaseMaster {
         ++p->count; /* count function evaluations */
         p->baseMaster->send(p->client, fmi2_import_set_time(0,0,t));
         p->baseMaster->send(p->client, fmi2_import_set_continuous_states(0,0,x,nx));
-        p->baseMaster->send(p->client, fmi2_import_get_derivatives(0,0,nx));
-
         p->baseMaster->wait();
+        p->baseMaster->sendWait(p->client, fmi2_import_get_derivatives(0,0,nx));
 
-        common::extract_vector(dxdt, p->client->m_getDerivatives);
+
+        memcpy(dxdt,p->baseMaster->get_storage().get_derivatives_p(),nx);
+        //common::extract_vector(dxdt, p->client->m_getDerivatives);
+        //p->baseMaster->get_storage().print(
+        //                                   p->baseMaster->get_storage().get_states());
+        //                                   p->baseMaster->get_storage().get_derivatives());
 
         // maybe just send all three and then wait?
         return GSL_SUCCESS;
@@ -245,12 +249,10 @@ class ModelExchangeStepper : public BaseMaster {
         if( p->resultFile != NULL) free(p->resultFile);
         if( m->model.x != NULL)    free(m->model.x);
 
-        p->m_backup.x.clear();
-        p->z.clear();
         free(p);
         free(m);
     }
-    void freeSim(void){
+ public:    void freeSim(void){
       fmu_parameters *p;
       while(m_sims.size()){
         freeFMUModel((fmu_model *)m_sims[0]->model);
@@ -268,12 +270,8 @@ class ModelExchangeStepper : public BaseMaster {
         bool allocFail = false;
         fmu_parameters* p = getParameters(m);
         m->model.x    = (double*)calloc(p->nx, sizeof(double));
-        try{p->m_backup.x.reserve(p->nx);}
-        catch(std::bad_alloc const &){allocFail = true;}
-        try{ p->z.reserve(p->nz);}
-        catch(std::bad_alloc const &){allocFail = true;}
 
-        if(!m->model.x || allocFail) {
+        if(!m->model.x){
             freeFMUModel(m);
             perror("WeakMaster:ModelExchange:allocateMemory ERROR -  could not allocate memory");
             exit(1);
@@ -294,13 +292,19 @@ class ModelExchangeStepper : public BaseMaster {
         // TODO one result file for each fmu
         p->resultFile = getModelResultPath("resultFile");
         if ( ( p->m_backup.result_file = fopen(p->resultFile, "w+") ) == NULL){
-          printf("can't open file: %s\n", p->resultFile);
-          exit(1);
+            fprintf(stderr,"can't open file: %s\n", p->resultFile);
+            exit(1);
         }
         p->baseMaster = this;
         p->nx = p->client->getNumContinuousStates();
         p->nz = p->client->getNumEventIndicators();
         m->model.n_variables = p->nx;
+
+        fprintf(stderr,"\n------------------------\ninit_fmu_model debugging\n------------------------\n");
+        fprintf(stderr,"nx         = %d\n",p->nx);
+        fprintf(stderr,"n_variables= %d\n",m->model.n_variables);
+        fprintf(stderr,"nz         = %d\n",p->nz);
+        fprintf(stderr,"resultPath = %s\n",p->resultFile);
 
         allocateMemory(m);
 
@@ -308,7 +312,10 @@ class ModelExchangeStepper : public BaseMaster {
         m->model.jacobian = NULL;
         m->model.free = NULL;//freeFMUModel;
         sendWait(p->client, fmi2_import_get_continuous_states(0,0,p->nx));
-        common::extract_vector(m->model.x, p->client->m_getContinuousStates);
+        memcpy(m->model.x, get_storage().get_states_p(),p->nx);
+        //p->baseMaster->sendWait(p->client, fmi2_import_get_event_indicators(0,0, p->nz));
+        //sync();
+
         return(cgsl_model*)m;
     }
 
@@ -321,10 +328,14 @@ class ModelExchangeStepper : public BaseMaster {
         step_control.id = step_control_y_new;
         step_control.start = 1e-8;
 
+        vector<size_t> fmu_state_alloc({});
+        vector<size_t> fmu_indicators_alloc({});
         for(FMIClient* client: m_clients)
           {
             cgsl_model* cgsl = init_fmu_model(client);
             fmu_parameters* p = getParameters(cgsl);
+            fmu_state_alloc.push_back(p->nx);
+            fmu_indicators_alloc.push_back(p->nz);
             cgsl_simulation* sim = (cgsl_simulation *)malloc(sizeof(cgsl_simulation));
             *sim = cgsl_init_simulation(cgsl,  /* model */
                                                        rk8pd, /* integrator: Runge-Kutta Prince Dormand pair order 7-8 */
@@ -333,6 +344,7 @@ class ModelExchangeStepper : public BaseMaster {
                                                        step_control);
             m_sims.push_back(sim);
           }
+        fmu_alloc(fmu_state_alloc,fmu_indicators_alloc);
 
 #endif
     }
@@ -344,10 +356,11 @@ class ModelExchangeStepper : public BaseMaster {
      *  @param sims Vector of all simulations
      */
     void restoreStates(std::vector<cgsl_simulation*> *sims){
+        size_t client_id = 0;
         for(auto sim : *sims) {
             fmu_parameters* p = getParameters(sim->model);
-            for(int i = 0; i < p->m_backup.x.size(); i++)
-                sim->model->x[i] = p->m_backup.x[i];
+            //restore previous states
+            memcpy(sim->model->x, get_storage().get_backup_states_p(client_id++),p->nx);
 
             sim->i.evolution->failed_steps = p->m_backup.failed_steps;
             sim->t = p->m_backup.t;
@@ -373,12 +386,7 @@ class ModelExchangeStepper : public BaseMaster {
             fmu_parameters* p = getParameters(sim->model);
 
             p->baseMaster->sendWait(p->client, fmi2_import_get_continuous_states(0,0,p->nx));
-            common::extract_vector(p->m_backup.x, p->client->m_getContinuousStates);
-            // if statement not needed if timestep is choosen more carefully
-            if(timeLoop.t_start == sim->t && p->nz > 0){
-                p->baseMaster->sendWait(p->client, fmi2_import_get_event_indicators(0,0, p->nz));
-                common::extract_vector(p->z, p->client->m_getEventIndicators);
-            }
+            sync();
             p->m_backup.failed_steps = sim->i.evolution->failed_steps;
             p->m_backup.t = sim->t;
             p->m_backup.size_of_file = ftell(p->m_backup.result_file);
@@ -406,27 +414,29 @@ class ModelExchangeStepper : public BaseMaster {
      *
      *  @param sims Vector of all simulations
      */
-    bool getStateEvent(std::vector<cgsl_simulation*> sims){
+    bool getStateEvent(std::vector<cgsl_simulation*> *sims){
         bool ret = false;
-        for(auto sim: sims) {
-            fmu_parameters* p = getParameters(sim->model);
-            p->stateEvent = 0;
-            if(p->nz > 0){
-                double z[p->nz];
-                p->baseMaster->sendWait(p->client, fmi2_import_get_event_indicators(0,0,p->nz));
+        Data &current = get_storage().get_indicators();
+        Data &backup = get_storage().get_backup_indicators();
+        for(int i = 0; i < current.size(); i++)
+            if(signbit(current.at(i)) != signbit(backup.at(i) ))
+                return true;
+    }
 
-                /* compare signbit of previous state and the current */
-                common::extract_vector(z, p->client->m_getEventIndicators);
-                for(int i = 0; i < p->nz; i++){
-                  printf("zzz = %f, %f \n", z[i], p->z[i]);
-                    if(signbit(z[i]) != signbit(p->z[i])) {
-                        p->stateEvent = 1;
-                        ret = true;
-                    }
-                }
-            }
-        }
-        return ret;
+    /** hasStateEvent:
+     ** returns true if at least one simulation has an event
+     *
+     *  @param sims Vector of all simulations
+     */
+    bool hasStateEvent(std::vector<cgsl_simulation*> *sims){
+      fmu_parameters* p;
+      for(auto sim:*sims){
+        p = getParameters(sim->model);
+        if(p->stateEvent)
+          return true;
+      }
+      return false;
+
     }
 
     /** getSafeTime:
@@ -435,14 +445,13 @@ class ModelExchangeStepper : public BaseMaster {
      *
      *  @param sim A cgsl simulation
      */
-    double getSafeTime(cgsl_simulation *sim){
+    double getSafeTime(std::vector<cgsl_simulation*> *sims){
 
         // golden ratio
         double phi = (1 + sqrt(5)) / 2;
 
-        fmu_parameters* p = getParameters(sim->model);
         /* passed solution, need to reduce tEnd */
-        if(p->stateEvent) {
+        if(hasStateEvent(sims)){
             timeLoop.t_crossed = timeLoop.t_new;
             timeLoop.t_new = timeLoop.t_safe + (timeLoop.t_crossed - timeLoop.t_safe) / phi;
 
@@ -454,22 +463,6 @@ class ModelExchangeStepper : public BaseMaster {
         return timeLoop.t_new;
     }
 
-    /** hasStateEvent:
-     ** returns true if at least one simulation has an event
-     *
-     *  @param sims Vector of all simulations
-     */
-    bool hasStateEvent(std::vector<cgsl_simulation*> sims){
-      fmu_parameters* p;
-      for(auto sim:sims){
-        p = getParameters(sim->model);
-        if(p->stateEvent)
-          return true;
-      }
-      return false;
-
-    }
-
     /** step
      *  run cgsl_step_to on all simulations
      *
@@ -477,7 +470,7 @@ class ModelExchangeStepper : public BaseMaster {
      */
     void step(std::vector<cgsl_simulation*> *sims){
         for(auto sim: *sims)
-            cgsl_step_to(sim, sim->t, getSafeTime(sim));
+            cgsl_step_to(sim, sim->t, timeLoop.t_new);
     }
 
     /** reduceSims
@@ -502,25 +495,29 @@ class ModelExchangeStepper : public BaseMaster {
      *  @param sims Vector of all simulations
      *  @return Returns the time immediatly after the event
      */
-    double findEventTime(std::vector<cgsl_simulation*> sims){
-        restoreStates(&sims);
+    void findEventTime(std::vector<cgsl_simulation*> *sims){
+        //resetIntegratorTimeVariables(timeLoop.t_crossed);
+        restoreStates(sims);
         double tol = 1e-6;
         fmu_parameters* p;
 
         //remove all simulations that doesn't have an event
-        reduceSims(&sims);
+        //reduceSims(sims);
 
         while(timeLoop.t_crossed - timeLoop.t_safe > tol) {
-            step(&sims);
+            step(sims);
 
+            //printStates();
             getStateEvent(sims);
+            getSafeTime(sims);
+
             if(hasStateEvent(sims)){
-                restoreStates(&sims);
-                reduceSims(&sims);
+                restoreStates(sims);
+                //       reduceSims(sims);
             }else
-                storeStates(&sims);
+                storeStates(sims);
         }
-        return timeLoop.t_crossed;
+        timeLoop.t_new = timeLoop.t_crossed;
     }
 
     /** reachedEnd
@@ -528,13 +525,11 @@ class ModelExchangeStepper : public BaseMaster {
      *  @param pt Previuous time
      *  @param pc Count of how many times the different t - pt < toleranc
      */
-    int reachedEnd(double t, double* pt, int* pc){
+    void reachedEnd(double t, double* pt, int* pc){
       double tol = 1e-6;
-      if( t - *pt < tol ) *pc++;
+      if( t - *pt < tol ) (*pc)++;
       else *pc = 0;
       *pt = t;
-
-      return *pc == 20 ? 1:0;
     }
 
     /** newDiscreteStatesStart
@@ -560,23 +555,20 @@ class ModelExchangeStepper : public BaseMaster {
 
     void printStates(void){
       fmu_parameters* p;
-
+      std::vector<double> rep;
       for(auto sim: m_sims){
         p = getParameters(sim->model);
-      sendWait(p->client,fmi2_import_get_continuous_states(0,0,p->nx));
-      }
-      for(auto sim: m_sims){
-        p = getParameters(sim->model);
-        std::vector<double> rep;
+        rep.resize(p->nx, 0);
 
+        sendWait(p->client,fmi2_import_get_continuous_states(0,0,p->nx));
         common::extract_vector(rep, p->client->m_getContinuousStates);
-        printf("\nstates\n");
         for(auto val:rep)
           printf("%f ",val);
         printf("\n");
       }
     }
     void runIteration(double t, double dt) {
+        if(reachedTheEnd) return;
         timeLoop.t_start = t;
         timeLoop.t_end = t + dt;
         double prevTimeEvent = t;
@@ -585,19 +577,22 @@ class ModelExchangeStepper : public BaseMaster {
         newDiscreteStatesStart(timeLoop.t_end);
         printStates();
 
+        //        printf("runIteration\n"); exit(20);
         while( timeLoop.t_safe < timeLoop.t_end ){
             step(&m_sims);
-            if( getStateEvent(m_sims) ){
-                timeLoop.t_new = findEventTime(m_sims);
+
+            getStateEvent(&m_sims);
+            getSafeTime(&m_sims);
+            if( hasStateEvent(&m_sims) ){
+                findEventTime(&m_sims);
                 step(&m_sims);
             }
 
             newDiscreteStatesStart(timeLoop.t_end);
 
-            printStates();
-            if(reachedEnd(timeLoop.t_new, &prevTimeEvent, &prevTimeCount)) return;
+            reachedEnd(timeLoop.t_new, &prevTimeEvent, &prevTimeCount);
+            if(20 == prevTimeCount){reachedTheEnd = true; return;}
         }
-
     }
 };
 }// namespace fmitcp_master

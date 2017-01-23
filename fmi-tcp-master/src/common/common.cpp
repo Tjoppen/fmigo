@@ -5,7 +5,6 @@
 #include <sstream>
 
 using namespace std;
-
 namespace common {
 
 deque<string> split(const string &s, char delim) {

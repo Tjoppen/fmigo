@@ -3,6 +3,7 @@
  * Date: 18-01-2017
  */
 #include <iostream>
+#include <cmath>
 #ifdef DEBUG
 #include "fmu_go_storage.hpp"
 #else
@@ -132,23 +133,36 @@ void FmuGoStorage::push_to(size_t client_id, Data &current, double* array)
      *  Toggles the working dataset with a backup copy from last call of sync()
      *  swap only makes shallow copies
      */
-void FmuGoStorage::cycle()
-    {
-        swap(m_states.first, m_states.second );
-        swap(m_indicators.first, m_indicators.second );
-        swap(m_derivatives.first, m_derivatives.second );
-    }
+#define cycle_storage_cpp(name)\
+    swap(get_##name(), get_backup_##name() );
+void FmuGoStorage::cycle() {
+    cycle_storage_cpp(states);
+    cycle_storage_cpp(derivatives);
+    cycle_storage_cpp(indicators);
+    cycle_storage_cpp(nominals);
+}
 
     /** sync():
      *  Makes a deep copy of the current dataset to a backup dataset
      */
-inline void FmuGoStorage::sync(){
-    copy(get_states().begin(), get_states().end(), get_backup_states().begin() );
-    copy(get_indicators().begin(), get_indicators().end(), get_backup_indicators().begin() );
-    copy(get_derivatives().begin(), get_derivatives().end(), get_backup_derivatives().begin() );
-    copy(get_nominals().begin(), get_nominals().end(), get_backup_nominals().begin() );
+#define sync_storage_cpp(name)\
+    copy(get_##name().begin(), get_##name().end(), get_backup_##name().begin() );
+void FmuGoStorage::sync(){
+    sync_storage_cpp(states);
+    sync_storage_cpp(derivatives);
+    sync_storage_cpp(indicators);
+    sync_storage_cpp(nominals);
 }
 
+bool FmuGoStorage::past_event(size_t id){
+    Data & func = get_indicators();
+    for(size_t index = get_offset(id, func); index < get_end(id, func);index++)
+        if(signbit( *(get_indicators().begin() + index)) !=
+           signbit( *(get_backup_indicators().begin() + index))
+           )
+            return true;
+    return false;
+}
     /** test_function():
      *  test the functionality of the class
      */
@@ -156,7 +170,7 @@ void FmuGoStorage::test_functions(void)
     {
 
         fprintf(stderr,"Test of fmi_on_storage start\n");
-#define first_size_storage_cpp 1 
+#define first_size_storage_cpp 1
 #define second_size_storage_cpp 2
 #define third_size_storage_cpp 10
 #define first_vec_storage_cpp {1}

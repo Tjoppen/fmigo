@@ -26,9 +26,23 @@ class FmuGoStorage {
     private:                                                            \
         Storage m_##name;   /* to store the data */                     \
     inline Data & get_current_##name() { return m_##name.first ;}       \
-    inline Data & get_backup_##name()  { return m_##name.second;}       \
  public:                                                                \
+    inline Data & get_backup_##name()  { return m_##name.second;}       \
     inline Data & get_##name(){return get_current_##name();}            \
+    inline double get_##name(size_t id, size_t index){                  \
+        if(index > get_end(id,get_##name())){                           \
+            fprintf(stderr,"Error: out of range for Data::iterator get_"#name""); \
+            exit(1);                                                    \
+        }                                                               \
+        return *(get_##name().begin()+get_offset(id,get_##name())+index); \
+    }                                                                   \
+    inline double get_backup_##name(size_t id, size_t index){                  \
+        if(index > get_end(id,get_backup_##name())){                           \
+            fprintf(stderr,"Error: out of range for Data::iterator get_backup_"#name""); \
+            exit(1);                                                    \
+        }                                                               \
+        return *(get_backup_##name().begin()+get_offset(id,get_backup_##name())+index); \
+    }                                                                   \
     inline void get_##name(double *ret, size_t id) {                    \
         /*need do extract the correct dataset belonging to client*/     \
         size_t o = get_offset( id, get_##name() );                      \
@@ -62,6 +76,7 @@ class FmuGoStorage {
 
     CURRENT_BACKUP(current);
     CURRENT_BACKUP(backup);
+    bool past_event(size_t id);
 
  private:
     BoundsVector m_bounds;
@@ -98,11 +113,11 @@ class FmuGoStorage {
     }
     inline size_t & get_offset(const size_t s, Data &p){return get_bounds(p).at(s).first;}
     inline size_t & get_end(const size_t s,Data &p){return get_bounds(p).at(s).second;}
+
+ public:
     inline size_t get_size(const size_t s, Data &p) {
         return get_bounds(p).at(s).second - get_bounds(p).at(s).first;
     }
-
- public:
     void allocate_storage_states(const vector<size_t> &size_vec,Data &p);
     void allocate_storage(const vector<size_t> &number_of_states, Data &p);
     void allocate_storage(const vector<size_t> &number_of_states,const vector<size_t> &number_of_indicators);
@@ -143,7 +158,7 @@ class FmuGoStorage {
     /** sync():
      *  Makes a deep copy of the current dataset to a backup dataset
      */
-    inline void sync();
+    void sync();
 
 
     /** test_function():

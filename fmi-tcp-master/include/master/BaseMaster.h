@@ -44,16 +44,15 @@ namespace fmitcp_master {
         void slaveError                     (FMIClient* slave){exit(1);}
 
         inline FmuGoStorage & get_storage(){return m_fmuGoStorage;}
-        void fmu_alloc(std::vector<size_t> states,std::vector<size_t> indicators){
+        void fmu_alloc(){
+            vector<size_t> states({});
+            vector<size_t> indicators({});
+            for(auto client: m_clients) {
+                states.push_back(client->getNumContinuousStates());
+                indicators.push_back(client->getNumEventIndicators());
+            }
             get_storage().allocate_storage(states,indicators);
         }
-        void set(int id, Data &storage, Data vec)
-        {
-            if(get_storage().size(storage) > id)
-                get_storage().push_to(id, storage, vec);
-        }
-        //void sync(){get_storage().sync();}
-        void cycle(){get_storage().cycle();}
 
         //void freeSim(){};
 #define on(name) void name(FMIClient* slave) {}

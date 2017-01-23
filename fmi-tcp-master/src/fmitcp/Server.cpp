@@ -875,8 +875,7 @@ string Server::clientData(const char *data, size_t size) {
     m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_continuous_states_req(mid=%d,fmuId=%d,nx=%d)\n",r.message_id(), r.fmuid(), r.nx());
 
     fmi2_status_t status = fmi2_status_ok;
-    std::vector<fmi2_real_t> x;
-    x.reserve(r.nx()*sizeof(fmi2_real_t));
+    std::vector<fmi2_real_t> x(r.nx());
 
     if (!m_sendDummyResponses) {
       status = fmi2_import_get_continuous_states(m_fmi2Instance, x.data(), r.nx());
@@ -899,8 +898,7 @@ string Server::clientData(const char *data, size_t size) {
     m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_derivatives_req(mid=%d,fmuId=%d,nderivatives=%d)\n",r.message_id(), r.fmuid(), r.nderivatives());
 
     fmi2_status_t status = fmi2_status_ok;
-    std::vector<fmi2_real_t> derivatives;
-    derivatives.reserve(r.nderivatives()*sizeof(fmi2_real_t));
+    std::vector<fmi2_real_t> derivatives(r.nderivatives());
 
     if (!m_sendDummyResponses) {
       status = fmi2_import_get_derivatives(m_fmi2Instance, derivatives.data(), r.nderivatives());

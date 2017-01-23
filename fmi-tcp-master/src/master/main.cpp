@@ -25,6 +25,8 @@
 #endif
 #include <fstream>
 #include "control.pb.h"
+#include <string>
+#include <iostream>
 
 using namespace fmitcp_master;
 using namespace fmitcp;

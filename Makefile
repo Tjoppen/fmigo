@@ -23,9 +23,8 @@ FORCE:
 
 run_me_test:
 	(cd ~/work/umit/build && ninja && ninja install  | grep -v Up-to-date | grep -v Linking | grep -v Install | grep -v "Set runtime")
-	pwd
-	mpiexec -np 1 $(MASTERPATH)fmi-mpi-master -t 12 -m me : -np 1 $(SERVERPATH)fmi-mpi-server $(FMUPATH)vanDerPol.fmu
-	mpiexec -np 1 $(MASTERPATH)fmi-mpi-master -t 12 -m me : -np 1 $(SERVERPATH)fmi-mpi-server $(FMUPATH)bouncingBall.fmu
+	mpiexec -np 1 $(MASTERPATH)fmi-mpi-master -t 1.5 -m me : -np 1 $(SERVERPATH)fmi-mpi-server $(FMUPATH)bouncingBall.fmu
+	#mpiexec -np 1 $(MASTERPATH)fmi-mpi-master -t 12 -m me : -np 1 $(SERVERPATH)fmi-mpi-server $(FMUPATH)vanDerPol.fmu
 
 valgrind:
 	(cd ~/work/umit/build && ninja && ninja install  | grep -v Up-to-date | grep -v Building | grep -v Install | grep -v "Set runtime") && mpiexec -np 1 $(MASTERPATH)fmi-mpi-master -t 12 -m me : -np 1 valgrind -v --leak-check=full $(SERVERPATH)fmi-mpi-server $(FMUPATH)vanDerPol.fmu

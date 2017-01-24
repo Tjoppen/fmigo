@@ -100,7 +100,7 @@ public:
 class ModelExchangeStepper : public BaseMaster {
     typedef struct TimeLoop
     {
-        fmi2_real_t t_start, t_safe, t_new, t_crossed, t_end;
+        fmi2_real_t t_start, t_safe, dt_new, t_crossed, t_end;
     } TimeLoop;
     typedef struct backup
     {
@@ -113,6 +113,8 @@ class ModelExchangeStepper : public BaseMaster {
     } backup;
     typedef struct fmu_parameters{
 
+        double t_ok;
+        double t_past;
         int count;                    /* number of function evaluations */
         int nz;                       /* number of event indicators, from XML file */
         int nx;                       /* number of states, from XML file */
@@ -130,6 +132,7 @@ class ModelExchangeStepper : public BaseMaster {
 
         bool stateEvent;
         backup m_backup;
+    bool debuggingvar = false;
     }fmu_parameters;
     struct fmu_model{
       cgsl_model model;
@@ -150,44 +153,6 @@ class ModelExchangeStepper : public BaseMaster {
       fprintf(stderr, "ModelExchangeStepper\n");
     }
 
-    /** getMedelResultPath
-     *  extracts the filename of the path without extension,
-     *  creates a directory to place the result file and
-     *
-     *  @param fmuPath
-     */
-    char* getModelResultPath(const char* fmuPath)
-    {
-        size_t n = strlen(fmuPath);
-        char* p = (char*)malloc((1+n) * sizeof(char));
-
-        // copy path to p, tp for destruction only.
-        void* tp = memcpy(p, fmuPath, n);
-        *(p+n) = '\0';
-
-        // pointer to be
-        char* name = p;
-
-        // find file name of path 'path'
-        while((p = strchr(p, '/')) != NULL)
-            name = ++p;
-
-        // remove file extension
-        if((p = strchr(name, '.')) != NULL)
-            *p = '\0';
-
-        // allocate memory for resultFile
-        size_t s = strlen(name);
-        char* resultFile = (char*)calloc(s + 10, sizeof(char));
-
-        // add path and resultFile
-        sprintf(resultFile, "data/%s.mat", name);
-
-        // free copy of path
-        free(tp);
-        return resultFile;
-    }
-
     /** fmu_function
      *  function needed by cgsl_simulation to get and set the current
      *  states and derivatives
@@ -199,15 +164,30 @@ class ModelExchangeStepper : public BaseMaster {
      */
     static int fmu_function(double t, const double x[], double dxdt[], void* params)
     {
+
         // make local variables
         fmu_parameters* p = (fmu_parameters*)params;
 
         ++p->count; /* count function evaluations */
-        p->baseMaster->send(p->client, fmi2_import_set_time(0,0,t));
-        p->baseMaster->send(p->client, fmi2_import_set_continuous_states(0,0,x,p->nx));
-        p->baseMaster->sendWait(p->client, fmi2_import_get_derivatives(0,0,p->nx));
-        p->baseMaster->get_storage().get_derivatives(dxdt, p->client->getId());
+        if(!p->stateEvent){
+            p->baseMaster->send(p->client, fmi2_import_set_time(0,0,t));
+            p->baseMaster->send(p->client, fmi2_import_set_continuous_states(0,0,x,p->nx));
+            p->baseMaster->send(p->client, fmi2_import_get_derivatives(0,0,p->nx));
+            p->baseMaster->wait();
+            p->baseMaster->get_storage().get_derivatives(dxdt, p->client->getId());
 
+            if(p->nz){
+                p->baseMaster->sendWait(p->client, fmi2_import_get_event_indicators(0,0,p->nz));
+                if(p->baseMaster->get_storage().past_event(p->client->getId())){
+                    fprintf(stderr,"fmu_function %f\n", t);
+                    p->stateEvent = true;
+                    p->t_past = t;
+                } else{
+                    p->stateEvent = false;
+                    p->t_ok = t;
+                }
+            }
+        }
         return GSL_SUCCESS;
     }
 
@@ -239,7 +219,7 @@ class ModelExchangeStepper : public BaseMaster {
         free(p);
         free(m);
     }
- public:    void freeSim(void){
+    void freeSim(void){
       fmu_parameters *p;
       while(m_sims.size()){
         freeFMUModel((fmu_model *)m_sims[0]->model);
@@ -294,7 +274,7 @@ class ModelExchangeStepper : public BaseMaster {
         fprintf(stderr,"nx         = %d\n",p->nx);
         fprintf(stderr,"n_variables= %d\n",m->model.n_variables);
         fprintf(stderr,"nz         = %d\n",p->nz);
-        fprintf(stderr,"resultPath = %s\n",p->resultFile);
+        //fprintf(stderr,"resultPath = %s\n",p->resultFile);
         fprintf(stderr,"resultPath = %s\n",p->client->getSpaceSeparatedFieldNames("fmu").c_str());
 
 
@@ -373,12 +353,14 @@ class ModelExchangeStepper : public BaseMaster {
         for(auto sim : sims){
             fmu_parameters* p = getParameters(sim->model);
 
-            p->baseMaster->sendWait(p->client, fmi2_import_get_continuous_states(0,0,p->nx));
-            get_storage().sync();
+            sendWait(p->client, fmi2_import_get_continuous_states(0,0,p->nx));
+            get_storage().get_states(sim->model->x,p->client->getId());
             p->m_backup.failed_steps = sim->i.evolution->failed_steps;
             p->m_backup.t = sim->t;
             p->m_backup.size_of_file = ftell(p->m_backup.result_file);
-      }
+        }
+        get_storage().sync();
+
     }
 
 
@@ -393,7 +375,7 @@ class ModelExchangeStepper : public BaseMaster {
         // all simulations should be at the same time
         timeLoop.t_safe = m_sims[0]->t;
         timeLoop.t_crossed = timeLoop.t_end;
-        timeLoop.t_new = t_new;//min(sim->h, max(max((sim->t - prevTimeEvent)/500,0),t_end));
+        timeLoop.dt_new = t_new;//min(sim->h, max(max((sim->t - prevTimeEvent)/500,0),t_end));
     }
 
 
@@ -443,22 +425,23 @@ class ModelExchangeStepper : public BaseMaster {
      *
      *  @param sim A cgsl simulation
      */
-    double getSafeTime(std::vector<cgsl_simulation*> &sims){
+    double getGoldenNewTime(std::vector<cgsl_simulation*> &sims){
 
         // golden ratio
         double phi = (1 + sqrt(5)) / 2;
 
         /* passed solution, need to reduce tEnd */
         if(hasStateEvent(sims)){
-            timeLoop.t_crossed = timeLoop.t_new;
-            timeLoop.t_new = timeLoop.t_safe + (timeLoop.t_crossed - timeLoop.t_safe) / phi;
+            timeLoop.t_crossed -= timeLoop.dt_new;
+            timeLoop.dt_new = (timeLoop.t_crossed - timeLoop.t_safe) / phi;
 
         } else { // havent passed solution, increase step
-            timeLoop.t_safe = timeLoop.t_new;
-            timeLoop.t_new = timeLoop.t_crossed - (timeLoop.t_crossed - timeLoop.t_safe) / phi;
+            timeLoop.t_safe += timeLoop.dt_new;
+            timeLoop.dt_new = (timeLoop.t_crossed - timeLoop.t_safe) -
+                (timeLoop.t_crossed - timeLoop.t_safe) / phi;
         }
 
-        return timeLoop.t_new;
+        return timeLoop.dt_new;
     }
 
     /** step
@@ -467,8 +450,14 @@ class ModelExchangeStepper : public BaseMaster {
      *  @param sims Vector of all simulations
      */
     void step(std::vector<cgsl_simulation*> &sims){
-        for(auto sim: sims)
-            cgsl_step_to(sim, sim->t, timeLoop.t_new);
+        fmu_parameters *p;
+        for(auto sim: sims){
+            p = getParameters(sim->model);
+            p->stateEvent = false;
+            p->t_past = sim->t + timeLoop.dt_new;
+            p->t_ok = sim->t;
+            cgsl_step_to(sim, sim->t, sim->t + timeLoop.dt_new);
+        }
     }
 
     /** reduceSims
@@ -503,11 +492,11 @@ class ModelExchangeStepper : public BaseMaster {
         //reduceSims(sims);
 
         while(timeLoop.t_crossed - timeLoop.t_safe > tol) {
+            getGoldenNewTime(sims);
             step(sims);
 
             //printStates();
-            getStateEvent(sims);
-            getSafeTime(sims);
+            //getStateEvent(sims);
 
             if(hasStateEvent(sims)){
                 restoreStates(sims);
@@ -515,7 +504,6 @@ class ModelExchangeStepper : public BaseMaster {
             }else
                 storeStates(sims);
         }
-        timeLoop.t_new = timeLoop.t_crossed;
     }
 
     /** reachedEnd
@@ -524,7 +512,7 @@ class ModelExchangeStepper : public BaseMaster {
      *  @param pc Count of how many times the different t - pt < toleranc
      */
     void reachedEnd(double t, double* pt, int* pc){
-      double tol = 1e-6;
+      double tol = 1e-2;
       if( t - *pt < tol ) (*pc)++;
       else *pc = 0;
       *pt = t;
@@ -538,14 +526,18 @@ class ModelExchangeStepper : public BaseMaster {
      *  @param t The current time
      *  @param t_new New next time
      */
-    void newDiscreteStatesStart(double t_new){
-        // set start values for the time integration
-        resetIntegratorTimeVariables(t_new);
+    void newDiscreteStatesStart(){
         // start at a new state
         sendWait(m_clients, fmi2_import_enter_event_mode(0,0));
         // todo loop until newDiscreteStatesNeeded == false
         sendWait(m_clients, fmi2_import_new_discrete_states(0,0));
         sendWait(m_clients, fmi2_import_enter_continuous_time_mode(0,0));
+        fmu_parameters *p;
+        for(auto sim: m_sims){
+            p = getParameters(sim->model);
+            send(p->client, fmi2_import_get_event_indicators(0,0,p->nz));
+        }
+        wait();
 
         // store the current state of all running FMUs
         storeStates(m_sims);
@@ -560,7 +552,35 @@ class ModelExchangeStepper : public BaseMaster {
       //get_storage().print(get_storage().get_states());
       //get_storage().print(get_storage().get_indicators());
     }
+    void getSafeAndCrossed(){
+        fmu_parameters *p;
+        for(auto sim: m_sims){
+            p = getParameters(sim->model);
+            timeLoop.t_safe    = max( timeLoop.t_safe,    p->t_ok);
+            timeLoop.t_crossed = min( timeLoop.t_crossed, p->t_past);
+        }
+    }
 
+    double safeTimeStep(std::vector<cgsl_simulation*> &sims){
+        double t = sims[0]->t;
+        double h = sims[0]->h;
+        for(auto sim: sims) h = min(h,sim->h);
+
+        timeLoop.dt_new = min(timeLoop.t_end - t,
+                              min(timeLoop.t_crossed - timeLoop.t_safe,
+                                  h));
+    }
+
+        void update_(){
+            fmu_parameters *p;
+            for(auto sim: m_sims){
+                p = getParameters(sim->model);
+                send(p->client, fmi2_import_get_event_indicators(0,0,p->nz));
+                send(p->client, fmi2_import_get_continuous_states(0,0,p->nx));
+            }
+            wait();
+        }
+        int breakit = 1000;
     void runIteration(double t, double dt) {
         if(reachedTheEnd) return;
         timeLoop.t_start = t;
@@ -571,36 +591,86 @@ class ModelExchangeStepper : public BaseMaster {
         fmu_parameters *p;
         for(auto sim: m_sims){
             p = getParameters(sim->model);
+            p->stateEvent = false;
+            p->t_ok = t;
+            p->t_past = t + dt;
             sendWait(p->client, fmi2_import_get_continuous_states(0,0,p->nx));
-            sendWait(p->client, fmi2_import_get_derivatives(0,0,p->nx));
+            //sendWait(p->client, fmi2_import_get_derivatives(0,0,p->nx));
             sendWait(p->client, fmi2_import_get_event_indicators(0,0,p->nz));
         }
 
-        get_storage().sync();
-        newDiscreteStatesStart(timeLoop.t_end);
+        //newDiscreteStatesStart(timeLoop.t_end);
 
+               newDiscreteStatesStart();
         while( timeLoop.t_safe < timeLoop.t_end ){
-            step(m_sims);
+            if (hasStateEvent(m_sims)){
+                getSafeAndCrossed();// set crossed and safe time to time found by fmu_function
 
-            getStateEvent(m_sims);
-            getSafeTime(m_sims);
-            if( hasStateEvent(m_sims) ){
-                findEventTime(m_sims);
-                step(m_sims);
+                restoreStates(m_sims);
+                timeLoop.dt_new = timeLoop.t_safe - m_sims[0]->t;
+                step(m_sims); // a safe step
+                if(hasStateEvent(m_sims)) {
+                    fprintf(stderr,"should never happen, safetime error\n");
+                    fprintf(stderr," %f  %f  %f\n",m_sims[0]->t,timeLoop.dt_new, timeLoop.t_crossed);
+                    exit(1);
+                }
+                storeStates(m_sims);
+                timeLoop.dt_new = timeLoop.t_crossed - m_sims[0]->t;
+
+                // instead of findEventTime assume t_crossed is reasonable
+                step(m_sims); //findEventTime(m_sims);
+                fprintf(stderr,"time after crossed step %f\n", m_sims[0]->t);
+                ((fmu_parameters*)m_sims[0]->model->parameters)->debuggingvar = false;
+            }else{
+                timeLoop.t_safe = m_sims[0]->t;
+                timeLoop.t_crossed = timeLoop.t_end;
+                ((fmu_parameters*)m_sims[0]->model->parameters)->debuggingvar = false;
             }
 
-            newDiscreteStatesStart(timeLoop.t_end);
-            /* fmu_parameters *p; */
-            /* for(auto sim: m_sims){ */
-            /*     p = getParameters(sim->model); */
-            /*     send(p->client, fmi2_import_get_continuous_states(0,0,p->nx)); */
-            /* } */
-            /* wait(); */
-            /* get_storage().print(get_storage().get_states()); */
-            reachedEnd(timeLoop.t_new, &prevTimeEvent, &prevTimeCount);
-            if(20 == prevTimeCount){reachedTheEnd = true; return;}
-        }
+            safeTimeStep(m_sims);
+            if(hasStateEvent(m_sims))
+               newDiscreteStatesStart();
+            storeStates(m_sims);
+            if(((fmu_parameters*)m_sims[0]->model->parameters)->debuggingvar){
+                fprintf(stderr,"used dt = %f \n",timeLoop.dt_new);
+            }
+            //restoreStates(m_sims);
+            if(((fmu_parameters*)m_sims[0]->model->parameters)->debuggingvar){
+                //timeLoop.dt_new = 0.0001;
+                for(int i = 0; i < 1000; i++){
+                    safeTimeStep(m_sims);
+                    storeStates(m_sims);
+                    fprintf(stderr,"sim time %f \n", m_sims[0]->t);
+                    step(m_sims);
+                    fprintf(stderr,"outsim time %f \n", m_sims[0]->t);
+                        get_storage().print(get_storage().get_backup_indicators());
+                        get_storage().print(get_storage().get_states());
+                    if(hasStateEvent(m_sims)){
+                        restoreStates(m_sims);//=
+                        getSafeAndCrossed();//=
+                        timeLoop.dt_new = timeLoop.t_crossed - m_sims[0]->t;//=
+                        fprintf(stderr,"crossed run ");
+                        step(m_sims);//=
+                        timeLoop.t_crossed = 10000000;
+                        getSafeAndCrossed();
+                        get_storage().print(get_storage().get_backup_indicators());
+                        get_storage().print(get_storage().get_indicators());
 
+                        fprintf(stderr,"t %f [s %f, c %f] \n", m_sims[0]->t,timeLoop.t_safe, timeLoop.t_crossed);
+                        fprintf(stderr,"endofhas \n\n");
+                    }
+                    newDiscreteStatesStart();
+                        storeStates(m_sims);
+                    //update_();
+                    //storeStates(m_sims);
+                    //get_storage().print(get_storage().get_states());
+                    //fmu_parameters *p = getParameters(m_sims[0]->model);
+                    //if(get_storage().past_event(p->client->getId())) exit(6);
+                }
+            }
+            step(m_sims);
+        }
+        //fprintf(stderr,"prevTimeCount = %d\n",prevTimeCount);
         //get_storage().print(get_storage().get_states());
     }
 };

@@ -78,12 +78,13 @@ void FmuGoStorage::allocate_storage(const vector<size_t> &number_of_states,const
         allocate_storage(number_of_states, get_current_nominals());
     }
 
-void FmuGoStorage::print(Data & current)
+void FmuGoStorage::print(Data & current){ char str[1]=""; FmuGoStorage::print(current,str);}
+void FmuGoStorage::print(Data & current,char *str)
     {
+        fprintf(stderr,str);
         for(auto x: get_bounds(current)) {
                 for(size_t i = x.first; i != x.second; ++i)
                     fprintf(stderr,"%f ",current.at(i));
-                fprintf(stderr,"\n");
             }
         fprintf(stderr,"\n");
     }
@@ -157,10 +158,18 @@ void FmuGoStorage::sync(){
 bool FmuGoStorage::past_event(size_t id){
     Data & func = get_indicators();
     for(size_t index = get_offset(id, func); index < get_end(id, func);index++)
+        {
         if(signbit( *(get_indicators().begin() + index)) !=
            signbit( *(get_backup_indicators().begin() + index))
            )
+            {
+            // fprintf(stderr,"compr past_event %f, %f \n",
+            //         *(get_indicators().begin() + index),
+            //         *(get_backup_indicators().begin() + index)
+            //         );
             return true;
+            }
+        }
     return false;
 }
     /** test_function():

@@ -124,6 +124,7 @@ class FmuGoStorage {
     ~FmuGoStorage();
     FmuGoStorage();
     FmuGoStorage(const vector<size_t> &number_of_states,const vector<size_t> &number_of_indicators);
+    void print(Data & current,char *str);
     void print(Data & current);
 
     size_t size(Data &p);

@@ -2,6 +2,9 @@ SERVERPATH=~/work/umit/build/install/bin/
 MASTERPATH=~/work/umit/build/install/bin/
 FMUPATH=~/work/umit/data/
 
+BOUNCINGBALL= -np 1 $(SERVERPATH)fmi-mpi-server $(FMUPATH)bouncingBall.fmu
+VANDERPOL= -np 1 $(SERVERPATH)fmi-mpi-server $(FMUPATH)vanDerPol.fmu
+VANDERPOL2= -np 1 $(SERVERPATH)fmi-mpi-server $(FMUPATH)vanDerPol2.fmu
 all: build cosimulation #run
 make: FORCE
 	(cd ~/work/umit/buildmake && make > tempbuild && cat tempbuild | grep -v "make\[" | grep -v "\[ ")
@@ -23,8 +26,10 @@ FORCE:
 
 run_me_test:
 	(cd ~/work/umit/build && ninja && ninja install  | grep -v Up-to-date | grep -v Linking | grep -v Install | grep -v "Set runtime")
-	mpiexec -np 1 $(MASTERPATH)fmi-mpi-master -t 1.5 -m me : -np 1 $(SERVERPATH)fmi-mpi-server $(FMUPATH)bouncingBall.fmu
-	#mpiexec -np 1 $(MASTERPATH)fmi-mpi-master -t 12 -m me : -np 1 $(SERVERPATH)fmi-mpi-server $(FMUPATH)vanDerPol.fmu
+	mpiexec -np 1 $(MASTERPATH)fmi-mpi-master -t 3 -m me : $(BOUNCINGBALL)
+	#mpiexec -np 1 $(MASTERPATH)fmi-mpi-master -t 12 -m me : $(VANDERPOL) : $(VANDERPOL2)
+	#mpiexec -np 1 $(MASTERPATH)fmi-mpi-master -t 1.5 -m me : $(BOUNCINGBALL) : $(BOUNCINGBALL)
+	#mpiexec -np 1 $(MASTERPATH)fmi-mpi-master -t 1.6 -m me : $(VANDERPOL) : $(BOUNCINGBALL)
 
 valgrind:
 	(cd ~/work/umit/build && ninja && ninja install  | grep -v Up-to-date | grep -v Building | grep -v Install | grep -v "Set runtime") && mpiexec -np 1 $(MASTERPATH)fmi-mpi-master -t 12 -m me : -np 1 valgrind -v --leak-check=full $(SERVERPATH)fmi-mpi-server $(FMUPATH)vanDerPol.fmu

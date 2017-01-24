@@ -1,4 +1,4 @@
-y = load("~/work/umit/data/resultFile.mat");
+y = load("~/work/umit/data/resultFile0.mat");
 [tt,ss] = makepulses(y(:,1));
 
 figure (1)

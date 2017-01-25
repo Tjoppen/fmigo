@@ -19,6 +19,7 @@
 #include <unistd.h>
 #include <fstream>
 #include <sstream>
+#include <algorithm>
 
 using namespace fmitcp::serialize;
 
@@ -179,9 +180,10 @@ class ModelExchangeStepper : public BaseMaster {
             if(p->nz){
                 p->baseMaster->sendWait(p->client, fmi2_import_get_event_indicators(0,0,p->nz));
                 if(p->baseMaster->get_storage().past_event(p->client->getId())){
-                    fprintf(stderr,"fmu_function %f\n", t);
+                    //fprintf(stderr,"fmu_function %f, %f\n", p->t_ok,t);
                     p->stateEvent = true;
                     p->t_past = t;
+                    return GSL_CONTINUE;
                 } else{
                     p->stateEvent = false;
                     p->t_ok = t;
@@ -456,6 +458,8 @@ class ModelExchangeStepper : public BaseMaster {
             p->stateEvent = false;
             p->t_past = sim->t + timeLoop.dt_new;
             p->t_ok = sim->t;
+            if(p->t_ok > 1.5377 && 0)
+                    fprintf(stderr,"step %0.32f, %0.32f\n", p->t_ok,p->t_past);
             cgsl_step_to(sim, sim->t, sim->t + timeLoop.dt_new);
         }
     }
@@ -601,17 +605,26 @@ class ModelExchangeStepper : public BaseMaster {
 
         //newDiscreteStatesStart(timeLoop.t_end);
 
-               newDiscreteStatesStart();
+        newDiscreteStatesStart();
         while( timeLoop.t_safe < timeLoop.t_end ){
             if (hasStateEvent(m_sims)){
                 getSafeAndCrossed();// set crossed and safe time to time found by fmu_function
 
                 restoreStates(m_sims);
                 timeLoop.dt_new = timeLoop.t_safe - m_sims[0]->t;
-                step(m_sims); // a safe step
-                if(hasStateEvent(m_sims)) {
+                //if(m_sims[0]->t > 1.5377)
+                get_storage().print(get_storage().get_indicators()),
+                    get_storage().print(get_storage().get_backup_indicators());
+                fprintf(stderr,"%f \n",*min_element(get_storage().get_indicators().begin(),get_storage().get_indicators().end()));
+                if(abs(*min_element(get_storage().get_indicators().begin(),get_storage().get_indicators().end())) > 1e-6)
+                    step(m_sims); // a safe step
+                else
+                    fprintf(stderr," has indicator size = %0.16f\n",get_storage().get_indicators()[0]);
+                //if(m_sims[0]->t > 1.5377)
+                get_storage().print(get_storage().get_indicators());
+                if(hasStateEvent(m_sims) && 0) {
                     fprintf(stderr,"should never happen, safetime error\n");
-                    fprintf(stderr," %f  %f  %f\n",m_sims[0]->t,timeLoop.dt_new, timeLoop.t_crossed);
+                    fprintf(stderr,"%f  %f\n",timeLoop.t_safe, timeLoop.t_crossed);
                     exit(1);
                 }
                 storeStates(m_sims);

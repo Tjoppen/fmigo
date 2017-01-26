@@ -127,6 +127,7 @@ class FmuGoStorage {
     void print(Data & current,char *str);
     void print(Data & current);
 
+    double absmin(Data & current, size_t id);
     size_t size(Data &p);
 
     /** push_to():

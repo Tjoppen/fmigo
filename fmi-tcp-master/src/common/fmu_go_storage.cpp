@@ -89,6 +89,15 @@ void FmuGoStorage::print(Data & current,char *str)
         fprintf(stderr,"\n");
     }
 
+double FmuGoStorage::absmin(Data &current,size_t id){
+    size_t o = get_offset(id, current);
+    double min = *(current.begin() + o);
+    for(size_t i = o + 1; i < get_end(id, current); i++)
+        if(abs(*(current.begin() + i)) < abs(min))
+            min = *(current.begin() + i);
+    return min;
+}
+
 /** size()
  *  returns the number of fmus that have allocated memory
  */
@@ -179,12 +188,14 @@ void FmuGoStorage::test_functions(void)
     {
 
         fprintf(stderr,"Test of fmi_on_storage start\n");
+#define minVal   1
+#define minValn -1
 #define first_size_storage_cpp 1
-#define second_size_storage_cpp 2
-#define third_size_storage_cpp 10
+#define second_size_storage_cpp 5
+#define third_size_storage_cpp 11
 #define first_vec_storage_cpp {1}
-#define second_vec_storage_cpp {1,2}
-#define third_vec_storage_cpp {1,2,3,4,5,6,7,8,9,10}
+#define second_vec_storage_cpp {-3,-2,minValn,-4,-5}
+#define third_vec_storage_cpp {1,2,3,4,5,6,7,8,9,10,minVal}
         vector<size_t> n_states({first_size_storage_cpp,
                     second_size_storage_cpp,
                     third_size_storage_cpp});
@@ -318,4 +329,13 @@ void FmuGoStorage::test_functions(void)
         test_get_p_storage_cpp(backup_nominals);
         test_get_p_storage_cpp(indicators);
         test_get_p_storage_cpp(backup_indicators);
+
+        fprintf(stderr,"Testing absmin()     -  ");
+        if ( minVal  != testFmuGoStorage.absmin(testFmuGoStorage.get_indicators(),2) ||
+             minValn != testFmuGoStorage.absmin(testFmuGoStorage.get_indicators(),1) )
+            fprintf(stderr," Failed!\n  ");
+        else
+            fprintf(stderr," OK!\n");
+
+
     }

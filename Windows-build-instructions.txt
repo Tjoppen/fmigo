@@ -1,13 +1,16 @@
 To build on Windows you may use build.bat. There are some prerequisites though:
 
-Microsoft Visual Studio 2013
-CMake: https://cmake.org/download/ (Must be Cmake 3.3.2)
+Microsoft Visual Studio 2013 or 2015
+CMake 3.2 or later: https://cmake.org/download/
 MS-MPI: https://msdn.microsoft.com/en-us/library/windows/desktop/bb524831(v=vs.85).aspx Download and install both msmpisdk.msi and MSMpiSetup.exe
 
 If you have everything set up correctly then the following commands should work in cmd.exe: cmake, msbuild, mpiexec.
 If not then you need to set point %PATH% to where these programs are located.
 
-Run build.bat to build the system.
+Run the appropriate .bat file to build the system:
+
+Visual Studio 2013: build_msvc12.bat
+Visual Studio 2015: build_msvc14.bat
 
 For being able to run the tests:
 Python
@@ -20,23 +23,3 @@ If everything is set up correctly the following commands should work inside of b
 Run run_test.sh to run the tests.
 If mpiexec complains about [...]/install/bin/fmi-tcp-master missing then you need to run "make install" in build/
 If fmu-builder is missing you have probably cloned the repository without --recurse-submodules. Run "git submodule init && git submodule update" in the root project and umit-fmus/
-
-
-
-
-
-### Start trials for Visual Studio 2015.  ###
-
-Switch name in build.bat to 'set CMAKE_GENERATOR="Visual Studio 14 2015"'
-
-
-Errors will result
-* VS2015 removed support for vsnprintf/vasprintf/asprintf
-
-vsnprintf solution: add following to CMakeLists
-
-set(CMAKE_REQUIRED_LIBRARIES "$(CMAKE_REQUIRED_LIBRARIES) legacy_stdio_definitions.lib")
-
-vasprintf/asprintf - Extensions of printf (Relatively easy to implement and can possibly be implemented in preprocessor as definitions).
-
-

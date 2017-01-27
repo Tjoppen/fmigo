@@ -505,7 +505,6 @@ int main(int argc, char *argv[] ) {
 #endif
 
     double timeStep = 0.1;
-    double startTime = 0;
     double endTime = 10;
     double relativeTolerance = 0.0001;
     double relaxation = 4,
@@ -639,13 +638,12 @@ int main(int argc, char *argv[] ) {
         master->send(clients[x], fmi2_import_instantiate2(0, x < fmuVisibilities.size() ? fmuVisibilities[x] : false));
     }
 
-    master->send(clients, fmi2_import_setup_experiment(0, 0, true, relativeTolerance, startTime, endTime >= 0, endTime));
+    master->send(clients, fmi2_import_setup_experiment(0, 0, true, relativeTolerance, 0, endTime >= 0, endTime));
     master->send(clients, fmi2_import_enter_initialization_mode(0, 0));
 
     //send user-defined parameters
     sendUserParams(master, clients, params);
 
-    double t = startTime;
 #ifdef WIN32
     LARGE_INTEGER freq, t1;
     QueryPerformanceFrequency(&freq);
@@ -666,22 +664,26 @@ int main(int argc, char *argv[] ) {
     master->send(clients, fmi2_import_exit_initialization_mode(0, 0));
     master->wait();
 
+    //double t = 0;
+    int step = 0;
+    int nsteps = (int)round(endTime / timeStep);
+
 #ifndef WIN32
     //HDF5
-    int expected_records = 1+1.01*(endTime-startTime)/timeStep, nrecords = 0;
+    int expected_records = 1+1.01*endTime/timeStep, nrecords = 0;
     timelog.reserve(expected_records*MAX_TIME_COLS);
 
     gettimeofday(&tl1, NULL);
 #endif
 
-    int step = 0;
-
     if (zmqControl) {
-        pushResults(step, t, endTime, timeStep, push_socket, master, clients, true);
+        pushResults(step, 0, endTime, timeStep, push_socket, master, clients, true);
     }
 
     //run
-    while ((endTime < 0 || t < endTime) && running) {
+    while ((endTime < 0 || step < nsteps) && running) {
+        double t = step * endTime / nsteps;
+
         if (zmqControl) {
             handleZmqControl(rep_socket, &paused, &running);
         }
@@ -734,11 +736,10 @@ int main(int argc, char *argv[] ) {
 
         master->runIteration(t, timeStep);
 
-        t += timeStep;
         step++;
 
         if (zmqControl) {
-            pushResults(step, t, endTime, timeStep, push_socket, master, clients, false);
+            pushResults(step, t+timeStep, endTime, timeStep, push_socket, master, clients, false);
         } else {
             printf("\n");
         }
@@ -748,6 +749,19 @@ int main(int argc, char *argv[] ) {
         nrecords++;
 #endif
     }
+
+    if (!zmqControl) {
+      printOutputs(endTime, master, clients);
+
+      //finish off with zeroes for any extra forces
+      int n = master->getNumForceOutputs();
+      for (int i = 0; i < n; i++) {
+        printf(",0");
+      }
+
+      printf("\n");
+    }
+
 
 #ifndef WIN32
     vector<size_t> field_offset;

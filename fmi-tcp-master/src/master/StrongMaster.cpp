@@ -307,3 +307,20 @@ string StrongMaster::getForceFieldnames() const {
     }
     return oss.str();
 }
+
+int StrongMaster::getNumForceOutputs() const {
+  int ret = 0;
+  for (int i=0; i<m_clients.size(); i++){
+    FMIClient *client = m_clients[i];
+    for (int j = 0; j < client->numConnectors(); j++) {
+      StrongConnector *sc = client->getConnector(j);
+      if (sc->hasForce()) {
+        ret += 3;
+      }
+      if (sc->hasTorque()) {
+        ret += 3;
+      }
+    }
+  }
+  return ret;
+}

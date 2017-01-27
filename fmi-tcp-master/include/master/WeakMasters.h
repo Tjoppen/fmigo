@@ -178,14 +178,15 @@ class ModelExchangeStepper : public BaseMaster {
         p->baseMaster->sendWait(p->client, fmi2_import_get_derivatives(0,0,p->nx));
         p->baseMaster->get_storage().get_derivatives(dxdt, p->client->getId());
 
-        if(t>2.3 && t<2.38)
+        if(t>0.45 && t<0.46)
             fprintf(stderr,"x0 = %f, t =%f\n", x[0],t);
         if(p->nz){
             p->baseMaster->sendWait(p->client, fmi2_import_get_event_indicators(0,0,p->nz));
             if(p->baseMaster->get_storage().past_event(p->client->getId())){
                 p->stateEvent = true;
                 p->t_past = t;
-                fprintf(stderr,"fmu_function \n %0.32f,\n %0.32f\n", p->t_ok,p->t_past);
+                //fprintf(stderr,"fmu_function \n %0.32f,\n %0.32f\n", p->t_ok,p->t_past);
+                //cout << x[0] << endl;
                 p->debuggingvar = true;
                 return GSL_CONTINUE;
             } else{
@@ -317,8 +318,8 @@ class ModelExchangeStepper : public BaseMaster {
                                                        step_control);
             m_sims.push_back(sim);
           }
-            get_storage().sync();
-
+        get_storage().sync();
+        clerePrintFile();
 #endif
     }
 
@@ -443,12 +444,14 @@ class ModelExchangeStepper : public BaseMaster {
 
         /* passed solution, need to reduce tEnd */
         if(hasStateEvent(sims)){
+            //cout << "has " << endl;
             timeLoop.t_crossed = sims[0]->t;
             timeLoop.dt_new = (timeLoop.t_crossed - timeLoop.t_safe) / phi;
 
         } else { // havent passed solution, increase step
+            //cout << "nhas" << endl;
             timeLoop.t_safe = sims[0]->t;
-            timeLoop.dt_new = (timeLoop.t_crossed - timeLoop.t_safe)*(1 - 1 / phi);
+            timeLoop.dt_new = (timeLoop.t_crossed - timeLoop.t_safe)*(1.0 - 1.0 / phi);
         }
 
         return timeLoop.dt_new;
@@ -486,7 +489,15 @@ class ModelExchangeStepper : public BaseMaster {
             sims.erase(sims.begin() + it--);
         }
     }
-
+    void clerePrintFile(){
+        std::ofstream ofs("data/eventLocations.mat", std::ofstream::out | std::ofstream::trunc);
+        ofs.close();
+    }
+    void printEventTimeToFile(double t, double z){
+        ofstream fileOUT("data/eventLocations.mat", ios::app); // open filename.txt in append mode
+        fileOUT << t << " " << z << endl; // append "some stuff" to the end of the file
+        fileOUT.close(); // close the file
+    }
     /** findEventTime
      *  if there is an event, find the event and return
      *  the time at where the time event occured
@@ -497,34 +508,38 @@ class ModelExchangeStepper : public BaseMaster {
     void stepToEvent(std::vector<cgsl_simulation*> &sims){
         //resetIntegratorTimeVariables(timeLoop.t_crossed);
         //restoreStates(sims);
-        double tol = 1e-6;
-        fmu_parameters* p;
-        p = getParameters(sims[0]->model);
-
-        //remove all simulations that doesn't have an event
-        //reduceSims(sims);
-
+        int iter = 20;
+        double tol = 1e-9;
         //set t_safe and t_crossed to values recived by gsl
         getSafeAndCrossed();
-        getGoldenNewTime(sims);
-        while(!hasStateEvent(sims) &&
-              get_storage().absmin(get_storage().get_indicators()) > 1e-6 &&
-              timeLoop.dt_new > 1e-6
-              ) {
-
-            step(sims);
-
-            //getStateEvent(sims);
-
+        cout.precision(16);
+        while(get_storage().absmin(get_storage().get_indicators()) > tol &&
+               timeLoop.dt_new > tol) {
+            getGoldenNewTime(sims);
             if(hasStateEvent(sims)){
                 restoreStates(sims);
-                //       reduceSims(sims);
-            }else
-                storeStates(sims);
-            getGoldenNewTime(sims);
+                //cout << " crossed indi " <<  get_storage().get_indicators()[0] << endl << " time " << sims[0]->t << endl;
+            }
+            else storeStates(sims);
+            step(sims);
+            if(--iter < 0){
+                cout<< "infloop "<<fixed<< timeLoop.t_crossed << endl << timeLoop.t_safe << endl;
+                cout<< "infloop " << get_storage().get_backup_indicators()[0]<< endl;
+            }
         }
-        //timeLoop.dt_new = timeLoop.t_crossed - sims[0]->t;
-        //step(sims);//step pass the event
+        if(!hasStateEvent(sims)){
+            timeLoop.dt_new = timeLoop.t_crossed - timeLoop.t_safe;
+            step(sims);
+            if(!hasStateEvent(sims)){
+                cout << "ERROR" << endl;
+                exit(55);
+            }
+
+        }
+        storeStates(sims);
+        cout << " have result " << get_storage().get_indicators()[0] << endl;
+        printEventTimeToFile(sims[0]->t, get_storage().get_indicators()[0]);
+        if(sims[0]->t > 2.5) exit(56);
     }
 
     /** reachedEnd
@@ -644,9 +659,7 @@ class ModelExchangeStepper : public BaseMaster {
             if (hasStateEvent(m_sims)){
                 getSafeAndCrossed();// set crossed and safe time to time found by fmu_function
 
-                printStates();
                 restoreStates(m_sims);
-                printStates();
                 timeLoop.dt_new = timeLoop.t_safe - m_sims[0]->t;
                 //if(m_sims[0]->t > 1.5377)
                 //get_storage().print(get_storage().get_indicators()),

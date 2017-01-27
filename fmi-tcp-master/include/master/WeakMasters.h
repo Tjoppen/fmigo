@@ -174,16 +174,18 @@ class ModelExchangeStepper : public BaseMaster {
         ++p->count; /* count function evaluations */
         p->baseMaster->send(p->client, fmi2_import_set_time(0,0,t));
         p->baseMaster->send(p->client, fmi2_import_set_continuous_states(0,0,x,p->nx));
-        p->baseMaster->send(p->client, fmi2_import_get_derivatives(0,0,p->nx));
         p->baseMaster->wait();
+        p->baseMaster->sendWait(p->client, fmi2_import_get_derivatives(0,0,p->nx));
         p->baseMaster->get_storage().get_derivatives(dxdt, p->client->getId());
 
+        if(t>2.3 && t<2.38)
+            fprintf(stderr,"x0 = %f, t =%f\n", x[0],t);
         if(p->nz){
             p->baseMaster->sendWait(p->client, fmi2_import_get_event_indicators(0,0,p->nz));
             if(p->baseMaster->get_storage().past_event(p->client->getId())){
-                fprintf(stderr,"fmu_function %0.32f,\n %0.32f\n", p->t_ok,t);
                 p->stateEvent = true;
                 p->t_past = t;
+                fprintf(stderr,"fmu_function \n %0.32f,\n %0.32f\n", p->t_ok,p->t_past);
                 p->debuggingvar = true;
                 return GSL_CONTINUE;
             } else{
@@ -327,12 +329,11 @@ class ModelExchangeStepper : public BaseMaster {
      *  @param sims Vector of all simulations
      */
     void restoreStates(std::vector<cgsl_simulation*> &sims){
-        size_t client_id = 0;
+        get_storage().cycle();
+        get_storage().sync();
         for(auto sim : sims) {
             fmu_parameters* p = getParameters(sim->model);
             //restore previous states
-            get_storage().cycle();
-            get_storage().sync();
             get_storage().get_states(sim->model->x,p->client->getId());
 
             sim->i.evolution->failed_steps = p->m_backup.failed_steps;
@@ -358,7 +359,6 @@ class ModelExchangeStepper : public BaseMaster {
         for(auto sim : sims){
             fmu_parameters* p = getParameters(sim->model);
             send(p->client, fmi2_import_get_continuous_states(0,0,p->nx));
-            send(p->client, fmi2_import_get_event_indicators(0,0,p->nz));
             p->m_backup.failed_steps = sim->i.evolution->failed_steps;
             p->m_backup.t = sim->t;
             p->m_backup.size_of_file = ftell(p->m_backup.result_file);
@@ -367,7 +367,9 @@ class ModelExchangeStepper : public BaseMaster {
         for(auto sim : sims){
             fmu_parameters* p = getParameters(sim->model);
             get_storage().get_states(sim->model->x,p->client->getId());
+            send(p->client, fmi2_import_get_event_indicators(0,0,p->nz));
         }
+        wait();
         get_storage().sync();
 
     }
@@ -462,7 +464,7 @@ class ModelExchangeStepper : public BaseMaster {
         for(auto sim: sims){
             p = getParameters(sim->model);
             p->stateEvent = false;
-            p->t_past = sim->t + timeLoop.dt_new;
+            p->t_past = max(p->t_past, sim->t + timeLoop.dt_new);
             p->t_ok = sim->t;
             if(p->t_ok > 1.5377 && 0)
                     fprintf(stderr,"step %0.32f, %0.32f\n", p->t_ok,p->t_past);
@@ -494,22 +496,24 @@ class ModelExchangeStepper : public BaseMaster {
      */
     void stepToEvent(std::vector<cgsl_simulation*> &sims){
         //resetIntegratorTimeVariables(timeLoop.t_crossed);
-        restoreStates(sims);
+        //restoreStates(sims);
         double tol = 1e-6;
         fmu_parameters* p;
+        p = getParameters(sims[0]->model);
 
         //remove all simulations that doesn't have an event
         //reduceSims(sims);
 
         //set t_safe and t_crossed to values recived by gsl
         getSafeAndCrossed();
-        while(!hasStateEvent(m_sims) &&
-              get_storage().absmin(get_storage().get_indicators()) > 1e-6
+        getGoldenNewTime(sims);
+        while(!hasStateEvent(sims) &&
+              get_storage().absmin(get_storage().get_indicators()) > 1e-6 &&
+              timeLoop.dt_new > 1e-6
               ) {
-            getGoldenNewTime(sims);
+
             step(sims);
 
-            //printStates();
             //getStateEvent(sims);
 
             if(hasStateEvent(sims)){
@@ -517,9 +521,10 @@ class ModelExchangeStepper : public BaseMaster {
                 //       reduceSims(sims);
             }else
                 storeStates(sims);
+            getGoldenNewTime(sims);
         }
-        timeLoop.dt_new = timeLoop.t_crossed - sims[0]->t;
-        step(sims);//step pass the event
+        //timeLoop.dt_new = timeLoop.t_crossed - sims[0]->t;
+        //step(sims);//step pass the event
     }
 
     /** reachedEnd
@@ -563,18 +568,28 @@ class ModelExchangeStepper : public BaseMaster {
       fmu_parameters* p;
       for(auto sim: m_sims){
         p = getParameters(sim->model);
-        sendWait(p->client,fmi2_import_get_continuous_states(0,0,p->nx));
+        //sendWait(p->client,fmi2_import_get_continuous_states(0,0,p->nx));
+        //sendWait(p->client,fmi2_import_get_event_indicators(0,0,p->nz));
       }
-      //get_storage().print(get_storage().get_states());
-      //get_storage().print(get_storage().get_indicators());
+      fprintf(stderr,"      states     ");
+      get_storage().print(get_storage().get_states());
+      fprintf(stderr,"      indicator  ");
+      get_storage().print(get_storage().get_indicators());
+      fprintf(stderr,"      bindicator ");
+      get_storage().print(get_storage().get_backup_indicators());
     }
     void getSafeAndCrossed(){
         fmu_parameters *p;
+        p = getParameters(m_sims[0]->model);
+        double t_ok = p->t_ok;
+        double t_past = p->t_past;
         for(auto sim: m_sims){
             p = getParameters(sim->model);
-            timeLoop.t_safe    = max( timeLoop.t_safe,    p->t_ok);
-            timeLoop.t_crossed = min( timeLoop.t_crossed, p->t_past);
+            t_ok   = min( p->t_ok,    t_ok);
+            t_past = min( p->t_past, t_past);
         }
+        timeLoop.t_safe    = max( timeLoop.t_safe,    t_ok);
+        timeLoop.t_crossed = min( timeLoop.t_crossed, t_past);
     }
 
     double safeTimeStep(std::vector<cgsl_simulation*> &sims){
@@ -582,21 +597,28 @@ class ModelExchangeStepper : public BaseMaster {
         double h = sims[0]->h;
         for(auto sim: sims) h = min(h,sim->h);
 
-        timeLoop.dt_new = min(timeLoop.t_end - t,
-                              min(timeLoop.t_crossed - timeLoop.t_safe,
-                                  h));
+        double absmin = get_storage().absmin(get_storage().get_indicators());
+        if(hasStateEvent(sims)){
+            timeLoop.dt_new = h * (absmin > 0 ? absmin:0.00001);
+            fprintf(stderr,"set a variable stepsize h %f, dt = %f\n",h,timeLoop.dt_new);
+        }else
+            timeLoop.dt_new = timeLoop.t_end - t;
+        /* timeLoop.dt_new = min(timeLoop.t_end - t, */
+        /*                       min(timeLoop.t_crossed - timeLoop.t_safe, */
+        /*                           h)); */
     }
 
-        void update_(){
-            fmu_parameters *p;
-            for(auto sim: m_sims){
-                p = getParameters(sim->model);
-                send(p->client, fmi2_import_get_event_indicators(0,0,p->nz));
-                send(p->client, fmi2_import_get_continuous_states(0,0,p->nx));
-            }
-            wait();
+    void update_(){
+        fmu_parameters *p;
+        for(auto sim: m_sims){
+            p = getParameters(sim->model);
+            send(p->client, fmi2_import_get_event_indicators(0,0,p->nz));
+            send(p->client, fmi2_import_get_continuous_states(0,0,p->nx));
         }
-        int breakit = 1000;
+        wait();
+    }
+    int breakit = 1000;
+
     void runIteration(double t, double dt) {
         if(reachedTheEnd) return;
         timeLoop.t_start = t;
@@ -622,29 +644,27 @@ class ModelExchangeStepper : public BaseMaster {
             if (hasStateEvent(m_sims)){
                 getSafeAndCrossed();// set crossed and safe time to time found by fmu_function
 
+                printStates();
                 restoreStates(m_sims);
+                printStates();
                 timeLoop.dt_new = timeLoop.t_safe - m_sims[0]->t;
                 //if(m_sims[0]->t > 1.5377)
                 //get_storage().print(get_storage().get_indicators()),
                 //get_storage().print(get_storage().get_backup_indicators());
                 //fprintf(stderr,"%f \n",*min_element(get_storage().get_indicators().begin(),get_storage().get_indicators().end()));
                 //if(abs(*min_element(get_storage().get_indicators().begin(),get_storage().get_indicators().end())) > 1e-4)
-                if(get_storage().absmin(get_storage().get_indicators()) > 1e-4)
+                fmu_parameters*p=getParameters(m_sims[0]->model);
+                if(get_storage().absmin(get_storage().get_indicators()) > 1e-6 && timeLoop.dt_new > 1e-6)
                     step(m_sims); // a safe step
                 else
                     fprintf(stderr," has indicator size = %0.16f\n",get_storage().get_indicators()[0]);
-                //if(m_sims[0]->t > 1.5377)
-                //get_storage().print(get_storage().get_indicators());
+                getSafeAndCrossed();
                 if(hasStateEvent(m_sims)) restoreStates(m_sims);
                 else storeStates(m_sims);
 
-                timeLoop.dt_new = timeLoop.t_crossed - m_sims[0]->t;
-
-                // instead of findEventTime assume t_crossed is reasonable
-                step(m_sims);
-                //stepToEvent(m_sims);
+                stepToEvent(m_sims);
                 //fprintf(stderr,"time after crossed step %f\n", m_sims[0]->t);
-                ((fmu_parameters*)m_sims[0]->model->parameters)->debuggingvar = true;
+                ((fmu_parameters*)m_sims[0]->model->parameters)->debuggingvar = false;
             }else{
                 timeLoop.t_safe = m_sims[0]->t;
                 timeLoop.t_crossed = timeLoop.t_end;
@@ -655,7 +675,11 @@ class ModelExchangeStepper : public BaseMaster {
             if(hasStateEvent(m_sims))
                newDiscreteStatesStart();
             storeStates(m_sims);
+            double t = m_sims[0]->t;
             step(m_sims);
+            if(abs(timeLoop.dt_new-m_sims[0]->t + t) > 0)
+                fprintf(stderr," t = %f, mt = %f,\ndt        = %0.32f \nactial dt = %0.32f\ndifference= %0.32f\n",t,m_sims[0]->t,timeLoop.dt_new,m_sims[0]->t-t,timeLoop.dt_new-m_sims[0]->t+t );
+
             if(((fmu_parameters*)m_sims[0]->model->parameters)->debuggingvar){
                 fprintf(stderr,"used dt = %f \n",timeLoop.dt_new);
             }

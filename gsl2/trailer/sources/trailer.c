@@ -1,6 +1,9 @@
+#ifdef WIN32
+#define _USE_MATH_DEFINES //needed for M_PI
+#endif
+#include <math.h>
 #include "modelDescription.h"
 #include "gsl-interface.h"
-#include <math.h>
 
 #define SIMULATION_TYPE cgsl_simulation
 #define SIMULATION_INIT trailer_init

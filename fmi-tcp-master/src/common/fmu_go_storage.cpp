@@ -89,12 +89,19 @@ void FmuGoStorage::print(Data & current,char *str)
         fprintf(stderr,"\n");
     }
 
+double FmuGoStorage::absmin(Data &current){
+    double min = abs(*(current.begin()));
+    for(auto z: current)
+        if(abs(z) < min)
+            min = abs(z);
+    return min;
+}
 double FmuGoStorage::absmin(Data &current,size_t id){
     size_t o = get_offset(id, current);
-    double min = *(current.begin() + o);
+    double min = abs( *(current.begin() + o));
     for(size_t i = o + 1; i < get_end(id, current); i++)
-        if(abs(*(current.begin() + i)) < abs(min))
-            min = *(current.begin() + i);
+        if(abs(*(current.begin() + i)) < min)
+            min =abs(*(current.begin() + i));
     return min;
 }
 
@@ -188,7 +195,7 @@ void FmuGoStorage::test_functions(void)
     {
 
         fprintf(stderr,"Test of fmi_on_storage start\n");
-#define minVal   1
+#define minVal 0.1
 #define minValn -1
 #define first_size_storage_cpp 1
 #define second_size_storage_cpp 5
@@ -332,10 +339,10 @@ void FmuGoStorage::test_functions(void)
 
         fprintf(stderr,"Testing absmin()     -  ");
         if ( minVal  != testFmuGoStorage.absmin(testFmuGoStorage.get_indicators(),2) ||
-             minValn != testFmuGoStorage.absmin(testFmuGoStorage.get_indicators(),1) )
+             abs(minValn) != testFmuGoStorage.absmin(testFmuGoStorage.get_indicators(),1) ||
+             abs(minValn) < minVal? abs(minValn):minVal != testFmuGoStorage.absmin(testFmuGoStorage.get_indicators()) )
             fprintf(stderr," Failed!\n  ");
         else
             fprintf(stderr," OK!\n");
-
 
     }

@@ -12,6 +12,9 @@ make: FORCE
 build: FORCE
 	(cd ~/work/umit/build && ninja install > tempbuild && cat tempbuild | grep -v "Up-to-date")
 
+plot2:
+	(cd $(FMUPATH) && make plot)
+
 plot: run_me_test
 	(cd $(FMUPATH) && make plot)
 

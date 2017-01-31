@@ -103,7 +103,7 @@ class ModelExchangeStepper : public BaseMaster {
     {
         fmi2_real_t t_safe, dt_new, t_crossed, t_end;
     } TimeLoop;
-     struct Backup
+    typedef struct Backup
     {
         double t;
         double h;
@@ -113,7 +113,7 @@ class ModelExchangeStepper : public BaseMaster {
         FILE* result_file;
         long size_of_file;
 
-    } ;
+    } Backup;
     typedef struct fmu_parameters{
 
         double t_ok;

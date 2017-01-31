@@ -131,7 +131,7 @@ class ModelExchangeStepper : public BaseMaster {
       cgsl_model model;
     };
     cgsl_simulation m_sim;
-    vector<WeakConnection> m_weakConnections;
+    std::vector<WeakConnection> m_weakConnections;
     enum INTEGRATORTYPE m_integratorType;
     double m_tolerance;
     TimeLoop timeLoop;
@@ -139,7 +139,7 @@ class ModelExchangeStepper : public BaseMaster {
     map<FMIClient*, OutputRefsType> clientGetXs;  //one OutputRefsType for each client
     std::vector<int> stepOrder;
  public:
- ModelExchangeStepper(vector<FMIClient*> clients, vector<WeakConnection> weakConnections, double relativeTolerance, enum INTEGRATORTYPE integratorType  ) :
+ ModelExchangeStepper(std::vector<FMIClient*> clients, std::vector<WeakConnection> weakConnections, double relativeTolerance, enum INTEGRATORTYPE integratorType  ) :
     BaseMaster(clients,weakConnections), m_tolerance(relativeTolerance), m_integratorType(integratorType)
     {
       fprintf(stderr, "ModelExchangeStepper\n");
@@ -333,7 +333,7 @@ class ModelExchangeStepper : public BaseMaster {
      *  restores all values needed by the simulations to restart
      *  from a known safe time.
      *
-     *  @param sims Vector of all simulations
+     *  @param sim The simulation
      */
     void restoreStates(cgsl_simulation &sim){
         get_storage().cycle();
@@ -364,7 +364,7 @@ class ModelExchangeStepper : public BaseMaster {
      *  stores all values needed by the simulations to restart
      *  from a known safe time.
      *
-     *  @param sims Vector of all simulations
+     *  @param sim The simulation
      */
     void storeStates(cgsl_simulation &sim){
         fmu_parameters* p = get_p(sim);
@@ -389,7 +389,7 @@ class ModelExchangeStepper : public BaseMaster {
     /** hasStateEvent:
      ** returns true if at least one simulation has an event
      *
-     *  @param sims Vector of all simulations
+     *  @param sim The simulation
      */
     bool hasStateEvent(cgsl_simulation &sim){
         return get_p(sim)->stateEvent;
@@ -419,7 +419,7 @@ class ModelExchangeStepper : public BaseMaster {
     /** step
      *  run cgsl_step_to on all simulations
      *
-     *  @param sims Vector of all simulations
+     *  @param sim The simulation
      */
     void step(cgsl_simulation &sim){
         fmu_parameters *p;
@@ -434,7 +434,7 @@ class ModelExchangeStepper : public BaseMaster {
      *  if there is an event, find the event and return
      *  the time at where the time event occured
      *
-     *  @param sim Vector of all simulations
+     *  @param sim The simulation
      *  @return Returns the time immediatly after the event
      */
     void stepToEvent(cgsl_simulation &sim){

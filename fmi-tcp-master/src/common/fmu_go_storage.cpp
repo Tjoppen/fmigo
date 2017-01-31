@@ -311,14 +311,53 @@ void FmuGoStorage::test_functions(void)
         test_push_to_p_storage_cpp(derivatives);
         test_push_to_p_storage_cpp(indicators);
 
-        double ret[third_size_storage_cpp];
+        size_t s = first_size_storage_cpp +
+                   second_size_storage_cpp +
+                   third_size_storage_cpp;
+        double ret[s];
+        int j ;
+#define test_get_p_fail(name, s1, s2)                           \
+        j = 0;                                                  \
+        for(int i = s1; i < s2 ; j++,i++)                       \
+            if(name[j] != ret[i]) {                            \
+                fail = true;                                    \
+                break;                                          \
+            }                                                   \
+        if(fail){                                               \
+            fprintf(stderr,"FAILD! "#name"\n");                 \
+            j = 0;                                              \
+            cout << "s1 " << s1 << " s2 " << s2 << endl;        \
+            for(int i = 0; i < s2 ; i++)                        \
+                cout << ret[i] << " ";                          \
+            cout <<  endl;                                      \
+            for(int i = s1; i < s2 ; j++,i++)                   \
+                cout << name[j] << " --- " << ret[i] << endl;  \
+        }
+
+
+        int k;
 #define test_get_p_storage_cpp(name)                                    \
         fprintf(stderr,"Testing get_"#name"_p()     -  ");              \
         testFmuGoStorage.get_##name(ret,2);                             \
         fail = false;                                                   \
-        for(int i = 0; i < third_size_storage_cpp; i++)                 \
-            if(z[i] != ret[i]) fail = true;                             \
+        test_get_p_fail(z,                                              \
+                        first_size_storage_cpp +                        \
+                        second_size_storage_cpp,                        \
+                        first_size_storage_cpp +                        \
+                        second_size_storage_cpp +                       \
+                        third_size_storage_cpp)                         \
+        testFmuGoStorage.get_##name(ret,0);                             \
+        test_get_p_fail(x,0, first_size_storage_cpp );                  \
                                                                         \
+        testFmuGoStorage.get_##name(ret,1);                             \
+        test_get_p_fail(y, first_size_storage_cpp ,                     \
+                        first_size_storage_cpp +                        \
+                        second_size_storage_cpp);                       \
+                                                                        \
+        k = 0;                                                      \
+        for(auto v:get_##name())                                        \
+            if(ret[k++] != v ) fail = true;                             \
+        \
         if(fail) {                                                      \
             fprintf(stderr,"FAILD!\n");                                 \
             for(int i = 0; i < third_size_storage_cpp; i++)             \

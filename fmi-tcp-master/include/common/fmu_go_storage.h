@@ -49,7 +49,7 @@ class FmuGoStorage {
         size_t e = get_end( id, get_##name() );                         \
         copy(get_##name().begin() + o,                                  \
              get_##name().begin() + e,                                  \
-             ret);                                                      \
+             ret + o);                                                  \
     }                                                                   \
     inline void get_backup_##name(double *ret, size_t id)  {            \
         /*need do extract the correct dataset belonging to client*/     \
@@ -57,7 +57,7 @@ class FmuGoStorage {
         size_t e = get_end( id, get_backup_##name() );                  \
         copy(get_backup_##name().begin() + o,                           \
              get_backup_##name().begin() + e,                           \
-             ret);                                                      \
+             ret + o);                                                  \
     }
 
     CREATE_DATA_HPP(states);
@@ -111,10 +111,10 @@ class FmuGoStorage {
         if( e == STORAGE::indicators) return get_current_indicators();
         if( e == STORAGE::nominals) return get_current_nominals();
     }
-    inline size_t & get_offset(const size_t s, Data &p){return get_bounds(p).at(s).first;}
     inline size_t & get_end(const size_t s,Data &p){return get_bounds(p).at(s).second;}
 
  public:
+    inline size_t & get_offset(const size_t s, Data &p){return get_bounds(p).at(s).first;}
     inline size_t get_size(const size_t s, Data &p) {
         return get_bounds(p).at(s).second - get_bounds(p).at(s).first;
     }

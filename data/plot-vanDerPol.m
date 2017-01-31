@@ -1,4 +1,4 @@
-y = load("~/work/umit/data/resultFile0.mat");
+y = load("~/work/umit/data/resultFile.mat");
 figure (4)
 plot(y(:,1),y(:,2))
 %axis([2.5586,2.5588,-0.0000000021,0.0000000021]);

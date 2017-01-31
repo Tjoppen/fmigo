@@ -12,9 +12,6 @@ make: FORCE
 build: FORCE
 	(cd ~/work/umit/build && ninja install > tempbuild && cat tempbuild | grep -v "Up-to-date")
 
-plot2:
-	(cd $(FMUPATH) && make plot)
-
 plot: run_me_test
 	(cd $(FMUPATH) && make plot)
 
@@ -32,6 +29,9 @@ FORCE:
 run_me_test:
 	(cd ~/work/umit/build && ninja && ninja install  | grep -v Up-to-date | grep -v Linking | grep -v Install | grep -v "Set runtime")
 	mpiexec -np 1 $(MASTERPATH)fmi-mpi-master -t 3 -m me : $(BOUNCINGBALL)
+	(cd $(FMUPATH) && make plot)
+	mpiexec -np 1 $(MASTERPATH)fmi-mpi-master -t 12 -m me : $(VANDERPOL)
+	(cd $(FMUPATH) && make plot)
 	#mpiexec -np 1 $(MASTERPATH)fmi-mpi-master -t 12 -m me : $(VANDERPOL) : $(VANDERPOL2)
 	#mpiexec -np 1 $(MASTERPATH)fmi-mpi-master -t 1.5 -m me : $(BOUNCINGBALL) : $(BOUNCINGBALL)
 	#mpiexec -np 1 $(MASTERPATH)fmi-mpi-master -t 1.6 -m me : $(VANDERPOL) : $(BOUNCINGBALL)

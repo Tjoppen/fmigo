@@ -90,6 +90,7 @@ void FmuGoStorage::print(Data & current,char *str)
     }
 
 double FmuGoStorage::absmin(Data &current){
+    if(!current.size()) return 0;
     double min = abs(*(current.begin()));
     for(auto z: current)
         if(abs(z) < min)

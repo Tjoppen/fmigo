@@ -503,10 +503,9 @@ class ModelExchangeStepper : public BaseMaster {
     }
 
     double safeTimeStep(cgsl_simulation &sim){
-        double absmin = get_storage().absmin(get_storage().get_indicators());
-
         // if sims has a state event do not step to far
         if(hasStateEvent(sim)){
+            double absmin = get_storage().absmin(get_storage().get_indicators());
             timeLoop.dt_new = sim.h * (absmin > 0 ? absmin:0.00001);
         }else
             timeLoop.dt_new = timeLoop.t_end - sim.t;
@@ -516,7 +515,6 @@ class ModelExchangeStepper : public BaseMaster {
         timeLoop.t_end = t + dt;
 
         newDiscreteStates();
-
         while( timeLoop.t_safe < timeLoop.t_end ){
             if (hasStateEvent(m_sim)){
                 getSafeAndCrossed();

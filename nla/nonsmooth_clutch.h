@@ -37,7 +37,8 @@ extern "C" {
 struct nonsmooth_clutch_params {
 
   double masses[ 4 ];           /* masses for the 4 bodies: first three on engine side, last one is second plate */
-  double first_spring;          /* spring constant for the first set of soft springs */
+  double first_spring;          /* spring constant for the first set of
+                                 * soft springs */
   double second_spring;         /* spring constant for the second set of stiff springs */
   double plate_pressure;        /* force between the clutch plates */
   double friction_coefficient;  /* friction of the plates */

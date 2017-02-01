@@ -100,15 +100,15 @@ void fmitcp::writeHDF5File(
     }
 }
 
-fmitcp_proto::fmi2_event_info_t* fmitcp::fmi2EventInfoToProtoEventInfo(fmi2_event_info_t *eventInfo)
+fmitcp_proto::fmi2_event_info_t* fmitcp::fmi2EventInfoToProtoEventInfo(const fmi2_event_info_t &eventInfo)
 {
-  fmitcp_proto::fmi2_event_info_t* info;
-  info->set_newdiscretestatesneeded(eventInfo->newDiscreteStatesNeeded);
-  info->set_terminatesimulation(eventInfo->terminateSimulation);
-  info->set_nominalsofcontinuousstateschanged(eventInfo->nominalsOfContinuousStatesChanged);
-  info->set_valuesofcontinuousstateschanged(eventInfo->valuesOfContinuousStatesChanged);
-  info->set_nexteventtimedefined(eventInfo->nextEventTimeDefined);
-  info->set_nexteventtime(eventInfo->nextEventTime);
+  fmitcp_proto::fmi2_event_info_t* info = new fmitcp_proto::fmi2_event_info_t;
+  info->set_newdiscretestatesneeded(eventInfo.newDiscreteStatesNeeded);
+  info->set_terminatesimulation(eventInfo.terminateSimulation);
+  info->set_nominalsofcontinuousstateschanged(eventInfo.nominalsOfContinuousStatesChanged);
+  info->set_valuesofcontinuousstateschanged(eventInfo.valuesOfContinuousStatesChanged);
+  info->set_nexteventtimedefined(eventInfo.nextEventTimeDefined);
+  info->set_nexteventtime(eventInfo.nextEventTime);
 
   return info;
 }

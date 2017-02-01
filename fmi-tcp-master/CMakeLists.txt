@@ -1,11 +1,11 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
-# Protobuf
-INCLUDE(FindProtobuf)
-FIND_PACKAGE(Protobuf REQUIRED)
 FIND_PACKAGE(Threads REQUIRED)
 
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O3")
+if (NOT WIN32)
+  # cl.exe has a different set of flags
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O3 -Wmaybe-uninitialized")
+endif ()
 
 INCLUDE_DIRECTORIES(${FMIL_INCLUDE_DIR} ${STRONG_COUPLING_INCLUDE_DIR} ${FMITCP_INCLUDE_DIR} include include/fmitcp src/fmitcp)
 LINK_DIRECTORIES   (${FMIL_LIBS_DIR}    ${STRONG_COUPLING_LIBS_DIR}    ${FMITCP_LIBS_DIR})
@@ -69,8 +69,6 @@ SET(TCP_MASTER_NAME fmi-tcp-master)
 SET(MPI_MASTER_NAME fmi-mpi-master)
 set(TCP_SERVER_NAME fmi-tcp-server)
 set(MPI_SERVER_NAME fmi-mpi-server)
-
-SET(EXECUTABLE_OUTPUT_PATH "${CMAKE_CURRENT_LIST_DIR}/bin")
 
 if (USE_GPL)
   set(EXTRALIBS gsl gslcblas )
@@ -188,42 +186,3 @@ endif()
 
 INSTALL(TARGETS ${TCP_MASTER_NAME} ${TCP_SERVER_NAME} DESTINATION bin)
 install(TARGETS ${MPI_MASTER_NAME} ${MPI_SERVER_NAME} DESTINATION bin)
-
-SET(FMU_SRCS
-  fmu/fmu_interface.c
-)
-SET(FMU_HEADERS
-  fmu/include/fmiFunctions.h
-  fmu/include/fmiFunctionTypes.h
-  fmu/include/fmiTypesPlatform.h
-  fmu/include/fmu_interface.h
-)
-
-# create the fmu.dll
-SET(CMAKE_SHARED_LIBRARY_PREFIX "")
-ADD_LIBRARY(vanilla SHARED ${FMU_HEADERS} ${FMU_SRCS})
-
-SET_TARGET_PROPERTIES(vanilla
-    PROPERTIES
-    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/bin"
-    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/bin"
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/bin"
-)
-
-# remove the exisitng fmu and directories
-EXECUTE_PROCESS(COMMAND rm -r -f "${CMAKE_CURRENT_LIST_DIR}/bin/binaries")
-EXECUTE_PROCESS(COMMAND rm -f "${CMAKE_CURRENT_LIST_DIR}/bin/vanilla.fmu")
-
-if ( 0 )
-# create the needed directories
-EXECUTE_PROCESS(COMMAND mkdir -p "${CMAKE_CURRENT_LIST_DIR}/bin/binaries/win32")
-
-# copy the fmu.dll to binaries & modelDescription.xml to bin
-EXECUTE_PROCESS(COMMAND cp "${CMAKE_CURRENT_LIST_DIR}/bin/vanilla.dll" "${CMAKE_CURRENT_LIST_DIR}/bin/binaries/win32")
-EXECUTE_PROCESS(COMMAND cp "${CMAKE_CURRENT_LIST_DIR}/fmu/modelDescription.xml" "${CMAKE_CURRENT_LIST_DIR}/bin")
-
-# make a zip file
-EXECUTE_PROCESS(COMMAND zip -r "vanilla.fmu" "binaries" "modelDescription.xml"
-                WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/bin)
-
-endif ( 0 )

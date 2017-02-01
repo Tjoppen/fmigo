@@ -1,4 +1,4 @@
-DEPS = Makefile  ../diag4.h ../diag4qp.h ../Makefile ../nonsmooth_clutch.h ../nonsmooth_clutch.cpp
+DEPS = Makefile  ../diag4.h ../banded.h ../qp_solver.h ../Makefile ../nonsmooth_clutch.h ../nonsmooth_clutch.cpp
 
 LOADLIBES = -lm
 CXXFLAGS = -g -std=c++11  -I/home/claude/vtb/umit/nla/

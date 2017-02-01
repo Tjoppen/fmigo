@@ -1,10 +1,19 @@
 build
-bin
-lib
 testout
 *.pb.cc
 *.pb.h
 *.o
+*.oct
+*-
+tmp
+*.log
+*.aux
+*.bbl
+*.blg
+*.rel
+*.nav
+*.bcf
+*.snm
 codelite
 *.fmu
 

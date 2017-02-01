@@ -12,8 +12,12 @@ make: FORCE
 build: FORCE
 	(cd ~/work/umit/build && ninja install > tempbuild && cat tempbuild | grep -v "Up-to-date")
 
-plot: run_me_test
-	(cd $(FMUPATH) && make plot)
+makeplot: run_me_test plot
+
+plot:
+	pkill python || echo ""
+	python $(FMUPATH)plot1.py $(FMUPATH)bouncingball.mat
+	python $(FMUPATH)plot1.py $(FMUPATH)vanderpol.mat der
 
 run:
 	(cd ~/work/umit/build && ninja && ninja install  | grep -v Up-to-date | grep -v Building | grep -v Install | grep -v "Set runtime") && mpiexec -np 1 $(MASTERPATH)fmi-mpi-master -t 12 -m me : -np 1 $(SERVERPATH)fmi-mpi-server $(FMUPATH)bouncingBall.fmu
@@ -29,9 +33,9 @@ FORCE:
 run_me_test:
 	(cd ~/work/umit/build && ninja && ninja install  | grep -v Up-to-date | grep -v Linking | grep -v Install | grep -v "Set runtime")
 	mpiexec -np 1 $(MASTERPATH)fmi-mpi-master -t 3 -m me : $(BOUNCINGBALL)
-	(cd $(FMUPATH) && make plot)
+	(cd $(FMUPATH) && mv resultFile.mat bouncingball.mat)
 	mpiexec -np 1 $(MASTERPATH)fmi-mpi-master -t 12 -m me : $(VANDERPOL)
-	(cd $(FMUPATH) && make plot)
+	(cd $(FMUPATH) && mv resultFile.mat vanderpol.mat)
 	#mpiexec -np 1 $(MASTERPATH)fmi-mpi-master -t 12 -m me : $(VANDERPOL) : $(VANDERPOL2)
 	#mpiexec -np 1 $(MASTERPATH)fmi-mpi-master -t 1.5 -m me : $(BOUNCINGBALL) : $(BOUNCINGBALL)
 	#mpiexec -np 1 $(MASTERPATH)fmi-mpi-master -t 1.6 -m me : $(VANDERPOL) : $(BOUNCINGBALL)

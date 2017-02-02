@@ -1,7 +1,7 @@
 SERVERPATH=~/work/umit/build/install/bin/
 MASTERPATH=~/work/umit/build/install/bin/
 FMUPATH=~/work/umit/data/
-
+SHELL := /bin/bash
 BOUNCINGBALL= -np 1 $(SERVERPATH)fmi-mpi-server $(FMUPATH)bouncingBall.fmu
 VANDERPOL= -np 1 $(SERVERPATH)fmi-mpi-server $(FMUPATH)vanDerPol.fmu
 VANDERPOL2= -np 1 $(SERVERPATH)fmi-mpi-server $(FMUPATH)vanDerPol2.fmu
@@ -13,6 +13,9 @@ build: FORCE
 	(cd ~/work/umit/build && ninja install > tempbuild && cat tempbuild | grep -v "Up-to-date")
 
 makeplot: run_me_test plot
+
+generate:
+	pushd ~/work/umit/umit-fmus/ && ./generate_everything.sh && popd
 
 plot:
 	pkill python || echo ""

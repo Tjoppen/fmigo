@@ -329,6 +329,7 @@ int fmitcp_master::parseArguments( int argc,
                 case fmi2_base_type_int:  p.intValue = atoi(values[2].c_str()); break;
                 case fmi2_base_type_bool: p.boolValue = (values[2] == "true"); break;
                 case fmi2_base_type_str:  p.stringValue = values[2]; break;
+                case fmi2_base_type_enum: fprintf(stderr, "An enum snuck its way into -p\n"); exit(1);
                 }
 
                 (*params)[make_pair(p.fmuIndex,p.type)].push_back(p);

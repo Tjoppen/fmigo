@@ -717,7 +717,7 @@ string Server::clientData(const char *data, size_t size) {
     // Create response
     fmitcp_proto::fmi2_import_free_fmu_state_res response;
     response.set_message_id(r.message_id());
-    response.set_status(fmitcp_proto::fmi2_status_ok);
+    response.set_status(fmitcp::fmi2StatusToProtofmi2Status(status));
     ret.first = fmitcp_proto::type_fmi2_import_free_fmu_state_res;
     ret.second = response.SerializeAsString();
     m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_free_fmu_state_res(mid=%d,status=%d)\n",response.message_id(),response.status());

@@ -1,7 +1,5 @@
 #include <iostream>
 #include <stdio.h>
-#include <stdarg.h>
-#include <stdlib.h>
 #ifdef WIN32
 #include "master/getopt.h"
 #else
@@ -22,11 +20,12 @@ using namespace common;
 using namespace std;
 
 static void printHelp(){
-    system("man fmi-tcp-master");
+  fprintf(stderr, "Check manpage for help, \"man fmi-tcp-master\"\n");
 }
 
 static void printInvalidArg(char option){
-    fprintf(stderr, "Invalid argument of -%c. Use -h for help.\n",option);
+  fprintf(stderr, "Invalid argument of -%c\n",option);
+  printHelp();
 }
 
 static fmi2_base_type_enu_t type_from_char(string type) {
@@ -139,7 +138,7 @@ int fmitcp_master::parseArguments( int argc,
 
     vector<char*> argv2 = make_char_vector(argvstore);
 
-    while ((c = getopt (argv2.size(), argv2.data(), "xrl:vqh:t:T:c:d:s:o:p:f:m:g:w:C:j:5:F:NM:a:z:ZL:i")) != -1){
+    while ((c = getopt (argv2.size(), argv2.data(), "xrl:vqh:t:T:c:d:s:o:p:f:m:g:w:C:j:5:F:NM:a:z:ZLi:")) != -1){
         int n, skip, l, cont, i, numScanned, stop, vis;
         deque<string> parts;
         if (optarg) parts = split(optarg, ':');
@@ -332,6 +331,7 @@ int fmitcp_master::parseArguments( int argc,
                 case fmi2_base_type_int:  p.intValue = atoi(values[2].c_str()); break;
                 case fmi2_base_type_bool: p.boolValue = (values[2] == "true"); break;
                 case fmi2_base_type_str:  p.stringValue = values[2]; break;
+                case fmi2_base_type_enum: fprintf(stderr, "An enum snuck its way into -p\n"); exit(1);
                 }
 
                 (*params)[make_pair(p.fmuIndex,p.type)].push_back(p);

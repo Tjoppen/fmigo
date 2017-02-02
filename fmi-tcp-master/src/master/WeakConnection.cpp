@@ -24,18 +24,20 @@ MultiValue WeakConnection::setFromReal(double in) const {
     switch (conn.toType) {
     case fmi2_base_type_real:
         ret.r = in*conn.slope + conn.intercept;
-	break;
+        break;
     case fmi2_base_type_int:
         ret.i = (int)(in*conn.slope + conn.intercept);
-	break;
+        break;
     case fmi2_base_type_bool:
         ret.b = fabs(in * conn.slope + conn.intercept) > 0.5;
-	break;
+        break;
     case fmi2_base_type_str:
         //we could support this, but eh..
         fprintf(stderr, "Converting real -> str not supported\n");
         exit(1);
-	break;
+    case fmi2_base_type_enum:
+        fprintf(stderr, "Converting real -> enum not supported\n");
+        exit(1);
     }
     return ret;
 }
@@ -45,7 +47,7 @@ MultiValue WeakConnection::setFromInteger(int in) const {
     switch (conn.toType) {
     case fmi2_base_type_real:
         ret.r = in*conn.slope + conn.intercept;
-	break;
+        break;
     case fmi2_base_type_int:
         if (conn.slope == 1 && conn.intercept == 0) {
             //special case to avoid losing precision
@@ -53,15 +55,17 @@ MultiValue WeakConnection::setFromInteger(int in) const {
         } else {
             ret.i = (int)(in*conn.slope + conn.intercept);
         }
-	break;
+        break;
     case fmi2_base_type_bool:
         ret.b = fabs(in*conn.slope + conn.intercept) > 0.5;
-	break;
+        break;
     case fmi2_base_type_str:
         //same here - let's avoid this for now
         fprintf(stderr, "Converting int -> str not supported\n");
         exit(1);
-	break;
+    case fmi2_base_type_enum:
+        fprintf(stderr, "Converting int -> enum not supported\n");
+        exit(1);
     }
     return ret;
 }
@@ -71,10 +75,10 @@ MultiValue WeakConnection::setFromBoolean(bool in) const {
     switch (conn.toType) {
     case fmi2_base_type_real:
         ret.r = in*conn.slope + conn.intercept;
-	break;
+        break;
     case fmi2_base_type_int:
         ret.i = (int)(in*conn.slope + conn.intercept);
-	break;
+        break;
     case fmi2_base_type_bool:
         //slope/intercept on bool -> bool doesn't really make sense IMO
         if (conn.slope != 1 || conn.intercept != 0) {
@@ -82,12 +86,14 @@ MultiValue WeakConnection::setFromBoolean(bool in) const {
             exit(1);
         }
         ret.b = in;
-	break;
+        break;
     case fmi2_base_type_str:
         //this one too
         fprintf(stderr, "Converting bool -> str not supported\n");
         exit(1);
-	break;
+    case fmi2_base_type_enum:
+        fprintf(stderr, "Converting bool -> enum not supported\n");
+        exit(1);
     }
     return ret;
 }
@@ -167,6 +173,9 @@ static InputRefsValuesType getInputWeakRefsAndValues_internal(vector<WeakConnect
         case fmi2_base_type_str:
             doit(refValues, wc, stringValueOfs,  wc.from->m_getStringValues,  &WeakConnection::setFromString);
             break;
+        case fmi2_base_type_enum:
+            fprintf(stderr, "Tried to connect enum output somewhere. Enums are not yet supported\n");
+            exit(1);
         }
     }
 

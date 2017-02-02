@@ -54,7 +54,7 @@ static void parse_server_args(int argc, char **argv, string *fmuPath, int *filte
       std::istringstream ss(nextArg);
       ss >> *port;
 
-      if (port <= 0) {
+      if (*port <= 0) {
         printf("Invalid port.\n");fflush(NULL);
         exit(EXIT_FAILURE);
       }

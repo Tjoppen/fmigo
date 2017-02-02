@@ -435,6 +435,12 @@ static void printOutputs(double t, BaseMaster *master, vector<FMIClient*>& clien
                 printf(",%i", client->m_getBooleanValues.front());
                 client->m_getBooleanValues.pop_front();
                 break;
+            case fmi2_base_type_str:
+                fprintf(stderr, "String outputs not allowed for now\n");
+                exit(1);
+            case fmi2_base_type_enum:
+                fprintf(stderr, "Enum outputs not allowed for now\n");
+                exit(1);
             /*case fmi2_base_type_str:
              * TODO: string escaping
                 printf(",\"%s\"", client->m_getStringValues.front().c_str());

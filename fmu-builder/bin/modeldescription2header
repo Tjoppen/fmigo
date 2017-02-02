@@ -36,7 +36,7 @@ elif fmiVersion == "2.0":
         providesDirectionalDerivative = cs.get('providesDirectionalDerivative') == "true"
         canGetAndSetFMUstate = cs.get('canGetAndSetFMUstate') == "true"
     elif me != None:
-        fmuType = me
+        fmuType = "me"
         modelIdentifier = me.get('modelIdentifier')
         providesDirectionalDerivative = me.get('providesDirectionalDerivative') == "true"
         canGetAndSetFMUstate = me.get('canGetAndSetFMUstate') == "true"
@@ -48,6 +48,8 @@ elif fmiVersion == "2.0":
 reals = {}
 ints  = {}
 bools = {}
+states = {}
+derivatives = {}
 
 for sv in root.find('ModelVariables').findall('ScalarVariable'):
     name = sv.attrib['name']
@@ -61,6 +63,7 @@ for sv in root.find('ModelVariables').findall('ScalarVariable'):
     I = sv.find('Integer')
     E = sv.find('Enum')
     B = sv.find('Boolean')
+    S = sv.find('State')
 
     if R != None:
         if vr in reals:
@@ -84,6 +87,9 @@ for sv in root.find('ModelVariables').findall('ScalarVariable'):
     else:
         warning('Variable "' + sc.attrib['name'] + '" has unknown/unsupported type')
         exit(1)
+    if S != None:
+        states[len(states)] = (name, 0)
+        derivatives[len(derivatives)] = ('d'+name, 0)
 
 print('''#ifndef MODELDESCRIPTION_H
 #define MODELDESCRIPTION_H
@@ -97,17 +103,19 @@ print('''#ifndef MODELDESCRIPTION_H
 #define NUMBER_OF_REALS %i
 #define NUMBER_OF_INTEGERS %i
 #define NUMBER_OF_BOOLEANS %i
-#define NUMBER_OF_STATES 0
+#define NUMBER_OF_STATES %i
 #define NUMBER_OF_EVENT_INDICATORS 0
 ''' % (
     modelIdentifier,
     root.get('guid'),
-    '#define FMI_COSIMULATION' if fmuType == 'cs' else '',
+    '#define FMI_COSIMULATION' if fmuType == 'cs' else
+    ('#define FMI_MODELEXCHANGE' if fmuType == 'me' else ''),
     1 if providesDirectionalDerivative else 0,
     1 if canGetAndSetFMUstate else 0,
     len(reals),
     len(ints),
     len(bools),
+    len(states),
 ))
 
 print('''
@@ -146,12 +154,19 @@ print('''
 ))
 
 print('''
+#define STATES { %s }
+''' % (
+    ', '.join(['VR_'+value[0].upper() for key,value in states.items()]),
+))
+
+
+print('''
 //the following getters and setters are static to avoid getting linking errors if this file is included in more than one place
 
 #define HAVE_GENERATED_GETTERS_SETTERS  //for letting the template know that we have our own getters and setters
 ''')
 
-def gen_getters_setters(t, d):
+def gen_getters(f, t, d):
     print('''
 static fmi2Status generated_fmi2Get%s(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2%s value[]) {
     int i;
@@ -162,8 +177,13 @@ static fmi2Status generated_fmi2Get%s(const modelDescription_t *md, const fmi2Va
         }
     }
     return fmi2OK;
-}
+}''' % (
+        f,t,
+        '\n'.join(['        case VR_%s: value[i] = md->%s; break;' % (value[0].upper(), value[0]) for key,value in d.items()]),
+    ))
 
+def gen_setters(f, t, d):
+    print('''
 static fmi2Status generated_fmi2Set%s(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2%s value[]) {
     int i;
     for (i = 0; i < nvr; i++) {
@@ -174,16 +194,31 @@ static fmi2Status generated_fmi2Set%s(modelDescription_t *md, const fmi2ValueRef
     }
     return fmi2OK;
 }''' % (
-        t,t,
-        '\n'.join(['        case %i: value[i] = md->%s; break;' % (key, value[0]) for key,value in d.items()]),
-        t,t,
-        '\n'.join(['        case %i: md->%s = value[i]; break;' % (key, value[0]) for key,value in d.items()]),
+        f,t,
+        '\n'.join(['        case VR_%s: md->%s = value[i]; break;' % (value[0].upper(), value[0]) for key,value in d.items()]),
     ))
 
+def gen_get_user_defined(f,t):
+    print('''
+fmi2Status getUserDefined%s(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2%s value[]);
+static fmi2Status generated_fmi2Get%s(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2%s value[]) {
+    return getUserDefined%s(md, vr, nvr, value);
+}
+''' % (
+        f,t,f,t,f
+    ))
 
-gen_getters_setters('Real',    reals)
-gen_getters_setters('Integer', ints)
-gen_getters_setters('Boolean', bools)
+gen_getters('Real', 'Real',    reals)
+gen_setters('Real', 'Real',    reals)
+gen_getters('Integer', 'Integer', ints)
+gen_setters('Integer', 'Integer', ints)
+gen_getters('Boolean', 'Boolean', bools)
+gen_setters('Boolean', 'Boolean', bools)
+
+if fmuType == 'me' :
+    gen_getters('ContinuousStates', 'Real', states)
+    gen_setters('ContinuousStates', 'Real', states)
+    gen_setters('Derivatives', 'Real', states)
+    gen_get_user_defined('Derivatives','Real')
 
 print('#endif //MODELDESCRIPTION_H')
-

@@ -32,6 +32,12 @@ parser.add_argument('-c','--console',
                     action='store_true',
                     default=False,
                     help='Generate CONSOLE target')
+# Get FMU type (co-simulation or model exchange)
+parser.add_argument('-f','--fmuType',
+                    type=str,
+                    help='Fmu type',
+                    default="cs")
+
 args = parser.parse_args()
 link_libraries = args.link.split(",")
 definitions = " -".join(args.definitions.split(","))
@@ -50,17 +56,14 @@ root = tree.getroot()
 # Get FMU version
 fmiVersion = root.get('fmiVersion')
 
-# Get FMU type (co-simulation or model exchange)
-fmuType = "cs"
-
 # Get model identifier.
 modelIdentifier = "modelIdentifier"
 if fmiVersion == "1.0":
     modelIdentifier = root.get('modelIdentifier')
 elif fmiVersion == "2.0":
-    if fmuType == "cs":
+    if args.fmuType == "cs":
         modelIdentifier = root.find('CoSimulation').get('modelIdentifier')
-    elif fmuType == "me":
+    elif args.fmuType == "me":
         modelIdentifier = root.find('ModelExchange').get('modelIdentifier')
 
 # Get system info

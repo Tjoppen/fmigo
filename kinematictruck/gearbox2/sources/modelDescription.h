@@ -79,19 +79,19 @@ static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case 0: value[i] = md->theta_e; break;
-        case 1: value[i] = md->omega_e; break;
-        case 2: value[i] = md->omegadot_e; break;
-        case 3: value[i] = md->tau_e; break;
-        case 4: value[i] = md->j1; break;
-        case 5: value[i] = md->d1; break;
-        case 6: value[i] = md->theta_l; break;
-        case 7: value[i] = md->omega_l; break;
-        case 8: value[i] = md->omegadot_l; break;
-        case 9: value[i] = md->tau_l; break;
-        case 10: value[i] = md->alpha; break;
-        case 11: value[i] = md->j2; break;
-        case 12: value[i] = md->d2; break;
+        case VR_THETA_E: value[i] = md->theta_e; break;
+        case VR_OMEGA_E: value[i] = md->omega_e; break;
+        case VR_OMEGADOT_E: value[i] = md->omegadot_e; break;
+        case VR_TAU_E: value[i] = md->tau_e; break;
+        case VR_J1: value[i] = md->j1; break;
+        case VR_D1: value[i] = md->d1; break;
+        case VR_THETA_L: value[i] = md->theta_l; break;
+        case VR_OMEGA_L: value[i] = md->omega_l; break;
+        case VR_OMEGADOT_L: value[i] = md->omegadot_l; break;
+        case VR_TAU_L: value[i] = md->tau_l; break;
+        case VR_ALPHA: value[i] = md->alpha; break;
+        case VR_J2: value[i] = md->j2; break;
+        case VR_D2: value[i] = md->d2; break;
         default: return fmi2Error;
         }
     }
@@ -102,19 +102,19 @@ static fmi2Status generated_fmi2SetReal(modelDescription_t *md, const fmi2ValueR
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case 0: md->theta_e = value[i]; break;
-        case 1: md->omega_e = value[i]; break;
-        case 2: md->omegadot_e = value[i]; break;
-        case 3: md->tau_e = value[i]; break;
-        case 4: md->j1 = value[i]; break;
-        case 5: md->d1 = value[i]; break;
-        case 6: md->theta_l = value[i]; break;
-        case 7: md->omega_l = value[i]; break;
-        case 8: md->omegadot_l = value[i]; break;
-        case 9: md->tau_l = value[i]; break;
-        case 10: md->alpha = value[i]; break;
-        case 11: md->j2 = value[i]; break;
-        case 12: md->d2 = value[i]; break;
+        case VR_THETA_E: md->theta_e = value[i]; break;
+        case VR_OMEGA_E: md->omega_e = value[i]; break;
+        case VR_OMEGADOT_E: md->omegadot_e = value[i]; break;
+        case VR_TAU_E: md->tau_e = value[i]; break;
+        case VR_J1: md->j1 = value[i]; break;
+        case VR_D1: md->d1 = value[i]; break;
+        case VR_THETA_L: md->theta_l = value[i]; break;
+        case VR_OMEGA_L: md->omega_l = value[i]; break;
+        case VR_OMEGADOT_L: md->omegadot_l = value[i]; break;
+        case VR_TAU_L: md->tau_l = value[i]; break;
+        case VR_ALPHA: md->alpha = value[i]; break;
+        case VR_J2: md->j2 = value[i]; break;
+        case VR_D2: md->d2 = value[i]; break;
         default: return fmi2Error;
         }
     }

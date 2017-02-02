@@ -58,12 +58,12 @@ static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case 0: value[i] = md->force; break;
-        case 1: value[i] = md->force_c; break;
-        case 2: value[i] = md->x; break;
-        case 3: value[i] = md->v; break;
-        case 4: value[i] = md->damping; break;
-        case 5: value[i] = md->mass; break;
+        case VR_FORCE: value[i] = md->force; break;
+        case VR_FORCE_C: value[i] = md->force_c; break;
+        case VR_X: value[i] = md->x; break;
+        case VR_V: value[i] = md->v; break;
+        case VR_DAMPING: value[i] = md->damping; break;
+        case VR_MASS: value[i] = md->mass; break;
         default: return fmi2Error;
         }
     }
@@ -74,12 +74,12 @@ static fmi2Status generated_fmi2SetReal(modelDescription_t *md, const fmi2ValueR
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case 0: md->force = value[i]; break;
-        case 1: md->force_c = value[i]; break;
-        case 2: md->x = value[i]; break;
-        case 3: md->v = value[i]; break;
-        case 4: md->damping = value[i]; break;
-        case 5: md->mass = value[i]; break;
+        case VR_FORCE: md->force = value[i]; break;
+        case VR_FORCE_C: md->force_c = value[i]; break;
+        case VR_X: md->x = value[i]; break;
+        case VR_V: md->v = value[i]; break;
+        case VR_DAMPING: md->damping = value[i]; break;
+        case VR_MASS: md->mass = value[i]; break;
         default: return fmi2Error;
         }
     }
@@ -90,7 +90,7 @@ static fmi2Status generated_fmi2GetInteger(const modelDescription_t *md, const f
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case 98: value[i] = md->filter_length; break;
+        case VR_FILTER_LENGTH: value[i] = md->filter_length; break;
         default: return fmi2Error;
         }
     }
@@ -101,7 +101,7 @@ static fmi2Status generated_fmi2SetInteger(modelDescription_t *md, const fmi2Val
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case 98: md->filter_length = value[i]; break;
+        case VR_FILTER_LENGTH: md->filter_length = value[i]; break;
         default: return fmi2Error;
         }
     }

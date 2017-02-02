@@ -136,38 +136,38 @@ static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case 0: value[i] = md->theta1; break;
-        case 1: value[i] = md->theta2; break;
-        case 2: value[i] = md->omega1; break;
-        case 3: value[i] = md->omega2; break;
-        case 4: value[i] = md->alpha1; break;
-        case 5: value[i] = md->alpha2; break;
-        case 6: value[i] = md->dtheta1; break;
-        case 7: value[i] = md->dtheta2; break;
-        case 8: value[i] = md->out_torque1; break;
-        case 9: value[i] = md->out_torque2; break;
-        case 10: value[i] = md->tau1; break;
-        case 11: value[i] = md->tau2; break;
-        case 12: value[i] = md->theta_drive1; break;
-        case 13: value[i] = md->omega_drive1; break;
-        case 14: value[i] = md->theta_drive2; break;
-        case 15: value[i] = md->omega_drive2; break;
-        case 16: value[i] = md->J; break;
-        case 17: value[i] = md->compliance; break;
-        case 18: value[i] = md->D; break;
-        case 19: value[i] = md->K_drive1; break;
-        case 20: value[i] = md->D_drive1; break;
-        case 21: value[i] = md->K_drive2; break;
-        case 22: value[i] = md->D_drive2; break;
-        case 23: value[i] = md->driver_sign1; break;
-        case 24: value[i] = md->driver_sign2; break;
-        case 25: value[i] = md->integrate_dt1; break;
-        case 26: value[i] = md->integrate_dt2; break;
-        case 27: value[i] = md->step; break;
-        case 29: value[i] = md->theta01; break;
-        case 30: value[i] = md->theta02; break;
-        case 31: value[i] = md->omega01; break;
-        case 32: value[i] = md->omega02; break;
+        case VR_THETA1: value[i] = md->theta1; break;
+        case VR_THETA2: value[i] = md->theta2; break;
+        case VR_OMEGA1: value[i] = md->omega1; break;
+        case VR_OMEGA2: value[i] = md->omega2; break;
+        case VR_ALPHA1: value[i] = md->alpha1; break;
+        case VR_ALPHA2: value[i] = md->alpha2; break;
+        case VR_DTHETA1: value[i] = md->dtheta1; break;
+        case VR_DTHETA2: value[i] = md->dtheta2; break;
+        case VR_OUT_TORQUE1: value[i] = md->out_torque1; break;
+        case VR_OUT_TORQUE2: value[i] = md->out_torque2; break;
+        case VR_TAU1: value[i] = md->tau1; break;
+        case VR_TAU2: value[i] = md->tau2; break;
+        case VR_THETA_DRIVE1: value[i] = md->theta_drive1; break;
+        case VR_OMEGA_DRIVE1: value[i] = md->omega_drive1; break;
+        case VR_THETA_DRIVE2: value[i] = md->theta_drive2; break;
+        case VR_OMEGA_DRIVE2: value[i] = md->omega_drive2; break;
+        case VR_J: value[i] = md->J; break;
+        case VR_COMPLIANCE: value[i] = md->compliance; break;
+        case VR_D: value[i] = md->D; break;
+        case VR_K_DRIVE1: value[i] = md->K_drive1; break;
+        case VR_D_DRIVE1: value[i] = md->D_drive1; break;
+        case VR_K_DRIVE2: value[i] = md->K_drive2; break;
+        case VR_D_DRIVE2: value[i] = md->D_drive2; break;
+        case VR_DRIVER_SIGN1: value[i] = md->driver_sign1; break;
+        case VR_DRIVER_SIGN2: value[i] = md->driver_sign2; break;
+        case VR_INTEGRATE_DT1: value[i] = md->integrate_dt1; break;
+        case VR_INTEGRATE_DT2: value[i] = md->integrate_dt2; break;
+        case VR_STEP: value[i] = md->step; break;
+        case VR_THETA01: value[i] = md->theta01; break;
+        case VR_THETA02: value[i] = md->theta02; break;
+        case VR_OMEGA01: value[i] = md->omega01; break;
+        case VR_OMEGA02: value[i] = md->omega02; break;
         default: return fmi2Error;
         }
     }
@@ -178,38 +178,38 @@ static fmi2Status generated_fmi2SetReal(modelDescription_t *md, const fmi2ValueR
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case 0: md->theta1 = value[i]; break;
-        case 1: md->theta2 = value[i]; break;
-        case 2: md->omega1 = value[i]; break;
-        case 3: md->omega2 = value[i]; break;
-        case 4: md->alpha1 = value[i]; break;
-        case 5: md->alpha2 = value[i]; break;
-        case 6: md->dtheta1 = value[i]; break;
-        case 7: md->dtheta2 = value[i]; break;
-        case 8: md->out_torque1 = value[i]; break;
-        case 9: md->out_torque2 = value[i]; break;
-        case 10: md->tau1 = value[i]; break;
-        case 11: md->tau2 = value[i]; break;
-        case 12: md->theta_drive1 = value[i]; break;
-        case 13: md->omega_drive1 = value[i]; break;
-        case 14: md->theta_drive2 = value[i]; break;
-        case 15: md->omega_drive2 = value[i]; break;
-        case 16: md->J = value[i]; break;
-        case 17: md->compliance = value[i]; break;
-        case 18: md->D = value[i]; break;
-        case 19: md->K_drive1 = value[i]; break;
-        case 20: md->D_drive1 = value[i]; break;
-        case 21: md->K_drive2 = value[i]; break;
-        case 22: md->D_drive2 = value[i]; break;
-        case 23: md->driver_sign1 = value[i]; break;
-        case 24: md->driver_sign2 = value[i]; break;
-        case 25: md->integrate_dt1 = value[i]; break;
-        case 26: md->integrate_dt2 = value[i]; break;
-        case 27: md->step = value[i]; break;
-        case 29: md->theta01 = value[i]; break;
-        case 30: md->theta02 = value[i]; break;
-        case 31: md->omega01 = value[i]; break;
-        case 32: md->omega02 = value[i]; break;
+        case VR_THETA1: md->theta1 = value[i]; break;
+        case VR_THETA2: md->theta2 = value[i]; break;
+        case VR_OMEGA1: md->omega1 = value[i]; break;
+        case VR_OMEGA2: md->omega2 = value[i]; break;
+        case VR_ALPHA1: md->alpha1 = value[i]; break;
+        case VR_ALPHA2: md->alpha2 = value[i]; break;
+        case VR_DTHETA1: md->dtheta1 = value[i]; break;
+        case VR_DTHETA2: md->dtheta2 = value[i]; break;
+        case VR_OUT_TORQUE1: md->out_torque1 = value[i]; break;
+        case VR_OUT_TORQUE2: md->out_torque2 = value[i]; break;
+        case VR_TAU1: md->tau1 = value[i]; break;
+        case VR_TAU2: md->tau2 = value[i]; break;
+        case VR_THETA_DRIVE1: md->theta_drive1 = value[i]; break;
+        case VR_OMEGA_DRIVE1: md->omega_drive1 = value[i]; break;
+        case VR_THETA_DRIVE2: md->theta_drive2 = value[i]; break;
+        case VR_OMEGA_DRIVE2: md->omega_drive2 = value[i]; break;
+        case VR_J: md->J = value[i]; break;
+        case VR_COMPLIANCE: md->compliance = value[i]; break;
+        case VR_D: md->D = value[i]; break;
+        case VR_K_DRIVE1: md->K_drive1 = value[i]; break;
+        case VR_D_DRIVE1: md->D_drive1 = value[i]; break;
+        case VR_K_DRIVE2: md->K_drive2 = value[i]; break;
+        case VR_D_DRIVE2: md->D_drive2 = value[i]; break;
+        case VR_DRIVER_SIGN1: md->driver_sign1 = value[i]; break;
+        case VR_DRIVER_SIGN2: md->driver_sign2 = value[i]; break;
+        case VR_INTEGRATE_DT1: md->integrate_dt1 = value[i]; break;
+        case VR_INTEGRATE_DT2: md->integrate_dt2 = value[i]; break;
+        case VR_STEP: md->step = value[i]; break;
+        case VR_THETA01: md->theta01 = value[i]; break;
+        case VR_THETA02: md->theta02 = value[i]; break;
+        case VR_OMEGA01: md->omega01 = value[i]; break;
+        case VR_OMEGA02: md->omega02 = value[i]; break;
         default: return fmi2Error;
         }
     }
@@ -220,7 +220,7 @@ static fmi2Status generated_fmi2GetInteger(const modelDescription_t *md, const f
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case 28: value[i] = md->n_elements; break;
+        case VR_N_ELEMENTS: value[i] = md->n_elements; break;
         default: return fmi2Error;
         }
     }
@@ -231,7 +231,7 @@ static fmi2Status generated_fmi2SetInteger(modelDescription_t *md, const fmi2Val
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case 28: md->n_elements = value[i]; break;
+        case VR_N_ELEMENTS: md->n_elements = value[i]; break;
         default: return fmi2Error;
         }
     }

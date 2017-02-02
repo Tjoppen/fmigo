@@ -2,13 +2,13 @@
 #define MODELDESCRIPTION_H
 #include "FMI2/fmi2Functions.h" //for fmi2Real etc.
 
-#define MODEL_IDENTIFIER impulse
-#define MODEL_GUID "{bea86d20-e0df-47d3-b694-bd366a1d5731}"
+#define MODEL_IDENTIFIER springs
+#define MODEL_GUID "{94c48023-cb4a-4ea1-9e70-ee6556d3ba0c}"
 #define FMI_COSIMULATION
-#define HAVE_DIRECTIONAL_DERIVATIVE 1
+#define HAVE_DIRECTIONAL_DERIVATIVE 0
 #define CAN_GET_SET_FMU_STATE 1
-#define NUMBER_OF_REALS 6
-#define NUMBER_OF_INTEGERS 3
+#define NUMBER_OF_REALS 12
+#define NUMBER_OF_INTEGERS 0
 #define NUMBER_OF_BOOLEANS 0
 #define NUMBER_OF_STATES 0
 #define NUMBER_OF_EVENT_INDICATORS 0
@@ -16,43 +16,55 @@
 
 #define HAVE_MODELDESCRIPTION_STRUCT
 typedef struct {
-    fmi2Real theta; //VR=0
-    fmi2Real omega; //VR=1
-    fmi2Real alpha; //VR=2
-    fmi2Real tau; //VR=3
-    fmi2Real pulse_amplitude; //VR=7
-    fmi2Real dc_offset; //VR=8
-    fmi2Integer pulse_type; //VR=4
-    fmi2Integer pulse_start; //VR=5
-    fmi2Integer pulse_length; //VR=6
+    fmi2Real x0; //VR=0
+    fmi2Real v0; //VR=1
+    fmi2Real dx0; //VR=2
+    fmi2Real dv0; //VR=3
+    fmi2Real x1; //VR=4
+    fmi2Real v1; //VR=5
+    fmi2Real dx1; //VR=6
+    fmi2Real dv1; //VR=7
+    fmi2Real k1; //VR=8
+    fmi2Real k2; //VR=9
+    fmi2Real x1_in; //VR=10
+    fmi2Real x0_out; //VR=11
+
 
 } modelDescription_t;
 
 
 #define HAVE_DEFAULTS
 static const modelDescription_t defaults = {
-    0, //theta
-    0, //omega
-    0, //alpha
-    0.0, //tau
-    1.0, //pulse_amplitude
-    0.0, //dc_offset
-    0, //pulse_type
-    0, //pulse_start
-    1, //pulse_length
+    0.0, //x0
+    0.0, //v0
+    0.0, //dx0
+    0.0, //dv0
+    0.0, //x1
+    0.0, //v1
+    0.0, //dx1
+    0.0, //dv1
+    1.0, //k1
+    1.0, //k2
+    0.0, //x1_in
+    0, //x0_out
+
 
 };
 
 
-#define VR_THETA 0
-#define VR_OMEGA 1
-#define VR_ALPHA 2
-#define VR_TAU 3
-#define VR_PULSE_AMPLITUDE 7
-#define VR_DC_OFFSET 8
-#define VR_PULSE_TYPE 4
-#define VR_PULSE_START 5
-#define VR_PULSE_LENGTH 6
+#define VR_X0 0
+#define VR_V0 1
+#define VR_DX0 2
+#define VR_DV0 3
+#define VR_X1 4
+#define VR_V1 5
+#define VR_DX1 6
+#define VR_DV1 7
+#define VR_K1 8
+#define VR_K2 9
+#define VR_X1_IN 10
+#define VR_X0_OUT 11
+
 
 
 //the following getters and setters are static to avoid getting linking errors if this file is included in more than one place
@@ -64,12 +76,18 @@ static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case VR_THETA: value[i] = md->theta; break;
-        case VR_OMEGA: value[i] = md->omega; break;
-        case VR_ALPHA: value[i] = md->alpha; break;
-        case VR_TAU: value[i] = md->tau; break;
-        case VR_PULSE_AMPLITUDE: value[i] = md->pulse_amplitude; break;
-        case VR_DC_OFFSET: value[i] = md->dc_offset; break;
+        case 0: value[i] = md->x0; break;
+        case 1: value[i] = md->v0; break;
+        case 2: value[i] = md->dx0; break;
+        case 3: value[i] = md->dv0; break;
+        case 4: value[i] = md->x1; break;
+        case 5: value[i] = md->v1; break;
+        case 6: value[i] = md->dx1; break;
+        case 7: value[i] = md->dv1; break;
+        case 8: value[i] = md->k1; break;
+        case 9: value[i] = md->k2; break;
+        case 10: value[i] = md->x1_in; break;
+        case 11: value[i] = md->x0_out; break;
         default: return fmi2Error;
         }
     }
@@ -80,12 +98,18 @@ static fmi2Status generated_fmi2SetReal(modelDescription_t *md, const fmi2ValueR
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case VR_THETA: md->theta = value[i]; break;
-        case VR_OMEGA: md->omega = value[i]; break;
-        case VR_ALPHA: md->alpha = value[i]; break;
-        case VR_TAU: md->tau = value[i]; break;
-        case VR_PULSE_AMPLITUDE: md->pulse_amplitude = value[i]; break;
-        case VR_DC_OFFSET: md->dc_offset = value[i]; break;
+        case 0: md->x0 = value[i]; break;
+        case 1: md->v0 = value[i]; break;
+        case 2: md->dx0 = value[i]; break;
+        case 3: md->dv0 = value[i]; break;
+        case 4: md->x1 = value[i]; break;
+        case 5: md->v1 = value[i]; break;
+        case 6: md->dx1 = value[i]; break;
+        case 7: md->dv1 = value[i]; break;
+        case 8: md->k1 = value[i]; break;
+        case 9: md->k2 = value[i]; break;
+        case 10: md->x1_in = value[i]; break;
+        case 11: md->x0_out = value[i]; break;
         default: return fmi2Error;
         }
     }
@@ -96,9 +120,7 @@ static fmi2Status generated_fmi2GetInteger(const modelDescription_t *md, const f
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case VR_PULSE_TYPE: value[i] = md->pulse_type; break;
-        case VR_PULSE_START: value[i] = md->pulse_start; break;
-        case VR_PULSE_LENGTH: value[i] = md->pulse_length; break;
+
         default: return fmi2Error;
         }
     }
@@ -109,9 +131,7 @@ static fmi2Status generated_fmi2SetInteger(modelDescription_t *md, const fmi2Val
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case VR_PULSE_TYPE: md->pulse_type = value[i]; break;
-        case VR_PULSE_START: md->pulse_start = value[i]; break;
-        case VR_PULSE_LENGTH: md->pulse_length = value[i]; break;
+
         default: return fmi2Error;
         }
     }

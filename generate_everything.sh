@@ -2,6 +2,7 @@ set -e
 
 MD2HDR="`pwd`/../fmu-builder/bin/modeldescription2header"
 GENERATOR="`pwd`/../fmu-builder/bin/cmake-generator -t `pwd`/templates/fmi2/ -i `pwd`/../FMILibrary-2.0.1/ThirdParty/FMI/default -m ${MD2HDR}"
+GENERATORME="`pwd`/../fmu-builder/bin/cmake-generator -t `pwd`/templates/fmi2/ -i `pwd`/../FMILibrary-2.0.1/ThirdParty/FMI/default -m ${MD2HDR} -f me"
 
 GSLFMUS="
     gsl2/clutch2
@@ -15,7 +16,9 @@ GSLFMUS="
     gsl2/trailer
     gsl2/engine2
 "
-
+MEFMUS="
+    gsl2/springs
+"
 FMUS="
     typeconvtest
     impulse
@@ -55,6 +58,17 @@ do
     pushd $d
         python ${MD2HDR} modelDescription.xml > sources/modelDescription.h
         python ${GENERATOR} ${GSL}
+    popd
+done
+
+#New GSL interface
+for d in $MEFMUS
+do
+    echo "add_subdirectory($d)" >> CMakeLists.txt
+    GSL="-t `pwd`/templates/gsl2/gsl-interface.c -t `pwd`/templates/gsl2/gsl-interface.h -l gsl,gslcblas,m -c"
+    pushd $d
+        python ${MD2HDR} modelDescription.xml > sources/modelDescription.h
+        python ${GENERATORME} ${GSL}
     popd
 done
 

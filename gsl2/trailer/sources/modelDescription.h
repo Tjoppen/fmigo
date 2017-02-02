@@ -151,42 +151,42 @@ static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case 1: value[i] = md->x0; break;
-        case 2: value[i] = md->v0; break;
-        case 3: value[i] = md->mass; break;
-        case 4: value[i] = md->r_w; break;
-        case 5: value[i] = md->r_g; break;
-        case 6: value[i] = md->area; break;
-        case 7: value[i] = md->rho; break;
-        case 8: value[i] = md->c_d; break;
-        case 9: value[i] = md->g; break;
-        case 10: value[i] = md->c_r_1; break;
-        case 11: value[i] = md->c_r_2; break;
-        case 12: value[i] = md->mu; break;
-        case 13: value[i] = md->k_d; break;
-        case 14: value[i] = md->gamma_d; break;
-        case 15: value[i] = md->k_t; break;
-        case 16: value[i] = md->gamma_t; break;
-        case 19: value[i] = md->integrator; break;
-        case 20: value[i] = md->phi_i; break;
-        case 21: value[i] = md->omega_i; break;
-        case 22: value[i] = md->tau_d; break;
-        case 23: value[i] = md->tau_e; break;
-        case 24: value[i] = md->angle; break;
-        case 25: value[i] = md->brake; break;
-        case 26: value[i] = md->x_in; break;
-        case 27: value[i] = md->v_in; break;
-        case 28: value[i] = md->f_in; break;
-        case 29: value[i] = md->x; break;
-        case 30: value[i] = md->v; break;
-        case 31: value[i] = md->a; break;
-        case 32: value[i] = md->phi; break;
-        case 33: value[i] = md->omega; break;
-        case 34: value[i] = md->alpha; break;
-        case 35: value[i] = md->tau_c; break;
-        case 36: value[i] = md->f_c; break;
-        case 37: value[i] = md->triangle_amplitude; break;
-        case 38: value[i] = md->triangle_wavelength; break;
+        case VR_X0: value[i] = md->x0; break;
+        case VR_V0: value[i] = md->v0; break;
+        case VR_MASS: value[i] = md->mass; break;
+        case VR_R_W: value[i] = md->r_w; break;
+        case VR_R_G: value[i] = md->r_g; break;
+        case VR_AREA: value[i] = md->area; break;
+        case VR_RHO: value[i] = md->rho; break;
+        case VR_C_D: value[i] = md->c_d; break;
+        case VR_G: value[i] = md->g; break;
+        case VR_C_R_1: value[i] = md->c_r_1; break;
+        case VR_C_R_2: value[i] = md->c_r_2; break;
+        case VR_MU: value[i] = md->mu; break;
+        case VR_K_D: value[i] = md->k_d; break;
+        case VR_GAMMA_D: value[i] = md->gamma_d; break;
+        case VR_K_T: value[i] = md->k_t; break;
+        case VR_GAMMA_T: value[i] = md->gamma_t; break;
+        case VR_INTEGRATOR: value[i] = md->integrator; break;
+        case VR_PHI_I: value[i] = md->phi_i; break;
+        case VR_OMEGA_I: value[i] = md->omega_i; break;
+        case VR_TAU_D: value[i] = md->tau_d; break;
+        case VR_TAU_E: value[i] = md->tau_e; break;
+        case VR_ANGLE: value[i] = md->angle; break;
+        case VR_BRAKE: value[i] = md->brake; break;
+        case VR_X_IN: value[i] = md->x_in; break;
+        case VR_V_IN: value[i] = md->v_in; break;
+        case VR_F_IN: value[i] = md->f_in; break;
+        case VR_X: value[i] = md->x; break;
+        case VR_V: value[i] = md->v; break;
+        case VR_A: value[i] = md->a; break;
+        case VR_PHI: value[i] = md->phi; break;
+        case VR_OMEGA: value[i] = md->omega; break;
+        case VR_ALPHA: value[i] = md->alpha; break;
+        case VR_TAU_C: value[i] = md->tau_c; break;
+        case VR_F_C: value[i] = md->f_c; break;
+        case VR_TRIANGLE_AMPLITUDE: value[i] = md->triangle_amplitude; break;
+        case VR_TRIANGLE_WAVELENGTH: value[i] = md->triangle_wavelength; break;
         default: return fmi2Error;
         }
     }
@@ -197,42 +197,42 @@ static fmi2Status generated_fmi2SetReal(modelDescription_t *md, const fmi2ValueR
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case 1: md->x0 = value[i]; break;
-        case 2: md->v0 = value[i]; break;
-        case 3: md->mass = value[i]; break;
-        case 4: md->r_w = value[i]; break;
-        case 5: md->r_g = value[i]; break;
-        case 6: md->area = value[i]; break;
-        case 7: md->rho = value[i]; break;
-        case 8: md->c_d = value[i]; break;
-        case 9: md->g = value[i]; break;
-        case 10: md->c_r_1 = value[i]; break;
-        case 11: md->c_r_2 = value[i]; break;
-        case 12: md->mu = value[i]; break;
-        case 13: md->k_d = value[i]; break;
-        case 14: md->gamma_d = value[i]; break;
-        case 15: md->k_t = value[i]; break;
-        case 16: md->gamma_t = value[i]; break;
-        case 19: md->integrator = value[i]; break;
-        case 20: md->phi_i = value[i]; break;
-        case 21: md->omega_i = value[i]; break;
-        case 22: md->tau_d = value[i]; break;
-        case 23: md->tau_e = value[i]; break;
-        case 24: md->angle = value[i]; break;
-        case 25: md->brake = value[i]; break;
-        case 26: md->x_in = value[i]; break;
-        case 27: md->v_in = value[i]; break;
-        case 28: md->f_in = value[i]; break;
-        case 29: md->x = value[i]; break;
-        case 30: md->v = value[i]; break;
-        case 31: md->a = value[i]; break;
-        case 32: md->phi = value[i]; break;
-        case 33: md->omega = value[i]; break;
-        case 34: md->alpha = value[i]; break;
-        case 35: md->tau_c = value[i]; break;
-        case 36: md->f_c = value[i]; break;
-        case 37: md->triangle_amplitude = value[i]; break;
-        case 38: md->triangle_wavelength = value[i]; break;
+        case VR_X0: md->x0 = value[i]; break;
+        case VR_V0: md->v0 = value[i]; break;
+        case VR_MASS: md->mass = value[i]; break;
+        case VR_R_W: md->r_w = value[i]; break;
+        case VR_R_G: md->r_g = value[i]; break;
+        case VR_AREA: md->area = value[i]; break;
+        case VR_RHO: md->rho = value[i]; break;
+        case VR_C_D: md->c_d = value[i]; break;
+        case VR_G: md->g = value[i]; break;
+        case VR_C_R_1: md->c_r_1 = value[i]; break;
+        case VR_C_R_2: md->c_r_2 = value[i]; break;
+        case VR_MU: md->mu = value[i]; break;
+        case VR_K_D: md->k_d = value[i]; break;
+        case VR_GAMMA_D: md->gamma_d = value[i]; break;
+        case VR_K_T: md->k_t = value[i]; break;
+        case VR_GAMMA_T: md->gamma_t = value[i]; break;
+        case VR_INTEGRATOR: md->integrator = value[i]; break;
+        case VR_PHI_I: md->phi_i = value[i]; break;
+        case VR_OMEGA_I: md->omega_i = value[i]; break;
+        case VR_TAU_D: md->tau_d = value[i]; break;
+        case VR_TAU_E: md->tau_e = value[i]; break;
+        case VR_ANGLE: md->angle = value[i]; break;
+        case VR_BRAKE: md->brake = value[i]; break;
+        case VR_X_IN: md->x_in = value[i]; break;
+        case VR_V_IN: md->v_in = value[i]; break;
+        case VR_F_IN: md->f_in = value[i]; break;
+        case VR_X: md->x = value[i]; break;
+        case VR_V: md->v = value[i]; break;
+        case VR_A: md->a = value[i]; break;
+        case VR_PHI: md->phi = value[i]; break;
+        case VR_OMEGA: md->omega = value[i]; break;
+        case VR_ALPHA: md->alpha = value[i]; break;
+        case VR_TAU_C: md->tau_c = value[i]; break;
+        case VR_F_C: md->f_c = value[i]; break;
+        case VR_TRIANGLE_AMPLITUDE: md->triangle_amplitude = value[i]; break;
+        case VR_TRIANGLE_WAVELENGTH: md->triangle_wavelength = value[i]; break;
         default: return fmi2Error;
         }
     }
@@ -243,7 +243,7 @@ static fmi2Status generated_fmi2GetInteger(const modelDescription_t *md, const f
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case 98: value[i] = md->filter_length; break;
+        case VR_FILTER_LENGTH: value[i] = md->filter_length; break;
         default: return fmi2Error;
         }
     }
@@ -254,7 +254,7 @@ static fmi2Status generated_fmi2SetInteger(modelDescription_t *md, const fmi2Val
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case 98: md->filter_length = value[i]; break;
+        case VR_FILTER_LENGTH: md->filter_length = value[i]; break;
         default: return fmi2Error;
         }
     }
@@ -265,8 +265,8 @@ static fmi2Status generated_fmi2GetBoolean(const modelDescription_t *md, const f
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case 17: value[i] = md->integrate_dw; break;
-        case 18: value[i] = md->integrate_dx; break;
+        case VR_INTEGRATE_DW: value[i] = md->integrate_dw; break;
+        case VR_INTEGRATE_DX: value[i] = md->integrate_dx; break;
         default: return fmi2Error;
         }
     }
@@ -277,8 +277,8 @@ static fmi2Status generated_fmi2SetBoolean(modelDescription_t *md, const fmi2Val
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case 17: md->integrate_dw = value[i]; break;
-        case 18: md->integrate_dx = value[i]; break;
+        case VR_INTEGRATE_DW: md->integrate_dw = value[i]; break;
+        case VR_INTEGRATE_DX: md->integrate_dx = value[i]; break;
         default: return fmi2Error;
         }
     }

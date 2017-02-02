@@ -70,16 +70,16 @@ static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case 0: value[i] = md->x0; break;
-        case 1: value[i] = md->v0; break;
-        case 2: value[i] = md->dx0; break;
-        case 3: value[i] = md->mass; break;
-        case 4: value[i] = md->gamma; break;
-        case 5: value[i] = md->clutch_damping; break;
-        case 6: value[i] = md->v_in; break;
-        case 7: value[i] = md->force_in; break;
-        case 8: value[i] = md->v; break;
-        case 9: value[i] = md->force_clutch; break;
+        case VR_X0: value[i] = md->x0; break;
+        case VR_V0: value[i] = md->v0; break;
+        case VR_DX0: value[i] = md->dx0; break;
+        case VR_MASS: value[i] = md->mass; break;
+        case VR_GAMMA: value[i] = md->gamma; break;
+        case VR_CLUTCH_DAMPING: value[i] = md->clutch_damping; break;
+        case VR_V_IN: value[i] = md->v_in; break;
+        case VR_FORCE_IN: value[i] = md->force_in; break;
+        case VR_V: value[i] = md->v; break;
+        case VR_FORCE_CLUTCH: value[i] = md->force_clutch; break;
         default: return fmi2Error;
         }
     }
@@ -90,16 +90,16 @@ static fmi2Status generated_fmi2SetReal(modelDescription_t *md, const fmi2ValueR
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case 0: md->x0 = value[i]; break;
-        case 1: md->v0 = value[i]; break;
-        case 2: md->dx0 = value[i]; break;
-        case 3: md->mass = value[i]; break;
-        case 4: md->gamma = value[i]; break;
-        case 5: md->clutch_damping = value[i]; break;
-        case 6: md->v_in = value[i]; break;
-        case 7: md->force_in = value[i]; break;
-        case 8: md->v = value[i]; break;
-        case 9: md->force_clutch = value[i]; break;
+        case VR_X0: md->x0 = value[i]; break;
+        case VR_V0: md->v0 = value[i]; break;
+        case VR_DX0: md->dx0 = value[i]; break;
+        case VR_MASS: md->mass = value[i]; break;
+        case VR_GAMMA: md->gamma = value[i]; break;
+        case VR_CLUTCH_DAMPING: md->clutch_damping = value[i]; break;
+        case VR_V_IN: md->v_in = value[i]; break;
+        case VR_FORCE_IN: md->force_in = value[i]; break;
+        case VR_V: md->v = value[i]; break;
+        case VR_FORCE_CLUTCH: md->force_clutch = value[i]; break;
         default: return fmi2Error;
         }
     }
@@ -110,7 +110,7 @@ static fmi2Status generated_fmi2GetInteger(const modelDescription_t *md, const f
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case 98: value[i] = md->filter_length; break;
+        case VR_FILTER_LENGTH: value[i] = md->filter_length; break;
         default: return fmi2Error;
         }
     }
@@ -121,7 +121,7 @@ static fmi2Status generated_fmi2SetInteger(modelDescription_t *md, const fmi2Val
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case 98: md->filter_length = value[i]; break;
+        case VR_FILTER_LENGTH: md->filter_length = value[i]; break;
         default: return fmi2Error;
         }
     }

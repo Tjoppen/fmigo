@@ -1,7 +1,7 @@
 /* ---------------------------------------------------------------------------*
  * fmuTemplate.c
  * Implementation of the FMI interface based on functions and macros to
- * be defined by the includer of this file. 
+ * be defined by the includer of this file.
  * If FMI_COSIMULATION is defined, this implements "FMI for Co-Simulation 2.0",
  * otherwise "FMI for Model Exchange 2.0".
  * The "FMI for Co-Simulation 2.0", implementation assumes that exactly the
@@ -19,7 +19,7 @@
  * Copyright QTronic GmbH. All rights reserved.
  * ---------------------------------------------------------------------------*/
 
-// macro to be used to log messages. The macro check if current 
+// macro to be used to log messages. The macro check if current
 // log category is valid and, if true, call the logger provided by simulator.
 #define FILTERED_LOG(instance, status, categoryIndex, message, ...) if (isCategoryLogged(instance, categoryIndex)) \
         instance->functions->logger(instance->functions->componentEnvironment, instance->instanceName, status, \
@@ -49,14 +49,14 @@ static fmi2Boolean isCategoryLogged(ModelInstance *comp, int categoryIndex) {
 // Private helpers used below to validate function arguments
 // ---------------------------------------------------------------------------
 
-/*static fmi2Boolean invalidNumber(ModelInstance *comp, const char *f, const char *arg, int n, int nExpected) {
+static fmi2Boolean invalidNumber(ModelInstance *comp, const char *f, const char *arg, int n, int nExpected) {
     if (n != nExpected) {
         comp->s.state = modelError;
         FILTERED_LOG(comp, fmi2Error, LOG_ERROR, "%s: Invalid argument %s = %d. Expected %d.", f, arg, n, nExpected)
         return fmi2True;
     }
     return fmi2False;
-}*/
+}
 
 static fmi2Boolean invalidState(ModelInstance *comp, const char *f, int statesExpected) {
     if (!comp)
@@ -771,6 +771,9 @@ fmi2Status fmiSetContinuousStates(fmi2Component c, const fmi2Real x[], size_t nx
         return fmi2Error;
     if (nullPointer(comp, "fmiSetContinuousStates", "x[]", x))
         return fmi2Error;
+#ifdef HAVE_MODELDESCRIPTION_STRUCT
+    return generated_fmi2SetContinuousStates(&comp->s.md, vrStates, nx, x);
+#else
     for (i = 0; i < nx; i++) {
         fmi2ValueReference vr = vrStates[i];
         FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmiSetContinuousStates: #r%d#=%.16g", vr, x[i])
@@ -778,6 +781,7 @@ fmi2Status fmiSetContinuousStates(fmi2Component c, const fmi2Real x[], size_t nx
         comp->s.r[vr] = x[i];
     }
     return fmi2OK;
+#endif
 }
 
 /* Evaluation of the model equations */
@@ -790,14 +794,16 @@ fmi2Status fmiGetDerivatives(fmi2Component c, fmi2Real derivatives[], size_t nx)
         return fmi2Error;
     if (nullPointer(comp, "fmiGetDerivatives", "derivatives[]", derivatives))
         return fmi2Error;
-#if NUMBER_OF_STATES>0
+#ifdef HAVE_MODELDESCRIPTION_STRUCT
+    return generated_fmi2GetDerivatives(&comp->s.md, vrStates, nx, derivatives);
+#else
     for (i = 0; i < nx; i++) {
         fmi2ValueReference vr = vrStates[i] + 1;
         derivatives[i] = comp->s.r[vr];
         FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmiGetDerivatives: #r%d# = %.16g", vr, derivatives[i])
     }
-#endif
     return fmi2OK;
+#endif
 }
 
 fmi2Status fmiGetEventIndicators(fmi2Component c, fmi2Real eventIndicators[], size_t ni) {
@@ -825,12 +831,17 @@ fmi2Status fmiGetContinuousStates(fmi2Component c, fmi2Real states[], size_t nx)
         return fmi2Error;
     if (nullPointer(comp, "fmiGetContinuousStates", "states[]", states))
         return fmi2Error;
+
+#ifdef HAVE_MODELDESCRIPTION_STRUCT
+    return generated_fmi2GetContinuousStates(&comp->s.md, vrStates, nx, states);
+#else
     for (i = 0; i < nx; i++) {
         fmi2ValueReference vr = vrStates[i];
         states[i] = comp->s.r[vr];
         FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmiGetContinuousStates: #r%u# = %.16g", vr, states[i])
     }
     return fmi2OK;
+#endif
 }
 
 fmi2Status fmiGetNominalsOfContinuousStates(fmi2Component c, fmi2Real x_nominal[], size_t nx) {

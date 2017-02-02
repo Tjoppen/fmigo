@@ -1,0 +1,30 @@
+#include "modelDescription.h"
+#include "gsl-interface.h"
+
+#define SIMULATION_TYPE cgsl_simulation
+#define SIMULATION_INIT strings_init
+#define SIMULATION_FREE cgsl_free_simulation
+
+#include "fmuTemplate.h"
+
+
+static void astrings_init(state_t *s) {
+}
+
+static void adoStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
+    //cgsl_step_to( &s->simulation, currentCommunicationPoint, communicationStepSize );
+}
+
+
+//gcc -g clutch.c ../../../templates/gsl2/gsl-interface.c -DCONSOLE -I../../../templates/gsl2 -I../../../templates/fmi2 -lgsl -lgslcblas -lm -Wall
+#ifdef CONSOLE
+int main(){
+
+  return 0;
+}
+#else
+
+// include code that implements the FMI based on the above definitions
+#include "fmuTemplate_impl.h"
+
+#endif

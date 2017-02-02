@@ -91,23 +91,23 @@ static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case 1: value[i] = md->theta_out; break;
-        case 2: value[i] = md->omega_out; break;
-        case 3: value[i] = md->alpha_out; break;
-        case 4: value[i] = md->tau_out; break;
-        case 5: value[i] = md->theta_in; break;
-        case 6: value[i] = md->omega_in; break;
-        case 7: value[i] = md->tau_in; break;
-        case 8: value[i] = md->theta0; break;
-        case 9: value[i] = md->omega0; break;
-        case 10: value[i] = md->kp; break;
-        case 11: value[i] = md->tau_max; break;
-        case 12: value[i] = md->omega_target; break;
-        case 13: value[i] = md->jinv; break;
-        case 14: value[i] = md->k1; break;
-        case 15: value[i] = md->k2; break;
-        case 16: value[i] = md->k_in; break;
-        case 17: value[i] = md->d_in; break;
+        case VR_THETA_OUT: value[i] = md->theta_out; break;
+        case VR_OMEGA_OUT: value[i] = md->omega_out; break;
+        case VR_ALPHA_OUT: value[i] = md->alpha_out; break;
+        case VR_TAU_OUT: value[i] = md->tau_out; break;
+        case VR_THETA_IN: value[i] = md->theta_in; break;
+        case VR_OMEGA_IN: value[i] = md->omega_in; break;
+        case VR_TAU_IN: value[i] = md->tau_in; break;
+        case VR_THETA0: value[i] = md->theta0; break;
+        case VR_OMEGA0: value[i] = md->omega0; break;
+        case VR_KP: value[i] = md->kp; break;
+        case VR_TAU_MAX: value[i] = md->tau_max; break;
+        case VR_OMEGA_TARGET: value[i] = md->omega_target; break;
+        case VR_JINV: value[i] = md->jinv; break;
+        case VR_K1: value[i] = md->k1; break;
+        case VR_K2: value[i] = md->k2; break;
+        case VR_K_IN: value[i] = md->k_in; break;
+        case VR_D_IN: value[i] = md->d_in; break;
         default: return fmi2Error;
         }
     }
@@ -118,23 +118,23 @@ static fmi2Status generated_fmi2SetReal(modelDescription_t *md, const fmi2ValueR
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case 1: md->theta_out = value[i]; break;
-        case 2: md->omega_out = value[i]; break;
-        case 3: md->alpha_out = value[i]; break;
-        case 4: md->tau_out = value[i]; break;
-        case 5: md->theta_in = value[i]; break;
-        case 6: md->omega_in = value[i]; break;
-        case 7: md->tau_in = value[i]; break;
-        case 8: md->theta0 = value[i]; break;
-        case 9: md->omega0 = value[i]; break;
-        case 10: md->kp = value[i]; break;
-        case 11: md->tau_max = value[i]; break;
-        case 12: md->omega_target = value[i]; break;
-        case 13: md->jinv = value[i]; break;
-        case 14: md->k1 = value[i]; break;
-        case 15: md->k2 = value[i]; break;
-        case 16: md->k_in = value[i]; break;
-        case 17: md->d_in = value[i]; break;
+        case VR_THETA_OUT: md->theta_out = value[i]; break;
+        case VR_OMEGA_OUT: md->omega_out = value[i]; break;
+        case VR_ALPHA_OUT: md->alpha_out = value[i]; break;
+        case VR_TAU_OUT: md->tau_out = value[i]; break;
+        case VR_THETA_IN: md->theta_in = value[i]; break;
+        case VR_OMEGA_IN: md->omega_in = value[i]; break;
+        case VR_TAU_IN: md->tau_in = value[i]; break;
+        case VR_THETA0: md->theta0 = value[i]; break;
+        case VR_OMEGA0: md->omega0 = value[i]; break;
+        case VR_KP: md->kp = value[i]; break;
+        case VR_TAU_MAX: md->tau_max = value[i]; break;
+        case VR_OMEGA_TARGET: md->omega_target = value[i]; break;
+        case VR_JINV: md->jinv = value[i]; break;
+        case VR_K1: md->k1 = value[i]; break;
+        case VR_K2: md->k2 = value[i]; break;
+        case VR_K_IN: md->k_in = value[i]; break;
+        case VR_D_IN: md->d_in = value[i]; break;
         default: return fmi2Error;
         }
     }
@@ -145,7 +145,7 @@ static fmi2Status generated_fmi2GetInteger(const modelDescription_t *md, const f
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case 98: value[i] = md->filter_length; break;
+        case VR_FILTER_LENGTH: value[i] = md->filter_length; break;
         default: return fmi2Error;
         }
     }
@@ -156,7 +156,7 @@ static fmi2Status generated_fmi2SetInteger(modelDescription_t *md, const fmi2Val
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case 98: md->filter_length = value[i]; break;
+        case VR_FILTER_LENGTH: md->filter_length = value[i]; break;
         default: return fmi2Error;
         }
     }
@@ -167,7 +167,7 @@ static fmi2Status generated_fmi2GetBoolean(const modelDescription_t *md, const f
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case 18: value[i] = md->integrate_dtheta; break;
+        case VR_INTEGRATE_DTHETA: value[i] = md->integrate_dtheta; break;
         default: return fmi2Error;
         }
     }
@@ -178,7 +178,7 @@ static fmi2Status generated_fmi2SetBoolean(modelDescription_t *md, const fmi2Val
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case 18: md->integrate_dtheta = value[i]; break;
+        case VR_INTEGRATE_DTHETA: md->integrate_dtheta = value[i]; break;
         default: return fmi2Error;
         }
     }

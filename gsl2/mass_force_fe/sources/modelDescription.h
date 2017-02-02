@@ -73,17 +73,17 @@ static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case 0: value[i] = md->vin; break;
-        case 1: value[i] = md->force_c; break;
-        case 2: value[i] = md->x; break;
-        case 3: value[i] = md->v; break;
-        case 4: value[i] = md->damping; break;
-        case 5: value[i] = md->mass; break;
-        case 6: value[i] = md->coupling_spring; break;
-        case 7: value[i] = md->coupling_damping; break;
-        case 8: value[i] = md->force_out1; break;
-        case 9: value[i] = md->force_out2; break;
-        case 10: value[i] = md->dx; break;
+        case VR_VIN: value[i] = md->vin; break;
+        case VR_FORCE_C: value[i] = md->force_c; break;
+        case VR_X: value[i] = md->x; break;
+        case VR_V: value[i] = md->v; break;
+        case VR_DAMPING: value[i] = md->damping; break;
+        case VR_MASS: value[i] = md->mass; break;
+        case VR_COUPLING_SPRING: value[i] = md->coupling_spring; break;
+        case VR_COUPLING_DAMPING: value[i] = md->coupling_damping; break;
+        case VR_FORCE_OUT1: value[i] = md->force_out1; break;
+        case VR_FORCE_OUT2: value[i] = md->force_out2; break;
+        case VR_DX: value[i] = md->dx; break;
         default: return fmi2Error;
         }
     }
@@ -94,17 +94,17 @@ static fmi2Status generated_fmi2SetReal(modelDescription_t *md, const fmi2ValueR
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case 0: md->vin = value[i]; break;
-        case 1: md->force_c = value[i]; break;
-        case 2: md->x = value[i]; break;
-        case 3: md->v = value[i]; break;
-        case 4: md->damping = value[i]; break;
-        case 5: md->mass = value[i]; break;
-        case 6: md->coupling_spring = value[i]; break;
-        case 7: md->coupling_damping = value[i]; break;
-        case 8: md->force_out1 = value[i]; break;
-        case 9: md->force_out2 = value[i]; break;
-        case 10: md->dx = value[i]; break;
+        case VR_VIN: md->vin = value[i]; break;
+        case VR_FORCE_C: md->force_c = value[i]; break;
+        case VR_X: md->x = value[i]; break;
+        case VR_V: md->v = value[i]; break;
+        case VR_DAMPING: md->damping = value[i]; break;
+        case VR_MASS: md->mass = value[i]; break;
+        case VR_COUPLING_SPRING: md->coupling_spring = value[i]; break;
+        case VR_COUPLING_DAMPING: md->coupling_damping = value[i]; break;
+        case VR_FORCE_OUT1: md->force_out1 = value[i]; break;
+        case VR_FORCE_OUT2: md->force_out2 = value[i]; break;
+        case VR_DX: md->dx = value[i]; break;
         default: return fmi2Error;
         }
     }
@@ -115,7 +115,7 @@ static fmi2Status generated_fmi2GetInteger(const modelDescription_t *md, const f
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case 98: value[i] = md->filter_length; break;
+        case VR_FILTER_LENGTH: value[i] = md->filter_length; break;
         default: return fmi2Error;
         }
     }
@@ -126,7 +126,7 @@ static fmi2Status generated_fmi2SetInteger(modelDescription_t *md, const fmi2Val
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case 98: md->filter_length = value[i]; break;
+        case VR_FILTER_LENGTH: md->filter_length = value[i]; break;
         default: return fmi2Error;
         }
     }

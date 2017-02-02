@@ -72,6 +72,8 @@ class FmuGoStorage {
         if( &p == &get_current_derivatives()) return get_##name##_derivatives(); \
         if( &p == &get_current_indicators()) return get_##name##_indicators(); \
         if( &p == &get_current_nominals()) return get_##name##_nominals(); \
+        fprintf(stderr, "get_"#name"(): Unknown data\n");               \
+        exit(1);                                                        \
     }
 
     CURRENT_BACKUP(current);
@@ -104,12 +106,20 @@ class FmuGoStorage {
         if( &p == &get_current_derivatives()) return STORAGE::derivatives;
         if( &p == &get_current_indicators()) return STORAGE::indicators;
         if( &p == &get_current_nominals()) return STORAGE::nominals;
+        fprintf(stderr, "get_current_type(): Unknown data\n");
+        exit(1);
     }
     inline Data& get_current(STORAGE e){
-        if( e == STORAGE::states) return get_current_states();
-        if( e == STORAGE::derivatives) return get_current_derivatives();
-        if( e == STORAGE::indicators) return get_current_indicators();
-        if( e == STORAGE::nominals) return get_current_nominals();
+        switch (e) {
+        case STORAGE::states: return get_current_states();
+        case STORAGE::derivatives: return get_current_derivatives();
+        case STORAGE::indicators: return get_current_indicators();
+        case STORAGE::nominals: return get_current_nominals();
+        default:
+            //gcc isn't quite smart enough to catch that this should never happen
+            fprintf(stderr, "get_current(): Unknown STORAGE\n");
+            exit(1);
+        }
     }
     inline size_t & get_end(const size_t s,Data &p){return get_bounds(p).at(s).second;}
 

@@ -81,7 +81,7 @@ void FmuGoStorage::allocate_storage(const vector<size_t> &number_of_states,const
 void FmuGoStorage::print(Data & current){ char str[1]=""; FmuGoStorage::print(current,str);}
 void FmuGoStorage::print(Data & current,char *str)
     {
-        fprintf(stderr,str);
+        fputs(str,stderr);
         for(auto x: get_bounds(current)) {
                 for(size_t i = x.first; i != x.second; ++i)
                     fprintf(stderr,"%f ",current.at(i));

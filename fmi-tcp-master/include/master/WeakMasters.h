@@ -140,8 +140,9 @@ class ModelExchangeStepper : public BaseMaster {
     std::vector<int> stepOrder;
  public:
  ModelExchangeStepper(std::vector<FMIClient*> clients, std::vector<WeakConnection> weakConnections, double relativeTolerance, enum INTEGRATORTYPE integratorType  ) :
-    BaseMaster(clients,weakConnections), m_tolerance(relativeTolerance), m_integratorType(integratorType)
+    BaseMaster(clients,weakConnections), m_integratorType(integratorType), m_tolerance(relativeTolerance)
     {
+      //TODO: init timeLoop? might be used uninitialized
       fprintf(stderr, "ModelExchangeStepper\n");
     }
 
@@ -502,7 +503,7 @@ class ModelExchangeStepper : public BaseMaster {
         timeLoop.t_crossed = p->t_past;//min( timeLoop.t_crossed, t_past);
     }
 
-    double safeTimeStep(cgsl_simulation &sim){
+    void safeTimeStep(cgsl_simulation &sim){
         // if sims has a state event do not step to far
         if(hasStateEvent(sim)){
             double absmin = get_storage().absmin(get_storage().get_indicators());

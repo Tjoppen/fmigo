@@ -168,6 +168,7 @@ static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2
         case VR_THETA02: value[i] = md->theta02; break;
         case VR_OMEGA01: value[i] = md->omega01; break;
         case VR_OMEGA02: value[i] = md->omega02; break;
+
         default: return fmi2Error;
         }
     }
@@ -210,6 +211,7 @@ static fmi2Status generated_fmi2SetReal(modelDescription_t *md, const fmi2ValueR
         case VR_THETA02: md->theta02 = value[i]; break;
         case VR_OMEGA01: md->omega01 = value[i]; break;
         case VR_OMEGA02: md->omega02 = value[i]; break;
+
         default: return fmi2Error;
         }
     }
@@ -221,6 +223,7 @@ static fmi2Status generated_fmi2GetInteger(const modelDescription_t *md, const f
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
         case VR_N_ELEMENTS: value[i] = md->n_elements; break;
+
         default: return fmi2Error;
         }
     }
@@ -232,6 +235,7 @@ static fmi2Status generated_fmi2SetInteger(modelDescription_t *md, const fmi2Val
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
         case VR_N_ELEMENTS: md->n_elements = value[i]; break;
+
         default: return fmi2Error;
         }
     }

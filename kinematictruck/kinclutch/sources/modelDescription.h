@@ -27,7 +27,6 @@ typedef struct {
     fmi2Real tau_l; //VR=8
     fmi2Real j_l; //VR=9
 
-
 } modelDescription_t;
 
 
@@ -44,7 +43,6 @@ static const modelDescription_t defaults = {
     0.0, //tau_l
     1.0, //j_l
 
-
 };
 
 
@@ -58,7 +56,6 @@ static const modelDescription_t defaults = {
 #define VR_ALPHA_L 7
 #define VR_TAU_L 8
 #define VR_J_L 9
-
 
 
 //the following getters and setters are static to avoid getting linking errors if this file is included in more than one place
@@ -80,6 +77,7 @@ static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2
         case VR_ALPHA_L: value[i] = md->alpha_l; break;
         case VR_TAU_L: value[i] = md->tau_l; break;
         case VR_J_L: value[i] = md->j_l; break;
+
         default: return fmi2Error;
         }
     }
@@ -100,6 +98,7 @@ static fmi2Status generated_fmi2SetReal(modelDescription_t *md, const fmi2ValueR
         case VR_ALPHA_L: md->alpha_l = value[i]; break;
         case VR_TAU_L: md->tau_l = value[i]; break;
         case VR_J_L: md->j_l = value[i]; break;
+
         default: return fmi2Error;
         }
     }

@@ -56,6 +56,7 @@ typedef struct {
     fmi2Boolean is_gearbox; //VR=17
     fmi2Boolean integrate_dx_s; //VR=11
     fmi2Boolean octave_output; //VR=97
+
 } modelDescription_t;
 
 
@@ -101,6 +102,7 @@ static const modelDescription_t defaults = {
     0, //is_gearbox
     0, //integrate_dx_s
     0, //octave_output
+
 };
 
 
@@ -145,6 +147,7 @@ static const modelDescription_t defaults = {
 #define VR_INTEGRATE_DX_S 11
 #define VR_OCTAVE_OUTPUT 97
 
+
 //the following getters and setters are static to avoid getting linking errors if this file is included in more than one place
 
 #define HAVE_GENERATED_GETTERS_SETTERS  //for letting the template know that we have our own getters and setters
@@ -188,6 +191,7 @@ static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2
         case VR_V_S: value[i] = md->v_s; break;
         case VR_A_S: value[i] = md->a_s; break;
         case VR_FORCE_S: value[i] = md->force_s; break;
+
         default: return fmi2Error;
         }
     }
@@ -232,6 +236,7 @@ static fmi2Status generated_fmi2SetReal(modelDescription_t *md, const fmi2ValueR
         case VR_V_S: md->v_s = value[i]; break;
         case VR_A_S: md->a_s = value[i]; break;
         case VR_FORCE_S: md->force_s = value[i]; break;
+
         default: return fmi2Error;
         }
     }
@@ -244,6 +249,7 @@ static fmi2Status generated_fmi2GetInteger(const modelDescription_t *md, const f
         switch (vr[i]) {
         case VR_FILTER_LENGTH: value[i] = md->filter_length; break;
         case VR_GEAR: value[i] = md->gear; break;
+
         default: return fmi2Error;
         }
     }
@@ -256,6 +262,7 @@ static fmi2Status generated_fmi2SetInteger(modelDescription_t *md, const fmi2Val
         switch (vr[i]) {
         case VR_FILTER_LENGTH: md->filter_length = value[i]; break;
         case VR_GEAR: md->gear = value[i]; break;
+
         default: return fmi2Error;
         }
     }
@@ -270,6 +277,7 @@ static fmi2Status generated_fmi2GetBoolean(const modelDescription_t *md, const f
         case VR_IS_GEARBOX: value[i] = md->is_gearbox; break;
         case VR_INTEGRATE_DX_S: value[i] = md->integrate_dx_s; break;
         case VR_OCTAVE_OUTPUT: value[i] = md->octave_output; break;
+
         default: return fmi2Error;
         }
     }
@@ -284,6 +292,7 @@ static fmi2Status generated_fmi2SetBoolean(modelDescription_t *md, const fmi2Val
         case VR_IS_GEARBOX: md->is_gearbox = value[i]; break;
         case VR_INTEGRATE_DX_S: md->integrate_dx_s = value[i]; break;
         case VR_OCTAVE_OUTPUT: md->octave_output = value[i]; break;
+
         default: return fmi2Error;
         }
     }

@@ -55,6 +55,7 @@ typedef struct {
     fmi2Integer filter_length; //VR=98
     fmi2Boolean integrate_dw; //VR=17
     fmi2Boolean integrate_dx; //VR=18
+
 } modelDescription_t;
 
 
@@ -99,6 +100,7 @@ static const modelDescription_t defaults = {
     0, //filter_length
     0, //integrate_dw
     0, //integrate_dx
+
 };
 
 
@@ -141,6 +143,7 @@ static const modelDescription_t defaults = {
 #define VR_FILTER_LENGTH 98
 #define VR_INTEGRATE_DW 17
 #define VR_INTEGRATE_DX 18
+
 
 //the following getters and setters are static to avoid getting linking errors if this file is included in more than one place
 
@@ -187,6 +190,7 @@ static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2
         case VR_F_C: value[i] = md->f_c; break;
         case VR_TRIANGLE_AMPLITUDE: value[i] = md->triangle_amplitude; break;
         case VR_TRIANGLE_WAVELENGTH: value[i] = md->triangle_wavelength; break;
+
         default: return fmi2Error;
         }
     }
@@ -233,6 +237,7 @@ static fmi2Status generated_fmi2SetReal(modelDescription_t *md, const fmi2ValueR
         case VR_F_C: md->f_c = value[i]; break;
         case VR_TRIANGLE_AMPLITUDE: md->triangle_amplitude = value[i]; break;
         case VR_TRIANGLE_WAVELENGTH: md->triangle_wavelength = value[i]; break;
+
         default: return fmi2Error;
         }
     }
@@ -244,6 +249,7 @@ static fmi2Status generated_fmi2GetInteger(const modelDescription_t *md, const f
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
         case VR_FILTER_LENGTH: value[i] = md->filter_length; break;
+
         default: return fmi2Error;
         }
     }
@@ -255,6 +261,7 @@ static fmi2Status generated_fmi2SetInteger(modelDescription_t *md, const fmi2Val
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
         case VR_FILTER_LENGTH: md->filter_length = value[i]; break;
+
         default: return fmi2Error;
         }
     }
@@ -267,6 +274,7 @@ static fmi2Status generated_fmi2GetBoolean(const modelDescription_t *md, const f
         switch (vr[i]) {
         case VR_INTEGRATE_DW: value[i] = md->integrate_dw; break;
         case VR_INTEGRATE_DX: value[i] = md->integrate_dx; break;
+
         default: return fmi2Error;
         }
     }
@@ -279,6 +287,7 @@ static fmi2Status generated_fmi2SetBoolean(modelDescription_t *md, const fmi2Val
         switch (vr[i]) {
         case VR_INTEGRATE_DW: md->integrate_dw = value[i]; break;
         case VR_INTEGRATE_DX: md->integrate_dx = value[i]; break;
+
         default: return fmi2Error;
         }
     }

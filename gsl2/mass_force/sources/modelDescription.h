@@ -64,6 +64,7 @@ static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2
         case VR_V: value[i] = md->v; break;
         case VR_DAMPING: value[i] = md->damping; break;
         case VR_MASS: value[i] = md->mass; break;
+
         default: return fmi2Error;
         }
     }
@@ -80,6 +81,7 @@ static fmi2Status generated_fmi2SetReal(modelDescription_t *md, const fmi2ValueR
         case VR_V: md->v = value[i]; break;
         case VR_DAMPING: md->damping = value[i]; break;
         case VR_MASS: md->mass = value[i]; break;
+
         default: return fmi2Error;
         }
     }
@@ -91,6 +93,7 @@ static fmi2Status generated_fmi2GetInteger(const modelDescription_t *md, const f
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
         case VR_FILTER_LENGTH: value[i] = md->filter_length; break;
+
         default: return fmi2Error;
         }
     }
@@ -102,6 +105,7 @@ static fmi2Status generated_fmi2SetInteger(modelDescription_t *md, const fmi2Val
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
         case VR_FILTER_LENGTH: md->filter_length = value[i]; break;
+
         default: return fmi2Error;
         }
     }

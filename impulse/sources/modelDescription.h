@@ -70,6 +70,7 @@ static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2
         case VR_TAU: value[i] = md->tau; break;
         case VR_PULSE_AMPLITUDE: value[i] = md->pulse_amplitude; break;
         case VR_DC_OFFSET: value[i] = md->dc_offset; break;
+
         default: return fmi2Error;
         }
     }
@@ -86,6 +87,7 @@ static fmi2Status generated_fmi2SetReal(modelDescription_t *md, const fmi2ValueR
         case VR_TAU: md->tau = value[i]; break;
         case VR_PULSE_AMPLITUDE: md->pulse_amplitude = value[i]; break;
         case VR_DC_OFFSET: md->dc_offset = value[i]; break;
+
         default: return fmi2Error;
         }
     }
@@ -99,6 +101,7 @@ static fmi2Status generated_fmi2GetInteger(const modelDescription_t *md, const f
         case VR_PULSE_TYPE: value[i] = md->pulse_type; break;
         case VR_PULSE_START: value[i] = md->pulse_start; break;
         case VR_PULSE_LENGTH: value[i] = md->pulse_length; break;
+
         default: return fmi2Error;
         }
     }
@@ -112,6 +115,7 @@ static fmi2Status generated_fmi2SetInteger(modelDescription_t *md, const fmi2Val
         case VR_PULSE_TYPE: md->pulse_type = value[i]; break;
         case VR_PULSE_START: md->pulse_start = value[i]; break;
         case VR_PULSE_LENGTH: md->pulse_length = value[i]; break;
+
         default: return fmi2Error;
         }
     }

@@ -27,8 +27,8 @@ typedef struct {
     fmi2Real kp; //VR=8
     fmi2Real tau_max; //VR=9
     fmi2Real beta; //VR=10
-
     fmi2Boolean clamp_beta; //VR=0
+
 } modelDescription_t;
 
 
@@ -45,8 +45,8 @@ static const modelDescription_t defaults = {
     20.0, //kp
     1350.0, //tau_max
     0.0, //beta
-
     1, //clamp_beta
+
 };
 
 
@@ -61,8 +61,8 @@ static const modelDescription_t defaults = {
 #define VR_KP 8
 #define VR_TAU_MAX 9
 #define VR_BETA 10
-
 #define VR_CLAMP_BETA 0
+
 
 //the following getters and setters are static to avoid getting linking errors if this file is included in more than one place
 
@@ -84,6 +84,7 @@ static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2
         case VR_KP: value[i] = md->kp; break;
         case VR_TAU_MAX: value[i] = md->tau_max; break;
         case VR_BETA: value[i] = md->beta; break;
+
         default: return fmi2Error;
         }
     }
@@ -105,6 +106,7 @@ static fmi2Status generated_fmi2SetReal(modelDescription_t *md, const fmi2ValueR
         case VR_KP: md->kp = value[i]; break;
         case VR_TAU_MAX: md->tau_max = value[i]; break;
         case VR_BETA: md->beta = value[i]; break;
+
         default: return fmi2Error;
         }
     }
@@ -138,6 +140,7 @@ static fmi2Status generated_fmi2GetBoolean(const modelDescription_t *md, const f
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
         case VR_CLAMP_BETA: value[i] = md->clamp_beta; break;
+
         default: return fmi2Error;
         }
     }
@@ -149,6 +152,7 @@ static fmi2Status generated_fmi2SetBoolean(modelDescription_t *md, const fmi2Val
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
         case VR_CLAMP_BETA: md->clamp_beta = value[i]; break;
+
         default: return fmi2Error;
         }
     }

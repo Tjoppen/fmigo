@@ -34,6 +34,7 @@ typedef struct {
     fmi2Real k_i; //VR=95
     fmi2Integer filter_length; //VR=98
     fmi2Boolean dump_data; //VR=97
+
 } modelDescription_t;
 
 
@@ -57,6 +58,7 @@ static const modelDescription_t defaults = {
     1.0, //k_i
     0, //filter_length
     0, //dump_data
+
 };
 
 
@@ -78,6 +80,7 @@ static const modelDescription_t defaults = {
 #define VR_K_I 95
 #define VR_FILTER_LENGTH 98
 #define VR_DUMP_DATA 97
+
 
 //the following getters and setters are static to avoid getting linking errors if this file is included in more than one place
 
@@ -104,6 +107,7 @@ static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2
         case VR_STEPS: value[i] = md->steps; break;
         case VR_E_FORCE: value[i] = md->e_force; break;
         case VR_K_I: value[i] = md->k_i; break;
+
         default: return fmi2Error;
         }
     }
@@ -130,6 +134,7 @@ static fmi2Status generated_fmi2SetReal(modelDescription_t *md, const fmi2ValueR
         case VR_STEPS: md->steps = value[i]; break;
         case VR_E_FORCE: md->e_force = value[i]; break;
         case VR_K_I: md->k_i = value[i]; break;
+
         default: return fmi2Error;
         }
     }
@@ -141,6 +146,7 @@ static fmi2Status generated_fmi2GetInteger(const modelDescription_t *md, const f
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
         case VR_FILTER_LENGTH: value[i] = md->filter_length; break;
+
         default: return fmi2Error;
         }
     }
@@ -152,6 +158,7 @@ static fmi2Status generated_fmi2SetInteger(modelDescription_t *md, const fmi2Val
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
         case VR_FILTER_LENGTH: md->filter_length = value[i]; break;
+
         default: return fmi2Error;
         }
     }
@@ -163,6 +170,7 @@ static fmi2Status generated_fmi2GetBoolean(const modelDescription_t *md, const f
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
         case VR_DUMP_DATA: value[i] = md->dump_data; break;
+
         default: return fmi2Error;
         }
     }
@@ -174,6 +182,7 @@ static fmi2Status generated_fmi2SetBoolean(modelDescription_t *md, const fmi2Val
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
         case VR_DUMP_DATA: md->dump_data = value[i]; break;
+
         default: return fmi2Error;
         }
     }

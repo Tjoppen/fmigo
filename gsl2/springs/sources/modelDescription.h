@@ -24,7 +24,10 @@ typedef struct {
     fmi2Real k2; //VR=5
     fmi2Real x_in; //VR=6
     fmi2Real x_out; //VR=7
-
+    fmi2Real dx0;
+    fmi2Real dv0;
+    fmi2Real dx1;
+    fmi2Real dv1;
 
 } modelDescription_t;
 
@@ -39,7 +42,10 @@ static const modelDescription_t defaults = {
     1.0, //k2
     0.0, //x_in
     0, //x_out
-
+    0, //dx0
+    0, //dv0
+    0, //dx1
+    0, //dv1
 
 };
 
@@ -52,7 +58,6 @@ static const modelDescription_t defaults = {
 #define VR_K2 5
 #define VR_X_IN 6
 #define VR_X_OUT 7
-
 
 
 //the following getters and setters are static to avoid getting linking errors if this file is included in more than one place
@@ -72,6 +77,7 @@ static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2
         case VR_K2: value[i] = md->k2; break;
         case VR_X_IN: value[i] = md->x_in; break;
         case VR_X_OUT: value[i] = md->x_out; break;
+
         default: return fmi2Error;
         }
     }
@@ -90,6 +96,7 @@ static fmi2Status generated_fmi2SetReal(modelDescription_t *md, const fmi2ValueR
         case VR_K2: md->k2 = value[i]; break;
         case VR_X_IN: md->x_in = value[i]; break;
         case VR_X_OUT: md->x_out = value[i]; break;
+
         default: return fmi2Error;
         }
     }
@@ -140,6 +147,9 @@ static fmi2Status generated_fmi2SetBoolean(modelDescription_t *md, const fmi2Val
     return fmi2OK;
 }
 
+#define STATES { VR_X0, VR_V0, VR_X1, VR_V1 }
+
+
 static fmi2Status generated_fmi2GetContinuousStates(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Real value[]) {
     int i;
     for (i = 0; i < nvr; i++) {
@@ -148,6 +158,7 @@ static fmi2Status generated_fmi2GetContinuousStates(const modelDescription_t *md
         case VR_V0: value[i] = md->v0; break;
         case VR_X1: value[i] = md->x1; break;
         case VR_V1: value[i] = md->v1; break;
+
         default: return fmi2Error;
         }
     }
@@ -162,32 +173,24 @@ static fmi2Status generated_fmi2SetContinuousStates(modelDescription_t *md, cons
         case VR_V0: md->v0 = value[i]; break;
         case VR_X1: md->x1 = value[i]; break;
         case VR_V1: md->v1 = value[i]; break;
+
         default: return fmi2Error;
         }
     }
     return fmi2OK;
 }
 
-static fmi2Status generated_fmi2SetDerivatives(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Real value[]) {
+static fmi2Status generated_fmi2GetDerivatives(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Real value[]) {
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case VR_X0: md->x0 = value[i]; break;
-        case VR_V0: md->v0 = value[i]; break;
-        case VR_X1: md->x1 = value[i]; break;
-        case VR_V1: md->v1 = value[i]; break;
+        case VR_X0: md->dx0 = value[i]; break;
+        case VR_V0: md->dv0 = value[i]; break;
+        case VR_X1: md->dx1 = value[i]; break;
+        case VR_V1: md->dv1 = value[i]; break;
         default: return fmi2Error;
         }
     }
     return fmi2OK;
 }
-
-fmi2Status getUserDefinedDerivatives(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Real value[]);
-static fmi2Status generated_fmi2GetDerivatives(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Real value[]) {
-    return getUserDefinedDerivatives(md, vr, nvr, value);
-}
-
-
-#define STATES { VR_X0, VR_V0, VR_X1, VR_V1 }
-
 #endif //MODELDESCRIPTION_H

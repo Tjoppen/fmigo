@@ -24,7 +24,6 @@ typedef struct {
     fmi2Real dc; //VR=5
     fmi2Real d; //VR=6
 
-
 } modelDescription_t;
 
 
@@ -38,7 +37,6 @@ static const modelDescription_t defaults = {
     250.0, //dc
     10.0, //d
 
-
 };
 
 
@@ -49,7 +47,6 @@ static const modelDescription_t defaults = {
 #define VR_KC 4
 #define VR_DC 5
 #define VR_D 6
-
 
 
 //the following getters and setters are static to avoid getting linking errors if this file is included in more than one place
@@ -68,6 +65,7 @@ static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2
         case VR_KC: value[i] = md->kc; break;
         case VR_DC: value[i] = md->dc; break;
         case VR_D: value[i] = md->d; break;
+
         default: return fmi2Error;
         }
     }
@@ -85,6 +83,7 @@ static fmi2Status generated_fmi2SetReal(modelDescription_t *md, const fmi2ValueR
         case VR_KC: md->kc = value[i]; break;
         case VR_DC: md->dc = value[i]; break;
         case VR_D: md->d = value[i]; break;
+
         default: return fmi2Error;
         }
     }

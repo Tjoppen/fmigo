@@ -3,6 +3,14 @@ cmake_minimum_required(VERSION 3.2)
 #suppress warning about libexpat.a
 cmake_policy(SET CMP0058 OLD)
 
+
+# Set default build type
+if(NOT CMAKE_BUILD_TYPE)
+  message(STATUS "CMake build type set to RELEASE.")
+  set(CMAKE_BUILD_TYPE Release CACHE String "" FORCE)
+endif()
+
+
 option(BUILD_FMUS "Build example FMUs in umit-fmus/?" ON)
 option(USE_GPL "Enable GPL? Needed for GNU GSL support in master (algebraic loop solver, ModelExchange integrator)" ON)
 

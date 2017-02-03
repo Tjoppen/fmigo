@@ -78,21 +78,6 @@ if(WIN32)
         include_directories(${CMAKE_CURRENT_SOURCE_DIR}/3dparty/zeromq/4.2.0-master/include)
         link_directories(${CMAKE_CURRENT_SOURCE_DIR}/3dparty/zeromq/4.2.0-master/cl32-11)
 
-    set(JSONCPP_DIR "${CMAKE_CURRENT_BINARY_DIR}/jsoncpp")
-    set(JSONCPP_URL "https://github.com/open-source-parsers/jsoncpp/archive/0.10.5.zip")
-    set(JSONCPP_MD5 "7ebcc0530b77cd25b2d6920dd19c2d53")
-
-    ExternalProject_Add(jsoncpp-ext
-        PREFIX ${JSONCPP_DIR}
-        URL ${JSONCPP_URL}
-        URL_MD5 ${JSONCPP_MD5}
-        BUILD_COMMAND msbuild jsoncpp.sln /p:Configuration=${CMAKE_BUILD_TYPE} ${MSVC_TOOLCHAIN_VERSION}
-        INSTALL_COMMAND ""
-    )
-
-    include_directories(${JSONCPP_DIR}/src/jsoncpp-ext/include)
-    link_directories(${JSONCPP_DIR}/src/jsoncpp-ext-build/src/lib_json/${CMAKE_BUILD_TYPE})
-
     set(HDF5_DIR "${CMAKE_CURRENT_BINARY_DIR}/hdf5")
     ExternalProject_Add(hdf5-ext
         PREFIX  ${HDF5_DIR}
@@ -134,11 +119,6 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_VERSION}/src/XML/in
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_VERSION}/src/ZIP/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_VERSION}/ThirdParty/FMI/default)
 
-if (UNIX)
-    # Ubuntu
-    include_directories(/usr/include/jsoncpp)
-endif ()
-
 add_subdirectory(strong-coupling-core)
 add_subdirectory(${FMILIBRARY_VERSION})
 add_subdirectory(fmi-tcp-master)
@@ -147,8 +127,8 @@ add_dependencies(fmi-mpi-master fmilib)
 
 if (WIN32)
     add_dependencies(sc suitesparse-ext)
-    add_dependencies(fmi-tcp-master jsoncpp-ext protobuf-ext hdf5-ext)
-    add_dependencies(fmi-mpi-master jsoncpp-ext protobuf-ext hdf5-ext)
+    add_dependencies(fmi-tcp-master protobuf-ext hdf5-ext)
+    add_dependencies(fmi-mpi-master protobuf-ext hdf5-ext)
 endif ()
 
 if (BUILD_FMUS)

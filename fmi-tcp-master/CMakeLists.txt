@@ -97,7 +97,6 @@ IF(WIN32)
         ${Boost_FILESYSTEM_LIBRARY}
         ${Boost_SYSTEM_LIBRARY}
         libprotobuf
-        jsoncpp
         libhdf5
         libhdf5_hl
         libzmq
@@ -126,7 +125,6 @@ ELSE(WIN32)
         dl
         ##sc m umfpack amd blas atlas cholmod colamd suitesparseconfig # For strong coupling
         sc m umfpack amd blas cholmod colamd suitesparseconfig # For strong coupling
-        jsoncpp
         hdf5
         hdf5_hl
         zmq

@@ -22,3 +22,5 @@ test:
   artifacts:
     paths:
       - umit-*.tar.gz
+  tags:
+    - shell

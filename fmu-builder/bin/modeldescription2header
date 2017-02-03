@@ -121,43 +121,34 @@ print('''#ifndef MODELDESCRIPTION_H
 print('''
 #define HAVE_MODELDESCRIPTION_STRUCT
 typedef struct {
-%s
-%s
-%s
+%s%s%s%s
 } modelDescription_t;
 ''' % (
-    '\n'.join(['    fmi2Real '+value[0]+'; //VR='+str(key) for key,value in reals.items()]),
-    '\n'.join(['    fmi2Integer '+value[0]+'; //VR='+str(key) for key,value in ints.items()]),
-    '\n'.join(['    fmi2Boolean '+value[0]+'; //VR='+str(key) for key,value in bools.items()]),
+    ''.join(['    fmi2Real '+value[0]+'; //VR='+str(key)+'\n' for key,value in reals.items()]),
+    ''.join(['    fmi2Integer '+value[0]+'; //VR='+str(key)+'\n' for key,value in ints.items()]),
+    ''.join(['    fmi2Boolean '+value[0]+'; //VR='+str(key)+'\n' for key,value in bools.items()]),
+    ''.join(['    fmi2Real '+value[0] + ';\n' for key,value in derivatives.items()]) if fmuType == 'me' else '',
 ))
 
 print('''
 #define HAVE_DEFAULTS
 static const modelDescription_t defaults = {
-%s
-%s
-%s
+%s%s%s%s
 };
 ''' % (
-    '\n'.join(['    '+str(value[1])+', //'+value[0] for key,value in reals.items()]),
-    '\n'.join(['    '+str(value[1])+', //'+value[0] for key,value in ints.items()]),
-    '\n'.join(['    '+str(value[1])+', //'+value[0] for key,value in bools.items()]),
+    ''.join(['    '+str(value[1])+', //'+value[0]+'\n' for key,value in reals.items()]),
+    ''.join(['    '+str(value[1])+', //'+value[0]+'\n' for key,value in ints.items()]),
+    ''.join(['    '+str(value[1])+', //'+value[0]+'\n' for key,value in bools.items()]),
+    ''.join(['    '+str(value[1])+', //'+value[0]+'\n' for key,value in derivatives.items()]) if fmuType == 'me' else '',
 ))
 
 print('''
-%s
-%s
-%s''' % (
-    '\n'.join(['#define VR_'+value[0].upper()+' '+str(key) for key,value in reals.items()]),
-    '\n'.join(['#define VR_'+value[0].upper()+' '+str(key) for key,value in ints.items()]),
-    '\n'.join(['#define VR_'+value[0].upper()+' '+str(key) for key,value in bools.items()]),
+%s%s%s''' % (
+    ''.join(['#define VR_'+value[0].upper()+' '+str(key)+'\n' for key,value in reals.items()]),
+    ''.join(['#define VR_'+value[0].upper()+' '+str(key)+'\n' for key,value in ints.items()]),
+    ''.join(['#define VR_'+value[0].upper()+' '+str(key)+'\n' for key,value in bools.items()]),
 ))
 
-print('''
-#define STATES { %s }
-''' % (
-    ', '.join(['VR_'+value[0].upper() for key,value in states.items()]),
-))
 
 
 print('''
@@ -165,6 +156,21 @@ print('''
 
 #define HAVE_GENERATED_GETTERS_SETTERS  //for letting the template know that we have our own getters and setters
 ''')
+def gen_getters_deri(f, t, d, d2):
+    print('''
+static fmi2Status generated_fmi2Get%s(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2%s value[]) {
+    int i;
+    for (i = 0; i < nvr; i++) {
+        switch (vr[i]) {'''% (f,t))
+    for i in range(0, len(d)):
+        print('''        case VR_%s: md->%s = value[i]; break;''' % (d[i][0].upper(), d2[i][0]))
+    print(
+        '''        default: return fmi2Error;
+        }
+    }
+    return fmi2OK;
+}'''
+    )
 
 def gen_getters(f, t, d):
     print('''
@@ -179,7 +185,7 @@ static fmi2Status generated_fmi2Get%s(const modelDescription_t *md, const fmi2Va
     return fmi2OK;
 }''' % (
         f,t,
-        '\n'.join(['        case VR_%s: value[i] = md->%s; break;' % (value[0].upper(), value[0]) for key,value in d.items()]),
+        ''.join(['        case VR_%s: value[i] = md->%s; break;\n' % (value[0].upper(), value[0]) for key,value in d.items()]),
     ))
 
 def gen_setters(f, t, d):
@@ -195,17 +201,7 @@ static fmi2Status generated_fmi2Set%s(modelDescription_t *md, const fmi2ValueRef
     return fmi2OK;
 }''' % (
         f,t,
-        '\n'.join(['        case VR_%s: md->%s = value[i]; break;' % (value[0].upper(), value[0]) for key,value in d.items()]),
-    ))
-
-def gen_get_user_defined(f,t):
-    print('''
-fmi2Status getUserDefined%s(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2%s value[]);
-static fmi2Status generated_fmi2Get%s(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2%s value[]) {
-    return getUserDefined%s(md, vr, nvr, value);
-}
-''' % (
-        f,t,f,t,f
+        ''.join(['        case VR_%s: md->%s = value[i]; break;\n' % (value[0].upper(), value[0]) for key,value in d.items()]),
     ))
 
 gen_getters('Real', 'Real',    reals)
@@ -216,9 +212,13 @@ gen_getters('Boolean', 'Boolean', bools)
 gen_setters('Boolean', 'Boolean', bools)
 
 if fmuType == 'me' :
+    print('''
+#define STATES { %s }
+''' % (
+    ', '.join(['VR_'+value[0].upper() for key,value in states.items()]),
+    ))
     gen_getters('ContinuousStates', 'Real', states)
     gen_setters('ContinuousStates', 'Real', states)
-    gen_setters('Derivatives', 'Real', states)
-    gen_get_user_defined('Derivatives','Real')
+    gen_getters_deri('Derivatives', 'Real', states, derivatives)
 
 print('#endif //MODELDESCRIPTION_H')

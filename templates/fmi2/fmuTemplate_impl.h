@@ -520,35 +520,6 @@ fmi2Status fmi2DeSerializeFMUstate (fmi2Component c, const fmi2Byte serializedSt
     //return fmi2OK;
 }
 
-fmi2Status fmi2DoStep(fmi2Component cc, fmi2Real currentCommunicationPoint,
-                    fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
-    ModelInstance *comp = (ModelInstance *)cc;
-
-    if (invalidState(comp, "fmi2DoStep", modelInitialized|modelStepping))
-        return fmi2Error;
-
-    // model is in stepping state
-    comp->s.state = modelStepping;
-
-    FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2DoStep: "
-        "currentCommunicationPoint = %g, "
-        "communicationStepSize = %g, "
-        "noSetFMUStatePriorToCurrentPoint = fmi%s",
-        currentCommunicationPoint, communicationStepSize, noSetFMUStatePriorToCurrentPoint ? "True" : "False")
-
-    if (communicationStepSize <= 0) {
-        FILTERED_LOG(comp, fmi2Error, LOG_ERROR,
-            "fmi2DoStep: communication step size must be > 0. Fount %g.", communicationStepSize)
-        return fmi2Error;
-    }
-
-#ifdef NEW_DOSTEP
-    doStep(&comp->s, currentCommunicationPoint, communicationStepSize, noSetFMUStatePriorToCurrentPoint);
-#else
-    doStep(&comp->s, currentCommunicationPoint, communicationStepSize);
-#endif
-    return fmi2OK;
-}
 
 fmi2Status fmi2GetDirectionalDerivative(fmi2Component c, const fmi2ValueReference vUnknown_ref[], size_t nUnknown,
                 const fmi2ValueReference vKnown_ref[] , size_t nKnown, const fmi2Real dvKnown[], fmi2Real dvUnknown[]) {
@@ -613,6 +584,36 @@ fmi2Status fmi2GetRealOutputDerivatives(fmi2Component c, const fmi2ValueReferenc
         " This model cannot compute derivatives of outputs: MaxOutputDerivativeOrder=\"0\"")
     for (i = 0; i < nvr; i++) value[i] = 0;
     return fmi2Error;
+}
+
+fmi2Status fmi2DoStep(fmi2Component cc, fmi2Real currentCommunicationPoint,
+                    fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
+    ModelInstance *comp = (ModelInstance *)cc;
+
+    if (invalidState(comp, "fmi2DoStep", modelInitialized|modelStepping))
+        return fmi2Error;
+
+    // model is in stepping state
+    comp->s.state = modelStepping;
+
+    FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2DoStep: "
+        "currentCommunicationPoint = %g, "
+        "communicationStepSize = %g, "
+        "noSetFMUStatePriorToCurrentPoint = fmi%s",
+        currentCommunicationPoint, communicationStepSize, noSetFMUStatePriorToCurrentPoint ? "True" : "False")
+
+    if (communicationStepSize <= 0) {
+        FILTERED_LOG(comp, fmi2Error, LOG_ERROR,
+            "fmi2DoStep: communication step size must be > 0. Fount %g.", communicationStepSize)
+        return fmi2Error;
+    }
+
+#ifdef NEW_DOSTEP
+    doStep(&comp->s, currentCommunicationPoint, communicationStepSize, noSetFMUStatePriorToCurrentPoint);
+#else
+    doStep(&comp->s, currentCommunicationPoint, communicationStepSize);
+#endif
+    return fmi2OK;
 }
 
 fmi2Status fmi2CancelStep(fmi2Component c) {
@@ -784,28 +785,6 @@ fmi2Status fmiSetContinuousStates(fmi2Component c, const fmi2Real x[], size_t nx
 #endif
 }
 
-/* Evaluation of the model equations */
-fmi2Status fmiGetDerivatives(fmi2Component c, fmi2Real derivatives[], size_t nx) {
-    int i;
-    ModelInstance* comp = (ModelInstance *)c;
-    if (invalidState(comp, "fmiGetDerivatives", modelInitialized|modelStepping|modelTerminated))
-        return fmi2Error;
-    if (invalidNumber(comp, "fmiGetDerivatives", "nx", nx, NUMBER_OF_STATES))
-        return fmi2Error;
-    if (nullPointer(comp, "fmiGetDerivatives", "derivatives[]", derivatives))
-        return fmi2Error;
-#ifdef HAVE_MODELDESCRIPTION_STRUCT
-    return generated_fmi2GetDerivatives(&comp->s.md, vrStates, nx, derivatives);
-#else
-    for (i = 0; i < nx; i++) {
-        fmi2ValueReference vr = vrStates[i] + 1;
-        derivatives[i] = comp->s.r[vr];
-        FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmiGetDerivatives: #r%d# = %.16g", vr, derivatives[i])
-    }
-    return fmi2OK;
-#endif
-}
-
 fmi2Status fmiGetEventIndicators(fmi2Component c, fmi2Real eventIndicators[], size_t ni) {
     int i;
     ModelInstance *comp = (ModelInstance *)c;
@@ -839,6 +818,28 @@ fmi2Status fmiGetContinuousStates(fmi2Component c, fmi2Real states[], size_t nx)
         fmi2ValueReference vr = vrStates[i];
         states[i] = comp->s.r[vr];
         FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmiGetContinuousStates: #r%u# = %.16g", vr, states[i])
+    }
+    return fmi2OK;
+#endif
+}
+
+/* Evaluation of the model equations */
+fmi2Status fmiGetDerivatives(fmi2Component c, fmi2Real derivatives[], size_t nx) {
+    int i;
+    ModelInstance* comp = (ModelInstance *)c;
+    if (invalidState(comp, "fmiGetDerivatives", modelInitialized|modelStepping|modelTerminated))
+        return fmi2Error;
+    if (invalidNumber(comp, "fmiGetDerivatives", "nx", nx, NUMBER_OF_STATES))
+        return fmi2Error;
+    if (nullPointer(comp, "fmiGetDerivatives", "derivatives[]", derivatives))
+        return fmi2Error;
+#ifdef HAVE_MODELDESCRIPTION_STRUCT
+    return generated_fmi2GetDerivatives(&comp->s.md, vrStates, nx, derivatives);
+#else
+    for (i = 0; i < nx; i++) {
+        fmi2ValueReference vr = vrStates[i] + 1;
+        derivatives[i] = comp->s.r[vr];
+        FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmiGetDerivatives: #r%d# = %.16g", vr, derivatives[i])
     }
     return fmi2OK;
 #endif

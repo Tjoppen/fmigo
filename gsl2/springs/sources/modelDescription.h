@@ -10,7 +10,7 @@
 #define NUMBER_OF_REALS 8
 #define NUMBER_OF_INTEGERS 0
 #define NUMBER_OF_BOOLEANS 0
-#define NUMBER_OF_STATES 4
+#define NUMBER_OF_STATES 1
 #define NUMBER_OF_EVENT_INDICATORS 0
 
 
@@ -25,9 +25,6 @@ typedef struct {
     fmi2Real x_in; //VR=6
     fmi2Real x_out; //VR=7
     fmi2Real dx0;
-    fmi2Real dv0;
-    fmi2Real dx1;
-    fmi2Real dv1;
 
 } modelDescription_t;
 
@@ -43,9 +40,6 @@ static const modelDescription_t defaults = {
     0.0, //x_in
     0, //x_out
     0, //dx0
-    0, //dv0
-    0, //dx1
-    0, //dv1
 
 };
 
@@ -147,7 +141,7 @@ static fmi2Status generated_fmi2SetBoolean(modelDescription_t *md, const fmi2Val
     return fmi2OK;
 }
 
-#define STATES { VR_X0, VR_V0, VR_X1, VR_V1 }
+#define STATES { VR_X0 }
 
 
 static fmi2Status generated_fmi2GetContinuousStates(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Real value[]) {
@@ -155,9 +149,6 @@ static fmi2Status generated_fmi2GetContinuousStates(const modelDescription_t *md
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
         case VR_X0: value[i] = md->x0; break;
-        case VR_V0: value[i] = md->v0; break;
-        case VR_X1: value[i] = md->x1; break;
-        case VR_V1: value[i] = md->v1; break;
 
         default: return fmi2Error;
         }
@@ -170,9 +161,6 @@ static fmi2Status generated_fmi2SetContinuousStates(modelDescription_t *md, cons
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
         case VR_X0: md->x0 = value[i]; break;
-        case VR_V0: md->v0 = value[i]; break;
-        case VR_X1: md->x1 = value[i]; break;
-        case VR_V1: md->v1 = value[i]; break;
 
         default: return fmi2Error;
         }
@@ -180,14 +168,15 @@ static fmi2Status generated_fmi2SetContinuousStates(modelDescription_t *md, cons
     return fmi2OK;
 }
 
+
+static void updateStates(modelDescription_t *md);
+
 static fmi2Status generated_fmi2GetDerivatives(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Real value[]) {
     int i;
+    updateStates(md);
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
         case VR_X0: md->dx0 = value[i]; break;
-        case VR_V0: md->dv0 = value[i]; break;
-        case VR_X1: md->dx1 = value[i]; break;
-        case VR_V1: md->dv1 = value[i]; break;
         default: return fmi2Error;
         }
     }

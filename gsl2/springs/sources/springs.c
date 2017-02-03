@@ -2,12 +2,15 @@
 #include "gsl-interface.h"
 #include "fmuTemplate.h"
 
+#ifndef STATES
+#define STATES {}
+#endif
 static void updateStates(modelDescription_t *md){
     md->x0 = md->x_in;
-    md->dx0 = md->v0;
-    md->dv0 = -md->k1 * (md->x0 - md->x1);
-    md->dx1 = md->v1;
-    md->dv1 = -md->k1 * (md->x1 - md->x0) -md->k2 * (md->x1 - md->x_in);
+    /* md->dx0 = md->v0; */
+    /* md->dv0 = -md->k1 * (md->x0 - md->x1); */
+    /* md->dx1 = md->v1; */
+    /* md->dv1 = -md->k1 * (md->x1 - md->x0) -md->k2 * (md->x1 - md->x_in); */
     md->x_out = md->x1;
 }
 

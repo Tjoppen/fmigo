@@ -37,7 +37,7 @@
         description="velocity left mass"
         causality="parameter"
         variability="fixed">
-      <State/>
+      <!-- <State/> -->
       <Real start="0"/>
     </ScalarVariable>
     <ScalarVariable
@@ -46,7 +46,7 @@
         description="position right mass"
         causality="parameter"
         variability="fixed">
-      <State/>
+      <!-- <State/> -->
       <Real start="1"/>
     </ScalarVariable>
     <ScalarVariable
@@ -55,7 +55,7 @@
         description="velocity right mass"
         causality="parameter"
         variability="fixed">
-      <State/>
+      <!-- <State/> -->
       <Real start="0"/>
     </ScalarVariable>
 

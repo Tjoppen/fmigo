@@ -131,6 +131,7 @@ void BaseMaster::solveLoops() {
 
   gsl_multiroot_function f = {loop_residual_f, n, this};
   gsl_multiroot_fsolver *s = gsl_multiroot_fsolver_alloc(gsl_multiroot_fsolver_hybrids, n);
+  // TODO CHECK IF s == NULL
   gsl_multiroot_fsolver_set(s, &f, x0);
 
   int i = 0, imax = 100, status;

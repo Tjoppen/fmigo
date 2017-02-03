@@ -114,8 +114,46 @@ static void zeroState(state_t *s) {
 }
 
 // ---------------------------------------------------------------------------
-// FMI functions
+// FMI functions: class methods not depending of a specific model instance
 // ---------------------------------------------------------------------------
+
+const char* fmi2GetTypesPlatform() {
+    return fmi2TypesPlatform;
+}
+
+const char* fmi2GetVersion() {
+    return fmi2Version;
+}
+
+fmi2Status fmi2SetDebugLogging(fmi2Component c, fmi2Boolean loggingOn, size_t nCategories, const fmi2String categories[]) {
+    // ignore arguments: nCategories, categories
+    int i, j;
+    ModelInstance *comp = (ModelInstance *)c;
+    comp->loggingOn = loggingOn;
+
+    for (j = 0; j < NUMBER_OF_CATEGORIES; j++) {
+        comp->logCategories[j] = fmi2False;
+    }
+    for (i = 0; i < nCategories; i++) {
+        fmi2Boolean categoryFound = fmi2False;
+        for (j = 0; j < NUMBER_OF_CATEGORIES; j++) {
+            if (strcmp(logCategoriesNames[j], categories[i]) == 0) {
+                comp->logCategories[j] = loggingOn;
+                categoryFound = fmi2True;
+                break;
+            }
+        }
+        if (!categoryFound) {
+            comp->functions->logger(comp->componentEnvironment, comp->instanceName, fmi2Warning,
+                logCategoriesNames[LOG_ERROR],
+                "logging category '%s' is not supported by model", categories[i]);
+        }
+    }
+
+    FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2SetDebugLogging")
+    return fmi2OK;
+}
+
 fmi2Component fmi2Instantiate(fmi2String instanceName, fmi2Type fmuType, fmi2String fmuGUID,
                             fmi2String fmuResourceLocation, const fmi2CallbackFunctions *functions,
                             fmi2Boolean visible, fmi2Boolean loggingOn) {
@@ -175,6 +213,19 @@ fmi2Component fmi2Instantiate(fmi2String instanceName, fmi2Type fmuType, fmi2Str
     return comp;
 }
 
+void fmi2FreeInstance(fmi2Component c) {
+    ModelInstance *comp = (ModelInstance *)c;
+    if (!comp) return;
+    if (invalidState(comp, "fmi2FreeInstance", modelTerminated))
+        return;
+    FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2FreeInstance")
+    if (comp->instanceName) comp->functions->freeMemory(comp->instanceName);
+#ifdef SIMULATION_FREE
+    SIMULATION_FREE(comp->s.simulation);
+#endif
+    comp->functions->freeMemory(comp);
+}
+
 fmi2Status fmi2SetupExperiment(fmi2Component c, fmi2Boolean toleranceDefined, fmi2Real tolerance,
                             fmi2Real startTime, fmi2Boolean stopTimeDefined, fmi2Real stopTime) {
 
@@ -230,65 +281,6 @@ fmi2Status fmi2Reset(fmi2Component c) {
 
     zeroState(&comp->s);
     comp->s.state = modelInstantiated;
-    return fmi2OK;
-}
-
-void fmi2FreeInstance(fmi2Component c) {
-    ModelInstance *comp = (ModelInstance *)c;
-    if (!comp) return;
-    if (invalidState(comp, "fmi2FreeInstance", modelTerminated))
-        return;
-    FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2FreeInstance")
-    if (comp->instanceName) comp->functions->freeMemory(comp->instanceName);
-#ifdef SIMULATION_FREE
-    SIMULATION_FREE(comp->s.simulation);
-#endif
-    comp->functions->freeMemory(comp);
-}
-
-// ---------------------------------------------------------------------------
-// FMI functions: class methods not depending of a specific model instance
-// ---------------------------------------------------------------------------
-
-const char* fmi2GetVersion() {
-    return fmi2Version;
-}
-
-const char* fmi2GetTypesPlatform() {
-    return fmi2TypesPlatform;
-}
-
-// ---------------------------------------------------------------------------
-// FMI functions: logging control, setters and getters for Real, Integer,
-// Boolean, String
-// ---------------------------------------------------------------------------
-
-fmi2Status fmi2SetDebugLogging(fmi2Component c, fmi2Boolean loggingOn, size_t nCategories, const fmi2String categories[]) {
-    // ignore arguments: nCategories, categories
-    int i, j;
-    ModelInstance *comp = (ModelInstance *)c;
-    comp->loggingOn = loggingOn;
-
-    for (j = 0; j < NUMBER_OF_CATEGORIES; j++) {
-        comp->logCategories[j] = fmi2False;
-    }
-    for (i = 0; i < nCategories; i++) {
-        fmi2Boolean categoryFound = fmi2False;
-        for (j = 0; j < NUMBER_OF_CATEGORIES; j++) {
-            if (strcmp(logCategoriesNames[j], categories[i]) == 0) {
-                comp->logCategories[j] = loggingOn;
-                categoryFound = fmi2True;
-                break;
-            }
-        }
-        if (!categoryFound) {
-            comp->functions->logger(comp->componentEnvironment, comp->instanceName, fmi2Warning,
-                logCategoriesNames[LOG_ERROR],
-                "logging category '%s' is not supported by model", categories[i]);
-        }
-    }
-
-    FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2SetDebugLogging")
     return fmi2OK;
 }
 
@@ -480,6 +472,7 @@ fmi2Status fmi2GetFMUstate (fmi2Component c, fmi2FMUstate* FMUstate) {
     return fmi2Error;
 #endif
 }
+
 fmi2Status fmi2SetFMUstate (fmi2Component c, fmi2FMUstate FMUstate) {
 #if CAN_GET_SET_FMU_STATE
     ModelInstance *comp = (ModelInstance *)c;
@@ -497,29 +490,32 @@ fmi2Status fmi2SetFMUstate (fmi2Component c, fmi2FMUstate FMUstate) {
     return fmi2Error;
 #endif
 }
+
 fmi2Status fmi2FreeFMUstate(fmi2Component c, fmi2FMUstate* FMUstate) {
     ModelInstance *comp = (ModelInstance *)c;
     comp->functions->freeMemory(*FMUstate);
     *FMUstate = NULL;
     return fmi2OK;
 }
+
 fmi2Status fmi2SerializedFMUstateSize(fmi2Component c, fmi2FMUstate FMUstate, size_t *size) {
     return fmi2Error; //disabled for now
     //ModelInstance *comp = (ModelInstance *)c;
     //*size = sizeof(comp->s);
     //return fmi2OK;
 }
+
 fmi2Status fmi2SerializeFMUstate (fmi2Component c, fmi2FMUstate FMUstate, fmi2Byte serializedState[], size_t size) {
     return fmi2Error; //disabled for now
     //memcpy(serializedState, FMUstate, size);
     //return fmi2OK;
 }
+
 fmi2Status fmi2DeSerializeFMUstate (fmi2Component c, const fmi2Byte serializedState[], size_t size, fmi2FMUstate* FMUstate) {
     return fmi2Error; //disabled for now
     //memcpy(*FMUstate, serializedState, size);
     //return fmi2OK;
 }
-
 
 fmi2Status fmi2GetDirectionalDerivative(fmi2Component c, const fmi2ValueReference vUnknown_ref[], size_t nUnknown,
                 const fmi2ValueReference vKnown_ref[] , size_t nKnown, const fmi2Real dvKnown[], fmi2Real dvUnknown[]) {

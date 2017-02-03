@@ -304,6 +304,11 @@ class ModelExchangeStepper : public BaseMaster {
 
 
     void prepare() {
+        for (size_t x = 0; x < m_weakConnections.size(); x++) {
+            WeakConnection wc = m_weakConnections[x];
+            clientGetXs[wc.to][wc.from][wc.conn.fromType].push_back(wc.conn.fromOutputVR);
+            cout << "wc.to " << wc.to << " from " << wc.from << " outputvr " << wc.conn.fromOutputVR << endl;
+        }
 #ifdef USE_GPL
         /* This is the step control which determines tolerances. */
         cgsl_step_control_parameters step_control;

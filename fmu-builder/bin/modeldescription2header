@@ -158,8 +158,12 @@ print('''
 ''')
 def gen_getters_deri(f, t, d, d2):
     print('''
+
+static void updateStates(modelDescription_t *md);
+
 static fmi2Status generated_fmi2Get%s(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2%s value[]) {
     int i;
+    updateStates(md);
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {'''% (f,t))
     for i in range(0, len(d)):

@@ -149,19 +149,24 @@ ELSE(WIN32)
 ENDIF(WIN32)
 
 # Compile proto
-add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.pb.cc
-    COMMAND ${PROTOC} --cpp_out=. fmitcp.proto
+set(FMITCP_PROTOBUF_TARGETS ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.pb.cc ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp_pb2.py)
+add_custom_command(OUTPUT ${FMITCP_PROTOBUF_TARGETS}
+    COMMAND ${PROTOC} --cpp_out=. --python_out=. fmitcp.proto
     WORKING_DIRECTORY   ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp
     DEPENDS libprotobuf ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.proto)
 #can't depend on the generated files themselves because CMake is awful. create a custom target instead
 add_custom_target(fmitcp_pb DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.pb.cc)
 
-add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/src/master/control.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/src/master/control.pb.cc
-    COMMAND ${PROTOC} --cpp_out=. control.proto
+set(MASTER_CONTROL_PROTOBUF_TARGETS ${CMAKE_CURRENT_SOURCE_DIR}/src/master/control.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/src/master/control.pb.cc ${CMAKE_CURRENT_SOURCE_DIR}/src/master/control_pb2.py)
+add_custom_command(OUTPUT ${MASTER_CONTROL_PROTOBUF_TARGETS}
+    COMMAND ${PROTOC} --cpp_out=. --python_out=. control.proto
     WORKING_DIRECTORY   ${CMAKE_CURRENT_SOURCE_DIR}/src/master
     DEPENDS libprotobuf ${CMAKE_CURRENT_SOURCE_DIR}/src/master/control.proto)
 #same here
 add_custom_target(control_pb DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/master/control.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/src/master/control.pb.cc)
+
+# Install compiled protbuf files 
+install(FILES ${FMITCP_PROTOBUF_TARGETS} ${MASTER_CONTROL_PROTOBUF_TARGETS} DESTINATION protobuf)
 
 add_dependencies(${TCP_MASTER_NAME} fmitcp_pb control_pb)
 add_dependencies(${TCP_SERVER_NAME} fmitcp_pb)

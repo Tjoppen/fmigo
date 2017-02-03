@@ -9,8 +9,7 @@ umit:
     - git submodule update --init
     - docker build -t umit/ubuntu:$(git rev-parse HEAD) .
   tags:
-    - linux
-    - docker
+    - shell
 
 test:
   stage: test

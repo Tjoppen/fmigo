@@ -19,7 +19,7 @@
 
 #define NUMBER_OF_CATEGORIES 4
 
-#define MASK_fmi2EnterEventMode          (modelEventMode | modelContinuousTimeMode)
+#define MASK_fmi2EnterEventMode          (modelInitialized | modelEventMode | modelContinuousTimeMode)
 #define MASK_fmi2NewDiscreteStates       modelEventMode
 #define MASK_fmi2EnterContinuousTimeMode modelEventMode
 #define MASK_fmi2CompletedIntegratorStep modelContinuousTimeMode

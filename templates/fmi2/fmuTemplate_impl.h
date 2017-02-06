@@ -266,7 +266,7 @@ fmi2Status fmi2ExitInitializationMode(fmi2Component c) {
 
 fmi2Status fmi2Terminate(fmi2Component c) {
     ModelInstance *comp = (ModelInstance *)c;
-    if (invalidState(comp, "fmi2Terminate", modelInitialized|modelStepping))
+    if (invalidState(comp, "fmi2Terminate", modelInitialized|modelStepping|modelContinuousTimeMode))
         return fmi2Error;
     FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2Terminate")
 
@@ -287,7 +287,7 @@ fmi2Status fmi2Reset(fmi2Component c) {
 
 fmi2Status fmi2GetReal (fmi2Component c, const fmi2ValueReference vr[], size_t nvr, fmi2Real value[]) {
     ModelInstance *comp = (ModelInstance *)c;
-    if (invalidState(comp, "fmi2GetReal", modelInitializationMode|modelInitialized|modelStepping|modelError))
+    if (invalidState(comp, "fmi2GetReal", modelInitializationMode|modelInitialized|modelStepping|modelError|modelContinuousTimeMode))
         return fmi2Error;
     if (nvr > 0 && nullPointer(comp, "fmi2GetReal", "vr[]", vr))
         return fmi2Error;

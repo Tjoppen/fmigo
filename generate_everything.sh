@@ -15,6 +15,7 @@ GSLFMUS="
     gsl2/mass_force_fe
     gsl2/trailer
     gsl2/engine2
+    gsl2/subME
 "
 MEFMUS="
     gsl2/springs

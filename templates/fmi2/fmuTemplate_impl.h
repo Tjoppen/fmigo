@@ -30,6 +30,7 @@ static fmi2String logCategoriesNames[] = {"logAll", "logError", "logFmiCall", "l
 // array of value references of states
 #if NUMBER_OF_STATES>0
 fmi2ValueReference vrStates[NUMBER_OF_STATES] = STATES;
+fmi2ValueReference vrDerivatives[NUMBER_OF_STATES] = DERIVATIVES;
 #endif
 
 // ---------------------------------------------------------------------------
@@ -674,34 +675,34 @@ fmi2Status fmi2GetStringStatus(fmi2Component c, const fmi2StatusKind s, fmi2Stri
 // ---------------------------------------------------------------------------
 #else
 /* Enter and exit the different modes */
-fmi2Status fmiEnterEventMode(fmi2Component c) {
+fmi2Status fmi2EnterEventMode(fmi2Component c) {
     ModelInstance *comp = (ModelInstance *)c;
-    if (invalidState(comp, "fmiEnterEventMode", modelStepping))
+    if (invalidState(comp, "fmi2EnterEventMode", MASK_fmi2EnterEventMode))
         return fmi2Error;
-    FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmiEnterEventMode")
+    FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2EnterEventMode")
 
+#ifdef HAVE_MODELDESCRIPTION_STRUCT
+    comp->s.state = modelEventMode;
+#endif
     return fmi2OK;
 }
 
-fmi2Status fmiNewDiscreteStates(fmi2Component c, fmi2EventInfo *eventInfo) {
+fmi2Status fmi2NewDiscreteStates(fmi2Component c, fmi2EventInfo *eventInfo) {
     ModelInstance *comp = (ModelInstance *)c;
-    if (invalidState(comp, "fmiNewDiscreteStates", modelInitialized|modelStepping))
+    int timeEvent = 0;
+    if (invalidState(comp, "fmi2NewDiscreteStates", MASK_fmi2NewDiscreteStates))
         return fmi2Error;
-    FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmiNewDiscreteStates")
+    FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2NewDiscreteStates")
 
-    if (comp->s.state == modelStepping) {
-        comp->s.eventInfo.newDiscreteStatesNeeded = fmi2False;
-        comp->s.eventInfo.terminateSimulation = fmi2False;
-        comp->s.eventInfo.nominalsOfContinuousStatesChanged = fmi2False;
-        comp->s.eventInfo.valuesOfContinuousStatesChanged = fmi2False;
-        comp->s.eventInfo.nextEventTimeDefined = fmi2False;
-        comp->s.eventInfo.nextEventTime = 0; // next time event if nextEventTimeDefined = fmi2True
+    comp->s.eventInfo.newDiscreteStatesNeeded = fmi2False;
+    comp->s.eventInfo.terminateSimulation = fmi2False;
+    comp->s.eventInfo.nominalsOfContinuousStatesChanged = fmi2False;
+    comp->s.eventInfo.valuesOfContinuousStatesChanged = fmi2False;
 
-        eventUpdate(comp, &comp->s.eventInfo);
+    if (comp->s.eventInfo.nextEventTimeDefined && comp->s.eventInfo.nextEventTime <= comp->s.time) {
+        timeEvent = 1;
     }
-
-    // model in stepping state
-    comp->s.state = modelStepping;
+    eventUpdate(comp, &comp->s.eventInfo);
 
     // copy internal eventInfo of component to output eventInfo
     eventInfo->newDiscreteStatesNeeded = comp->s.eventInfo.newDiscreteStatesNeeded;
@@ -714,131 +715,150 @@ fmi2Status fmiNewDiscreteStates(fmi2Component c, fmi2EventInfo *eventInfo) {
     return fmi2OK;
 }
 
-fmi2Status fmiEnterContinuousTimeMode(fmi2Component c) {
+fmi2Status fmi2EnterContinuousTimeMode(fmi2Component c) {
     ModelInstance *comp = (ModelInstance *)c;
-    if (invalidState(comp, "fmiEnterContinuousTimeMode", modelStepping))
+    if (invalidState(comp, "fmi2EnterContinuousTimeMode", MASK_fmi2EnterContinuousTimeMode))
         return fmi2Error;
-    FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL,"fmiEnterContinuousTimeMode")
+    FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL,"fmi2EnterContinuousTimeMode")
+
+    comp->s.state = modelContinuousTimeMode;
     return fmi2OK;
 }
 
-fmi2Status fmiCompletedIntegratorStep(fmi2Component c, fmi2Boolean noSetFMUStatePriorToCurrentPoint,
+fmi2Status fmi2CompletedIntegratorStep(fmi2Component c, fmi2Boolean noSetFMUStatePriorToCurrentPoint,
                                      fmi2Boolean *enterEventMode, fmi2Boolean *terminateSimulation) {
     ModelInstance *comp = (ModelInstance *)c;
-    if (invalidState(comp, "fmiCompletedIntegratorStep", modelStepping))
+    if (invalidState(comp, "fmi2CompletedIntegratorStep", MASK_fmi2CompletedIntegratorStep))
         return fmi2Error;
-    if (nullPointer(comp, "fmiCompletedIntegratorStep", "enterEventMode", enterEventMode))
+    if (nullPointer(comp, "fmi2CompletedIntegratorStep", "enterEventMode", enterEventMode))
         return fmi2Error;
-    if (nullPointer(comp, "fmiCompletedIntegratorStep", "terminateSimulation", terminateSimulation))
+    if (nullPointer(comp, "fmi2CompletedIntegratorStep", "terminateSimulation", terminateSimulation))
         return fmi2Error;
-    FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL,"fmiCompletedIntegratorStep")
+    FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL,"fmi2CompletedIntegratorStep")
     *enterEventMode = fmi2False;
     *terminateSimulation = fmi2False;
     return fmi2OK;
 }
 
 /* Providing independent variables and re-initialization of caching */
-fmi2Status fmiSetTime(fmi2Component c, fmi2Real time) {
+fmi2Status fmi2SetTime(fmi2Component c, fmi2Real time) {
     ModelInstance *comp = (ModelInstance *)c;
-    if (invalidState(comp, "fmiSetTime", modelInstantiated|modelInitialized|modelStepping))
+    if (invalidState(comp, "fmi2SetTime", MASK_fmi2SetTime))
         return fmi2Error;
-    FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmiSetTime: time=%.16g", time)
+    FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2SetTime: time=%.16g", time)
     comp->s.time = time;
     return fmi2OK;
 }
 
-fmi2Status fmiSetContinuousStates(fmi2Component c, const fmi2Real x[], size_t nx){
+fmi2Status fmi2SetContinuousStates(fmi2Component c, const fmi2Real x[], size_t nx){
     ModelInstance *comp = (ModelInstance *)c;
+#if NUMBER_OF_REALS>0
     int i;
-    if (invalidState(comp, "fmiSetContinuousStates", modelStepping))
+#endif
+    if (invalidState(comp, "fmi2SetContinuousStates", MASK_fmi2SetContinuousStates))
         return fmi2Error;
-    if (invalidNumber(comp, "fmiSetContinuousStates", "nx", nx, NUMBER_OF_STATES))
+    if (invalidNumber(comp, "fmi2SetContinuousStates", "nx", nx, NUMBER_OF_STATES))
         return fmi2Error;
-    if (nullPointer(comp, "fmiSetContinuousStates", "x[]", x))
+    if (nullPointer(comp, "fmi2SetContinuousStates", "x[]", x))
         return fmi2Error;
+#if NUMBER_OF_REALS>0
 #ifdef HAVE_MODELDESCRIPTION_STRUCT
-    return generated_fmi2SetContinuousStates(&comp->s.md, vrStates, nx, x);
+    return generated_fmi2SetReal(&comp->s.md, vrStates, nx, x);
 #else
     for (i = 0; i < nx; i++) {
         fmi2ValueReference vr = vrStates[i];
-        FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmiSetContinuousStates: #r%d#=%.16g", vr, x[i])
-        assert(vr >= 0 && vr < NUMBER_OF_REALS);
+        FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2SetContinuousStates: #r%d#=%.16g", vr, x[i])
+        assert(vr < NUMBER_OF_REALS);
         comp->s.r[vr] = x[i];
     }
-    return fmi2OK;
 #endif
-}
-
-fmi2Status fmiGetEventIndicators(fmi2Component c, fmi2Real eventIndicators[], size_t ni) {
-    int i;
-    ModelInstance *comp = (ModelInstance *)c;
-    if (invalidState(comp, "fmiGetEventIndicators", modelInitialized|modelStepping|modelTerminated))
-        return fmi2Error;
-    if (invalidNumber(comp, "fmiGetEventIndicators", "ni", ni, NUMBER_OF_EVENT_INDICATORS))
-        return fmi2Error;
-#if NUMBER_OF_EVENT_INDICATORS>0
-    for (i = 0; i < ni; i++) {
-        eventIndicators[i] = getEventIndicator(comp, i); // to be implemented by the includer of this file
-        FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmiGetEventIndicators: z%d = %.16g", i, eventIndicators[i])
-    }
 #endif
     return fmi2OK;
-}
-
-fmi2Status fmiGetContinuousStates(fmi2Component c, fmi2Real states[], size_t nx) {
-    int i;
-    ModelInstance *comp = (ModelInstance *)c;
-    if (invalidState(comp, "fmiGetContinuousStates", modelInitialized|modelStepping|modelTerminated))
-        return fmi2Error;
-    if (invalidNumber(comp, "fmiGetContinuousStates", "nx", nx, NUMBER_OF_STATES))
-        return fmi2Error;
-    if (nullPointer(comp, "fmiGetContinuousStates", "states[]", states))
-        return fmi2Error;
-
-#ifdef HAVE_MODELDESCRIPTION_STRUCT
-    return generated_fmi2GetContinuousStates(&comp->s.md, vrStates, nx, states);
-#else
-    for (i = 0; i < nx; i++) {
-        fmi2ValueReference vr = vrStates[i];
-        states[i] = comp->s.r[vr];
-        FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmiGetContinuousStates: #r%u# = %.16g", vr, states[i])
-    }
-    return fmi2OK;
-#endif
 }
 
 /* Evaluation of the model equations */
-fmi2Status fmiGetDerivatives(fmi2Component c, fmi2Real derivatives[], size_t nx) {
+fmi2Status fmi2GetDerivatives(fmi2Component c, fmi2Real derivatives[], size_t nx) {
+#if NUMBER_OF_STATES>0
     int i;
+#endif
     ModelInstance* comp = (ModelInstance *)c;
-    if (invalidState(comp, "fmiGetDerivatives", modelInitialized|modelStepping|modelTerminated))
+    if (invalidState(comp, "fmi2GetDerivatives", MASK_fmi2GetDerivatives))
         return fmi2Error;
-    if (invalidNumber(comp, "fmiGetDerivatives", "nx", nx, NUMBER_OF_STATES))
+    if (invalidNumber(comp, "fmi2GetDerivatives", "nx", nx, NUMBER_OF_STATES))
         return fmi2Error;
-    if (nullPointer(comp, "fmiGetDerivatives", "derivatives[]", derivatives))
+    if (nullPointer(comp, "fmi2GetDerivatives", "derivatives[]", derivatives))
         return fmi2Error;
+#if NUMBER_OF_STATES>0
 #ifdef HAVE_MODELDESCRIPTION_STRUCT
-    return generated_fmi2GetDerivatives(&comp->s.md, vrStates, nx, derivatives);
+    return generated_fmi2SetReal(&comp->s.md, vrDerivatives, nx, derivatives);
 #else
     for (i = 0; i < nx; i++) {
         fmi2ValueReference vr = vrStates[i] + 1;
-        derivatives[i] = comp->s.r[vr];
-        FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmiGetDerivatives: #r%d# = %.16g", vr, derivatives[i])
+        derivatives[i] = getReal(comp, vr); // to be implemented by the includer of this file
+        FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2GetDerivatives: #r%d# = %.16g", vr, derivatives[i])
     }
-    return fmi2OK;
 #endif
+#endif
+    return fmi2OK;
 }
 
-fmi2Status fmiGetNominalsOfContinuousStates(fmi2Component c, fmi2Real x_nominal[], size_t nx) {
+fmi2Status fmi2GetEventIndicators(fmi2Component c, fmi2Real eventIndicators[], size_t ni) {
+#if NUMBER_OF_EVENT_INDICATORS>0
+    int i;
+#endif
+    ModelInstance *comp = (ModelInstance *)c;
+    if (invalidState(comp, "fmi2GetEventIndicators", MASK_fmi2GetEventIndicators))
+        return fmi2Error;
+    if (invalidNumber(comp, "fmi2GetEventIndicators", "ni", ni, NUMBER_OF_EVENT_INDICATORS))
+        return fmi2Error;
+#if NUMBER_OF_EVENT_INDICATORS>0
+#ifdef HAVE_MODELDESCRIPTION_STRUCT
+    return generated_fmi2SetReal(&comp->s.md, vrStates, nx, eventIndicators);
+#else
+    for (i = 0; i < ni; i++) {
+        eventIndicators[i] = getEventIndicator(comp, i); // to be implemented by the includer of this file
+        FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2GetEventIndicators: z%d = %.16g", i, eventIndicators[i])
+    }
+#endif
+#endif
+    return fmi2OK;
+}
+
+fmi2Status fmi2GetContinuousStates(fmi2Component c, fmi2Real states[], size_t nx) {
+#if NUMBER_OF_REALS>0
+    int i;
+#endif
+    ModelInstance *comp = (ModelInstance *)c;
+    if (invalidState(comp, "fmi2GetContinuousStates", MASK_fmi2GetContinuousStates))
+        return fmi2Error;
+    if (invalidNumber(comp, "fmi2GetContinuousStates", "nx", nx, NUMBER_OF_STATES))
+        return fmi2Error;
+    if (nullPointer(comp, "fmi2GetContinuousStates", "states[]", states))
+        return fmi2Error;
+#if NUMBER_OF_REALS>0
+#ifdef HAVE_MODELDESCRIPTION_STRUCT
+    return generated_fmi2GetReal(&comp->s.md, vrStates, nx, states);
+#else
+    for (i = 0; i < nx; i++) {
+        fmi2ValueReference vr = vrStates[i];
+        states[i] = getReal(comp, vr); // to be implemented by the includer of this file
+        FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2GetContinuousStates: #r%u# = %.16g", vr, states[i])
+    }
+#endif
+#endif
+    return fmi2OK;
+}
+
+fmi2Status fmi2GetNominalsOfContinuousStates(fmi2Component c, fmi2Real x_nominal[], size_t nx) {
     int i;
     ModelInstance *comp = (ModelInstance *)c;
-    if (invalidState(comp, "fmiGetNominalContinuousStates", modelInstantiated|modelInitialized|modelStepping|modelTerminated))
+    if (invalidState(comp, "fmi2GetNominalsOfContinuousStates", MASK_fmi2GetNominalsOfContinuousStates))
         return fmi2Error;
-    if (invalidNumber(comp, "fmiGetNominalContinuousStates", "nx", nx, NUMBER_OF_STATES))
+    if (invalidNumber(comp, "fmi2GetNominalContinuousStates", "nx", nx, NUMBER_OF_STATES))
         return fmi2Error;
-    if (nullPointer(comp, "fmiGetNominalContinuousStates", "x_nominal[]", x_nominal))
+    if (nullPointer(comp, "fmi2GetNominalContinuousStates", "x_nominal[]", x_nominal))
         return fmi2Error;
-    FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmiGetNominalContinuousStates: x_nominal[0..%d] = 1.0", nx-1)
+    FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2GetNominalContinuousStates: x_nominal[0..%d] = 1.0", nx-1)
     for (i = 0; i < nx; i++)
         x_nominal[i] = 1;
     return fmi2OK;

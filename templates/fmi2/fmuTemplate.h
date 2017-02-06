@@ -19,13 +19,32 @@
 
 #define NUMBER_OF_CATEGORIES 4
 
+#define MASK_fmi2EnterEventMode          (modelEventMode | modelContinuousTimeMode)
+#define MASK_fmi2NewDiscreteStates       modelEventMode
+#define MASK_fmi2EnterContinuousTimeMode modelEventMode
+#define MASK_fmi2CompletedIntegratorStep modelContinuousTimeMode
+#define MASK_fmi2SetTime                 (modelEventMode | modelContinuousTimeMode)
+#define MASK_fmi2SetContinuousStates     modelContinuousTimeMode
+#define MASK_fmi2GetEventIndicators      (modelInitializationMode \
+                                        | modelEventMode | modelContinuousTimeMode \
+                                        | modelTerminated | modelError)
+#define MASK_fmi2GetDerivatives          (modelEventMode | modelContinuousTimeMode \
+                                        | modelTerminated | modelError)
+#define MASK_fmi2GetContinuousStates     MASK_fmi2GetEventIndicators
+#define MASK_fmi2GetNominalsOfContinuousStates ( modelInstantiated \
+                                        | modelEventMode | modelContinuousTimeMode \
+                                        | modelTerminated | modelError)
+
 typedef enum {
     modelInstantiated       = 1<<0,
     modelInitializationMode = 1<<1,
     modelInitialized        = 1<<2, // state just after fmiExitInitializationMode
     modelStepping           = 1<<3, // state after initialization
     modelTerminated         = 1<<4,
-    modelError              = 1<<5
+    modelError              = 1<<5,
+    // ME states
+    modelEventMode          = 1<<6,
+    modelContinuousTimeMode = 1<<7
 } ModelState;
 
 #ifndef WIN32

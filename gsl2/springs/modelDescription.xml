@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <fmiModelDescription
     fmiVersion="2.0"
-    description="Force-velocity clutch with GSL integrator"
+    description="Two masses with a spring"
     modelName="springs"
     guid="{94c48023-cb4a-4ea1-9e70-ee6556d3ba0c}"
     numberOfEventIndicators="0">
@@ -23,84 +23,122 @@
 
   <ModelVariables>
     <ScalarVariable
-        name="x0"
-        valueReference="0"
-        description="position left mass"
-        causality="parameter"
-        variability="fixed">
-      <State/>
+        name="x_in"
+        valueReference="1"
+        description="position of mass connected to left mass"
+        variability="continuous"
+        causality="output">
       <Real start="-1"/>
     </ScalarVariable>
     <ScalarVariable
-        name="v0"
-        valueReference="1"
-        description="velocity left mass"
-        causality="parameter"
-        variability="fixed">
-      <!-- <State/> -->
-      <Real start="0"/>
+        name="x0"
+        valueReference="2"
+        description="position left mass"
+        variability="continuous"
+        causality="output">
+      <Real start="-1"/>
     </ScalarVariable>
     <ScalarVariable
         name="x1"
-        valueReference="2"
+        valueReference="3"
         description="position right mass"
-        causality="parameter"
-        variability="fixed">
-      <!-- <State/> -->
+        variability="continuous"
+        initial="exact"
+        causality="local">
       <Real start="1"/>
     </ScalarVariable>
     <ScalarVariable
+        name="v0"
+        valueReference="4"
+        description="velocity left mass"
+        variability="continuous"
+        initial="exact"
+        causality="local">
+      <Real start="0"/>
+    </ScalarVariable>
+    <ScalarVariable
         name="v1"
-        valueReference="3"
+        valueReference="5"
         description="velocity right mass"
-        causality="parameter"
-        variability="fixed">
-      <!-- <State/> -->
+        variability="continuous"
+        initial="exact"
+        causality="local">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <!-- Derivatives -->
+    <ScalarVariable
+        name="dx0"
+        valueReference="6"
+        description="change in position left mass"
+        variability="continuous"
+        derivative="2"
+        initial="exact"
+        causality="local">
+      <Real start="0"/>
+    </ScalarVariable>
+    <ScalarVariable
+        name="dx1"
+        valueReference="7"
+        description="change in position right mass"
+        variability="continuous"
+        derivative="3"
+        initial="exact"
+        causality="local">
+      <Real start="0"/>
+    </ScalarVariable>
+    <ScalarVariable
+        name="dv0"
+        valueReference="8"
+        description="change in velocity left mass"
+        variability="continuous"
+        derivative="4"
+        initial="exact"
+        causality="local">
+      <Real start="0"/>
+    </ScalarVariable>
+    <ScalarVariable
+        name="dv1"
+        valueReference="9"
+        description="change in velocity right mass"
+        variability="continuous"
+        derivative="5"
+        initial="exact"
+        causality="local">
       <Real start="0"/>
     </ScalarVariable>
 
     <!-- internal parameter -->
     <ScalarVariable
         name="k1"
-        valueReference="4"
+        valueReference="10"
         description="spring constant spring on left mass"
         causality="parameter"
-        variability="fixed">
+        variability="tunable"
+        initial="exact">
       <Real start="0"/>
     </ScalarVariable>
     <ScalarVariable
         name="k2"
-        valueReference="5"
+        valueReference="11"
         description="spring constant for spring between masses"
         causality="parameter"
-        variability="fixed">
+        variability="fixed"
+        initial="exact">
       <Real start="1"/>
     </ScalarVariable>
 
-    <!-- inputs -->
-    <ScalarVariable
-        name="x_in"
-        valueReference="6"
-        description="position of mass connected to left mass"
-        causality="input">
-      <Real start="0.0"/>
-    </ScalarVariable>
-
-    <!-- outputs -->
-    <ScalarVariable
-        name="x_out"
-        valueReference="7"
-        description="position of the left mass"
-        causality="output">
-      <Real />
-    </ScalarVariable>
   </ModelVariables>
-
   <ModelStructure>
     <Outputs>
-      <Unknown index="7"/>
+      <Unknown index="1"/>
     </Outputs>
-    <Derivatives/>
+    <Derivatives>
+      <Unknown index="6"/>
+      <Unknown index="7"/>
+      <Unknown index="8"/>
+      <Unknown index="9"/>
+    </Derivatives>
     <DiscreteStates/>
     <InitialUnknowns />
   </ModelStructure>

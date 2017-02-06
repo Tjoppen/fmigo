@@ -547,6 +547,7 @@ int main(int argc, char *argv[] ) {
             &method, &realtimeMode, &printXML, &stepOrder, &fmuVisibilities,
             &scs, &connconf, &hdf5Filename, &fieldnameFilename, &holonomic, &compliance,
             &command_port, &results_port, &paused, &solveLoops, &integratorType, &tolerance)) {
+
         return 1;
     }
 

@@ -1,11 +1,13 @@
 SERVERPATH=~/work/umit/build/install/bin/
 MASTERPATH=~/work/umit/build/install/bin/
 FMUPATH=~/work/umit/umit-fmus/gsl2/
+DATAPATH=~/work/umit/data/
 SHELL := /bin/bash
 
-BOUNCINGBALL= -np 1 $(SERVERPATH)fmi-mpi-server $(FMUPATH)/bouncingBall/bouncingBall.fmu
-VANDERPOL= -np 1 $(SERVERPATH)fmi-mpi-server $(FMUPATH)/vanDerPol/vanDerPol.fmu
-SPRINGS= -np 1 $(SERVERPATH)fmi-mpi-server $(FMUPATH)/springs/springs.fmu
+BOUNCINGBALL= -np 1 $(SERVERPATH)fmi-mpi-server $(FMUPATH)bouncingBall/bouncingBall.fmu
+VANDERPOL= -np 1 $(SERVERPATH)fmi-mpi-server $(FMUPATH)vanDerPol/vanDerPol.fmu
+SPRINGS= -np 1 $(SERVERPATH)fmi-mpi-server $(FMUPATH)springs/springs.fmu
+SUBME= -np 1 $(SERVERPATH)fmi-mpi-server $(FMUPATH)subME/subME.fmu
 
 makeplot: run_me_test plot
 
@@ -25,7 +27,7 @@ build:FORCE
 					    grep -v "Set runtime")
 
 rundebug: build
-	mpiexec -np 1 xterm -hold -e gdb --args $(MASTERPATH)fmi-mpi-master -m me -t 10 : -np 1 xterm -hold -e gdb --args $(SERVERPATH)fmi-mpi-server $(FMUPATH)bouncingBall.fmu)
+	mpiexec -np 1 xterm -hold -e gdb --args $(MASTERPATH)fmi-mpi-master -x -m me -t 10 : -np 1 xterm -hold -e gdb --args $(SERVERPATH)fmi-mpi-server $(FMUPATH)bouncingBall.fmu)
 
 runmpidebug: build
 	./DEBUG.sh $(MASTERPATH)fmi-mpi-master $(SERVERPATH)fmi-mpi-server $(FMUPATH)vanDerPol.fmu
@@ -33,14 +35,16 @@ runmpidebug: build
 FORCE:
 
 run_me_two: build
-	mpiexec -np 1 $(MASTERPATH)fmi-mpi-master -t 12 -m me -l -c 0,7,1,6 -c 1,7,0,6 : $(SPRINGS) : $(SPRINGS)
+	mpiexec -np 1 $(MASTERPATH)fmi-mpi-master -t 12 -m me -c 0,2,1,1 : $(SPRINGS) :  $(SPRINGS)
 	(cd $(FMUPATH) && mv resultFile.mat springs.mat)
+#	mpiexec -np 1 $(MASTERPATH)fmi-mpi-master -t 12 -m me -c 0,3,1,2:0,3,1,1 : $(SUBME) : $(SUBME)
+#	(cd $(FMUPATH) && mv resultFile.mat subME.mat)
 
 run_me_test: build
 	mpiexec -np 1 $(MASTERPATH)fmi-mpi-master -t 3 -m me : $(BOUNCINGBALL)
-	(cd $(FMUPATH) && mv resultFile.mat bouncingball.mat)
+	(cd $(DATAPATH) && mv resultFile.mat bouncingball.mat)
 	mpiexec -np 1 $(MASTERPATH)fmi-mpi-master -t 12 -m me : $(VANDERPOL)
-	(cd $(FMUPATH) && mv resultFile.mat vanderpol.mat)
+	(cd $(DATAPATH) && mv resultFile.mat vanderpol.mat)
 	#mpiexec -np 1 $(MASTERPATH)fmi-mpi-master -t 12 -m me : $(VANDERPOL) : $(VANDERPOL2)
 	#mpiexec -np 1 $(MASTERPATH)fmi-mpi-master -t 1.5 -m me : $(BOUNCINGBALL) : $(BOUNCINGBALL)
 	#mpiexec -np 1 $(MASTERPATH)fmi-mpi-master -t 1.6 -m me : $(VANDERPOL) : $(BOUNCINGBALL)

@@ -4,27 +4,39 @@
 #define SIMULATION_TYPE cgsl_simulation
 #define SIMULATION_INIT springs_init
 #define SIMULATION_FREE cgsl_free_simulation
-#define NUMBER_OF_EVENT_INDICATORS 0
 
 #include "fmuTemplate.h"
 
 static void update_all(modelDescription_t *md){
-    //std::cout << "hello " << sdt::endl;
-    md->dx0 = md->v0;
-    md->dv0 = -md->k1 * (md->x0 - md->x1);
-    md->dx1 = md->v1;
-    md->dv1 = -md->k1 * (md->x1 - md->x0) -md->k2 * (md->x1 - md->x_in);
-    //fprintf(stderr,"%f %f %f %f \n",md->dx0,md->dv0,md->dx1,md->dv1);
+    md->dx = md->v;
+    md->force_out = md->k * (md->x - md->x_in);
+    md->dv = -md->force_out - md->g;
 }
 
-static fmi2Status getEventIndicator(const modelDescription_t *md, size_t ni, fmi2Real eventIndicators[]){
+// offset for event indicator, adds hysteresis and prevents z=0 at restart
+#define EPS_INDICATORS 1e-14
 
+static fmi2Status getEventIndicator(modelDescription_t *md, fmi2Real eventIndicators[]){
+    if(md->dirty) {
+        update_all(md);
+        md->dirty = 0;
+    }
+    eventIndicators[0] = md->x + (md->x>0 ? EPS_INDICATORS : -EPS_INDICATORS);
 
     return fmi2OK;
 }
 
 // used to set the next time event, if any.
 static void eventUpdate(ModelInstance *comp, fmi2EventInfo *eventInfo) {
+
+    modelDescription_t *md = &comp->s.md;
+    if (!(md->x>0)) {
+        md->x = - md->c * md->v;
+    }
+    eventInfo->valuesOfContinuousStatesChanged   = fmi2True;
+    eventInfo->nominalsOfContinuousStatesChanged = fmi2False;
+    eventInfo->terminateSimulation   = fmi2False;
+    eventInfo->nextEventTimeDefined  = fmi2False;
     return;
 }
 

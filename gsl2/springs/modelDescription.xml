@@ -3,7 +3,7 @@
     fmiVersion="2.0"
     description="Two masses with a spring"
     modelName="springs"
-    guid="{94c48023-cb4a-4ea1-9e70-ee6556d3ba0c}"
+    guid="{78a384b7-1718-4f46-a8ee-9536df41db41}"
     numberOfEventIndicators="0">
 
   <ModelExchange
@@ -27,7 +27,7 @@
         valueReference="1"
         description="position of mass connected to left mass"
         variability="continuous"
-        causality="output">
+        causality="input">
       <Real start="-1"/>
     </ScalarVariable>
     <ScalarVariable
@@ -116,7 +116,7 @@
         causality="parameter"
         variability="tunable"
         initial="exact">
-      <Real start="0"/>
+      <Real start="1"/>
     </ScalarVariable>
     <ScalarVariable
         name="k2"
@@ -125,13 +125,14 @@
         causality="parameter"
         variability="fixed"
         initial="exact">
-      <Real start="1"/>
+      <Real start="0"/>
     </ScalarVariable>
 
   </ModelVariables>
   <ModelStructure>
     <Outputs>
-      <Unknown index="1"/>
+      <Unknown index="2"/>
+      <Unknown index="3"/>
     </Outputs>
     <Derivatives>
       <Unknown index="6"/>

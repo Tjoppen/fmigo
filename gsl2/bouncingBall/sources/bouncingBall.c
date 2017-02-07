@@ -4,7 +4,6 @@
 #define SIMULATION_TYPE cgsl_simulation
 #define SIMULATION_INIT springs_init
 #define SIMULATION_FREE cgsl_free_simulation
-#define NUMBER_OF_EVENT_INDICATORS 0
 
 #include "fmuTemplate.h"
 
@@ -17,7 +16,7 @@ static void update_all(modelDescription_t *md){
     //fprintf(stderr,"%f %f %f %f \n",md->dx0,md->dv0,md->dx1,md->dv1);
 }
 
-static fmi2Status getEventIndicator(const modelDescription_t *md, size_t ni, fmi2Real eventIndicators[]){
+static fmi2Status getEventIndicator(const modelDescription_t *md, fmi2Real eventIndicators[]){
 
 
     return fmi2OK;

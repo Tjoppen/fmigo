@@ -2,12 +2,12 @@
 <fmiModelDescription
     fmiVersion="2.0"
     description="Two masses with a spring"
-    modelName="springs"
-    guid="{94c48023-cb4a-4ea1-9e70-ee6556d3ba0c}"
-    numberOfEventIndicators="0">
+    modelName="bouncingBall"
+    guid="{5e7c4fc2-0d0b-4a42-be27-f5be0a5a479e}"
+    numberOfEventIndicators="1">
 
   <ModelExchange
-      modelIdentifier="springs"
+      modelIdentifier="bouncingBall"
       canHandleVariableCommunicationStepSize="true"
       canGetAndSetFMUstate="true"
       providesDirectionalDerivative="false"/>

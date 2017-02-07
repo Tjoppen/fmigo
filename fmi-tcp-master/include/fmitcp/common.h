@@ -42,7 +42,7 @@ namespace fmitcp {
 
   fmitcp_proto::jm_status_enu_t fmiJMStatusToProtoJMStatus(jm_status_enu_t status);
   fmitcp_proto::fmi2_status_t fmi2StatusToProtofmi2Status(fmi2_status_t status);
-  fmitcp_proto::fmi2_event_info_t* fmi2EventInfoToProtoEventInfo(fmi2_event_info_t* eventInfo);
+  fmitcp_proto::fmi2_event_info_t* fmi2EventInfoToProtoEventInfo(const fmi2_event_info_t &eventInfo);
   fmitcp_proto::jm_log_level_enu_t fmiJMLogLevelToProtoJMLogLevel(jm_log_level_enu_t logLevel);
   fmi2_event_info_t protoEventInfoToFmi2EventInfo(fmitcp_proto::fmi2_event_info_t eventInfo);
   fmi2_status_kind_t protoStatusKindToFmiStatusKind(fmitcp_proto::fmi2_status_kind_t statusKind);

@@ -16,7 +16,7 @@ RUN apt-get update
 RUN apt-get install --yes \
         build-essential cmake ninja-build git python bc psmisc \
         protobuf-compiler protobuf-c-compiler libprotobuf-dev \
-        libsuitesparse-dev libzmqpp-dev libhdf5-dev libjsoncpp-dev \
+        libsuitesparse-dev libzmqpp-dev libhdf5-dev \
         libopenmpi-dev libgsl-dev
 #
 # Create user, since mpiexec doesn't like to run as root

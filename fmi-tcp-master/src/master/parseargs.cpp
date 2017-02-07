@@ -1,13 +1,10 @@
 #include <iostream>
 #include <stdio.h>
-#include <stdarg.h>
-#include <stdlib.h>
 #ifdef WIN32
 #include "master/getopt.h"
 #else
 #include <getopt.h>
 #endif
-#include <json/json.h>
 #include <deque>
 #include <fstream>
 #include "common/common.h"
@@ -22,11 +19,12 @@ using namespace common;
 using namespace std;
 
 static void printHelp(){
-    system("man fmi-tcp-master");
+  fprintf(stderr, "Check manpage for help, \"man fmi-tcp-master\"\n");
 }
 
 static void printInvalidArg(char option){
-    fprintf(stderr, "Invalid argument of -%c. Use -h for help.\n",option);
+  fprintf(stderr, "Invalid argument of -%c\n",option);
+  printHelp();
 }
 
 static fmi2_base_type_enu_t type_from_char(string type) {
@@ -115,7 +113,6 @@ int fmitcp_master::parseArguments( int argc,
                     std::vector<int> *stepOrder,
                     std::vector<int> *fmuVisibilities,
                     vector<strongconnection> *strongConnections,
-                    vector<connectionconfig> *connconf,
                     string *hdf5Filename,
                     string *fieldnameFilename,
                     bool *holonomic,
@@ -137,7 +134,7 @@ int fmitcp_master::parseArguments( int argc,
 
     vector<char*> argv2 = make_char_vector(argvstore);
 
-    while ((c = getopt (argv2.size(), argv2.data(), "xrl:vqht:c:d:s:o:p:f:m:g:w:C:j:5:F:NM:a:z:ZL")) != -1){
+    while ((c = getopt (argv2.size(), argv2.data(), "xrl:vqht:c:d:s:o:p:f:m:g:w:C:5:F:NM:a:z:ZL")) != -1){
         int n, skip, l, cont, i, numScanned, stop, vis;
         deque<string> parts;
         if (optarg) parts = split(optarg, ':');
@@ -330,6 +327,7 @@ int fmitcp_master::parseArguments( int argc,
                 case fmi2_base_type_int:  p.intValue = atoi(values[2].c_str()); break;
                 case fmi2_base_type_bool: p.boolValue = (values[2] == "true"); break;
                 case fmi2_base_type_str:  p.stringValue = values[2]; break;
+                case fmi2_base_type_enum: fprintf(stderr, "An enum snuck its way into -p\n"); exit(1);
                 }
 
                 (*params)[make_pair(p.fmuIndex,p.type)].push_back(p);
@@ -346,65 +344,6 @@ int fmitcp_master::parseArguments( int argc,
                 fmuVisibilities->push_back(atoi(it->c_str()));
             }
             break;
-
-        case 'j': {
-            Json::Value root;
-            std::ifstream ifs(optarg);
-            if (!ifs) {
-                fprintf(stderr, "%s does not exist\n", optarg);
-                exit(1);
-            }
-            ifs >> root;
-
-            for (auto conn : root["connections"]) {
-                //fprintf(stderr, "node %s, signal %s\n", conn["input"]["node"].asString().c_str(), conn["input"]["signal"].asString().c_str());
-                connectionconfig conf;
-                conf.input.node   = conn["input"]["node"].asString();
-                conf.input.signal = conn["input"]["signal"].asString();
-
-                for (auto output : conn["outputs"]) {
-                    //fprintf(stderr, "-> %s, %s\n", output["node"].asString().c_str(), output["signal"].asString().c_str());
-                    nodesignal ns;
-                    ns.node   = output["node"].asString();
-                    ns.signal = output["signal"].asString();
-                    conf.outputs.push_back(ns);
-                }
-
-                if (conn.isMember("constant")) {
-                    auto c = conn["constant"];
-
-                    if (c.isBool()) {
-                        //fprintf(stderr, "bool: %s\n", c.asBool() ? "true" : "false");
-                        conf.defaultValue.type = fmi2_base_type_bool;
-                        conf.defaultValue.boolValue = c.asBool();
-                    } else if (c.isDouble()) {
-                        //fprintf(stderr, "double: %lf\n", c.asDouble());
-                        conf.defaultValue.type = fmi2_base_type_real;
-                        conf.defaultValue.realValue = c.asDouble();
-                    } else if (c.isInt()) {
-                        //fprintf(stderr, "int: %i\n", c.asInt());
-                        conf.defaultValue.type = fmi2_base_type_int;
-                        conf.defaultValue.intValue = c.asInt();
-                    } else if (c.isString()) {
-                        //fprintf(stderr, "string: %s\n", c.asString().c_str());
-                        conf.defaultValue.type = fmi2_base_type_str;
-                        conf.defaultValue.stringValue = c.asString();
-                    } else {
-                        fprintf(stderr, "unknown constant value type for node %s, signal %s\n",
-                                conn["input"]["node"].asString().c_str(), conn["input"]["signal"].asString().c_str());
-                        exit(1);
-                    }
-
-                    conf.hasDefault = true;
-                } else {
-                    conf.hasDefault = false;
-                }
-                connconf->push_back(conf);
-            }
-            fprintf(stderr, "Parsed %li connection configuration(s) from %s\n",
-                    connconf->size(), optarg);
-            break;
-        }
 
         case '5':
             *hdf5Filename = optarg;

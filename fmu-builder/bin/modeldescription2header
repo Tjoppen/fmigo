@@ -17,6 +17,7 @@ root = tree.getroot()
 
 # Get FMU version
 fmiVersion = root.get('fmiVersion')
+ni = root.get('numberOfEventIndicators');
 
 # Get model identifier.
 csFmuType = False
@@ -53,6 +54,7 @@ ints  = {}
 bools = {}
 states = {}
 derivatives = {}
+
 SV = root.find('ModelVariables').findall('ScalarVariable')
 
 for sv in SV:
@@ -110,7 +112,7 @@ print('''#ifndef MODELDESCRIPTION_H
 #define NUMBER_OF_INTEGERS %i
 #define NUMBER_OF_BOOLEANS %i
 #define NUMBER_OF_STATES %i
-#define NUMBER_OF_EVENT_INDICATORS 0
+#define NUMBER_OF_EVENT_INDICATORS %s
 ''' % (
     modelIdentifier,
     root.get('guid'),

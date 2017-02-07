@@ -5,6 +5,8 @@ DATAPATH=~/work/umit/data/
 SHELL := /bin/bash
 
 BOUNCINGBALL= -np 1 $(SERVERPATH)fmi-mpi-server $(FMUPATH)bouncingBall/bouncingBall.fmu
+BOUNCINGBALLWITHSPRING= -np 1 $(SERVERPATH)fmi-mpi-server $(FMUPATH)bouncingBallWithSpring/bouncingBallWithSpring.fmu
+FIXEDPOINT= -np 1 $(SERVERPATH)fmi-mpi-server $(FMUPATH)fixedPoint/fixedPoint.fmu
 VANDERPOL= -np 1 $(SERVERPATH)fmi-mpi-server $(FMUPATH)vanDerPol/vanDerPol.fmu
 SPRINGS= -np 1 $(SERVERPATH)fmi-mpi-server $(FMUPATH)springs/springs.fmu
 SUBME= -np 1 $(SERVERPATH)fmi-mpi-server $(FMUPATH)subME/subME.fmu
@@ -35,10 +37,10 @@ runmpidebug: build
 FORCE:
 
 run_me_two: build
-	mpiexec -np 1 $(MASTERPATH)fmi-mpi-master -t 12 -m me -c 0,2,1,1 : $(SPRINGS) :  $(SPRINGS)
+	mpiexec -np 1 $(MASTERPATH)fmi-mpi-master -t 12 -m me -p r,0,301,1 -c 0,1,1,100 : $(FIXEDPOINT) :  $(BOUNINGBALLWITHSPRING)
+	(cd $(FMUPATH) && mv resultFile.mat ballspringfixed.mat)
+	mpiexec -np 1 $(MASTERPATH)fmi-mpi-master -t 12 -m me -p r,1,11,1 -c 0,2,1,1 : $(SPRINGS) :  $(SPRINGS)
 	(cd $(FMUPATH) && mv resultFile.mat springs.mat)
-#	mpiexec -np 1 $(MASTERPATH)fmi-mpi-master -t 12 -m me -c 0,3,1,2:0,3,1,1 : $(SUBME) : $(SUBME)
-#	(cd $(FMUPATH) && mv resultFile.mat subME.mat)
 
 run_me_test: build
 	mpiexec -np 1 $(MASTERPATH)fmi-mpi-master -t 3 -m me : $(BOUNCINGBALL)

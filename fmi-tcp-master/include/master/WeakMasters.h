@@ -122,6 +122,7 @@ class ModelExchangeStepper : public BaseMaster {
 
         BaseMaster* baseMaster;       /* BaseMaster object pointer */
         std::vector<FMIClient*> clients;            /* FMIClient object pointer */
+        std::vector<WeakConnection> weakConnections;
 
         bool stateEvent;
         bool skip;
@@ -131,7 +132,6 @@ class ModelExchangeStepper : public BaseMaster {
       cgsl_model model;
     };
     cgsl_simulation m_sim;
-    std::vector<WeakConnection> m_weakConnections;
     enum INTEGRATORTYPE m_integratorType;
     double m_tolerance;
     TimeLoop timeLoop;
@@ -173,6 +173,7 @@ class ModelExchangeStepper : public BaseMaster {
                                             client->getNumContinuousStates()));
         }
         p->baseMaster->wait();
+        p->baseMaster->solveLoops();
 
         for(auto client: p->clients)
             p->baseMaster->send(client, fmi2_import_get_derivatives(0,0,(int)client->getNumContinuousStates()));
@@ -267,7 +268,6 @@ class ModelExchangeStepper : public BaseMaster {
 
         m->model.parameters = (void*)p;
         p->clients = clients;
-        // TODO one result file for each fmu
 
         ostringstream prefix;
         prefix << "data/resultFile.mat";

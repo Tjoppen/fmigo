@@ -79,7 +79,6 @@ for sv in SV:
         if meFmuType:
             if 'derivative' in sv.attrib:
                 states[vr] = (reals[int(sv.attrib['derivative'])][0], start)
-                #states[vr] = (name, start)
                 derivatives[vr] = (name, start)
     elif I != None or E != None:
         if vr in ints:
@@ -124,28 +123,31 @@ print('''#ifndef MODELDESCRIPTION_H
     len(ints),
     len(bools),
     len(states),
+    ni,
 ))
 
 print('''
 #define HAVE_MODELDESCRIPTION_STRUCT
 typedef struct {
-%s%s%s
+%s%s%s%s
 } modelDescription_t;
 ''' % (
     ''.join(['    fmi2Real '+value[0]+'; //VR='+str(key)+'\n' for key,value in reals.items()]),
     ''.join(['    fmi2Integer '+value[0]+'; //VR='+str(key)+'\n' for key,value in ints.items()]),
     ''.join(['    fmi2Boolean '+value[0]+'; //VR='+str(key)+'\n' for key,value in bools.items()]),
+    '    fmi2Boolean dirty;' if meFmuType else '',
 ))
 
 print('''
 #define HAVE_DEFAULTS
 static const modelDescription_t defaults = {
-%s%s%s
+%s%s%s%s
 };
 ''' % (
     ''.join(['    '+str(value[1])+', //'+value[0]+'\n' for key,value in reals.items()]),
     ''.join(['    '+str(value[1])+', //'+value[0]+'\n' for key,value in ints.items()]),
     ''.join(['    '+str(value[1])+', //'+value[0]+'\n' for key,value in bools.items()]),
+    '    1,' if meFmuType else '',
 ))
 
 print('''
@@ -172,10 +174,13 @@ if meFmuType:
     ', '.join(['VR_'+value[0].upper() for key,value in derivatives.items()]),
     ))
 
+print('''%s'''%(
+    '\nstatic void update_all(modelDescription_t *md);\n' if meFmuType else '',))
+
 def gen_getters_setters(t, d):
     print('''
-static fmi2Status generated_fmi2Get%s(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2%s value[]) {
-    int i;
+static fmi2Status generated_fmi2Get%s(%smodelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2%s value[]) {
+    %s    int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
 %s
@@ -186,7 +191,7 @@ static fmi2Status generated_fmi2Get%s(const modelDescription_t *md, const fmi2Va
 }
 
 static fmi2Status generated_fmi2Set%s(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2%s value[]) {
-    int i;
+    %s    int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
 %s
@@ -195,9 +200,13 @@ static fmi2Status generated_fmi2Set%s(modelDescription_t *md, const fmi2ValueRef
     }
     return fmi2OK;
 }''' % (
-        t,t,
+        t,
+        'const ' if csFmuType else '' ,
+        t,
+        'if (md->dirty){\n        update_all(md);\n        md->dirty = 0;\n    }\n' if meFmuType else '',
         ''.join(['        case VR_%s: value[i] = md->%s; break;\n' % (value[0].upper(), value[0]) for key,value in d.items()]),
         t,t,
+        'md->dirty = 1;\n' if meFmuType else '',
         ''.join(['        case VR_%s: md->%s = value[i]; break;\n' % (value[0].upper(), value[0]) for key,value in d.items()]),
     ))
 

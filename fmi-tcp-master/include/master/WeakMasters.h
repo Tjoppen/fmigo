@@ -519,7 +519,6 @@ class ModelExchangeStepper : public BaseMaster {
 
     void runIteration(double t, double dt) {
         timeLoop.t_end = t + dt;
-
         newDiscreteStates();
         while( timeLoop.t_safe < timeLoop.t_end ){
             if (hasStateEvent(m_sim)){

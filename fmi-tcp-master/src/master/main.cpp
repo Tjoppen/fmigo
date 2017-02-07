@@ -762,7 +762,6 @@ int main(int argc, char *argv[] ) {
         nrecords++;
 #endif
     }
-
     if (!zmqControl) {
       printOutputs(endTime, master, clients);
 
@@ -795,7 +794,9 @@ int main(int argc, char *argv[] ) {
     delete master;
 
     for (size_t x = 0; x < clients.size(); x++) {
+    cout << " client size "<< clients.size() << endl;
         delete clients[x];
+        cout << " pasted delete" << endl;
     }
 
 #ifdef USE_MPI

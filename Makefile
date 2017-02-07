@@ -16,8 +16,8 @@ generate:
 
 plot:
 	pkill python || echo ""
-	python $(FMUPATH)plot1.py $(FMUPATH)bouncingball.mat
-	python $(FMUPATH)plot1.py $(FMUPATH)vanderpol.mat der
+	python $(DATAPATH)plot1.py $(DATAPATH)bouncingball.mat
+	python $(DATAPATH)plot1.py $(DATAPATH)vanderpol.mat der
 
 build:FORCE
 	(cd ~/work/umit/build && ninja && ninja install  | 		\

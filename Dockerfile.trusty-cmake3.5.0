@@ -10,14 +10,26 @@ RUN apt-get update
 #                   do this for us yet
 #           psmisc: for killall
 #  mpi-default-bin: for mpiexec
-#
-# NOTE: this installs CMake 2.8.12.2, which does not support making .zip files
+#        coreutils: for sha1sum
 #
 RUN apt-get install --yes \
-        build-essential cmake ninja-build git python bc psmisc \
+        build-essential ninja-build git python bc psmisc \
         protobuf-compiler protobuf-c-compiler libprotobuf-dev \
         libsuitesparse-dev libzmqpp-dev libhdf5-dev \
-        libopenmpi-dev libgsl0-dev mpi-default-bin zip
+        libopenmpi-dev libgsl0-dev mpi-default-bin \
+        wget coreutils
+
+WORKDIR /root
+
+# CMake 3.5.0
+RUN wget https://www.cmake.org/files/v3.5/cmake-3.5.0.tar.gz
+RUN echo "4a10116e061bbe806ffdd5164aca7780b0e98f4e  cmake-3.5.0.tar.gz" > cmake-3.5.0.tar.gz.sha1
+RUN sha1sum -c cmake-3.5.0.tar.gz.sha1
+RUN tar xf cmake-3.5.0.tar.gz
+WORKDIR /root/cmake-3.5.0
+RUN ./configure
+RUN make
+RUN make install
 
 #
 # Create user, since mpiexec doesn't like to run as root
@@ -39,3 +51,4 @@ RUN mkdir build
 WORKDIR /home/gitlab-ci/umit/build
 RUN cmake .. -G Ninja
 RUN ninja install
+

@@ -7,16 +7,18 @@ umit:
   stage: build
   script:
     - git submodule update --init
-    - docker build -t umit/trusty:$(git rev-parse HEAD) -f Dockerfile.trusty .
-    - docker build -t umit/xenial:$(git rev-parse HEAD) -f Dockerfile.xenial .
+    - docker build -t umit/trusty:$(git rev-parse HEAD)            -f Dockerfile.trusty            .
+    - docker build -t umit/trusty-cmake3.5.0:$(git rev-parse HEAD) -f Dockerfile.trusty-cmake3.5.0 .
+    - docker build -t umit/xenial:$(git rev-parse HEAD)            -f Dockerfile.xenial            .
   tags:
     - shell
 
 test:
   stage: test
   script:
-    - docker run --workdir /home/gitlab-ci/umit umit/trusty:$(git rev-parse HEAD) bash run_tests.sh
-    - docker run --workdir /home/gitlab-ci/umit umit/xenial:$(git rev-parse HEAD) bash run_tests.sh
+    - docker run --workdir /home/gitlab-ci/umit umit/trusty:$(git rev-parse HEAD)            bash run_tests.sh
+    - docker run --workdir /home/gitlab-ci/umit umit/trusty-cmake3.5.0:$(git rev-parse HEAD) bash run_tests.sh
+    - docker run --workdir /home/gitlab-ci/umit umit/xenial:$(git rev-parse HEAD)            bash run_tests.sh
     - docker cp $(docker ps -a |grep umit/xenial:$(git rev-parse HEAD)|grep "bash run_tests.sh"|head -n1|cut -d" " -f 1):/home/gitlab-ci/umit/build/install - > umit-$(git rev-parse HEAD).tar
     - gzip -9 umit-$(git rev-parse HEAD).tar
   dependencies:

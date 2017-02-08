@@ -7,6 +7,7 @@
 
 #include "fmuTemplate.h"
 
+static void updateStates(modelDescription_t *md){}
 static void update_all(modelDescription_t *md){
     md->dx = md->v;
     md->force_out = md->k * (md->x - md->x_in);
@@ -17,10 +18,10 @@ static void update_all(modelDescription_t *md){
 #define EPS_INDICATORS 1e-14
 
 static fmi2Status getEventIndicator(modelDescription_t *md, fmi2Real eventIndicators[]){
-    if(md->dirty) {
-        update_all(md);
-        md->dirty = 0;
-    }
+    /* if(md->dirty) { */
+    /*     update_all(md); */
+    /*     md->dirty = 0; */
+    /* } */
     eventIndicators[0] = md->x + (md->x>0 ? EPS_INDICATORS : -EPS_INDICATORS);
 
     return fmi2OK;

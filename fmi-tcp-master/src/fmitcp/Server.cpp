@@ -717,7 +717,7 @@ string Server::clientData(const char *data, size_t size) {
     // Create response
     fmitcp_proto::fmi2_import_free_fmu_state_res response;
     response.set_message_id(r.message_id());
-    response.set_status(fmitcp_proto::fmi2_status_ok);
+    response.set_status(fmitcp::fmi2StatusToProtofmi2Status(status));
     ret.first = fmitcp_proto::type_fmi2_import_free_fmu_state_res;
     ret.second = response.SerializeAsString();
     m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_free_fmu_state_res(mid=%d,status=%d)\n",response.message_id(),response.status());
@@ -787,9 +787,9 @@ string Server::clientData(const char *data, size_t size) {
     fmitcp_proto::fmi2_import_new_discrete_states_req r; r.ParseFromArray(data, size);
     m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_new_discrete_states_req(mid=%d,fmuId=%d)\n",r.message_id(), r.fmuid());
 
-    fmi2_event_info_t* eventInfo;
+    fmi2_event_info_t eventInfo;
     if (!m_sendDummyResponses) {
-      fmi2_import_new_discrete_states(m_fmi2Instance, eventInfo); 
+      fmi2_import_new_discrete_states(m_fmi2Instance, &eventInfo);
     }
 
     //Create response
@@ -824,12 +824,13 @@ string Server::clientData(const char *data, size_t size) {
     // TODO
     // Unpack message
     fmitcp_proto::fmi2_import_set_continuous_states_req r; r.ParseFromArray(data, size);
-    m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_set_continuous_states_req(mid=%d,fmuId=%d,x=%f)\n",r.message_id(), r.fmuid(), r.x());
+    m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_set_continuous_states_req(mid=%d,fmuId=%d)\n",r.message_id(), r.fmuid());
 
     fmi2_status_t status = fmi2_status_ok;
     std::vector<fmi2_real_t> x;
     x.reserve(r.nx()*sizeof(fmi2_real_t));
-    for(int i; i<r.nx();i++)
+    int i;
+    for(i=0; i<r.nx();i++)
       x[i] = r.x(i);
 
     if (!m_sendDummyResponses) {
@@ -863,7 +864,7 @@ string Server::clientData(const char *data, size_t size) {
       response.add_z(z[i]);
 
     ret.second = response.SerializeAsString();
-    m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_get_event_indicators_res(mid=%d,z=%s)\n",response.message_id(),response.z());
+    m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_get_event_indicators_res(mid=%d)\n",response.message_id());
                                                                                                                                                             
     sendResponse = false;
   break; } case fmitcp_proto::type_fmi2_import_get_continuous_states_req: {
@@ -889,7 +890,7 @@ string Server::clientData(const char *data, size_t size) {
       response.add_x(x[i]);
 
     ret.second = response.SerializeAsString();
-    m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_get_continuous_states_res(mid=%d,x=%s)\n",response.message_id(),response.x());
+    m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_get_continuous_states_res(mid=%d)\n",response.message_id());
     sendResponse = false;
   break; } case fmitcp_proto::type_fmi2_import_get_derivatives_req: {
     // TODO
@@ -914,7 +915,7 @@ string Server::clientData(const char *data, size_t size) {
       response.add_derivatives(derivatives[i]);
 
     ret.second = response.SerializeAsString();
-    m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_get_derivatives_res(mid=%d,derivatives=%s)\n",response.message_id(),response.derivatives());
+    m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_get_derivatives_res(mid=%d)\n",response.message_id());
     
      sendResponse = false;
   break; } case fmitcp_proto::type_fmi2_import_get_nominal_continuous_states_req: {
@@ -940,7 +941,7 @@ string Server::clientData(const char *data, size_t size) {
       response.add_nominal(nominal[i]);
 
     ret.second = response.SerializeAsString();
-    m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_get_nominal_continuous_states_res(mid=%d,nominals=%s)\n",response.message_id(),response.nominal());
+    m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_get_nominal_continuous_states_res(mid=%d)\n",response.message_id());
     sendResponse = false;
   break; } case fmitcp_proto::type_fmi2_import_set_real_input_derivatives_req: {
 

@@ -12,14 +12,15 @@ function tc = scaniaclutch ( dphi, domega, clutch_damping )
   ##
   ##    if too low (< -b[ 0 ]) then c[ 0 ]
   ##    if too high (> b[ 4 ]) then c[ 4 ]
-  ##    else lerp between two values in c
+  ##    else linear interpolation between two values in c
+  ##
 
   tc = c( 1 ); #clutch torque
   
   if (dphi <= b( 1 )) 
-    tc = 970.0 * (dphi - b( 1 ) ) / 0.034906585039886591  + c( 1 );
+    tc = ( c( 2 ) - c( 1 ) ).* (dphi - b( 1 ) ) ./ ( b( 2 ) - b( 1 ) )  + c( 1 );
   elseif ( dphi >= b( end ) ) 
-    tc = 3450.0 * ( dphi - b( end ) ) / 0.078539816339744828   + c( end );
+    tc = ( c( end ) - c( end - 1 ) ) .* ( dphi - b( end ) ) ./ ( b( end ) - b( end - 1 )    + c( end );
   else 
     
     for i = 1:length(b)-1

@@ -6,6 +6,7 @@ typedef double Real;
 #else
 using namespace agx;
 #endif
+
 /// \todo Added for things to compile. Should probably be something else.
 struct steps
 {

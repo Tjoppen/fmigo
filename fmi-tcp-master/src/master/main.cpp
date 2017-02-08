@@ -90,92 +90,6 @@ static vector<WeakConnection> setupWeakConnections(vector<connection> connection
     return weakConnections;
 }
 
-/**
- * Look for exactly zero or one match for given node+signal name and given causality
- */
-typedef map<FMIClient*, variable_map> clientvarmap;
-static bool matchNodesignal(const clientvarmap& varmaps, fmi2_causality_enu_t causality,
-        nodesignal ns, clientvarmap::const_iterator& varmapit, variable_map::const_iterator& varit) {
-    //fprintf(stderr, "looking for signal %s, causality %i\n", ns.signal.c_str(), causality);
-    varmapit = varmaps.end();
-    size_t nmatches = 0;
-    for (clientvarmap::const_iterator m = varmaps.begin(); m != varmaps.end(); m++) {
-        varit = m->second.find(ns.signal);
-        if (m->first->getModelName() == ns.node && varit != m->second.end() && varit->second.causality == causality) {
-            //found something!
-            varmapit = m;
-            nmatches++;
-        }
-    }
-    if (nmatches > 1) {
-        fprintf(stderr, "Found %li matches for node \"%s\" signal \"%s\" (expected zero or one) - bailing out!\n", nmatches, ns.node.c_str(), ns.signal.c_str());
-        exit(1);
-    }
-    return nmatches == 1;
-}
-
-static void addAutomaticConnectionsAndParams(const vector<connectionconfig> &connconf,
-        vector<FMIClient*> clients, vector<WeakConnection> &weakConnections, parameter_map &params) {
-    clientvarmap maps;
-    for (auto client : clients) {
-        maps[client] = client->getVariables();
-    }
-    for (auto cc : connconf) {
-        //first see if we can find a corresponding input
-        clientvarmap::const_iterator varmapit, ovarmapit;
-        variable_map::const_iterator varit, ovarit;
-        bool match = matchNodesignal(maps, fmi2_causality_enu_input, cc.input, varmapit, varit);
-
-        //fprintf(stderr, "signal %s matched? %i\n", cc.input.signal.c_str(), match);
-        if (!match) {
-            //this happens often, nothing to alarm the user about
-            continue;
-        }
-
-        match = false;
-        nodesignal ons;
-        //fprintf(stderr, "%li outputs\n", cc.outputs.size());
-        for (auto o : cc.outputs) {
-            if ((match = matchNodesignal(maps, fmi2_causality_enu_output, o, ovarmapit, ovarit))) {
-                ons = o;
-                break;
-            }
-        }
-
-        if (match) {
-            fprintf(stderr, "Creating weak connection FMU %d VR %d -> FMU %d VR %d [automatic] (node \"%s\" signal \"%s\" -> node \"%s\" signal \"%s\")\n",
-                    ovarmapit->first->getId(), ovarit->second.vr, varmapit->first->getId(), varit->second.vr,
-                    ons.node.c_str(), ons.signal.c_str(), cc.input.node.c_str(), cc.input.signal.c_str());
-            connection conn;
-            conn.fromType = conn.toType = fmi2_base_type_real;
-            conn.fromOutputVR = ovarit->second.vr;
-            conn.toInputVR = varit->second.vr;
-            weakConnections.push_back(WeakConnection(conn, ovarmapit->first, varmapit->first));
-
-            if (varit->second.type != fmi2_base_type_real) {
-                fprintf(stderr, "Only real valued weak connections supported at the moment\n");
-                exit(1);
-            }
-        } else {
-            //no match - see if there's a default value
-            if (cc.hasDefault) {
-                //TODO: actually print the value? a bit of a hassle right not since params have variable type
-                fprintf(stderr, "Default value -> FMU %d VR %d [automatic] (node \"%s\" signal \"%s\")\n",
-                    varmapit->first->getId(), varit->second.vr, cc.input.node.c_str(), cc.input.signal.c_str());
-                param p = cc.defaultValue;
-                p.fmuIndex = varmapit->first->getId();
-                p.valueReference = varit->second.vr;
-                params[make_pair(p.fmuIndex, varit->second.type)].push_back(p);
-            } else {
-                //no default value - fail!
-                fprintf(stderr, "Node \"%s\" signal \"%s\" has input but no output or default value!\n",
-                        cc.input.node.c_str(), cc.input.signal.c_str());
-                exit(1);
-            }
-        }
-    }
-}
-
 static StrongConnector* findOrCreateBallLockConnector(FMIClient *client,
         int posX, int posY, int posZ,
         int accX, int accY, int accZ,
@@ -433,6 +347,12 @@ static void printOutputs(double t, BaseMaster *master, vector<FMIClient*>& clien
                 printf(",%i", client->m_getBooleanValues.front());
                 client->m_getBooleanValues.pop_front();
                 break;
+            case fmi2_base_type_str:
+                fprintf(stderr, "String outputs not allowed for now\n");
+                exit(1);
+            case fmi2_base_type_enum:
+                fprintf(stderr, "Enum outputs not allowed for now\n");
+                exit(1);
             /*case fmi2_base_type_str:
              * TODO: string escaping
                 printf(",\"%s\"", client->m_getStringValues.front().c_str());
@@ -505,7 +425,6 @@ int main(int argc, char *argv[] ) {
 #endif
 
     double timeStep = 0.1;
-    double startTime = 0;
     double endTime = 10;
     double relativeTolerance = 0.0001;
     double relaxation = 4,
@@ -524,7 +443,6 @@ int main(int argc, char *argv[] ) {
     vector<int> stepOrder;
     vector<int> fmuVisibilities;
     vector<strongconnection> scs;
-    vector<connectionconfig> connconf;
     Solver solver;
     string hdf5Filename;
     string fieldnameFilename;
@@ -536,7 +454,7 @@ int main(int argc, char *argv[] ) {
             argc, argv, &fmuURIs, &connections, &params, &endTime, &timeStep,
             &loglevel, &csv_separator, &outFilePath, &quietMode, &fileFormat,
             &method, &realtimeMode, &printXML, &stepOrder, &fmuVisibilities,
-            &scs, &connconf, &hdf5Filename, &fieldnameFilename, &holonomic, &compliance,
+            &scs, &hdf5Filename, &fieldnameFilename, &holonomic, &compliance,
             &command_port, &results_port, &paused, &solveLoops)) {
         return 1;
     }
@@ -594,14 +512,13 @@ int main(int argc, char *argv[] ) {
     vector<FMIClient*> clients = setupClients(fmuURIs, context);
 #endif
 
-    //connect, get modelDescription XML (important for connconf)
+    //connect, get modelDescription XML (was important for connconf)
     for (auto it = clients.begin(); it != clients.end(); it++) {
         (*it)->m_loglevel = loglevel;
         (*it)->connect();
     }
 
     vector<WeakConnection> weakConnections = setupWeakConnections(connections, clients);
-    addAutomaticConnectionsAndParams(connconf, clients, weakConnections, params);
     setupConstraintsAndSolver(scs, clients, &solver);
 
     BaseMaster *master;
@@ -639,13 +556,12 @@ int main(int argc, char *argv[] ) {
         master->send(clients[x], fmi2_import_instantiate2(0, x < fmuVisibilities.size() ? fmuVisibilities[x] : false));
     }
 
-    master->send(clients, fmi2_import_setup_experiment(0, 0, true, relativeTolerance, startTime, endTime >= 0, endTime));
+    master->send(clients, fmi2_import_setup_experiment(0, 0, true, relativeTolerance, 0, endTime >= 0, endTime));
     master->send(clients, fmi2_import_enter_initialization_mode(0, 0));
 
     //send user-defined parameters
     sendUserParams(master, clients, params);
 
-    double t = startTime;
 #ifdef WIN32
     LARGE_INTEGER freq, t1;
     QueryPerformanceFrequency(&freq);
@@ -666,22 +582,26 @@ int main(int argc, char *argv[] ) {
     master->send(clients, fmi2_import_exit_initialization_mode(0, 0));
     master->wait();
 
+    //double t = 0;
+    int step = 0;
+    int nsteps = (int)round(endTime / timeStep);
+
 #ifndef WIN32
     //HDF5
-    int expected_records = 1+1.01*(endTime-startTime)/timeStep, nrecords = 0;
+    int expected_records = 1+1.01*endTime/timeStep, nrecords = 0;
     timelog.reserve(expected_records*MAX_TIME_COLS);
 
     gettimeofday(&tl1, NULL);
 #endif
 
-    int step = 0;
-
     if (zmqControl) {
-        pushResults(step, t, endTime, timeStep, push_socket, master, clients, true);
+        pushResults(step, 0, endTime, timeStep, push_socket, master, clients, true);
     }
 
     //run
-    while ((endTime < 0 || t < endTime) && running) {
+    while ((endTime < 0 || step < nsteps) && running) {
+        double t = step * endTime / nsteps;
+
         if (zmqControl) {
             handleZmqControl(rep_socket, &paused, &running);
         }
@@ -734,11 +654,10 @@ int main(int argc, char *argv[] ) {
 
         master->runIteration(t, timeStep);
 
-        t += timeStep;
         step++;
 
         if (zmqControl) {
-            pushResults(step, t, endTime, timeStep, push_socket, master, clients, false);
+            pushResults(step, t+timeStep, endTime, timeStep, push_socket, master, clients, false);
         } else {
             printf("\n");
         }
@@ -748,6 +667,19 @@ int main(int argc, char *argv[] ) {
         nrecords++;
 #endif
     }
+
+    if (!zmqControl) {
+      printOutputs(endTime, master, clients);
+
+      //finish off with zeroes for any extra forces
+      int n = master->getNumForceOutputs();
+      for (int i = 0; i < n; i++) {
+        printf(",0");
+      }
+
+      printf("\n");
+    }
+
 
 #ifndef WIN32
     vector<size_t> field_offset;

@@ -1,11 +1,11 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
-# Protobuf
-INCLUDE(FindProtobuf)
-FIND_PACKAGE(Protobuf REQUIRED)
 FIND_PACKAGE(Threads REQUIRED)
 
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O3")
+if (NOT WIN32)
+  # cl.exe has a different set of flags
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O3 -Wall -Werror -Wno-unused-variable -Wno-unused-function -Wno-sign-compare -Wextra -Wno-unused-parameter")
+endif ()
 
 INCLUDE_DIRECTORIES(${FMIL_INCLUDE_DIR} ${STRONG_COUPLING_INCLUDE_DIR} ${FMITCP_INCLUDE_DIR} include include/fmitcp src/fmitcp)
 LINK_DIRECTORIES   (${FMIL_LIBS_DIR}    ${STRONG_COUPLING_LIBS_DIR}    ${FMITCP_LIBS_DIR})
@@ -66,8 +66,6 @@ SET(MPI_MASTER_NAME fmi-mpi-master)
 set(TCP_SERVER_NAME fmi-tcp-server)
 set(MPI_SERVER_NAME fmi-mpi-server)
 
-SET(EXECUTABLE_OUTPUT_PATH "${CMAKE_CURRENT_LIST_DIR}/bin")
-
 if (USE_GPL)
   set(EXTRALIBS gsl gslcblas )
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_GPL")
@@ -99,7 +97,6 @@ IF(WIN32)
         ${Boost_FILESYSTEM_LIBRARY}
         ${Boost_SYSTEM_LIBRARY}
         libprotobuf
-        jsoncpp
         libhdf5
         libhdf5_hl
         libzmq
@@ -128,7 +125,6 @@ ELSE(WIN32)
         dl
         ##sc m umfpack amd blas atlas cholmod colamd suitesparseconfig # For strong coupling
         sc m umfpack amd blas cholmod colamd suitesparseconfig # For strong coupling
-        jsoncpp
         hdf5
         hdf5_hl
         zmq
@@ -151,19 +147,24 @@ ELSE(WIN32)
 ENDIF(WIN32)
 
 # Compile proto
-add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.pb.cc
-    COMMAND ${PROTOC} --cpp_out=. fmitcp.proto
+set(FMITCP_PROTOBUF_TARGETS ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.pb.cc ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp_pb2.py)
+add_custom_command(OUTPUT ${FMITCP_PROTOBUF_TARGETS}
+    COMMAND ${PROTOC} --cpp_out=. --python_out=. fmitcp.proto
     WORKING_DIRECTORY   ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp
     DEPENDS libprotobuf ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.proto)
 #can't depend on the generated files themselves because CMake is awful. create a custom target instead
 add_custom_target(fmitcp_pb DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.pb.cc)
 
-add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/src/master/control.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/src/master/control.pb.cc
-    COMMAND ${PROTOC} --cpp_out=. control.proto
+set(MASTER_CONTROL_PROTOBUF_TARGETS ${CMAKE_CURRENT_SOURCE_DIR}/src/master/control.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/src/master/control.pb.cc ${CMAKE_CURRENT_SOURCE_DIR}/src/master/control_pb2.py)
+add_custom_command(OUTPUT ${MASTER_CONTROL_PROTOBUF_TARGETS}
+    COMMAND ${PROTOC} --cpp_out=. --python_out=. control.proto
     WORKING_DIRECTORY   ${CMAKE_CURRENT_SOURCE_DIR}/src/master
     DEPENDS libprotobuf ${CMAKE_CURRENT_SOURCE_DIR}/src/master/control.proto)
 #same here
 add_custom_target(control_pb DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/master/control.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/src/master/control.pb.cc)
+
+# Install compiled protbuf files 
+install(FILES ${FMITCP_PROTOBUF_TARGETS} ${MASTER_CONTROL_PROTOBUF_TARGETS} DESTINATION protobuf)
 
 add_dependencies(${TCP_MASTER_NAME} fmitcp_pb control_pb)
 add_dependencies(${TCP_SERVER_NAME} fmitcp_pb)
@@ -183,42 +184,3 @@ endif()
 
 INSTALL(TARGETS ${TCP_MASTER_NAME} ${TCP_SERVER_NAME} DESTINATION bin)
 install(TARGETS ${MPI_MASTER_NAME} ${MPI_SERVER_NAME} DESTINATION bin)
-
-SET(FMU_SRCS
-  fmu/fmu_interface.c
-)
-SET(FMU_HEADERS
-  fmu/include/fmiFunctions.h
-  fmu/include/fmiFunctionTypes.h
-  fmu/include/fmiTypesPlatform.h
-  fmu/include/fmu_interface.h
-)
-
-# create the fmu.dll
-SET(CMAKE_SHARED_LIBRARY_PREFIX "")
-ADD_LIBRARY(vanilla SHARED ${FMU_HEADERS} ${FMU_SRCS})
-
-SET_TARGET_PROPERTIES(vanilla
-    PROPERTIES
-    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/bin"
-    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/bin"
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/bin"
-)
-
-# remove the exisitng fmu and directories
-EXECUTE_PROCESS(COMMAND rm -r -f "${CMAKE_CURRENT_LIST_DIR}/bin/binaries")
-EXECUTE_PROCESS(COMMAND rm -f "${CMAKE_CURRENT_LIST_DIR}/bin/vanilla.fmu")
-
-if ( 0 )
-# create the needed directories
-EXECUTE_PROCESS(COMMAND mkdir -p "${CMAKE_CURRENT_LIST_DIR}/bin/binaries/win32")
-
-# copy the fmu.dll to binaries & modelDescription.xml to bin
-EXECUTE_PROCESS(COMMAND cp "${CMAKE_CURRENT_LIST_DIR}/bin/vanilla.dll" "${CMAKE_CURRENT_LIST_DIR}/bin/binaries/win32")
-EXECUTE_PROCESS(COMMAND cp "${CMAKE_CURRENT_LIST_DIR}/fmu/modelDescription.xml" "${CMAKE_CURRENT_LIST_DIR}/bin")
-
-# make a zip file
-EXECUTE_PROCESS(COMMAND zip -r "vanilla.fmu" "binaries" "modelDescription.xml"
-                WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/bin)
-
-endif ( 0 )

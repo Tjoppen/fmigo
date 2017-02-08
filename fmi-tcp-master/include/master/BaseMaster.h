@@ -78,6 +78,11 @@ namespace fmitcp_master {
         }
 
         void wait();
+
+        //implemented by StrongMaster to allow the main loop to fill in zeroes for the forces in the last row in the CSV output
+        virtual int getNumForceOutputs() const {
+          return 0;
+        }
     };
 };
 

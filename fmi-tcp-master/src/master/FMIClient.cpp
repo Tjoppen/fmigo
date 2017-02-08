@@ -370,6 +370,9 @@ void FMIClient::sendGetX(const SendGetXType& typeRefs) {
             case fmi2_base_type_str:
                 sendMessage(fmi2_import_get_string(0, 0, it->second));
                 break;
+            case fmi2_base_type_enum:
+                fprintf(stderr, "fmi2_base_type_enum snuck its way into FMIClient::sendGetX() somehow\n");
+                exit(1);
             }
         }
     }
@@ -405,6 +408,9 @@ void FMIClient::sendSetX(const SendSetXType& typeRefsValues) {
             case fmi2_base_type_str:
                 sendMessage(fmi2_import_set_string (0, 0, it->second.first, vectorToBaseType(it->second.second, &MultiValue::s)));
                 break;
+            case fmi2_base_type_enum:
+                fprintf(stderr, "fmi2_base_type_enum snuck its way into FMIClient::sendSetX() somehow\n");
+                exit(1);
             }
         }
     }

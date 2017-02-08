@@ -1,7 +1,8 @@
 FROM ubuntu:trusty
+RUN apt-get update
 
 # http://askubuntu.com/questions/610291/how-to-install-cmake-3-2-on-ubuntu-14-04
-RUN apt-get install software-properties-common
+RUN apt-get install --yes software-properties-common
 RUN add-apt-repository ppa:george-edison55/cmake-3.x
 RUN apt-get update
 

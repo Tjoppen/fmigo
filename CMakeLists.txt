@@ -1,7 +1,9 @@
-cmake_minimum_required(VERSION 3.2)
+cmake_minimum_required(VERSION 2.8)
 
-#suppress warning about libexpat.a
-cmake_policy(SET CMP0058 OLD)
+if(CMAKE_VERSION VERSION_GREATER "3.3")
+    #suppress warning about libexpat.a
+    cmake_policy(SET CMP0058 OLD)
+endif()
 
 
 # Set default build type
@@ -13,6 +15,22 @@ endif()
 
 option(BUILD_FMUS "Build example FMUs in umit-fmus/?" ON)
 option(USE_GPL "Enable GPL? Needed for GNU GSL support in master (algebraic loop solver, ModelExchange integrator)" ON)
+
+# Need to be able to zip FMUs. Recent versions of CMake can do this with the "tar" sub-command.
+# For older CMakes we rely on "zip" being installed on the system
+# We also need to be able to copy multiple files using the "copy" sub-command, or the "cp" commands must be installed
+# There may also be some CMake versions between 2.8.12.2 and 3.5.0 that have have the correct behavior for "copy" or "tar" (but not both)
+if (BUILD_FMUS AND CMAKE_VERSION VERSION_LESS "3.5.0")
+    find_program(ZIP_PROGRAM zip)
+    find_program(CP_PROGRAM  cp)
+    if (NOT ZIP_PROGRAM)
+        message(FATAL_ERROR "CMake < 3.5.0 and zip not installed on the system -> can't pack FMUs")
+    endif ()
+    if (NOT CP_PROGRAM)
+        # We could maybe fall back to "copy" on Windows
+        message(FATAL_ERROR "CMake < 3.5.0 and cp not installed on the system -> can't pack FMUs")
+    endif ()
+endif ()
 
 # Download/install protobuf, umfpack as needed
 if(WIN32)

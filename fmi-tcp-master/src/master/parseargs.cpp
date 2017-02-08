@@ -177,11 +177,6 @@ int fmitcp_master::parseArguments( int argc,
                     return 1;
                 }
 
-                cout << "a " <<  values[a].c_str() << endl;
-                cout << "b " <<  values[b].c_str() << endl;
-                cout << "c " <<  values[c].c_str() << endl;
-                cout << "d " <<  values[d].c_str() << endl;
-
                 conn.fromFMU      = atoi(values[a].c_str());
                 conn.fromOutputVR = atoi(values[b].c_str());
                 conn.toFMU        = atoi(values[c].c_str());
@@ -499,11 +494,7 @@ int fmitcp_master::parseArguments( int argc,
     int i = 0;
     for (auto it = connections->begin(); it != connections->end(); it++, i++) {
         if (checkFMUIndex(it, i, numFMUs))
-            {
-                cout << " i " << i << " numFMUs " << numFMUs <<" " << connections->size() << endl;
-            exit(24);
             return 1;
-            }
     }
 
     i = 0;

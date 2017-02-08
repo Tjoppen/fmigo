@@ -27,6 +27,14 @@ TARGET_LINK_LIBRARIES( ${TARGET} ${LIBS} )
 
 
 
+if (CMAKE_VERSION VERSION_LESS "3.5.0")
+    set(ZIP_COMMAND zip -r ${CMAKE_CURRENT_SOURCE_DIR}/${TARGET}.fmu .)
+else ()
+    # Would use "." for path, but that results in paths like ./modelDescription.xml in the .fmu which is probably a bad thing
+    # We could maybe work around this by running a subcommand that lists all files in ${CMAKE_CURRENT_BINARY_DIR}/fmu into a variable
+    set(ZIP_COMMAND ${CMAKE_COMMAND} -E tar cf ${CMAKE_CURRENT_SOURCE_DIR}/${TARGET}.fmu --format=zip modelDescription.xml binaries sources)
+endif ()
+
 # There doesn't seem to be a way to repack an FMU in case it is deleted.
 # A post-build command is good enough for now.
 # Having to have a separate series of commands for Windows is also not optimal
@@ -39,7 +47,7 @@ if (WIN32)
         COMMAND ${CMAKE_COMMAND} -E copy ${SRCS} ${CMAKE_CURRENT_BINARY_DIR}/fmu/sources
         COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml ${CMAKE_CURRENT_BINARY_DIR}/fmu
         # Later: COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt ${CMAKE_CURRENT_BINARY_DIR}/fmu
-        COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR}/fmu ${CMAKE_COMMAND} -E tar cf ${CMAKE_CURRENT_SOURCE_DIR}/${TARGET}.fmu --format=zip modelDescription.xml binaries sources
+        COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR}/fmu ${ZIP_COMMAND}
         MAIN_DEPENDENCY ${TARGET}
     )
 else ()
@@ -50,7 +58,7 @@ else ()
         COMMAND ${CMAKE_COMMAND} -E copy ${SRCS} ${CMAKE_CURRENT_BINARY_DIR}/fmu/sources
         COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml ${CMAKE_CURRENT_BINARY_DIR}/fmu
         # Later: COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt ${CMAKE_CURRENT_BINARY_DIR}/fmu
-        COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR}/fmu ${CMAKE_COMMAND} -E tar cf ${CMAKE_CURRENT_SOURCE_DIR}/${TARGET}.fmu --format=zip ${CMAKE_CURRENT_BINARY_DIR}/fmu/*
+        COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR}/fmu ${ZIP_COMMAND}
         MAIN_DEPENDENCY ${TARGET}
     )
 endif ()

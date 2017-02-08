@@ -1,9 +1,6 @@
-# Build and store this as umit/ubuntu:1 on each build machine, like so:
-#
-#  docker build -t umit/ubuntu:1 .
-#
 FROM ubuntu:xenial
 RUN apt-get update
+
 #
 # Some notes on the packages installed here where it may not be obvious why
 # they are installed:

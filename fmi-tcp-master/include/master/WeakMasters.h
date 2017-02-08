@@ -121,7 +121,7 @@ class ModelExchangeStepper : public BaseMaster {
         int count;                    /* number of function evaluations */
 
         BaseMaster* baseMaster;       /* BaseMaster object pointer */
-        std::vector<FMIClient*> clients;            /* FMIClient object pointer */
+        std::vector<FMIClient*> clients;            /* FMIClient vector */
         std::vector<WeakConnection> weakConnections;
 
         bool stateEvent;
@@ -262,7 +262,7 @@ class ModelExchangeStepper : public BaseMaster {
      *
      *  @param client A pointer to a fmi client
      */
-    cgsl_model* init_fmu_model(std::vector<FMIClient*> clients){
+    cgsl_model* init_fmu_model(const std::vector<FMIClient*> &clients){
         fmu_parameters* p = (fmu_parameters*)malloc(sizeof(fmu_parameters));
         fmu_model* m = (fmu_model*)malloc(sizeof(fmu_model));
 
@@ -272,7 +272,7 @@ class ModelExchangeStepper : public BaseMaster {
         ostringstream prefix;
         prefix << "data/resultFile.mat";
         if ( ( p->backup.result_file = fopen(prefix.str().c_str(), "w+") ) == NULL){
-            cout << "Could not open file " << prefix.str() << endl;
+            cerr << "Could not open file " << prefix.str() << endl;
             exit(1);
         }
         p->baseMaster = this;

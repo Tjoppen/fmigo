@@ -112,7 +112,8 @@ static deque<string> escapeSplit(string str, char delim) {
       escaped = true;
     } else if (c == delim) {
       ret.push_back(oss.str());
-      oss = ostringstream();
+      oss.str("");
+      oss.clear();
     } else {
       oss << c;
     }

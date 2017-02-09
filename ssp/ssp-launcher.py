@@ -635,7 +635,15 @@ for key,value in parameters.iteritems():
         if paramname in mds[fmu.id]:
             p = mds[fmu.id][paramname]
             if p[CAUSALITY] == 'input' or p[CAUSALITY] == 'parameter':
-                flatparams.extend(['-p','%s,%i,%i,%s' % (value['type'], fmu.id, p['vr'], value['value'])])
+                flatparams.extend([
+                    '-p','%s,%i,%i,%s' % (
+                        value['type'],
+                        fmu.id,
+                        p['vr'],
+                        # Escape backslashes and colons
+                        str(value['value']).replace('\\','\\\\').replace(':','\\:')
+                    )
+                ])
             else:
                 print('WARNING: FMU %s, tried to set variable %s which is neither an input nor a parameter' % (fmuname, paramname))
         else:

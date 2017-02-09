@@ -104,7 +104,6 @@ static deque<string> escapeSplit(string str, char delim) {
   ostringstream oss;
   bool escaped = false;
 
-  fprintf(stderr, "split(%c) \"%s\"\n", delim, str.c_str());
   for (char c : str) {
     if (escaped) {
       oss << c;
@@ -112,7 +111,6 @@ static deque<string> escapeSplit(string str, char delim) {
     } else if (c == '\\') {
       escaped = true;
     } else if (c == delim) {
-      fprintf(stderr, "out: %s\n", oss.str().c_str());
       ret.push_back(oss.str());
       oss = ostringstream();
     } else {
@@ -121,7 +119,6 @@ static deque<string> escapeSplit(string str, char delim) {
   }
 
   //push remaining string
-  fprintf(stderr, "out: %s\n", oss.str().c_str());
   ret.push_back(oss.str());
   return ret;
 }

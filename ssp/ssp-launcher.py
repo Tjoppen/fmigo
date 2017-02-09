@@ -641,7 +641,7 @@ for key,value in parameters.iteritems():
                         fmu.id,
                         p['vr'],
                         # Escape backslashes and colons
-                        str(value['value']).replace('\\','\\\\').replace(':','\\:')
+                        str(value['value']).replace('\\','\\\\').replace(':','\\:').replace(',','\\,')
                     )
                 ])
             else:

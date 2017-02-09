@@ -106,6 +106,10 @@ static deque<string> escapeSplit(string str, char delim) {
 
   for (char c : str) {
     if (escaped) {
+      if (c != ',' && c != ':' && c != '\\') {
+        fprintf(stderr, "ERROR: Only comma, colon and backslash (\",:\\\") may be escaped in program options (\"%s\")\n", str.c_str());
+        exit(1);
+      }
       oss << c;
       escaped = false;
     } else if (c == '\\') {
@@ -117,6 +121,11 @@ static deque<string> escapeSplit(string str, char delim) {
     } else {
       oss << c;
     }
+  }
+
+  if (escaped) {
+    fprintf(stderr, "ERROR: Trailing backslash in program option (\"%s\")\n", str.c_str());
+    exit(1);
   }
 
   //push remaining string

@@ -1,147 +1,56 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="ISO-8859-1"?>
 <fmiModelDescription
-    fmiVersion="2.0"
-    description="Two masses with a spring"
-    modelName="bouncingBall"
-    guid="{5e7c4fc2-0d0b-4a42-be27-f5be0a5a479e}"
-    numberOfEventIndicators="1">
+  fmiVersion="2.0"
+  modelName="bouncingBall"
+  guid="{8c4e810f-3df3-4a00-8276-176fa3c9f003}"
+  numberOfEventIndicators="1">
 
-  <ModelExchange
-      modelIdentifier="bouncingBall"
-      canHandleVariableCommunicationStepSize="true"
-      canGetAndSetFMUstate="true"
-      providesDirectionalDerivative="false"/>
+<ModelExchange
+  modelIdentifier="bouncingBall"/>
 
-  <LogCategories>
-    <Category name="logAll"/>
-    <Category name="logError"/>
-    <Category name="logFmiCall"/>
-    <Category name="logEvent"/>
-  </LogCategories>
+<LogCategories>
+  <Category name="logAll"/>
+  <Category name="logError"/>
+  <Category name="logFmiCall"/>
+  <Category name="logEvent"/>
+</LogCategories>
 
-  <DefaultExperiment startTime="0" stopTime="10" stepSize="0.1"/>
+<ModelVariables>
+  <ScalarVariable name="h" valueReference="0" description="height, used as state"
+                  causality="local" variability="continuous" initial="exact">
+    <Real start="1"/>
+  </ScalarVariable>
+  <ScalarVariable name="der_h" valueReference="1" description="velocity of ball"
+                  causality="local" variability="continuous" initial="calculated">
+    <Real derivative="1"/>
+  </ScalarVariable>
+  <ScalarVariable name="v" valueReference="2" description="velocity of ball, used as state"
+                  causality="local" variability="continuous" initial="exact">
+    <Real start="0" reinit="true"/>
+  </ScalarVariable>
+  <ScalarVariable name="der_v" valueReference="3" description="acceleration of ball"
+                  causality="local" variability="continuous" initial="calculated">
+    <Real derivative="3"/>
+  </ScalarVariable>
+  <ScalarVariable name="g" valueReference="4" description="acceleration of gravity"
+                  causality="parameter" variability="fixed" initial="exact">
+    <Real start="9.81"/>
+  </ScalarVariable>
+  <ScalarVariable name="e" valueReference="5" description="dimensionless parameter"
+                  causality="parameter" variability="fixed" initial="exact">
+    <Real start="0.7"/>
+  </ScalarVariable>
+</ModelVariables>
 
-  <ModelVariables>
-    <ScalarVariable
-        name="x_in"
-        valueReference="1"
-        description="position of mass connected to left mass"
-        variability="continuous"
-        causality="input">
-      <Real start="-1"/>
-    </ScalarVariable>
-    <ScalarVariable
-        name="x0"
-        valueReference="2"
-        description="position left mass"
-        variability="continuous"
-        causality="output">
-      <Real start="-1"/>
-    </ScalarVariable>
-    <ScalarVariable
-        name="x1"
-        valueReference="3"
-        description="position right mass"
-        variability="continuous"
-        initial="exact"
-        causality="local">
-      <Real start="1"/>
-    </ScalarVariable>
-    <ScalarVariable
-        name="v0"
-        valueReference="4"
-        description="velocity left mass"
-        variability="continuous"
-        initial="exact"
-        causality="local">
-      <Real start="0"/>
-    </ScalarVariable>
-    <ScalarVariable
-        name="v1"
-        valueReference="5"
-        description="velocity right mass"
-        variability="continuous"
-        initial="exact"
-        causality="local">
-      <Real start="0"/>
-    </ScalarVariable>
-
-    <!-- Derivatives -->
-    <ScalarVariable
-        name="dx0"
-        valueReference="6"
-        description="change in position left mass"
-        variability="continuous"
-        derivative="2"
-        initial="exact"
-        causality="local">
-      <Real start="0"/>
-    </ScalarVariable>
-    <ScalarVariable
-        name="dx1"
-        valueReference="7"
-        description="change in position right mass"
-        variability="continuous"
-        derivative="3"
-        initial="exact"
-        causality="local">
-      <Real start="0"/>
-    </ScalarVariable>
-    <ScalarVariable
-        name="dv0"
-        valueReference="8"
-        description="change in velocity left mass"
-        variability="continuous"
-        derivative="4"
-        initial="exact"
-        causality="local">
-      <Real start="0"/>
-    </ScalarVariable>
-    <ScalarVariable
-        name="dv1"
-        valueReference="9"
-        description="change in velocity right mass"
-        variability="continuous"
-        derivative="5"
-        initial="exact"
-        causality="local">
-      <Real start="0"/>
-    </ScalarVariable>
-
-    <!-- internal parameter -->
-    <ScalarVariable
-        name="k1"
-        valueReference="10"
-        description="spring constant spring on left mass"
-        causality="parameter"
-        variability="tunable"
-        initial="exact">
-      <Real start="1"/>
-    </ScalarVariable>
-    <ScalarVariable
-        name="k2"
-        valueReference="11"
-        description="spring constant for spring between masses"
-        causality="parameter"
-        variability="fixed"
-        initial="exact">
-      <Real start="0"/>
-    </ScalarVariable>
-
-  </ModelVariables>
-  <ModelStructure>
-    <Outputs>
-      <Unknown index="2"/>
-      <Unknown index="3"/>
-    </Outputs>
-    <Derivatives>
-      <Unknown index="6"/>
-      <Unknown index="7"/>
-      <Unknown index="8"/>
-      <Unknown index="9"/>
-    </Derivatives>
-    <DiscreteStates/>
-    <InitialUnknowns />
-  </ModelStructure>
+<ModelStructure>
+  <Derivatives>
+    <Unknown index="2" />
+    <Unknown index="4" />
+  </Derivatives>
+  <InitialUnknowns>
+    <Unknown index="2"/>
+    <Unknown index="4"/>
+  </InitialUnknowns>
+</ModelStructure>
 
 </fmiModelDescription>

@@ -47,6 +47,8 @@ class FmuGoStorage {
         /*need do extract the correct dataset belonging to client*/     \
         size_t o = get_offset( id, get_##name() );                      \
         size_t e = get_end( id, get_##name() );                         \
+        if(e-o == 0 )                                                   \
+            fprintf(stderr,"Trying to extract zero length vector \n\n");\
         copy(get_##name().begin() + o,                                  \
              get_##name().begin() + e,                                  \
              ret + o);                                                  \
@@ -55,6 +57,8 @@ class FmuGoStorage {
         /*need do extract the correct dataset belonging to client*/     \
         size_t o = get_offset( id, get_backup_##name() );               \
         size_t e = get_end( id, get_backup_##name() );                  \
+        if(e-o == 0 )                                                   \
+            fprintf(stderr,"Trying to extract zero length backup vector \n\n");\
         copy(get_backup_##name().begin() + o,                           \
              get_backup_##name().begin() + e,                           \
              ret + o);                                                  \
@@ -91,21 +95,21 @@ class FmuGoStorage {
            &p == &get_current_derivatives() || &p == &get_backup_derivatives() ||
            &p == &get_current_nominals() || &p == &get_backup_nominals())
             return m_bounds;
-        fprintf(stderr,"something is wrong\n");
-        fprintf(stderr,"p = %p, \ns = %p\ni = %p\nd = %p\nn = %p\n",p,
+        fprintf(stderr, "get_bounds(): Unknown data\n");               \
+        fprintf(stderr,"p = %p, \ns = %p\ni = %p\nd = %p\nn = %p\n",
+                p,
                 &get_current_states(),
                 &get_current_indicators(),
                 &get_current_derivatives(),
-                &get_current_nominals()
-                );
-        exit(66);
+                &get_current_nominals());
+        exit(1);
     }
 
     inline STORAGE get_current_type(Data &p) {
-        if( &p == &get_current_states()) return STORAGE::states;
-        if( &p == &get_current_derivatives()) return STORAGE::derivatives;
-        if( &p == &get_current_indicators()) return STORAGE::indicators;
-        if( &p == &get_current_nominals()) return STORAGE::nominals;
+        if( &p == &get_current_states() ||  &p == &get_backup_states()) return STORAGE::states;
+        if( &p == &get_current_derivatives() || &p == &get_backup_derivatives()) return STORAGE::derivatives;
+        if( &p == &get_current_indicators() || &p == &get_backup_indicators()) return STORAGE::indicators;
+        if( &p == &get_current_nominals() || &p == &get_backup_nominals()) return STORAGE::nominals;
         fprintf(stderr, "get_current_type(): Unknown data\n");
         exit(1);
     }
@@ -125,9 +129,8 @@ class FmuGoStorage {
 
  public:
     inline size_t & get_offset(const size_t s, Data &p){return get_bounds(p).at(s).first;}
-    inline size_t get_size(const size_t s, Data &p) {
-        return get_bounds(p).at(s).second - get_bounds(p).at(s).first;
-    }
+    inline size_t get_size(const size_t s, Data &p) {return get_end(s,p) - get_offset(s,p);}
+
     void allocate_storage_states(const vector<size_t> &size_vec,Data &p);
     void allocate_storage(const vector<size_t> &number_of_states, Data &p);
     void allocate_storage(const vector<size_t> &number_of_states,const vector<size_t> &number_of_indicators);

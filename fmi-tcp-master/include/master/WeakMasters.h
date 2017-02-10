@@ -134,6 +134,7 @@ class ModelExchangeStepper : public BaseMaster {
     enum INTEGRATORTYPE m_integratorType;
     double m_tolerance;
     TimeLoop timeLoop;
+    bool restored = false;
 
     map<FMIClient*, OutputRefsType> clientGetXs;  //one OutputRefsType for each client
     std::vector<int> stepOrder;
@@ -457,13 +458,18 @@ class ModelExchangeStepper : public BaseMaster {
                 timeLoop.dt_new = timeLoop.t_safe - sim.t;
                 step(sim);
                 if(!hasStateEvent(sim)) storeStates(sim);
-                else
-                    cout << "failed at stepping to safe timestep "<< timeLoop.dt_new << endl;
-
+                else{
+                    cerr << "failed at stepping to safe timestep "<< sim.t << " " << timeLoop.t_safe << " " << timeLoop.t_crossed << endl;
+                    restoreStates(sim);
+                    step(sim);
+                    restoreStates(sim);
+                    step(sim);
+                    cerr << "failed at stepping to safe timestep "<< sim.t << " " << timeLoop.t_safe << " " << timeLoop.t_crossed << endl;
+                }
                 timeLoop.dt_new = timeLoop.t_crossed - sim.t;
                 step(sim);
                 if(!hasStateEvent(sim)){
-                    cout << "failed at stepping to event " << endl;
+                    cerr << "failed at stepping to event " << endl;
                     exit(22);
                 }
             }

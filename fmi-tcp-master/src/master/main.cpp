@@ -793,8 +793,14 @@ int main(int argc, char *argv[] ) {
     //clean up
     delete master;
 
-    for (size_t x = 0; x < clients.size(); x++) {
-        delete clients[x];
+    // for (size_t x = 0; x < clients.size(); x++) {
+    //     delete clients[x];
+    // }
+    for(auto client: clients){
+        if(client == NULL)
+            cerr << "have a null vector " << endl;
+        cerr << " address " << &client << endl;
+        delete client;
     }
 
 #ifdef USE_MPI

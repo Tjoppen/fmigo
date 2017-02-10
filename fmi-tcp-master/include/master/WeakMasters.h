@@ -122,10 +122,9 @@ class ModelExchangeStepper : public BaseMaster {
 
         BaseMaster* baseMaster;       /* BaseMaster object pointer */
         std::vector<FMIClient*> clients;            /* FMIClient vector */
-        std::vector<WeakConnection> weakConnections;
+        //std::vector<WeakConnection> weakConnections;
 
         bool stateEvent;
-        bool skip;
         Backup backup;
     }fmu_parameters;
     struct fmu_model{
@@ -142,7 +141,6 @@ class ModelExchangeStepper : public BaseMaster {
  ModelExchangeStepper(std::vector<FMIClient*> clients, std::vector<WeakConnection> weakConnections, double relativeTolerance, enum INTEGRATORTYPE integratorType  ) :
     BaseMaster(clients,weakConnections), m_integratorType(integratorType), m_tolerance(relativeTolerance)
     {
-      //TODO: init timeLoop? might be used uninitialized
       fprintf(stderr, "ModelExchangeStepper\n");
     }
 
@@ -244,17 +242,25 @@ class ModelExchangeStepper : public BaseMaster {
      *
      *  @param m Pointer to a fmu_model
      */
-    void allocateMemory(fmu_model* m){
-        bool allocFail = false;
-        fmu_parameters* p = get_p(m);
-        m->model.x = (double*)calloc(m->model.n_variables, sizeof(double));
-        p->backup.dydt = (double*)calloc(m->model.n_variables, sizeof(double));
+    fmu_model* allocateMemory(const std::vector<FMIClient*> &clients){
+        fmu_model* m = (fmu_model*)calloc(1,sizeof(fmu_model));
+        fmu_parameters* p = (fmu_parameters*)calloc(1,sizeof(fmu_parameters));
 
-        if(!m->model.x || !p->backup.dydt){
+        fmu_alloc(clients);
+        m->model.n_variables = get_storage().get_states().size();
+
+        m->model.x = (double*)calloc(m->model.n_variables, sizeof(double));
+        m->model.parameters = (void*)p;
+
+        p->backup.dydt = (double*)calloc(m->model.n_variables, sizeof(double));
+        p->backup.result_file = (FILE*)calloc(1, sizeof(FILE));
+
+        if(!m->model.x || !p->backup.dydt || !p->backup.result_file || !p){
             freeFMUModel(m);
             perror("WeakMaster:ModelExchange:allocateMemory ERROR -  could not allocate memory");
             exit(1);
         }
+        return m;
     }
 
     /** init_fmu_model
@@ -263,30 +269,27 @@ class ModelExchangeStepper : public BaseMaster {
      *  @param client A pointer to a fmi client
      */
     cgsl_model* init_fmu_model(const std::vector<FMIClient*> &clients){
-        fmu_parameters* p = (fmu_parameters*)malloc(sizeof(fmu_parameters));
-        fmu_model* m = (fmu_model*)malloc(sizeof(fmu_model));
-
-        m->model.parameters = (void*)p;
-        p->clients = clients;
+        fmu_model* m = allocateMemory(clients);
+        fmu_parameters* p = get_p(m);
 
         ostringstream prefix;
-        prefix << "data/resultFile.mat";
+        prefix << "/home/jonas/work/umit/data/resultFile.mat";
         if ( ( p->backup.result_file = fopen(prefix.str().c_str(), "w+") ) == NULL){
             cerr << "Could not open file " << prefix.str() << endl;
             exit(1);
         }
+        p->t_ok = 0;
+        p->t_past = 0;
         p->baseMaster = this;
+        p->stateEvent = false;
+        p->clients.resize(0,0);
+        p->count = 0;
 
-        //        for(auto client: clients){
-        //p->nx = client->getNumContinuousStates();
-        //p->nz = client->getNumEventIndicators();
+        p->backup.t = 0;
+        p->backup.h = 0;
+        p->backup.size_of_file = 0;
 
-        double nx = 0;
-        for(auto client: clients)
-            nx += client->getNumContinuousStates();
-        m->model.n_variables = nx;
-
-        allocateMemory(m);
+        p->clients = m_clients;
 
         m->model.function = fmu_function;
         m->model.jacobian = NULL;
@@ -316,9 +319,6 @@ class ModelExchangeStepper : public BaseMaster {
         step_control.eps_abs = 1e-6;
         step_control.id = step_control_y_new;
         step_control.start = 1e-8;
-
-        // allocate memory needed by messages
-        fmu_alloc();
 
         // set up a gsl_simulation for each client
         cgsl_model* cgsl = init_fmu_model(m_clients);
@@ -518,6 +518,7 @@ class ModelExchangeStepper : public BaseMaster {
     }
 
     void runIteration(double t, double dt) {
+        timeLoop.t_safe = t;
         timeLoop.t_end = t + dt;
         newDiscreteStates();
         while( timeLoop.t_safe < timeLoop.t_end ){

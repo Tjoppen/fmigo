@@ -47,8 +47,6 @@ class FmuGoStorage {
         /*need do extract the correct dataset belonging to client*/     \
         size_t o = get_offset( id, get_##name() );                      \
         size_t e = get_end( id, get_##name() );                         \
-        if(e-o == 0 )                                                   \
-            fprintf(stderr,"Trying to extract zero length vector \n\n");\
         copy(get_##name().begin() + o,                                  \
              get_##name().begin() + e,                                  \
              ret + o);                                                  \
@@ -57,8 +55,6 @@ class FmuGoStorage {
         /*need do extract the correct dataset belonging to client*/     \
         size_t o = get_offset( id, get_backup_##name() );               \
         size_t e = get_end( id, get_backup_##name() );                  \
-        if(e-o == 0 )                                                   \
-            fprintf(stderr,"Trying to extract zero length backup vector \n\n");\
         copy(get_backup_##name().begin() + o,                           \
              get_backup_##name().begin() + e,                           \
              ret + o);                                                  \

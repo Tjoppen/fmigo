@@ -315,10 +315,10 @@ class ModelExchangeStepper : public BaseMaster {
 #ifdef USE_GPL
         /* This is the step control which determines tolerances. */
         cgsl_step_control_parameters step_control;
-        step_control.eps_rel = 1e-6;
+        step_control.eps_rel = 1e-9;
         step_control.eps_abs = 1e-6;
         step_control.id = step_control_y_new;
-        step_control.start = 1e-8;
+        step_control.start = 1e-10;
 
         // set up a gsl_simulation for each client
         cgsl_model* cgsl = init_fmu_model(m_clients);

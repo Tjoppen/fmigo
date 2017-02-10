@@ -31,7 +31,7 @@
 // define initial state vector as vector of value references
 static void update_all(modelDescription_t *md){
     md->der_h = md->v;
-    md->der_v = -md->g;
+    md->der_v = -md->g - md->k * (md->h - md->x_in);
 }
 
 // offset for event indicator, adds hysteresis and prevents z=0 at restart

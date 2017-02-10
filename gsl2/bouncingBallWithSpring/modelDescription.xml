@@ -49,7 +49,7 @@
     <Real start="0.7"/>
   </ScalarVariable>
   <ScalarVariable
-    name="k1"
+    name="k"
     valueReference="30"
     description="spring constant spring on left mass"
     causality="parameter"

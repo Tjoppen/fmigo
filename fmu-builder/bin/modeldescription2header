@@ -75,11 +75,13 @@ for sv in SV:
             warning(sys.argv[1]+' contains multiple Reals with VR='+str(vr))
             exit(1)
         start = float(R.attrib['start']) if 'start' in R.attrib else 0
-        reals[vr] = (name, start)
         if meFmuType:
-            if 'derivative' in sv.attrib:
-                states[vr] = (reals[int(sv.attrib['derivative'])][0], start)
+            if 'derivative' in R.attrib:
+                states[vr] = (SV[int(R.attrib['derivative']) - 1].attrib['name'], start)
+                start = float(R.attrib['derivative']) if 'derivative' in R.attrib else 0
                 derivatives[vr] = (name, start)
+        reals[vr] = (name, start)
+
     elif I != None or E != None:
         if vr in ints:
             warning(sys.argv[1]+' contains multiple Integers/Enums with VR='+str(vr))

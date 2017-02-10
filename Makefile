@@ -1,15 +1,17 @@
-SERVERPATH=~/work/umit/build/install/bin/
-MASTERPATH=~/work/umit/build/install/bin/
-FMUPATH=~/work/umit/umit-fmus/gsl2/
-DATAPATH=~/work/umit/data/
+SERVER=~/work/umit/build/install/bin/fmi-mpi-server
+MASTER=~/work/umit/build/install/bin/fmi-mpi-master
+FMU=~/work/umit/umit-fmus/gsl2/
+DATA=~/work/umit/data/
 SHELL := /bin/bash
 
-BOUNCINGBALL= -np 1 $(SERVERPATH)fmi-mpi-server $(FMUPATH)bouncingBall/bouncingBall.fmu
-BOUNCINGBALLWITHSPRING= -np 1 $(SERVERPATH)fmi-mpi-server $(FMUPATH)bouncingBallWithSpring/bouncingBallWithSpring.fmu
-FIXEDPOINT= -np 1 $(SERVERPATH)fmi-mpi-server $(FMUPATH)fixedPoint/fixedPoint.fmu
-VANDERPOL= -np 1 $(SERVERPATH)fmi-mpi-server $(FMUPATH)vanDerPol/vanDerPol.fmu
-SPRINGS= -np 1 $(SERVERPATH)fmi-mpi-server $(FMUPATH)springs/springs.fmu
-SUBME= -np 1 $(SERVERPATH)fmi-mpi-server $(FMUPATH)subME/subME.fmu
+BOUNCINGBALL= -np 1 $(SERVER) $(FMU)bouncingBall/bouncingBall.fmu
+BOUNCINGBALLWITHSPRING= -np 1 $(SERVER) $(FMU)bouncingBallWithSpring/bouncingBallWithSpring.fmu
+FIXEDPOINT= -np 1 $(SERVER) $(FMU)fixedPoint/fixedPoint.fmu
+VANDERPOL= -np 1 $(SERVER) $(FMU)vanDerPol/vanDerPol.fmu
+SPRINGS= -np 1 $(SERVER) $(FMU)springs/springs.fmu
+SUBME= -np 1 $(SERVER) $(FMU)subME/subME.fmu
+#DEBUGG= $(FMU)fixedPoint/fixedPoint.fmu
+DEBUGG= $(FMU)vanDerPol/vanDerPol.fmu
 
 makeplot: run_me_test plot
 
@@ -18,9 +20,10 @@ generate:
 
 plot:
 	pkill python || echo ""
-	python $(DATAPATH)plot1.py $(DATAPATH)bouncingball.mat
-	python $(DATAPATH)plot1.py $(DATAPATH)vanderpol.mat der
+	python $(DATA)plot1.py $(DATA)bouncingball.mat
+	python $(DATA)plot1.py $(DATA)vanderpol.mat der
 
+FORCE:
 build:FORCE
 	(cd ~/work/umit/build && ninja && ninja install  | 		\
 					    grep -v Up-to-date | 	\
@@ -29,30 +32,28 @@ build:FORCE
 					    grep -v "Set runtime")
 
 rundebug: build
-	mpiexec -np 1 xterm -hold -e gdb --args $(MASTERPATH)fmi-mpi-master -x -m me -t 10 : -np 1 xterm -hold -e gdb --args $(SERVERPATH)fmi-mpi-server $(FMUPATH)bouncingBall.fmu)
+	mpiexec -np 1 xterm -hold -e gdb --args $(MASTER) -m me -t 10 : -np 1 xterm -hold -e gdb --args $(SERVER) $(DEBUGG)
 
-runmpidebug: build
-	./DEBUG.sh $(MASTERPATH)fmi-mpi-master $(SERVERPATH)fmi-mpi-server $(FMUPATH)vanDerPol.fmu
-#	( mpiexec -np 1 $( ./mpidebug.sh $(MASTERPATH)fmi-mpi-master -m me -t 12 ) : -np 1 $( ./mpidebug.sh $(SERVERPATH)fmi-mpi-server $(FMUPATH)vanDerPol.fmu ) )
-FORCE:
+debug: build
+	./mpiemacsgdb.sh $(MASTER) $(SERVER) $(DEBUGG)
 
-run_me_two: build
-	mpiexec -np 1 $(MASTERPATH)fmi-mpi-master -t 12 -m me -p r,0,301,1 -c 0,1,1,100 : $(FIXEDPOINT) :  $(BOUNINGBALLWITHSPRING)
-	(cd $(FMUPATH) && mv resultFile.mat ballspringfixed.mat)
-	mpiexec -np 1 $(MASTERPATH)fmi-mpi-master -t 12 -m me -p r,1,11,1 -c 0,2,1,1 : $(SPRINGS) :  $(SPRINGS)
-	(cd $(FMUPATH) && mv resultFile.mat springs.mat)
+run_me_two: generate build
+	mpiexec -np 1 $(MASTER) -t 12 -m me : $(FIXEDPOINT) # : $(BOUNCINGBALL)
+	#mpiexec -np 1 $(MASTER) -t 12 -m me -p r,0,301,1 -c 0,1,1,1 : $(FIXEDPOINT) :  $(BOUNINGBALLWITHSPRING)
+	#(cd $(FMU) && mv resultFile.mat ballspringfixed.mat)
+	#mpiexec -np 1 $(MASTER) -t 12 -m me -p r,1,11,1 -c 0,2,1,1 : $(SPRINGS) :  $(SPRINGS)
+	#(cd $(FMU) && mv resultFile.mat springs.mat)
 
 run_me_test: build
-	mpiexec -np 1 $(MASTERPATH)fmi-mpi-master -t 3 -m me : $(BOUNCINGBALL)
-	(cd $(DATAPATH) && mv resultFile.mat bouncingball.mat)
-	mpiexec -np 1 $(MASTERPATH)fmi-mpi-master -t 12 -m me : $(VANDERPOL)
-	(cd $(DATAPATH) && mv resultFile.mat vanderpol.mat)
-	#mpiexec -np 1 $(MASTERPATH)fmi-mpi-master -t 12 -m me : $(VANDERPOL) : $(VANDERPOL2)
-	#mpiexec -np 1 $(MASTERPATH)fmi-mpi-master -t 1.5 -m me : $(BOUNCINGBALL) : $(BOUNCINGBALL)
-	#mpiexec -np 1 $(MASTERPATH)fmi-mpi-master -t 1.6 -m me : $(VANDERPOL) : $(BOUNCINGBALL)
+	mpiexec -np 1 $(MASTER) -t 3 -m me : $(BOUNCINGBALL)
+	(cd $(DATA) && mv resultFile.mat bouncingball.mat)
+	mpiexec -np 1 $(MASTER) -t 12 -m me : $(VANDERPOL)
+	(cd $(DATA) && mv resultFile.mat vanderpol.mat)
+	mpiexec -np 1 $(MASTER) -t 12 -m me -p r,1,11,1 -c 0,2,1,1 : $(SPRINGS) :  $(SPRINGS)
+	(cd $(FMU) && mv resultFile.mat springs.mat)
 
-valgrind:
-	mpiexec -np 1 $(MASTERPATH)fmi-mpi-master -t 12 -m me : -np 1 valgrind -v --leak-check=full $(SERVERPATH)fmi-mpi-server $(FMUPATH)bouncingBall.fmu
+valgrind: build
+	mpiexec -np 1 $(MASTER) -t 12 -m me : -np 1 valgrind -v --leak-check=full $(SERVER) $(DEBUGG)
 
 FLAGS=-D DEBUG
 FMUGOHPP=~/work/umit/fmi-tcp-master/src/common/fmu_go_storage.hpp
@@ -60,6 +61,7 @@ FMUGOH=~/work/umit/fmi-tcp-master/include/common/fmu_go_storage.h
 TESTFILE=~/work/umit/fmi-tcp-master/src/common/testStorage.cpp
 LINKFILES=~/work/umit/fmi-tcp-master/src/common/fmu_go_storage.cpp $(FLAGS)
 LOOP=1 1 1 1 1 1 1 1 1
+
 fmugostorageLOOP: merge_hpp_with_h
 	$(foreach var,$(LOOP),g++ -std=c++11 $(TESTFILE) $(LINKFILES) -o foo && ./foo && rm foo;)
 

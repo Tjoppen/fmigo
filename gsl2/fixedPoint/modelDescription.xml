@@ -30,49 +30,13 @@
         causality="output">
       <Real start="-1"/>
     </ScalarVariable>
-    <ScalarVariable
-        name="dx0"
-        valueReference="2"
-        description="change in position left mass"
-        variability="continuous"
-        derivative="1"
-        initial="exact"
-        causality="local">
-      <Real start="0"/>
-    </ScalarVariable>
-    <ScalarVariable
-        name="x1"
-        valueReference="3"
-        description="position right mass"
-        variability="continuous"
-        initial="exact"
-        causality="local">
-      <Real start="1"/>
-    </ScalarVariable>
-    <ScalarVariable
-        name="dx1"
-        valueReference="4"
-        description="change in position right mass"
-        variability="continuous"
-        initial="exact"
-        causality="local">
-      <Real start="0"/>
-    </ScalarVariable>
-    <ScalarVariable
-        name="vi0"
-        valueReference="5"
-        causality="local">
-      <Real start="0"/>
-    </ScalarVariable>
 
   </ModelVariables>
   <ModelStructure>
     <Outputs>
       <Unknown index="1"/>
     </Outputs>
-    <Derivatives>
-      <Unknown index="2"/>
-    </Derivatives>
+    <Derivatives/>
     <DiscreteStates/>
     <InitialUnknowns />
   </ModelStructure>

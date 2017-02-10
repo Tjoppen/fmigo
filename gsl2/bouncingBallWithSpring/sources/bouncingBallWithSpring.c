@@ -7,7 +7,6 @@
 
 #include "fmuTemplate.h"
 
-static void updateStates(modelDescription_t *md){}
 static void update_all(modelDescription_t *md){
     md->dx = md->v;
     md->force_out = md->k * (md->x - md->x_in);

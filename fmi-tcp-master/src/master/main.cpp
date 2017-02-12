@@ -92,92 +92,6 @@ static vector<WeakConnection> setupWeakConnections(vector<connection> connection
     return weakConnections;
 }
 
-/**
- * Look for exactly zero or one match for given node+signal name and given causality
- */
-typedef map<FMIClient*, variable_map> clientvarmap;
-static bool matchNodesignal(const clientvarmap& varmaps, fmi2_causality_enu_t causality,
-        nodesignal ns, clientvarmap::const_iterator& varmapit, variable_map::const_iterator& varit) {
-    //fprintf(stderr, "looking for signal %s, causality %i\n", ns.signal.c_str(), causality);
-    varmapit = varmaps.end();
-    size_t nmatches = 0;
-    for (clientvarmap::const_iterator m = varmaps.begin(); m != varmaps.end(); m++) {
-        varit = m->second.find(ns.signal);
-        if (m->first->getModelName() == ns.node && varit != m->second.end() && varit->second.causality == causality) {
-            //found something!
-            varmapit = m;
-            nmatches++;
-        }
-    }
-    if (nmatches > 1) {
-        fprintf(stderr, "Found %li matches for node \"%s\" signal \"%s\" (expected zero or one) - bailing out!\n", nmatches, ns.node.c_str(), ns.signal.c_str());
-        exit(1);
-    }
-    return nmatches == 1;
-}
-
-static void addAutomaticConnectionsAndParams(const vector<connectionconfig> &connconf,
-        vector<FMIClient*> clients, vector<WeakConnection> &weakConnections, parameter_map &params) {
-    clientvarmap maps;
-    for (auto client : clients) {
-        maps[client] = client->getVariables();
-    }
-    for (auto cc : connconf) {
-        //first see if we can find a corresponding input
-        clientvarmap::const_iterator varmapit, ovarmapit;
-        variable_map::const_iterator varit, ovarit;
-        bool match = matchNodesignal(maps, fmi2_causality_enu_input, cc.input, varmapit, varit);
-
-        //fprintf(stderr, "signal %s matched? %i\n", cc.input.signal.c_str(), match);
-        if (!match) {
-            //this happens often, nothing to alarm the user about
-            continue;
-        }
-
-        match = false;
-        nodesignal ons;
-        //fprintf(stderr, "%li outputs\n", cc.outputs.size());
-        for (auto o : cc.outputs) {
-            if ((match = matchNodesignal(maps, fmi2_causality_enu_output, o, ovarmapit, ovarit))) {
-                ons = o;
-                break;
-            }
-        }
-
-        if (match) {
-            fprintf(stderr, "Creating weak connection FMU %d VR %d -> FMU %d VR %d [automatic] (node \"%s\" signal \"%s\" -> node \"%s\" signal \"%s\")\n",
-                    ovarmapit->first->getId(), ovarit->second.vr, varmapit->first->getId(), varit->second.vr,
-                    ons.node.c_str(), ons.signal.c_str(), cc.input.node.c_str(), cc.input.signal.c_str());
-            connection conn;
-            conn.fromType = conn.toType = fmi2_base_type_real;
-            conn.fromOutputVR = ovarit->second.vr;
-            conn.toInputVR = varit->second.vr;
-            weakConnections.push_back(WeakConnection(conn, ovarmapit->first, varmapit->first));
-
-            if (varit->second.type != fmi2_base_type_real) {
-                fprintf(stderr, "Only real valued weak connections supported at the moment\n");
-                exit(1);
-            }
-        } else {
-            //no match - see if there's a default value
-            if (cc.hasDefault) {
-                //TODO: actually print the value? a bit of a hassle right not since params have variable type
-                fprintf(stderr, "Default value -> FMU %d VR %d [automatic] (node \"%s\" signal \"%s\")\n",
-                    varmapit->first->getId(), varit->second.vr, cc.input.node.c_str(), cc.input.signal.c_str());
-                param p = cc.defaultValue;
-                p.fmuIndex = varmapit->first->getId();
-                p.valueReference = varit->second.vr;
-                params[make_pair(p.fmuIndex, varit->second.type)].push_back(p);
-            } else {
-                //no default value - fail!
-                fprintf(stderr, "Node \"%s\" signal \"%s\" has input but no output or default value!\n",
-                        cc.input.node.c_str(), cc.input.signal.c_str());
-                exit(1);
-            }
-        }
-    }
-}
-
 static StrongConnector* findOrCreateBallLockConnector(FMIClient *client,
         int posX, int posY, int posZ,
         int accX, int accY, int accZ,
@@ -533,7 +447,6 @@ int main(int argc, char *argv[] ) {
     vector<int> stepOrder;
     vector<int> fmuVisibilities;
     vector<strongconnection> scs;
-    vector<connectionconfig> connconf;
     Solver solver;
     string hdf5Filename;
     string fieldnameFilename;
@@ -545,9 +458,8 @@ int main(int argc, char *argv[] ) {
             argc, argv, &fmuURIs, &connections, &params, &endTime, &timeStep,
             &loglevel, &csv_separator, &outFilePath, &quietMode, &fileFormat,
             &method, &realtimeMode, &printXML, &stepOrder, &fmuVisibilities,
-            &scs, &connconf, &hdf5Filename, &fieldnameFilename, &holonomic, &compliance,
-            &command_port, &results_port, &paused, &solveLoops, &integratorType, &tolerance)) {
-
+            &scs, &hdf5Filename, &fieldnameFilename, &holonomic, &compliance,
+            &command_port, &results_port, &paused, &solveLoops)) {
         return 1;
     }
 
@@ -604,14 +516,13 @@ int main(int argc, char *argv[] ) {
     vector<FMIClient*> clients = setupClients(fmuURIs, context);
 #endif
 
-    //connect, get modelDescription XML (important for connconf)
+    //connect, get modelDescription XML (was important for connconf)
     for (auto it = clients.begin(); it != clients.end(); it++) {
         (*it)->m_loglevel = loglevel;
         (*it)->connect();
     }
 
     vector<WeakConnection> weakConnections = setupWeakConnections(connections, clients);
-    addAutomaticConnectionsAndParams(connconf, clients, weakConnections, params);
     setupConstraintsAndSolver(scs, clients, &solver);
 
     BaseMaster *master;
@@ -619,7 +530,7 @@ int main(int argc, char *argv[] ) {
 
     if( method == me ){
 
-      master =  (BaseMaster *) new ModelExchangeStepper( clients, weakConnections, tolerance, integratorType);
+      master =  (BaseMaster *) new ModelExchangeStepper( clients, weakConnections);
     }else if (scs.size()) {
         if (method != jacobi) {
             fprintf(stderr, "Can only do Jacobi stepping for weak connections when also doing strong coupling\n");

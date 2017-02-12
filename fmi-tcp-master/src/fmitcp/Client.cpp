@@ -90,7 +90,9 @@ void Client::clientData(const char* data, long size){
 #define CLIENT_VALUE_CASE(type){                                        \
     type##_res r;                                                       \
     r.ParseFromArray(data, size);                                       \
-    m_logger.log(Logger::LOG_NETWORK,"< "#type"_res(value=%d)\n",r.value()); \
+    std::ostringstream stream;                                          \
+    stream << "< "#type"_res(value=" << r.value() << ")\n";             \
+    m_logger.log(Logger::LOG_NETWORK, stream.str().c_str());            \
     on_##type##_res(r.message_id(), r.value());                         \
     }
 
@@ -209,7 +211,7 @@ void Client::clientData(const char* data, long size){
     case type_fmi2_import_get_event_indicators_res: {
         m_logger.log(Logger::LOG_NETWORK,"This command is NOT TESTED\n");
         fmi2_import_get_event_indicators_res r; r.ParseFromArray(data, size);
-        m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_event_indicators_res(mid=%d,event_indicators=%d,status=%d)\n",r.message_id(), r.z(), r.status());
+        m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_event_indicators_res(mid=%d, status=%d)\n",r.message_id(), r.status());
 
         std::vector<double> z;
         for(int i=0; i<r.z_size(); i++)
@@ -224,7 +226,7 @@ void Client::clientData(const char* data, long size){
         std::vector<double> x;
         for(int i=0; i<r.x_size(); i++)
             x.push_back(r.x(i));
-        m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_continuous_states_res(mid=%d,continuous_states=%d,states=%d)\n",r.message_id(), r.x(), r.status());
+        m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_continuous_states_res(mid=%d, states=%d)\n",r.message_id(), r.status());
         on_fmi2_import_get_continuous_states_res(r.message_id(),x,r.status());
         break;
     }
@@ -234,8 +236,8 @@ void Client::clientData(const char* data, long size){
         std::vector<double> derivatives;
         for(int i=0; i<r.derivatives_size(); i++)
             derivatives.push_back(r.derivatives(i));
+        m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_derivatives_res(mid=%d, status=%d)\n",r.message_id(), r.status());
         m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_derivatives_res(mid=%d,derivatives=%d,status=%d)\n",r.message_id(), r.derivatives(), r.status());
-        //        on_fmi2_import_get_derivatives_res(r.message_id(),repeated_to_vector<double>(r.derivatives()),r.status());
 
         on_fmi2_import_get_derivatives_res(r.message_id(),derivatives,r.status());
         break;
@@ -246,7 +248,7 @@ void Client::clientData(const char* data, long size){
         std::vector<double> x;
         for(int i=0; i<r.nominal_size(); i++)
             x.push_back(r.nominal(i));
-        m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_nominal_continuous_states_res(mid=%d,continuous_states=%d,states=%d)\n",r.message_id(), r.nominal(), r.status());
+        m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_nominal_continuous_states_res(mid=%d, states=%d)\n",r.message_id(), r.status());
         on_fmi2_import_get_nominal_continuous_states_res(r.message_id(),x,r.status());
         break;
     }

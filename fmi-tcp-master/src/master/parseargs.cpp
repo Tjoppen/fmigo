@@ -5,13 +5,13 @@
 #else
 #include <getopt.h>
 #endif
-#include <json/json.h>
 #include <deque>
 #include <fstream>
 #include "common/common.h"
 #ifdef USE_MPI
 #include <mpi.h>
 #endif
+#include <sstream>
 
 #include "master/parseargs.h"
 
@@ -96,6 +96,44 @@ static void add_args(vector<string>& argvstore, vector<char*>& argv2, string fil
     }
 }
 
+//split a delim separated string, with backslash escaping
+//delim=':' example: "s,0,0,C\:\\foo\\bar:s,0,1,D\:\\bluh\\" -> "s,0,0,C:\foo\bar", "s,0,1,D:\bluh\"
+//trailing single backslashes will be pruned ("...\" -> "...")
+static deque<string> escapeSplit(string str, char delim) {
+  deque<string> ret;
+  ostringstream oss;
+  bool escaped = false;
+
+  for (char c : str) {
+    if (escaped) {
+      if (c != ',' && c != ':' && c != '\\') {
+        fprintf(stderr, "ERROR: Only comma, colon and backslash (\",:\\\") may be escaped in program options (\"%s\")\n", str.c_str());
+        exit(1);
+      }
+      oss << c;
+      escaped = false;
+    } else if (c == '\\') {
+      escaped = true;
+    } else if (c == delim) {
+      ret.push_back(oss.str());
+      oss.str("");
+      oss.clear();
+    } else {
+      oss << c;
+    }
+  }
+
+  if (escaped) {
+    fprintf(stderr, "ERROR: Trailing backslash in program option (\"%s\")\n", str.c_str());
+    exit(1);
+  }
+
+  //push remaining string
+  ret.push_back(oss.str());
+  return ret;
+}
+
+
 int fmitcp_master::parseArguments( int argc,
                     char *argv[],
                     std::vector<std::string> *fmuFilePaths,
@@ -114,7 +152,6 @@ int fmitcp_master::parseArguments( int argc,
                     std::vector<int> *stepOrder,
                     std::vector<int> *fmuVisibilities,
                     vector<strongconnection> *strongConnections,
-                    vector<connectionconfig> *connconf,
                     string *hdf5Filename,
                     string *fieldnameFilename,
                     bool *holonomic,
@@ -122,9 +159,7 @@ int fmitcp_master::parseArguments( int argc,
                     int *command_port,
                     int *results_port,
                     bool *paused,
-                    bool *solveLoops,
-                    enum INTEGRATORTYPE *integratorType,
-                    double *tolerance
+                    bool *solveLoops
         ) {
     int index, c;
     opterr = 0;
@@ -138,17 +173,17 @@ int fmitcp_master::parseArguments( int argc,
 
     vector<char*> argv2 = make_char_vector(argvstore);
 
-    while ((c = getopt (argv2.size(), argv2.data(), "xrl:vqh:t:T:c:d:s:o:p:f:m:g:w:C:j:5:F:NM:a:z:ZLi:")) != -1){
+    while ((c = getopt (argv2.size(), argv2.data(), "xrl:vqht:c:d:s:o:p:f:m:g:w:C:5:F:NM:a:z:ZL")) != -1){
         int n, skip, l, cont, i, numScanned, stop, vis;
         deque<string> parts;
-        if (optarg) parts = split(optarg, ':');
+        if (optarg) parts = escapeSplit(optarg, ':');
 
         switch (c) {
 
         case 'c':
             for (auto it = parts.begin(); it != parts.end(); it++) {
                 connection conn;
-                deque<string> values = split(*it, ',');
+                deque<string> values = escapeSplit(*it, ',');
                 conn.slope = 1;
                 conn.intercept = 0;
                 int a = 0, b = 1, c = 2, d = 3; //positions of FMUFROM,VRFROM,FMUTO,VRTO in values
@@ -189,7 +224,7 @@ int fmitcp_master::parseArguments( int argc,
         case 'C':
             //strong connections
             for (auto it = parts.begin(); it != parts.end(); it++) {
-                deque<string> values = split(*it, ',');
+                deque<string> values = escapeSplit(*it, ',');
                 strongconnection sc;
 
                 if (values.size() < 3) {
@@ -310,7 +345,7 @@ int fmitcp_master::parseArguments( int argc,
         case 'p':
             for (auto it = parts.begin(); it != parts.end(); it++) {
                 param p;
-                deque<string> values = split(*it, ',');
+                deque<string> values = escapeSplit(*it, ',');
 
                 //expect [type,]FMU,VR,value
                 if (values.size() == 4) {
@@ -349,65 +384,6 @@ int fmitcp_master::parseArguments( int argc,
             }
             break;
 
-        case 'j': {
-            Json::Value root;
-            std::ifstream ifs(optarg);
-            if (!ifs) {
-                fprintf(stderr, "%s does not exist\n", optarg);
-                exit(1);
-            }
-            ifs >> root;
-
-            for (auto conn : root["connections"]) {
-                //fprintf(stderr, "node %s, signal %s\n", conn["input"]["node"].asString().c_str(), conn["input"]["signal"].asString().c_str());
-                connectionconfig conf;
-                conf.input.node   = conn["input"]["node"].asString();
-                conf.input.signal = conn["input"]["signal"].asString();
-
-                for (auto output : conn["outputs"]) {
-                    //fprintf(stderr, "-> %s, %s\n", output["node"].asString().c_str(), output["signal"].asString().c_str());
-                    nodesignal ns;
-                    ns.node   = output["node"].asString();
-                    ns.signal = output["signal"].asString();
-                    conf.outputs.push_back(ns);
-                }
-
-                if (conn.isMember("constant")) {
-                    auto c = conn["constant"];
-
-                    if (c.isBool()) {
-                        //fprintf(stderr, "bool: %s\n", c.asBool() ? "true" : "false");
-                        conf.defaultValue.type = fmi2_base_type_bool;
-                        conf.defaultValue.boolValue = c.asBool();
-                    } else if (c.isDouble()) {
-                        //fprintf(stderr, "double: %lf\n", c.asDouble());
-                        conf.defaultValue.type = fmi2_base_type_real;
-                        conf.defaultValue.realValue = c.asDouble();
-                    } else if (c.isInt()) {
-                        //fprintf(stderr, "int: %i\n", c.asInt());
-                        conf.defaultValue.type = fmi2_base_type_int;
-                        conf.defaultValue.intValue = c.asInt();
-                    } else if (c.isString()) {
-                        //fprintf(stderr, "string: %s\n", c.asString().c_str());
-                        conf.defaultValue.type = fmi2_base_type_str;
-                        conf.defaultValue.stringValue = c.asString();
-                    } else {
-                        fprintf(stderr, "unknown constant value type for node %s, signal %s\n",
-                                conn["input"]["node"].asString().c_str(), conn["input"]["signal"].asString().c_str());
-                        exit(1);
-                    }
-
-                    conf.hasDefault = true;
-                } else {
-                    conf.hasDefault = false;
-                }
-                connconf->push_back(conf);
-            }
-            fprintf(stderr, "Parsed %li connection configuration(s) from %s\n",
-                    connconf->size(), optarg);
-            break;
-        }
-
         case '5':
             *hdf5Filename = optarg;
             break;
@@ -440,15 +416,6 @@ int fmitcp_master::parseArguments( int argc,
         case 'Z':
             fprintf(stderr, "Starting master in paused state\n");
             *paused = true;
-            break;
-        case 'i':
-            if(strcmp(optarg,"cgsl") == 0){
-                *integratorType = cgsl;
-            } else if(strcmp(optarg,"bsd") == 0){
-                *integratorType = bsd;
-            }break;
-        case 'T':
-            *tolerance = atof(optarg);
             break;
         case 'L':
             *solveLoops = true;

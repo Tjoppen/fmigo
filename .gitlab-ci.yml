@@ -1,42 +1,32 @@
 ---
-image: umit/ubuntu:1
 stages:
   - build
   - test
 
-before_script:
-  # Accept mimmi's public key, download required submodules.
-  # We need to do this because Gitlab CI doesn't yet copy the submodules
-  # into the build for us.
-  - echo "mimmi.math.umu.se ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCwPGabkLBOnkVMnGDezLttyBnKf3t5nTRdoimQhNdVC+jbiqzue/+9cnHmFMrZcdf8qGfOlH5MzqFrWh0Es3yHSyIxDRhdKNB1UblkG+VafAi94uOeH+ho6bb/QNAKAKrEtMbHgAHLsVufVlSPpYY2GvKw8yQ53K3qviZrCLmd4GSxsV3elu3EPspyJ4KDU9ZJDAdkfP9iY7LlbAj/EGKYzG0uX7rmuC7EULVSEzvbFoHxSwDkrDuSiwicaZoBvqkEfyYvyvZqa2OU813RSFh5DjHXPkh+oKBG/Yn79b951AKuLCRSBhYmtbY42wVduPoQfEHE+prfwBE6Lv69ZhiN" >> ~/.ssh/known_hosts
-  - git submodule init
-  - git submodule update --recursive
+variables:
+  GIT_SUBMODULE_STRATEGY: "recursive"
 
 umit:
   stage: build
   script:
-    - mkdir -p build
-    - cd build
-    - cmake .. -G Ninja
-    - ninja install
-  artifacts:
-    paths:
-      - build/install/bin/*
-      #- umit-fmus/*/*.fmu
+    - docker build -t umit/trusty:$(git rev-parse HEAD)            -f Dockerfile.trusty            .
+    - docker build -t umit/trusty-cmake3.5.0:$(git rev-parse HEAD) -f Dockerfile.trusty-cmake3.5.0 .
+    - docker build -t umit/xenial:$(git rev-parse HEAD)            -f Dockerfile.xenial            .
   tags:
-    - linux
-    - docker
+    - shell
 
 test:
   stage: test
   script:
-    # Re-build FMUs
-    # This wouldn't be needed if we could mark all .fmu files as artifacts
-    - mkdir -p umit-fmus/build
-    - cd umit-fmus/build
-    - cmake .. -G Ninja
-    - ninja
-    - cd ../..
-    - bash run_tests.sh
+    - docker run --workdir /home/gitlab-ci/umit umit/trusty:$(git rev-parse HEAD)            bash run_tests.sh
+    - docker run --workdir /home/gitlab-ci/umit umit/trusty-cmake3.5.0:$(git rev-parse HEAD) bash run_tests.sh
+    - docker run --workdir /home/gitlab-ci/umit umit/xenial:$(git rev-parse HEAD)            bash run_tests.sh
+    - docker cp $(docker ps -a |grep umit/xenial:$(git rev-parse HEAD)|grep "bash run_tests.sh"|head -n1|cut -d" " -f 1):/home/gitlab-ci/umit/build/install - > umit-$(git rev-parse HEAD).tar
+    - gzip -9 umit-$(git rev-parse HEAD).tar
   dependencies:
     - umit
+  artifacts:
+    paths:
+      - umit-*.tar.gz
+  tags:
+    - shell

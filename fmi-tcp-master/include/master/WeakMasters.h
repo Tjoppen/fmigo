@@ -131,16 +131,14 @@ class ModelExchangeStepper : public BaseMaster {
       cgsl_model model;
     };
     cgsl_simulation m_sim;
-    enum INTEGRATORTYPE m_integratorType;
-    double m_tolerance;
     TimeLoop timeLoop;
     bool restored = false;
 
     map<FMIClient*, OutputRefsType> clientGetXs;  //one OutputRefsType for each client
     std::vector<int> stepOrder;
  public:
- ModelExchangeStepper(std::vector<FMIClient*> clients, std::vector<WeakConnection> weakConnections, double relativeTolerance, enum INTEGRATORTYPE integratorType  ) :
-    BaseMaster(clients,weakConnections), m_integratorType(integratorType), m_tolerance(relativeTolerance)
+ ModelExchangeStepper(std::vector<FMIClient*> clients, std::vector<WeakConnection> weakConnections) :
+    BaseMaster(clients,weakConnections)
     {
       fprintf(stderr, "ModelExchangeStepper\n");
     }

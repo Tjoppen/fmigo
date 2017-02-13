@@ -21,8 +21,7 @@ test:
     - docker run --workdir /home/gitlab-ci/umit umit/trusty:$(git rev-parse HEAD)            bash run_tests.sh
     - docker run --workdir /home/gitlab-ci/umit umit/trusty-cmake3.5.0:$(git rev-parse HEAD) bash run_tests.sh
     - docker run --workdir /home/gitlab-ci/umit umit/xenial:$(git rev-parse HEAD)            bash run_tests.sh
-    - docker cp $(docker ps -a |grep umit/xenial:$(git rev-parse HEAD)|grep "bash run_tests.sh"|head -n1|cut -d" " -f 1):/home/gitlab-ci/umit/build/install - > umit-$(git rev-parse HEAD).tar
-    - gzip -9 umit-$(git rev-parse HEAD).tar
+    - docker run --workdir /home/gitlab-ci/umit/build/install umit/xenial:$(git rev-parse HEAD) tar cz . > umit-$(git rev-parse HEAD).tar.gz
   dependencies:
     - umit
   artifacts:

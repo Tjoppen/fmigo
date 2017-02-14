@@ -122,6 +122,7 @@ class ModelExchangeStepper : public BaseMaster {
 
         BaseMaster* baseMaster;       /* BaseMaster object pointer */
         std::vector<FMIClient*> clients;            /* FMIClient vector */
+        std::vector<int> intv;            /* FMIClient vector */
         //std::vector<WeakConnection> weakConnections;
 
         bool stateEvent;
@@ -131,6 +132,8 @@ class ModelExchangeStepper : public BaseMaster {
       cgsl_model model;
     };
     cgsl_simulation m_sim;
+    fmu_parameters m_p;
+    fmu_model m_model;
     TimeLoop timeLoop;
     bool restored = false;
 
@@ -209,6 +212,9 @@ class ModelExchangeStepper : public BaseMaster {
     inline fmu_parameters* get_p(cgsl_model* m){
         return (fmu_parameters*)(m->parameters);
     }
+    inline fmu_parameters* get_p(fmu_model& m){
+        return ((fmu_parameters *)(m.model.parameters));
+    }
     inline fmu_parameters* get_p(fmu_model* m){
         return (fmu_parameters*)(m->model.parameters);
     }
@@ -241,25 +247,21 @@ class ModelExchangeStepper : public BaseMaster {
      *
      *  @param m Pointer to a fmu_model
      */
-    fmu_model* allocateMemory(const std::vector<FMIClient*> &clients){
-        fmu_model* m = (fmu_model*)calloc(1,sizeof(fmu_model));
-        fmu_parameters* p = (fmu_parameters*)calloc(1,sizeof(fmu_parameters));
-
+    void allocateMemory(fmu_model &m, const std::vector<FMIClient*> &clients){
         fmu_alloc(clients);
-        m->model.n_variables = get_storage().get_states().size();
+        m.model.n_variables = get_storage().get_states().size();
 
-        m->model.x = (double*)calloc(m->model.n_variables, sizeof(double));
-        m->model.parameters = (void*)p;
+        m.model.x = (double*)calloc(m.model.n_variables, sizeof(double));
+        m.model.parameters = (void*)&m_p;
 
-        p->backup.dydt = (double*)calloc(m->model.n_variables, sizeof(double));
-        p->backup.result_file = (FILE*)calloc(1, sizeof(FILE));
+        m_p.backup.dydt = (double*)calloc(m.model.n_variables, sizeof(double));
+        m_p.backup.result_file = (FILE*)calloc(1, sizeof(FILE));
 
-        if(!m->model.x || !p->backup.dydt || !p->backup.result_file || !p){
-            freeFMUModel(m);
+        if(!m.model.x || !m_p.backup.dydt || !m_p.backup.result_file){
+            //freeFMUModel(m);
             perror("WeakMaster:ModelExchange:allocateMemory ERROR -  could not allocate memory");
             exit(1);
         }
-        return m;
     }
 
     /** init_fmu_model
@@ -267,8 +269,8 @@ class ModelExchangeStepper : public BaseMaster {
      *
      *  @param client A pointer to a fmi client
      */
-    cgsl_model* init_fmu_model(const std::vector<FMIClient*> &clients){
-        fmu_model* m = allocateMemory(clients);
+    void init_fmu_model(fmu_model &m,  const std::vector<FMIClient*> &clients){
+        allocateMemory(m, clients);
         fmu_parameters* p = get_p(m);
 
         ostringstream prefix;
@@ -281,27 +283,24 @@ class ModelExchangeStepper : public BaseMaster {
         p->t_past = 0;
         p->baseMaster = this;
         p->stateEvent = false;
-        p->clients.resize(0,0);
+        //p.clients.resize(0,0);
         p->count = 0;
 
         p->backup.t = 0;
         p->backup.h = 0;
         p->backup.size_of_file = 0;
-
         p->clients = m_clients;
 
-        m->model.function = fmu_function;
-        m->model.jacobian = NULL;
-        m->model.free = NULL;//freeFMUModel;
+        m.model.function = fmu_function;
+        m.model.jacobian = NULL;
+        m.model.free = NULL;//freeFMUModel;
 
         for(auto client: clients)
             send(client, fmi2_import_get_continuous_states(0,0,(int)client->getNumContinuousStates()));
         wait();
 
         for(auto client: clients)
-            get_storage().get_states(m->model.x, client->getId());
-
-        return(cgsl_model*)m;
+            get_storage().get_states(m.model.x, client->getId());
     }
 
 
@@ -320,11 +319,11 @@ class ModelExchangeStepper : public BaseMaster {
         step_control.start = 1e-10;
 
         // set up a gsl_simulation for each client
-        cgsl_model* cgsl = init_fmu_model(m_clients);
-        fmu_parameters* p = get_p(cgsl);
+        init_fmu_model(m_model, m_clients);
+        fmu_parameters* p = get_p(m_model);
 
         //m_sim = (cgsl_simulation *)malloc(sizeof(cgsl_simulation));
-        m_sim = cgsl_init_simulation(cgsl,  /* model */
+        m_sim = cgsl_init_simulation(&m_model.model,  /* model */
                                      rk8pd, /* integrator: Runge-Kutta Prince Dormand pair order 7-8 */
                                      1,     /* write to file: YES! */
                                      p->backup.result_file,

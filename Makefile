@@ -5,13 +5,17 @@ DATA=~/work/umit/data/
 SHELL := /bin/bash
 
 BOUNCINGBALL= -np 1 $(SERVER) $(FMU)bouncingBall/bouncingBall.fmu
+BOUNCINGBALLOLD= -np 1 $(SERVER) $(DATA)bouncingBall.fmu
 BOUNCINGBALLWITHSPRING= -np 1 $(SERVER) $(FMU)bouncingBallWithSpring/bouncingBallWithSpring.fmu
 FIXEDPOINT= -np 1 $(SERVER) $(FMU)fixedPoint/fixedPoint.fmu
 VANDERPOL= -np 1 $(SERVER) $(FMU)vanDerPol/vanDerPol.fmu
 SPRINGS= -np 1 $(SERVER) $(FMU)springs/springs.fmu
 SUBME= -np 1 $(SERVER) $(FMU)subME/subME.fmu
-#DEBUGG= $(FMU)fixedPoint/fixedPoint.fmu
+
+DEBUGG= $(FMU)fixedPoint/fixedPoint.fmu
 DEBUGG= $(FMU)vanDerPol/vanDerPol.fmu
+DEBUGG= $(DATA)bouncingBall.fmu
+DEBUGG= $(FMU)bouncingBall/bouncingBall.fmu
 
 makeplot: run_me_test plot
 
@@ -45,6 +49,8 @@ run_me_two: generate build
 	#(cd $(FMU) && mv resultFile.mat springs.mat)
 
 run_me_test: build
+	mpiexec -np 1 $(MASTER) -t 3 -m me : $(BOUNCINGBALLOLD)
+	(cd $(DATA) && mv resultFile.mat bouncingballOld.mat)
 	mpiexec -np 1 $(MASTER) -t 3 -m me : $(BOUNCINGBALL)
 	(cd $(DATA) && mv resultFile.mat bouncingball.mat)
 	mpiexec -np 1 $(MASTER) -t 12 -m me : $(VANDERPOL)
@@ -53,7 +59,7 @@ run_me_test: build
 	(cd $(FMU) && mv resultFile.mat springs.mat)
 
 valgrind: build
-	mpiexec -np 1 $(MASTER) -t 12 -m me : -np 1 valgrind -v --leak-check=full $(SERVER) $(DEBUGG)
+	mpiexec -np 1 valgrind -v --leak-check=full --show-leak-kinds=all $(MASTER) -t 0.1 -m me : -np 1 $(SERVER) $(DEBUGG)
 
 FLAGS=-D DEBUG
 FMUGOHPP=~/work/umit/fmi-tcp-master/src/common/fmu_go_storage.hpp

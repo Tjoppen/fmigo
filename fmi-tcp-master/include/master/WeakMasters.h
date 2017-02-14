@@ -103,7 +103,7 @@ class ModelExchangeStepper : public BaseMaster {
     {
         fmi2_real_t t_safe, dt_new, t_crossed, t_end;
     } TimeLoop;
-    typedef struct Backup
+    struct Backup
     {
         double t;
         double h;
@@ -113,8 +113,8 @@ class ModelExchangeStepper : public BaseMaster {
         FILE* result_file;
         long size_of_file;
 
-    } Backup;
-    typedef struct fmu_parameters{
+    };
+    struct fmu_parameters{
 
         double t_ok;
         double t_past;
@@ -127,7 +127,7 @@ class ModelExchangeStepper : public BaseMaster {
 
         bool stateEvent;
         Backup backup;
-    }fmu_parameters;
+    };
     struct fmu_model{
       cgsl_model model;
     };
@@ -144,6 +144,11 @@ class ModelExchangeStepper : public BaseMaster {
     BaseMaster(clients,weakConnections)
     {
       fprintf(stderr, "ModelExchangeStepper\n");
+    }
+    ~ModelExchangeStepper(){
+        cgsl_free_simulation(m_sim);
+        free(m_p.backup.dydt);
+        free(m_model.model.x);
     }
 
     /** fmu_function
@@ -222,26 +227,6 @@ class ModelExchangeStepper : public BaseMaster {
         return get_p(s.model);
     }
 
-    /** freeFMUModel
-     *  Free all memory allocated by allacateMemory(fmu_model* m)
-     *
-     *  @param m Pointer to a fmu_model
-     */
-    void freeFMUModel(fmu_model* m){
-        if(m == NULL) return;
-
-        fmu_parameters* p = get_p(m);
-        if( p != NULL)             return;
-        if( m->model.x != NULL)    free(m->model.x);
-        if( p->backup.dydt != NULL)    free(p->backup.dydt);
-
-        free(p);
-        free(m);
-    }
-    void freeSim(void){
-      freeFMUModel((fmu_model *)m_sim.model);
-    }
-
     /** allocate Memory
      *  Allocates memory needed by the fmu_model
      *
@@ -250,14 +235,18 @@ class ModelExchangeStepper : public BaseMaster {
     void allocateMemory(fmu_model &m, const std::vector<FMIClient*> &clients){
         fmu_alloc(clients);
         m.model.n_variables = get_storage().get_states().size();
+        if(m.model.n_variables == 0){
+            cerr << "ModelExchangeStepper nothing to integrate" << endl;
+            exit(0);
+        }
 
         m.model.x = (double*)calloc(m.model.n_variables, sizeof(double));
         m.model.parameters = (void*)&m_p;
 
         m_p.backup.dydt = (double*)calloc(m.model.n_variables, sizeof(double));
-        m_p.backup.result_file = (FILE*)calloc(1, sizeof(FILE));
+        //m_p.backup.result_file = (FILE*)calloc(1, sizeof(FILE));
 
-        if(!m.model.x || !m_p.backup.dydt || !m_p.backup.result_file){
+        if(!m.model.x || !m_p.backup.dydt){
             //freeFMUModel(m);
             perror("WeakMaster:ModelExchange:allocateMemory ERROR -  could not allocate memory");
             exit(1);
@@ -308,7 +297,6 @@ class ModelExchangeStepper : public BaseMaster {
         for (size_t x = 0; x < m_weakConnections.size(); x++) {
             WeakConnection wc = m_weakConnections[x];
             clientGetXs[wc.to][wc.from][wc.conn.fromType].push_back(wc.conn.fromOutputVR);
-            cout << "wc.to " << wc.to << " from " << wc.from << " outputvr " << wc.conn.fromOutputVR << endl;
         }
 #ifdef USE_GPL
         /* This is the step control which determines tolerances. */

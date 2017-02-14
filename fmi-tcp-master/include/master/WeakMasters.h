@@ -194,7 +194,7 @@ class ModelExchangeStepper : public BaseMaster {
                 if(p->baseMaster->get_storage().past_event(client->getId())){
                     p->stateEvent = true;
                     p->t_past = t;
-                    return GSL_CONTINUE;
+                    return GSL_SUCCESS;
                 } else{
                     p->stateEvent = false;
                     p->t_ok = t;

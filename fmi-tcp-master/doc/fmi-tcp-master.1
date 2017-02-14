@@ -126,7 +126,20 @@ where each PARAMX has the following syntax:
 
     PARAMX=[TYPE,]FMU,VR,VALUE
 
-If type is not specified then real values are assumed, just like with weak connections.
+Comma, colon and backslash characters in VALUE must be escaped with backslash.
+A typical use case is paths on Windows, which might look something like this in bash syntax:
+
+    -p 's,0,0,C\\:\\\\foo bar\\\\woo.tx'
+
+Note that extra escaping may be necessary in order to pass through your shell properly.
+If using double quotes in bash:
+
+    -p "s,0,0,C\\\\:\\\\\\\\foo bar\\\\\\\\woo.tx"
+
+No characters other than comma, colon and backslash may be escaped.
+Having a single trailing backslash in an option is an error ("C\\:\\\\foo\\").
+
+If TYPE is not specified then real values are assumed, just like with weak connections.
 Example:
 
     -p b,0,0,true:r,0,0,0:s,0,0,hello

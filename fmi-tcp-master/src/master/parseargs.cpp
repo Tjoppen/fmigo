@@ -11,6 +11,7 @@
 #ifdef USE_MPI
 #include <mpi.h>
 #endif
+#include <sstream>
 
 #include "master/parseargs.h"
 
@@ -95,6 +96,44 @@ static void add_args(vector<string>& argvstore, vector<char*>& argv2, string fil
     }
 }
 
+//split a delim separated string, with backslash escaping
+//delim=':' example: "s,0,0,C\:\\foo\\bar:s,0,1,D\:\\bluh\\" -> "s,0,0,C:\foo\bar", "s,0,1,D:\bluh\"
+//trailing single backslashes will be pruned ("...\" -> "...")
+static deque<string> escapeSplit(string str, char delim) {
+  deque<string> ret;
+  ostringstream oss;
+  bool escaped = false;
+
+  for (char c : str) {
+    if (escaped) {
+      if (c != ',' && c != ':' && c != '\\') {
+        fprintf(stderr, "ERROR: Only comma, colon and backslash (\",:\\\") may be escaped in program options (\"%s\")\n", str.c_str());
+        exit(1);
+      }
+      oss << c;
+      escaped = false;
+    } else if (c == '\\') {
+      escaped = true;
+    } else if (c == delim) {
+      ret.push_back(oss.str());
+      oss.str("");
+      oss.clear();
+    } else {
+      oss << c;
+    }
+  }
+
+  if (escaped) {
+    fprintf(stderr, "ERROR: Trailing backslash in program option (\"%s\")\n", str.c_str());
+    exit(1);
+  }
+
+  //push remaining string
+  ret.push_back(oss.str());
+  return ret;
+}
+
+
 int fmitcp_master::parseArguments( int argc,
                     char *argv[],
                     std::vector<std::string> *fmuFilePaths,
@@ -137,14 +176,14 @@ int fmitcp_master::parseArguments( int argc,
     while ((c = getopt (argv2.size(), argv2.data(), "xrl:vqht:c:d:s:o:p:f:m:g:w:C:5:F:NM:a:z:ZL")) != -1){
         int n, skip, l, cont, i, numScanned, stop, vis;
         deque<string> parts;
-        if (optarg) parts = split(optarg, ':');
+        if (optarg) parts = escapeSplit(optarg, ':');
 
         switch (c) {
 
         case 'c':
             for (auto it = parts.begin(); it != parts.end(); it++) {
                 connection conn;
-                deque<string> values = split(*it, ',');
+                deque<string> values = escapeSplit(*it, ',');
                 conn.slope = 1;
                 conn.intercept = 0;
                 int a = 0, b = 1, c = 2, d = 3; //positions of FMUFROM,VRFROM,FMUTO,VRTO in values
@@ -185,7 +224,7 @@ int fmitcp_master::parseArguments( int argc,
         case 'C':
             //strong connections
             for (auto it = parts.begin(); it != parts.end(); it++) {
-                deque<string> values = split(*it, ',');
+                deque<string> values = escapeSplit(*it, ',');
                 strongconnection sc;
 
                 if (values.size() < 3) {
@@ -306,7 +345,7 @@ int fmitcp_master::parseArguments( int argc,
         case 'p':
             for (auto it = parts.begin(); it != parts.end(); it++) {
                 param p;
-                deque<string> values = split(*it, ',');
+                deque<string> values = escapeSplit(*it, ',');
 
                 //expect [type,]FMU,VR,value
                 if (values.size() == 4) {

@@ -26,21 +26,32 @@
         name="x_in"
         valueReference="1"
         description="position of mass connected to left mass"
+        causality="input"
         variability="continuous"
-        causality="input">
-      <Real start="-1"/>
+        initial="exact">
+        <Real start="-1"/>
     </ScalarVariable>
     <ScalarVariable
         name="x0"
         valueReference="2"
         description="position left mass"
         variability="continuous"
+        initial="exact"
         causality="output">
       <Real start="-1"/>
     </ScalarVariable>
     <ScalarVariable
-        name="x1"
+        name="dx0"
         valueReference="3"
+        description="change in position left mass"
+        variability="continuous"
+        initial="calculated"
+        causality="local">
+      <Real derivative="2"/>
+    </ScalarVariable>
+    <ScalarVariable
+        name="x1"
+        valueReference="4"
         description="position right mass"
         variability="continuous"
         initial="exact"
@@ -48,8 +59,17 @@
       <Real start="1"/>
     </ScalarVariable>
     <ScalarVariable
+        name="dx1"
+        valueReference="5"
+        description="change in position right mass"
+        variability="continuous"
+        initial="calculated"
+        causality="local">
+      <Real derivative="4"/>
+    </ScalarVariable>
+    <ScalarVariable
         name="v0"
-        valueReference="4"
+        valueReference="6"
         description="velocity left mass"
         variability="continuous"
         initial="exact"
@@ -57,42 +77,19 @@
       <Real start="0"/>
     </ScalarVariable>
     <ScalarVariable
-        name="v1"
-        valueReference="5"
-        description="velocity right mass"
-        variability="continuous"
-        initial="exact"
-        causality="local">
-      <Real start="0"/>
-    </ScalarVariable>
-
-    <!-- Derivatives -->
-    <ScalarVariable
-        name="dx0"
-        valueReference="6"
-        description="change in position left mass"
-        variability="continuous"
-        derivative="2"
-        initial="exact"
-        causality="local">
-      <Real start="0"/>
-    </ScalarVariable>
-    <ScalarVariable
-        name="dx1"
-        valueReference="7"
-        description="change in position right mass"
-        variability="continuous"
-        derivative="3"
-        initial="exact"
-        causality="local">
-      <Real start="0"/>
-    </ScalarVariable>
-    <ScalarVariable
         name="dv0"
-        valueReference="8"
+        valueReference="7"
         description="change in velocity left mass"
         variability="continuous"
-        derivative="4"
+        initial="calculated"
+        causality="local">
+      <Real derivative="6"/>
+    </ScalarVariable>
+    <ScalarVariable
+        name="v1"
+        valueReference="8"
+        description="velocity right mass"
+        variability="continuous"
         initial="exact"
         causality="local">
       <Real start="0"/>
@@ -102,10 +99,9 @@
         valueReference="9"
         description="change in velocity right mass"
         variability="continuous"
-        derivative="5"
-        initial="exact"
+        initial="calculated"
         causality="local">
-      <Real start="0"/>
+      <Real derivative="8"/>
     </ScalarVariable>
 
     <!-- internal parameter -->
@@ -127,12 +123,30 @@
         initial="exact">
       <Real start="0"/>
     </ScalarVariable>
+    <ScalarVariable
+        name="f_in"
+        valueReference="12"
+        description="incomming force"
+        causality="input"
+        variability="continuous"
+        initial="exact">
+        <Real start="0"/>
+    </ScalarVariable>
+    <ScalarVariable
+        name="f_out"
+        valueReference="13"
+        description="output force"
+        causality="output"
+        variability="continuous"
+        initial="exact">
+        <Real start="0"/>
+    </ScalarVariable>
 
   </ModelVariables>
   <ModelStructure>
     <Outputs>
       <Unknown index="2"/>
-      <Unknown index="3"/>
+      <Unknown index="4"/>
     </Outputs>
     <Derivatives>
       <Unknown index="6"/>

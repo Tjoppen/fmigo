@@ -12,8 +12,9 @@ static void updateStates(modelDescription_t *md){}
 static void update_all(modelDescription_t *md){
     //std::cout << "hello " << sdt::endl;
     md->dx0 = md->v0;
-    md->dv0 = -md->k1 * (md->x0 - md->x1);
+    md->dv0 = -md->k1 * (md->x0 - md->x1) - md->f_in;
     md->dx1 = md->v1;
+    md->f_out = -md->k2 * (md->x1 - md->x_in);
     md->dv1 = -md->k1 * (md->x1 - md->x0) -md->k2 * (md->x1 - md->x_in);
     //fprintf(stderr,"%f %f %f %f \n",md->dx0,md->dv0,md->dx1,md->dv1);
 }

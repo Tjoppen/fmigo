@@ -18,10 +18,10 @@
 <ModelVariables>
   <ScalarVariable name="x_in" valueReference="10" description="height, used as state"
                   causality="input" variability="continuous" initial="exact">
-    <Real start="1"/>
+    <Real start="10"/>
   </ScalarVariable>
   <ScalarVariable name="f_out" valueReference="20" description="height, used as state"
-                  causality="output" variability="continuous" initial="exact">
+                  causality="output" variability="continuous" initial="approx">
     <Real start="1"/>
   </ScalarVariable>
   <ScalarVariable name="h" valueReference="1" description="height, used as state"
@@ -53,13 +53,18 @@
     valueReference="30"
     description="spring constant spring on left mass"
     causality="parameter"
-    variability="tunable"
+    variability="fixed"
     initial="exact">
-    <Real start="1"/>
+    <Real start="0"/>
   </ScalarVariable>
 </ModelVariables>
 
 <ModelStructure>
+    <Outputs>
+      <Unknown index="2"/>
+      <Unknown index="3"/>
+      <Unknown index="4"/>
+    </Outputs>
   <Derivatives>
     <Unknown index="4" />
     <Unknown index="6" />

@@ -31,6 +31,7 @@
 // define initial state vector as vector of value references
 static void update_all(modelDescription_t *md){
     md->der_h = md->v;
+    md->f_out = md->k * (md->h - md->x_in);
     md->der_v = -md->g - md->k * (md->h - md->x_in);
 }
 

@@ -12,6 +12,11 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release CACHE String "" FORCE)
 endif()
 
+SET(FMI_GO_MAJOR_VERSION 0)
+SET(FMI_GO_MINOR_VERSION 5)
+SET(FMI_GO_PATCH_VERSION 0)
+SET(FMI_GO_VERSION ${FMI_GO_MAJOR_VERSION}.${FMI_GO_MINOR_VERSION}.${FMI_GO_PATCH_VERSION} )
+
 
 option(BUILD_FMUS "Build example FMUs in umit-fmus/?" ON)
 option(USE_GPL "Enable GPL? Needed for GNU GSL support in master (algebraic loop solver, ModelExchange integrator)" ON)
@@ -152,3 +157,15 @@ endif ()
 if (BUILD_FMUS)
     add_subdirectory(umit-fmus)
 endif ()
+
+
+# CPack setup
+set(CPACK_PACKAGE_NAME "fmi-go")
+# set(CPACK_PACKAGE_VENDOR "")
+set(CPACK_PACKAGE_VERSION ${FMI_GO_VERSION})
+set(CPACK_PACKAGE_VERSION_MAJOR ${FMI_GO_MAJOR_VERSION})
+set(CPACK_PACKAGE_VERSION_MINOR ${FMI_GO_MINOR_VERSION})
+set(CPACK_PACKAGE_VERSION_PATCH ${FMI_GO_RELEASE_VERSION})
+# set(CPACK_RESOURCE_FILE_LICENSE ${LICENSE_FILE})
+set(CPACK_GENERATOR "ZIP")
+include(CPack)

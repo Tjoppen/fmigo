@@ -42,17 +42,6 @@ struct param {
     int boolValue;                      // Boolean
 };
 
-struct nodesignal {
-    std::string node, signal;
-};
-
-struct connectionconfig {
-    nodesignal input;
-    std::vector<nodesignal> outputs;
-    bool hasDefault;
-    param defaultValue;
-};
-
 enum FILEFORMAT {
     csv
 };
@@ -106,7 +95,6 @@ int parseArguments( int argc,
                     std::vector<int> *stepOrder,
                     std::vector<int> *fmuVisibilities,
                     std::vector<strongconnection> *strongConnections,
-                    std::vector<connectionconfig> *connconf,
                     std::string *hdf5Filename,
                     std::string *fieldnameFilename,
                     bool *holonomic,

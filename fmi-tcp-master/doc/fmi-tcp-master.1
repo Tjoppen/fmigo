@@ -4,7 +4,7 @@ fmi-tcp-master \- simulate FMUs
 .SH SYNOPSIS
 .ll +8
 .B fmi-tcp-master
-.RB [ " \-xrlvqhtcdsopfmgwCj5FNMazZL " ]
+.RB [ " \-xrlvqhtcdsopfmgwC5FNMazZL " ]
 [
 .I "URLs \&..."
 ]
@@ -126,7 +126,20 @@ where each PARAMX has the following syntax:
 
     PARAMX=[TYPE,]FMU,VR,VALUE
 
-If type is not specified then real values are assumed, just like with weak connections.
+Comma, colon and backslash characters in VALUE must be escaped with backslash.
+A typical use case is paths on Windows, which might look something like this in bash syntax:
+
+    -p 's,0,0,C\\:\\\\foo bar\\\\woo.tx'
+
+Note that extra escaping may be necessary in order to pass through your shell properly.
+If using double quotes in bash:
+
+    -p "s,0,0,C\\\\:\\\\\\\\foo bar\\\\\\\\woo.tx"
+
+No characters other than comma, colon and backslash may be escaped.
+Having a single trailing backslash in an option is an error ("C\\:\\\\foo\\").
+
+If TYPE is not specified then real values are assumed, just like with weak connections.
 Example:
 
     -p b,0,0,true:r,0,0,0:s,0,0,hello
@@ -179,9 +192,6 @@ Note that like all lists you can concatenate the strong connection specification
     -C\ shaft,0,1,20,19,14,17,20,19,14,17:lock,0,1,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18:ball,1,2,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18
 
 Default is no strong connections. Specifying strong connections is incompatible with using the Gauss-Seidel stepper (-m gs).
-.TP
-.B \-j [JSON filename]
-Connection configuration file. Used to automatically connect inputs/outputs with specified names, and to assign default values to inputs when no suitable output is found.
 .TP
 .B \-d [TIMESTEP]
 Timestep size. Default is 0.1.

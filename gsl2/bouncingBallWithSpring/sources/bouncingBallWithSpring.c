@@ -54,42 +54,6 @@ static void eventUpdate(ModelInstance *comp, fmi2EventInfo *eventInfo) {
     eventInfo->nextEventTimeDefined  = fmi2False;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// used to set the next time event, if any.
-
-static void SIMULATION_INIT(state_t *s) {
-    return;
-}
-
-static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
-    cgsl_step_to( &s->simulation, currentCommunicationPoint, communicationStepSize );
-}
-
 //gcc -g springs.c ../../../templates/gsl2/gsl-interface.c -DCONSOLE -I../../../templates/gsl2 -I../../../templates/fmi2 -lgsl -lgslcblas -lm -Wall
 #ifdef CONSOLE
 int main(){

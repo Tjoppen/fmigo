@@ -28,7 +28,7 @@
         description="position of mass connected to left mass"
         causality="input"
         variability="continuous"
-        initial="exact">
+        initial="approx">
         <Real start="-1"/>
     </ScalarVariable>
     <ScalarVariable
@@ -129,7 +129,7 @@
         description="incomming force"
         causality="input"
         variability="continuous"
-        initial="exact">
+        initial="approx">
         <Real start="0"/>
     </ScalarVariable>
     <ScalarVariable

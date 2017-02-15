@@ -9,6 +9,8 @@
 #define WEAKMASTERS_H_
 #include "master/BaseMaster.h"
 #include "master/WeakConnection.h"
+//#include "master/MEFunctions.h"
+//#include "master/MEGSLFunctions_impl.h"
 #include "common/common.h"
 #include <fmitcp/serialize.h>
 #include <FMI2/fmi2_types.h>

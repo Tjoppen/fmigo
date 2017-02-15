@@ -705,7 +705,7 @@ int main(int argc, char *argv[] ) {
     delete master;
 
     for (size_t x = 0; x < clients.size(); x++) {
-        //delete clients[x];
+        delete clients[x];
     }
 
 #ifdef USE_MPI

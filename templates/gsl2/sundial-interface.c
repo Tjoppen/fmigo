@@ -12,12 +12,24 @@
 //http://stackoverflow.com/questions/6809275/unresolved-external-symbol-hypot-when-using-static-library#10051898
 double hypot(double x, double y) {return _hypot(x, y);}
 #endif
+
+#define Ith(v,i)    NV_Ith_S(v,i-1)       /* Ith numbers components 1..NEQ */
+#define IJth(A,i,j) DENSE_ELEM(A,i-1,j-1) /* IJth numbers rows,cols 1..NEQ */
+
 static int check_flag(void *flagvalue, const char *funcname, int opt);
 
-const void * csundial_get_integrator( int  i ) {
+const csundial_integrator csundial_CVode={
+    .create    = CVodeCreate,
+    .init      = CVodeInit,
+    .tolerance = CVodeSVtolerances,
+    .rootInit  = CVodeRootInit,
+    .setJac    = CVDlsSetDenseJacFn
+};
+const csundial_integrator csundial_get_integrator( int  i ) {
 
-  const void * integrators [] =
+  const csundial_integrator integrators [] =
     {
+           csundial_CVode
     };
 
   return integrators [ i ];
@@ -31,8 +43,15 @@ const void * csundial_get_integrator( int  i ) {
  * being able to apply the ECPE filters (among other things).
  */
 static int csundial_step ( void * _s  ) {
-  return 0;
+  csundial_simulation * s = ( csundial_simulation * ) _s ;
+  int status;
+  if ( s->fixed_step ) {
+      //status = gsl_odeiv2_evolve_apply_fixed_step(s->i.evolution, s->i.control, s->i.step, &s->i.system, &s->t, s->h, s->model->x);
+  } else {
+      //status = gsl_odeiv2_evolve_apply           (s->i.evolution, s->i.control, s->i.step, &s->i.system, &s->t, s->t1, &s->h, s->model->x);
+  }
 
+  return 0;
 }
 
 /**
@@ -40,54 +59,92 @@ static int csundial_step ( void * _s  ) {
  */
 int csundial_step_to(void * _s,  double comm_point, double comm_step ) {
 
-  csundial_simulation * s = ( csundial_simulation * ) _s;
+    csundial_simulation * s = ( csundial_simulation * ) _s;
 
-  int i;
+    s->t = comm_point;
+    s->t1 = comm_point + comm_step;
+    int flag = CVode(s->cvode_mem, s->t1, s->model->x, &s->t, CV_NORMAL);
 
-  return 0;
-
+    int i;
+    if ( s->print  && s->file ) {
+      fprintf (s->file, "%.5e ", s->t );
+      for ( i = 0; i < NV_LENGTH_S(s->model->x); ++i ){
+          fprintf (s->file, "%.5e ", Ith(s->model->x,i));
+      }
+      fprintf (s->file, "\n");
+    }
 }
 
 #define NEQ   3                /* number of equations  */
 #define RTOL  RCONST(1.0e-4)   /* scalar relative tolerance            */
-#define T0    RCONST(0.0)      /* initial time           */
+#define ATOL1 RCONST(1.0e-8)   /* vector absolute tolerance components */
+#define ATOL2 RCONST(1.0e-14)
+#define ATOL3 RCONST(1.0e-6)
 /**
  * Note: we use pass-by-value semantics for all structs anywhere possible.
  */
 csundial_simulation csundial_init_simulation(
-  csundial_model * model, /** the model we work on */
-  double h,           //must be non-zero, even with variable step
-  int fixed_step,     //if non-zero, use a fixed step of h
-  int save,
-  int print,
-  int *f)
+    csundial_model * model, /** the model we work on */
+    enum csundial_integrator_ids integrator, /** Integrator ID   */
+    double h,           //must be non-zero, even with variable step
+    int fixed_step,     //if non-zero, use a fixed step of h
+    int save,
+    int print,
+    int *f)
 {
   csundial_simulation sim;
-  realtype reltol;
-  N_Vector y, abstol;
-  int flag;
+  int flag, flagr, iout;
+  realtype reltol, t, tout;
+
+  sim.abstol = N_VNew_Serial(NEQ);
+  if (check_flag((void *)sim.abstol, "N_VNew_Serial", 0)) exit(1);
   /* Set the scalar relative tolerance */
   reltol = RTOL;
+  /* Set the vector absolute tolerance */
+  Ith(sim.abstol,1) = ATOL1;
+  Ith(sim.abstol,2) = ATOL2;
+  Ith(sim.abstol,3) = ATOL3;
 
-  y = N_VNew_Serial(NEQ);
-  if (check_flag((void *)y, "N_VNew_Serial", 0)) exit(1);
-  abstol = N_VNew_Serial(NEQ);
-  if (check_flag((void *)abstol, "N_VNew_Serial", 0)) exit(1);
+  sim.model = model;
+  sim.i                      = csundial_get_integrator(integrator);
+  sim.n                      = 0;
+  sim.t                      = 0.0;
+  sim.t1                     = 0.0;
+  sim.h                      = h;
+  sim.fixed_step             = fixed_step;
+  sim.save                   = save;
+  sim.print                  = print;
 
-  sim.cvode_mem = NULL;
-  sim.cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
+  //sim.cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
+  sim.cvode_mem = sim.i.create(CV_BDF, CV_NEWTON);
   if (check_flag((void *)sim.cvode_mem, "CVodeCreate", 0)) exit(1);
 
   /* Call CVodeInit to initialize the integrator memory and specify the
    * user's right hand side function in y'=f(t,y), the inital time T0, and
    * the initial dependent variable vector y. */
-  flag = CVodeInit(sim.cvode_mem, model->function, T0, y);
+  flag = sim.i.init(sim.cvode_mem, sim.model->function, sim.t, sim.model->x);
   if (check_flag(&flag, "CVodeInit", 1)) exit(1);
 
-  /* Call CVodeSVtolerances to specify the scalar relative tolerance
-   * and vector absolute tolerances */
-  flag = CVodeSVtolerances(sim.cvode_mem, reltol, abstol);
+  /* /\* Call CVodeSVtolerances to specify the scalar relative tolerance */
+  /*  * and vector absolute tolerances *\/ */
+  flag = sim.i.tolerance(sim.cvode_mem, reltol, sim.abstol);
   if (check_flag(&flag, "CVodeSVtolerances", 1)) exit(1);
+
+  /* Call CVodeRootInit to specify the root function g with 2 components */
+  if(sim.model->rootfinding != NULL){
+    flag = sim.i.rootInit(sim.cvode_mem, 2, sim.model->rootfinding);
+    if (check_flag(&flag, "CVodeRootInit", 1)) exit(1);
+  }
+
+  /* Call CVDense to specify the CVDENSE dense linear solver */
+  flag = CVDense(sim.cvode_mem, NEQ);
+  if (check_flag(&flag, "CVDense", 1)) exit(1);
+
+  /* Set the Jacobian routine to Jac (user-supplied) */
+  flag = sim.i.setJac(sim.cvode_mem, sim.model->jacobian);
+  //flag = CVDlsSetDenseJacFn(sim.cvode_mem, NULL);
+  if (check_flag(&flag, "CVDlsSetDenseJacFn", 1)) exit(1);
+
   return sim;
 
 }

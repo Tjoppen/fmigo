@@ -16,7 +16,15 @@
  * Encapsulation of the integrator;
 */
 typedef struct csundial_integrator{
-
+    void* (*create)(int,int);
+    int (*init)(void*,CVRhsFn,realtype,N_Vector);
+    int (*tolerance)(void*, realtype, N_Vector);
+    int (*rootInit)(void*, int,CVRootFn);
+    int (*setJac)(void*,CVDlsDenseJacFn);
+    //CVRhsFn function;
+    //CVDlsDenseJacFn jacobian;
+    //CVRootFn rootfinding;
+    //N_Vector x;
 } csundial_integrator;
 
 
@@ -53,6 +61,9 @@ typedef int (* pre_post_step_ptr ) (double t, double dt, const double y[], void 
 typedef struct csundial_model{
 
     CVRhsFn function;
+    CVDlsDenseJacFn jacobian;
+    CVRootFn rootfinding;
+    N_Vector x;
 } csundial_model;
 
 /**
@@ -71,7 +82,18 @@ void csundial_model_default_free(csundial_model *model);
 typedef struct csundial_simulation {
 
     csundial_model *model;
+    csundial_integrator i;
     void* cvode_mem;
+    realtype reltol;
+    N_Vector abstol;
+    FILE * file;
+    double t;		      /** current time */
+    double t1;		      /** stop time */
+    double h;		      /** first stepsize and current value */
+    int    n;		      /** number of time steps taken */
+    int    fixed_step;	      /** whether or not we move at fixed step */
+    int    save;	      /** persistence to file */
+    int    print;	      /** verbose on stderr */
 } csundial_simulation;
 
 /*****************************
@@ -84,7 +106,7 @@ typedef struct csundial_simulation {
  */
 enum csundial_integrator_ids
 {
-  rk2,		/* 0 */
+  cvode,		/* 0 */
 };
 
 /**************
@@ -102,12 +124,13 @@ enum csundial_integrator_ids
  *   instead of descriptor?  Open and close file automatically?
  */
 csundial_simulation csundial_init_simulation(
-  csundial_model * model, /** the model we work on */
-  double h,           //must be non-zero, even with variable step
-  int fixed_step,     //if non-zero, use a fixed step of h
-  int save,
-  int print,
-  int *f);
+    csundial_model * model, /** the model we work on */
+    enum csundial_integrator_ids integrator, /** Integrator ID   */
+    double h,           //must be non-zero, even with variable step
+    int fixed_step,     //if non-zero, use a fixed step of h
+    int save,
+    int print,
+    int *f);
 
 /**
  *  Memory deallocation.
@@ -118,7 +141,7 @@ void  csundial_free_simulation( csundial_simulation sim );
 int csundial_step_to(void * _s,  double comm_point, double comm_step ) ;
 
 /** Accessor */
-const void * csundial_get_integrator( int  i ) ;
+const csundial_integrator csundial_get_integrator( int  i ) ;
 
 /**  Commit to file. */
 void csundial_save_data( struct csundial_simulation * sim );

@@ -1,6 +1,11 @@
 #ifndef SUNDIAL_INTERFACE_H
 #define SUNDIAL_INTERFACE_H
 
+#include <cvode/cvode.h>             /* prototypes for CVODE fcts., consts. */
+#include <nvector/nvector_serial.h>  /* serial N_Vector types, fcts., macros */
+#include <cvode/cvode_dense.h>       /* prototype for CVDense */
+#include <sundials/sundials_dense.h> /* definitions DlsMat DENSE_ELEM */
+#include <sundials/sundials_types.h> /* definition of type realtype */
 
 /*****************************
  * Structure definitions
@@ -18,6 +23,7 @@ typedef struct csundial_integrator{
 //see <gsl/gsl_odeiv2.h> for an explanation of these
 typedef int (* ode_function_ptr ) (double t, const double y[], double dydt[], void * params);
 typedef int (* ode_jacobian_ptr ) (double t, const double y[], double * dfdy, double dfdt[], void * params);
+typedef int (* pre_post_step_ptr ) (double t, double dt, const double y[], void * params);
 
 /** Pre/post step callbacks
  *      t: Start of the current time step (communicationPoint)
@@ -25,7 +31,6 @@ typedef int (* ode_jacobian_ptr ) (double t, const double y[], double * dfdy, do
  *      y: For pre, the values of the variables before stepping. For post, after.
  * params: Opaque pointer
  */
-typedef int (* pre_post_step_ptr ) (double t, double dt, const double y[], void * params);
 
 /**
  *
@@ -47,6 +52,7 @@ typedef int (* pre_post_step_ptr ) (double t, double dt, const double y[], void 
 
 typedef struct csundial_model{
 
+    CVRhsFn function;
 } csundial_model;
 
 /**
@@ -64,6 +70,8 @@ void csundial_model_default_free(csundial_model *model);
  */
 typedef struct csundial_simulation {
 
+    csundial_model *model;
+    void* cvode_mem;
 } csundial_simulation;
 
 /*****************************
@@ -95,7 +103,6 @@ enum csundial_integrator_ids
  */
 csundial_simulation csundial_init_simulation(
   csundial_model * model, /** the model we work on */
-  enum csundial_integrator_ids integrator,
   double h,           //must be non-zero, even with variable step
   int fixed_step,     //if non-zero, use a fixed step of h
   int save,

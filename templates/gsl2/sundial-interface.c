@@ -1,10 +1,18 @@
 #include "sundial-interface.h"
 #include <string.h>
+#include <stdlib.h>
+
+#include <cvode/cvode.h>             /* prototypes for CVODE fcts., consts. */
+#include <nvector/nvector_serial.h>  /* serial N_Vector types, fcts., macros */
+#include <cvode/cvode_dense.h>       /* prototype for CVDense */
+#include <sundials/sundials_dense.h> /* definitions DlsMat DENSE_ELEM */
+#include <sundials/sundials_types.h> /* definition of type realtype */
 
 #ifdef WIN32
 //http://stackoverflow.com/questions/6809275/unresolved-external-symbol-hypot-when-using-static-library#10051898
 double hypot(double x, double y) {return _hypot(x, y);}
 #endif
+static int check_flag(void *flagvalue, const char *funcname, int opt);
 
 const void * csundial_get_integrator( int  i ) {
 
@@ -40,12 +48,14 @@ int csundial_step_to(void * _s,  double comm_point, double comm_step ) {
 
 }
 
+#define NEQ   3                /* number of equations  */
+#define RTOL  RCONST(1.0e-4)   /* scalar relative tolerance            */
+#define T0    RCONST(0.0)      /* initial time           */
 /**
  * Note: we use pass-by-value semantics for all structs anywhere possible.
  */
 csundial_simulation csundial_init_simulation(
   csundial_model * model, /** the model we work on */
-  enum csundial_integrator_ids integrator,
   double h,           //must be non-zero, even with variable step
   int fixed_step,     //if non-zero, use a fixed step of h
   int save,
@@ -53,6 +63,31 @@ csundial_simulation csundial_init_simulation(
   int *f)
 {
   csundial_simulation sim;
+  realtype reltol;
+  N_Vector y, abstol;
+  int flag;
+  /* Set the scalar relative tolerance */
+  reltol = RTOL;
+
+  y = N_VNew_Serial(NEQ);
+  if (check_flag((void *)y, "N_VNew_Serial", 0)) exit(1);
+  abstol = N_VNew_Serial(NEQ);
+  if (check_flag((void *)abstol, "N_VNew_Serial", 0)) exit(1);
+
+  sim.cvode_mem = NULL;
+  sim.cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
+  if (check_flag((void *)sim.cvode_mem, "CVodeCreate", 0)) exit(1);
+
+  /* Call CVodeInit to initialize the integrator memory and specify the
+   * user's right hand side function in y'=f(t,y), the inital time T0, and
+   * the initial dependent variable vector y. */
+  flag = CVodeInit(sim.cvode_mem, model->function, T0, y);
+  if (check_flag(&flag, "CVodeInit", 1)) exit(1);
+
+  /* Call CVodeSVtolerances to specify the scalar relative tolerance
+   * and vector absolute tolerances */
+  flag = CVodeSVtolerances(sim.cvode_mem, reltol, abstol);
+  if (check_flag(&flag, "CVodeSVtolerances", 1)) exit(1);
   return sim;
 
 }
@@ -192,4 +227,41 @@ csundial_model * csundial_epce_default_model_init(
         void *epce_post_step_params) {
     csundial_model*f;
     return csundial_epce_model_init(m, f, filter_length, epce_post_step, epce_post_step_params);
+}
+
+/*
+ * Check function return value...
+ *   opt == 0 means SUNDIALS function allocates memory so check if
+ *            returned NULL pointer
+ *   opt == 1 means SUNDIALS function returns a flag so check if
+ *            flag >= 0
+ *   opt == 2 means function allocates memory so check if returned
+ *            NULL pointer
+ */
+
+static int check_flag(void *flagvalue, const char *funcname, int opt)
+{
+  int *errflag;
+
+  /* Check if SUNDIALS function returned NULL pointer - no memory allocated */
+  if (opt == 0 && flagvalue == NULL) {
+    fprintf(stderr, "\nSUNDIALS_ERROR: %s() failed - returned NULL pointer\n\n",
+	    funcname);
+    return(1); }
+
+  /* Check if flag < 0 */
+  else if (opt == 1) {
+    errflag = (int *) flagvalue;
+    if (*errflag < 0) {
+      fprintf(stderr, "\nSUNDIALS_ERROR: %s() failed with flag = %d\n\n",
+	      funcname, *errflag);
+      return(1); }}
+
+  /* Check if function returned NULL pointer - no memory allocated */
+  else if (opt == 2 && flagvalue == NULL) {
+    fprintf(stderr, "\nMEMORY_ERROR: %s() failed - returned NULL pointer\n\n",
+	    funcname);
+    return(1); }
+
+  return(0);
 }

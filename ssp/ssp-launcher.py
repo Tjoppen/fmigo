@@ -350,7 +350,7 @@ class System:
             version = get_attrib(tree.getroot(), 'version')
         else:
             version = 'Draft20150721'
-            printf('WARNING: version not set in root, assuming ' + self.version)
+            print('WARNING: version not set in root, assuming ' + self.version)
 
         structure = SystemStructure(tree.getroot())
 
@@ -571,7 +571,13 @@ def unzip_ssp(dest_dir, ssp_filename):
             with zipfile.ZipFile(f) as z:
                 z.extract(MODELDESCRIPTION, d)
 
-unzip_ssp(d, sys.argv[1])
+
+# Check if we run master directly from an SSD XML file instead of an SSP zip archive
+if os.path.basename(sys.argv[1]) == SSD_NAME:
+    d = os.path.dirname(sys.argv[1])
+else:
+    unzip_ssp(d, sys.argv[1])
+
 root = System.fromfile(d, SSD_NAME)
 
 root.resolve_dictionary_inputs()
@@ -584,11 +590,17 @@ for fmu in fmus:
     fmumap[fmu.get_name()] = fmu.id
     fmu.connect(connectionmultimap)
 
+    with zipfile.ZipFile(fmu.path) as z:
+        md_data = z.read('modelDescription.xml')
+
     # Parse modelDescription, turn variable list into map
-    tree = ET.parse(os.path.join(os.path.splitext(fmu.path)[0], MODELDESCRIPTION))
+    # tree = ET.parse(os.path.join(os.path.splitext(fmu.path)[0], MODELDESCRIPTION))
+    # root = tree.getroot()
+    # print(md_data)
+    root = ET.XML(md_data)
 
     svs = {}
-    for sv in tree.getroot().find('ModelVariables').findall('ScalarVariable'):
+    for sv in root.find('ModelVariables').findall('ScalarVariable'):
         name = sv.attrib['name']
         if name in svs:
             print(fmu.path + ' contains multiple variables named "' + name + '"!')

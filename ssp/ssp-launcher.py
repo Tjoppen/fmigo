@@ -5,7 +5,7 @@ import sys
 import os
 import os.path
 import glob
-import xml.etree.ElementTree as ET
+from lxml import etree
 import subprocess
 import shutil
 
@@ -149,7 +149,7 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
 
             #read from file
             #TODO: print unhandled XML in ParameterSet
-            tree = ET.parse(os.path.join(path, get_attrib(pb, 'source')))
+            tree = etree.parse(os.path.join(path, get_attrib(pb, 'source')))
             pvs = find_elements(tree.getroot(), 'ssv:Parameters', 'ssv:Parameter')
             #print('Parsed %i params' % len(pvs))
         else:
@@ -217,7 +217,7 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
                 exit(1)
 
             #TODO: print unhandled XML in ParameterMapping too
-            tree = ET.parse(os.path.join(path, get_attrib(pm, 'source')))
+            tree = etree.parse(os.path.join(path, get_attrib(pm, 'source')))
             mes = tree.getroot().findall('ssm:MappingEntry', ns)
 
             for me in mes:
@@ -344,7 +344,11 @@ class System:
 
         #parse XML, delete all attribs and element we know how to deal with
         #print residual, indicating things we don't yet support
-        tree = ET.parse(path)
+        tree = etree.parse(path)
+
+        # Remove comments, which would otherwise result in residual XML
+        for c in tree.xpath('//comment()'):
+            c.getparent().remove(c)
 
         if 'version' in tree.getroot().attrib:
             version = get_attrib(tree.getroot(), 'version')
@@ -363,7 +367,7 @@ class System:
         remove_if_empty(tree.getroot(), s)
 
         if len(tree.getroot()) > 0 or len(tree.getroot().attrib) > 0:
-            print('WARNING: Residual XML: '+ET.tostring(tree.getroot()))
+            print('WARNING: Residual XML: '+etree.tostring(tree.getroot()))
 
         return ret
 
@@ -596,10 +600,10 @@ for fmu in fmus:
         md_data = z.read('modelDescription.xml')
 
     # Parse modelDescription, turn variable list into map
-    # tree = ET.parse(os.path.join(os.path.splitext(fmu.path)[0], MODELDESCRIPTION))
+    # tree = etree.parse(os.path.join(os.path.splitext(fmu.path)[0], MODELDESCRIPTION))
     # root = tree.getroot()
     # print(md_data)
-    root = ET.XML(md_data)
+    root = etree.XML(md_data)
 
     svs = {}
     for sv in root.find('ModelVariables').findall('ScalarVariable'):

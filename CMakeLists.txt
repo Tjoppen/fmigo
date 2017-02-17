@@ -153,4 +153,4 @@ if (BUILD_FMUS)
     add_subdirectory(umit-fmus)
 endif ()
 
-install(FILES ssp/ssp-launcher.py DESTINATION bin)
+add_subdirectory(ssp)

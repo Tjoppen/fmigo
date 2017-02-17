@@ -575,8 +575,10 @@ def unzip_ssp(dest_dir, ssp_filename):
 # Check if we run master directly from an SSD XML file instead of an SSP zip archive
 if os.path.basename(sys.argv[1]) == SSD_NAME:
     d = os.path.dirname(sys.argv[1])
+    unzipped_ssp = False
 else:
     unzip_ssp(d, sys.argv[1])
+    unzipped_ssp = True
 
 root = System.fromfile(d, SSD_NAME)
 
@@ -696,7 +698,8 @@ p.communicate(input=" ".join(flatconns).encode('utf-8'))
 ret = p.returncode  #ret can be None
 
 if ret == 0:
-    shutil.rmtree(d)
+    if unzipped_ssp:
+        shutil.rmtree(d)
 else:
     print('An error occured (returncode = ' + str(ret) + '). Check ' + d)
 

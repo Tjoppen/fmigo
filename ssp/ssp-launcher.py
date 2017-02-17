@@ -31,6 +31,28 @@ fmus = []
 systems = []
 parameters = {}
 
+schema_names = {
+    'SSD': 'SystemStructureDescription.xsd',
+    'SSM': 'SystemStructureParameterMapping.xsd',
+    'SSV': 'SystemStructureParameterValues.xsd',
+}
+schemas = {}
+
+for type in schema_names:
+    # Expect schema to be located next to this script
+    try:
+        schema_path = os.path.join(os.path.dirname(__file__), schema_names[type])
+        schemas[type] = etree.XMLSchema(etree.parse(schema_path))
+    except Exception as e:
+        print(e)
+        print('Cannot open/parse %s - no %s validation performed' % (schema_path, type))
+        schemas[type] = None
+
+def validate(tree, type):
+    if schemas[type] and not schemas[type].validate(tree):
+        print('ERROR: %s file %s does not validate' % (type, path))
+        exit(1)
+
 # Adds (key,value) to given multimap.
 # Each (key,value) may appear only once.
 def add_multimap_value(multimap, key, value):
@@ -150,6 +172,7 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
             #read from file
             #TODO: print unhandled XML in ParameterSet
             tree = etree.parse(os.path.join(path, get_attrib(pb, 'source')))
+            validate(tree, 'SSV')
             pvs = find_elements(tree.getroot(), 'ssv:Parameters', 'ssv:Parameter')
             #print('Parsed %i params' % len(pvs))
         else:
@@ -218,6 +241,7 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
 
             #TODO: print unhandled XML in ParameterMapping too
             tree = etree.parse(os.path.join(path, get_attrib(pm, 'source')))
+            validate(tree, 'SSM')
             mes = tree.getroot().findall('ssm:MappingEntry', ns)
 
             for me in mes:
@@ -345,6 +369,7 @@ class System:
         #parse XML, delete all attribs and element we know how to deal with
         #print residual, indicating things we don't yet support
         tree = etree.parse(path)
+        validate(tree, 'SSD')
 
         # Remove comments, which would otherwise result in residual XML
         for c in tree.xpath('//comment()'):

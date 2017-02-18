@@ -13,9 +13,6 @@
 double hypot(double x, double y) {return _hypot(x, y);}
 #endif
 
-#define Ith(v,i)    NV_Ith_S(v,i-1)       /* Ith numbers components 1..NEQ */
-#define IJth(A,i,j) DENSE_ELEM(A,i-1,j-1) /* IJth numbers rows,cols 1..NEQ */
-
 static int check_flag(void *flagvalue, const char *funcname, int opt);
 
 const csundial_integrator csundial_CVode={
@@ -25,28 +22,22 @@ const csundial_integrator csundial_CVode={
     .rootInit  = CVodeRootInit,
     .setJac    = CVDlsSetDenseJacFn
 };
+
 const csundial_integrator csundial_get_integrator( int  i ) {
 
   const csundial_integrator integrators [] =
     {
-           csundial_CVode
+        csundial_CVode,
     };
 
   return integrators [ i ];
 
 }
 
-
-/**
- * Integrate the equations by one full step.
- * Used by csundial_step_to() only, can't be external because we need comm_step for
- * being able to apply the ECPE filters (among other things).
- */
-static int csundial_step ( void * _s  ) {
-  csundial_simulation * s = ( csundial_simulation * ) _s ;
-  int status;
-
-  return 0;
+const int csundial_get_roots(csundial_simulation &sim, int *roots){
+      int flagr = CVodeGetRootInfo(sim.cvode_mem, roots);
+      if (check_flag(&flagr, "CVodeGetRootInfo", 1)) exit(1);
+      return flagr;
 }
 
 /**
@@ -56,25 +47,28 @@ int csundial_step_to(void * _s,  double comm_point, double comm_step ) {
 
     csundial_simulation * s = ( csundial_simulation * ) _s;
 
-    s->t = comm_point;
-    s->t1 = comm_point + comm_step;
+    s->t  = comm_point;		/* start point */
+    s->t1 = comm_point + comm_step; /* end point */
     int flag = CVode(s->cvode_mem, s->t1, s->model->x, &s->t, CV_NORMAL);
 
     int i;
-    if ( s->file ) {
-      fprintf (s->file, "%.5e ", s->t );
-      for ( i = 0; i < NV_LENGTH_S(s->model->x); ++i ){
-          fprintf (s->file, "%.5e ", Ith(s->model->x,i));
-      }
+    if ( s->file && s->save) {
+#if defined(SUNDIALS_EXTENDED_PRECISION)
+#define PRINT_TYPE "%.5Le "
+#elif defined(SUNDIALS_DOUBLE_PRECISION)
+#define PRINT_TYPE "%.5e "
+#else
+#define PRINT_TYPE "%.5e "
+#endif
+      fprintf (s->file, PRINT_TYPE, s->t );
+      for ( i = 0; i < NV_LENGTH_S(s->model->x); ++i )
+          fprintf (s->file, PRINT_TYPE , Ith(s->model->x,i));
       fprintf (s->file, "\n");
     }
+    return flag;
+
 }
 
-#define NEQ   3                /* number of equations  */
-#define RTOL  RCONST(1.0e-4)   /* scalar relative tolerance            */
-#define ATOL1 RCONST(1.0e-8)   /* vector absolute tolerance components */
-#define ATOL2 RCONST(1.0e-14)
-#define ATOL3 RCONST(1.0e-6)
 /**
  * Note: we use pass-by-value semantics for all structs anywhere possible.
  */
@@ -86,15 +80,12 @@ csundial_simulation csundial_init_simulation(
     csundial_step_control_parameters step_control)
 {
   csundial_simulation sim;
-  int flag, flagr, iout;
-  realtype reltol, t, tout;
+  int flag;
 
   sim.model = model;
   sim.i                      = csundial_get_integrator(integrator);
-  sim.n                      = 0;
   sim.t                      = 0.0;
   sim.t1                     = 0.0;
-  sim.h                      = step_control.start;
   sim.save                   = save;
   sim.file                   = f;
 
@@ -115,12 +106,12 @@ csundial_simulation csundial_init_simulation(
 
   /* Call CVodeRootInit to specify the root function g with 2 components */
   if(sim.model->rootfinding != NULL){
-    flag = sim.i.rootInit(sim.cvode_mem, 2, sim.model->rootfinding);
+    flag = sim.i.rootInit(sim.cvode_mem, sim.model->n_roots, sim.model->rootfinding);
     if (check_flag(&flag, "CVodeRootInit", 1)) exit(1);
   }
 
   /* Call CVDense to specify the CVDENSE dense linear solver */
-  flag = CVDense(sim.cvode_mem, NEQ);
+  flag = CVDense(sim.cvode_mem, sim.model->neq);
   if (check_flag(&flag, "CVDense", 1)) exit(1);
 
   /* Set the Jacobian routine to Jac (user-supplied) */
@@ -146,7 +137,7 @@ csundial_model* csundial_model_default_alloc(int n_variables, const double *x0, 
         ode_function_ptr function, ode_jacobian_ptr jacobian,
         pre_post_step_ptr pre_step, pre_post_step_ptr post_step, size_t sz) {
 
-    csundial_model*m;
+    csundial_model*m = (csundial_model*)calloc(1,sizeof(csundial_model));
     return m;
 
 }
@@ -257,9 +248,7 @@ csundial_model * csundial_epce_model_init( csundial_model  *m, csundial_model *f
         int filter_length,
         epce_post_step_ptr epce_post_step,
         void *epce_post_step_params){
-
-    csundial_model* model;
-  return (csundial_model*)model;
+  return f;
 }
 
 static int csundial_automatic_filter_function (double t, const double y[], double dydt[], void * params) {
@@ -277,7 +266,7 @@ csundial_model * csundial_epce_default_model_init(
         int filter_length,
         epce_post_step_ptr epce_post_step,
         void *epce_post_step_params) {
-    csundial_model*f;
+    csundial_model* f = (csundial_model*)calloc(1,sizeof(csundial_model));
     return csundial_epce_model_init(m, f, filter_length, epce_post_step, epce_post_step_params);
 }
 

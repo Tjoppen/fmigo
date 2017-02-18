@@ -11,12 +11,11 @@
  * Structure definitions
  *****************************
  */
+#define Ith(v,i)    NV_Ith_S(v,i-1)       /* Ith numbers components 1..NEQ */
+#define IJth(A,i,j) DENSE_ELEM(A,i-1,j-1) /* IJth numbers rows,cols 1..NEQ */
+
 
 typedef struct {
-    realtype eps_rel;
-    N_Vector eps_aps;
-    //enum cgsl_step_control_ids id; /* control id */
-    realtype start;			 /* optional initial step */
 } csundial_step_control_parameters;
 /**
  * Encapsulation of the integrator;
@@ -32,6 +31,7 @@ typedef struct csundial_integrator{
     //CVRootFn rootfinding;
     //N_Vector x;
 } csundial_integrator;
+
 
 
 //see <gsl/gsl_odeiv2.h> for an explanation of these
@@ -62,7 +62,7 @@ typedef int (* pre_post_step_ptr ) (double t, double dt, const double y[], void 
  *         .
  *         .
  *  }  my_model ;
-*/
+ */
 
 typedef struct csundial_model{
 
@@ -73,6 +73,8 @@ typedef struct csundial_model{
     N_Vector x;
     N_Vector abstol;
     realtype reltol;
+    int n_roots;
+    int neq;
 } csundial_model;
 
 /**
@@ -96,10 +98,10 @@ typedef struct csundial_simulation {
     FILE * file;
     double t;		      /** current time */
     double t1;		      /** stop time */
-    double h;		      /** first stepsize and current value */
-    int    n;		      /** number of time steps taken */
     int    save;	      /** persistence to file */
 } csundial_simulation;
+
+const int csundial_get_roots(csundial_simulation &sim, int *roots);
 
 /*****************************
  * Enum  definitions

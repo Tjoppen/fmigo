@@ -32,15 +32,7 @@
 
 /* Header files with a description of contents used */
 
-#include <cvode/cvode.h>             /* prototypes for CVODE fcts., consts. */
-#include <nvector/nvector_serial.h>  /* serial N_Vector types, fcts., macros */
-#include <cvode/cvode_dense.h>       /* prototype for CVDense */
-//#include <sundials/sundials_dense.h> /* definitions DlsMat DENSE_ELEM */
-//#include <sundials/sundials_types.h> /* definition of type realtype */
 #include  "/home/jonas/work/umit/umit-fmus/templates/gsl2/sundial-interface.h"
-
-/* User-defined vector and matrix accessor macros: Ith, IJth */
-
 /* These macros are defined in order to write code which exactly matches
    the mathematical problem description given above.
 
@@ -54,8 +46,6 @@
    DENSE_ELEM macro in dense.h. DENSE_ELEM numbers rows and columns of a
    dense matrix starting from 0. */
 
-#define Ith(v,i)    NV_Ith_S(v,i-1)       /* Ith numbers components 1..NEQ */
-#define IJth(A,i,j) DENSE_ELEM(A,i-1,j-1) /* IJth numbers rows,cols 1..NEQ */
 
 
 /* Problem Constants */
@@ -110,116 +100,67 @@ void free_csundial_model(csundial_model * m){
 
 int main()
 {
-  csundial_model model;
-  csundial_step_control_parameters step_control;
+    csundial_model model;
+    csundial_step_control_parameters step_control;
 
-  model.x = N_VNew_Serial(NEQ);
-  if (check_flag((void *)model.x, "N_VNew_Serial", 0)) return (1);
-  /* Initialize y */
-  Ith(model.x,1) = Y1;
-  Ith(model.x,2) = Y2;
-  Ith(model.x,3) = Y3;
+    model.x = N_VNew_Serial(NEQ);
+    model.neq = NEQ;
+    if (check_flag((void *)model.x, "N_VNew_Serial", 0)) return (1);
+    /* Initialize y */
+    Ith(model.x,1) = Y1;
+    Ith(model.x,2) = Y2;
+    Ith(model.x,3) = Y3;
 
-  model.abstol = N_VNew_Serial(NEQ);
-  if (check_flag((void *)model.abstol, "N_VNew_Serial", 0)) return(1);
-  /* Set the scalar relative tolerance */
-  model.reltol = RTOL;
-  /* Set the vector absolute tolerance */
-  Ith(model.abstol,1) = ATOL1;
-  Ith(model.abstol,2) = ATOL2;
-  Ith(model.abstol,3) = ATOL3;
+    model.abstol = N_VNew_Serial(NEQ);
+    if (check_flag((void *)model.abstol, "N_VNew_Serial", 0)) return(1);
+    /* Set the scalar relative tolerance */
+    model.reltol = RTOL;
+    /* Set the vector absolute tolerance */
+    Ith(model.abstol,1) = ATOL1;
+    Ith(model.abstol,2) = ATOL2;
+    Ith(model.abstol,3) = ATOL3;
 
-  model.function = f;
-  model.jacobian = Jac;
-  model.rootfinding = g;
-  model.free = free_csundial_model;
-  csundial_simulation sim = csundial_init_simulation(&model,cvode,0,NULL,step_control);
+    model.function = f;
+    model.jacobian = Jac;
+    model.rootfinding = g;
+    model.n_roots = 2;
+    model.free = free_csundial_model;
+    int rootsfound[model.n_roots];
+    csundial_simulation sim = csundial_init_simulation(&model,cvode,0,NULL,step_control);
 
-  // realtype reltol, t, tout;
-  // N_Vector y, abstol;
-  // void *cvode_mem;
-  // int flag, flagr, iout;
-  int rootsfound[2];
 
-  // y = abstol = NULL;
-  // cvode_mem = NULL;
-
-  // /* Create serial vector of length NEQ for I.C. and abstol */
-  // y = N_VNew_Serial(NEQ);
-  // if (check_flag((void *)y, "N_VNew_Serial", 0)) return(1);
-  // abstol = N_VNew_Serial(NEQ);
-  // if (check_flag((void *)abstol, "N_VNew_Serial", 0)) return(1);
-
-  // /* Initialize y */
-  // Ith(y,1) = Y1;
-  // Ith(y,2) = Y2;
-  // Ith(y,3) = Y3;
-
-  // /* Set the scalar relative tolerance */
-  // reltol = RTOL;
-  // /* Set the vector absolute tolerance */
-  // Ith(abstol,1) = ATOL1;
-  // Ith(abstol,2) = ATOL2;
-  // Ith(abstol,3) = ATOL3;
-
-  // /* Call CVodeCreate to create the solver memory and specify the
-  //  * Backward Differentiation Formula and the use of a Newton iteration */
-  // cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
-  // if (check_flag((void *)cvode_mem, "CVodeCreate", 0)) return(1);
-
-  // /* Call CVodeInit to initialize the integrator memory and specify the
-  //  * user's right hand side function in y'=f(t,y), the inital time T0, and
-  //  * the initial dependent variable vector y. */
-  // flag = CVodeInit(cvode_mem, f, T0, y);
-  // if (check_flag(&flag, "CVodeInit", 1)) return(1);
-
-  // /* Call CVodeSVtolerances to specify the scalar relative tolerance
-  //  * and vector absolute tolerances */
-  // flag = CVodeSVtolerances(cvode_mem, reltol, abstol);
-  // if (check_flag(&flag, "CVodeSVtolerances", 1)) return(1);
-
-  // // /* Call CVodeRootInit to specify the root function g with 2 components */
-  // flag = CVodeRootInit(cvode_mem, 2, g);
-  // if (check_flag(&flag, "CVodeRootInit", 1)) return(1);
-
-  // // /* Call CVDense to specify the CVDENSE dense linear solver */
-  // flag = CVDense(cvode_mem, NEQ);
-  // if (check_flag(&flag, "CVDense", 1)) return(1);
-
-  // // /* Set the Jacobian routine to Jac (user-supplied) */
-  // flag = CVDlsSetDenseJacFn(cvode_mem, Jac);
-  // if (check_flag(&flag, "CVDlsSetDenseJacFn", 1)) return(1);
-
-  /* In loop, call CVode, print results, and test for error.
+    /* In loop, call CVode, print results, and test for error.
      Break out of loop when NOUT preset output times have been reached.  */
-  printf(" \n3-species kinetics problem\n\n");
+    printf(" \n3-species kinetics problem\n\n");
 
-  int iout = 0;  realtype tout = T1,t;
-  int flag,flagr;
-  while(1) {
-    flag = CVode(sim.cvode_mem, tout, sim.model->x, &t, CV_NORMAL);
-    PrintOutput(t, Ith(sim.model->x,1), Ith(sim.model->x,2), Ith(sim.model->x,3));
+    int iout = 0;  realtype tout = T1,t;
+    int flag,flagr;
+    while(1) {
+        flag = csundial_step_to(&sim,sim.t,tout-sim.t);
+        //flag = CVode(sim.cvode_mem, tout, sim.model->x, &t, CV_NORMAL);
+        PrintOutput(sim.t, Ith(sim.model->x,1), Ith(sim.model->x,2), Ith(sim.model->x,3));
 
-    if (flag == CV_ROOT_RETURN) {
-      flagr = CVodeGetRootInfo(sim.cvode_mem, rootsfound);
-      if (check_flag(&flagr, "CVodeGetRootInfo", 1)) return(1);
-      PrintRootInfo(rootsfound[0],rootsfound[1]);
+        if (flag == CV_ROOT_RETURN) {
+            flagr = csundial_get_roots(sim,rootsfound);
+            //flagr = CVodeGetRootInfo(sim.cvode_mem, rootsfound);
+            if (check_flag(&flagr, "CVodeGetRootInfo", 1)) return(1);
+            PrintRootInfo(rootsfound[0],rootsfound[1]);
+        }
+
+        if (check_flag(&flag, "CVode", 1)) break;
+        if (flag == CV_SUCCESS) {
+            iout++;
+            tout *= TMULT;
+        }
+
+        if (iout == NOUT) break;
     }
 
-    if (check_flag(&flag, "CVode", 1)) break;
-    if (flag == CV_SUCCESS) {
-      iout++;
-      tout *= TMULT;
-    }
+    /* Print some final statistics */
+    PrintFinalStats(sim.cvode_mem);
 
-    if (iout == NOUT) break;
-  }
-
-  /* Print some final statistics */
-  PrintFinalStats(sim.cvode_mem);
-
-  csundial_free_simulation(sim);
-  return(0);
+    csundial_free_simulation(sim);
+    return(0);
 }
 
 
@@ -273,10 +214,10 @@ static int Jac(long int N, realtype t,
 
   y1 = Ith(y,1); y2 = Ith(y,2); y3 = Ith(y,3);
 
-  IJth(J,1,1) = RCONST(-0.04);
+  IJth(J,1,1) = RCONST(-0.04)*y1;
   IJth(J,1,2) = RCONST(1.0e4)*y3;
   IJth(J,1,3) = RCONST(1.0e4)*y2;
-  IJth(J,2,1) = RCONST(0.04);
+  IJth(J,2,1) = RCONST(0.04)*y1;
   IJth(J,2,2) = RCONST(-1.0e4)*y3-RCONST(6.0e7)*y2;
   IJth(J,2,3) = RCONST(-1.0e4)*y2;
   IJth(J,3,2) = RCONST(6.0e7)*y2;

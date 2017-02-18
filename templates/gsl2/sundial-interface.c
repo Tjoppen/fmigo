@@ -45,11 +45,6 @@ const csundial_integrator csundial_get_integrator( int  i ) {
 static int csundial_step ( void * _s  ) {
   csundial_simulation * s = ( csundial_simulation * ) _s ;
   int status;
-  if ( s->fixed_step ) {
-      //status = gsl_odeiv2_evolve_apply_fixed_step(s->i.evolution, s->i.control, s->i.step, &s->i.system, &s->t, s->h, s->model->x);
-  } else {
-      //status = gsl_odeiv2_evolve_apply           (s->i.evolution, s->i.control, s->i.step, &s->i.system, &s->t, s->t1, &s->h, s->model->x);
-  }
 
   return 0;
 }
@@ -66,7 +61,7 @@ int csundial_step_to(void * _s,  double comm_point, double comm_step ) {
     int flag = CVode(s->cvode_mem, s->t1, s->model->x, &s->t, CV_NORMAL);
 
     int i;
-    if ( s->print  && s->file ) {
+    if ( s->file ) {
       fprintf (s->file, "%.5e ", s->t );
       for ( i = 0; i < NV_LENGTH_S(s->model->x); ++i ){
           fprintf (s->file, "%.5e ", Ith(s->model->x,i));
@@ -86,34 +81,22 @@ int csundial_step_to(void * _s,  double comm_point, double comm_step ) {
 csundial_simulation csundial_init_simulation(
     csundial_model * model, /** the model we work on */
     enum csundial_integrator_ids integrator, /** Integrator ID   */
-    double h,           //must be non-zero, even with variable step
-    int fixed_step,     //if non-zero, use a fixed step of h
     int save,
-    int print,
-    int *f)
+    FILE* f,
+    csundial_step_control_parameters step_control)
 {
   csundial_simulation sim;
   int flag, flagr, iout;
   realtype reltol, t, tout;
-
-  sim.abstol = N_VNew_Serial(NEQ);
-  if (check_flag((void *)sim.abstol, "N_VNew_Serial", 0)) exit(1);
-  /* Set the scalar relative tolerance */
-  reltol = RTOL;
-  /* Set the vector absolute tolerance */
-  Ith(sim.abstol,1) = ATOL1;
-  Ith(sim.abstol,2) = ATOL2;
-  Ith(sim.abstol,3) = ATOL3;
 
   sim.model = model;
   sim.i                      = csundial_get_integrator(integrator);
   sim.n                      = 0;
   sim.t                      = 0.0;
   sim.t1                     = 0.0;
-  sim.h                      = h;
-  sim.fixed_step             = fixed_step;
+  sim.h                      = step_control.start;
   sim.save                   = save;
-  sim.print                  = print;
+  sim.file                   = f;
 
   //sim.cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
   sim.cvode_mem = sim.i.create(CV_BDF, CV_NEWTON);
@@ -127,7 +110,7 @@ csundial_simulation csundial_init_simulation(
 
   /* /\* Call CVodeSVtolerances to specify the scalar relative tolerance */
   /*  * and vector absolute tolerances *\/ */
-  flag = sim.i.tolerance(sim.cvode_mem, reltol, sim.abstol);
+  flag = sim.i.tolerance(sim.cvode_mem, sim.model->reltol, sim.model->abstol);
   if (check_flag(&flag, "CVodeSVtolerances", 1)) exit(1);
 
   /* Call CVodeRootInit to specify the root function g with 2 components */
@@ -142,7 +125,6 @@ csundial_simulation csundial_init_simulation(
 
   /* Set the Jacobian routine to Jac (user-supplied) */
   flag = sim.i.setJac(sim.cvode_mem, sim.model->jacobian);
-  //flag = CVDlsSetDenseJacFn(sim.cvode_mem, NULL);
   if (check_flag(&flag, "CVDlsSetDenseJacFn", 1)) exit(1);
 
   return sim;
@@ -150,6 +132,8 @@ csundial_simulation csundial_init_simulation(
 }
 
 void csundial_model_default_free(csundial_model *model) {
+  N_VDestroy_Serial(model->x);
+  N_VDestroy_Serial(model->abstol);
 }
 
 static void csundial_model_default_get_state(csundial_model *model) {
@@ -168,6 +152,17 @@ csundial_model* csundial_model_default_alloc(int n_variables, const double *x0, 
 }
 
 void  csundial_free_simulation( csundial_simulation sim ) {
+
+  if (sim.file) {
+    fclose(sim.file);
+  }
+
+  if (sim.model->free) {
+    sim.model->free(sim.model);
+  }
+
+  /* Free integrator memory */
+  CVodeFree(&sim.cvode_mem);
 
   return;
 }

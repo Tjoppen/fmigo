@@ -12,6 +12,12 @@
  *****************************
  */
 
+typedef struct {
+    realtype eps_rel;
+    N_Vector eps_aps;
+    //enum cgsl_step_control_ids id; /* control id */
+    realtype start;			 /* optional initial step */
+} csundial_step_control_parameters;
 /**
  * Encapsulation of the integrator;
 */
@@ -63,7 +69,10 @@ typedef struct csundial_model{
     CVRhsFn function;
     CVDlsDenseJacFn jacobian;
     CVRootFn rootfinding;
+    void (*free)(csundial_model *);
     N_Vector x;
+    N_Vector abstol;
+    realtype reltol;
 } csundial_model;
 
 /**
@@ -84,16 +93,12 @@ typedef struct csundial_simulation {
     csundial_model *model;
     csundial_integrator i;
     void* cvode_mem;
-    realtype reltol;
-    N_Vector abstol;
     FILE * file;
     double t;		      /** current time */
     double t1;		      /** stop time */
     double h;		      /** first stepsize and current value */
     int    n;		      /** number of time steps taken */
-    int    fixed_step;	      /** whether or not we move at fixed step */
     int    save;	      /** persistence to file */
-    int    print;	      /** verbose on stderr */
 } csundial_simulation;
 
 /*****************************
@@ -126,11 +131,9 @@ enum csundial_integrator_ids
 csundial_simulation csundial_init_simulation(
     csundial_model * model, /** the model we work on */
     enum csundial_integrator_ids integrator, /** Integrator ID   */
-    double h,           //must be non-zero, even with variable step
-    int fixed_step,     //if non-zero, use a fixed step of h
     int save,
-    int print,
-    int *f);
+    FILE *g,
+    csundial_step_control_parameters step_control);
 
 /**
  *  Memory deallocation.

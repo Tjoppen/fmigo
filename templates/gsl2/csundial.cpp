@@ -81,7 +81,7 @@ static void PrintRootInfo(int root_f1, int root_f2);
 
 /* Private function to print final statistics */
 
-static void PrintFinalStats(void *cvode_mem);
+static void PrintFinalStats(void *ode_mem);
 
 /* Private function to check function return values */
 
@@ -107,18 +107,18 @@ int main()
     model.neq = NEQ;
     if (check_flag((void *)model.x, "N_VNew_Serial", 0)) return (1);
     /* Initialize y */
-    Ith(model.x,1) = Y1;
-    Ith(model.x,2) = Y2;
-    Ith(model.x,3) = Y3;
+    Ith(model.x,0) = Y1;
+    Ith(model.x,1) = Y2;
+    Ith(model.x,2) = Y3;
 
     model.abstol = N_VNew_Serial(NEQ);
     if (check_flag((void *)model.abstol, "N_VNew_Serial", 0)) return(1);
     /* Set the scalar relative tolerance */
     model.reltol = RTOL;
     /* Set the vector absolute tolerance */
-    Ith(model.abstol,1) = ATOL1;
-    Ith(model.abstol,2) = ATOL2;
-    Ith(model.abstol,3) = ATOL3;
+    Ith(model.abstol,0) = ATOL1;
+    Ith(model.abstol,1) = ATOL2;
+    Ith(model.abstol,2) = ATOL3;
 
     model.function = f;
     model.jacobian = Jac;
@@ -126,7 +126,7 @@ int main()
     model.n_roots = 2;
     model.free = free_csundial_model;
     int rootsfound[model.n_roots];
-    csundial_simulation sim = csundial_init_simulation(&model,cvode,0,NULL,step_control);
+    csundial_simulation sim = csundial_init_simulation(&model,cvode,0,NULL);
 
 
     /* In loop, call CVode, print results, and test for error.
@@ -137,12 +137,12 @@ int main()
     int flag,flagr;
     while(1) {
         flag = csundial_step_to(&sim,sim.t,tout-sim.t);
-        //flag = CVode(sim.cvode_mem, tout, sim.model->x, &t, CV_NORMAL);
-        PrintOutput(sim.t, Ith(sim.model->x,1), Ith(sim.model->x,2), Ith(sim.model->x,3));
+        //flag = CVode(sim.ode_mem, tout, sim.model->x, &t, CV_NORMAL);
+        PrintOutput(sim.t, Ith(sim.model->x,0), Ith(sim.model->x,1), Ith(sim.model->x,2));
 
         if (flag == CV_ROOT_RETURN) {
             flagr = csundial_get_roots(sim,rootsfound);
-            //flagr = CVodeGetRootInfo(sim.cvode_mem, rootsfound);
+            //flagr = CVodeGetRootInfo(sim.ode_mem, rootsfound);
             if (check_flag(&flagr, "CVodeGetRootInfo", 1)) return(1);
             PrintRootInfo(rootsfound[0],rootsfound[1]);
         }
@@ -157,7 +157,7 @@ int main()
     }
 
     /* Print some final statistics */
-    PrintFinalStats(sim.cvode_mem);
+    PrintFinalStats(sim.ode_mem);
 
     csundial_free_simulation(sim);
     return(0);
@@ -178,11 +178,11 @@ static int f(realtype t, N_Vector y, N_Vector ydot, void *user_data)
 {
   realtype y1, y2, y3, yd1, yd3;
 
-  y1 = Ith(y,1); y2 = Ith(y,2); y3 = Ith(y,3);
+  y1 = Ith(y,0); y2 = Ith(y,1); y3 = Ith(y,2);
 
-  yd1 = Ith(ydot,1) = RCONST(-0.04)*y1 + RCONST(1.0e4)*y2*y3;
-  yd3 = Ith(ydot,3) = RCONST(3.0e7)*y2*y2;
-        Ith(ydot,2) = -yd1 - yd3;
+  yd1 = Ith(ydot,0) = RCONST(-0.04)*y1 + RCONST(1.0e4)*y2*y3;
+  yd3 = Ith(ydot,2) = RCONST(3.0e7)*y2*y2;
+        Ith(ydot,1) = -yd1 - yd3;
 
   return(0);
 }
@@ -195,7 +195,7 @@ static int g(realtype t, N_Vector y, realtype *gout, void *user_data)
 {
   realtype y1, y3;
 
-  y1 = Ith(y,1); y3 = Ith(y,3);
+  y1 = Ith(y,0); y3 = Ith(y,2);
   gout[0] = y1 - RCONST(0.0001);
   gout[1] = y3 - RCONST(0.01);
 
@@ -212,15 +212,15 @@ static int Jac(long int N, realtype t,
 {
   realtype y1, y2, y3;
 
-  y1 = Ith(y,1); y2 = Ith(y,2); y3 = Ith(y,3);
+  y1 = Ith(y,0); y2 = Ith(y,1); y3 = Ith(y,2);
 
-  IJth(J,1,1) = RCONST(-0.04)*y1;
-  IJth(J,1,2) = RCONST(1.0e4)*y3;
-  IJth(J,1,3) = RCONST(1.0e4)*y2;
-  IJth(J,2,1) = RCONST(0.04)*y1;
-  IJth(J,2,2) = RCONST(-1.0e4)*y3-RCONST(6.0e7)*y2;
-  IJth(J,2,3) = RCONST(-1.0e4)*y2;
-  IJth(J,3,2) = RCONST(6.0e7)*y2;
+  IJth(J,0,0) = RCONST(-0.04)*y1;
+  IJth(J,0,1) = RCONST(1.0e4)*y3;
+  IJth(J,0,2) = RCONST(1.0e4)*y2;
+  IJth(J,1,0) = RCONST(0.04)*y1;
+  IJth(J,1,1) = RCONST(-1.0e4)*y3-RCONST(6.0e7)*y2;
+  IJth(J,1,2) = RCONST(-1.0e4)*y2;
+  IJth(J,2,1) = RCONST(6.0e7)*y2;
 
   return(0);
 }
@@ -255,30 +255,30 @@ static void PrintRootInfo(int root_f1, int root_f2)
  * Get and print some final statistics
  */
 
-static void PrintFinalStats(void *cvode_mem)
+static void PrintFinalStats(void *ode_mem)
 {
   long int nst, nfe, nsetups, nje, nfeLS, nni, ncfn, netf, nge;
   int flag;
 
-  flag = CVodeGetNumSteps(cvode_mem, &nst);
+  flag = CVodeGetNumSteps(ode_mem, &nst);
   check_flag(&flag, "CVodeGetNumSteps", 1);
-  flag = CVodeGetNumRhsEvals(cvode_mem, &nfe);
+  flag = CVodeGetNumRhsEvals(ode_mem, &nfe);
   check_flag(&flag, "CVodeGetNumRhsEvals", 1);
-  flag = CVodeGetNumLinSolvSetups(cvode_mem, &nsetups);
+  flag = CVodeGetNumLinSolvSetups(ode_mem, &nsetups);
   check_flag(&flag, "CVodeGetNumLinSolvSetups", 1);
-  flag = CVodeGetNumErrTestFails(cvode_mem, &netf);
+  flag = CVodeGetNumErrTestFails(ode_mem, &netf);
   check_flag(&flag, "CVodeGetNumErrTestFails", 1);
-  flag = CVodeGetNumNonlinSolvIters(cvode_mem, &nni);
+  flag = CVodeGetNumNonlinSolvIters(ode_mem, &nni);
   check_flag(&flag, "CVodeGetNumNonlinSolvIters", 1);
-  flag = CVodeGetNumNonlinSolvConvFails(cvode_mem, &ncfn);
+  flag = CVodeGetNumNonlinSolvConvFails(ode_mem, &ncfn);
   check_flag(&flag, "CVodeGetNumNonlinSolvConvFails", 1);
 
-  flag = CVDlsGetNumJacEvals(cvode_mem, &nje);
+  flag = CVDlsGetNumJacEvals(ode_mem, &nje);
   check_flag(&flag, "CVDlsGetNumJacEvals", 1);
-  flag = CVDlsGetNumRhsEvals(cvode_mem, &nfeLS);
+  flag = CVDlsGetNumRhsEvals(ode_mem, &nfeLS);
   check_flag(&flag, "CVDlsGetNumRhsEvals", 1);
 
-  flag = CVodeGetNumGEvals(cvode_mem, &nge);
+  flag = CVodeGetNumGEvals(ode_mem, &nge);
   check_flag(&flag, "CVodeGetNumGEvals", 1);
 
   printf("\nFinal Statistics:\n");

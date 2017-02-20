@@ -2,12 +2,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include <cvode/cvode.h>             /* prototypes for CVODE fcts., consts. */
-#include <nvector/nvector_serial.h>  /* serial N_Vector types, fcts., macros */
-#include <cvode/cvode_dense.h>       /* prototype for CVDense */
-#include <sundials/sundials_dense.h> /* definitions DlsMat DENSE_ELEM */
-#include <sundials/sundials_types.h> /* definition of type realtype */
-
 #ifdef WIN32
 //http://stackoverflow.com/questions/6809275/unresolved-external-symbol-hypot-when-using-static-library#10051898
 double hypot(double x, double y) {return _hypot(x, y);}
@@ -15,27 +9,171 @@ double hypot(double x, double y) {return _hypot(x, y);}
 
 static int check_flag(void *flagvalue, const char *funcname, int opt);
 
-const csundial_integrator csundial_CVode={
-    .create    = CVodeCreate,
-    .init      = CVodeInit,
-    .tolerance = CVodeSVtolerances,
-    .rootInit  = CVodeRootInit,
-    .setJac    = CVDlsSetDenseJacFn
-};
 
-const csundial_integrator csundial_get_integrator( int  i ) {
-
-  const csundial_integrator integrators [] =
-    {
-        csundial_CVode,
-    };
-
-  return integrators [ i ];
-
+void create(csundial_simulation &sim){
+    switch (sim.integrator){
+    case cvode: {
+        sim.ode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
+        if (check_flag((void *)sim.ode_mem, "CVodeCreate", 0)) exit(1);
+        break;
+    }
+    case arkode:{
+        sim.ode_mem = ARKodeCreate();     /* Create the solver memory */
+        if (check_flag((void *)sim.ode_mem, "ARKodeCreate", 0)) exit(1);
+    }
+    }
+}
+void init(csundial_simulation &sim){
+    int flag;
+    switch (sim.integrator){
+    case cvode:{
+            flag = CVodeInit(sim.ode_mem, sim.model->function, sim.t, sim.model->x);
+            if (check_flag(&flag, "CVodeInit", 1)) exit(1);
+            break;
+    }
+    case arkode:{
+        flag = ARKodeInit(sim.ode_mem, NULL, sim.model->function, sim.t, sim.model->x);
+        if (check_flag(&flag, "ARKodeInit", 1)) exit(1);
+        break;
+    }
+    }
 }
 
+void tolerance(csundial_simulation &sim){
+    int flag;
+    switch (sim.integrator){
+    case cvode:{
+            flag = CVodeSVtolerances(sim.ode_mem, sim.model->reltol, sim.model->abstol);
+            if (check_flag(&flag, "CVodeSVtolerances", 1)) exit(1);
+            break;
+    }
+    case arkode:{
+        flag = ARKodeSStolerances(sim.ode_mem, sim.model->reltol, Ith(sim.model->abstol,0));  /* Specify tolerances */
+        if (check_flag(&flag, "ARKodeSStolerances", 1)) exit(1);
+        break;
+    }
+    }
+}
+
+void rootInit(csundial_simulation &sim){
+    int flag;
+    switch (sim.integrator){
+    case cvode:{
+            flag = CVodeRootInit(sim.ode_mem, sim.model->n_roots, sim.model->rootfinding);
+            if (check_flag(&flag, "CVodeRootInit", 1)) exit(1);
+            break;
+    }
+    case arkode:{
+        break;
+    }
+    }
+}
+
+void CVDense(csundial_simulation &sim){
+    int flag;
+    switch (sim.integrator){
+    case cvode:{
+        flag = CVDense(sim.ode_mem, sim.model->neq);
+        if (check_flag(&flag, "CVDense", 1)) exit(1);
+        break;
+    }
+    case arkode:{
+        flag = ARKDense(sim.ode_mem, sim.model->neq);   /* Specify dense linear solver */
+        if (check_flag(&flag, "ARKDense", 1)) exit(1);
+        break;
+    }
+    }
+}
+
+void setJac(csundial_simulation &sim){
+    int flag;
+    switch (sim.integrator){
+    case cvode:{
+        flag = CVDlsSetDenseJacFn(sim.ode_mem, sim.model->jacobian);
+        if (check_flag(&flag, "CVDlsSetDenseJacFn", 1)) exit(1);
+        break;
+    }
+    case arkode:{
+        flag = ARKDlsSetDenseJacFn(sim.ode_mem, sim.model->jacobian);       /* Set Jacobian routine */
+        if (check_flag(&flag, "ARKDlsSetDenseJacFn", 1)) exit(1);
+        break;
+    }
+    }
+}
+
+void setUserData(csundial_simulation &sim){
+    int flag;
+    switch (sim.integrator){
+    case cvode:{
+        break;
+    }
+    case arkode:{
+        flag = ARKodeSetUserData(sim.ode_mem, (void *) &sim.model->parameters);  /* Pass lamda to user functions */
+        if (check_flag(&flag, "ARKodeSetUserData", 1)) exit(1);
+        break;
+    }
+    }
+}
+
+void setLinear(csundial_simulation &sim){
+    int flag;
+    switch (sim.integrator){
+    case cvode:{
+        break;
+    }
+    case arkode:{
+        flag = ARKodeSetLinear(sim.ode_mem, sim.model->linear);
+        if (check_flag(&flag, "ARKodeSetLinear", 1)) exit(1);
+        break;
+    }
+    }
+}
+
+int stepTo(csundial_simulation *sim){
+    int flag;
+    switch (sim->integrator){
+    case cvode:{
+        flag = CVode(sim->ode_mem, sim->t1, sim->model->x, &sim->t, CV_NORMAL);
+        break;
+    }
+    case arkode:{
+        flag = ARKode(sim->ode_mem, sim->t1, sim->model->x, &sim->t, ARK_NORMAL);      /* call integrator */
+        break;
+    }
+    }
+}
+
+/* Free integrator memory */
+void freeSimMem(csundial_simulation *sim){
+    int flag;
+    switch (sim->integrator){
+    case cvode:{
+        CVodeFree(&sim->ode_mem);
+        break;
+    }
+    case arkode:{
+        ARKodeFree(&sim->ode_mem);
+        break;
+    }
+    }
+}
+
+  // if (check_flag(&flag, "ARKodeSetLinear", 1)) return 1;
+const csundial_integrator csundial_ode={
+    .create    = create,
+    .init      = init,
+    .tolerance = tolerance,
+    .rootInit  = rootInit,
+    .CVDense   = CVDense,
+    .setJac    = setJac,
+    .setUserData = setUserData,
+    .setLinear = setLinear,
+    .stepTo    = stepTo,
+    .free    = freeSimMem,
+};
+
 const int csundial_get_roots(csundial_simulation &sim, int *roots){
-      int flagr = CVodeGetRootInfo(sim.cvode_mem, roots);
+      int flagr = CVodeGetRootInfo(sim.ode_mem, roots);
       if (check_flag(&flagr, "CVodeGetRootInfo", 1)) exit(1);
       return flagr;
 }
@@ -45,14 +183,14 @@ const int csundial_get_roots(csundial_simulation &sim, int *roots){
  */
 int csundial_step_to(void * _s,  double comm_point, double comm_step ) {
 
-    csundial_simulation * s = ( csundial_simulation * ) _s;
+    csundial_simulation * sim = ( csundial_simulation * ) _s;
 
-    s->t  = comm_point;		/* start point */
-    s->t1 = comm_point + comm_step; /* end point */
-    int flag = CVode(s->cvode_mem, s->t1, s->model->x, &s->t, CV_NORMAL);
+    sim->t  = comm_point;		/* start point */
+    sim->t1 = comm_point + comm_step; /* end point */
+    int flag = sim->i.stepTo(sim);
 
     int i;
-    if ( s->file && s->save) {
+    if ( sim->file && sim->save) {
 #if defined(SUNDIALS_EXTENDED_PRECISION)
 #define PRINT_TYPE "%.5Le "
 #elif defined(SUNDIALS_DOUBLE_PRECISION)
@@ -60,10 +198,10 @@ int csundial_step_to(void * _s,  double comm_point, double comm_step ) {
 #else
 #define PRINT_TYPE "%.5e "
 #endif
-      fprintf (s->file, PRINT_TYPE, s->t );
-      for ( i = 0; i < NV_LENGTH_S(s->model->x); ++i )
-          fprintf (s->file, PRINT_TYPE , Ith(s->model->x,i));
-      fprintf (s->file, "\n");
+      fprintf (sim->file, PRINT_TYPE, sim->t );
+      for ( i = 0; i < NV_LENGTH_S(sim->model->x); ++i )
+          fprintf (sim->file, PRINT_TYPE , Ith(sim->model->x,i));
+      fprintf (sim->file, "\n");
     }
     return flag;
 
@@ -76,47 +214,42 @@ csundial_simulation csundial_init_simulation(
     csundial_model * model, /** the model we work on */
     enum csundial_integrator_ids integrator, /** Integrator ID   */
     int save,
-    FILE* f,
-    csundial_step_control_parameters step_control)
+    FILE* f)
 {
   csundial_simulation sim;
   int flag;
 
-  sim.model = model;
-  sim.i                      = csundial_get_integrator(integrator);
+  sim.model                  = model;
+  sim.integrator             = integrator;
+  sim.i                      = csundial_ode;
   sim.t                      = 0.0;
   sim.t1                     = 0.0;
   sim.save                   = save;
   sim.file                   = f;
 
-  //sim.cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
-  sim.cvode_mem = sim.i.create(CV_BDF, CV_NEWTON);
-  if (check_flag((void *)sim.cvode_mem, "CVodeCreate", 0)) exit(1);
+  sim.i.create(sim);
 
   /* Call CVodeInit to initialize the integrator memory and specify the
    * user's right hand side function in y'=f(t,y), the inital time T0, and
    * the initial dependent variable vector y. */
-  flag = sim.i.init(sim.cvode_mem, sim.model->function, sim.t, sim.model->x);
-  if (check_flag(&flag, "CVodeInit", 1)) exit(1);
+  sim.i.init(sim);
 
   /* /\* Call CVodeSVtolerances to specify the scalar relative tolerance */
   /*  * and vector absolute tolerances *\/ */
-  flag = sim.i.tolerance(sim.cvode_mem, sim.model->reltol, sim.model->abstol);
-  if (check_flag(&flag, "CVodeSVtolerances", 1)) exit(1);
+  sim.i.tolerance(sim);
+  sim.i.setUserData(sim);
 
   /* Call CVodeRootInit to specify the root function g with 2 components */
   if(sim.model->rootfinding != NULL){
-    flag = sim.i.rootInit(sim.cvode_mem, sim.model->n_roots, sim.model->rootfinding);
-    if (check_flag(&flag, "CVodeRootInit", 1)) exit(1);
+      sim.i.rootInit(sim);
   }
 
   /* Call CVDense to specify the CVDENSE dense linear solver */
-  flag = CVDense(sim.cvode_mem, sim.model->neq);
-  if (check_flag(&flag, "CVDense", 1)) exit(1);
+  sim.i.CVDense(sim);
 
+  sim.i.setLinear(sim);
   /* Set the Jacobian routine to Jac (user-supplied) */
-  flag = sim.i.setJac(sim.cvode_mem, sim.model->jacobian);
-  if (check_flag(&flag, "CVDlsSetDenseJacFn", 1)) exit(1);
+  sim.i.setJac(sim);
 
   return sim;
 
@@ -153,7 +286,7 @@ void  csundial_free_simulation( csundial_simulation sim ) {
   }
 
   /* Free integrator memory */
-  CVodeFree(&sim.cvode_mem);
+  sim.i.free(&sim);
 
   return;
 }

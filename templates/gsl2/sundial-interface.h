@@ -1,7 +1,11 @@
+//#if __has_include(<arkode/arkode.h>) && __has_include(<arkode/arkode_dense.h>)
+//#endif
 #ifndef SUNDIAL_INTERFACE_H
 #define SUNDIAL_INTERFACE_H
 
 #include <cvode/cvode.h>             /* prototypes for CVODE fcts., consts. */
+#include <arkode/arkode.h>           /* prototypes for ARKODE fcts., consts. */
+#include <arkode/arkode_dense.h>     /* prototype for ARKDense */
 #include <nvector/nvector_serial.h>  /* serial N_Vector types, fcts., macros */
 #include <cvode/cvode_dense.h>       /* prototype for CVDense */
 #include <sundials/sundials_dense.h> /* definitions DlsMat DENSE_ELEM */
@@ -11,8 +15,8 @@
  * Structure definitions
  *****************************
  */
-#define Ith(v,i)    NV_Ith_S(v,i-1)       /* Ith numbers components 1..NEQ */
-#define IJth(A,i,j) DENSE_ELEM(A,i-1,j-1) /* IJth numbers rows,cols 1..NEQ */
+#define Ith(v,i)    NV_Ith_S(v,i)       /* Ith numbers components 1..NEQ */
+#define IJth(A,i,j) DENSE_ELEM(A,i,j) /* IJth numbers rows,cols 1..NEQ */
 
 
 typedef struct {
@@ -20,17 +24,6 @@ typedef struct {
 /**
  * Encapsulation of the integrator;
 */
-typedef struct csundial_integrator{
-    void* (*create)(int,int);
-    int (*init)(void*,CVRhsFn,realtype,N_Vector);
-    int (*tolerance)(void*, realtype, N_Vector);
-    int (*rootInit)(void*, int,CVRootFn);
-    int (*setJac)(void*,CVDlsDenseJacFn);
-    //CVRhsFn function;
-    //CVDlsDenseJacFn jacobian;
-    //CVRootFn rootfinding;
-    //N_Vector x;
-} csundial_integrator;
 
 
 
@@ -39,6 +32,22 @@ typedef int (* ode_function_ptr ) (double t, const double y[], double dydt[], vo
 typedef int (* ode_jacobian_ptr ) (double t, const double y[], double * dfdy, double dfdt[], void * params);
 typedef int (* pre_post_step_ptr ) (double t, double dt, const double y[], void * params);
 
+typedef struct csundial_simulation csundial_simulation;
+typedef void (*csundial_integrator_f_r)(csundial_simulation&);
+typedef void (*csundial_integrator_f_p)(csundial_simulation*);
+typedef int (*csundial_step_to_f)(csundial_simulation*);
+typedef struct csundial_integrator{
+    csundial_integrator_f_r create;
+    csundial_integrator_f_r init;
+    csundial_integrator_f_r tolerance;
+    csundial_integrator_f_r rootInit;
+    csundial_integrator_f_r CVDense;
+    csundial_integrator_f_r setJac;
+    csundial_integrator_f_r setUserData;
+    csundial_integrator_f_r setLinear;
+    csundial_step_to_f stepTo;
+    csundial_integrator_f_p free;
+} csundial_integrator;
 /** Pre/post step callbacks
  *      t: Start of the current time step (communicationPoint)
  *     dt: Length of the current time step (communicationStepSize)
@@ -75,6 +84,8 @@ typedef struct csundial_model{
     realtype reltol;
     int n_roots;
     int neq;
+    int linear;
+    void* parameters;
 } csundial_model;
 
 /**
@@ -94,7 +105,8 @@ typedef struct csundial_simulation {
 
     csundial_model *model;
     csundial_integrator i;
-    void* cvode_mem;
+    int integrator;
+    void* ode_mem;
     FILE * file;
     double t;		      /** current time */
     double t1;		      /** stop time */
@@ -114,6 +126,7 @@ const int csundial_get_roots(csundial_simulation &sim, int *roots);
 enum csundial_integrator_ids
 {
   cvode,		/* 0 */
+  arkode,		/* 1 */
 };
 
 /**************
@@ -134,8 +147,7 @@ csundial_simulation csundial_init_simulation(
     csundial_model * model, /** the model we work on */
     enum csundial_integrator_ids integrator, /** Integrator ID   */
     int save,
-    FILE *g,
-    csundial_step_control_parameters step_control);
+    FILE *g);
 
 /**
  *  Memory deallocation.
@@ -144,9 +156,6 @@ void  csundial_free_simulation( csundial_simulation sim );
 
 /**  Step from current time to next communication point. */
 int csundial_step_to(void * _s,  double comm_point, double comm_step ) ;
-
-/** Accessor */
-const csundial_integrator csundial_get_integrator( int  i ) ;
 
 /**  Commit to file. */
 void csundial_save_data( struct csundial_simulation * sim );

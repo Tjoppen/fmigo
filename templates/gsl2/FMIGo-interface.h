@@ -113,8 +113,11 @@ typedef struct FMIGo_simulation {
     int integrator;
     void (*save_data)(void*);
     void (*set_fixed_step)(void *,double);
+    void (*set_variable_step)(void *);
+    void* (*init_simulation)(void*,int,double,int,int,int,FILE*);
     void (*free_simulation)(void *);
     static void (*default_free)(void*);
+    int (*step_to)(void *,double,double);
 
 
 } FMIGo_simulation;

@@ -1,42 +1,31 @@
-#ifndef GSL_INTERFACE_H
-#define GSL_INTERFACE_H
+#ifndef FMIGO_INTERFACE_H
+#define FMIGO_INTERFACE_H
 
+#include "gsl-interface.h"
+#include "sundial-interface.h"
 
 #include <gsl/gsl_odeiv2.h>
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_matrix.h>
 
 /*****************************
- * Structure definitions
+ * Enum  definitions
  *****************************
  */
 
 /**
- * Encapsulation of the integrator;
-*/
-typedef struct FMIGo_integrator{
-
-  const gsl_odeiv2_step_type * step_type; /* time step allocation */
-  gsl_odeiv2_step      * step;		  /* time step control */
-  gsl_odeiv2_control   * control;	  /* definition of the system */
-  gsl_odeiv2_system      system;	  /* definition of the driver */
-  gsl_odeiv2_evolve    * evolution;	  /* emove forward in time*/
-  gsl_odeiv2_driver    * driver;	  /* high level interface */
-
-} FMIGo_integrator;
-
-
-//see <gsl/gsl_odeiv2.h> for an explanation of these
-typedef int (* ode_function_ptr ) (double t, const double y[], double dydt[], void * params);
-typedef int (* ode_jacobian_ptr ) (double t, const double y[], double * dfdy, double dfdt[], void * params);
-
-/** Pre/post step callbacks
- *      t: Start of the current time step (communicationPoint)
- *     dt: Length of the current time step (communicationStepSize)
- *      y: For pre, the values of the variables before stepping. For post, after.
- * params: Opaque pointer
+ * List of available time integration methods in the gsl_odeiv2 library
  */
-typedef int (* pre_post_step_ptr ) (double t, double dt, const double y[], void * params);
+enum FMIGo_lib_ids
+{
+  gsl,                          /* 0 */
+  sundial,                      /* 1 */
+};
+
+/*****************************
+ * Structure definitions
+ *****************************
+ */
 
 /**
  *
@@ -56,31 +45,20 @@ typedef int (* pre_post_step_ptr ) (double t, double dt, const double y[], void 
  *  }  my_model ;
 */
 
-typedef struct FMIGo_model{
-  int n_variables;
-  double *x;  	        /** state variables */
-  double *x_backup;     /** for get/set FMU state */
-  void * parameters;
+typedef void* FMIGo_model;
+typedef struct FMIGo_params{
+    void* params;
+    int n_variables;
+    N_Vector y;
+    N_Vector ydot;
+    N_Vector dfdy;
+    N_Vector dfdt;
+    ode_function_ptr gsl_f;
+    ode_jacobian_ptr gsl_j;
+    CVRhsFn sundial_f;
+    CVDlsDenseJacFn sundial_j;
 
-  /** Definition of the dynamical system: this assumes an *explicit* ODE */
-  ode_function_ptr function;
-  /** Jacobian */
-  ode_jacobian_ptr jacobian;
-
-  /** Pre/post step functions */
-  pre_post_step_ptr pre_step;
-  pre_post_step_ptr post_step;
-
-  /** Get/set FMU state
-   * Used to copy/retreive internal state to/from temporary storage inside the model
-   * params: Opaque pointer
-   */
-  void (* get_state) (struct FMIGo_model *model);
-  void (* set_state) (struct FMIGo_model *model);
-
-  /** Destructor */
-  void (* free) (struct FMIGo_model * model);
-} FMIGo_model;
+}FMIGo_params;
 
 /**
  * Useful function for allocating the most common type of model
@@ -97,49 +75,25 @@ FMIGo_model* FMIGo_model_default_alloc(
                                         Useful for the my_model case described earlier in this file */
 );
 
-
-/** Default destructor. Frees model->x and the model itself */
-void FMIGo_model_default_free(FMIGo_model *model);
-
 /**
  * Finally we can put everything in a bag.  The spefic model only has to
  * fill in these fields.
  */
 typedef struct FMIGo_simulation {
-
-    void* model;
+    FMIGo_model model;
     void* sim;
-    int lib;
+    enum FMIGo_lib_ids lib;
     int integrator;
-    void (*save_data)(void*);
-    void (*set_fixed_step)(void *,double);
-    void (*set_variable_step)(void *);
-    void* (*init_simulation)(void*,int,double,int,int,int,FILE*);
-    void (*free_simulation)(void *);
-    static void (*default_free)(void*);
-    int (*step_to)(void *,double,double);
-
-
 } FMIGo_simulation;
 
-/*****************************
- * Enum  definitions
- *****************************
- */
-
-/**
- * List of available time integration methods in the gsl_odeiv2 library
- */
-enum FMIGo_lib_ids
-{
-  gsl,                          /* 0 */
-  sundial,                      /* 1 */
-};
 
 /**************
  * Function declarations.
  **************
  */
+
+/** Default destructor. Frees model->x and the model itself */
+void FMIGo_model_default_free(FMIGo_simulation &sim);
 
 /**
  * Essentially the constructor for the FMIGo_simulation object.
@@ -151,14 +105,15 @@ enum FMIGo_lib_ids
  *   instead of descriptor?  Open and close file automatically?
  */
 FMIGo_simulation FMIGo_init_simulation(
-  FMIGo_model * model, /** the model we work on */
-        enum FMIGo_integrator_ids integrator, /** Integrator ID   */
-        double h,                    /** Initial time-step: must be non-zero, even  with variable step*/
-        int fixed_step,		     /** Boolean */
-        int save,		     /** Boolean */
-        int print,		     /** Boolean  */
-        FILE *f		             /** File descriptor if 'save' is enabled  */
-  );
+    FMIGo_model * model, /** the model we work on */
+    enum FMIGo_lib_ids lib,
+    int integrator,             /** Integrator ID   */
+    double h, /** Initial time-step: must be non-zero, even  with variable step*/
+    int fixed_step,       /** Boolean */
+    int save,             /** Boolean */
+    int print,            /** Boolean  */
+    FILE *f               /** File descriptor if 'save' is enabled  */
+);
 
 /**
  *  Memory deallocation.
@@ -166,48 +121,18 @@ FMIGo_simulation FMIGo_init_simulation(
 void  FMIGo_free_simulation( FMIGo_simulation sim );
 
 /**  Step from current time to next communication point. */
-int FMIGo_step_to(void * _s,  double comm_point, double comm_step ) ;
-
-/** Accessor */
-const gsl_odeiv2_step_type * FMIGo_get_integrator( int  i ) ;
+int FMIGo_step_to(FMIGo_simulation &sim,  double comm_point, double comm_step ) ;
 
 /**  Commit to file. */
-void FMIGo_save_data( struct FMIGo_simulation * sim );
+void FMIGo_save_data( FMIGo_simulation &sim );
 
 
 /** Mutators for fixed step*/
 /** \TODO: make this a toggle */
-void FMIGo_simulation_set_fixed_step( FMIGo_simulation * s, double h );
-void FMIGo_simulation_set_variable_step( FMIGo_simulation * s );
+void FMIGo_simulation_set_fixed_step( FMIGo_simulation &s, double h );
+void FMIGo_simulation_set_variable_step( FMIGo_simulation &s );
 
 /** Get/set FMU state */
-void FMIGo_simulation_get( FMIGo_simulation *s );
-void FMIGo_simulation_set( FMIGo_simulation *s );
-
-typedef int (*epce_post_step_ptr) (
-    int n,                          /** Number of variables */
-    const double outputs[],         /** Outputs. Filtered or not, depending on filter_length */
-    void * params                   /** User pointer */
-);
-
-FMIGo_model * FMIGo_epce_model_init( FMIGo_model  *m, FMIGo_model *f,
-        int filter_length,
-        epce_post_step_ptr epce_post_step,
-        void *epce_post_step_params
-);
-
-/**
- * Allocate an EPCE filtered model for the given model with the default filter:
- *
- *  zdot = x
- *
- * The corresponding Jacobian is the identity matrix.
- */
-FMIGo_model * FMIGo_epce_default_model_init(
-        FMIGo_model  *m,
-        int filter_length,
-        epce_post_step_ptr epce_post_step,
-        void *epce_post_step_params
-);
-
+void FMIGo_simulation_get( FMIGo_simulation &s );
+void FMIGo_simulation_set( FMIGo_simulation &s );
 #endif

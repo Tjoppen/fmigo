@@ -15,12 +15,11 @@
  * Structure definitions
  *****************************
  */
+//#define NV_CONTENT_S(v)  ( (N_VectorContent_Serial)(v->content) )
 #define Ith(v,i)    NV_Ith_S(v,i)       /* Ith numbers components 1..NEQ */
 #define IJth(A,i,j) DENSE_ELEM(A,i,j) /* IJth numbers rows,cols 1..NEQ */
 
 
-typedef struct {
-} csundial_step_control_parameters;
 /**
  * Encapsulation of the integrator;
 */
@@ -91,7 +90,10 @@ typedef struct csundial_model{
 /**
  * Useful function for allocating the most common type of model
  */
-csundial_model* csundial_model_default_alloc(void);
+csundial_model* csundial_model_default_alloc(int n_variables, N_Vector x0, void *parameters,
+                                             CVRhsFn function, CVDlsDenseJacFn jacobian,
+                                             pre_post_step_ptr pre_step, pre_post_step_ptr post_step,
+                                             size_t sz) ;
 
 
 /** Default destructor. Frees model->x and the model itself */

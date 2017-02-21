@@ -11,7 +11,7 @@ const gsl_odeiv2_step_type * cgsl_get_integrator( int  i ) {
   const gsl_odeiv2_step_type * integrators [] =
     {
       gsl_odeiv2_step_rk2,	/* 0 */
-      gsl_odeiv2_step_rk4,	/* 1 */ 
+      gsl_odeiv2_step_rk4,	/* 1 */
       gsl_odeiv2_step_rkf45,	/* 2 */
       gsl_odeiv2_step_rkck,	/* 3 */
       gsl_odeiv2_step_rk8pd,	/* 4 */
@@ -54,12 +54,12 @@ int cgsl_step_to(void * _s,  double comm_point, double comm_step ) {
 
   cgsl_simulation * s = ( cgsl_simulation * ) _s;
 
-  int i; 
+  int i;
 
   s->t  = comm_point;		/* start point */
   s->t1 = comm_point + comm_step; /* end point */
   s->iterations = 0;
-  
+
   if (s->model->pre_step) {
     s->model->pre_step(comm_point, comm_step, s->model->x, s->model->parameters);
   }
@@ -74,16 +74,16 @@ int cgsl_step_to(void * _s,  double comm_point, double comm_step ) {
     s->iterations++;
 
     // integreate  all variables
-    
+
     /// Diagnostics and printing below this point
     if (status != GSL_SUCCESS ){
       fprintf(stderr, "GSL integrator: bad status: %d \n", status);
       exit(-1);
     }
-    if ( s->print  && s->file ) { 
+    if ( s->print  && s->file ) {
       fprintf (s->file, "%.5e ", s->t );
       for ( i = 0; i < s->i.system.dimension; ++i ){
-	fprintf (s->file, "%.5e ", s->model->x[ i ]); 
+	fprintf (s->file, "%.5e ", s->model->x[ i ]);
       }
       fprintf (s->file, "\n");
     }
@@ -91,7 +91,7 @@ int cgsl_step_to(void * _s,  double comm_point, double comm_step ) {
     if ( s->save ) {
       cgsl_save_data( s );
     }
-    
+
   }
 
   if (s->model->post_step) {
@@ -133,7 +133,7 @@ cgsl_simulation cgsl_init_simulation(
   gsl_odeiv2_step_set_driver (sim.i.step, sim.i.driver);
   sim.n                      = 0;
   sim.t                      = 0.0;
-  sim.t1                     = 0.0; 
+  sim.t1                     = 0.0;
   sim.h                      = h;
   sim.fixed_step             = fixed_step;
 
@@ -176,11 +176,11 @@ cgsl_model* cgsl_model_default_alloc(int n_variables, const double *x0, void *pa
       sz = sizeof(cgsl_model);
     }
 
-    cgsl_model * m = calloc( 1, sz );
+    cgsl_model * m = (cgsl_model*)calloc( 1, sz );
 
     m->n_variables = n_variables;
-    m->x           = calloc( n_variables, sizeof(double));
-    m->x_backup    = calloc( n_variables, sizeof(double));
+    m->x           = (double*)calloc( n_variables, sizeof(double));
+    m->x_backup    = (double*)calloc( n_variables, sizeof(double));
 
     if (x0) {
         memcpy(m->x, x0, n_variables * sizeof(double));
@@ -219,7 +219,7 @@ void  cgsl_free_simulation( cgsl_simulation sim ) {
   }
 
   return;
-  
+
 }
 
 /** Resize an array by copying data, deallocate previous memory.  Return
@@ -227,46 +227,46 @@ void  cgsl_free_simulation( cgsl_simulation sim ) {
 static int gsl_hungry_alloc( int  n, double ** x ){
 
   double * old = *x;
-  int N = 2 * n  + 10; 
+  int N = 2 * n  + 10;
 
-  *x = ( double * ) malloc ( N * sizeof( double ) ); 
+  *x = ( double * ) malloc ( N * sizeof( double ) );
   memcpy( *x, old, n * sizeof( double ) );
-  free( old ); 
+  free( old );
 
   return N;
-  
+
 }
 
 void cgsl_save_data( struct cgsl_simulation * sim ){
 
   if ( sim->store_data ){
 
-    int stride =  1 + sim->i.system.dimension; 
+    int stride =  1 + sim->i.system.dimension;
     int N =  stride * sim->n;
 
     while ( sim->buffer_size < ( N + stride ) ) {
       sim->buffer_size = gsl_hungry_alloc(  sim->buffer_size, &sim->data );
     }
-    
+
     sim->data[ N ] = sim->t;
 
   }
 
   return;
-  
+
 }
 
 void cgsl_simulation_set_fixed_step( cgsl_simulation * s, double h){
 
   s->h = h;
-  s->fixed_step = 1; 
+  s->fixed_step = 1;
 
   return;
 }
 
 void cgsl_simulation_set_variable_step( cgsl_simulation * s ) {
 
-  s->fixed_step = 0; 
+  s->fixed_step = 0;
 
   return;
 }
@@ -291,7 +291,7 @@ typedef struct cgsl_epce_model {
   cgsl_model  *model;           /** actual model */
   cgsl_model  *filter;          /** filtered variables */
 
-  double *z_prev;               /** z values of previous step, copied in pre_step 
+  double *z_prev;               /** z values of previous step, copied in pre_step
                                  * TODO: replace with circular buffer for longer averaging
                                  */
   double *z_prev_backup;        /** for get/set FMU state */
@@ -313,7 +313,7 @@ typedef struct cgsl_epce_model {
 static int cgsl_epce_model_eval (double t, const double y[], double dydt[], void * params){
 
   int x;
-  int status =  GSL_SUCCESS; 
+  int status =  GSL_SUCCESS;
   cgsl_epce_model * p = (cgsl_epce_model *) params;
 
   p->model->function (t, y, dydt,                         p->model->parameters);
@@ -359,7 +359,7 @@ static int cgsl_epce_model_jacobian (double t, const double y[], double * dfdy, 
       gsl_matrix_set(&dfdy_mat_e.matrix, i, j, gsl_matrix_get(&dfdy_mat_m.matrix, i, j));
     }
   }
-  
+
   //finally, zero fill the entire right side of the matrix
   for (i = 0; i < p->e_model.n_variables; i++) {
     for (j = p->model->n_variables; j < p->e_model.n_variables; j++) {
@@ -497,16 +497,16 @@ cgsl_model * cgsl_epce_model_init( cgsl_model  *m, cgsl_model *f,
   model->e_model.parameters     = model;
   model->model                  = m;
   model->filter                 = f;
-  model->z_prev                 = calloc(f->n_variables, sizeof(double));
-  model->z_prev_backup          = calloc(f->n_variables, sizeof(double));
+  model->z_prev                 = (double*)calloc(f->n_variables, sizeof(double));
+  model->z_prev_backup          = (double*)calloc(f->n_variables, sizeof(double));
   model->e_model.free           = cgsl_epce_model_free;
   model->e_model.get_state      = cgsl_epce_model_get_state;
   model->e_model.set_state      = cgsl_epce_model_set_state;
   model->filter_length          = filter_length;
   model->epce_post_step         = epce_post_step;
   model->epce_post_step_params  = epce_post_step_params;
-  model->outputs                = calloc(f->n_variables, sizeof(double));
-  model->filtered_outputs       = calloc(f->n_variables, sizeof(double));
+  model->outputs                = (double*)calloc(f->n_variables, sizeof(double));
+  model->filtered_outputs       = (double*)calloc(f->n_variables, sizeof(double));
 
   //copy initial values
   memcpy(model->e_model.x,                  m->x, m->n_variables * sizeof(m->x[0]));
@@ -519,7 +519,7 @@ cgsl_model * cgsl_epce_model_init( cgsl_model  *m, cgsl_model *f,
 
 static int cgsl_automatic_filter_function (double t, const double y[], double dydt[], void * params) {
 
-    cgsl_model *m = params;
+    cgsl_model *m = (cgsl_model*)params;
     int x;
 
     for (x = 0; x < m->n_variables; x++) {
@@ -531,7 +531,7 @@ static int cgsl_automatic_filter_function (double t, const double y[], double dy
 
 static int cgsl_automatic_filter_jacobian (double t, const double y[], double * dfdy, double dfdt[], void * params) {
 
-    cgsl_model *m = params;
+    cgsl_model *m = (cgsl_model*)params;
     int x;
 
     gsl_matrix_view dfdy_mat = gsl_matrix_view_array (dfdy, m->n_variables, m->n_variables);

@@ -403,6 +403,40 @@ csundial_model * csundial_epce_default_model_init(
     return csundial_epce_model_init(m, f, filter_length, epce_post_step, epce_post_step_params);
 }
 
+csundial_model* csundial_model_default_alloc(int n_variables, int n_roots, N_Vector x0, N_Vector abstol,
+                                             realtype reltol, void *parameters,
+                                             CVRhsFn function, CVDlsDenseJacFn jacobian, CVRootFn rootfinding,
+                                             pre_post_step_ptr pre_step, pre_post_step_ptr post_step,
+                                             size_t sz) {
+    //allocate at least the size of cgsl_model
+    if ( sz < sizeof(csundial_model) ) {
+      sz = sizeof(csundial_model);
+    }
+    csundial_model *model = (csundial_model*)calloc( 1, sz );
+
+    /* Initialize x */
+    model->x = N_VNew_Serial(n_variables);
+    model->neq = n_variables;
+    if (check_flag((void *)model->x, "N_VNew_Serial", 0)) exit(1);
+    memcpy(NV_DATA_S(model->x),NV_DATA_S(x0),n_variables);
+
+    model->abstol = N_VNew_Serial(n_variables);
+    if (check_flag((void *)model->abstol, "N_VNew_Serial", 0)) exit(1);
+    /* Set the scalar relative tolerance */
+    model->reltol = reltol;
+    /* Set the vector absolute tolerance */
+    memcpy(NV_DATA_S(model->abstol),NV_DATA_S(abstol),n_variables);
+
+    model->function = function;
+    model->jacobian = jacobian;
+    model->rootfinding = rootfinding;
+    model->n_roots = n_roots;
+    model->free        = csundial_model_default_free;
+    //model->get_state   = csundial_model_default_get_state;
+    //model->set_state   = csundial_model_default_set_state;
+    return model;
+}
+
 /*
  * Check function return value...
  *   opt == 0 means SUNDIALS function allocates memory so check if

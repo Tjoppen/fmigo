@@ -1,14 +1,10 @@
-#include "gsl-interface.h"
-#include "sundial-interface.h"
+#include "FMIGo-interface.h"
 #include <string.h>
-
+#define NOT_IMPLEMENTED(name)\
+    fprintf(stderr,"FMIGo: function not implemented - "#name"\n");
 /**
  * Integrate the equations up to a given end point.
  */
-int FMIGo_step_to(void *sim,  double comm_point, double comm_step ) {
-    return sim.step_to(sim,comm_point,comm_step);
-}
-
 /**
  * Note: we use pass-by-value semantics for all structs anywhere possible.
  */
@@ -25,66 +21,150 @@ FMIGo_simulation FMIGo_init_simulation(
 
   FMIGo_simulation sim;
 
-  sim.model                  = model;
-  sim.s                      = FMIGo_get_simulation(lib);
-  sim.sim                    = sim.s.init_simulation(model,integrator,h,fixed_step,save,print,f);
+  sim.model         = model;
+  sim.lib           = lib;
+  switch (lib){
+  case gsl:{
+      cgsl_simulation * s = (cgsl_simulation*)calloc(1,sizeof(cgsl_simulation));
+      *s = cgsl_init_simulation((cgsl_model*)model,
+                                (cgsl_integrator_ids)integrator,
+                                h,fixed_step,save,print,f);
+  sim.sim = (void *)s;
+      break;
+  }
+  case sundial:{
+      csundial_simulation * s = (csundial_simulation*)calloc(1,sizeof(csundial_simulation));
+      *s = csundial_init_simulation((csundial_model*)model,
+                                    (csundial_integrator_ids)integrator,
+                                    save,f);
+  sim.sim = (void *)s;
+      break;
+  }
+  }
+
 
   return sim;
 
 }
 
 void FMIGo_model_default_free(FMIGo_simulation& sim) {
-    sim.default_free(sim.model);
+    switch (sim.lib){
+    case gsl:{
+        cgsl_model_default_free((cgsl_model*)sim.model);
+    }
+    case sundial:{
+    }
+    }
 }
 
-FMIGo_model FMIGo_model_default_alloc(FMIGo_simulation &sim, int n_variables, const double *x0, void *parameters,
-        ode_function_ptr function, ode_jacobian_ptr jacobian,
-        pre_post_step_ptr pre_step, pre_post_step_ptr post_step, size_t sz) {
-    switch (sim->lib){
+static int FMIGo_function(double t, const double *y, double *ydot, void *params){
+    FMIGo_params * p = (FMIGo_params*)params;
+    memcpy(NV_DATA_S(p->y), y, p->n_variables);
+    NV_DATA_S(p->ydot) = ydot;
+    return p->sundial_f(t, p->y, p->ydot, p->params);
+}
+
+static int FMIGo_jacobian(double t, const double y[], double * dfdy, double dfdt[], void * params){
+    FMIGo_params * p = (FMIGo_params*)params;
+    memcpy(NV_DATA_S(p->y), y, p->n_variables);
+    NV_DATA_S(p->dfdy) = dfdy;
+    return p->sundial_j(t, p->y, dfdy, p->params);
+}
+
+FMIGo_model FMIGo_model_default_alloc(FMIGo_simulation &sim,
+                                      int n_variables,
+                                      int n_roots,
+                                      const N_Vector x0,
+                                      const N_Vector abstol,
+                                      void *parameters,
+                                      CVRhsFn function,
+                                      CVDlsDenseJacFn jacobian,
+                                      CVRootFn rootfinding,
+                                      pre_post_step_ptr pre_step, pre_post_step_ptr post_step,
+                                      size_t sz) {
+
+    switch (sim.lib){
     case gsl:{
-        gsl_model_default_alloc(n_variables,x0,parameters,function,Jacobian,pre_step,post_step,sz);
+        FMIGo_params *p;
+        p->n_variables = n_variables;
+        p->params = parameters;
+        p->sundial_f = function;
+        p->sundial_j = jacobian;
+        p->y    = N_VNew_Serial(n_variables);
+        p->ydot = N_VNew_Serial(n_variables);
+        //free because ther are only shells
+        free(NV_DATA_S(p->y));
+        free(NV_DATA_S(p->ydot));
+
+        if(jacobian){
+            p->dfdy    = N_VNew_Serial(n_variables);
+            //free because ther are only shells
+            free(NV_DATA_S(p->dfdy));
+        }
+        return cgsl_model_default_alloc(n_variables,NV_DATA_S(x0),parameters,FMIGo_function,FMIGo_jacobian,pre_step,post_step,sz);
 
     }
+    case sundial:{
+        return csundial_model_default_alloc(n_variables,x0,parameters,function,NULL,pre_step,post_step,sz);
     }
-    return m;
+    }
+    return NULL;
 
 }
 
 void  FMIGo_free_simulation( FMIGo_simulation &sim ) {
-    sim.free_simulation(sim.sim);
+    switch (sim.lib){
+    case gsl: {
+        cgsl_free_simulation(*(cgsl_simulation*)sim.sim);
+        break;
+    }
+    case sundial:{
+        csundial_free_simulation(*(csundial_simulation*)sim.sim);
+        break;
+    }
+    }
   return;
 
-}
-
-/** Resize an array by copying data, deallocate previous memory.  Return
- * new size */
-static int gsl_hungry_alloc(FMIGo_simulation &sim, int  n, double ** x ){
-    return sim.hungry_alloc(n,x);
 }
 
 void FMIGo_save_data( FMIGo_simulation &sim ){
-    sim.save_data(sim.sim);
+    switch (sim.lib){
+    case gsl:{
+        cgsl_save_data((cgsl_simulation*)sim.sim);
+        break;
+    }
+    case sundial:{
+        NOT_IMPLEMENTED(csundial_simulatian_save_data);
+        break;
+    }
+    }
     return;
 }
 
-void FMIGo_simulation_set_fixed_step( FMIGo_simulation * sim, double h){
-    sim->i.set_fixed_step(sim->sim,h);
+void FMIGo_simulation_set_fixed_step( FMIGo_simulation &sim, double h){
+    switch (sim.lib){
+    case gsl:{
+        cgsl_simulation_set_fixed_step((cgsl_simulation*)sim.sim,h);
+        break;
+    }
+    case sundial:{
+        csundial_simulation_set_fixed_step((csundial_simulation*)sim.sim,h);
+        break;
+    }
+    }
     return;
 }
 
-void FMIGo_simulation_set_variable_step( FMIGo_simulation * sim ) {
-    sim->i.set_variable_step(sim->sim);
+void FMIGo_simulation_set_variable_step( FMIGo_simulation &sim ) {
+    switch (sim.lib){
+    case gsl:{
+        cgsl_simulation_set_variable_step((cgsl_simulation*)sim.sim);
+        break;
+    }
+    case sundial:{
+        csundial_simulation_set_variable_step((csundial_simulation*)sim.sim);
+        break;
+    }
+    }
     return;
-}
-
-  return;
-}
-
-FMIGo_model FMIGo_epce_default_model_init(
-        FMIGo_model m,
-        int filter_length,
-        epce_post_step_ptr epce_post_step,
-        void *epce_post_step_params) {
-
-    return cgsl_epce_default_model_init((cgsl_model*)m, filter_length, epce_post_step, epce_post_step_params);
 }

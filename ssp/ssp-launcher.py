@@ -23,6 +23,7 @@ ns = {
     'ssd': 'http://www.pmsf.net/xsd/SystemStructureDescriptionDraft',
     'ssv': 'http://www.pmsf.net/xsd/SystemStructureParameterValuesDraft',
     'ssm': 'http://www.pmsf.net/xsd/SystemStructureParameterMappingDraft',
+    'umit':'http://umit.math.umu.se/UMITSSD',
 }
 d = tempfile.mkdtemp(prefix='ssp')
 print(d)
@@ -35,6 +36,7 @@ schema_names = {
     'SSD': 'SystemStructureDescription.xsd',
     'SSM': 'SystemStructureParameterMapping.xsd',
     'SSV': 'SystemStructureParameterValues.xsd',
+    'UMIT':'UMITSSD.xsd',
 }
 schemas = {}
 
@@ -423,6 +425,7 @@ class System:
         signaldicts = find_elements(s, 'ssd:SignalDictionaries',    'ssd:SignalDictionary')
         sigdictrefs = find_elements(s, 'ssd:Elements',              'ssd:SignalDictionaryReference')
         params      = find_elements(s, 'ssd:ParameterBindings',     'ssd:ParameterBinding')
+        annotations = find_elements(s, 'ssd:Annotations',           'ssd:Annotation')
         elements    = s.find('ssd:Elements', ns)
 
         for conn in connectors[1]:
@@ -520,6 +523,31 @@ class System:
             remove_if_empty(sdr, conns[0])
             remove_if_empty(sigdictrefs[0], sdr)
         #print('SignalDictionaryReference: ' + str(self.sigdictrefs))
+
+        for annotation in annotations[1]:
+            type = get_attrib(annotation, 'type')
+            if type == 'se.umu.math.umit.ssp.kinematicconstraints':
+                if 'UMIT' in schemas:
+                    schemas['UMIT'].assertValid(annotation[0])
+
+                for shaft in find_elements(annotation, 'umit:KinematicConstraints', 'umit:ShaftConstraint')[1]:
+                    get_attrib(shaft, 'element1')
+                    get_attrib(shaft, 'element2')
+                    get_attrib(shaft, 'angle1', '')
+                    get_attrib(shaft, 'angle2', '')
+                    get_attrib(shaft, 'angularVelocity1')
+                    get_attrib(shaft, 'angularVelocity2')
+                    get_attrib(shaft, 'angularAcceleration1')
+                    get_attrib(shaft, 'angularAcceleration2')
+                    get_attrib(shaft, 'torque1')
+                    get_attrib(shaft, 'torque2')
+                    remove_if_empty(annotation[0], shaft)
+
+                remove_if_empty(annotation, annotation[0])
+            else:
+                print('WARNING: Found unknown Annotation of type "%s"' % type)
+            remove_if_empty(annotations[0], annotation)
+        remove_if_empty(s, annotations[0])
 
         for subsystem in subsystems[1]:
             ss = System.fromxml(d, subsystem, self.version, self)

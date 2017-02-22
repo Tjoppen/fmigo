@@ -11,4 +11,4 @@ mkdir build
 cd build
 cmake .. -G %CMAKE_GENERATOR% -DCMAKE_BUILD_TYPE=%CMAKE_BUILD_TYPE%  -DBUILD_FMUS=OFF && ^
 cmake --build .                  -- /m %BUILD_OPTIONS% && ^
-cmake --build . --target install -- %BUILD_OPTIONS%
+cmake --build . --target package -- %BUILD_OPTIONS%

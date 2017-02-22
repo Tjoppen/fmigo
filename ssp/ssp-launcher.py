@@ -5,7 +5,7 @@ import sys
 import os
 import os.path
 import glob
-import xml.etree.ElementTree as ET
+from lxml import etree
 import subprocess
 import shutil
 
@@ -30,6 +30,28 @@ print(d)
 fmus = []
 systems = []
 parameters = {}
+
+schema_names = {
+    'SSD': 'SystemStructureDescription.xsd',
+    'SSM': 'SystemStructureParameterMapping.xsd',
+    'SSV': 'SystemStructureParameterValues.xsd',
+}
+schemas = {}
+
+for type in schema_names:
+    # Expect schema to be located next to this script
+    try:
+        schema_path = os.path.join(os.path.dirname(__file__), schema_names[type])
+        schemas[type] = etree.XMLSchema(etree.parse(schema_path))
+    except Exception as e:
+        print(e)
+        print('Cannot open/parse %s - no %s validation performed' % (schema_path, type))
+        schemas[type] = None
+
+def validate(tree, type):
+    if schemas[type] and not schemas[type].validate(tree):
+        print('ERROR: %s file %s does not validate' % (type, path))
+        exit(1)
 
 # Adds (key,value) to given multimap.
 # Each (key,value) may appear only once.
@@ -149,7 +171,8 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
 
             #read from file
             #TODO: print unhandled XML in ParameterSet
-            tree = ET.parse(os.path.join(path, get_attrib(pb, 'source')))
+            tree = etree.parse(os.path.join(path, get_attrib(pb, 'source')))
+            validate(tree, 'SSV')
             pvs = find_elements(tree.getroot(), 'ssv:Parameters', 'ssv:Parameter')
             #print('Parsed %i params' % len(pvs))
         else:
@@ -217,7 +240,8 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
                 exit(1)
 
             #TODO: print unhandled XML in ParameterMapping too
-            tree = ET.parse(os.path.join(path, get_attrib(pm, 'source')))
+            tree = etree.parse(os.path.join(path, get_attrib(pm, 'source')))
+            validate(tree, 'SSM')
             mes = tree.getroot().findall('ssm:MappingEntry', ns)
 
             for me in mes:
@@ -344,13 +368,18 @@ class System:
 
         #parse XML, delete all attribs and element we know how to deal with
         #print residual, indicating things we don't yet support
-        tree = ET.parse(path)
+        tree = etree.parse(path)
+        validate(tree, 'SSD')
+
+        # Remove comments, which would otherwise result in residual XML
+        for c in tree.xpath('//comment()'):
+            c.getparent().remove(c)
 
         if 'version' in tree.getroot().attrib:
             version = get_attrib(tree.getroot(), 'version')
         else:
             version = 'Draft20150721'
-            printf('WARNING: version not set in root, assuming ' + self.version)
+            print('WARNING: version not set in root, assuming ' + self.version)
 
         structure = SystemStructure(tree.getroot())
 
@@ -363,7 +392,7 @@ class System:
         remove_if_empty(tree.getroot(), s)
 
         if len(tree.getroot()) > 0 or len(tree.getroot().attrib) > 0:
-            print('WARNING: Residual XML: '+ET.tostring(tree.getroot()))
+            print('WARNING: Residual XML: '+etree.tostring(tree.getroot()))
 
         return ret
 
@@ -571,7 +600,15 @@ def unzip_ssp(dest_dir, ssp_filename):
             with zipfile.ZipFile(f) as z:
                 z.extract(MODELDESCRIPTION, d)
 
-unzip_ssp(d, sys.argv[1])
+
+# Check if we run master directly from an SSD XML file instead of an SSP zip archive
+if os.path.basename(sys.argv[1]) == SSD_NAME:
+    d = os.path.dirname(sys.argv[1])
+    unzipped_ssp = False
+else:
+    unzip_ssp(d, sys.argv[1])
+    unzipped_ssp = True
+
 root = System.fromfile(d, SSD_NAME)
 
 root.resolve_dictionary_inputs()
@@ -584,11 +621,17 @@ for fmu in fmus:
     fmumap[fmu.get_name()] = fmu.id
     fmu.connect(connectionmultimap)
 
+    with zipfile.ZipFile(fmu.path) as z:
+        md_data = z.read('modelDescription.xml')
+
     # Parse modelDescription, turn variable list into map
-    tree = ET.parse(os.path.join(os.path.splitext(fmu.path)[0], MODELDESCRIPTION))
+    # tree = etree.parse(os.path.join(os.path.splitext(fmu.path)[0], MODELDESCRIPTION))
+    # root = tree.getroot()
+    # print(md_data)
+    root = etree.XML(md_data)
 
     svs = {}
-    for sv in tree.getroot().find('ModelVariables').findall('ScalarVariable'):
+    for sv in root.find('ModelVariables').findall('ScalarVariable'):
         name = sv.attrib['name']
         if name in svs:
             print(fmu.path + ' contains multiple variables named "' + name + '"!')
@@ -684,7 +727,8 @@ p.communicate(input=" ".join(flatconns).encode('utf-8'))
 ret = p.returncode  #ret can be None
 
 if ret == 0:
-    shutil.rmtree(d)
+    if unzipped_ssp:
+        shutil.rmtree(d)
 else:
     print('An error occured (returncode = ' + str(ret) + '). Check ' + d)
 

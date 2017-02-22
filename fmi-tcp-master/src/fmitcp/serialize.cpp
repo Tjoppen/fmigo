@@ -154,7 +154,7 @@ std::string fmitcp::serialize::fmi2_import_set_debug_logging(int message_id, int
     req.set_message_id(message_id);
     req.set_fmuid(fmuId);
     req.set_loggingon(loggingOn);
-    for(int i=0; i<categories.size(); i++)
+    for(size_t i=0; i<categories.size(); i++)
         req.add_categories(categories[i]);
 
     return pack(type_fmi2_import_set_debug_logging_req, req);
@@ -164,9 +164,9 @@ std::string fmitcp::serialize::fmi2_import_set_real(int message_id, int fmuId, c
     fmi2_import_set_real_req req;
     req.set_message_id(message_id);
     req.set_fmuid(fmuId);
-    for(int i=0; i<valueRefs.size(); i++)
+    for(size_t i=0; i<valueRefs.size(); i++)
         req.add_valuereferences(valueRefs[i]);
-    for(int i=0; i<values.size(); i++)
+    for(size_t i=0; i<values.size(); i++)
         req.add_values(values[i]);
 
     return pack(type_fmi2_import_set_real_req, req);
@@ -176,9 +176,9 @@ std::string fmitcp::serialize::fmi2_import_set_integer(int message_id, int fmuId
     fmi2_import_set_integer_req req;
     req.set_message_id(message_id);
     req.set_fmuid(fmuId);
-    for(int i=0; i<valueRefs.size(); i++)
+    for(size_t i=0; i<valueRefs.size(); i++)
         req.add_valuereferences(valueRefs[i]);
-    for(int i=0; i<values.size(); i++)
+    for(size_t i=0; i<values.size(); i++)
         req.add_values(values[i]);
 
     return pack(type_fmi2_import_set_integer_req, req);
@@ -188,9 +188,9 @@ std::string fmitcp::serialize::fmi2_import_set_boolean(int message_id, int fmuId
     fmi2_import_set_boolean_req req;
     req.set_message_id(message_id);
     req.set_fmuid(fmuId);
-    for(int i=0; i<valueRefs.size(); i++)
+    for(size_t i=0; i<valueRefs.size(); i++)
         req.add_valuereferences(valueRefs[i]);
-    for(int i=0; i<values.size(); i++)
+    for(size_t i=0; i<values.size(); i++)
         req.add_values(values[i]);
 
     return pack(type_fmi2_import_set_boolean_req, req);
@@ -201,9 +201,9 @@ std::string fmitcp::serialize::fmi2_import_set_string(int message_id, int fmuId,
     fmi2_import_set_string_req req;
     req.set_message_id(message_id);
     req.set_fmuid(fmuId);
-    for(int i=0; i<valueRefs.size(); i++)
+    for(size_t i=0; i<valueRefs.size(); i++)
         req.add_valuereferences(valueRefs[i]);
-    for(int i=0; i<values.size(); i++)
+    for(size_t i=0; i<values.size(); i++)
         req.add_values(values[i]);
 
     return pack(type_fmi2_import_set_string_req, req);
@@ -213,7 +213,7 @@ std::string fmitcp::serialize::fmi2_import_get_real(int message_id, int fmuId, c
     fmi2_import_get_real_req req;
     req.set_message_id(message_id);
     req.set_fmuid(fmuId);
-    for(int i=0; i<valueRefs.size(); i++)
+    for(size_t i=0; i<valueRefs.size(); i++)
         req.add_valuereferences(valueRefs[i]);
 
     return pack(type_fmi2_import_get_real_req, req);
@@ -223,7 +223,7 @@ std::string fmitcp::serialize::fmi2_import_get_integer(int message_id, int fmuId
     fmi2_import_get_integer_req req;
     req.set_message_id(message_id);
     req.set_fmuid(fmuId);
-    for(int i=0; i<valueRefs.size(); i++)
+    for(size_t i=0; i<valueRefs.size(); i++)
         req.add_valuereferences(valueRefs[i]);
 
     return pack(type_fmi2_import_get_integer_req, req);
@@ -233,7 +233,7 @@ std::string fmitcp::serialize::fmi2_import_get_boolean(int message_id, int fmuId
     fmi2_import_get_boolean_req req;
     req.set_message_id(message_id);
     req.set_fmuid(fmuId);
-    for(int i=0; i<valueRefs.size(); i++)
+    for(size_t i=0; i<valueRefs.size(); i++)
         req.add_valuereferences(valueRefs[i]);
 
     return pack(type_fmi2_import_get_boolean_req, req);
@@ -243,7 +243,7 @@ std::string fmitcp::serialize::fmi2_import_get_string (int message_id, int fmuId
     fmi2_import_get_string_req req;
     req.set_message_id(message_id);
     req.set_fmuid(fmuId);
-    for(int i=0; i<valueRefs.size(); i++)
+    for(size_t i=0; i<valueRefs.size(); i++)
         req.add_valuereferences(valueRefs[i]);
 
     return pack(type_fmi2_import_get_string_req, req);
@@ -276,11 +276,11 @@ std::string fmitcp::serialize::fmi2_import_get_directional_derivative(int messag
     fmi2_import_get_directional_derivative_req req;
     req.set_message_id(message_id);
     req.set_fmuid(fmuId);
-    for(int i=0; i<v_ref.size(); i++)
+    for(size_t i=0; i<v_ref.size(); i++)
         req.add_v_ref(v_ref[i]);
-    for(int i=0; i<z_ref.size(); i++)
+    for(size_t i=0; i<z_ref.size(); i++)
         req.add_z_ref(z_ref[i]);
-    for(int i=0; i<dv.size(); i++)
+    for(size_t i=0; i<dv.size(); i++)
         req.add_dv(dv[i]);
 
     return pack(type_fmi2_import_get_directional_derivative_req, req);

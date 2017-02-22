@@ -46,14 +46,14 @@ for type in schema_names:
     except Exception as e:
         print(e)
         print('Cannot open/parse %s - no %s validation performed' % (schema_path, type))
-        schemas[type] = None
 
 def parse_and_validate(type, path):
-    tree = etree.parse(path)
-    if schemas[type] and not schemas[type].validate(tree):
-        print('ERROR: %s file %s does not validate' % (type, path))
-        exit(1)
-    return tree
+    if type in schemas:
+        parser = etree.XMLParser(schema=schemas[type])
+    else:
+        parser = etree.XMLParser()
+
+    return etree.parse(path, parser)
 
 # Adds (key,value) to given multimap.
 # Each (key,value) may appear only once.

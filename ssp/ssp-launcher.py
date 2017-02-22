@@ -48,10 +48,12 @@ for type in schema_names:
         print('Cannot open/parse %s - no %s validation performed' % (schema_path, type))
         schemas[type] = None
 
-def validate(tree, type):
+def parse_and_validate(type, path):
+    tree = etree.parse(path)
     if schemas[type] and not schemas[type].validate(tree):
         print('ERROR: %s file %s does not validate' % (type, path))
         exit(1)
+    return tree
 
 # Adds (key,value) to given multimap.
 # Each (key,value) may appear only once.
@@ -171,8 +173,7 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
 
             #read from file
             #TODO: print unhandled XML in ParameterSet
-            tree = etree.parse(os.path.join(path, get_attrib(pb, 'source')))
-            validate(tree, 'SSV')
+            tree = parse_and_validate('SSV', os.path.join(path, get_attrib(pb, 'source')))
             pvs = find_elements(tree.getroot(), 'ssv:Parameters', 'ssv:Parameter')
             #print('Parsed %i params' % len(pvs))
         else:
@@ -240,8 +241,7 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
                 exit(1)
 
             #TODO: print unhandled XML in ParameterMapping too
-            tree = etree.parse(os.path.join(path, get_attrib(pm, 'source')))
-            validate(tree, 'SSM')
+            tree = parse_and_validate('SSM', os.path.join(path, get_attrib(pm, 'source')))
             mes = tree.getroot().findall('ssm:MappingEntry', ns)
 
             for me in mes:
@@ -368,8 +368,7 @@ class System:
 
         #parse XML, delete all attribs and element we know how to deal with
         #print residual, indicating things we don't yet support
-        tree = etree.parse(path)
-        validate(tree, 'SSD')
+        tree = parse_and_validate('SSD', path)
 
         # Remove comments, which would otherwise result in residual XML
         for c in tree.xpath('//comment()'):

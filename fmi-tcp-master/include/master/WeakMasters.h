@@ -112,6 +112,7 @@ class ModelExchangeStepper : public BaseMaster {
         double *dydt;
         unsigned long failed_steps;
 
+        ostringstream prefix;
         FILE* result_file;
         long size_of_file;
 
@@ -171,7 +172,6 @@ class ModelExchangeStepper : public BaseMaster {
         ++p->count; /* count function evaluations */
         if(p->stateEvent)return GSL_SUCCESS;
 
-        cout << " t " << t << endl;
         Data& states = p->baseMaster->get_storage().get_states();
 
         for(auto client: p->clients){
@@ -213,30 +213,6 @@ class ModelExchangeStepper : public BaseMaster {
         return GSL_SUCCESS;
     }
 
-    static int fmu_epce_function(double t, const double x[], double dxdt[], void* params)
-    {
-
-        // make local variables
-        fmu_parameters* p = (fmu_parameters*)params;
-
-        ++p->count; /* count function evaluations */
-        Data& states = p->baseMaster->get_storage().get_states();
-
-        for(auto client: p->clients){
-            p->baseMaster->send(client, fmi2_import_set_time(0,0,t));
-            p->baseMaster->send(client, fmi2_import_set_continuous_states(0,0,
-                                            x + p->baseMaster->get_storage().get_offset(client->getId(), states),
-                                            client->getNumContinuousStates()));
-        }
-        p->baseMaster->wait();
-        p->baseMaster->solveLoops();
-
-        for(auto client: p->clients)
-            p->baseMaster->send(client, fmi2_import_get_derivatives(0,0,(int)client->getNumContinuousStates()));
-        p->baseMaster->wait();
-
-        return GSL_SUCCESS;
-    }
 
     /** get_p
      *  Extracts the parameters from the model
@@ -244,13 +220,13 @@ class ModelExchangeStepper : public BaseMaster {
      *  @param m Model
      */
     inline fmu_parameters* get_p(cgsl_model* m){
-        return (fmu_parameters*)(m->parameters);
+        return (fmu_parameters*)(m->get_model_parameters(m));
     }
     inline fmu_parameters* get_p(fmu_model& m){
-        return ((fmu_parameters *)(m.model.parameters));
+        return ((fmu_parameters *)(m.model.get_model_parameters(&m.model)));
     }
     inline fmu_parameters* get_p(fmu_model* m){
-        return (fmu_parameters*)(m->model.parameters);
+        return (fmu_parameters*)(m->model.get_model_parameters(&m->model));
     }
     inline fmu_parameters* get_p(cgsl_simulation s){
         return get_p(s.model);
@@ -271,7 +247,6 @@ class ModelExchangeStepper : public BaseMaster {
 
         m.model.x = (double*)calloc(m.model.n_variables, sizeof(double));
         m.model.x_backup = (double*)calloc(m.model.n_variables, sizeof(double));
-        m.model.parameters = (void*)&m_p;
 
         m_p.backup.dydt = (double*)calloc(m.model.n_variables, sizeof(double));
         //m_p.backup.result_file = (FILE*)calloc(1, sizeof(FILE));
@@ -283,6 +258,11 @@ class ModelExchangeStepper : public BaseMaster {
         }
     }
 
+    static void *get_model_parameters(const cgsl_model *m){
+        cout << "get_model_parameters" << endl;
+        return m->parameters;
+    }
+
     /** init_fmu_model
      *  Creates the fmu_model and sets the parameters
      *
@@ -290,10 +270,13 @@ class ModelExchangeStepper : public BaseMaster {
      */
     void init_fmu_model(fmu_model &m,  const std::vector<FMIClient*> &clients){
         allocateMemory(m, clients);
+        m.model.parameters = (void*)&m_p;
+        m.model.get_model_parameters = get_model_parameters;
         fmu_parameters* p = get_p(m);
 
         ostringstream prefix;
         prefix << "/home/jonas/work/umit/data/resultFile.mat";
+        p->backup.prefix << "/home/jonas/work/umit/data/resultFile.mat";
         if ( ( p->backup.result_file = fopen(prefix.str().c_str(), "w+") ) == NULL){
             cerr << "Could not open file " << prefix.str() << endl;
             exit(1);
@@ -327,6 +310,27 @@ class ModelExchangeStepper : public BaseMaster {
 
     static int epce_post_step(int n, const double outputs[], void * params) {
 
+        // make local variables
+        fmu_parameters* p = (fmu_parameters*)params;
+
+        ++p->count; /* count function evaluations */
+        Data& states = p->baseMaster->get_storage().get_states();
+
+        cout << "out " << outputs[0] << " " << outputs[1] << endl;
+        /* for(auto client: p->clients){ */
+        /*                 p->baseMaster->send(client, fmi2_import_set_continuous_states(0,0, */
+        /*                                     outputs + p->baseMaster->get_storage().get_offset(client->getId(), states), */
+        /*                                     client->getNumContinuousStates())); */
+        /* } */
+        p->baseMaster->wait();
+        p->baseMaster->solveLoops();
+
+        for(auto client: p->clients)
+            {
+                cout << " client id " << client->getNumContinuousStates() << endl;
+            p->baseMaster->send(client, fmi2_import_get_derivatives(0,0,(int)client->getNumContinuousStates()));
+            }
+        p->baseMaster->wait();
 
         return GSL_SUCCESS;
     }
@@ -343,16 +347,16 @@ class ModelExchangeStepper : public BaseMaster {
         init_fmu_model(m_model, m_clients);
         fmu_parameters* p = get_p(m_model);
         int filter_length = get_storage().get_states().size();
-                                     /* cgsl_epce_default_model_init( */
-                                     /*        &m_model.model,  /\* model *\/ */
-                                     /*        filter_length, */
-                                     /*        fmu_epce_function, */
-                                     /*        p), */
+        cgsl_model* e_model = cgsl_epce_default_model_init(&m_model.model,  /* model */
+                                                              2,
+                                                              epce_post_step,
+                                                              p);
 
         //m_sim = (cgsl_simulation *)malloc(sizeof(cgsl_simulation));
-        m_sim = cgsl_init_simulation(&m_model.model,
+        m_sim = cgsl_init_simulation(e_model,
+                                     //&m_model.model,
                                      rk8pd, /* integrator: Runge-Kutta Prince Dormand pair order 7-8 */
-                                     1e-2,
+                                     1e-10,
                                      0,
                                      0,
                                      1,     /* write to file: YES! */
@@ -460,12 +464,8 @@ class ModelExchangeStepper : public BaseMaster {
         p->stateEvent = false;
         p->t_past = max(p->t_past, sim.t + timeLoop.dt_new);
         p->t_ok = sim.t;
-        cout << " step " << p->t_past << " " << p->t_ok << " " << timeLoop.dt_new<< endl;
-        cout << "s->fixed " << m_sim.fixed_step << endl;
-        cout << "step " << sim.t << " " << sim.t + timeLoop.dt_new << endl;
 
-        cgsl_step_to(&sim, sim.t, sim.t + timeLoop.dt_new);
-        cout << "step " << sim.t << endl;
+        cgsl_step_to(&sim, sim.t, timeLoop.dt_new);
     }
 
     /** stepToEvent
@@ -552,7 +552,6 @@ class ModelExchangeStepper : public BaseMaster {
             timeLoop.dt_new = sim.h * (absmin > 0 ? absmin:0.00001);
         }else
             timeLoop.dt_new = timeLoop.t_end - sim.t;
-        cout << "safe_time " << timeLoop.dt_new << " " << sim.t << " " << timeLoop.t_end << endl;
     }
 
     void runIteration(double t, double dt) {
@@ -560,9 +559,8 @@ class ModelExchangeStepper : public BaseMaster {
         timeLoop.t_end = t + dt;
         timeLoop.dt_new= dt;
         newDiscreteStates();
-        cout << endl << endl;
-        cout << timeLoop.t_safe << endl;
         while( timeLoop.t_safe < timeLoop.t_end ){
+            step(m_sim);
             if (hasStateEvent(m_sim)){
                 getSafeAndCrossed();
 
@@ -580,17 +578,16 @@ class ModelExchangeStepper : public BaseMaster {
                 if(hasStateEvent(m_sim))
                     stepToEvent(m_sim);
 
-            }else{
-                timeLoop.t_safe = m_sim.t;
-                timeLoop.t_crossed = timeLoop.t_end;
+            }
+            else {
+            timeLoop.t_safe = m_sim.t;
+            timeLoop.t_crossed = timeLoop.t_end;
             }
 
             safeTimeStep(m_sim);
             if(hasStateEvent(m_sim))
                newDiscreteStates();
             storeStates(m_sim);
-            step(m_sim);
-            cout << timeLoop.t_safe << endl;
         }
     }
 };

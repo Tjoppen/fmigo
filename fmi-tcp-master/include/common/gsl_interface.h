@@ -85,6 +85,8 @@ typedef struct cgsl_model{
 
   /** Destructor */
   void (* free) (struct cgsl_model * model);
+
+  void* (*get_model_parameters)(const struct cgsl_model *model);
 } cgsl_model;
 
 /**

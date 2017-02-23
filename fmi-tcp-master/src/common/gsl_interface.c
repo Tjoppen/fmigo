@@ -479,6 +479,10 @@ static void cgsl_epce_model_set_state(cgsl_model *model) {
   memcpy(m->z_prev, m->z_prev_backup, m->filter->n_variables * sizeof(m->z_prev[0]));
 }
 
+void * cgsl_epce_get_model_parameters(const cgsl_model *m){
+    return ((cgsl_epce_model*)m)->model->parameters;
+}
+
 cgsl_model * cgsl_epce_model_init( cgsl_model  *m, cgsl_model *f,
         int filter_length,
         epce_post_step_ptr epce_post_step,
@@ -503,6 +507,7 @@ cgsl_model * cgsl_epce_model_init( cgsl_model  *m, cgsl_model *f,
   model->e_model.free           = cgsl_epce_model_free;
   model->e_model.get_state      = cgsl_epce_model_get_state;
   model->e_model.set_state      = cgsl_epce_model_set_state;
+  model->e_model.get_model_parameters = cgsl_epce_get_model_parameters;
   model->filter_length          = filter_length;
   model->epce_post_step         = epce_post_step;
   model->epce_post_step_params  = epce_post_step_params;

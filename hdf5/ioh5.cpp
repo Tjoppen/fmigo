@@ -439,20 +439,7 @@ namespace h5 {
   
         type_id = t.type_c; 
         datatype  = H5Tcopy(type_id);
-#if 0 
-        std::cerr << "H5: " << H5T_NATIVE_INT << "  Table " << type_id << "  typeinfo " << ti1.name() << endl;
-        
-        if ( datatype < 0 ){
-          std::cerr << " bad datatype " << std::endl;
-        }
-#endif
         plist     = H5Pcreate(H5P_DATASET_CREATE);
-#if 0 
-        if ( plist < 0 ){
-          std::cerr << " can't create property list " << std::endl;
-        }
-        
-#endif
         if ( n == 0) { 
           rank = 1;
           dataspace = H5Screate(H5S_SCALAR);

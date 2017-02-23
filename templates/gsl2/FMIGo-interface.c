@@ -64,11 +64,22 @@ static int FMIGo_function(double t, const double *y, double *ydot, void *params)
     return p->sundial_f(t, p->y, p->ydot, p->params);
 }
 
+/* typedef int (*CVDlsDenseJacFn)(long int N, realtype t, */
+/* 			       N_Vector y, N_Vector fy, */
+/* 			       DlsMat Jac, void *user_data, */
+/* 			       N_Vector tmp1, N_Vector tmp2, N_Vector tmp3); */
 static int FMIGo_jacobian(double t, const double y[], double * dfdy, double dfdt[], void * params){
     FMIGo_params * p = (FMIGo_params*)params;
     memcpy(NV_DATA_S(p->y), y, p->n_variables);
     NV_DATA_S(p->dfdy) = dfdy;
-    return p->sundial_j(t, p->y, dfdy, p->params);
+    realtype *col_j;
+    for( int j = 0; p->n_variables ; j++){
+        col_j = DENSE_COL(p->jac,j);
+        for( int i = 0; p->n_variables ; i++){
+            col_j[i] = 0; // TODO set proper value
+        }
+    }
+    return p->sundial_j(p->n_variables, t, p->y, p->dfdy, p->jac, p->params, p->tmp1, p->tmp2, p->tmp3);
 }
 
 FMIGo_model FMIGo_model_default_alloc(FMIGo_simulation &sim,
@@ -105,7 +116,7 @@ FMIGo_model FMIGo_model_default_alloc(FMIGo_simulation &sim,
 
     }
     case sundial:{
-        return csundial_model_default_alloc(n_variables,x0,parameters,function,NULL,pre_step,post_step,sz);
+        return csundial_model_default_alloc(n_variables,x0,parameters,function,NULL,rootfinding,pre_step,post_step,sz);
     }
     }
     return NULL;

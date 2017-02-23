@@ -53,27 +53,16 @@ typedef struct FMIGo_params{
     N_Vector ydot;
     N_Vector dfdy;
     N_Vector dfdt;
+    N_Vector tmp1;
+    N_Vector tmp2;
+    N_Vector tmp3;
+    DlsMat jac;
     ode_function_ptr gsl_f;
     ode_jacobian_ptr gsl_j;
     CVRhsFn sundial_f;
     CVDlsDenseJacFn sundial_j;
 
 }FMIGo_params;
-
-/**
- * Useful function for allocating the most common type of model
- */
-FMIGo_model* FMIGo_model_default_alloc(
-        int n_variables,            /** Number of variables */
-        const double *x0,           /** Initial values. If NULL, initialize model->x to all zeroes instead */
-        void *parameters,           /** User pointer */
-        ode_function_ptr function,  /** ODE function */
-        ode_jacobian_ptr jacobian,  /** Jacobian */
-        pre_post_step_ptr pre_step, /** Pre-step function */
-        pre_post_step_ptr post_step,/** Post-step function */
-        size_t sz                   /** If sz > sizeof(FMIGo_model) then allocate sz bytes instead.
-                                        Useful for the my_model case described earlier in this file */
-);
 
 /**
  * Finally we can put everything in a bag.  The spefic model only has to
@@ -85,6 +74,24 @@ typedef struct FMIGo_simulation {
     enum FMIGo_lib_ids lib;
     int integrator;
 } FMIGo_simulation;
+
+
+/**
+ * Useful function for allocating the most common type of model
+ */
+FMIGo_model FMIGo_model_default_alloc(
+                 FMIGo_simulation &sim, /** The simulation */
+                 int n_variables, /** Number of variables */
+                 const N_Vector x0, /** Initial values. If NULL, initialize model->x to all zeroes instead */
+                 void *parameters,  /** User pointer */
+                 CVRhsFn function,  /** ODE function */
+                 CVDlsDenseJacFn jacobian, /** Jacobian */
+                 CVRootFn rootfinding,     /*  */
+                 pre_post_step_ptr pre_step,  /** Pre-step function */
+                 pre_post_step_ptr post_step, /** Post-step function */
+                 size_t sz /** If sz > sizeof(FMIGo_model) then allocate sz bytes instead.
+                               Useful for the my_model case described earlier in this file */
+                                       );
 
 
 /**************

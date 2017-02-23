@@ -266,9 +266,10 @@ static void csundial_model_default_get_state(csundial_model *model) {
 static void csundial_model_default_set_state(csundial_model *model) {
 }
 
-csundial_model* csundial_model_default_alloc(int n_variables, const double *x0, void *parameters,
-        ode_function_ptr function, ode_jacobian_ptr jacobian,
-        pre_post_step_ptr pre_step, pre_post_step_ptr post_step, size_t sz) {
+csundial_model* csundial_model_default_alloc(int n_variables, const N_Vector x0,
+                                             void *parameters, CVRhsFn function,
+                                             CVDlsDenseJacFn jacobian, CVRootFn rootfinding,
+                                             pre_post_step_ptr pre_step, pre_post_step_ptr post_step, size_t sz) {
 
     csundial_model*m = (csundial_model*)calloc(1,sizeof(csundial_model));
     return m;

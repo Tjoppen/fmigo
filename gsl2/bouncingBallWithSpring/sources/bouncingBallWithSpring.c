@@ -20,10 +20,6 @@
 #include "modelDescription.h"
 #include "gsl-interface.h"
 
-#define SIMULATION_TYPE cgsl_simulation
-#define SIMULATION_INIT springs_init
-#define SIMULATION_FREE cgsl_free_simulation
-
 #include "fmuTemplate.h"
 // define class name and unique id
 #define MODEL_IDENTIFIER bouncingBallWithSpring

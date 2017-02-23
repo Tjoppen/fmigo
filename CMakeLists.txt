@@ -158,6 +158,7 @@ if (BUILD_FMUS)
     add_subdirectory(umit-fmus)
 endif ()
 
+add_subdirectory(ssp)
 
 # CPack setup
 set(CPACK_PACKAGE_NAME "fmi-go")

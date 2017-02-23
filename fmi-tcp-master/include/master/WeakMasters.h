@@ -36,7 +36,6 @@ public:
     }
 
     void prepare() {
-        exit(44);
     }
 
     void runIteration(double t, double dt) {
@@ -80,7 +79,6 @@ public:
     }
 
     void prepare() {
-        exit(44);
         for (size_t x = 0; x < m_weakConnections.size(); x++) {
             WeakConnection wc = m_weakConnections[x];
             clientGetXs[wc.to][wc.from][wc.conn.fromType].push_back(wc.conn.fromOutputVR);
@@ -173,6 +171,7 @@ class ModelExchangeStepper : public BaseMaster {
         ++p->count; /* count function evaluations */
         if(p->stateEvent)return GSL_SUCCESS;
 
+        cout << " t " << t << endl;
         Data& states = p->baseMaster->get_storage().get_states();
 
         for(auto client: p->clients){
@@ -198,7 +197,7 @@ class ModelExchangeStepper : public BaseMaster {
 
         p->baseMaster->wait();
 
-        p->baseMaster->get_storage().print(p->baseMaster->get_storage().get_states());
+        //p->baseMaster->get_storage().print(p->baseMaster->get_storage().get_states());
         for(auto client: p->clients){
             if(client->getNumEventIndicators()){
                 if(p->baseMaster->get_storage().past_event(client->getId())){
@@ -333,7 +332,6 @@ class ModelExchangeStepper : public BaseMaster {
     }
 
     void prepare() {
-        exit(44);
         for (size_t x = 0; x < m_weakConnections.size(); x++) {
             WeakConnection wc = m_weakConnections[x];
             clientGetXs[wc.to][wc.from][wc.conn.fromType].push_back(wc.conn.fromOutputVR);
@@ -462,8 +460,12 @@ class ModelExchangeStepper : public BaseMaster {
         p->stateEvent = false;
         p->t_past = max(p->t_past, sim.t + timeLoop.dt_new);
         p->t_ok = sim.t;
-        cout << " step " << p->t_past << " " << p->t_ok << endl;
+        cout << " step " << p->t_past << " " << p->t_ok << " " << timeLoop.dt_new<< endl;
+        cout << "s->fixed " << m_sim.fixed_step << endl;
+        cout << "step " << sim.t << " " << sim.t + timeLoop.dt_new << endl;
+
         cgsl_step_to(&sim, sim.t, sim.t + timeLoop.dt_new);
+        cout << "step " << sim.t << endl;
     }
 
     /** stepToEvent
@@ -550,12 +552,16 @@ class ModelExchangeStepper : public BaseMaster {
             timeLoop.dt_new = sim.h * (absmin > 0 ? absmin:0.00001);
         }else
             timeLoop.dt_new = timeLoop.t_end - sim.t;
+        cout << "safe_time " << timeLoop.dt_new << " " << sim.t << " " << timeLoop.t_end << endl;
     }
 
     void runIteration(double t, double dt) {
         timeLoop.t_safe = t;
         timeLoop.t_end = t + dt;
+        timeLoop.dt_new= dt;
         newDiscreteStates();
+        cout << endl << endl;
+        cout << timeLoop.t_safe << endl;
         while( timeLoop.t_safe < timeLoop.t_end ){
             if (hasStateEvent(m_sim)){
                 getSafeAndCrossed();
@@ -584,6 +590,7 @@ class ModelExchangeStepper : public BaseMaster {
                newDiscreteStates();
             storeStates(m_sim);
             step(m_sim);
+            cout << timeLoop.t_safe << endl;
         }
     }
 };

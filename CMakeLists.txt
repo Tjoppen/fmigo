@@ -152,6 +152,8 @@ if (WIN32)
     add_dependencies(sc suitesparse-ext)
     add_dependencies(fmi-tcp-master protobuf-ext hdf5-ext)
     add_dependencies(fmi-mpi-master protobuf-ext hdf5-ext)
+    add_dependencies(fmitcp_pb protobuf-ext)
+    add_dependencies(control_pb protobuf-ext)
 endif ()
 
 if (BUILD_FMUS)

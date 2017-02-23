@@ -40,6 +40,8 @@ static int cgsl_step ( void * _s  ) {
   if ( s->fixed_step ) {
     status = gsl_odeiv2_evolve_apply_fixed_step(s->i.evolution, s->i.control, s->i.step, &s->i.system, &s->t, s->h, s->model->x);
   } else {
+    
+    s->update(_state))
     status = gsl_odeiv2_evolve_apply           (s->i.evolution, s->i.control, s->i.step, &s->i.system, &s->t, s->t1, &s->h, s->model->x);
   }
 

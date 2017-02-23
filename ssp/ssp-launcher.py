@@ -11,7 +11,7 @@ import shutil
 
 if len(sys.argv) < 2:
     #TODO: we probably want to know which of TCP and MPI is wanted
-    print('USAGE: %s ssp-file' % sys.argv[0])
+    print('USAGE: %s [--dry-run] ssp-file' % sys.argv[0])
     exit(1)
 
 RESOURCE_DIR='resources'
@@ -628,12 +628,18 @@ def unzip_ssp(dest_dir, ssp_filename):
                 z.extract(MODELDESCRIPTION, d)
 
 
+dry_run = sys.argv[1] == '--dry-run'
+
+if dry_run and len(sys.argv) < 3:
+    print('ERROR: missing ssp-name')
+    exit(1)
+
 # Check if we run master directly from an SSD XML file instead of an SSP zip archive
-if os.path.basename(sys.argv[1]) == SSD_NAME:
-    d = os.path.dirname(sys.argv[1])
+if os.path.basename(sys.argv[-1]) == SSD_NAME:
+    d = os.path.dirname(sys.argv[-1])
     unzipped_ssp = False
 else:
-    unzip_ssp(d, sys.argv[1])
+    unzip_ssp(d, sys.argv[-1])
     unzipped_ssp = True
 
 root = System.fromfile(d, SSD_NAME)
@@ -748,10 +754,13 @@ for fmu in fmus:
 args = ['mpiexec','-np','1','fmi-mpi-master','-t','9.9','-d','0.1','-a','-'] + servers
 print(" ".join(args) + " <<< " + '"' + " ".join(flatconns+flatparams) + '"')
 
-#pipe arguments to master, leave stdout and stderr alone
-p = subprocess.Popen(args, stdin=subprocess.PIPE)
-p.communicate(input=" ".join(flatconns).encode('utf-8'))
-ret = p.returncode  #ret can be None
+if dry_run:
+    ret = 0
+else:
+    #pipe arguments to master, leave stdout and stderr alone
+    p = subprocess.Popen(args, stdin=subprocess.PIPE)
+    p.communicate(input=" ".join(flatconns).encode('utf-8'))
+    ret = p.returncode  #ret can be None
 
 if ret == 0:
     if unzipped_ssp:

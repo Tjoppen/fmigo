@@ -24,12 +24,12 @@
 #define MASK_fmi2EnterContinuousTimeMode modelEventMode
 #define MASK_fmi2CompletedIntegratorStep modelContinuousTimeMode
 #define MASK_fmi2SetTime                 (modelEventMode | modelContinuousTimeMode)
-#define MASK_fmi2SetContinuousStates     modelContinuousTimeMode
+#define MASK_fmi2SetContinuousStates     (modelContinuousTimeMode | modelInitializationMode)
 #define MASK_fmi2GetEventIndicators      (modelInitializationMode \
                                         | modelEventMode | modelContinuousTimeMode \
                                         | modelTerminated | modelError)
 #define MASK_fmi2GetDerivatives          (modelEventMode | modelContinuousTimeMode \
-                                        | modelTerminated | modelError)
+                                        | modelTerminated | modelError | modelInitializationMode)
 #define MASK_fmi2GetContinuousStates     MASK_fmi2GetEventIndicators
 #define MASK_fmi2GetNominalsOfContinuousStates ( modelInstantiated \
                                         | modelEventMode | modelContinuousTimeMode \

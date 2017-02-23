@@ -23,3 +23,11 @@ If everything is set up correctly the following commands should work inside of b
 Run run_test.sh to run the tests.
 If mpiexec complains about [...]/install/bin/fmi-tcp-master missing then you need to run "make install" in build/
 If fmu-builder is missing you have probably cloned the repository without --recurse-submodules. Run "git submodule init && git submodule update" in the root project and umit-fmus/
+
+
+
+# Windows runtime instructions
+Install the following
+* [MS-MPI](https://msdn.microsoft.com/en-us/library/windows/desktop/bb524831(v=vs.85).aspx) Download and install both msmpisdk.msi and MSMpiSetup.exe
+* [Visual C++ Redistributable Packages for Visual Studio 2013](https://www.microsoft.com/en-us/download/details.aspx?id=40784)
+* [Visual C++ Redistributable for Visual Studio 2012 Update 4](https://www.microsoft.com/en-us/download/details.aspx?id=30679#)

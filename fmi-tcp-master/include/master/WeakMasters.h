@@ -36,6 +36,7 @@ public:
     }
 
     void prepare() {
+        exit(44);
     }
 
     void runIteration(double t, double dt) {
@@ -79,6 +80,7 @@ public:
     }
 
     void prepare() {
+        exit(44);
         for (size_t x = 0; x < m_weakConnections.size(); x++) {
             WeakConnection wc = m_weakConnections[x];
             clientGetXs[wc.to][wc.from][wc.conn.fromType].push_back(wc.conn.fromOutputVR);
@@ -196,6 +198,7 @@ class ModelExchangeStepper : public BaseMaster {
 
         p->baseMaster->wait();
 
+        p->baseMaster->get_storage().print(p->baseMaster->get_storage().get_states());
         for(auto client: p->clients){
             if(client->getNumEventIndicators()){
                 if(p->baseMaster->get_storage().past_event(client->getId())){
@@ -208,6 +211,31 @@ class ModelExchangeStepper : public BaseMaster {
                 }
             }
         }
+        return GSL_SUCCESS;
+    }
+
+    static int fmu_epce_function(double t, const double x[], double dxdt[], void* params)
+    {
+
+        // make local variables
+        fmu_parameters* p = (fmu_parameters*)params;
+
+        ++p->count; /* count function evaluations */
+        Data& states = p->baseMaster->get_storage().get_states();
+
+        for(auto client: p->clients){
+            p->baseMaster->send(client, fmi2_import_set_time(0,0,t));
+            p->baseMaster->send(client, fmi2_import_set_continuous_states(0,0,
+                                            x + p->baseMaster->get_storage().get_offset(client->getId(), states),
+                                            client->getNumContinuousStates()));
+        }
+        p->baseMaster->wait();
+        p->baseMaster->solveLoops();
+
+        for(auto client: p->clients)
+            p->baseMaster->send(client, fmi2_import_get_derivatives(0,0,(int)client->getNumContinuousStates()));
+        p->baseMaster->wait();
+
         return GSL_SUCCESS;
     }
 
@@ -243,6 +271,7 @@ class ModelExchangeStepper : public BaseMaster {
         }
 
         m.model.x = (double*)calloc(m.model.n_variables, sizeof(double));
+        m.model.x_backup = (double*)calloc(m.model.n_variables, sizeof(double));
         m.model.parameters = (void*)&m_p;
 
         m_p.backup.dydt = (double*)calloc(m.model.n_variables, sizeof(double));
@@ -284,6 +313,8 @@ class ModelExchangeStepper : public BaseMaster {
 
         m.model.function = fmu_function;
         m.model.jacobian = NULL;
+        m.model.post_step = NULL;
+        m.model.pre_step = NULL;
         m.model.free = NULL;//freeFMUModel;
 
         for(auto client: clients)
@@ -295,29 +326,39 @@ class ModelExchangeStepper : public BaseMaster {
     }
 
 
+    static int epce_post_step(int n, const double outputs[], void * params) {
+
+
+        return GSL_SUCCESS;
+    }
+
     void prepare() {
+        exit(44);
         for (size_t x = 0; x < m_weakConnections.size(); x++) {
             WeakConnection wc = m_weakConnections[x];
             clientGetXs[wc.to][wc.from][wc.conn.fromType].push_back(wc.conn.fromOutputVR);
         }
 #ifdef USE_GPL
         /* This is the step control which determines tolerances. */
-        cgsl_step_control_parameters step_control;
-        step_control.eps_rel = 1e-9;
-        step_control.eps_abs = 1e-6;
-        step_control.id = step_control_y_new;
-        step_control.start = 1e-10;
 
         // set up a gsl_simulation for each client
         init_fmu_model(m_model, m_clients);
         fmu_parameters* p = get_p(m_model);
+        int filter_length = get_storage().get_states().size();
+                                     /* cgsl_epce_default_model_init( */
+                                     /*        &m_model.model,  /\* model *\/ */
+                                     /*        filter_length, */
+                                     /*        fmu_epce_function, */
+                                     /*        p), */
 
         //m_sim = (cgsl_simulation *)malloc(sizeof(cgsl_simulation));
-        m_sim = cgsl_init_simulation(&m_model.model,  /* model */
+        m_sim = cgsl_init_simulation(&m_model.model,
                                      rk8pd, /* integrator: Runge-Kutta Prince Dormand pair order 7-8 */
+                                     1e-2,
+                                     0,
+                                     0,
                                      1,     /* write to file: YES! */
-                                     p->backup.result_file,
-                                     step_control);
+                                     p->backup.result_file);
         // might not be needed
         get_storage().sync();
 #endif
@@ -421,6 +462,7 @@ class ModelExchangeStepper : public BaseMaster {
         p->stateEvent = false;
         p->t_past = max(p->t_past, sim.t + timeLoop.dt_new);
         p->t_ok = sim.t;
+        cout << " step " << p->t_past << " " << p->t_ok << endl;
         cgsl_step_to(&sim, sim.t, sim.t + timeLoop.dt_new);
     }
 

@@ -152,7 +152,7 @@ void FmuGoStorage::push_to(size_t client_id, Data &current, double* array)
      *  swap only makes shallow copies
      */
 #define cycle_storage_cpp(name)\
-    swap(get_##name(), get_backup_##name() );
+    swap(get_current_##name(), get_backup_##name() );
 void FmuGoStorage::cycle() {
     cycle_storage_cpp(states);
     cycle_storage_cpp(derivatives);
@@ -164,7 +164,7 @@ void FmuGoStorage::cycle() {
      *  Makes a deep copy of the current dataset to a backup dataset
      */
 #define sync_storage_cpp(name)\
-    copy(get_##name().begin(), get_##name().end(), get_backup_##name().begin() );
+    copy(get_current_##name().begin(), get_current_##name().end(), get_backup_##name().begin() );
 void FmuGoStorage::sync(){
     sync_storage_cpp(states);
     sync_storage_cpp(derivatives);
@@ -173,15 +173,15 @@ void FmuGoStorage::sync(){
 }
 
 bool FmuGoStorage::past_event(size_t id){
-    Data & func = get_indicators();
+    Data & func = get_current_indicators();
     for(size_t index = get_offset(id, func); index < get_end(id, func);index++)
         {
-        if(signbit( *(get_indicators().begin() + index)) !=
+        if(signbit( *(get_current_indicators().begin() + index)) !=
            signbit( *(get_backup_indicators().begin() + index))
            )
             {
             // fprintf(stderr,"compr past_event %f, %f \n",
-            //         *(get_indicators().begin() + index),
+            //         *(get_current_indicators().begin() + index),
             //         *(get_backup_indicators().begin() + index)
             //         );
             return true;
@@ -368,19 +368,19 @@ void FmuGoStorage::test_functions(void)
             fail = true;                                                \
         } else fprintf(stderr,"OK!\n");
 
-        test_get_p_storage_cpp(states);
+        test_get_p_storage_cpp(current_states);
         test_get_p_storage_cpp(backup_states);
-        test_get_p_storage_cpp(derivatives);
+        test_get_p_storage_cpp(current_derivatives);
         test_get_p_storage_cpp(backup_derivatives);
-        test_get_p_storage_cpp(nominals);
+        test_get_p_storage_cpp(current_nominals);
         test_get_p_storage_cpp(backup_nominals);
-        test_get_p_storage_cpp(indicators);
+        test_get_p_storage_cpp(current_indicators);
         test_get_p_storage_cpp(backup_indicators);
 
         fprintf(stderr,"Testing absmin()     -  ");
-        if ( minVal  != testFmuGoStorage.absmin(testFmuGoStorage.get_indicators(),2) ||
-             abs(minValn) != testFmuGoStorage.absmin(testFmuGoStorage.get_indicators(),1) ||
-             abs(minValn) < minVal? abs(minValn):minVal != testFmuGoStorage.absmin(testFmuGoStorage.get_indicators()) )
+        if ( minVal  != testFmuGoStorage.absmin(testFmuGoStorage.get_current_indicators(),2) ||
+             abs(minValn) != testFmuGoStorage.absmin(testFmuGoStorage.get_current_indicators(),1) ||
+             abs(minValn) < minVal? abs(minValn):minVal != testFmuGoStorage.absmin(testFmuGoStorage.get_current_indicators()) )
             fprintf(stderr," Failed!\n  ");
         else
             fprintf(stderr," OK!\n");

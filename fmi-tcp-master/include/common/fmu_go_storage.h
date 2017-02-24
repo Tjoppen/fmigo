@@ -25,16 +25,15 @@ class FmuGoStorage {
 #define CREATE_DATA_HPP(name)                                           \
     private:                                                            \
         Storage m_##name;   /* to store the data */                     \
-    inline Data & get_current_##name() { return m_##name.first ;}       \
  public:                                                                \
+    inline Data & get_current_##name() { return m_##name.first ;}       \
     inline Data & get_backup_##name()  { return m_##name.second;}       \
-    inline Data & get_##name(){return get_current_##name();}            \
-    inline double get_##name(size_t id, size_t index){                  \
-        if(index > get_end(id,get_##name())){                           \
+    inline double get_current_##name(size_t id, size_t index){                  \
+        if(index > get_end(id,get_current_##name())){                           \
             fprintf(stderr,"Error: out of range for Data::iterator get_"#name""); \
             exit(1);                                                    \
         }                                                               \
-        return *(get_##name().begin()+get_offset(id,get_##name())+index); \
+        return *(get_current_##name().begin()+get_offset(id,get_current_##name())+index); \
     }                                                                   \
     inline double get_backup_##name(size_t id, size_t index){                  \
         if(index > get_end(id,get_backup_##name())){                           \
@@ -43,12 +42,12 @@ class FmuGoStorage {
         }                                                               \
         return *(get_backup_##name().begin()+get_offset(id,get_backup_##name())+index); \
     }                                                                   \
-    inline void get_##name(double *ret, size_t id) {                    \
+    inline void get_current_##name(double *ret, size_t id) {                    \
         /*need do extract the correct dataset belonging to client*/     \
-        size_t o = get_offset( id, get_##name() );                      \
-        size_t e = get_end( id, get_##name() );                         \
-        copy(get_##name().begin() + o,                                  \
-             get_##name().begin() + e,                                  \
+        size_t o = get_offset( id, get_current_##name() );                      \
+        size_t e = get_end( id, get_current_##name() );                         \
+        copy(get_current_##name().begin() + o,                                  \
+             get_current_##name().begin() + e,                                  \
              ret + o);                                                  \
     }                                                                   \
     inline void get_backup_##name(double *ret, size_t id)  {            \

@@ -6,25 +6,52 @@ stages:
 variables:
   GIT_SUBMODULE_STRATEGY: "recursive"
 
-umit:
+build:trusty:
   stage: build
   script:
     - docker build -t umit/trusty:$(git rev-parse HEAD)            -f Dockerfile.trusty            .
+  tags:
+    - shell
+
+build:trusty-cmake3.5.0:
+  stage: build
+  script:
     - docker build -t umit/trusty-cmake3.5.0:$(git rev-parse HEAD) -f Dockerfile.trusty-cmake3.5.0 .
+  tags:
+    - shell
+
+build:xenial:
+  stage: build
+  script:
     - docker build -t umit/xenial:$(git rev-parse HEAD)            -f Dockerfile.xenial            .
   tags:
     - shell
 
-test:
+test:trusty:
   stage: test
   script:
     - docker run --workdir /home/gitlab-ci/umit umit/trusty:$(git rev-parse HEAD)            bash run_tests.sh
-    - docker run --workdir /home/gitlab-ci/umit umit/trusty-cmake3.5.0:$(git rev-parse HEAD) bash run_tests.sh
-    - docker run --workdir /home/gitlab-ci/umit umit/xenial:$(git rev-parse HEAD)            bash run_tests.sh
-    - docker cp $(docker ps -a |grep umit/xenial:$(git rev-parse HEAD)|grep "bash run_tests.sh"|head -n1|cut -d" " -f 1):/home/gitlab-ci/umit/build/install - > umit-$(git rev-parse HEAD).tar
-    - gzip -9 umit-$(git rev-parse HEAD).tar
   dependencies:
-    - umit
+    - build:trusty
+  tags:
+    - shell
+
+test:trusty-cmake3.5.0:
+  stage: test
+  script:
+    - docker run --workdir /home/gitlab-ci/umit umit/trusty-cmake3.5.0:$(git rev-parse HEAD) bash run_tests.sh
+  dependencies:
+    - build:trusty-cmake3.5.0
+  tags:
+    - shell
+
+test:xenial:
+  stage: test
+  script:
+    - docker run --workdir /home/gitlab-ci/umit umit/xenial:$(git rev-parse HEAD)            bash run_tests.sh
+    - docker run --workdir /home/gitlab-ci/umit/build/install umit/xenial:$(git rev-parse HEAD) tar cz . > umit-$(git rev-parse HEAD).tar.gz
+  dependencies:
+    - build:xenial
   artifacts:
     paths:
       - umit-*.tar.gz

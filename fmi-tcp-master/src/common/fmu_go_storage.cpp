@@ -217,7 +217,7 @@ void FmuGoStorage::test_functions(void)
 
 #define test_size_storage_cpp(name)\
         fprintf(stderr,"Testing size() -- "#name"     -  ");\
-        for(int i = 0 ; i < n_##name.size(); ++i)\
+        for(size_t i = 0 ; i < n_##name.size(); ++i)\
             {\
             if( n_##name.at(i) !=\
                 testFmuGoStorage.get_size(i ,\

@@ -1,7 +1,0 @@
-#include <stdio.h>
-#include "print.h"
-int main(void){
-    printf("hello world \n");
-    printA();
-    return 0;
-}

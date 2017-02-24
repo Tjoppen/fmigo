@@ -7,6 +7,11 @@ if (WIN32)
     set(CMAKE_EXE_LINKER_FLAGS "/SAFESEH:NO")
 endif ()
 
+# Don't add cgsl twice
+if (NOT TARGET cgsl)
+    add_subdirectory(templates/cgsl)
+endif ()
+
 add_subdirectory(gsl2/clutch2)
 add_subdirectory(gsl2/chained_sho)
 add_subdirectory(gsl2/exp)

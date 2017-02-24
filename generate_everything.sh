@@ -41,6 +41,11 @@ if (WIN32)
     set(CMAKE_EXE_LINKER_FLAGS "/SAFESEH:NO")
 endif ()
 
+# Don't add cgsl twice
+if (NOT TARGET cgsl)
+    add_subdirectory(templates/cgsl)
+endif ()
+
 END
 
 # Warnings during compilation may go unnoticed without -Werror, leading to
@@ -51,7 +56,9 @@ export CFLAGS="-Wall -Werror -O3"
 for d in $GSLFMUS
 do
     echo "add_subdirectory($d)" >> CMakeLists.txt
-    GSL="-t `pwd`/templates/gsl2/gsl-interface.c -t `pwd`/templates/gsl2/gsl-interface.h -l gsl,gslcblas,m -c"
+    # TODO: figure out how to include cgsl into each FMU as-is
+    # We don't have any CMakeLists.txt yet anyway
+    GSL="-l cgsl,m -c"
     pushd $d
         python ${MD2HDR} modelDescription.xml > sources/modelDescription.h
         python ${GENERATOR} ${GSL}

@@ -4,8 +4,6 @@ SET(TARGET mass_force)
 SET(SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/fmi2/fmuTemplate.h
     ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/fmi2/fmuTemplate_impl.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/gsl2/gsl-interface.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/gsl2/gsl-interface.h
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/mass_force.c
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
 )
@@ -21,11 +19,10 @@ ADD_LIBRARY(${TARGET} SHARED ${SRCS})
 INCLUDE_DIRECTORIES(
     ../../../FMILibrary-2.0.1/ThirdParty/FMI/default
     ../../templates/fmi2
-    ../../templates/gsl2
 )
 SET_TARGET_PROPERTIES(${TARGET} PROPERTIES PREFIX "")
 SET_TARGET_PROPERTIES(${TARGET} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/binaries/${ARCH}")
-SET(LIBS gsl gslcblas)
+SET(LIBS cgsl)
 if (UNIX)
     set(LIBS ${LIBS} m)
 endif ()

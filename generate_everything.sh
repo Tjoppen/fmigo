@@ -17,12 +17,12 @@ GSLFMUS="
     gsl2/engine2
 "
 MEFMUS="
-    gsl2/springs
-    gsl2/bouncingBall
-    gsl2/bouncingBallWithSpring
-    gsl2/fixedPoint
+    me/springs
+    me/bouncingBall
+    me/bouncingBallWithSpring
+    me/fixedPoint
 "
-FMUS="
+CSFMUS="
     typeconvtest
     impulse
     lumpedrod
@@ -71,7 +71,7 @@ do
     popd
 done
 
-#New GSL interface
+# Mode Exchange FMUs
 for d in $MEFMUS
 do
     echo "add_subdirectory($d)" >> CMakeLists.txt
@@ -81,7 +81,8 @@ do
     popd
 done
 
-for d in $FMUS
+# Co-Simulation FMUs
+for d in $CSFMUS
 do
     echo "add_subdirectory($d)" >> CMakeLists.txt
     pushd $d

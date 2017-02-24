@@ -1,0 +1,3 @@
+add_executable (helloDemo demo.cxx demo_b.cxx)
+
+target_link_libraries (helloDemo LINK_PUBLIC GSL)

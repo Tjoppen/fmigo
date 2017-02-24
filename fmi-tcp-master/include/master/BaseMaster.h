@@ -75,7 +75,7 @@ namespace fmitcp_master {
             }
         }
 
-        //like send() but only for one <FMU
+        //like send() but only for one FMU
         void send(FMIClient *fmu, std::string str) {
             fmu->sendMessage(str);
         }

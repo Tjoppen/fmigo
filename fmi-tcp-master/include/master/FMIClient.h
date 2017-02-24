@@ -40,7 +40,6 @@ namespace fmitcp_master {
         // FMI 2.0
         fmi2_import_t* m_fmi2Instance;
         fmi2_import_variable_list_t* m_fmi2Outputs;
-        fmi2_event_info_t* m_fmi2EventInfo;
 
     public:
         int m_stateId;
@@ -53,10 +52,6 @@ namespace fmitcp_master {
         std::deque<bool>        m_getBooleanValues;
         std::deque<std::string> m_getStringValues;
 
-        std::deque<std::vector<double>> m_getDerivatives;
-        std::deque<std::vector<double>> m_getContinuousStates;
-        std::deque<std::vector<double>> m_getNominalContinuousStates;
-        std::deque<std::vector<double>> m_getEventIndicators;
         /// Values returned from calls to fmiGetDirectionalDerivative()
         std::deque<std::vector<double> > m_getDirectionalDerivativeValues;
 

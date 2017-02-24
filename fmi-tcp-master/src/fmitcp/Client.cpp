@@ -237,7 +237,6 @@ void Client::clientData(const char* data, long size){
         for(int i=0; i<r.derivatives_size(); i++)
             derivatives.push_back(r.derivatives(i));
         m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_derivatives_res(mid=%d, status=%d)\n",r.message_id(), r.status());
-        m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_derivatives_res(mid=%d,derivatives=%d,status=%d)\n",r.message_id(), r.derivatives(), r.status());
 
         on_fmi2_import_get_derivatives_res(r.message_id(),derivatives,r.status());
         break;

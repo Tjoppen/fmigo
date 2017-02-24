@@ -25,8 +25,6 @@
 #endif
 #include <fstream>
 #include "control.pb.h"
-#include <string>
-#include <iostream>
 
 using namespace fmitcp_master;
 using namespace fmitcp;
@@ -441,7 +439,6 @@ int main(int argc, char *argv[] ) {
     int quietMode = 0;
     FILEFORMAT fileFormat = csv;
     METHOD method = jacobi;
-    INTEGRATORTYPE integratorType;
     int realtimeMode = 0;
     int printXML = 0;
     vector<int> stepOrder;
@@ -559,7 +556,7 @@ int main(int argc, char *argv[] ) {
     //init
     for (size_t x = 0; x < clients.size(); x++) {
         //set visibility based on command line
-      master->send(clients[x], fmi2_import_instantiate2(0, x < fmuVisibilities.size() ? fmuVisibilities[x] : false, method));
+        master->send(clients[x], fmi2_import_instantiate2(0, x < fmuVisibilities.size() ? fmuVisibilities[x] : false, method));
     }
 
     master->send(clients, fmi2_import_setup_experiment(0, 0, true, relativeTolerance, 0, endTime >= 0, endTime));

@@ -9,19 +9,14 @@
 #define WEAKMASTERS_H_
 #include "master/BaseMaster.h"
 #include "master/WeakConnection.h"
-//#include "master/MEFunctions.h"
-//#include "master/MEGSLFunctions_impl.h"
 #include "common/common.h"
 #include <fmitcp/serialize.h>
-#include <FMI2/fmi2_types.h>
 #include "common/gsl_interface.h"
-//#include <sys/stat.h>
-//#include <sys/types.h>
-#include <stdio.h>
+
+#ifdef DEBUG_MODEL_EXCHANGE
 #include <unistd.h>
-#include <fstream>
 #include <sstream>
-#include <algorithm>
+#endif
 
 using namespace fmitcp::serialize;
 
@@ -61,10 +56,7 @@ public:
             it->first->sendSetX(it->second);
         }
 
-        // why not wait here?? wait()
-
         sendWait(m_clients, fmi2_import_do_step(0, 0, t, dt, true));
-
     }
 };
 
@@ -74,7 +66,7 @@ class GaussSeidelMaster : public BaseMaster {
     std::vector<int> stepOrder;
 public:
     GaussSeidelMaster(vector<FMIClient*> clients, vector<WeakConnection> weakConnections, std::vector<int> stepOrder) :
-        BaseMaster(clients,weakConnections), stepOrder(stepOrder) {
+        BaseMaster(clients, weakConnections), stepOrder(stepOrder) {
         fprintf(stderr, "GSMaster\n");
     }
 
@@ -112,10 +104,10 @@ class ModelExchangeStepper : public BaseMaster {
         double *dydt;
         unsigned long failed_steps;
 
-        ostringstream prefix;
+#ifdef DEBUG_MODEL_EXCHANGE
         FILE* result_file;
         long size_of_file;
-
+#endif
     };
     struct fmu_parameters{
 
@@ -274,13 +266,14 @@ class ModelExchangeStepper : public BaseMaster {
         m.model.get_model_parameters = get_model_parameters;
         fmu_parameters* p = get_p(m);
 
+#ifdef DEBUG_MODEL_EXCHANGE
         ostringstream prefix;
         prefix << "/home/jonas/work/umit/data/resultFile.mat";
-        p->backup.prefix << "/home/jonas/work/umit/data/resultFile.mat";
         if ( ( p->backup.result_file = fopen(prefix.str().c_str(), "w+") ) == NULL){
             cerr << "Could not open file " << prefix.str() << endl;
             exit(1);
         }
+#endif
         p->t_ok = 0;
         p->t_past = 0;
         p->baseMaster = this;
@@ -290,7 +283,9 @@ class ModelExchangeStepper : public BaseMaster {
 
         p->backup.t = 0;
         p->backup.h = 0;
+#ifdef DEBUG_MODEL_EXCHANGE
         p->backup.size_of_file = 0;
+#endif
         p->clients = m_clients;
 
         m.model.function = fmu_function;
@@ -359,8 +354,13 @@ class ModelExchangeStepper : public BaseMaster {
                                      1e-10,
                                      0,
                                      0,
+#ifdef DEBUG_MODEL_EXCHANGE
                                      1,     /* write to file: YES! */
-                                     p->backup.result_file);
+                                     p->backup.result_file
+#else
+                                     0, NULL
+#endif
+                                     );
         // might not be needed
         get_storage().sync();
 #endif
@@ -388,6 +388,7 @@ class ModelExchangeStepper : public BaseMaster {
         sim.t = p->backup.t;
         sim.h = p->backup.h;
 
+#ifdef DEBUG_MODEL_EXCHANGE
         // reset position in the result file
         fseek(p->backup.result_file, p->backup.size_of_file, SEEK_SET);
 
@@ -395,6 +396,7 @@ class ModelExchangeStepper : public BaseMaster {
         int trunc = ftruncate(fileno(p->backup.result_file), p->backup.size_of_file);
         if(0 > trunc )
             perror("storeStates: ftruncate");
+#endif
     }
 
     /** storeStates
@@ -415,7 +417,9 @@ class ModelExchangeStepper : public BaseMaster {
         memcpy(p->backup.dydt, sim.i.evolution->dydt_out,
                sim.model->n_variables * sizeof(p->backup.dydt[0]));
 
+#ifdef DEBUG_MODEL_EXCHANGE
         p->backup.size_of_file = ftell(p->backup.result_file);
+#endif
 
         wait();
         for(auto client: m_clients)

@@ -30,21 +30,6 @@ string int_to_string(int i){
     return ss.str();
 }
 
-void extract_vector(double outVec[], std::deque<std::vector<double>> &inQue){
-    if(inQue.size() == 0) return;
-    int i = 0;
-    auto q  = inQue.front();
-    for(auto v:q)
-      outVec[i++] = v;
-    inQue.pop_front();
-}
-
-void extract_vector(std::vector<double> &outVec, std::deque<std::vector<double>> &inQue){
-    if(inQue.size() == 0) return;
-    outVec = inQue.front();
-    inQue.pop_front();
-}
-
 jm_log_level_enu_t protoJMLogLevelToFmiJMLogLevel(fmitcp_proto::jm_log_level_enu_t logLevel) {
   switch (logLevel) {
   case fmitcp_proto::jm_log_level_nothing:

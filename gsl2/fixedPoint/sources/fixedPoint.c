@@ -1,5 +1,4 @@
 #include "modelDescription.h"
-#include "gsl-interface.h"
 
 //#define SIMULATION_TYPE cgsl_simulation
 //#define SIMULATION_INIT springs_init
@@ -23,7 +22,7 @@ static void eventUpdate(ModelInstance *comp, fmi2EventInfo *eventInfo) {
 }
 int fixed(double t, const double x[], double dxdt[], void * params){
 
-  return GSL_SUCCESS;
+  return 0;//GSL_SUCCESS;
 }
 
 //gcc -g springs.c ../../../templates/gsl2/gsl-interface.c -DCONSOLE -I../../../templates/gsl2 -I../../../templates/fmi2 -lgsl -lgslcblas -lm -Wall

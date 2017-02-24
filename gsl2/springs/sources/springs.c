@@ -1,5 +1,4 @@
 #include "modelDescription.h"
-#include "gsl-interface.h"
 
 #define NUMBER_OF_EVENT_INDICATORS 0
 

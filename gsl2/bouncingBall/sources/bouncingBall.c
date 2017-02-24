@@ -18,7 +18,6 @@
 
 // include code that implements the FMI based on the above definitions
 #include "modelDescription.h"
-#include "gsl-interface.h"
 
 #include "fmuTemplate.h"
 // define class name and unique id

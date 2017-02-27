@@ -1,4 +1,4 @@
-#This file is genereted by modeldescription2header. DO NOT EDIT! 
+/*This file is genereted by modeldescription2header. DO NOT EDIT! */
 #ifndef MODELDESCRIPTION_H
 #define MODELDESCRIPTION_H
 #include "FMI2/fmi2Functions.h" //for fmi2Real etc.

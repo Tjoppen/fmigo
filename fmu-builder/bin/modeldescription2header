@@ -10,6 +10,7 @@ if len(sys.argv) < 2:
     print('USAGE: '+sys.argv[0] +' modelDescription-filename > header-filename', file=sys.stderr)
     print('Example: '+sys.argv[0]+' modelDescription.xml > header.h', file=sys.stderr)
     exit(1)
+print('''#This file is genereted by modeldescriptin2header. DO NOT EDIT! ''')
 
 # Parse xml file
 tree = e.parse(sys.argv[1])

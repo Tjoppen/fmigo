@@ -164,12 +164,10 @@ class ModelExchangeStepper : public BaseMaster {
         ++p->count; /* count function evaluations */
         if(p->stateEvent)return GSL_SUCCESS;
 
-        Data& states = p->baseMaster->get_storage().get_current_states();
-
         for(auto client: p->clients){
             p->baseMaster->send(client, fmi2_import_set_time(0,0,t));
             p->baseMaster->send(client, fmi2_import_set_continuous_states(0,0,
-                                            x + p->baseMaster->get_storage().get_offset(client->getId(), states),
+                                                                          x + p->baseMaster->get_storage().get_offset(client->getId(), STORAGE::states),
                                             client->getNumContinuousStates()));
         }
         p->baseMaster->wait();
@@ -251,7 +249,6 @@ class ModelExchangeStepper : public BaseMaster {
     }
 
     static void *get_model_parameters(const cgsl_model *m){
-        cout << "get_model_parameters" << endl;
         return m->parameters;
     }
 
@@ -313,9 +310,7 @@ class ModelExchangeStepper : public BaseMaster {
 
         for(auto client: p->clients)
             p->baseMaster->send(client, fmi2_import_get_continuous_states(0,0,(int)client->getNumContinuousStates()));
-        }
 
-        cout << "out " << outputs[0] << " " << outputs[1] << endl;
         /* for(auto client: p->clients){ */
         /*                 p->baseMaster->send(client, fmi2_import_set_continuous_states(0,0, */
         /*                                     outputs + p->baseMaster->get_storage().get_offset(client->getId(), states), */
@@ -352,8 +347,8 @@ class ModelExchangeStepper : public BaseMaster {
                                                               p);
 
         //m_sim = (cgsl_simulation *)malloc(sizeof(cgsl_simulation));
-        m_sim = cgsl_init_simulation(e_model,
-                                     //&m_model.model,
+        m_sim = cgsl_init_simulation(//e_model,
+                                     &m_model.model,
                                      rk8pd, /* integrator: Runge-Kutta Prince Dormand pair order 7-8 */
                                      1e-10,
                                      0,
@@ -486,7 +481,7 @@ class ModelExchangeStepper : public BaseMaster {
     void stepToEvent(cgsl_simulation &sim){
         double tol = 1e-9;
         while(!(hasStateEvent(sim) &&
-                (get_storage().absmin(get_storage().get_current_indicators()) < tol || timeLoop.dt_new < tol))){
+                (get_storage().absmin(STORAGE::indicators) < tol || timeLoop.dt_new < tol))){
             getGoldenNewTime(sim);
             step(sim);
             if(timeLoop.dt_new == 0) exit(23);
@@ -541,11 +536,9 @@ class ModelExchangeStepper : public BaseMaster {
 
     void printStates(void){
       fprintf(stderr,"      states     ");
-      get_storage().print(get_storage().get_current_states());
+      get_storage().print(STORAGE::states);
       fprintf(stderr,"      indicator  ");
-      get_storage().print(get_storage().get_current_indicators());
-      fprintf(stderr,"      bindicator ");
-      get_storage().print(get_storage().get_backup_indicators());
+      get_storage().print(STORAGE::indicators);
     }
     void getSafeAndCrossed(){
         fmu_parameters *p = get_p(m_sim);
@@ -556,7 +549,7 @@ class ModelExchangeStepper : public BaseMaster {
     void safeTimeStep(cgsl_simulation &sim){
         // if sims has a state event do not step to far
         if(hasStateEvent(sim)){
-            double absmin = get_storage().absmin(get_storage().get_current_indicators());
+            double absmin = get_storage().absmin(STORAGE::indicators);
             timeLoop.dt_new = sim.h * (absmin > 0 ? absmin:0.00001);
         }else
             timeLoop.dt_new = timeLoop.t_end - sim.t;
@@ -567,6 +560,7 @@ class ModelExchangeStepper : public BaseMaster {
         timeLoop.t_end = t + dt;
         timeLoop.dt_new= dt;
         newDiscreteStates();
+        int iter = 2;
         while( timeLoop.t_safe < timeLoop.t_end ){
             step(m_sim);
             if (hasStateEvent(m_sim)){

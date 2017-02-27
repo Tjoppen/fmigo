@@ -91,7 +91,7 @@ Server::Server(string fmuPath, bool debugLogging, jm_log_level_enu_t logLevel, s
       fmi2_import_free(m_fmi2Instance);
       fmi_import_free_context(m_context);
       fmi_import_rmdir(&m_jmCallbacks, m_workingDir.c_str());
-      m_logger.log(Logger::LOG_ERROR, "Only FMI Co-Simulation 2.0 is supported.\n");
+      m_logger.log(Logger::LOG_ERROR, "Unknown fmuType %i\n", fmuType);
       m_fmuParsed = false;
       return;
     }
@@ -141,7 +141,7 @@ Server::Server(string fmuPath, bool debugLogging, jm_log_level_enu_t logLevel, s
     // todo add FMI 1.0 later on.
     fmi_import_free_context(m_context);
     fmi_import_rmdir(&m_jmCallbacks, m_workingDir.c_str());
-    m_logger.log(Logger::LOG_ERROR, "Only FMI Co-Simulation 2.0 is supported.\n");
+    m_logger.log(Logger::LOG_ERROR, "Only FMI 2.0 is supported.\n");
     m_fmuParsed = false;
     return;
   }
@@ -265,7 +265,7 @@ string Server::clientData(const char *data, size_t size) {
       // fetch the logging categories from the FMU
       size_t nCategories = fmi2_import_get_log_categories_num(m_fmi2Instance);
       vector<fmi2_string_t> categories(nCategories);
-      int i;
+      size_t i;
       for (i = 0 ; i < nCategories ; i++) {
         categories[i] = fmi2_import_get_log_category(m_fmi2Instance, i);
       }
@@ -284,7 +284,7 @@ string Server::clientData(const char *data, size_t size) {
 
     fmi2_type_t simType;
     simType = fmi2_cosimulation;
-    if(r.fmutype() == 2)
+    if (r.has_fmutype() && r.fmutype() == 2)
       simType = fmi2_model_exchange;
 
     m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_instantiate_req(mid=%d,visible=%d)\n",messageId, visible);
@@ -1027,7 +1027,7 @@ string Server::clientData(const char *data, size_t size) {
         for (auto it : next_filter_map) {
             filter_log[it.first].push_back(it.second);
 
-            if (filter_log[it.first].size() > filter_depth) {
+            if (filter_log[it.first].size() > (size_t)filter_depth) {
                 filter_log[it.first].pop_front();
             }
         }

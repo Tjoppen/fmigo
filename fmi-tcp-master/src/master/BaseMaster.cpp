@@ -44,7 +44,7 @@ int BaseMaster::loop_residual_f(const gsl_vector *x, void *params, gsl_vector *f
       }
     }
   }
-  if (k != x->size) {
+  if (k != (int)x->size) {
     //this shouldn't happen
     fprintf(stderr, "loop solver ordering logic inconsistent\n");
     exit(1);
@@ -131,7 +131,12 @@ void BaseMaster::solveLoops() {
 
   gsl_multiroot_function f = {loop_residual_f, n, this};
   gsl_multiroot_fsolver *s = gsl_multiroot_fsolver_alloc(gsl_multiroot_fsolver_hybrids, n);
-  // TODO CHECK IF s == NULL
+
+  if (s == NULL) {
+    fprintf(stderr, "Failed to allocate multiroot fsolver\n");
+    exit(1);
+  }
+
   gsl_multiroot_fsolver_set(s, &f, x0);
 
   int i = 0, imax = 100, status;
@@ -181,7 +186,7 @@ void BaseMaster::wait() {
         int rank;
         std::string str = mpi_recv_string(MPI_ANY_SOURCE, &rank, NULL);
 
-        if (rank < 1 || rank > m_clients.size()) {
+        if (rank < 1 || rank > (int)m_clients.size()) {
             fprintf(stderr, "MPI rank out of bounds: %i\n", rank);
             exit(1);
         }

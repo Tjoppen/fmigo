@@ -52,11 +52,6 @@ enum METHOD {
     me
 };
 
-
-enum INTEGRATORTYPE{
-    cgsl,
-    bsd
-};
 /**
  * @brief Parses the command line arguments and stores in the given variable pointer targets.
  * @param argc Given by system

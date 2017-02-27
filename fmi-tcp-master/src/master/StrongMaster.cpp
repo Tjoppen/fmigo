@@ -64,10 +64,10 @@ void StrongMaster::runIteration(double t, double dt) {
 
     //get strong connector inputs
     //TODO: it'd be nice if these get_real() were pipelined with the get_real()s done above
-    for(int i=0; i<m_clients.size(); i++){
+    for(size_t i=0; i<m_clients.size(); i++){
         //check m_getDirectionalDerivativeValues while we're at it
         if (m_clients[i]->m_getDirectionalDerivativeValues.size() > 0) {
-            fprintf(stderr, "WARNING: Client %i had %zu unprocessed directional derivative results\n", i,
+            fprintf(stderr, "WARNING: Client %zu had %zu unprocessed directional derivative results\n", i,
                     m_clients[i]->m_getDirectionalDerivativeValues.size());
             exit(1);
             m_clients[i]->m_getDirectionalDerivativeValues.clear();
@@ -81,7 +81,7 @@ void StrongMaster::runIteration(double t, double dt) {
     PRINT_HDF5_DELTA("get_strong_reals_wait");
 
     //set connector values
-    for (int i=0; i<m_clients.size(); i++){
+    for (size_t i=0; i<m_clients.size(); i++){
         FMIClient *client = m_clients[i];
         vector<int> vrs = client->getStrongConnectorValueReferences();
         /*fprintf(stderr, "m_getRealValues:\n");
@@ -104,7 +104,7 @@ void StrongMaster::runIteration(double t, double dt) {
 
     //first filter out FMUs with save/load functionality
     std::vector<FMIClient*> saveLoadClients;
-    for (int i=0; i<m_clients.size(); i++){
+    for (size_t i=0; i<m_clients.size(); i++){
         FMIClient *client = m_clients[i];
         if (client->hasCapability(fmi2_cs_canGetAndSetFMUstate)) {
             saveLoadClients.push_back(client);
@@ -114,7 +114,7 @@ void StrongMaster::runIteration(double t, double dt) {
 
     //zero forces
     //if we don't do this then the forces would explode
-    for (int i=0; i<saveLoadClients.size(); i++){
+    for (size_t i=0; i<saveLoadClients.size(); i++){
         FMIClient *client = saveLoadClients[i];
         for (int j = 0; j < client->numConnectors(); j++) {
             StrongConnector *sc = client->getConnector(j);
@@ -134,7 +134,7 @@ void StrongMaster::runIteration(double t, double dt) {
     send(saveLoadClients, fmi2_import_do_step(0, 0, t, dt, false));
 
     //do about the same thing we did a little bit further up, but store the results in future values
-    for(int i=0; i<saveLoadClients.size(); i++){
+    for(size_t i=0; i<saveLoadClients.size(); i++){
         const vector<int> valueRefs = saveLoadClients[i]->getStrongConnectorValueReferences();
         send(saveLoadClients[i], fmi2_import_get_real(0, 0, valueRefs));
     }
@@ -144,14 +144,14 @@ void StrongMaster::runIteration(double t, double dt) {
     PRINT_HDF5_DELTA("get_future_values_wait");
 
     //set FUTURE connector values (velocities only)
-    for (int i=0; i<saveLoadClients.size(); i++){
+    for (size_t i=0; i<saveLoadClients.size(); i++){
         FMIClient *client = saveLoadClients[i];
         vector<int> vrs = client->getStrongConnectorValueReferences();
         client->setConnectorFutureVelocities(vrs, vector<double>(client->m_getRealValues.begin(), client->m_getRealValues.end()));
     }
 
     //restore
-    for (int i=0; i<saveLoadClients.size(); i++){
+    for (size_t i=0; i<saveLoadClients.size(); i++){
         FMIClient *client = saveLoadClients[i];
         send(client, fmi2_import_set_fmu_state(0, 0, client->m_stateId));
         send(client, fmi2_import_free_fmu_state(0, 0, client->m_stateId));
@@ -246,7 +246,7 @@ void StrongMaster::runIteration(double t, double dt) {
     PRINT_HDF5_DELTA("run_solver");
 
     //distribute forces
-    for (int i=0; i<m_clients.size(); i++){
+    for (size_t i=0; i<m_clients.size(); i++){
         FMIClient *client = m_clients[i];
         for (int j = 0; j < client->numConnectors(); j++) {
             StrongConnector *sc = client->getConnector(j);
@@ -285,7 +285,7 @@ void StrongMaster::runIteration(double t, double dt) {
 
 string StrongMaster::getForceFieldnames() const {
     ostringstream oss;
-    for (int i=0; i<m_clients.size(); i++){
+    for (size_t i=0; i<m_clients.size(); i++){
         FMIClient *client = m_clients[i];
         for (int j = 0; j < client->numConnectors(); j++) {
             StrongConnector *sc = client->getConnector(j);
@@ -310,7 +310,7 @@ string StrongMaster::getForceFieldnames() const {
 
 int StrongMaster::getNumForceOutputs() const {
   int ret = 0;
-  for (int i=0; i<m_clients.size(); i++){
+  for (size_t i=0; i<m_clients.size(); i++){
     FMIClient *client = m_clients[i];
     for (int j = 0; j < client->numConnectors(); j++) {
       StrongConnector *sc = client->getConnector(j);

@@ -9,19 +9,14 @@
 #define WEAKMASTERS_H_
 #include "master/BaseMaster.h"
 #include "master/WeakConnection.h"
-//#include "master/MEFunctions.h"
-//#include "master/MEGSLFunctions_impl.h"
 #include "common/common.h"
 #include <fmitcp/serialize.h>
-#include <FMI2/fmi2_types.h>
 #include "common/gsl_interface.h"
-//#include <sys/stat.h>
-//#include <sys/types.h>
-#include <stdio.h>
+
+#ifdef DEBUG_MODEL_EXCHANGE
 #include <unistd.h>
-#include <fstream>
 #include <sstream>
-#include <algorithm>
+#endif
 
 using namespace fmitcp::serialize;
 
@@ -61,10 +56,7 @@ public:
             it->first->sendSetX(it->second);
         }
 
-        // why not wait here?? wait()
-
         sendWait(m_clients, fmi2_import_do_step(0, 0, t, dt, true));
-
     }
 };
 
@@ -74,7 +66,7 @@ class GaussSeidelMaster : public BaseMaster {
     std::vector<int> stepOrder;
 public:
     GaussSeidelMaster(vector<FMIClient*> clients, vector<WeakConnection> weakConnections, std::vector<int> stepOrder) :
-        BaseMaster(clients,weakConnections), stepOrder(stepOrder) {
+        BaseMaster(clients, weakConnections), stepOrder(stepOrder) {
         fprintf(stderr, "GSMaster\n");
     }
 
@@ -112,10 +104,10 @@ class ModelExchangeStepper : public BaseMaster {
         double *dydt;
         unsigned long failed_steps;
 
-        ostringstream prefix;
+#ifdef DEBUG_MODEL_EXCHANGE
         FILE* result_file;
         long size_of_file;
-
+#endif
     };
     struct fmu_parameters{
 
@@ -172,7 +164,7 @@ class ModelExchangeStepper : public BaseMaster {
         ++p->count; /* count function evaluations */
         if(p->stateEvent)return GSL_SUCCESS;
 
-        Data& states = p->baseMaster->get_storage().get_states();
+        Data& states = p->baseMaster->get_storage().get_current_states();
 
         for(auto client: p->clients){
             p->baseMaster->send(client, fmi2_import_set_time(0,0,t));
@@ -188,7 +180,7 @@ class ModelExchangeStepper : public BaseMaster {
         p->baseMaster->wait();
 
         for(auto client: p->clients)
-            p->baseMaster->get_storage().get_derivatives(dxdt, client->getId());
+            p->baseMaster->get_storage().get_current_derivatives(dxdt, client->getId());
 
         for(auto client: p->clients){
             if(client->getNumEventIndicators())
@@ -197,7 +189,7 @@ class ModelExchangeStepper : public BaseMaster {
 
         p->baseMaster->wait();
 
-        //p->baseMaster->get_storage().print(p->baseMaster->get_storage().get_states());
+        //p->baseMaster->get_storage().print(p->baseMaster->get_storage().get_current_states());
         for(auto client: p->clients){
             if(client->getNumEventIndicators()){
                 if(p->baseMaster->get_storage().past_event(client->getId())){
@@ -239,7 +231,7 @@ class ModelExchangeStepper : public BaseMaster {
      */
     void allocateMemory(fmu_model &m, const std::vector<FMIClient*> &clients){
         fmu_alloc(clients);
-        m.model.n_variables = get_storage().get_states().size();
+        m.model.n_variables = get_storage().get_current_states().size();
         if(m.model.n_variables == 0){
             cerr << "ModelExchangeStepper nothing to integrate" << endl;
             exit(0);
@@ -274,13 +266,14 @@ class ModelExchangeStepper : public BaseMaster {
         m.model.get_model_parameters = get_model_parameters;
         fmu_parameters* p = get_p(m);
 
+#ifdef DEBUG_MODEL_EXCHANGE
         ostringstream prefix;
         prefix << "/home/jonas/work/umit/data/resultFile.mat";
-        p->backup.prefix << "/home/jonas/work/umit/data/resultFile.mat";
         if ( ( p->backup.result_file = fopen(prefix.str().c_str(), "w+") ) == NULL){
             cerr << "Could not open file " << prefix.str() << endl;
             exit(1);
         }
+#endif
         p->t_ok = 0;
         p->t_past = 0;
         p->baseMaster = this;
@@ -290,7 +283,9 @@ class ModelExchangeStepper : public BaseMaster {
 
         p->backup.t = 0;
         p->backup.h = 0;
+#ifdef DEBUG_MODEL_EXCHANGE
         p->backup.size_of_file = 0;
+#endif
         p->clients = m_clients;
 
         m.model.function = fmu_function;
@@ -304,7 +299,7 @@ class ModelExchangeStepper : public BaseMaster {
         wait();
 
         for(auto client: clients)
-            get_storage().get_states(m.model.x, client->getId());
+            get_storage().get_current_states(m.model.x, client->getId());
     }
 
 
@@ -314,7 +309,7 @@ class ModelExchangeStepper : public BaseMaster {
         fmu_parameters* p = (fmu_parameters*)params;
 
         ++p->count; /* count function evaluations */
-        Data& states = p->baseMaster->get_storage().get_states();
+        Data& states = p->baseMaster->get_storage().get_current_states();
 
         for(auto client: p->clients)
             p->baseMaster->send(client, fmi2_import_get_continuous_states(0,0,(int)client->getNumContinuousStates()));
@@ -350,7 +345,7 @@ class ModelExchangeStepper : public BaseMaster {
         // set up a gsl_simulation for each client
         init_fmu_model(m_model, m_clients);
         fmu_parameters* p = get_p(m_model);
-        int filter_length = get_storage().get_states().size();
+        int filter_length = get_storage().get_current_states().size();
         cgsl_model* e_model = cgsl_epce_default_model_init(&m_model.model,  /* model */
                                                               2,
                                                               epce_post_step,
@@ -363,8 +358,13 @@ class ModelExchangeStepper : public BaseMaster {
                                      1e-10,
                                      0,
                                      0,
+#ifdef DEBUG_MODEL_EXCHANGE
                                      1,     /* write to file: YES! */
-                                     p->backup.result_file);
+                                     p->backup.result_file
+#else
+                                     0, NULL
+#endif
+                                     );
         // might not be needed
         get_storage().sync();
 #endif
@@ -383,7 +383,7 @@ class ModelExchangeStepper : public BaseMaster {
         //restore previous states
 
         for(auto client: m_clients)
-            get_storage().get_states(sim.model->x,client->getId());
+            get_storage().get_current_states(sim.model->x,client->getId());
 
         memcpy(sim.i.evolution->dydt_out, p->backup.dydt,
                sim.model->n_variables * sizeof(p->backup.dydt[0]));
@@ -392,6 +392,7 @@ class ModelExchangeStepper : public BaseMaster {
         sim.t = p->backup.t;
         sim.h = p->backup.h;
 
+#ifdef DEBUG_MODEL_EXCHANGE
         // reset position in the result file
         fseek(p->backup.result_file, p->backup.size_of_file, SEEK_SET);
 
@@ -399,6 +400,7 @@ class ModelExchangeStepper : public BaseMaster {
         int trunc = ftruncate(fileno(p->backup.result_file), p->backup.size_of_file);
         if(0 > trunc )
             perror("storeStates: ftruncate");
+#endif
     }
 
     /** storeStates
@@ -419,11 +421,13 @@ class ModelExchangeStepper : public BaseMaster {
         memcpy(p->backup.dydt, sim.i.evolution->dydt_out,
                sim.model->n_variables * sizeof(p->backup.dydt[0]));
 
+#ifdef DEBUG_MODEL_EXCHANGE
         p->backup.size_of_file = ftell(p->backup.result_file);
+#endif
 
         wait();
         for(auto client: m_clients)
-            get_storage().get_states(sim.model->x,client->getId());
+            get_storage().get_current_states(sim.model->x,client->getId());
         get_storage().sync();
     }
 
@@ -482,7 +486,7 @@ class ModelExchangeStepper : public BaseMaster {
     void stepToEvent(cgsl_simulation &sim){
         double tol = 1e-9;
         while(!(hasStateEvent(sim) &&
-                (get_storage().absmin(get_storage().get_indicators()) < tol || timeLoop.dt_new < tol))){
+                (get_storage().absmin(get_storage().get_current_indicators()) < tol || timeLoop.dt_new < tol))){
             getGoldenNewTime(sim);
             step(sim);
             if(timeLoop.dt_new == 0) exit(23);
@@ -537,9 +541,9 @@ class ModelExchangeStepper : public BaseMaster {
 
     void printStates(void){
       fprintf(stderr,"      states     ");
-      get_storage().print(get_storage().get_states());
+      get_storage().print(get_storage().get_current_states());
       fprintf(stderr,"      indicator  ");
-      get_storage().print(get_storage().get_indicators());
+      get_storage().print(get_storage().get_current_indicators());
       fprintf(stderr,"      bindicator ");
       get_storage().print(get_storage().get_backup_indicators());
     }
@@ -552,7 +556,7 @@ class ModelExchangeStepper : public BaseMaster {
     void safeTimeStep(cgsl_simulation &sim){
         // if sims has a state event do not step to far
         if(hasStateEvent(sim)){
-            double absmin = get_storage().absmin(get_storage().get_indicators());
+            double absmin = get_storage().absmin(get_storage().get_current_indicators());
             timeLoop.dt_new = sim.h * (absmin > 0 ? absmin:0.00001);
         }else
             timeLoop.dt_new = timeLoop.t_end - sim.t;

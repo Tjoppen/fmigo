@@ -86,7 +86,6 @@ class FmuGoStorage {
 
     CURRENT_BACKUP(current);
     CURRENT_BACKUP(backup);
-    bool past_event(size_t id);
 
  private:
     BoundsVector m_bounds;
@@ -125,6 +124,11 @@ class FmuGoStorage {
     double absmin(enum STORAGE, size_t id);
     size_t size(enum STORAGE type);
 
+    /** past_event()
+      *
+      */
+    bool past_event(size_t id);
+
     /** push_to():
      *  Replace the 'current_data_set' for 'client_id' with 'vec'
      *
@@ -136,19 +140,19 @@ class FmuGoStorage {
 
 
     /** push_to():
-     *  Replace the 'current_data_set' for 'client_id' with 'vec'
-     *
-     *  @param client_id The client id
-     *  @param type Is one of enum STORAGE{states,indicators,derivatives,nominals}
-     *  @param array An array with data
-     */
+      * Replace the 'current_data_set' for 'client_id' with 'vec'
+      *
+      * @param client_id The client id
+      * @param type Is one of enum STORAGE{states,indicators,derivatives,nominals}
+      * @param array An array with data
+      */
     void push_to(size_t client_id, enum STORAGE type, double* array);
 
 
     /** cycle(): maybe reset?
-     *  Toggles the working dataset with a backup copy from last call of sync()
-     *  swap only makes shallow copies
-     */
+      * Toggles the working dataset with a backup copy from last call of sync()
+      * swap only makes shallow copies
+      */
     void cycle();
 
 

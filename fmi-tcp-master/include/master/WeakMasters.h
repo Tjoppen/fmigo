@@ -316,6 +316,10 @@ class ModelExchangeStepper : public BaseMaster {
         ++p->count; /* count function evaluations */
         Data& states = p->baseMaster->get_storage().get_states();
 
+        for(auto client: p->clients)
+            p->baseMaster->send(client, fmi2_import_get_continuous_states(0,0,(int)client->getNumContinuousStates()));
+        }
+
         cout << "out " << outputs[0] << " " << outputs[1] << endl;
         /* for(auto client: p->clients){ */
         /*                 p->baseMaster->send(client, fmi2_import_set_continuous_states(0,0, */

@@ -272,18 +272,18 @@ void FMIClient::on_fmi2_import_new_discrete_states_res             (int mid, fmi
     fprintf(stderr, " \n");
 
 void FMIClient::on_fmi2_import_get_derivatives_res                 (int mid, const vector<double>& derivatives, fmitcp_proto::fmi2_status_t status){
-    m_master->get_storage().push_to(getId(),m_master->get_storage().get_current_derivatives(), derivatives);
+    m_master->get_storage().push_to(getId(),STORAGE::derivatives, derivatives);
 }
 void FMIClient::on_fmi2_import_get_event_indicators_res            (int mid, const vector<double>& eventIndicators, fmitcp_proto::fmi2_status_t status){
-    m_master->get_storage().push_to(getId(),m_master->get_storage().get_current_indicators(),eventIndicators);
+    m_master->get_storage().push_to(getId(),STORAGE::indicators,eventIndicators);
 }
 //void on_fmi2_import_eventUpdate_res                     (int mid, bool iterationConverged, bool stateValueReferencesChanged, bool stateValuesChanged, bool terminateSimulation, bool upcomingTimeEvent, double nextEventTime, fmitcp_proto::fmi2_status_t status);
 //void on_fmi2_import_completed_event_iteration_res       (int mid, fmitcp_proto::fmi2_status_t status);
 void FMIClient::on_fmi2_import_get_continuous_states_res           (int mid, const vector<double>& states, fmitcp_proto::fmi2_status_t status){
-    m_master->get_storage().push_to(getId(),m_master->get_storage().get_current_states(),states);
+    m_master->get_storage().push_to(getId(),STORAGE::states,states);
 }
 void FMIClient::on_fmi2_import_get_nominal_continuous_states_res   (int mid, const vector<double>& nominals, fmitcp_proto::fmi2_status_t status){
-    m_master->get_storage().push_to(getId(),m_master->get_storage().get_current_nominals(),nominals);
+    m_master->get_storage().push_to(getId(),STORAGE::nominals,nominals);
 }
 //void on_fmi2_import_terminate_res                       (int mid, fmitcp_proto::fmi2_status_t status);
 //void on_fmi2_import_set_debug_logging_res               (int mid, fmitcp_proto::fmi2_status_t status);

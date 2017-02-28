@@ -61,7 +61,8 @@ test:xenial:
 test:ctest:xenial:
   stage: test
   script:
-    - cd /home/gitlab-ci/umit/build && ctest
+    - ls
+    --- cd /home/gitlab-ci/umit/build && ctest
   dependencies:
     - build:xenial
   tags:

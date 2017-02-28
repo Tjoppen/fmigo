@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 2.8)
 
+#enable testing
+enable_testing()
+# Includes which tests that should be skipped
+configure_file(${CMAKE_SOURCE_DIR}/CTestCustom.cmake ${CMAKE_BINARY_DIR})
+
 if(CMAKE_VERSION VERSION_GREATER "3.3")
     #suppress warning about libexpat.a
     cmake_policy(SET CMP0058 OLD)
@@ -139,6 +144,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_VERSION}/ThirdParty
 
 add_subdirectory(strong-coupling-core)
 add_subdirectory(${FMILIBRARY_VERSION})
+
 add_subdirectory(fmi-tcp-master)
 add_dependencies(fmi-tcp-master fmilib)
 add_dependencies(fmi-mpi-master fmilib)

@@ -122,6 +122,7 @@ class ModelExchangeStepper : public BaseMaster {
 
         bool stateEvent;
         Backup backup;
+        bool sim_started;
     };
     struct fmu_model{
       cgsl_model model;
@@ -275,6 +276,7 @@ class ModelExchangeStepper : public BaseMaster {
         p->t_past = 0;
         p->baseMaster = this;
         p->stateEvent = false;
+        p->sim_started = false;
         //p.clients.resize(0,0);
         p->count = 0;
 
@@ -299,32 +301,46 @@ class ModelExchangeStepper : public BaseMaster {
             get_storage().get_current_states(m.model.x, client->getId());
     }
 
+#define STATIC_GET_CLIENT_OFFSET(name)                                  \
+   p->baseMaster->get_storage().get_offset(client->getId(), STORAGE::name)
+#define STATIC_SET_(name, name2, data)                                       \
+    p->baseMaster->send(client, fmi2_import_set_##name##_##name2(0,0,     \
+                                                       data + STATIC_GET_CLIENT_OFFSET(name2), \
+                                                       client->getNumContinuousStates()));
+#define STATIC_GET_(name)                                               \
+    p->baseMaster->send(client, fmi2_import_get_##name(0,0,(int)client->getNumContinuousStates()))
 
     static int epce_post_step(int n, const double outputs[], void * params) {
-
         // make local variables
         fmu_parameters* p = (fmu_parameters*)params;
+        if( p->sim_started ){
+            ++p->count; /* count function evaluations */
+            Data& states = p->baseMaster->get_storage().get_current_states();
 
-        ++p->count; /* count function evaluations */
-        Data& states = p->baseMaster->get_storage().get_current_states();
+            fprintf(stderr,"\nepce_post_step %f %f \n",outputs[0],outputs[1]);
+            // extract current states to restore after outputs are changed
+            for(auto client: p->clients)
+                STATIC_GET_(continuous_states);
+            double tmp[p->baseMaster->get_storage().get_current_states().size()];
+            p->baseMaster->get_storage().get_current_states(tmp);
 
-        for(auto client: p->clients)
-            p->baseMaster->send(client, fmi2_import_get_continuous_states(0,0,(int)client->getNumContinuousStates()));
-
-        /* for(auto client: p->clients){ */
-        /*                 p->baseMaster->send(client, fmi2_import_set_continuous_states(0,0, */
-        /*                                     outputs + p->baseMaster->get_storage().get_offset(client->getId(), states), */
-        /*                                     client->getNumContinuousStates())); */
-        /* } */
-        p->baseMaster->wait();
-        p->baseMaster->solveLoops();
-
-        for(auto client: p->clients)
-            {
-                cout << " client id " << client->getNumContinuousStates() << endl;
-            p->baseMaster->send(client, fmi2_import_get_derivatives(0,0,(int)client->getNumContinuousStates()));
+            //set filtered states
+            for(auto client: p->clients){
+                STATIC_SET_(continuous,states,outputs);
             }
-        p->baseMaster->wait();
+            p->baseMaster->wait();
+            p->baseMaster->solveLoops();
+
+            // send get_ to update outputs. TODO use one function call instead
+            for(auto client: p->clients)
+                STATIC_GET_(derivatives);
+            p->baseMaster->wait();
+
+            //reset old states
+            for(auto client: p->clients){
+                STATIC_SET_(continuous,states,tmp);
+            }
+        }
 
         return GSL_SUCCESS;
     }
@@ -559,6 +575,7 @@ class ModelExchangeStepper : public BaseMaster {
         timeLoop.t_safe = t;
         timeLoop.t_end = t + dt;
         timeLoop.dt_new= dt;
+        get_p(m_sim)->sim_started = true;
         newDiscreteStates();
         int iter = 2;
         while( timeLoop.t_safe < timeLoop.t_end ){

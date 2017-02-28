@@ -62,7 +62,7 @@ test:ctest:xenial:
   stage: test
   script:
     - ls
-    - docker run --workdir /home/gitlab-ci/umit/build ctest
+    - docker run --workdir /home/gitlab-ci/umit/build umit/xenial:$(git rev-parse HEAD) ctest
   dependencies:
     - build:xenial
   tags:

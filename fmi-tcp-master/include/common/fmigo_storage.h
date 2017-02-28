@@ -15,7 +15,7 @@ using namespace std;
 /// Keep two state vectors so we can backup.
 /// work with references so that we can go from backup to current without
 /// copy.
-namespace fmu_go_storage{
+namespace fmigo_storage{
 typedef pair< size_t, size_t>  Bounds;
 typedef vector<double> Data;
 typedef pair< Data, Data>  Storage;
@@ -27,42 +27,40 @@ typedef vector<Bounds> BoundsVector;
      nominals = 1 << 4,
      bounds_i = states | derivatives | nominals
  };
-class FmuGoStorage {
+class FmigoStorage {
 #define CREATE_DATA_HPP(name)                                           \
     private:                                                            \
         Storage m_##name;   /* to store the data */                     \
  public:                                                                \
     inline Data & get_current_##name() { return m_##name.first ;}       \
     inline Data & get_backup_##name()  { return m_##name.second;}       \
-    inline double get_current_##name(size_t id, size_t index){                  \
-        if(index > get_end(id,STORAGE::name)){                        \
+    inline double get_current_##name(size_t id, size_t index){          \
+        if(index > get_end(id,STORAGE::name)){                          \
             fprintf(stderr,"Error: out of range for Data::iterator get_"#name""); \
             exit(1);                                                    \
         }                                                               \
         return *(get_current_##name().begin()+get_offset(id,STORAGE::name)+index); \
     }                                                                   \
-    inline double get_backup_##name(size_t id, size_t index){                  \
+    inline double get_backup_##name(size_t id, size_t index){           \
         if(index > get_end(id,STORAGE::name)){                          \
             fprintf(stderr,"Error: out of range for Data::iterator get_backup_"#name""); \
             exit(1);                                                    \
         }                                                               \
         return *(get_backup_##name().begin()+get_offset(id,STORAGE::name)+index); \
     }                                                                   \
-    inline void get_current_##name(double *ret, size_t id) {                    \
+    inline void get_current_##name(double *ret, size_t id) {            \
         /*need do extract the correct dataset belonging to client*/     \
-        size_t o = get_offset( id, STORAGE::name );                   \
-        size_t e = get_end( id, STORAGE::name );                      \
-        copy(get_current_##name().begin() + o,                                  \
-             get_current_##name().begin() + e,                                  \
+        size_t o = get_offset( id, STORAGE::name );                     \
+        size_t e = get_end( id, STORAGE::name );                        \
+        copy(get_current_##name().begin() + o,                          \
+             get_current_##name().begin() + e,                          \
              ret + o);                                                  \
     }                                                                   \
-    inline void get_backup_##name(double *ret, size_t id)  {            \
+    inline void get_current_##name(double *ret) {                       \
         /*need do extract the correct dataset belonging to client*/     \
-        size_t o = get_offset( id, STORAGE::name );                   \
-        size_t e = get_end( id, STORAGE::name );                      \
-        copy(get_backup_##name().begin() + o,                           \
-             get_backup_##name().begin() + e,                           \
-             ret + o);                                                  \
+        copy(get_current_##name().begin(),                              \
+             get_current_##name().end(),                                \
+             ret);                                                      \
     }
 
     CREATE_DATA_HPP(states);
@@ -114,15 +112,15 @@ class FmuGoStorage {
 
     void allocate_storage_states(const vector<size_t> &size_vec,enum STORAGE type);
     void allocate_storage(const vector<size_t> &number_of_states,const vector<size_t> &number_of_indicators);
-    ~FmuGoStorage();
-    FmuGoStorage();
-    FmuGoStorage(const vector<size_t> &number_of_states,const vector<size_t> &number_of_indicators);
+    ~FmigoStorage();
+    FmigoStorage();
+    FmigoStorage(const vector<size_t> &number_of_states,const vector<size_t> &number_of_indicators);
     void print(enum STORAGE type,char *str);
     void print(enum STORAGE type);
 
     double absmin(enum STORAGE type);
     double absmin(enum STORAGE, size_t id);
-    size_t size(enum STORAGE type);
+    size_t get_size(enum STORAGE type);
 
     /** past_event()
       *

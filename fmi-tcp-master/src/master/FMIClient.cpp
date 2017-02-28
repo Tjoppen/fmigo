@@ -6,7 +6,7 @@
 
 #include "master/BaseMaster.h"
 #include "common/common.h"
-#include "common/fmu_go_storage.h"
+#include "common/fmigo_storage.h"
 #include "master/FMIClient.h"
 
 using namespace fmitcp_master;

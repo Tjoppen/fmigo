@@ -11,16 +11,16 @@
 #include "FMIClient.h"
 #ifdef USE_GPL
 #include <gsl/gsl_multiroots.h>
-#include "common/fmu_go_storage.h"
+#include "common/fmigo_storage.h"
 #endif
 
-using namespace fmu_go_storage;
+using namespace fmigo_storage;
 namespace fmitcp_master {
     class BaseMaster {
     protected:
         std::vector<FMIClient*> m_clients;
         std::vector<WeakConnection> m_weakConnections;
-        class FmuGoStorage m_fmuGoStorage;//(std::vector<size_t>(0));
+        class FmigoStorage m_fmigoStorage;//(std::vector<size_t>(0));
         OutputRefsType clientWeakRefs;
 
         InputRefsValuesType initialNonReals;  //for loop solver
@@ -43,7 +43,7 @@ namespace fmitcp_master {
         void slaveDisconnected              (FMIClient* slave){}
         void slaveError                     (FMIClient* slave){exit(1);}
 
-        inline FmuGoStorage & get_storage(){return m_fmuGoStorage;}
+        inline FmigoStorage & get_storage(){return m_fmigoStorage;}
         void fmu_alloc(const std::vector<FMIClient*> &clients){
             vector<size_t> states({});
             vector<size_t> indicators({});

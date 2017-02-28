@@ -5,9 +5,9 @@
 #include <iostream>
 #include <cmath>
 #ifdef DEBUG
-#include "fmu_go_storage.hpp"
+#include "fmigo_storage.hpp"
 #else
-#include "common/fmu_go_storage.h"
+#include "common/fmigo_storage.h"
 #endif
 using namespace std;
 /// Global data for FMUs as well as maps to fetch and read from the FMI/X
@@ -16,26 +16,26 @@ using namespace std;
 /// Keep two state vectors so we can backup.
 /// work with references so that we can go from backup to current without
 /// copy.
-using namespace fmu_go_storage;
+using namespace fmigo_storage;
 
 
-FmuGoStorage::~FmuGoStorage()
+FmigoStorage::~FmigoStorage()
 {
 }
 
-FmuGoStorage::FmuGoStorage()
+FmigoStorage::FmigoStorage()
 {
     //allocate_storage(vector<size_t>({}),get_current_states());
     //allocate_storage_states(vector<size_t>({}),get_current_states());
     allocate_storage(vector<size_t>({}),vector<size_t>({}));
 }
-FmuGoStorage::FmuGoStorage(const vector<size_t> &number_of_states,const vector<size_t> &number_of_indicators)
+FmigoStorage::FmigoStorage(const vector<size_t> &number_of_states,const vector<size_t> &number_of_indicators)
 {
     //allocate_storage_states(number_of_states, get_current_states());
     //    allocate_storage(number_of_states, get_current_states());
     allocate_storage(number_of_states,number_of_indicators);
 }
-void FmuGoStorage::allocate_storage_states(const vector<size_t> &size_vec, enum STORAGE type)
+void FmigoStorage::allocate_storage_states(const vector<size_t> &size_vec, enum STORAGE type)
 {
         size_t total_size = 0;
         size_t first = 0;
@@ -52,7 +52,7 @@ void FmuGoStorage::allocate_storage_states(const vector<size_t> &size_vec, enum 
         get_backup(type) = get_current(type);
     }
 
-void FmuGoStorage::allocate_storage(const vector<size_t> &number_of_states,const vector<size_t> &number_of_indicators)
+void FmigoStorage::allocate_storage(const vector<size_t> &number_of_states,const vector<size_t> &number_of_indicators)
     {
         allocate_storage_states(number_of_states, STORAGE::states);
         allocate_storage_states(number_of_states, STORAGE::derivatives);
@@ -60,8 +60,8 @@ void FmuGoStorage::allocate_storage(const vector<size_t> &number_of_states,const
         allocate_storage_states(number_of_states, STORAGE::nominals);
     }
 
-void FmuGoStorage::print(enum STORAGE type){ char str[1]=""; FmuGoStorage::print(type,str);}
-void FmuGoStorage::print(enum STORAGE type,char *str)
+void FmigoStorage::print(enum STORAGE type){ char str[1]=""; FmigoStorage::print(type,str);}
+void FmigoStorage::print(enum STORAGE type,char *str)
     {
         fputs(str,stderr);
         Data& current = get_current(type);
@@ -80,7 +80,7 @@ void FmuGoStorage::print(enum STORAGE type,char *str)
         fprintf(stderr,"\n");
     }
 
-double FmuGoStorage::absmin(enum STORAGE type){
+double FmigoStorage::absmin(enum STORAGE type){
 
     if(!get_current(type).size()) return 0;
     double min = abs(*(get_current(type).begin()));
@@ -89,7 +89,7 @@ double FmuGoStorage::absmin(enum STORAGE type){
             min = abs(z);
     return min;
 }
-double FmuGoStorage::absmin(enum STORAGE type,size_t id){
+double FmigoStorage::absmin(enum STORAGE type,size_t id){
     size_t o = get_offset(id, type);
     double min = abs( *(get_current(type).begin() + o));
     for(size_t i = o + 1; i < get_end(id, type); i++)
@@ -101,7 +101,7 @@ double FmuGoStorage::absmin(enum STORAGE type,size_t id){
 /** size()
  *  returns the number of fmus that have allocated memory
  */
-size_t FmuGoStorage::size(enum STORAGE type){
+size_t FmigoStorage::get_size(enum STORAGE type){
     return get_bounds(type).size();
 }
 
@@ -112,7 +112,7 @@ size_t FmuGoStorage::size(enum STORAGE type){
      *  @param current_data_set Is one of get_current_{states,indicators,derivatives}()
      *  @param vec A vector with data
      */
-void FmuGoStorage::push_to(size_t client_id, enum STORAGE type, const Data &vec)
+void FmigoStorage::push_to(size_t client_id, enum STORAGE type, const Data &vec)
     {
         size_t s = get_size(client_id, type);
 
@@ -132,7 +132,7 @@ void FmuGoStorage::push_to(size_t client_id, enum STORAGE type, const Data &vec)
      *  @param current_data_set Is one of get_current_{states,indicators,derivatives}()
      *  @param array An array with data
      */
-void FmuGoStorage::push_to(size_t client_id, enum STORAGE type, double* array)
+void FmigoStorage::push_to(size_t client_id, enum STORAGE type, double* array)
     {
         for(size_t i = get_offset(client_id,type); i < get_end(client_id, type); i++)
             get_current(type).at(i) = *array++;
@@ -144,7 +144,7 @@ void FmuGoStorage::push_to(size_t client_id, enum STORAGE type, double* array)
      */
 #define cycle_storage_cpp(name)\
     swap(get_current_##name(), get_backup_##name() );
-void FmuGoStorage::cycle() {
+void FmigoStorage::cycle() {
     cycle_storage_cpp(states);
     cycle_storage_cpp(derivatives);
     cycle_storage_cpp(indicators);
@@ -156,14 +156,14 @@ void FmuGoStorage::cycle() {
      */
 #define sync_storage_cpp(name)\
     copy(get_current_##name().begin(), get_current_##name().end(), get_backup_##name().begin() );
-void FmuGoStorage::sync(){
+void FmigoStorage::sync(){
     sync_storage_cpp(states);
     sync_storage_cpp(derivatives);
     sync_storage_cpp(indicators);
     sync_storage_cpp(nominals);
 }
 
-bool FmuGoStorage::past_event(size_t id){
+bool FmigoStorage::past_event(size_t id){
     enum STORAGE type = STORAGE::indicators;
     size_t index = get_offset(id, type);
     for(; index < get_end(id, type); index++)
@@ -175,7 +175,7 @@ bool FmuGoStorage::past_event(size_t id){
     /** test_function():
      *  test the functionality of the class
      */
-void FmuGoStorage::test_functions(void)
+void FmigoStorage::test_functions(void)
     {
 
         fprintf(stderr,"Test of fmi_on_storage start\n");
@@ -195,14 +195,14 @@ void FmuGoStorage::test_functions(void)
         vector<size_t> n_nominals = n_states;
         Data a,b;
 
-        FmuGoStorage testFmuGoStorage(n_states,n_indicators);
+        FmigoStorage testFmigoStorage(n_states,n_indicators);
         bool fail = false;
 
 #define test_size_storage_cpp(name)\
         fprintf(stderr,"Testing size() -- "#name"     -  ");\
         for(size_t i = 0 ; i < n_##name.size(); ++i)\
             {\
-            if( n_##name.at(i) != testFmuGoStorage.get_size(i , STORAGE::name))   \
+            if( n_##name.at(i) != testFmigoStorage.get_size(i , STORAGE::name))   \
                 fail = true;\
             }\
         if(fail)\
@@ -216,10 +216,10 @@ void FmuGoStorage::test_functions(void)
 
 #define test_push_to_storage_cpp(name)\
         fprintf(stderr,"Testing push_to()  -  ");\
-        testFmuGoStorage.push_to(0,STORAGE::name,Data(first_vec_storage_cpp)); \
-        testFmuGoStorage.push_to(2,STORAGE::name,Data(third_vec_storage_cpp)); \
-        a = testFmuGoStorage.get_current_##name();\
-        b = testFmuGoStorage.get_backup_##name();\
+        testFmigoStorage.push_to(0,STORAGE::name,Data(first_vec_storage_cpp)); \
+        testFmigoStorage.push_to(2,STORAGE::name,Data(third_vec_storage_cpp)); \
+        a = testFmigoStorage.get_current_##name();\
+        b = testFmigoStorage.get_backup_##name();\
         if(a == b) fail = true;\
         if(fail){                                                       \
             fprintf(stderr,"FAILD push to -- "#name"!\n"); fail = false; \
@@ -232,9 +232,9 @@ void FmuGoStorage::test_functions(void)
         test_push_to_storage_cpp(nominals);
 
 #define test_cycle_storage_cpp_a(name)\
-        Data & name##_a = testFmuGoStorage.get_backup_##name();
+        Data & name##_a = testFmigoStorage.get_backup_##name();
 #define test_cycle_storage_cpp_b(name)\
-        Data & name##_b = testFmuGoStorage.get_backup_##name();\
+        Data & name##_b = testFmigoStorage.get_backup_##name();\
         fprintf(stderr,"Testing cycle() -- "#name" -  ");\
         if(name##_a != name##_b)\
             fprintf(stderr,"FAILD!\n");\
@@ -244,24 +244,24 @@ void FmuGoStorage::test_functions(void)
         test_cycle_storage_cpp_a(derivatives);
         test_cycle_storage_cpp_a(indicators);
         test_cycle_storage_cpp_a(nominals);
-        testFmuGoStorage.cycle();
+        testFmigoStorage.cycle();
         test_cycle_storage_cpp_b(states);
         test_cycle_storage_cpp_b(derivatives);
         test_cycle_storage_cpp_b(indicators);
         test_cycle_storage_cpp_b(nominals);
 
-        testFmuGoStorage.cycle();
+        testFmigoStorage.cycle();
 
 #define test_sync_storage_cpp(name)\
         fprintf(stderr,"Testing sync() -- "#name"  -  ");\
-        a = testFmuGoStorage.get_current_##name();\
+        a = testFmigoStorage.get_current_##name();\
 \
-        b = testFmuGoStorage.get_backup_##name();\
+        b = testFmigoStorage.get_backup_##name();\
         if(a != b)\
             fprintf(stderr,"FAILD!\n");\
         else fprintf(stderr,"OK!\n");
 
-        testFmuGoStorage.sync();
+        testFmigoStorage.sync();
         test_sync_storage_cpp(states);
         test_sync_storage_cpp(derivatives);
         test_sync_storage_cpp(indicators);
@@ -273,15 +273,15 @@ void FmuGoStorage::test_functions(void)
 
 #define test_push_to_p_storage_cpp(name)                                \
         fprintf(stderr,"Testing push_to_p() -- "#name"  -  ");          \
-        testFmuGoStorage.push_to(0,STORAGE::name,Data(first_vec_storage_cpp)); \
-        testFmuGoStorage.push_to(1,STORAGE::name,Data(second_vec_storage_cpp)); \
-        testFmuGoStorage.push_to(2,STORAGE::name,Data(third_vec_storage_cpp)); \
-        testFmuGoStorage.cycle();                                       \
-        testFmuGoStorage.push_to(0,STORAGE::name,x);                    \
-        testFmuGoStorage.push_to(1,STORAGE::name,y);                    \
-        testFmuGoStorage.push_to(2,STORAGE::name,z);                    \
-        a = testFmuGoStorage.get_backup_##name();                       \
-        b = testFmuGoStorage.get_current_##name();                      \
+        testFmigoStorage.push_to(0,STORAGE::name,Data(first_vec_storage_cpp)); \
+        testFmigoStorage.push_to(1,STORAGE::name,Data(second_vec_storage_cpp)); \
+        testFmigoStorage.push_to(2,STORAGE::name,Data(third_vec_storage_cpp)); \
+        testFmigoStorage.cycle();                                       \
+        testFmigoStorage.push_to(0,STORAGE::name,x);                    \
+        testFmigoStorage.push_to(1,STORAGE::name,y);                    \
+        testFmigoStorage.push_to(2,STORAGE::name,z);                    \
+        a = testFmigoStorage.get_backup_##name();                       \
+        b = testFmigoStorage.get_current_##name();                      \
         if(a != b) {                                                    \
             fprintf(stderr,"FAILD!\n");                                 \
             print(STORAGE::name);                                       \
@@ -321,7 +321,7 @@ void FmuGoStorage::test_functions(void)
         int k;
 #define test_get_p_storage_cpp(type,name)                               \
         fprintf(stderr,"Testing get_"#type#name"_p()     -  ");              \
-        testFmuGoStorage.get_##type##_##name(ret,2);                            \
+        testFmigoStorage.get_##type##_##name(ret,2);                            \
         fail = false;                                                   \
         test_get_p_fail(z,                                              \
                         first_size_storage_cpp +                        \
@@ -329,10 +329,10 @@ void FmuGoStorage::test_functions(void)
                         first_size_storage_cpp +                        \
                         second_size_storage_cpp +                       \
                         third_size_storage_cpp)                         \
-        testFmuGoStorage.get_##type##_##name(ret,0);                             \
+        testFmigoStorage.get_##type##_##name(ret,0);                             \
         test_get_p_fail(x,0, first_size_storage_cpp );                  \
                                                                         \
-        testFmuGoStorage.get_##type##_##name(ret,1);                             \
+        testFmigoStorage.get_##type##_##name(ret,1);                             \
         test_get_p_fail(y, first_size_storage_cpp ,                     \
                         first_size_storage_cpp +                        \
                         second_size_storage_cpp);                       \
@@ -346,7 +346,7 @@ void FmuGoStorage::test_functions(void)
             for(int i = 0; i < third_size_storage_cpp; i++)             \
                 fprintf(stderr, "%f  ---  %f\n",z[i],ret[i]);           \
             fprintf(stderr,"print \n");                                 \
-            testFmuGoStorage.print(STORAGE::name);                      \
+            testFmigoStorage.print(STORAGE::name);                      \
             fail = true;                                                \
         } else fprintf(stderr,"OK!\n");
 
@@ -360,9 +360,9 @@ void FmuGoStorage::test_functions(void)
         // test_get_p_storage_cpp(backup,indicators);
 
         fprintf(stderr,"Testing absmin()     -  ");
-        if ( minVal  != testFmuGoStorage.absmin(STORAGE::indicators,2) ||
-             abs(minValn) != testFmuGoStorage.absmin(STORAGE::indicators,1) ||
-             abs(minValn) < minVal? abs(minValn):minVal != testFmuGoStorage.absmin(STORAGE::indicators) )
+        if ( minVal  != testFmigoStorage.absmin(STORAGE::indicators,2) ||
+             abs(minValn) != testFmigoStorage.absmin(STORAGE::indicators,1) ||
+             abs(minValn) < minVal? abs(minValn):minVal != testFmigoStorage.absmin(STORAGE::indicators) )
             fprintf(stderr," Failed!\n  ");
         else
             fprintf(stderr," OK!\n");

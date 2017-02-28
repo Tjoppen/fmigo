@@ -41,7 +41,7 @@ SET(MASTER_SRCS
     src/master/WeakConnection.cpp
     src/common/url_parser.c
     src/common/common.cpp
-    src/common/fmu_go_storage.cpp
+    src/common/fmigo_storage.cpp
     src/common/gsl_interface.c
     src/master/BaseMaster.cpp
     src/master/parseargs.cpp
@@ -55,7 +55,7 @@ SET(MASTER_HEADERS
     include/master/WeakConnection.h
     include/master/WeakMasters.h
     include/common/common.h
-    include/common/fmu_go_storage.h
+    include/common/fmigo_storage.h
     include/common/gsl_interface.h
     include/common/url_parser.h
     ${FMITCP_HEADERS}

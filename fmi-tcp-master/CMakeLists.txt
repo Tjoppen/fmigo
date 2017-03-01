@@ -39,7 +39,6 @@ SET(MASTER_SRCS
     src/master/main.cpp
     src/master/FMIClient.cpp
     src/master/WeakConnection.cpp
-    src/common/url_parser.c
     src/common/common.cpp
     src/master/BaseMaster.cpp
     src/master/parseargs.cpp
@@ -53,7 +52,6 @@ SET(MASTER_HEADERS
     include/master/WeakConnection.h
     include/master/WeakMasters.h
     include/common/common.h
-    include/common/url_parser.h
     ${FMITCP_HEADERS}
     ${CMAKE_CURRENT_SOURCE_DIR}/src/master/control.pb.h
 )

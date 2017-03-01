@@ -13,7 +13,6 @@
 #include "master/FMIClient.h"
 #include "common/common.h"
 #include "master/WeakMasters.h"
-#include "common/url_parser.h"
 #include "master/parseargs.h"
 #include <sc/BallJointConstraint.h>
 #include <sc/LockConstraint.h>
@@ -50,26 +49,12 @@ static vector<FMIClient*> setupClients(int numFMUs) {
     return clients;
 }
 #else
-static FMIClient* connectClient(std::string uri, zmq::context_t &context, int clientId){
-    struct parsed_url * url = parse_url(uri.c_str());
-
-    if (!url || !url->port || !url->host) {
-        parsed_url_free(url);
-        return NULL;
-    }
-
-    FMIClient* client = new FMIClient(context, clientId, url->host, atoi(url->port));
-    parsed_url_free(url);
-
-    return client;
-}
-
 static vector<FMIClient*> setupClients(vector<string> fmuURIs, zmq::context_t &context) {
     vector<FMIClient*> clients;
     int clientId = 0;
     for (auto it = fmuURIs.begin(); it != fmuURIs.end(); it++, clientId++) {
         // Assume URI to client
-        FMIClient *client = connectClient(*it, context, clientId);
+        FMIClient *client = new FMIClient(context, clientId, *it);
 
         if (!client) {
             fprintf(stderr, "Failed to connect client with URI %s\n", it->c_str());

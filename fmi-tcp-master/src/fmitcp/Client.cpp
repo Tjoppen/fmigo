@@ -312,12 +312,9 @@ size_t Client::getNumPendingRequests() const {
 }
 
 #ifndef USE_MPI
-void Client::connect(string host, long port){
-    ostringstream oss;
-    oss << "tcp://" << host << ":" << port;
-    string str = oss.str();
-    m_logger.log(fmitcp::Logger::LOG_DEBUG,"connecting to %s\n", str.c_str());
-    m_socket.connect(str.c_str());
+void Client::connect(string uri){
+    m_logger.log(fmitcp::Logger::LOG_DEBUG,"connecting to %s\n", uri.c_str());
+    m_socket.connect(uri.c_str());
     m_logger.log(fmitcp::Logger::LOG_DEBUG,"connected\n");
 }
 #endif

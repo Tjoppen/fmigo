@@ -20,7 +20,7 @@ using namespace common;
 using namespace std;
 
 static void printHelp(){
-  fprintf(stderr, "Check manpage for help, \"man fmi-tcp-master\"\n");
+  fprintf(stderr, "Check manpage for help, \"man fmigo-master\"\n");
 }
 
 static void printInvalidArg(char option){

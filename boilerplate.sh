@@ -1,8 +1,8 @@
 export BUILD_DIR=$(pwd)/build
 export FMUS_DIR=$(pwd)/umit-fmus
 export PATH=$PATH:$BUILD_DIR/install/bin
-export SERVER=fmi-tcp-server
-export MASTER=fmi-tcp-master
+export SERVER=fmigo-server
+export MASTER=fmigo-master
 export MPI_SERVER=fmi-mpi-server
 export MPI_MASTER=fmi-mpi-master
 

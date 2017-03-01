@@ -61,9 +61,9 @@ if(WIN32)
     set(MASTER_HEADERS ${MASTER_HEADERS} include/master/getopt.h)
 endif()
 
-SET(TCP_MASTER_NAME fmi-tcp-master)
+SET(TCP_MASTER_NAME fmigo-master)
 SET(MPI_MASTER_NAME fmi-mpi-master)
-set(TCP_SERVER_NAME fmi-tcp-server)
+set(TCP_SERVER_NAME fmigo-server)
 set(MPI_SERVER_NAME fmi-mpi-server)
 
 if (USE_GPL)
@@ -79,7 +79,7 @@ if (USE_GPL)
 endif ()
 
 ADD_EXECUTABLE(${TCP_MASTER_NAME} ${MASTER_HEADERS} ${MASTER_SRCS})
-ADD_EXECUTABLE(${TCP_SERVER_NAME}  src/server/fmi-tcp-server.cpp src/common/common.cpp ${FMITCP_SRCS})
+ADD_EXECUTABLE(${TCP_SERVER_NAME}  src/server/fmigo-server.cpp src/common/common.cpp ${FMITCP_SRCS})
 
 add_executable(${MPI_SERVER_NAME}  src/server/fmi-mpi-server.cpp  src/common/common.cpp src/common/mpi_tools.cpp ${FMITCP_SRCS})
 add_executable(${MPI_MASTER_NAME} ${MASTER_HEADERS} ${MASTER_SRCS}                      src/common/mpi_tools.cpp )

@@ -113,7 +113,7 @@ int main(int argc, char *argv[]) {
   return EXIT_SUCCESS;
  } catch (zmq::error_t e) {
       //catch any stray ZMQ exceptions
-      //this should prevent "program stopped working" messages on Windows when fmi-tcp-servers are taskkill'd
+      //this should prevent "program stopped working" messages on Windows when fmigo-servers are taskkill'd
       fprintf(stderr, "zmq::error_t: %s\n", e.what());
       return 1;
  }

@@ -62,9 +62,8 @@ if(WIN32)
 endif()
 
 SET(TCP_MASTER_NAME fmigo-master)
-SET(MPI_MASTER_NAME fmi-mpi-master)
+SET(MPI_MASTER_NAME fmigo-mpi)
 set(TCP_SERVER_NAME fmigo-server)
-set(MPI_SERVER_NAME fmi-mpi-server)
 
 if (USE_GPL)
   set(EXTRALIBS gsl gslcblas )
@@ -81,7 +80,6 @@ endif ()
 ADD_EXECUTABLE(${TCP_MASTER_NAME} ${MASTER_HEADERS} ${MASTER_SRCS})
 ADD_EXECUTABLE(${TCP_SERVER_NAME}  src/server/fmigo-server.cpp src/common/common.cpp ${FMITCP_SRCS})
 
-add_executable(${MPI_SERVER_NAME}  src/server/fmi-mpi-server.cpp  src/common/common.cpp src/common/mpi_tools.cpp ${FMITCP_SRCS})
 add_executable(${MPI_MASTER_NAME} ${MASTER_HEADERS} ${MASTER_SRCS}                      src/common/mpi_tools.cpp )
 set_target_properties(${MPI_MASTER_NAME} PROPERTIES COMPILE_FLAGS -DUSE_MPI)
 
@@ -109,7 +107,6 @@ IF(WIN32)
     include_directories($ENV{MSMPI_INC} $ENV{MSMPI_INC}x86)
     TARGET_LINK_LIBRARIES(${TCP_MASTER_NAME} ${WINLIBS})
     TARGET_LINK_LIBRARIES(${TCP_SERVER_NAME}  ${WINLIBS})
-    target_link_libraries(${MPI_SERVER_NAME} ${WINLIBS} msmpi)
     target_link_libraries(${MPI_MASTER_NAME} ${WINLIBS} msmpi)
     INSTALL (FILES
         ${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib/lapack_blas_windows/libblas.dll
@@ -140,7 +137,6 @@ ELSE(WIN32)
     # NOTE: switching to MPI compilers. This seems to work fine, surprisingly
     set(CMAKE_C_COMPILER   mpicc)
     set(CMAKE_CXX_COMPILER mpicxx)
-    target_link_libraries(${MPI_SERVER_NAME} ${LINUXLIBS})
     target_link_libraries(${MPI_MASTER_NAME} ${LINUXLIBS} ${EXTRALIBS})
 
     add_custom_target(libprotobuf)  #fake target
@@ -171,7 +167,6 @@ add_dependencies(${TCP_MASTER_NAME} fmitcp_pb control_pb)
 add_dependencies(${TCP_SERVER_NAME} fmitcp_pb)
 if(NOT WIN32)
     add_dependencies(${MPI_MASTER_NAME} fmitcp_pb control_pb)
-    add_dependencies(${MPI_SERVER_NAME} fmitcp_pb)
 endif()
 
 # TODO: Server manpage?
@@ -183,5 +178,4 @@ if(NOT WIN32)
     INSTALL (FILES ${OUT_MANPAGE} DESTINATION man/man1)
 endif()
 
-INSTALL(TARGETS ${TCP_MASTER_NAME} ${TCP_SERVER_NAME} DESTINATION bin)
-install(TARGETS ${MPI_MASTER_NAME} ${MPI_SERVER_NAME} DESTINATION bin)
+INSTALL(TARGETS ${TCP_MASTER_NAME} ${TCP_SERVER_NAME} ${MPI_MASTER_NAME} DESTINATION bin)

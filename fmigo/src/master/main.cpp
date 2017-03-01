@@ -4,6 +4,8 @@
 #include <fmitcp/Logger.h>
 #ifdef USE_MPI
 #include <mpi.h>
+#include "common/mpi_tools.h"
+#include "server/FMIServer.h"
 #endif
 #include <zmq.hpp>
 #include <fmitcp/serialize.h>
@@ -401,12 +403,39 @@ static void pushResults(int step, double t, double endTime, double timeStep, zmq
     push_socket.send(rep);
 }
 
+#ifdef USE_MPI
+void run_server(string fmuPath, jm_log_level_enu_t loglevel) {
+    string hdf5Filename; //TODO?
+    FMIServer server(fmuPath, loglevel >= jm_log_level_debug, loglevel, hdf5Filename);
+
+    for (;;) {
+        int rank, tag;
+        std::string recv_str = mpi_recv_string(MPI_ANY_SOURCE, &rank, &tag);
+
+        //shutdown command?
+        if (tag == 1) {
+            break;
+        }
+
+        //let Server handle packet, send reply back to master
+        std::string str = server.clientData(recv_str.c_str(), recv_str.length());
+        if (str.length() > 0) {
+          MPI_Send((void*)str.c_str(), str.length(), MPI_CHAR, rank, tag, MPI_COMM_WORLD);
+        }
+    }
+
+    MPI_Finalize();
+}
+#endif
+
 int main(int argc, char *argv[] ) {
 #ifdef USE_MPI
-    fprintf(stderr, "MPI enabled\n");
     MPI_Init(NULL, NULL);
-#else
-    fprintf(stderr, "MPI disabled\n");
+
+    //world = master at 0, FMUs at 1..N
+    int world_size, world_rank;
+    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
 #endif
 
     double timeStep = 0.1;
@@ -459,6 +488,17 @@ int main(int argc, char *argv[] ) {
         fprintf(stderr, "WARNING: -o not implemented (output always goes to stdout)\n");
     }
 
+#ifdef USE_MPI
+    if (world_rank > 0) {
+        //we're a server
+        //in MPI mode, treat fmuURIs as a list of paths
+        //for each server node, fmuURIs[world_rank-1] is the corresponding FMU path
+        run_server(fmuURIs[world_rank-1], loglevel);
+        return 0;
+    }
+    //world_rank == 0 below
+#endif
+
     zmq::context_t context(1);
 
     zmq::socket_t rep_socket(context, ZMQ_REP);
@@ -477,16 +517,6 @@ int main(int argc, char *argv[] ) {
     }
 
 #ifdef USE_MPI
-    //world = master at 0, FMUs at 1..N
-    int world_size, world_rank;
-    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-
-    if (world_rank != 0) {
-        fprintf(stderr, "fmi-mpi-master: Expected world_rank = 0, got %i\n", world_rank);
-        return 1;
-    }
-
     vector<FMIClient*> clients = setupClients(world_size-1);
 #else
     //without this the maximum number of clients tops out at 300 on Linux,

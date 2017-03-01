@@ -18,11 +18,10 @@ int main(int argc, char *argv[]) {
     jm_log_level_enu_t log_level = jm_log_level_error;
     string fmuPath = "";
     string hdf5Filename;
-    int filter_depth = 0;
 
-    parse_server_args(argc, argv, &fmuPath, &filter_depth, &hdf5Filename, &debugLogging, &log_level);
+    parse_server_args(argc, argv, &fmuPath, &hdf5Filename, &debugLogging, &log_level);
 
-    FMIServer server(fmuPath, debugLogging, log_level, hdf5Filename, filter_depth);
+    FMIServer server(fmuPath, debugLogging, log_level, hdf5Filename);
 
     for (;;) {
         int rank, tag;

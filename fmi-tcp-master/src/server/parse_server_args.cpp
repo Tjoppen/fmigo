@@ -6,9 +6,7 @@ static void printHelp(char *program_name, int *port) {
 \n\
 OPTIONS\n\
 \n\
-%s    -F filter_depth\n\
-        Depth of FIR filter applied to all outputs. Filter is disabled by default.\n\
-    -5 hdf5_filename\n\
+%s    -5 hdf5_filename\n\
         Dump outputs into HDF5 with given filename\n\
     --help\n\
         You're looking at it.\n\
@@ -23,7 +21,7 @@ FMUPATH\n\
 }
 
 
-static void parse_server_args(int argc, char **argv, string *fmuPath, int *filter_depth,
+static void parse_server_args(int argc, char **argv, string *fmuPath,
         string *hdf5Filename, bool *debugLogging, jm_log_level_enu_t *log_level,
         int *port = NULL) {
   for (int j = 1; j < argc; j++) {
@@ -60,9 +58,6 @@ static void parse_server_args(int argc, char **argv, string *fmuPath, int *filte
 
     } else if (arg == "-5" && !last) {
       *hdf5Filename = argv[++j];
-    } else if (arg == "-F" && !last) {
-      *filter_depth = atoi(argv[++j]);
-      fprintf(stderr, "Using output filter with depth %i\n", *filter_depth);
     } else {
       *fmuPath = argv[j];
     }

@@ -768,13 +768,9 @@ for shaft in shaftconstraints:
 
     kineticconns.extend(['-C', connstr])
 
-servers = []
-for fmu in fmus:
-    servers.extend([':','-np','1','fmi-mpi-server',fmu.path])
-
 #read connections and parameters from stdin, since they can be quite many
 #stdin because we want to avoid leaving useless files on the filesystem
-args = ['mpiexec','-np','1','fmi-mpi-master','-t','9.9','-d','0.1','-a','-'] + servers
+args = ['mpiexec','-np',str(len(fmus)+1),'fmigo-mpi','-t','9.9','-d','0.1','-a','-'] + [fmu.path for fmu in fmus]
 print(" ".join(args) + " <<< " + '"' + " ".join(flatconns+flatparams+kineticconns) + '"')
 
 if dry_run:

@@ -60,7 +60,10 @@ do
     echo "add_subdirectory($d)" >> CMakeLists.txt
     # TODO: figure out how to include cgsl into each FMU as-is
     # We don't have any CMakeLists.txt yet anyway
-    GSL="-l cgsl,m -c"
+
+    # gsl and gslcblas only need to be linked manually like this on Windows
+    # If we like we could add some special option to cmake-generator just for WIN32 libraries
+    GSL="-l cgsl,gsl,gslcblas,m -c"
     pushd $d
         python ${MD2HDR} modelDescription.xml > sources/modelDescription.h
         python ${GENERATOR} ${GSL}

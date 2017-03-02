@@ -3,8 +3,7 @@ export FMUS_DIR=$(pwd)/umit-fmus
 export PATH=$PATH:$BUILD_DIR/install/bin
 export SERVER=fmigo-server
 export MASTER=fmigo-master
-export MPI_SERVER=fmi-mpi-server
-export MPI_MASTER=fmi-mpi-master
+export MPI_MASTER=fmigo-mpi
 
 if [[ "`uname`" = "Windows_NT" || "`uname`" = "MINGW64"* ]]
 then

@@ -187,38 +187,8 @@ static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real comm
 
 #ifdef CONSOLE
 int main(){
-
-  state_t s = {
-    {
-      0.0, 			/* init position */
-      0.0, 			/* init velocity */
-      10.0, 			/* mass */
-      10,			/* wheel radius r_w*/
-      1,			/* differential gear ratio */
-      2.0,			/* area */
-      1.0,			/* rho*/
-      1.0,			/* drag coeff c_d*/
-      10,			/* gravity */
-      0.0,			/* c_r_1 rolling resistance */
-      0.0,			/* c_r_2 rolling resistance */
-      1,			/* friction coeff*/
-      0e4,			/* coupling spring constant  differential*/
-      0e3,			/* coupling damping constant differential */
-      1e2,			/* coupling spring constant  trailer */
-      1e2,			/* coupling damping constant  trailer */
-      0,		/* integrate input speed on differential*/
-      1,		/* integrate input speed on trailer*/
-      rkf45,		/* which method*/
-      0,		/* differential input displacement */
-      0,		/* differential input speed */
-      0,		/* torque input on differential*/
-      0,		/* extra torque input on differential*/
-      0,		/* road elevation angle */
-      0,		/* brake position */
-      0,		/* displacement coupling on trailer*/
-      8,		/* displacement speed on trailer*/
-      0,		/* extra force on trailer*/
-    }};
+  state_t s;
+  s.md = defaults;
   trailer_init(&s);
   s.simulation.file = fopen( "s.m", "w+" );
   s.simulation.save = 1;

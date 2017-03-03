@@ -85,9 +85,9 @@
                     initial        = "approx">
         <Real start="0" />
     </ScalarVariable>  <!--index="9" -->
-    <ScalarVariable name           = "ta_clutchMax"
+    <ScalarVariable name           = "tq_clutchMax"
                     valueReference = "8"
-                    description    = "ta_clutchMax"
+                    description    = "tq_clutchMax"
                     causality      = "input"
                     variability    = "discrete"
                     initial        = "approx">

@@ -17,23 +17,23 @@
 #define alloca _alloca
 #else
 #include <alloca.h>
-#endif 
+#endif
 
 const static double flip = -1;
 
-/*  
-    One translational body driven by a rotational variable.  
+/*
+    One translational body driven by a rotational variable.
 
     This represents a trailer moving on a road with variable gradient,
     driven by a shaft, via a differential with gear ratio r_g, via a
-    wheel of radius r_w. 
+    wheel of radius r_w.
 
-    
-    Variables are listed as: 
+
+    Variables are listed as:
     x    : position of trailer along road (parametric)
     v    : speed of truck
     dphi : angle difference estimate between the input shaft and the
-    differential 
+    differential
     dx   : position difference between attached load
 
 
@@ -68,15 +68,15 @@ int trailer (double t, const double x[], double dxdt[], void * params){
 
   double sgnv = SIGNUM( x[ 1 ] );
   /* drag */
-  force += 
+  force +=
     -  sgnv *   0.5 * s->md.rho  * s->md.area * s->md.c_d * x[ 1 ] * x[ 1 ];
 
-  /* brake */ 
+  /* brake */
   force +=
     - sgnv * s->md.brake * s->md.mu * s->md.g * cos( s->md.angle + triangle );
 
   /* rolling resistance */
-  force += 
+  force +=
     - sgnv * ( s->md.c_r_2 * fabs( x[ 1 ] ) + s->md.c_r_1 ) * s->md.mass * s->md.g * cos( s->md.angle + triangle );
 
   /* any additional force */
@@ -87,8 +87,8 @@ int trailer (double t, const double x[], double dxdt[], void * params){
 
   /* coupling torque */
   s->md.tau_c =   s->md.gamma_d * ( x[ 1 ] / s->md.r_g / s->md.r_w - s->md.omega_i );
-  
-  if ( s->md.integrate_dw ) { 
+
+  if ( s->md.integrate_dw ) {
     s->md.tau_c +=  s->md.k_d *  x[ 2 ];
     dxdt[ 2 ] = x[ 1 ] / s->md.r_g / s->md.r_w - s->md.omega_i;
   }
@@ -99,20 +99,20 @@ int trailer (double t, const double x[], double dxdt[], void * params){
 
   /* coupling force */
   s->md.f_c =   s->md.gamma_t * ( x[ 1 ] - s->md.v_in );
-  
-  if ( s->md.integrate_dx) { 
+
+  if ( s->md.integrate_dx) {
     s->md.f_c +=  s->md.k_t *  x[ 3 ];
     dxdt[ 3 ] = x[ 1 ] -  s->md.v_in;
   }
   else{
     s->md.f_c +=  s->md.k_t *  ( x[ 0 ] - s->md.x_in );
     dxdt[ 3 ] = 0;
-  } 
+  }
 
   /* total acceleration */
   dxdt[ 1 ]  = ( 1.0 / s->md.mass ) * ( force - s->md.f_c - s->md.tau_c / s->md.r_w );
   dxdt[ 0 ]  = x[ 1 ];
-  
+
   return GSL_SUCCESS;
 
 }
@@ -122,10 +122,10 @@ int trailer (double t, const double x[], double dxdt[], void * params){
 /** TODO */
 int jac_trailer (double t, const double x[], double *dfdx, double dfdt[], void *params)
 {
-  
+
   state_t *s = (state_t*)params;
   gsl_matrix_view dfdx_mat = gsl_matrix_view_array (dfdx, 4, 4);
-  gsl_matrix * J = &dfdx_mat.matrix; 
+  gsl_matrix * J = &dfdx_mat.matrix;
 
 
   return GSL_SUCCESS;
@@ -187,38 +187,8 @@ static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real comm
 
 #ifdef CONSOLE
 int main(){
-
-  state_t s = {
-    {
-      0.0, 			/* init position */
-      0.0, 			/* init velocity */
-      10.0, 			/* mass */
-      10,			/* wheel radius r_w*/
-      1,			/* differential gear ratio */
-      2.0,			/* area */
-      1.0,			/* rho*/
-      1.0,			/* drag coeff c_d*/
-      10,			/* gravity */
-      0.0,			/* c_r_1 rolling resistance */
-      0.0,			/* c_r_2 rolling resistance */
-      1,			/* friction coeff*/
-      0e4,			/* coupling spring constant  differential*/
-      0e3,			/* coupling damping constant differential */
-      1e2,			/* coupling spring constant  trailer */
-      1e2,			/* coupling damping constant  trailer */
-      0,		/* integrate input speed on differential*/
-      1,		/* integrate input speed on trailer*/
-      rkf45,		/* which method*/
-      0,		/* differential input displacement */
-      0,		/* differential input speed */
-      0,		/* torque input on differential*/
-      0,		/* extra torque input on differential*/
-      0,		/* road elevation angle */
-      0,		/* brake position */
-      0,		/* displacement coupling on trailer*/
-      8,		/* displacement speed on trailer*/
-      0,		/* extra force on trailer*/
-    }};
+  state_t s;
+  s.md = defaults;
   trailer_init(&s);
   s.simulation.file = fopen( "s.m", "w+" );
   s.simulation.save = 1;

@@ -17,6 +17,12 @@ RUN apt-get install --yes \
         libopenmpi-dev libgsl-dev\
         valgrind
 
+RUN apt-get update
+
+RUN apt-get install --yes \
+        valgrind
+
+
 #
 # Create user, since mpiexec doesn't like to run as root
 #

@@ -57,12 +57,3 @@ test:xenial:
       - umit-*.tar.gz
   tags:
     - shell
-
-test:ctest:xenial:
-  stage: test
-  script:
-    - docker run --workdir /home/gitlab-ci/umit/build umit/xenial:$(git rev-parse HEAD) ctest
-  dependencies:
-    - build:xenial
-  tags:
-    - shell

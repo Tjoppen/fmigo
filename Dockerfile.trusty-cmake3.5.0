@@ -12,7 +12,7 @@ RUN apt-get update
 #  mpi-default-bin: for mpiexec
 #        coreutils: for sha1sum
 #
-RUN apt-get install --yes \
+RUN apt-get install --yes --fix-missing \
         build-essential ninja-build git python bc psmisc \
         protobuf-compiler protobuf-c-compiler libprotobuf-dev \
         libsuitesparse-dev libzmqpp-dev libhdf5-dev \

@@ -29,7 +29,6 @@ FMIClient::FMIClient(zmq::context_t &context, int id, string host, long port) : 
 #endif
     m_id = id;
     m_master = NULL;
-    m_initialized = false;
     m_fmi2Instance = NULL;
     m_context = NULL;
     m_fmi2Outputs = NULL;
@@ -73,10 +72,6 @@ void FMIClient::onError(string err){
 
 int FMIClient::getId(){
     return m_id;
-};
-
-bool FMIClient::isInitialized(){
-    return m_initialized;
 };
 
 void FMIClient::on_get_xml_res(int mid, fmitcp_proto::jm_log_level_enu_t logLevel, string xml) {
@@ -181,7 +176,6 @@ void FMIClient::on_fmi2_import_instantiate_res(int mid, fmitcp_proto::jm_status_
 };
 
 void FMIClient::on_fmi2_import_exit_initialization_mode_res(int mid, fmitcp_proto::fmi2_status_t status){
-    m_initialized = true; // Todo check the status
     m_master->onSlaveInitialized(this);
 };
 

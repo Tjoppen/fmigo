@@ -31,7 +31,6 @@ namespace fmitcp_master {
         long m_port;
 #endif
         std::string m_xml;
-        bool m_initialized;
 
         // variables for modelDescription.xml
         jm_callbacks m_jmCallbacks;
@@ -74,8 +73,6 @@ namespace fmitcp_master {
 
         //connects to remote host and gets modelDescription XML
         void connect(void);
-
-        bool isInitialized();
 
         /// Create a strong coupling connector for this client
         StrongConnector* createConnector();

@@ -244,6 +244,82 @@
                     variability    = "discrete">
           <Real />
     </ScalarVariable>  <!--index="30" -->
+    <ScalarVariable name           = "k1"
+                    valueReference = "30"
+                    description    = "spring constant"
+                    causality      = "parameter"
+                    variability    = "fixed"
+                    initial        = "exact">
+        <Real start="0"/>
+    </ScalarVariable>  <!--index="31" -->
+    <ScalarVariable name           = "f_shaft_out"
+                    valueReference = "31"
+                    description    = "r_slip"
+                    causality      = "output"
+                    variability    = "discrete">
+          <Real />
+    </ScalarVariable>  <!--index="32" -->
+    <ScalarVariable name           = "w_shaft_in"
+                    valueReference = "32"
+                    description    = "r_slip"
+                    causality      = "input"
+                    variability    = "discrete"
+                    initial        = "approx">
+          <Real start="0" />
+    </ScalarVariable>  <!--index="33" -->
+    <ScalarVariable name           = "w_wheel_out"
+                    valueReference = "33"
+                    description    = "r_slip"
+                    causality      = "output"
+                    variability    = "discrete">
+          <Real />
+    </ScalarVariable>  <!--index="34" -->
+    <ScalarVariable name           = "f_wheel_in"
+                    valueReference = "34"
+                    description    = "r_slip"
+                    causality      = "input"
+                    variability    = "discrete"
+                    initial        = "approx">
+          <Real start="0" />
+    </ScalarVariable>  <!--index="35" -->
+    <ScalarVariable name           = "k2"
+                    valueReference = "35"
+                    description    = "Model time [s]"
+                    causality      = "parameter"
+                    variability    = "fixed"
+                    initial        = "exact">
+        <Real start="0"/>
+    </ScalarVariable>  <!--index="36" -->
+    <ScalarVariable name           = "w_shaft_out"
+                    valueReference = "36"
+                    description    = "r_slip"
+                    causality      = "output"
+                    variability    = "discrete">
+          <Real />
+    </ScalarVariable>  <!--index="37" -->
+    <ScalarVariable name           = "f_shaft_in"
+                    valueReference = "37"
+                    description    = "r_slip"
+                    causality      = "input"
+                    variability    = "discrete"
+                    initial        = "approx">
+          <Real start="0" />
+    </ScalarVariable>  <!--index="38" -->
+    <ScalarVariable name           = "f_wheel_out"
+                    valueReference = "38"
+                    description    = "r_slip"
+                    causality      = "output"
+                    variability    = "discrete">
+          <Real />
+    </ScalarVariable>  <!--index="39" -->
+    <ScalarVariable name           = "w_wheel_in"
+                    valueReference = "39"
+                    description    = "r_slip"
+                    causality      = "input"
+                    variability    = "discrete"
+                    initial        = "approx">
+          <Real start="0" />
+    </ScalarVariable>  <!--index="40" -->
 
 </ModelVariables>
 <ModelStructure>

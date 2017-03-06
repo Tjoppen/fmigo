@@ -17,7 +17,8 @@ RUN apt-get install --yes \
         protobuf-compiler protobuf-c-compiler libprotobuf-dev \
         libsuitesparse-dev libzmqpp-dev libhdf5-dev \
         libopenmpi-dev libgsl0-dev mpi-default-bin \
-        wget coreutils valgrind
+        wget coreutils valgrind-dbg
+
 
 WORKDIR /root
 

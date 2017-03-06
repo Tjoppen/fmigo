@@ -20,9 +20,9 @@ RUN apt-get install --yes \
         libopenmpi-dev libgsl0-dev mpi-default-bin zip
 
 RUN apt-get update
-        valgrind-dbg
 
 RUN apt-get install --yes \
+        valgrind-dbg
 
 #
 # Create user, since mpiexec doesn't like to run as root

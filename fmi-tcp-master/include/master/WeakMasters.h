@@ -125,7 +125,7 @@ class ModelExchangeStepper : public BaseMaster {
         bool sim_started;
     };
     struct fmu_model{
-      cgsl_model model;
+      cgsl_model *model;
     };
     cgsl_simulation m_sim;
     fmu_parameters m_p;
@@ -144,7 +144,6 @@ class ModelExchangeStepper : public BaseMaster {
     ~ModelExchangeStepper(){
         cgsl_free_simulation(m_sim);
         free(m_p.backup.dydt);
-        free(m_model.model.x);
     }
 
     /** fmu_function
@@ -214,10 +213,10 @@ class ModelExchangeStepper : public BaseMaster {
         return (fmu_parameters*)(m->get_model_parameters(m));
     }
     inline fmu_parameters* get_p(fmu_model& m){
-        return ((fmu_parameters *)(m.model.get_model_parameters(&m.model)));
+        return ((fmu_parameters *)(m.model->get_model_parameters(m.model)));
     }
     inline fmu_parameters* get_p(fmu_model* m){
-        return (fmu_parameters*)(m->model.get_model_parameters(&m->model));
+        return (fmu_parameters*)(m->model->get_model_parameters(m->model));
     }
     inline fmu_parameters* get_p(cgsl_simulation s){
         return get_p(s.model);
@@ -229,20 +228,21 @@ class ModelExchangeStepper : public BaseMaster {
      *  @param m Pointer to a fmu_model
      */
     void allocateMemory(fmu_model &m, const std::vector<FMIClient*> &clients){
+        m.model = (cgsl_model*)calloc(1,sizeof(cgsl_model));
         fmu_alloc(clients);
-        m.model.n_variables = get_storage().get_current_states().size();
-        if(m.model.n_variables == 0){
+        m.model->n_variables = get_storage().get_current_states().size();
+        if(m.model->n_variables == 0){
             cerr << "ModelExchangeStepper nothing to integrate" << endl;
             exit(0);
         }
 
-        m.model.x = (double*)calloc(m.model.n_variables, sizeof(double));
-        m.model.x_backup = (double*)calloc(m.model.n_variables, sizeof(double));
+        m.model->x = (double*)calloc(m.model->n_variables, sizeof(double));
+        m.model->x_backup = (double*)calloc(m.model->n_variables, sizeof(double));
 
-        m_p.backup.dydt = (double*)calloc(m.model.n_variables, sizeof(double));
+        m_p.backup.dydt = (double*)calloc(m.model->n_variables, sizeof(double));
         //m_p.backup.result_file = (FILE*)calloc(1, sizeof(FILE));
 
-        if(!m.model.x || !m_p.backup.dydt){
+        if(!m.model->x || !m_p.backup.dydt){
             //freeFMUModel(m);
             perror("WeakMaster:ModelExchange:allocateMemory ERROR -  could not allocate memory");
             exit(1);
@@ -260,8 +260,8 @@ class ModelExchangeStepper : public BaseMaster {
      */
     void init_fmu_model(fmu_model &m,  const std::vector<FMIClient*> &clients){
         allocateMemory(m, clients);
-        m.model.parameters = (void*)&m_p;
-        m.model.get_model_parameters = get_model_parameters;
+        m.model->parameters = (void*)&m_p;
+        m.model->get_model_parameters = get_model_parameters;
         fmu_parameters* p = get_p(m);
 
 #ifdef DEBUG_MODEL_EXCHANGE
@@ -287,18 +287,18 @@ class ModelExchangeStepper : public BaseMaster {
 #endif
         p->clients = m_clients;
 
-        m.model.function = fmu_function;
-        m.model.jacobian = NULL;
-        m.model.post_step = NULL;
-        m.model.pre_step = NULL;
-        m.model.free = NULL;//freeFMUModel;
+        m.model->function = fmu_function;
+        m.model->jacobian = NULL;
+        m.model->post_step = NULL;
+        m.model->pre_step = NULL;
+        m.model->free = cgsl_model_default_free;//freeFMUModel;
 
         for(auto client: clients)
             send(client, fmi2_import_get_continuous_states(0,0,(int)client->getNumContinuousStates()));
         wait();
 
         for(auto client: clients)
-            get_storage().get_current_states(m.model.x, client->getId());
+            get_storage().get_current_states(m.model->x, client->getId());
     }
 
 #define STATIC_GET_CLIENT_OFFSET(name)                                  \
@@ -357,14 +357,14 @@ class ModelExchangeStepper : public BaseMaster {
         init_fmu_model(m_model, m_clients);
         fmu_parameters* p = get_p(m_model);
         int filter_length = get_storage().get_current_states().size();
-        cgsl_model* e_model = cgsl_epce_default_model_init(&m_model.model,  /* model */
+        cgsl_model* e_model = cgsl_epce_default_model_init(m_model.model,  /* model */
                                                               2,
                                                               epce_post_step,
                                                               p);
 
         //m_sim = (cgsl_simulation *)malloc(sizeof(cgsl_simulation));
         m_sim = cgsl_init_simulation(//e_model,
-                                     &m_model.model,
+                                     m_model.model,
                                      rk8pd, /* integrator: Runge-Kutta Prince Dormand pair order 7-8 */
                                      1e-10,
                                      0,

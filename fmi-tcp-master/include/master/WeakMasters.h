@@ -363,8 +363,12 @@ class ModelExchangeStepper : public BaseMaster {
                                                               p);
 
         //m_sim = (cgsl_simulation *)malloc(sizeof(cgsl_simulation));
-        m_sim = cgsl_init_simulation(//e_model,
+        m_sim = cgsl_init_simulation(
+#ifdef MODEL_EXCHANGE_FILTER
+                                     e_model,
+#else
                                      m_model.model,
+#endif
                                      rk8pd, /* integrator: Runge-Kutta Prince Dormand pair order 7-8 */
                                      1e-10,
                                      0,

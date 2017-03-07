@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 2.8)
 
+#enable testing
+enable_testing()
+# Includes which tests that should be skipped
+configure_file(${CMAKE_SOURCE_DIR}/CTestCustom.cmake ${CMAKE_BINARY_DIR})
+
 if(CMAKE_VERSION VERSION_GREATER "3.3")
     #suppress warning about libexpat.a
     cmake_policy(SET CMP0058 OLD)
@@ -152,3 +157,5 @@ endif ()
 if (BUILD_FMUS)
     add_subdirectory(umit-fmus)
 endif ()
+
+add_subdirectory(ssp)

@@ -265,7 +265,7 @@ string Server::clientData(const char *data, size_t size) {
       // fetch the logging categories from the FMU
       size_t nCategories = fmi2_import_get_log_categories_num(m_fmi2Instance);
       vector<fmi2_string_t> categories(nCategories);
-      int i;
+      size_t i;
       for (i = 0 ; i < nCategories ; i++) {
         categories[i] = fmi2_import_get_log_category(m_fmi2Instance, i);
       }
@@ -1032,7 +1032,7 @@ string Server::clientData(const char *data, size_t size) {
         for (auto it : next_filter_map) {
             filter_log[it.first].push_back(it.second);
 
-            if (filter_log[it.first].size() > filter_depth) {
+            if (filter_log[it.first].size() > (size_t)filter_depth) {
                 filter_log[it.first].pop_front();
             }
         }

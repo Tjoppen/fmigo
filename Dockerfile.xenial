@@ -16,6 +16,12 @@ RUN apt-get install --yes \
         libsuitesparse-dev libzmqpp-dev libhdf5-dev \
         libopenmpi-dev libgsl-dev
 
+RUN apt-get update
+
+RUN apt-get install --yes \
+        valgrind
+
+
 #
 # Create user, since mpiexec doesn't like to run as root
 #

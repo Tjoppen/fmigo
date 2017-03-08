@@ -289,7 +289,9 @@ class FMU:
                 if len(conn) > 1:
                     print('More then one sub-element of Connector - bailing out')
                     exit(1)
-                unit = get_attrib(conn[0], 'unit')
+                unit = get_attrib(conn[0], 'unit', False)
+                if unit == False:
+                    unit = None
                 remove_if_empty(conn, conn[0])
 
             remove_if_empty(connectors[0], conn)
@@ -328,7 +330,7 @@ class SystemStructure:
         self.name = get_attrib(root, 'name')
 
         #not sure what to use schemaLocation for, or if we should even require it
-        self.schemaLocation = get_attrib(root, '{http://www.w3.org/2001/XMLSchema-instance}schemaLocation')
+        # self.schemaLocation = get_attrib(root, '{http://www.w3.org/2001/XMLSchema-instance}schemaLocation')
 
         # Units keyed on name. Like {name: {'units': (units,), 'factor': 1, 'offset': 0}}
         self.unitsbyname = {}
@@ -770,7 +772,7 @@ for shaft in shaftconstraints:
 
 servers = []
 for fmu in fmus:
-    servers.extend([':','-np','1','fmi-mpi-server',fmu.path])
+    servers.extend([':','-np','1','fmi-mpi-server','-l','0',fmu.path])
 
 #read connections and parameters from stdin, since they can be quite many
 #stdin because we want to avoid leaving useless files on the filesystem

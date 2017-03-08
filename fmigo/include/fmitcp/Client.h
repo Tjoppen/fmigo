@@ -46,7 +46,7 @@ namespace fmitcp {
 
 #ifndef USE_MPI
         /// Connect the client to a server
-        void connect(string host, long port);
+        void connect(string uri);
 #endif
 
         /// Send a binary message

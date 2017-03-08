@@ -31,7 +31,6 @@ print(d)
 fmus = []
 systems = []
 parameters = {}
-shaftconstraints = []
 
 schema_names = {
     'SSD': 'SystemStructureDescription.xsd',
@@ -533,29 +532,19 @@ class System:
                 if 'UMIT' in schemas:
                     schemas['UMIT'].assertValid(annotation[0])
 
-                # Grab all shaft constraints, holonomic and nonholonomic
-                shafts  = find_elements(annotation, 'umit:KinematicConstraints', 'umit:ShaftConstraint')[1]
-                shafts += find_elements(annotation, 'umit:KinematicConstraints', 'umit:HolonomicShaftConstraint')[1]
-                for shaft in shafts:
-                    # Use tag to figure out if this shaft is holonomic or not
-                    holonomic = shaft.tag == '{%s}%s' % (ns['umit'], 'HolonomicShaftConstraint')
-                    shaftconstraint = []
-                    for i in [1,2]:
-                        # Full name
-                        name = self.get_name() + '.' + get_attrib(shaft, 'element%i' % i)
-
-                        # List connector names in order expected by -C option
-                        # If holonomic, graph 'angleN' as well
-                        connectors = [
-                            get_attrib(shaft, '%s%i' % (k,i))
-                                for k in (['angle'] if holonomic else []) + ['angularVelocity', 'angularAcceleration', 'torque']
-                        ]
-                        shaftconstraint.append((name, connectors))
-
-                    # Add to global list of shaft constraints
-                    shaftconstraints.append(shaftconstraint)
-
+                for shaft in find_elements(annotation, 'umit:KinematicConstraints', 'umit:ShaftConstraint')[1]:
+                    get_attrib(shaft, 'element1')
+                    get_attrib(shaft, 'element2')
+                    get_attrib(shaft, 'angle1', '')
+                    get_attrib(shaft, 'angle2', '')
+                    get_attrib(shaft, 'angularVelocity1')
+                    get_attrib(shaft, 'angularVelocity2')
+                    get_attrib(shaft, 'angularAcceleration1')
+                    get_attrib(shaft, 'angularAcceleration2')
+                    get_attrib(shaft, 'torque1')
+                    get_attrib(shaft, 'torque2')
                     remove_if_empty(annotation[0], shaft)
+
                 remove_if_empty(annotation, annotation[0])
             else:
                 print('WARNING: Found unknown Annotation of type "%s"' % type)
@@ -758,26 +747,10 @@ for key in connectionmultimap.keys():
         connstr = '%s,%i,%i,%s,%i,%i' % (fv['type'], fr[0], fv['vr'], tv['type'], to[0], tv['vr'])
         flatconns.extend(['-c', connstr])
 
-# Resolve kinetic connections
-kineticconns = []
-for shaft in shaftconstraints:
-    ids = (fmumap[shaft[0][0]], fmumap[shaft[1][0]])
-    connstr = 'shaft,%i,%i' % ids
-
-    for i in range(2):
-        for key in shaft[i][1]:
-            connstr += ',%i' % mds[ids[i]][key]['vr']
-
-    kineticconns.extend(['-C', connstr])
-
-servers = []
-for fmu in fmus:
-    servers.extend([':','-np','1','fmi-mpi-server','-l','0',fmu.path])
-
 #read connections and parameters from stdin, since they can be quite many
 #stdin because we want to avoid leaving useless files on the filesystem
-args = ['mpiexec','-np','1','fmi-mpi-master','-t','9.9','-d','0.1','-a','-'] + servers
-print(" ".join(args) + " <<< " + '"' + " ".join(flatconns+flatparams+kineticconns) + '"')
+args = ['mpiexec','-np',str(len(fmus)+1),'fmigo-mpi','-t','9.9','-d','0.1','-a','-'] + [fmu.path for fmu in fmus]
+print(" ".join(args) + " <<< " + '"' + " ".join(flatconns+flatparams) + '"')
 
 if dry_run:
     ret = 0

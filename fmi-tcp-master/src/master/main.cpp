@@ -425,11 +425,18 @@ int vrFromKeyName(FMIClient* client, string key){
 
   if(isNumeric(key))
     return atoi(key.c_str());
-  if(!client->getVariables().count(key)){
-    cerr << "Error: client(" << client->getId() << "):" << key << endl;
+  switch (client->getVariables().count(key)){
+  case 0:{
+    fprintf(stderr,"Error: client(%d):%s\n", client->getId(), key.c_str());
     exit(1);
   }
-  return client->getVariables()[key].vr;
+  case 1:  return client->getVariables()[key].vr;
+  default:{
+    fprintf(stderr,"Error: Not uniq - client(%d):%s\n", client->getId(), key.c_str());
+    exit(1);
+  }
+  }
+
 }
 
 int connectionNamesToVr(std::vector<connection> &conn,

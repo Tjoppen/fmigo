@@ -442,20 +442,25 @@ bool isNumeric(const std::string& input) {
     return std::all_of(input.begin(), input.end(), ::isdigit);
 }
 
+int vrFromKeyName(FMIClient* client, string key){
+
+  if(isNumeric(key))
+    return atoi(key.c_str());
+  if(!client->getVariables().count(key)){
+    cerr << "Error: client(" << client->getId() << "):" << key << endl;
+    exit(1);
+  }
+  return client->getVariables()[key].vr;
+}
+
 int connectionNamesToVr(std::vector<connection> &conn,
                         vector<strongconnection> &strongConnections,
                         const vector<FMIClient*> clients, // could not get this to compile when defined in parseargs
                         vector<VR_struct> vr_struct
                         ){
     for(size_t i = 0; i < vr_struct.size(); i++){
-      if(isNumeric(vr_struct[i].fromOutputVRorNAME))
-        conn[i].fromOutputVR = atoi(vr_struct[i].fromOutputVRorNAME.c_str());
-      else
-        conn[i].fromOutputVR = clients[conn[i].fromFMU]->getVariables()[vr_struct[i].fromOutputVRorNAME].vr;
-      if(isNumeric(vr_struct[i].toInputVRorNAME))
-        conn[i].toInputVR = atoi(vr_struct[i].toInputVRorNAME.c_str());
-      else
-        conn[i].toInputVR = clients[conn[i].toFMU]->getVariables()[vr_struct[i].toInputVRorNAME].vr;
+      conn[i].fromOutputVR = vrFromKeyName(clients[conn[i].fromFMU], vr_struct[i].fromOutputVRorNAME);
+      conn[i].toInputVR = vrFromKeyName(clients[conn[i].toFMU], vr_struct[i].toInputVRorNAME);
     }
     // Check if connections refer to nonexistant FMU index
     int i = 0;

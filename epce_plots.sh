@@ -31,7 +31,7 @@ run_chained_sho() {
 
     ampN=1
     amp0=-0
-    FMUS=": -np 1 fmi-mpi-server ../../impulse/impulse.fmu"
+    FMUS="../../impulse/impulse.fmu"
     # Connect impulse generator as force input on last system
     CONNS="-c 0,0,$N,196"
     PARAMS="-p i,0,4,0:i,0,5,${start}:i,0,6,${length}:0,7,$ampN"
@@ -55,19 +55,19 @@ run_chained_sho() {
         fi
 
         PARAMS="${PARAMS} -p i,$i,98,${filter_length} -p $i,0,${mass}:$i,4,${damping_i}:$i,95,${k_i}:$i,7,0"
-        FMUS="${FMUS} : -np 1 fmi-mpi-server chained_sho.fmu"
+        FMUS="${FMUS} chained_sho.fmu"
     done
 
     if false
        then 
     N1=$(bc <<< "$N + 1")
-    FMUS="${FMUS} : -np 1 fmi-mpi-server ../../impulse/impulse.fmu"
+    FMUS="${FMUS} ../../impulse/impulse.fmu"
     PARAMS="${PARAMS} -p i,$N1,4,0:i,$N1,5,${start}:i,$N1,6,${length}:$N1,7,$amp0"
 #    # Connect impulse generator as force input on first system
     CONNS="${CONNS}  -c $N1,0,1,196"
     fi
 
-    mpiexec -np 1 fmi-mpi-master -m $5 -t $6 -d $dt ${CONNS} ${PARAMS} ${FMUS} > ${output_filename} || true
+    mpiexec -np $(bc <<< "$N + 1") fmigo-mpi -m $5 -t $6 -d $dt ${CONNS} ${PARAMS} ${FMUS} > ${output_filename} || true
     # Cut out mpi crap if GSL exploded
     sed -i '/---.*/{N;N;N;N;N;N;N;N;N;N;s/---.*//}' ${output_filename}
 }

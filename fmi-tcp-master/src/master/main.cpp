@@ -417,27 +417,6 @@ static void pushResults(int step, double t, double endTime, double timeStep, zmq
     push_socket.send(rep);
 }
 
-static vector<char*> make_char_vector(vector<string>& vec) {
-    vector<char*> ret;
-    for (size_t x = 0; x < vec.size(); x++) {
-        ret.push_back((char*)vec[x].c_str());
-    }
-    return ret;
-}
-
-template<typename T> int checkFMUIndex(T it, int i, size_t numFMUs) {
-    if(it->fromFMU < 0 || (size_t)it->fromFMU >= numFMUs){
-        fprintf(stderr,"Connection %d connects from FMU %d, which does not exist.\n", i, it->fromFMU);
-        return 1;
-    }
-    if(it->toFMU < 0 || (size_t)it->toFMU >= numFMUs){
-        fprintf(stderr,"Connection %d connects to FMU %d, which does not exist.\n", i, it->toFMU);
-        return 1;
-    }
-
-    return 0;
-}
-
 bool isNumeric(const std::string& input) {
     return std::all_of(input.begin(), input.end(), ::isdigit);
 }

@@ -215,9 +215,7 @@ int fmitcp_master::parseArguments( int argc,
 
 
                 conn.fromFMU      = atoi(values[a].c_str());
-                //conn.fromOutputVR = atoi(values[b].c_str());
                 conn.toFMU        = atoi(values[c].c_str());
-                //conn.toInputVR    = atoi(values[d].c_str());
 
                 VR_struct vrs;
                 vrs.fromOutputVRorNAME = values[b];

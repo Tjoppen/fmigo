@@ -466,7 +466,14 @@ int fmitcp_master::parseArguments( int argc,
     }
 #endif
 
+    // Check if connections refer to nonexistant FMU index
     int i = 0;
+    for (auto it = connections->begin(); it != connections->end(); it++, i++) {
+        if (checkFMUIndex(it, i, numFMUs))
+            return 1;
+    }
+
+    i = 0;
     for (auto it = strongConnections->begin(); it != strongConnections->end(); it++, i++) {
         if (checkFMUIndex(it, i, numFMUs))
             return 1;

@@ -462,19 +462,6 @@ int connectionNamesToVr(std::vector<connection> &conn,
       conn[i].fromOutputVR = vrFromKeyName(clients[conn[i].fromFMU], vr_struct[i].fromOutputVRorNAME);
       conn[i].toInputVR = vrFromKeyName(clients[conn[i].toFMU], vr_struct[i].toInputVRorNAME);
     }
-    // Check if connections refer to nonexistant FMU index
-    int i = 0;
-    int numFMUs = clients.size();
-    for (auto it = conn.begin(); it != conn.end(); it++, i++) {
-        if (checkFMUIndex(it, i, numFMUs))
-            return 1;
-    }
-
-    // i = 0;
-    // for (auto it = strongConnections->begin(); it != strongConnections->end(); it++, i++) {
-    //     if (checkFMUIndex(it, i, numFMUs))
-    //         return 1;
-    // }
 
   return 0;
 }

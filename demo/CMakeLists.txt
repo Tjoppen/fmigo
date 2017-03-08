@@ -9,5 +9,8 @@ endif ()
 
 add_test(ctest_cgsl_run cgsl_demo)
 
-# Check for leaks
-add_test(ctest_cgsl_valgrind valgrind --leak-check=full --error-exitcode=1 ${CMAKE_CURRENT_BINARY_DIR}/cgsl_demo)
+# No valgrind on Windows
+if (NOT WIN32)
+  # Check for leaks
+  add_test(ctest_cgsl_valgrind valgrind --leak-check=full --error-exitcode=1 ${CMAKE_CURRENT_BINARY_DIR}/cgsl_demo)
+endif ()

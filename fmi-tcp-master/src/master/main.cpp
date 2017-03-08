@@ -443,33 +443,42 @@ bool isNumeric(const std::string& input) {
 
 int connectionNamesToVr(std::vector<connection> *connections,
                         vector<strongconnection> *strongConnections,
-                        const vector<FMIClient*> clients
+                        const vector<FMIClient*> clients, // could not get this to compile when defined in parseargs
+                        vector<VR_struct> vr_struct
                         ){
 
     variable_map map = clients[0]->getVariables();
     //std::cerr << "fmo " << connection->fromFMO << endl;
     fprintf(stderr, " %d\n", map["out"].vr);
-connection conn;
+    for(auto str: vr_struct){
+      connection conn;
 
-    conn.fromFMU      = clients[0]->getVariables()["out"].vr;
-    conn.fromOutputVR = clients[0]->getVariables()["out"].vr;
-    conn.toFMU        = clients[0]->getVariables()["out"].vr;
-    conn.toInputVR    = clients[0]->getVariables()["out"].vr;
+      conn.fromFMU      = atoi(str.fromFMU.c_str());
+      if(isNumeric(str.fromOutputVR))
+        conn.fromOutputVR = atoi(str.fromOutputVR.c_str());
+      else
+        conn.fromOutputVR = clients[conn.fromFMU]->getVariables()[str.fromOutputVR].vr;
+      conn.toFMU        = atoi(str.toFMU.c_str());
+      if(isNumeric(str.toInputVR))
+        conn.toInputVR = atoi(str.toInputVR.c_str());
+      else
+        conn.toInputVR    = clients[conn.toFMU]->getVariables()[str.toInputVR].vr;
 
-    //connections->push_back(conn);
+      //connections->push_back(conn);
+    }
     // Check if connections refer to nonexistant FMU index
-    int i = 0;
-    int numFMUs = 0;
-    for (auto it = connections->begin(); it != connections->end(); it++, i++) {
-        if (checkFMUIndex(it, i, numFMUs))
-            return 1;
-    }
+    // int i = 0;
+    // int numFMUs = 0;
+    // for (auto it = connections->begin(); it != connections->end(); it++, i++) {
+    //     if (checkFMUIndex(it, i, numFMUs))
+    //         return 1;
+    // }
 
-    i = 0;
-    for (auto it = strongConnections->begin(); it != strongConnections->end(); it++, i++) {
-        if (checkFMUIndex(it, i, numFMUs))
-            return 1;
-    }
+    // i = 0;
+    // for (auto it = strongConnections->begin(); it != strongConnections->end(); it++, i++) {
+    //     if (checkFMUIndex(it, i, numFMUs))
+    //         return 1;
+    // }
 
   return 0;
 }
@@ -577,7 +586,7 @@ int main(int argc, char *argv[] ) {
         (*it)->connect();
     }
 
-    connectionNamesToVr(&connections,&scs,clients);
+    connectionNamesToVr(&connections,&scs,clients,vr_struct);
     vector<WeakConnection> weakConnections = setupWeakConnections(connections, clients);
     setupConstraintsAndSolver(scs, clients, &solver);
 

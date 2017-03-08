@@ -21,7 +21,7 @@ An alternative to using the tools in win-bash may be to point %PATH% to C:\Progr
 If everything is set up correctly the following commands should work inside of bash.exe: dd, seq, bc
 
 Run run_test.sh to run the tests.
-If mpiexec complains about [...]/install/bin/fmi-tcp-master missing then you need to run "make install" in build/
+If mpiexec complains about [...]/install/bin/fmigo-mpi missing then you need to run "make install" in build/
 If fmu-builder is missing you have probably cloned the repository without --recurse-submodules. Run "git submodule init && git submodule update" in the root project and umit-fmus/
 
 

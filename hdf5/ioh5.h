@@ -185,7 +185,7 @@ namespace h5 {
     const H5::PredType   & predicate;
     const H5::DataType   type;
     const std::string    name;
-    const size_t        type_c;
+    const hid_t         type_c;
     const unsigned char type_size;
   };
 

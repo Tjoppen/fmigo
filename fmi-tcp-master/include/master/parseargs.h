@@ -33,10 +33,8 @@ struct strongconnection {
 };
 
 struct VR_struct{
-  std::string fromFMU;                // Index of FMU
-  std::string fromOutputVR;           // Value reference
-  std::string toFMU;                  // FMU index
-  std::string toInputVR;              // Value reference
+  std::string fromOutputVRorNAME;           // Value reference
+  std::string toInputVRorNAME;              // Value reference
 };
 
 struct param {

@@ -32,6 +32,13 @@ struct strongconnection {
     std::vector<int> vrs;
 };
 
+struct VR_struct{
+  std::string fromFMU;                // Index of FMU
+  std::string fromOutputVR;           // Value reference
+  std::string toFMU;                  // FMU index
+  std::string toInputVR;              // Value reference
+};
+
 struct param {
     int fmuIndex;
     int valueReference;                 // Value reference to apply to
@@ -102,8 +109,11 @@ int parseArguments( int argc,
                     int *command_port,
                     int *results_port,
                     bool *paused,
-                    bool *solveLoops
+                    bool *solveLoops,
+                    std::vector<VR_struct> *vr_struct
+
                     );
+
 }
 
 #endif /* PARSEARGS_H */

@@ -416,6 +416,64 @@ static void pushResults(int step, double t, double endTime, double timeStep, zmq
     push_socket.send(rep);
 }
 
+static vector<char*> make_char_vector(vector<string>& vec) {
+    vector<char*> ret;
+    for (size_t x = 0; x < vec.size(); x++) {
+        ret.push_back((char*)vec[x].c_str());
+    }
+    return ret;
+}
+
+template<typename T> int checkFMUIndex(T it, int i, size_t numFMUs) {
+    if(it->fromFMU < 0 || (size_t)it->fromFMU >= numFMUs){
+        fprintf(stderr,"Connection %d connects from FMU %d, which does not exist.\n", i, it->fromFMU);
+        return 1;
+    }
+    if(it->toFMU < 0 || (size_t)it->toFMU >= numFMUs){
+        fprintf(stderr,"Connection %d connects to FMU %d, which does not exist.\n", i, it->toFMU);
+        return 1;
+    }
+
+    return 0;
+}
+
+bool isNumeric(const std::string& input) {
+    return std::all_of(input.begin(), input.end(), ::isdigit);
+}
+
+int connectionNamesToVr(std::vector<connection> *connections,
+                        vector<strongconnection> *strongConnections,
+                        const vector<FMIClient*> clients
+                        ){
+
+    variable_map map = clients[0]->getVariables();
+    //std::cerr << "fmo " << connection->fromFMO << endl;
+    fprintf(stderr, " %d\n", map["out"].vr);
+connection conn;
+
+    conn.fromFMU      = clients[0]->getVariables()["out"].vr;
+    conn.fromOutputVR = clients[0]->getVariables()["out"].vr;
+    conn.toFMU        = clients[0]->getVariables()["out"].vr;
+    conn.toInputVR    = clients[0]->getVariables()["out"].vr;
+
+    //connections->push_back(conn);
+    // Check if connections refer to nonexistant FMU index
+    int i = 0;
+    int numFMUs = 0;
+    for (auto it = connections->begin(); it != connections->end(); it++, i++) {
+        if (checkFMUIndex(it, i, numFMUs))
+            return 1;
+    }
+
+    i = 0;
+    for (auto it = strongConnections->begin(); it != strongConnections->end(); it++, i++) {
+        if (checkFMUIndex(it, i, numFMUs))
+            return 1;
+    }
+
+  return 0;
+}
+
 int main(int argc, char *argv[] ) {
 #ifdef USE_MPI
     fprintf(stderr, "MPI enabled\n");
@@ -449,17 +507,17 @@ int main(int argc, char *argv[] ) {
     bool holonomic = true;
     int command_port = 0, results_port = 0;
     bool paused = false, running = true, solveLoops = false;
+    vector<VR_struct> vr_struct;
+
 
     if (parseArguments(
             argc, argv, &fmuURIs, &connections, &params, &endTime, &timeStep,
             &loglevel, &csv_separator, &outFilePath, &quietMode, &fileFormat,
             &method, &realtimeMode, &printXML, &stepOrder, &fmuVisibilities,
             &scs, &hdf5Filename, &fieldnameFilename, &holonomic, &compliance,
-            &command_port, &results_port, &paused, &solveLoops)) {
+            &command_port, &results_port, &paused, &solveLoops, &vr_struct)) {
         return 1;
     }
-
-    bool zmqControl = command_port > 0 && results_port > 0;
 
     if (printXML) {
         fprintf(stderr, "XML mode not implemented\n");
@@ -475,6 +533,7 @@ int main(int argc, char *argv[] ) {
     }
 
     zmq::context_t context(1);
+    bool zmqControl = command_port > 0 && results_port > 0;
 
     zmq::socket_t rep_socket(context, ZMQ_REP);
     zmq::socket_t push_socket(context, ZMQ_PUSH);
@@ -518,6 +577,7 @@ int main(int argc, char *argv[] ) {
         (*it)->connect();
     }
 
+    connectionNamesToVr(&connections,&scs,clients);
     vector<WeakConnection> weakConnections = setupWeakConnections(connections, clients);
     setupConstraintsAndSolver(scs, clients, &solver);
 

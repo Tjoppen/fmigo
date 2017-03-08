@@ -159,7 +159,8 @@ int fmitcp_master::parseArguments( int argc,
                     int *command_port,
                     int *results_port,
                     bool *paused,
-                    bool *solveLoops
+                    bool *solveLoops,
+                    vector<VR_struct> *vr_struct
         ) {
     int index, c;
     opterr = 0;
@@ -212,10 +213,18 @@ int fmitcp_master::parseArguments( int argc,
                     return 1;
                 }
 
+
                 conn.fromFMU      = atoi(values[a].c_str());
                 conn.fromOutputVR = atoi(values[b].c_str());
                 conn.toFMU        = atoi(values[c].c_str());
                 conn.toInputVR    = atoi(values[d].c_str());
+
+                VR_struct vrs;
+                vrs.fromFMU      = values[a];
+                vrs.fromOutputVR = values[b];
+                vrs.toFMU        = values[c];
+                vrs.toInputVR    = values[d];
+                vr_struct->push_back(vrs);
 
                 connections->push_back(conn);
             }
@@ -271,7 +280,7 @@ int fmitcp_master::parseArguments( int argc,
             } else if(strcmp(optarg,"gs") == 0){
                 *method = gs;
             } else if(strcmp(optarg,"me") == 0){
-                *method = me; 
+                *method = me;
             } else {
                 fprintf(stderr,"Method \"%s\" not recognized. Use \"jacobi\" or \"gs\".\n",optarg);
                 return 1;

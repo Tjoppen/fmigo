@@ -23,6 +23,8 @@ struct connection {
     int toFMU;                  // FMU index
     int toInputVR;              // Value reference
     double slope, intercept;    // for unit conversion. y = slope*x + intercept
+    std::string fromOutputVRorNAME;           // Value reference
+    std::string toInputVRorNAME;              // Value reference
 };
 
 struct strongconnection {
@@ -30,11 +32,6 @@ struct strongconnection {
     int fromFMU;
     int toFMU;
     std::vector<int> vrs;
-};
-
-struct VR_struct{
-  std::string fromOutputVRorNAME;           // Value reference
-  std::string toInputVRorNAME;              // Value reference
 };
 
 struct param {
@@ -107,9 +104,7 @@ int parseArguments( int argc,
                     int *command_port,
                     int *results_port,
                     bool *paused,
-                    bool *solveLoops,
-                    std::vector<VR_struct> *vr_struct
-
+                    bool *solveLoops
                     );
 
 }

@@ -434,12 +434,11 @@ int vrFromKeyName(FMIClient* client, string key){
 
 int connectionNamesToVr(std::vector<connection> &conn,
                         vector<strongconnection> &strongConnections,
-                        const vector<FMIClient*> clients, // could not get this to compile when defined in parseargs
-                        vector<VR_struct> vr_struct
+                        const vector<FMIClient*> clients // could not get this to compile when defined in parseargs
                         ){
-    for(size_t i = 0; i < vr_struct.size(); i++){
-      conn[i].fromOutputVR = vrFromKeyName(clients[conn[i].fromFMU], vr_struct[i].fromOutputVRorNAME);
-      conn[i].toInputVR = vrFromKeyName(clients[conn[i].toFMU], vr_struct[i].toInputVRorNAME);
+    for(size_t i = 0; i < conn.size(); i++){
+      conn[i].fromOutputVR = vrFromKeyName(clients[conn[i].fromFMU], conn[i].fromOutputVRorNAME);
+      conn[i].toInputVR = vrFromKeyName(clients[conn[i].toFMU], conn[i].toInputVRorNAME);
     }
 
   return 0;
@@ -478,7 +477,6 @@ int main(int argc, char *argv[] ) {
     bool holonomic = true;
     int command_port = 0, results_port = 0;
     bool paused = false, running = true, solveLoops = false;
-    vector<VR_struct> vr_struct;
 
 
     if (parseArguments(
@@ -486,7 +484,7 @@ int main(int argc, char *argv[] ) {
             &loglevel, &csv_separator, &outFilePath, &quietMode, &fileFormat,
             &method, &realtimeMode, &printXML, &stepOrder, &fmuVisibilities,
             &scs, &hdf5Filename, &fieldnameFilename, &holonomic, &compliance,
-            &command_port, &results_port, &paused, &solveLoops, &vr_struct)) {
+            &command_port, &results_port, &paused, &solveLoops)) {
         return 1;
     }
 
@@ -548,7 +546,7 @@ int main(int argc, char *argv[] ) {
         (*it)->connect();
     }
 
-    connectionNamesToVr(connections,scs,clients,vr_struct);
+    connectionNamesToVr(connections,scs,clients);
     vector<WeakConnection> weakConnections = setupWeakConnections(connections, clients);
     setupConstraintsAndSolver(scs, clients, &solver);
 

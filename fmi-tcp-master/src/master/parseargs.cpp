@@ -159,8 +159,7 @@ int fmitcp_master::parseArguments( int argc,
                     int *command_port,
                     int *results_port,
                     bool *paused,
-                    bool *solveLoops,
-                    vector<VR_struct> *vr_struct
+                    bool *solveLoops
         ) {
     int index, c;
     opterr = 0;
@@ -216,11 +215,8 @@ int fmitcp_master::parseArguments( int argc,
 
                 conn.fromFMU      = atoi(values[a].c_str());
                 conn.toFMU        = atoi(values[c].c_str());
-
-                VR_struct vrs;
-                vrs.fromOutputVRorNAME = values[b];
-                vrs.toInputVRorNAME    = values[d];
-                vr_struct->push_back(vrs);
+                conn.fromOutputVRorNAME = values[b];
+                conn.toInputVRorNAME    = values[d];
 
                 connections->push_back(conn);
             }

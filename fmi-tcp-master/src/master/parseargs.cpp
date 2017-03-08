@@ -238,7 +238,7 @@ int fmitcp_master::parseArguments( int argc,
                 sc.toFMU   = atoi(values[2].c_str());
 
                 for (auto it2 = values.begin() + 3; it2 != values.end(); it2++) {
-                    sc.vrs.push_back(atoi(it2->c_str()));
+                    sc.vrORname.push_back(it2->c_str());
                 }
 
                 strongConnections->push_back(sc);

@@ -31,6 +31,7 @@ struct strongconnection {
     std::string type;
     int fromFMU;
     int toFMU;
+    std::vector<std::string> vrORname;              // Value reference
     std::vector<int> vrs;
 };
 

@@ -447,6 +447,17 @@ int connectionNamesToVr(std::vector<connection> &connections,
       connections[i].toInputVR = vrFromKeyName(clients[connections[i].toFMU], connections[i].toInputVRorNAME);
     }
 
+    if(strongConnections.size()%2 != 0){
+      fprintf(stderr,"Error: strong connection needs even number of connections for fmu0 and fmu1\n");
+      exit(1);
+    }
+    for(size_t i = 0; i < strongConnections.size(); i++){
+      size_t j = 0;
+      for(; j < strongConnections[i].vrORname.size()/2; j++)
+        strongConnections[i].vrs.push_back(vrFromKeyName(clients[strongConnections[i].fromFMU],strongConnections[i].vrORname[j]));
+      for(; j < strongConnections[i].vrORname.size(); j++)
+        strongConnections[i].vrs.push_back(vrFromKeyName(clients[strongConnections[i].toFMU],strongConnections[i].vrORname[j]));
+    }
   return 0;
 }
 

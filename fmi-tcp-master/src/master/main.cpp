@@ -494,7 +494,6 @@ int main(int argc, char *argv[] ) {
     int command_port = 0, results_port = 0;
     bool paused = false, running = true, solveLoops = false;
 
-
     if (parseArguments(
             argc, argv, &fmuURIs, &connections, &params, &endTime, &timeStep,
             &loglevel, &csv_separator, &outFilePath, &quietMode, &fileFormat,
@@ -503,6 +502,8 @@ int main(int argc, char *argv[] ) {
             &command_port, &results_port, &paused, &solveLoops)) {
         return 1;
     }
+
+    bool zmqControl = command_port > 0 && results_port > 0;
 
     if (printXML) {
         fprintf(stderr, "XML mode not implemented\n");
@@ -518,7 +519,6 @@ int main(int argc, char *argv[] ) {
     }
 
     zmq::context_t context(1);
-    bool zmqControl = command_port > 0 && results_port > 0;
 
     zmq::socket_t rep_socket(context, ZMQ_REP);
     zmq::socket_t push_socket(context, ZMQ_PUSH);

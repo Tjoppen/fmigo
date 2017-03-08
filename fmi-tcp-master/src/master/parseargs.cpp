@@ -212,7 +212,6 @@ int fmitcp_master::parseArguments( int argc,
                     return 1;
                 }
 
-
                 conn.fromFMU      = atoi(values[a].c_str());
                 conn.toFMU        = atoi(values[c].c_str());
                 conn.fromOutputVRorNAME = values[b];

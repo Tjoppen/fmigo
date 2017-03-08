@@ -107,7 +107,6 @@ int parseArguments( int argc,
                     bool *paused,
                     bool *solveLoops
                     );
-
 }
 
 #endif /* PARSEARGS_H */

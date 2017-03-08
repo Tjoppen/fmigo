@@ -436,16 +436,15 @@ int vrFromKeyName(FMIClient* client, string key){
     exit(1);
   }
   }
-
 }
 
-int connectionNamesToVr(std::vector<connection> &conn,
+int connectionNamesToVr(std::vector<connection> &connections,
                         vector<strongconnection> &strongConnections,
                         const vector<FMIClient*> clients // could not get this to compile when defined in parseargs
                         ){
-    for(size_t i = 0; i < conn.size(); i++){
-      conn[i].fromOutputVR = vrFromKeyName(clients[conn[i].fromFMU], conn[i].fromOutputVRorNAME);
-      conn[i].toInputVR = vrFromKeyName(clients[conn[i].toFMU], conn[i].toInputVRorNAME);
+    for(size_t i = 0; i < connections.size(); i++){
+      connections[i].fromOutputVR = vrFromKeyName(clients[connections[i].fromFMU], connections[i].fromOutputVRorNAME);
+      connections[i].toInputVR = vrFromKeyName(clients[connections[i].toFMU], connections[i].toInputVRorNAME);
     }
 
   return 0;

@@ -26,6 +26,7 @@
 #include <fstream>
 #include "control.pb.h"
 
+#include <iostream> // for cerr
 using namespace fmitcp_master;
 using namespace fmitcp;
 using namespace fmitcp::serialize;
@@ -441,38 +442,28 @@ bool isNumeric(const std::string& input) {
     return std::all_of(input.begin(), input.end(), ::isdigit);
 }
 
-int connectionNamesToVr(std::vector<connection> *connections,
-                        vector<strongconnection> *strongConnections,
+int connectionNamesToVr(std::vector<connection> &conn,
+                        vector<strongconnection> &strongConnections,
                         const vector<FMIClient*> clients, // could not get this to compile when defined in parseargs
                         vector<VR_struct> vr_struct
                         ){
-
-    variable_map map = clients[0]->getVariables();
-    //std::cerr << "fmo " << connection->fromFMO << endl;
-    fprintf(stderr, " %d\n", map["out"].vr);
-    for(auto str: vr_struct){
-      connection conn;
-
-      conn.fromFMU      = atoi(str.fromFMU.c_str());
-      if(isNumeric(str.fromOutputVR))
-        conn.fromOutputVR = atoi(str.fromOutputVR.c_str());
+    for(size_t i = 0; i < vr_struct.size(); i++){
+      if(isNumeric(vr_struct[i].fromOutputVRorNAME))
+        conn[i].fromOutputVR = atoi(vr_struct[i].fromOutputVRorNAME.c_str());
       else
-        conn.fromOutputVR = clients[conn.fromFMU]->getVariables()[str.fromOutputVR].vr;
-      conn.toFMU        = atoi(str.toFMU.c_str());
-      if(isNumeric(str.toInputVR))
-        conn.toInputVR = atoi(str.toInputVR.c_str());
+        conn[i].fromOutputVR = clients[conn[i].fromFMU]->getVariables()[vr_struct[i].fromOutputVRorNAME].vr;
+      if(isNumeric(vr_struct[i].toInputVRorNAME))
+        conn[i].toInputVR = atoi(vr_struct[i].toInputVRorNAME.c_str());
       else
-        conn.toInputVR    = clients[conn.toFMU]->getVariables()[str.toInputVR].vr;
-
-      //connections->push_back(conn);
+        conn[i].toInputVR = clients[conn[i].toFMU]->getVariables()[vr_struct[i].toInputVRorNAME].vr;
     }
     // Check if connections refer to nonexistant FMU index
-    // int i = 0;
-    // int numFMUs = 0;
-    // for (auto it = connections->begin(); it != connections->end(); it++, i++) {
-    //     if (checkFMUIndex(it, i, numFMUs))
-    //         return 1;
-    // }
+    int i = 0;
+    int numFMUs = clients.size();
+    for (auto it = conn.begin(); it != conn.end(); it++, i++) {
+        if (checkFMUIndex(it, i, numFMUs))
+            return 1;
+    }
 
     // i = 0;
     // for (auto it = strongConnections->begin(); it != strongConnections->end(); it++, i++) {
@@ -586,7 +577,7 @@ int main(int argc, char *argv[] ) {
         (*it)->connect();
     }
 
-    connectionNamesToVr(&connections,&scs,clients,vr_struct);
+    connectionNamesToVr(connections,scs,clients,vr_struct);
     vector<WeakConnection> weakConnections = setupWeakConnections(connections, clients);
     setupConstraintsAndSolver(scs, clients, &solver);
 

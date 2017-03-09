@@ -144,6 +144,12 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_VERSION}/ThirdParty
 add_subdirectory(strong-coupling-core)
 add_subdirectory(${FMILIBRARY_VERSION})
 
+if (USE_GPL)
+  # We should have umit-fmus checked out
+  # Use its cgsl regardless of whether BUILD_FMUS is ON or not
+  add_subdirectory(umit-fmus/templates/cgsl)
+endif ()
+
 add_subdirectory(fmigo)
 add_dependencies(fmigo-master fmilib)
 add_dependencies(fmigo-mpi    fmilib)

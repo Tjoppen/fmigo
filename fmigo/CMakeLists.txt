@@ -68,8 +68,10 @@ SET(MPI_MASTER_NAME fmigo-mpi)
 set(TCP_SERVER_NAME fmigo-server)
 
 if (USE_GPL)
-  set(EXTRALIBS gsl gslcblas )
+  set(EXTRALIBS cgsl )
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_GPL")
+
+  include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../umit-fmus/templates/cgsl/include)
 
   if (WIN32)
     link_directories(${CMAKE_CURRENT_SOURCE_DIR}/../umit-fmus/wingsl/lib)

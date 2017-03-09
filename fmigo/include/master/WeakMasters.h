@@ -11,7 +11,9 @@
 #include "master/WeakConnection.h"
 #include "common/common.h"
 #include <fmitcp/serialize.h>
-#include "common/gsl_interface.h"
+#ifdef USE_GPL
+#include "gsl-interface.h"
+#endif
 
 #ifdef DEBUG_MODEL_EXCHANGE
 #include <unistd.h>

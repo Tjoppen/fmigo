@@ -2,11 +2,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-#ifdef WIN32
-//http://stackoverflow.com/questions/6809275/unresolved-external-symbol-hypot-when-using-static-library#10051898
-double hypot(double x, double y) {return _hypot(x, y);}
-#endif
-
 static int check_flag(void *flagvalue, const char *funcname, int opt);
 
 

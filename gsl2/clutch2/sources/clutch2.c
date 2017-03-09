@@ -1,5 +1,8 @@
 //TODO: add some kind of flag that switches this one between a clutch and a gearbox, to reduce the amount of code needed
 
+//fix WIN32 build
+#include "hypotmath.h"
+
 #include "modelDescription.h"
 #include "gsl-interface.h"
 #include <memory.h>

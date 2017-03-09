@@ -6,6 +6,10 @@
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_matrix.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*****************************
  * Structure definitions
  *****************************
@@ -224,5 +228,9 @@ cgsl_model * cgsl_epce_default_model_init(
         epce_post_step_ptr epce_post_step,
         void *epce_post_step_params
 );
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

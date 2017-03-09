@@ -39,7 +39,7 @@ void StrongMaster::getDirectionalDerivative(FMIClient *client, Vec3 seedVec, vec
         seed.push_back(seedVec.z());
     }
 
-    sendWait(client, fmi2_import_get_directional_derivative(0, 0, accelerationRefs, forceRefs, seed));
+    sendWait(client, fmi2_import_get_directional_derivative(accelerationRefs, forceRefs, seed));
 }
 
 void StrongMaster::runIteration(double t, double dt) {
@@ -74,7 +74,7 @@ void StrongMaster::runIteration(double t, double dt) {
         }
 
         const vector<int> valueRefs = m_clients[i]->getStrongConnectorValueReferences();
-        send(m_clients[i], fmi2_import_get_real(0, 0, valueRefs));
+        send(m_clients[i], fmi2_import_get_real(valueRefs));
     }
     PRINT_HDF5_DELTA("get_strong_reals");
     wait();
@@ -110,7 +110,7 @@ void StrongMaster::runIteration(double t, double dt) {
             saveLoadClients.push_back(client);
         }
     }
-    send(saveLoadClients, fmi2_import_get_fmu_state(0, 0));
+    send(saveLoadClients, fmi2_import_get_fmu_state());
 
     //zero forces
     //if we don't do this then the forces would explode
@@ -124,19 +124,19 @@ void StrongMaster::runIteration(double t, double dt) {
 
             vector<double> vec(fvrs.size(), 0.0);
 
-            send(client, fmi2_import_set_real(0, 0, fvrs, vec));
+            send(client, fmi2_import_set_real(fvrs, vec));
         }
     }
 
     //noSetFMUStatePriorToCurrentPoint = false
     //This signals to the FMU that we might restore it to a state prior to currentCommunicationPoint=t
     //In other words: do the step, but don't commit the results
-    send(saveLoadClients, fmi2_import_do_step(0, 0, t, dt, false));
+    send(saveLoadClients, fmi2_import_do_step(t, dt, false));
 
     //do about the same thing we did a little bit further up, but store the results in future values
     for(size_t i=0; i<saveLoadClients.size(); i++){
         const vector<int> valueRefs = saveLoadClients[i]->getStrongConnectorValueReferences();
-        send(saveLoadClients[i], fmi2_import_get_real(0, 0, valueRefs));
+        send(saveLoadClients[i], fmi2_import_get_real(valueRefs));
     }
 
     PRINT_HDF5_DELTA("get_future_values");
@@ -153,8 +153,8 @@ void StrongMaster::runIteration(double t, double dt) {
     //restore
     for (size_t i=0; i<saveLoadClients.size(); i++){
         FMIClient *client = saveLoadClients[i];
-        send(client, fmi2_import_set_fmu_state(0, 0, client->m_stateId));
-        send(client, fmi2_import_free_fmu_state(0, 0, client->m_stateId));
+        send(client, fmi2_import_set_fmu_state(client->m_stateId));
+        send(client, fmi2_import_free_fmu_state(client->m_stateId));
     }
 
     //get directional derivatives
@@ -271,7 +271,7 @@ void StrongMaster::runIteration(double t, double dt) {
             vector<int> tvrs = sc->getTorqueValueRefs();
             fvrs.insert(fvrs.end(), tvrs.begin(), tvrs.end());
 
-            send(client, fmi2_import_set_real(0, 0, fvrs, vec));
+            send(client, fmi2_import_set_real(fvrs, vec));
         }
     }
     PRINT_HDF5_DELTA("send_strong_forces");
@@ -279,7 +279,7 @@ void StrongMaster::runIteration(double t, double dt) {
     //do actual step
     //noSetFMUStatePriorToCurrentPoint = true
     //In other words: do the step, commit the results (basically, we're not going back)
-    sendWait(m_clients, fmi2_import_do_step(0, 0, t, dt, true));
+    sendWait(m_clients, fmi2_import_do_step(t, dt, true));
     PRINT_HDF5_DELTA("do_step");
 }
 

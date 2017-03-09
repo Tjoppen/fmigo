@@ -26,7 +26,7 @@ enum fmitcp_message_Type {
     type_fmi2_import_get_string_status_res = 118;
 
     // =========== FMI 2.0 (ME) Model Exchange functions ===========
-    
+
     type_fmi2_import_enter_event_mode_req = 201;
     type_fmi2_import_enter_event_mode_res = 202;
     type_fmi2_import_new_discrete_states_req = 203;
@@ -424,7 +424,6 @@ message fmi2_import_reset_res {
 // fmi2_status_t     fmi2_import_get_real (fmi2_import_t *fmu, const fmi2_value_reference_t vr[], size_t nvr, fmi2_real_t value[])
 //     Wrapper for the FMI function fmiGetReal(...)
 message fmi2_import_get_real_req {
-    required int32  fmuId = 2;
     repeated int32  valueReferences = 3 [packed=true];
 }
 message fmi2_import_get_real_res {
@@ -435,7 +434,6 @@ message fmi2_import_get_real_res {
 // fmi2_status_t     fmi2_import_get_integer (fmi2_import_t *fmu, const fmi2_value_reference_t vr[], size_t nvr, fmi2_integer_t value[])
 //     Wrapper for the FMI function fmiGetInteger(...)
 message fmi2_import_get_integer_req {
-    required int32  fmuId = 2;
     repeated int32  valueReferences = 3 [packed=true];
 }
 message fmi2_import_get_integer_res {
@@ -446,7 +444,6 @@ message fmi2_import_get_integer_res {
 // fmi2_status_t     fmi2_import_get_boolean (fmi2_import_t *fmu, const fmi2_value_reference_t vr[], size_t nvr, fmi2_boolean_t value[])
 //     Wrapper for the FMI function fmiGetBoolean(...)
 message fmi2_import_get_boolean_req {
-    required int32  fmuId = 2;
     repeated int32  valueReferences = 3 [packed=true];
 }
 message fmi2_import_get_boolean_res {
@@ -457,7 +454,6 @@ message fmi2_import_get_boolean_res {
 // fmi2_status_t     fmi2_import_get_string (fmi2_import_t *fmu, const fmi2_value_reference_t vr[], size_t nvr, fmi2_string_t value[])
 //     Wrapper for the FMI function fmiGetString(...)
 message fmi2_import_get_string_req {
-    required int32  fmuId = 2;
     repeated int32  valueReferences = 3 [packed=true];
 }
 message fmi2_import_get_string_res {
@@ -468,7 +464,6 @@ message fmi2_import_get_string_res {
 // fmi2_status_t     fmi2_import_set_real (fmi2_import_t *fmu, const fmi2_value_reference_t vr[], size_t nvr, const fmi2_real_t value[])
 //     Wrapper for the FMI function fmiSetReal(...)
 message fmi2_import_set_real_req {
-    required int32  fmuId = 2;
     repeated int32  valueReferences = 3 [packed=true];
     repeated double values = 4 [packed=true];
 }
@@ -499,7 +494,6 @@ message fmi2_import_set_boolean_res {
 // fmi2_status_t     fmi2_import_set_string (fmi2_import_t *fmu, const fmi2_value_reference_t vr[], size_t nvr, const fmi2_string_t value[])
 //     Wrapper for the FMI function fmiSetString(...)
 message fmi2_import_set_string_req {
-    required int32  fmuId = 2;
     repeated int32  valueReferences = 3 [packed=true];
     repeated string values = 4;
 }
@@ -510,7 +504,6 @@ message fmi2_import_set_string_res {
 // fmi2_status_t     fmi2_import_get_fmu_state (fmi2_import_t *fmu, fmi2_FMU_state_t *s)
 //     Wrapper for the FMI function fmiGetFMUstate(...)
 message fmi2_import_get_fmu_state_req {
-    required int32  fmuId = 2;
 }
 message fmi2_import_get_fmu_state_res {
     required int32 stateId = 2;

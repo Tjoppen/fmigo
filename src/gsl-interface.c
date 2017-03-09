@@ -1,11 +1,6 @@
 #include "gsl-interface.h"
 #include <string.h>
 
-#ifdef WIN32
-//http://stackoverflow.com/questions/6809275/unresolved-external-symbol-hypot-when-using-static-library#10051898
-double hypot(double x, double y) {return _hypot(x, y);}
-#endif
-
 const gsl_odeiv2_step_type * cgsl_get_integrator( int  i ) {
 
   const gsl_odeiv2_step_type * integrators [] =

@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <math.h>
+#include "hypotmath.h"
 #include "gsl-interface.h"
 
 static int sine(double t, const double y[], double dydt[], void * params) {

@@ -40,6 +40,7 @@ SET(MASTER_SRCS
     src/master/FMIClient.cpp
     src/master/WeakConnection.cpp
     src/common/common.cpp
+    src/common/CSV-parser.cpp
     src/master/BaseMaster.cpp
     src/master/parseargs.cpp
     src/master/StrongMaster.cpp
@@ -52,6 +53,7 @@ SET(MASTER_HEADERS
     include/master/WeakConnection.h
     include/master/WeakMasters.h
     include/common/common.h
+    include/common/CSV-parser.h
     ${FMITCP_HEADERS}
     ${CMAKE_CURRENT_SOURCE_DIR}/src/master/control.pb.h
 )
@@ -160,7 +162,7 @@ add_custom_command(OUTPUT ${MASTER_CONTROL_PROTOBUF_TARGETS}
 #same here
 add_custom_target(control_pb DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/master/control.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/src/master/control.pb.cc)
 
-# Install compiled protbuf files 
+# Install compiled protbuf files
 install(FILES ${FMITCP_PROTOBUF_TARGETS} ${MASTER_CONTROL_PROTOBUF_TARGETS} DESTINATION protobuf)
 
 add_dependencies(${TCP_MASTER_NAME} fmitcp_pb control_pb)

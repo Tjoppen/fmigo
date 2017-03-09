@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 2.8)
 
+#enable testing
+enable_testing()
+# Includes which tests that should be skipped
+configure_file(${CMAKE_SOURCE_DIR}/CTestCustom.cmake ${CMAKE_BINARY_DIR})
+
 if(CMAKE_VERSION VERSION_GREATER "3.3")
     #suppress warning about libexpat.a
     cmake_policy(SET CMP0058 OLD)
@@ -125,7 +130,6 @@ else(WIN32)
   link_directories(/usr/lib/x86_64-linux-gnu/hdf5/serial)
 endif(WIN32)
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/fmi-tcp/src/fmitcp/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/strong-coupling-core/include)
 
 set(FMILIBRARY_VERSION FMILibrary-2.0.1)
@@ -139,16 +143,18 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_VERSION}/ThirdParty
 
 add_subdirectory(strong-coupling-core)
 add_subdirectory(${FMILIBRARY_VERSION})
-add_subdirectory(fmi-tcp-master)
-add_dependencies(fmi-tcp-master fmilib)
-add_dependencies(fmi-mpi-master fmilib)
+add_subdirectory(fmigo)
+add_dependencies(fmigo-master fmilib)
+add_dependencies(fmigo-mpi    fmilib)
 
 if (WIN32)
     add_dependencies(sc suitesparse-ext)
-    add_dependencies(fmi-tcp-master protobuf-ext hdf5-ext)
-    add_dependencies(fmi-mpi-master protobuf-ext hdf5-ext)
+    add_dependencies(fmigo-master protobuf-ext hdf5-ext)
+    add_dependencies(fmigo-mpi    protobuf-ext hdf5-ext)
 endif ()
 
 if (BUILD_FMUS)
     add_subdirectory(umit-fmus)
 endif ()
+
+add_subdirectory(ssp)

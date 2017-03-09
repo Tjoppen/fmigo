@@ -5,13 +5,13 @@ import sys
 import os
 import os.path
 import glob
-import xml.etree.ElementTree as ET
+from lxml import etree
 import subprocess
 import shutil
 
 if len(sys.argv) < 2:
     #TODO: we probably want to know which of TCP and MPI is wanted
-    print('USAGE: %s ssp-file' % sys.argv[0])
+    print('USAGE: %s [--dry-run] ssp-file' % sys.argv[0])
     exit(1)
 
 RESOURCE_DIR='resources'
@@ -23,6 +23,7 @@ ns = {
     'ssd': 'http://www.pmsf.net/xsd/SystemStructureDescriptionDraft',
     'ssv': 'http://www.pmsf.net/xsd/SystemStructureParameterValuesDraft',
     'ssm': 'http://www.pmsf.net/xsd/SystemStructureParameterMappingDraft',
+    'umit':'http://umit.math.umu.se/UMITSSD',
 }
 d = tempfile.mkdtemp(prefix='ssp')
 print(d)
@@ -30,6 +31,31 @@ print(d)
 fmus = []
 systems = []
 parameters = {}
+
+schema_names = {
+    'SSD': 'SystemStructureDescription.xsd',
+    'SSM': 'SystemStructureParameterMapping.xsd',
+    'SSV': 'SystemStructureParameterValues.xsd',
+    'UMIT':'UMITSSD.xsd',
+}
+schemas = {}
+
+for type in schema_names:
+    # Expect schema to be located next to this script
+    try:
+        schema_path = os.path.join(os.path.dirname(__file__), schema_names[type])
+        schemas[type] = etree.XMLSchema(etree.parse(schema_path))
+    except Exception as e:
+        print(e)
+        print('Cannot open/parse %s - no %s validation performed' % (schema_path, type))
+
+def parse_and_validate(type, path):
+    if type in schemas:
+        parser = etree.XMLParser(schema=schemas[type])
+    else:
+        parser = etree.XMLParser()
+
+    return etree.parse(path, parser)
 
 # Adds (key,value) to given multimap.
 # Each (key,value) may appear only once.
@@ -149,7 +175,7 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
 
             #read from file
             #TODO: print unhandled XML in ParameterSet
-            tree = ET.parse(os.path.join(path, get_attrib(pb, 'source')))
+            tree = parse_and_validate('SSV', os.path.join(path, get_attrib(pb, 'source')))
             pvs = find_elements(tree.getroot(), 'ssv:Parameters', 'ssv:Parameter')
             #print('Parsed %i params' % len(pvs))
         else:
@@ -217,7 +243,7 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
                 exit(1)
 
             #TODO: print unhandled XML in ParameterMapping too
-            tree = ET.parse(os.path.join(path, get_attrib(pm, 'source')))
+            tree = parse_and_validate('SSM', os.path.join(path, get_attrib(pm, 'source')))
             mes = tree.getroot().findall('ssm:MappingEntry', ns)
 
             for me in mes:
@@ -262,7 +288,9 @@ class FMU:
                 if len(conn) > 1:
                     print('More then one sub-element of Connector - bailing out')
                     exit(1)
-                unit = get_attrib(conn[0], 'unit')
+                unit = get_attrib(conn[0], 'unit', False)
+                if unit == False:
+                    unit = None
                 remove_if_empty(conn, conn[0])
 
             remove_if_empty(connectors[0], conn)
@@ -301,7 +329,7 @@ class SystemStructure:
         self.name = get_attrib(root, 'name')
 
         #not sure what to use schemaLocation for, or if we should even require it
-        self.schemaLocation = get_attrib(root, '{http://www.w3.org/2001/XMLSchema-instance}schemaLocation')
+        # self.schemaLocation = get_attrib(root, '{http://www.w3.org/2001/XMLSchema-instance}schemaLocation')
 
         # Units keyed on name. Like {name: {'units': (units,), 'factor': 1, 'offset': 0}}
         self.unitsbyname = {}
@@ -344,13 +372,17 @@ class System:
 
         #parse XML, delete all attribs and element we know how to deal with
         #print residual, indicating things we don't yet support
-        tree = ET.parse(path)
+        tree = parse_and_validate('SSD', path)
+
+        # Remove comments, which would otherwise result in residual XML
+        for c in tree.xpath('//comment()'):
+            c.getparent().remove(c)
 
         if 'version' in tree.getroot().attrib:
             version = get_attrib(tree.getroot(), 'version')
         else:
             version = 'Draft20150721'
-            printf('WARNING: version not set in root, assuming ' + self.version)
+            print('WARNING: version not set in root, assuming ' + self.version)
 
         structure = SystemStructure(tree.getroot())
 
@@ -363,7 +395,7 @@ class System:
         remove_if_empty(tree.getroot(), s)
 
         if len(tree.getroot()) > 0 or len(tree.getroot().attrib) > 0:
-            print('WARNING: Residual XML: '+ET.tostring(tree.getroot()))
+            print('WARNING: Residual XML: '+etree.tostring(tree.getroot()))
 
         return ret
 
@@ -395,6 +427,7 @@ class System:
         signaldicts = find_elements(s, 'ssd:SignalDictionaries',    'ssd:SignalDictionary')
         sigdictrefs = find_elements(s, 'ssd:Elements',              'ssd:SignalDictionaryReference')
         params      = find_elements(s, 'ssd:ParameterBindings',     'ssd:ParameterBinding')
+        annotations = find_elements(s, 'ssd:Annotations',           'ssd:Annotation')
         elements    = s.find('ssd:Elements', ns)
 
         for conn in connectors[1]:
@@ -493,6 +526,31 @@ class System:
             remove_if_empty(sigdictrefs[0], sdr)
         #print('SignalDictionaryReference: ' + str(self.sigdictrefs))
 
+        for annotation in annotations[1]:
+            type = get_attrib(annotation, 'type')
+            if type == 'se.umu.math.umit.ssp.kinematicconstraints':
+                if 'UMIT' in schemas:
+                    schemas['UMIT'].assertValid(annotation[0])
+
+                for shaft in find_elements(annotation, 'umit:KinematicConstraints', 'umit:ShaftConstraint')[1]:
+                    get_attrib(shaft, 'element1')
+                    get_attrib(shaft, 'element2')
+                    get_attrib(shaft, 'angle1', '')
+                    get_attrib(shaft, 'angle2', '')
+                    get_attrib(shaft, 'angularVelocity1')
+                    get_attrib(shaft, 'angularVelocity2')
+                    get_attrib(shaft, 'angularAcceleration1')
+                    get_attrib(shaft, 'angularAcceleration2')
+                    get_attrib(shaft, 'torque1')
+                    get_attrib(shaft, 'torque2')
+                    remove_if_empty(annotation[0], shaft)
+
+                remove_if_empty(annotation, annotation[0])
+            else:
+                print('WARNING: Found unknown Annotation of type "%s"' % type)
+            remove_if_empty(annotations[0], annotation)
+        remove_if_empty(s, annotations[0])
+
         for subsystem in subsystems[1]:
             ss = System.fromxml(d, subsystem, self.version, self)
             self.subsystems[ss.name] = ss
@@ -571,7 +629,21 @@ def unzip_ssp(dest_dir, ssp_filename):
             with zipfile.ZipFile(f) as z:
                 z.extract(MODELDESCRIPTION, d)
 
-unzip_ssp(d, sys.argv[1])
+
+dry_run = sys.argv[1] == '--dry-run'
+
+if dry_run and len(sys.argv) < 3:
+    print('ERROR: missing ssp-name')
+    exit(1)
+
+# Check if we run master directly from an SSD XML file instead of an SSP zip archive
+if os.path.basename(sys.argv[-1]) == SSD_NAME:
+    d = os.path.dirname(sys.argv[-1])
+    unzipped_ssp = False
+else:
+    unzip_ssp(d, sys.argv[-1])
+    unzipped_ssp = True
+
 root = System.fromfile(d, SSD_NAME)
 
 root.resolve_dictionary_inputs()
@@ -584,11 +656,17 @@ for fmu in fmus:
     fmumap[fmu.get_name()] = fmu.id
     fmu.connect(connectionmultimap)
 
+    with zipfile.ZipFile(fmu.path) as z:
+        md_data = z.read('modelDescription.xml')
+
     # Parse modelDescription, turn variable list into map
-    tree = ET.parse(os.path.join(os.path.splitext(fmu.path)[0], MODELDESCRIPTION))
+    # tree = etree.parse(os.path.join(os.path.splitext(fmu.path)[0], MODELDESCRIPTION))
+    # root = tree.getroot()
+    # print(md_data)
+    root = etree.XML(md_data)
 
     svs = {}
-    for sv in tree.getroot().find('ModelVariables').findall('ScalarVariable'):
+    for sv in root.find('ModelVariables').findall('ScalarVariable'):
         name = sv.attrib['name']
         if name in svs:
             print(fmu.path + ' contains multiple variables named "' + name + '"!')
@@ -669,22 +747,22 @@ for key in connectionmultimap.keys():
         connstr = '%s,%i,%i,%s,%i,%i' % (fv['type'], fr[0], fv['vr'], tv['type'], to[0], tv['vr'])
         flatconns.extend(['-c', connstr])
 
-servers = []
-for fmu in fmus:
-    servers.extend([':','-np','1','fmi-mpi-server',fmu.path])
-
 #read connections and parameters from stdin, since they can be quite many
 #stdin because we want to avoid leaving useless files on the filesystem
-args = ['mpiexec','-np','1','fmi-mpi-master','-t','9.9','-d','0.1','-a','-'] + servers
+args = ['mpiexec','-np',str(len(fmus)+1),'fmigo-mpi','-t','9.9','-d','0.1','-a','-'] + [fmu.path for fmu in fmus]
 print(" ".join(args) + " <<< " + '"' + " ".join(flatconns+flatparams) + '"')
 
-#pipe arguments to master, leave stdout and stderr alone
-p = subprocess.Popen(args, stdin=subprocess.PIPE)
-p.communicate(input=" ".join(flatconns).encode('utf-8'))
-ret = p.returncode  #ret can be None
+if dry_run:
+    ret = 0
+else:
+    #pipe arguments to master, leave stdout and stderr alone
+    p = subprocess.Popen(args, stdin=subprocess.PIPE)
+    p.communicate(input=" ".join(flatconns).encode('utf-8'))
+    ret = p.returncode  #ret can be None
 
 if ret == 0:
-    shutil.rmtree(d)
+    if unzipped_ssp:
+        shutil.rmtree(d)
 else:
     print('An error occured (returncode = ' + str(ret) + '). Check ' + d)
 

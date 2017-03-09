@@ -19,6 +19,12 @@ RUN apt-get install --yes \
         libopenmpi-dev libgsl0-dev mpi-default-bin \
         wget coreutils
 
+RUN apt-get update
+
+RUN apt-get install --yes \
+        valgrind
+
+
 WORKDIR /root
 
 # CMake 3.5.0
@@ -51,4 +57,3 @@ RUN mkdir build
 WORKDIR /home/gitlab-ci/umit/build
 RUN cmake .. -G Ninja
 RUN ninja install
-

@@ -13,3 +13,5 @@ typedef struct fmigo_csv_matrix{
 typedef std::map<std::string, fmigo_csv_matrix> fmigo_csv_fmu;
 
 fmigo_csv_matrix fmigo_CSV_matrix(std::string csvf, char c);
+
+void printCSVmatrix(fmigo_csv_matrix m);

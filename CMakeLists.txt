@@ -42,44 +42,32 @@ if(WIN32)
     add_definitions(-D_SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS) # required by protobuf-ext
 
     if (MSVC14)
-        set(PROTOBUF_PROJECTS_DIR "msvc2015")
         set(MSVC_TOOLCHAIN_VERSION "/p:VisualStudioVersion=14.0")
     elseif (MSV12)
-        set(PROTOBUF_PROJECTS_DIR "msvc2013")
         set(MSVC_TOOLCHAIN_VERSION "/p:VisualStudioVersion=12.0")
     else (MSVC14)
         # Assume there is only one toolchain installed and it is compatible with MSVC12
         set(MSVC_TOOLCHAIN_VERSION "")
-        set(PROTOBUF_PROJECTS_DIR "msvc2013")
     endif (MSVC14)
 
     include(ExternalProject)
 
-    set(PROTOBUF_URL "https://github.com/google/protobuf/releases/download/v2.6.1/protobuf-2.6.1.zip")
-    set(PROTOBUF_MD5 "54e31efec42451ed73f99abc39f8c745")
-    set(PROTOBUF_DOWNLOAD_PATH "${CMAKE_CURRENT_BINARY_DIR}/protobuf-2.6.1.zip")
-    set(PROTOBUF_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/protobuf-2.6.1")
-    set(PROTOBUF_DIR "${PROTOBUF_PREFIX}/src/protobuf-ext")
+    set(PROTOBUF_URL "https://github.com/google/protobuf/releases/download/v3.2.0/protobuf-cpp-3.2.0.zip")
+    set(PROTOBUF_MD5 "a6c76f8fd0d393370bf4b32a29273114")
+    set(PROTOBUF_DOWNLOAD_PATH "${CMAKE_CURRENT_BINARY_DIR}/protobuf-cpp-3.2.0.zip")
+    set(PROTOBUF_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/protobuf-3.2.0")
 
     ExternalProject_Add(protobuf-ext
         PREFIX "${PROTOBUF_PREFIX}"
         URL ${PROTOBUF_URL}
         URL_MD5 ${PROTOBUF_MD5}
-        CONFIGURE_COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/${PROTOBUF_PROJECTS_DIR}/protobuf-2.6.1 ${PROTOBUF_DIR}
-        BINARY_DIR "${PROTOBUF_DIR}/vsprojects"
-        # Only build required libs because test fails with MSVC14
-        # BUILD_COMMAND msbuild protobuf.sln /p:Configuration=${CMAKE_BUILD_TYPE} ${MSVC_TOOLCHAIN_VERSION}
-        BUILD_COMMAND msbuild libprotobuf.vcxproj /p:Configuration=${CMAKE_BUILD_TYPE} ${MSVC_TOOLCHAIN_VERSION}
-              COMMAND msbuild libprotoc.vcxproj /p:Configuration=${CMAKE_BUILD_TYPE} ${MSVC_TOOLCHAIN_VERSION}
-              COMMAND msbuild protoc.vcxproj /p:Configuration=${CMAKE_BUILD_TYPE} ${MSVC_TOOLCHAIN_VERSION}
-        # BUILD_COMMAND msbuild libprotoc.vcxproj /p:Configuration=${CMAKE_BUILD_TYPE} ${MSVC_TOOLCHAIN_VERSION}
-        # BUILD_COMMAND msbuild protoc.vcxproj /p:Configuration=${CMAKE_BUILD_TYPE} ${MSVC_TOOLCHAIN_VERSION}
-        INSTALL_COMMAND ""
+        SOURCE_SUBDIR cmake
     )
 
-    include_directories("${PROTOBUF_DIR}/src")
-    link_directories("${PROTOBUF_DIR}/vsprojects/${CMAKE_BUILD_TYPE}")
-    set(PROTOBUF_BIN_DIR "${PROTOBUF_DIR}/vsprojects/${CMAKE_BUILD_TYPE}")
+    include_directories("${PROTOBUF_PREFIX}/src/protobuf-ext/src")
+    include_directories("${PROTOBUF_PREFIX}/src/ex-protobuf-ext1234/protobuf-3.2.0/src")
+    link_directories("${PROTOBUF_PREFIX}/src/protobuf-ext-build/${CMAKE_BUILD_TYPE}")
+    set(PROTOBUF_BIN_DIR "${PROTOBUF_PREFIX}/src/protobuf-ext-build/${CMAKE_BUILD_TYPE}")
 
     set(SUITESPARSE_COMMIT "232acd3f6c2ab2539167043e31c22a1ac1f599b8")
     set(SUITESPARSE_DIR "${CMAKE_CURRENT_BINARY_DIR}/suitesparse-metis-for-windows")
@@ -97,6 +85,8 @@ if(WIN32)
     link_directories(${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib)
     link_directories(${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib/lapack_blas_windows)
     link_directories(${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib64)
+    # Pick up the prebuild libblas for Win64
+    link_directories(${SUITESPARSE_DIR}/src/suitesparse-ext/lapack_windows/x64)
 
         include_directories(${CMAKE_CURRENT_SOURCE_DIR}/3dparty/zeromq/4.2.0-master/include)
         link_directories(${CMAKE_CURRENT_SOURCE_DIR}/3dparty/zeromq/4.2.0-master/cl32-11)
@@ -114,7 +104,7 @@ if(WIN32)
     include_directories(${HDF5_DIR}/src/hdf5-ext/hdf5-1.8.17/src)
     include_directories(${HDF5_DIR}/src/hdf5-ext/hdf5-1.8.17/hl/src)
     include_directories(${HDF5_DIR}/src/hdf5-ext-build)
-    link_directories(${HDF5_DIR}/src/hdf5-ext-build/bin/${CMAKE_BUILD_TYPE})
+    link_directories(${HDF5_DIR}/src/hdf5-ext-build/bin/${BUILD_DIR})
 
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/3dparty/zeromq/4.2.0-master/include)

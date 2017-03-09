@@ -23,9 +23,8 @@ void jmCallbacksLoggerClient(jm_callbacks* c, jm_string module, jm_log_level_enu
 #ifdef USE_MPI
 FMIClient::FMIClient(int world_rank, int id) : fmitcp::Client(world_rank), sc::Slave() {
 #else
-FMIClient::FMIClient(zmq::context_t &context, int id, string host, long port) : fmitcp::Client(context), sc::Slave() {
-    m_host = host;
-    m_port = port;
+FMIClient::FMIClient(zmq::context_t &context, int id, string uri) : fmitcp::Client(context), sc::Slave() {
+    m_uri = uri;
 #endif
     m_id = id;
     m_master = NULL;
@@ -50,7 +49,7 @@ FMIClient::~FMIClient() {
 
 void FMIClient::connect(void) {
 #ifndef USE_MPI
-    Client::connect(m_host, m_port);
+    Client::connect(m_uri);
 #endif
     //request modelDescription XML, don't return until we have it
     sendMessageBlocking(get_xml(0,0));

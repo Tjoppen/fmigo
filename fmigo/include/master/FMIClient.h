@@ -27,8 +27,7 @@ namespace fmitcp_master {
     private:
         int m_id;
 #ifndef USE_MPI
-        string m_host;
-        long m_port;
+        string m_uri;
 #endif
         std::string m_xml;
 
@@ -65,7 +64,7 @@ namespace fmitcp_master {
 #ifdef USE_MPI
         FMIClient(int world_rank, int id);
 #else
-        FMIClient(zmq::context_t &context, int id, string host, long port);
+        FMIClient(zmq::context_t &context, int id, string uri);
 #endif
         virtual ~FMIClient();
 

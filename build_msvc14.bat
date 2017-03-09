@@ -2,7 +2,6 @@
 @echo This mirrors what Jenkins is doing
 @echo Prerequirements: cmake, Visual Studio 2015 (especially msbuild.exe)
 
-
 set CMAKE_BUILD_TYPE=Release
 set BUILD_OPTIONS=/verbosity:d /p:Configuration=%CMAKE_BUILD_TYPE%
 set CMAKE_GENERATOR="Visual Studio 14 2015"

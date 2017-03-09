@@ -17,8 +17,8 @@
 typedef struct cgsl_integrator{
 
   const gsl_odeiv2_step_type * step_type; /* time step allocation */
-  gsl_odeiv2_step      * step;		  /* time step control */ 
-  gsl_odeiv2_control   * control;	  /* definition of the system */ 
+  gsl_odeiv2_step      * step;		  /* time step control */
+  gsl_odeiv2_control   * control;	  /* definition of the system */
   gsl_odeiv2_system      system;	  /* definition of the driver */
   gsl_odeiv2_evolve    * evolution;	  /* emove forward in time*/
   gsl_odeiv2_driver    * driver;	  /* high level interface */
@@ -39,21 +39,21 @@ typedef int (* ode_jacobian_ptr ) (double t, const double y[], double * dfdy, do
 typedef int (* pre_post_step_ptr ) (double t, double dt, const double y[], void * params);
 
 /**
- * 
+ *
  *  This is intended to contain everything needed to integrate only one
  *  little bit at a time *and* to be able to backtrack when needed, and to
  *  have multiple instances of the model.
- * 
+ *
  *  Here we use this for inheritance by aggregation so that each model is
- *  declared as 
- *  typedef struct my_model{ 
+ *  declared as
+ *  typedef struct my_model{
  *     cgs_model   m;
  *         .
  *         .
  *     extra stuff
  *         .
  *         .
- *  }  my_model ; 
+ *  }  my_model ;
 */
 
 typedef struct cgsl_model{
@@ -80,6 +80,9 @@ typedef struct cgsl_model{
 
   /** Destructor */
   void (* free) (struct cgsl_model * model);
+
+  /** Needed by ModelExchange to store content from parameters */
+  void* (*get_model_parameters)(const struct cgsl_model *model);
 } cgsl_model;
 
 /**
@@ -103,7 +106,7 @@ void cgsl_model_default_free(cgsl_model *model);
 
 /**
  * Finally we can put everything in a bag.  The spefic model only has to
- * fill in these fields. 
+ * fill in these fields.
  */
 typedef struct cgsl_simulation {
 
@@ -117,7 +120,7 @@ typedef struct cgsl_simulation {
   FILE * file;
   int store_data;	      /** whether or not we save the data in an array */
   double * data;              /** store variables as integration proceeds */
-  int buffer_size;            /** size of data storage */ 
+  int buffer_size;            /** size of data storage */
   int n;		      /** number of time steps taken */
   int save;		      /** persistence to file */
   int print;		      /** verbose on stderr */
@@ -132,11 +135,11 @@ typedef struct cgsl_simulation {
 
 /**
  * List of available time integration methods in the gsl_odeiv2 library
- */ 
+ */
 enum cgsl_integrator_ids
 {
   rk2,		/* 0 */
-  rk4,		/* 1 */ 
+  rk4,		/* 1 */
   rkf45,	/* 2 */
   rkck,		/* 3 */
   rk8pd,	/* 4 */
@@ -154,13 +157,13 @@ enum cgsl_integrator_ids
  */
 
 /**
- * Essentially the constructor for the cgsl_simulation object. 
+ * Essentially the constructor for the cgsl_simulation object.
  * The dynamical model is defined by a function, its Jacobian, an
- * opaque parameter struct, and a set of initial values. 
- * All variables are assumed to be continuous. 
+ * opaque parameter struct, and a set of initial values.
+ * All variables are assumed to be continuous.
  *
  *  \TODO: fix semantics for saving.  Use a filename
- *   instead of descriptor?  Open and close file automatically? 
+ *   instead of descriptor?  Open and close file automatically?
  */
 cgsl_simulation cgsl_init_simulation(
   cgsl_model * model, /** the model we work on */
@@ -178,7 +181,7 @@ cgsl_simulation cgsl_init_simulation(
 void  cgsl_free_simulation( cgsl_simulation sim );
 
 /**  Step from current time to next communication point. */
-int cgsl_step_to(void * _s,  double comm_point, double comm_step ) ; 
+int cgsl_step_to(void * _s,  double comm_point, double comm_step ) ;
 
 /** Accessor */
 const gsl_odeiv2_step_type * cgsl_get_integrator( int  i ) ;
@@ -187,7 +190,7 @@ const gsl_odeiv2_step_type * cgsl_get_integrator( int  i ) ;
 void cgsl_save_data( struct cgsl_simulation * sim );
 
 
-/** Mutators for fixed step*/ 
+/** Mutators for fixed step*/
 /** \TODO: make this a toggle */
 void cgsl_simulation_set_fixed_step( cgsl_simulation * s, double h );
 void cgsl_simulation_set_variable_step( cgsl_simulation * s );

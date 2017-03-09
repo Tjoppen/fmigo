@@ -102,6 +102,10 @@ int cgsl_step_to(void * _s,  double comm_point, double comm_step ) {
 
 }
 
+
+void * cgsl_default_get_model_param(const cgsl_model *m){
+    return m->parameters;
+}
 /**
  * Note: we use pass-by-value semantics for all structs anywhere possible.
  */
@@ -118,6 +122,7 @@ cgsl_simulation cgsl_init_simulation(
   cgsl_simulation sim;
 
   sim.model                  = model;
+  sim.model->get_model_parameters = cgsl_default_get_model_param;
   sim.i.step_type            =  cgsl_get_integrator( integrator );
   sim.i.control              = gsl_odeiv2_control_y_new (1e-6, 0.0); /** \TODO: IN-TEXT-DEFAULT  */
 
@@ -478,6 +483,10 @@ static void cgsl_epce_model_set_state(cgsl_model *model) {
   memcpy(m->z_prev, m->z_prev_backup, m->filter->n_variables * sizeof(m->z_prev[0]));
 }
 
+void * cgsl_epce_get_model_param(const cgsl_model *m){
+    return ((cgsl_epce_model*)m)->model->parameters;
+}
+
 cgsl_model * cgsl_epce_model_init( cgsl_model  *m, cgsl_model *f,
         int filter_length,
         epce_post_step_ptr epce_post_step,
@@ -502,6 +511,7 @@ cgsl_model * cgsl_epce_model_init( cgsl_model  *m, cgsl_model *f,
   model->e_model.free           = cgsl_epce_model_free;
   model->e_model.get_state      = cgsl_epce_model_get_state;
   model->e_model.set_state      = cgsl_epce_model_set_state;
+  model->e_model.get_model_parameters = cgsl_epce_get_model_param;
   model->filter_length          = filter_length;
   model->epce_post_step         = epce_post_step;
   model->epce_post_step_params  = epce_post_step_params;

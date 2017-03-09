@@ -15,8 +15,10 @@
  * [z(t)-z(t-dt)]/dt = {e^t*(e^dt - e^-dt)/(2*dt),  t - dt} =(lim dt->0) {e^t, t}
  */
 
+//fix WIN32 build
+#include "hypotmath.h"
+
 #include "gsl-interface.h"
-#include <math.h>
 
 static int exp_function (double t, const double x[], double dxdt[], void * params){
     dxdt[ 0 ]  = x[ 0 ];

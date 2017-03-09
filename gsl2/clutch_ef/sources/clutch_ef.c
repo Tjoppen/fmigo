@@ -1,4 +1,6 @@
-#include <math.h>
+//fix WIN32 build
+#include "hypotmath.h"
+
 #include "modelDescription.h"
 #include "gsl-interface.h"
 

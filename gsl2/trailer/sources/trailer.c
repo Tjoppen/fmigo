@@ -1,7 +1,6 @@
-#ifdef WIN32
-#define _USE_MATH_DEFINES //needed for M_PI
-#endif
-#include <math.h>
+//fix WIN32 build
+#include "hypotmath.h"
+
 #include "modelDescription.h"
 #include "gsl-interface.h"
 

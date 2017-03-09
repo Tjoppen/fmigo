@@ -323,8 +323,8 @@ class ModelExchangeStepper : public BaseMaster {
             // extract current states to restore after outputs are changed
             for(auto client: p->clients)
                 STATIC_GET_(continuous_states);
-            double tmp[p->baseMaster->get_storage().get_current_states().size()];
-            p->baseMaster->get_storage().get_current_states(tmp);
+            std::vector<double> tmp(p->baseMaster->get_storage().get_current_states().size());
+            p->baseMaster->get_storage().get_current_states(tmp.data());
 
             //set filtered states
             for(auto client: p->clients){
@@ -340,7 +340,7 @@ class ModelExchangeStepper : public BaseMaster {
 
             //reset old states
             for(auto client: p->clients){
-                STATIC_SET_(continuous,states,tmp);
+                STATIC_SET_(continuous,states,tmp.data());
             }
         }
 

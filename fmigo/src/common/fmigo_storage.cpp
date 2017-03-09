@@ -221,8 +221,8 @@ void FmigoStorage::test_functions(void)
 
 #define test_push_to_storage_cpp(name)\
         fprintf(stderr,"Testing push_to()  -  ");\
-        testFmigoStorage.push_to(0,STORAGE::name,Data(first_vec_storage_cpp)); \
-        testFmigoStorage.push_to(2,STORAGE::name,Data(third_vec_storage_cpp)); \
+        testFmigoStorage.push_to(0,STORAGE::name,Data first_vec_storage_cpp ); \
+        testFmigoStorage.push_to(2,STORAGE::name,Data third_vec_storage_cpp ); \
         a = testFmigoStorage.get_current_##name();\
         b = testFmigoStorage.get_backup_##name();\
         if(a == b) fail = true;\
@@ -280,9 +280,9 @@ void FmigoStorage::test_functions(void)
 
 #define test_push_to_p_storage_cpp(name)                                \
         fprintf(stderr,"Testing push_to_p() -- "#name"  -  ");          \
-        testFmigoStorage.push_to(0,STORAGE::name,Data(first_vec_storage_cpp)); \
-        testFmigoStorage.push_to(1,STORAGE::name,Data(second_vec_storage_cpp)); \
-        testFmigoStorage.push_to(2,STORAGE::name,Data(third_vec_storage_cpp)); \
+        testFmigoStorage.push_to(0,STORAGE::name,Data first_vec_storage_cpp ); \
+        testFmigoStorage.push_to(1,STORAGE::name,Data second_vec_storage_cpp ); \
+        testFmigoStorage.push_to(2,STORAGE::name,Data third_vec_storage_cpp ); \
         testFmigoStorage.cycle();                                       \
         testFmigoStorage.push_to(0,STORAGE::name,x);                    \
         testFmigoStorage.push_to(1,STORAGE::name,y);                    \
@@ -304,7 +304,7 @@ void FmigoStorage::test_functions(void)
         size_t s = first_size_storage_cpp +
                    second_size_storage_cpp +
                    third_size_storage_cpp;
-        double ret[s];
+        vector<double> ret(s);
         int j ;
 #define test_get_p_fail(name, s1, s2)                           \
         j = 0;                                                  \
@@ -328,7 +328,7 @@ void FmigoStorage::test_functions(void)
         int k;
 #define test_get_p_storage_cpp(type,name)                               \
         fprintf(stderr,"Testing get_"#type"_"#name"_p()     -  ");              \
-        testFmigoStorage.get_##type##_##name(ret,2);                            \
+        testFmigoStorage.get_##type##_##name(ret.data(),2);                            \
         fail = false;                                                   \
         test_get_p_fail(z,                                              \
                         first_size_storage_cpp +                        \
@@ -336,10 +336,10 @@ void FmigoStorage::test_functions(void)
                         first_size_storage_cpp +                        \
                         second_size_storage_cpp +                       \
                         third_size_storage_cpp)                         \
-        testFmigoStorage.get_##type##_##name(ret,0);                             \
+        testFmigoStorage.get_##type##_##name(ret.data(),0);                             \
         test_get_p_fail(x,0, first_size_storage_cpp );                  \
                                                                         \
-        testFmigoStorage.get_##type##_##name(ret,1);                             \
+        testFmigoStorage.get_##type##_##name(ret.data(),1);                             \
         test_get_p_fail(y, first_size_storage_cpp ,                     \
                         first_size_storage_cpp +                        \
                         second_size_storage_cpp);                       \

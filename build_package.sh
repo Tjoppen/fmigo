@@ -1,7 +1,7 @@
 #!/bin/bash
 
-rm -rf oos
-mkdir -p oos
-cd oos
+rm -rf build
+mkdir -p build
+cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_FMUS=OFF -GNinja
 cmake --build . --target package

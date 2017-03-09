@@ -2,7 +2,6 @@
 set -e
 source boilerplate.sh
 
-(cd ${FMUS_DIR}/tests && (./run_tests.sh || (echo "failed tests in umit-fmus/tests" && exit -1) ) )
 (cd articles/work-reports       && ( ./run_tests.sh  || ( echo "failed tests in work-reports" && exit -1 ) ) )
 (cd articles/truck              && ( python test_gsl_trucks.py  || ( echo "failed loop solver test" && exit -1 ) ) )
 (cd fmu-examples/co_simulation  && ( ./run_tests.sh ||  ( echo "failted test in co_simulation" && exit -1 ) ) )

@@ -72,13 +72,6 @@ if (USE_GPL)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_GPL")
 
   include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../umit-fmus/templates/cgsl/include)
-
-  if (WIN32)
-    link_directories(${CMAKE_CURRENT_SOURCE_DIR}/../umit-fmus/wingsl/lib)
-    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../umit-fmus/wingsl/include)
-    set(CMAKE_SHARED_LINKER_FLAGS "/SAFESEH:NO")
-    set(CMAKE_EXE_LINKER_FLAGS "/SAFESEH:NO")
-  endif ()
 endif ()
 
 ADD_EXECUTABLE(${TCP_MASTER_NAME} ${MASTER_HEADERS} ${MASTER_SRCS})

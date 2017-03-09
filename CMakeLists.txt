@@ -145,6 +145,13 @@ add_subdirectory(strong-coupling-core)
 add_subdirectory(${FMILIBRARY_VERSION})
 
 if (USE_GPL)
+  if (WIN32)
+    link_directories(${CMAKE_CURRENT_SOURCE_DIR}/umit-fmus/wingsl/lib)
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/umit-fmus/wingsl/include)
+    set(CMAKE_SHARED_LINKER_FLAGS "/SAFESEH:NO")
+    set(CMAKE_EXE_LINKER_FLAGS "/SAFESEH:NO")
+  endif ()
+
   # We should have umit-fmus checked out
   # Use its cgsl regardless of whether BUILD_FMUS is ON or not
   add_subdirectory(umit-fmus/templates/cgsl)

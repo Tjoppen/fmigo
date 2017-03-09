@@ -12,6 +12,7 @@
 #include <mpi.h>
 #endif
 #include <sstream>
+#include "common/CSV-parser.h"
 
 #include "master/parseargs.h"
 
@@ -180,7 +181,7 @@ int fmitcp_master::parseArguments( int argc,
 
     vector<char*> argv2 = make_char_vector(argvstore);
 
-    while ((c = getopt (argv2.size(), argv2.data(), "xrl:vqht:c:d:s:o:p:f:m:g:w:C:5:F:NM:a:z:ZL")) != -1){
+    while ((c = getopt (argv2.size(), argv2.data(), "xrl:vqht:c:d:V:s:o:p:f:m:g:w:C:5:F:NM:a:z:ZL")) != -1){
         int n, skip, l, cont, i, numScanned, stop, vis;
         deque<string> parts;
         if (optarg) parts = escapeSplit(optarg, ':');
@@ -278,7 +279,7 @@ int fmitcp_master::parseArguments( int argc,
             } else if(strcmp(optarg,"gs") == 0){
                 *method = gs;
             } else if(strcmp(optarg,"me") == 0){
-                *method = me; 
+                *method = me;
             } else {
                 fprintf(stderr,"Method \"%s\" not recognized. Use \"jacobi\" or \"gs\".\n",optarg);
                 return 1;
@@ -449,6 +450,25 @@ int fmitcp_master::parseArguments( int argc,
             }
             return 1;
 
+        case 'V':{
+          //for (auto it = parts.begin(); it != parts.end(); it++)
+        fprintf(stderr,"string %s",optarg);
+            {
+              fprintf(stderr," have CSV \n");
+              // fprintf(stderr," %s\n",parts.at(0).c_str());
+             deque<string> values = escapeSplit(optarg, ',');
+              if(values.size() != 2){
+                fprintf(stderr,"Error: Option \"-V\" requires two argument: \"-V fmuid,path/to/input.csv\"\n");
+                return(1);
+              }
+
+              fmigo_csv_fmu csv_matrix;
+
+              csv_matrix[values.at(0)] = fmigo_CSV_matrix(values.at(1),',');
+              //printCSVmatrix(csv_matrix[values.at(0)]);
+            }
+            break;
+        }
         default:
             printf("abort %c...\n",c);
             return 1;

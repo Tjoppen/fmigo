@@ -14,7 +14,6 @@
 #include <sstream>
 #include "master/FMIClient.h"
 #include "common/common.h"
-#include "common/CSV-parser.h"
 #include "master/WeakMasters.h"
 #include "master/parseargs.h"
 #include <sc/BallJointConstraint.h>
@@ -491,13 +490,14 @@ int main(int argc, char *argv[] ) {
     bool holonomic = true;
     int command_port = 0, results_port = 0;
     bool paused = false, running = true, solveLoops = false;
+    fmigo_csv_fmu csv_fmu;
 
     if (parseArguments(
             argc, argv, &fmuURIs, &connections, &params, &endTime, &timeStep,
             &loglevel, &csv_separator, &outFilePath, &quietMode, &fileFormat,
             &method, &realtimeMode, &printXML, &stepOrder, &fmuVisibilities,
             &scs, &hdf5Filename, &fieldnameFilename, &holonomic, &compliance,
-            &command_port, &results_port, &paused, &solveLoops)) {
+            &command_port, &results_port, &paused, &solveLoops, &csv_fmu)) {
         return 1;
     }
 
@@ -605,6 +605,7 @@ int main(int argc, char *argv[] ) {
     //send user-defined parameters
     sendUserParams(master, clients, params);
 
+    map<double, param_map> csvParam = param_mapFromCSV(csv_fmu, clients);
 #ifdef WIN32
     LARGE_INTEGER freq, t1;
     QueryPerformanceFrequency(&freq);
@@ -662,6 +663,8 @@ int main(int argc, char *argv[] ) {
         //HDF5
         columnofs = 0;
 #endif
+
+        sendUserParams(master, clients, csvParam[t]);
         if (realtimeMode) {
             double t_wall;
 

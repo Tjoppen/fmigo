@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include "common/CSV-parser.h"
 
 namespace fmitcp_master {
 
@@ -105,7 +106,8 @@ int parseArguments( int argc,
                     int *command_port,
                     int *results_port,
                     bool *paused,
-                    bool *solveLoops
+                    bool *solveLoops,
+                    fmigo_csv_fmu *csv_fmu
                     );
 }
 

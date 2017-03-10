@@ -44,22 +44,22 @@ int main(int argc, char *argv[]) {
   int port = 3000;
   bool debugLogging = false;
   jm_log_level_enu_t log_level = jm_log_level_error;
-  string hostName = "localhost", fmuPath = "";
+  string fmuPath = "";
   string hdf5Filename;
-  int filter_depth = 0;
 
-  parse_server_args(argc, argv, &fmuPath, &filter_depth, &hdf5Filename, &debugLogging, &log_level, &hostName, &port);
+  parse_server_args(argc, argv, &fmuPath, &hdf5Filename, &debugLogging, &log_level, &port);
 
-  FMIServer server(fmuPath, debugLogging, log_level, hdf5Filename, filter_depth);
+  FMIServer server(fmuPath, debugLogging, log_level, hdf5Filename);
   if (!server.isFmuParsed())
     return EXIT_FAILURE;
 
-  printf("FMI Server %s - tcp://%s:%i <-- %s\n",FMITCP_VERSION, hostName.c_str(), port, fmuPath.c_str());
+  ostringstream oss;
+  oss << "tcp://*:" << port;
+
+  printf("FMI Server %s - %s <-- %s\n",FMITCP_VERSION, oss.str().c_str(), fmuPath.c_str());
   server.getLogger()->setPrefix("Server: ");
 
   zmq::socket_t socket(context, ZMQ_PAIR);
-  ostringstream oss;
-  oss << "tcp://*:" << port;
   socket.bind(oss.str().c_str());
 
   //use monitor + inproc PAIR to stop when the client disconnects
@@ -113,7 +113,7 @@ int main(int argc, char *argv[]) {
   return EXIT_SUCCESS;
  } catch (zmq::error_t e) {
       //catch any stray ZMQ exceptions
-      //this should prevent "program stopped working" messages on Windows when fmi-tcp-servers are taskkill'd
+      //this should prevent "program stopped working" messages on Windows when fmigo-servers are taskkill'd
       fprintf(stderr, "zmq::error_t: %s\n", e.what());
       return 1;
  }

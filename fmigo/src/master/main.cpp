@@ -4,6 +4,8 @@
 #include <fmitcp/Logger.h>
 #ifdef USE_MPI
 #include <mpi.h>
+#include "common/mpi_tools.h"
+#include "server/FMIServer.h"
 #endif
 #include <zmq.hpp>
 #include <fmitcp/serialize.h>
@@ -13,7 +15,6 @@
 #include "master/FMIClient.h"
 #include "common/common.h"
 #include "master/WeakMasters.h"
-#include "common/url_parser.h"
 #include "master/parseargs.h"
 #include <sc/BallJointConstraint.h>
 #include <sc/LockConstraint.h>
@@ -50,26 +51,12 @@ static vector<FMIClient*> setupClients(int numFMUs) {
     return clients;
 }
 #else
-static FMIClient* connectClient(std::string uri, zmq::context_t &context, int clientId){
-    struct parsed_url * url = parse_url(uri.c_str());
-
-    if (!url || !url->port || !url->host) {
-        parsed_url_free(url);
-        return NULL;
-    }
-
-    FMIClient* client = new FMIClient(context, clientId, url->host, atoi(url->port));
-    parsed_url_free(url);
-
-    return client;
-}
-
 static vector<FMIClient*> setupClients(vector<string> fmuURIs, zmq::context_t &context) {
     vector<FMIClient*> clients;
     int clientId = 0;
     for (auto it = fmuURIs.begin(); it != fmuURIs.end(); it++, clientId++) {
         // Assume URI to client
-        FMIClient *client = connectClient(*it, context, clientId);
+        FMIClient *client = new FMIClient(context, clientId, *it);
 
         if (!client) {
             fprintf(stderr, "Failed to connect client with URI %s\n", it->c_str());
@@ -368,17 +355,21 @@ static void printOutputs(double t, BaseMaster *master, vector<FMIClient*>& clien
                 printf(",%i", client->m_getBooleanValues.front());
                 client->m_getBooleanValues.pop_front();
                 break;
-            case fmi2_base_type_str:
-                fprintf(stderr, "String outputs not allowed for now\n");
-                exit(1);
+            case fmi2_base_type_str: {
+                ostringstream oss;
+                for(char c: client->m_getStringValues.front()){
+                    switch (c){
+                    case '"': oss << "\"\""; break;
+                    default: oss << c;
+                    }
+                }
+                printf(",\"%s\"", oss.str().c_str());
+                client->m_getStringValues.pop_front();
+                break;
+            }
             case fmi2_base_type_enum:
                 fprintf(stderr, "Enum outputs not allowed for now\n");
                 exit(1);
-            /*case fmi2_base_type_str:
-             * TODO: string escaping
-                printf(",\"%s\"", client->m_getStringValues.front().c_str());
-                client->m_getStringValues.pop_front();
-                break;*/
             }
         }
     }
@@ -460,12 +451,39 @@ int connectionNamesToVr(std::vector<connection> &connections,
   return 0;
 }
 
+#ifdef USE_MPI
+void run_server(string fmuPath, jm_log_level_enu_t loglevel) {
+    string hdf5Filename; //TODO?
+    FMIServer server(fmuPath, loglevel >= jm_log_level_debug, loglevel, hdf5Filename);
+
+    for (;;) {
+        int rank, tag;
+        std::string recv_str = mpi_recv_string(MPI_ANY_SOURCE, &rank, &tag);
+
+        //shutdown command?
+        if (tag == 1) {
+            break;
+        }
+
+        //let Server handle packet, send reply back to master
+        std::string str = server.clientData(recv_str.c_str(), recv_str.length());
+        if (str.length() > 0) {
+          MPI_Send((void*)str.c_str(), str.length(), MPI_CHAR, rank, tag, MPI_COMM_WORLD);
+        }
+    }
+
+    MPI_Finalize();
+}
+#endif
+
 int main(int argc, char *argv[] ) {
 #ifdef USE_MPI
-    fprintf(stderr, "MPI enabled\n");
     MPI_Init(NULL, NULL);
-#else
-    fprintf(stderr, "MPI disabled\n");
+
+    //world = master at 0, FMUs at 1..N
+    int world_size, world_rank;
+    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
 #endif
 
     double timeStep = 0.1;
@@ -518,6 +536,17 @@ int main(int argc, char *argv[] ) {
         fprintf(stderr, "WARNING: -o not implemented (output always goes to stdout)\n");
     }
 
+#ifdef USE_MPI
+    if (world_rank > 0) {
+        //we're a server
+        //in MPI mode, treat fmuURIs as a list of paths
+        //for each server node, fmuURIs[world_rank-1] is the corresponding FMU path
+        run_server(fmuURIs[world_rank-1], loglevel);
+        return 0;
+    }
+    //world_rank == 0 below
+#endif
+
     zmq::context_t context(1);
 
     zmq::socket_t rep_socket(context, ZMQ_REP);
@@ -536,16 +565,6 @@ int main(int argc, char *argv[] ) {
     }
 
 #ifdef USE_MPI
-    //world = master at 0, FMUs at 1..N
-    int world_size, world_rank;
-    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-
-    if (world_rank != 0) {
-        fprintf(stderr, "fmi-mpi-master: Expected world_rank = 0, got %i\n", world_rank);
-        return 1;
-    }
-
     vector<FMIClient*> clients = setupClients(world_size-1);
 #else
     //without this the maximum number of clients tops out at 300 on Linux,

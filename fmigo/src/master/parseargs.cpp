@@ -20,7 +20,7 @@ using namespace common;
 using namespace std;
 
 static void printHelp(){
-  fprintf(stderr, "Check manpage for help, \"man fmi-tcp-master\"\n");
+  fprintf(stderr, "Check manpage for help, \"man fmigo-master\"\n");
 }
 
 static void printInvalidArg(char option){
@@ -163,6 +163,13 @@ int fmitcp_master::parseArguments( int argc,
         ) {
     int index, c;
     opterr = 0;
+
+#ifdef USE_MPI
+    //world = master at 0, FMUs at 1..N
+    int world_size, world_rank;
+    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+#endif
 
     //repack argv into argvstore, to which the entries in argv2 point
     vector<string> argvstore;
@@ -402,7 +409,14 @@ int fmitcp_master::parseArguments( int argc,
             break;
 
         case 'a':
+#ifdef USE_MPI
+            if (world_rank == 0) {
+                //only chomp stdin on the master node
+                add_args(argvstore, argv2, optarg, optind);
+            }
+#else
             add_args(argvstore, argv2, optarg, optind);
+#endif
             break;
 
         case 'z':
@@ -442,11 +456,6 @@ int fmitcp_master::parseArguments( int argc,
         }
     }
 
-#ifdef USE_MPI
-    int world_size;
-    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-    size_t numFMUs = world_size - 1;
-#else
     // Parse FMU paths in the end of the command line
     for (index = optind; index < (int)argv2.size(); index++) {
         fmuFilePaths->push_back(argv2[index]);
@@ -455,7 +464,18 @@ int fmitcp_master::parseArguments( int argc,
     size_t numFMUs = fmuFilePaths->size();
 
     if (numFMUs == 0){
-        fprintf(stderr, "No FMUs given. Aborting... (see -h for help)\n");
+        fprintf(stderr, "No FMUs given. Aborting...\n");
+        printHelp();
+        return 1;
+    }
+
+#ifdef USE_MPI
+    if ((size_t)world_size != numFMUs + 1) {
+        //only complain for the first node
+        if (world_rank == 0) {
+            fprintf(stderr, "Need exactly n+1 processes, where n is the number of FMUs (%zu)\n", numFMUs);
+            fprintf(stderr, "Try re-running with mpiexec -np %zu fmigo-mpi [rest of command line]\n", numFMUs+1 );
+        }
         return 1;
     }
 #endif

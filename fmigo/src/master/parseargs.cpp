@@ -134,6 +134,15 @@ static deque<string> escapeSplit(string str, char delim) {
   return ret;
 }
 
+void setParamValue(param &p, string s){
+                switch (p.type) {
+                case fmi2_base_type_real: p.realValue = atof(s.c_str()); break;
+                case fmi2_base_type_int:  p.intValue = atoi(s.c_str()); break;
+                case fmi2_base_type_bool: p.boolValue = (s == "true"); break;
+                case fmi2_base_type_str:  p.stringValue = s; break;
+                case fmi2_base_type_enum: fprintf(stderr, "An enum snuck its way into -p\n"); exit(1);
+                }
+}
 
 int fmitcp_master::parseArguments( int argc,
                     char *argv[],
@@ -368,14 +377,9 @@ int fmitcp_master::parseArguments( int argc,
 
                 p.fmuIndex       = atoi(values[0].c_str());
                 p.valueReference = atoi(values[1].c_str());
+                p.vrORname = values[1];
 
-                switch (p.type) {
-                case fmi2_base_type_real: p.realValue = atof(values[2].c_str()); break;
-                case fmi2_base_type_int:  p.intValue = atoi(values[2].c_str()); break;
-                case fmi2_base_type_bool: p.boolValue = (values[2] == "true"); break;
-                case fmi2_base_type_str:  p.stringValue = values[2]; break;
-                case fmi2_base_type_enum: fprintf(stderr, "An enum snuck its way into -p\n"); exit(1);
-                }
+                setParamValue(p,values[2]);
 
                 (*params)[make_pair(p.fmuIndex,p.type)].push_back(p);
             }

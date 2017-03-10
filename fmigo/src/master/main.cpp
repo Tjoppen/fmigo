@@ -14,6 +14,7 @@
 #include <sstream>
 #include "master/FMIClient.h"
 #include "common/common.h"
+#include "common/CSV-parser.h"
 #include "master/WeakMasters.h"
 #include "master/parseargs.h"
 #include <sc/BallJointConstraint.h>
@@ -190,6 +191,33 @@ static void setupConstraintsAndSolver(vector<strongconnection> strongConnections
    }
 }
 
+map<double, param_map > param_mapFromCSV(fmigo_csv_fmu csvfmus, vector<FMIClient*> clients){
+  map<double, param_map > pairmap;
+    for (auto it = csvfmus.begin(); it != csvfmus.end(); it++) {
+      variable_map vmap = clients[it->first]->getVariables();
+      for (auto time: it->second.time) {
+        for (auto header: it->second.headers) {
+          param p;
+          p.fmuIndex = it->first;
+          p.vrORname = header;
+          p.valueReference = vmap[header].vr;
+          p.type = vmap[header].type;
+
+          string s = it->second.matrix[time][header];
+          switch (p.type) {
+          case fmi2_base_type_real: p.realValue = atof(s.c_str()); break;
+          case fmi2_base_type_int:  p.intValue = atoi(s.c_str()); break;
+          case fmi2_base_type_bool: p.boolValue = (s == "true"); break;
+          case fmi2_base_type_str:  p.stringValue = s; break;
+          case fmi2_base_type_enum: fprintf(stderr, "An enum snuck its way into -p\n"); exit(1);
+          }
+          pairmap[atof(time.c_str())][make_pair(p.fmuIndex,p.type)].push_back(p);
+        }
+      }
+    }
+
+  return pairmap;
+}
 static void sendUserParams(BaseMaster *master, vector<FMIClient*> clients, map<pair<int,fmi2_base_type_enu_t>, vector<param> > params) {
     for (auto it = params.begin(); it != params.end(); it++) {
         FMIClient *client = clients[it->first.first];

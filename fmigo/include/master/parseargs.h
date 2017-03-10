@@ -43,6 +43,8 @@ struct param {
     int boolValue;                      // Boolean
 };
 
+ typedef std::map<std::pair<int,fmi2_base_type_enu_t>, std::vector<param> > param_map;
+
 enum FILEFORMAT {
     csv
 };

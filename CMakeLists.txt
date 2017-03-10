@@ -52,15 +52,12 @@ if(WIN32)
 
     include(ExternalProject)
 
-    set(PROTOBUF_URL "https://github.com/google/protobuf/releases/download/v3.2.0/protobuf-cpp-3.2.0.zip")
-    set(PROTOBUF_MD5 "a6c76f8fd0d393370bf4b32a29273114")
-    set(PROTOBUF_DOWNLOAD_PATH "${CMAKE_CURRENT_BINARY_DIR}/protobuf-cpp-3.2.0.zip")
     set(PROTOBUF_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/protobuf-3.2.0")
 
     ExternalProject_Add(protobuf-ext
         PREFIX "${PROTOBUF_PREFIX}"
-        URL ${PROTOBUF_URL}
-        URL_MD5 ${PROTOBUF_MD5}
+        URL https://github.com/google/protobuf/releases/download/v3.2.0/protobuf-cpp-3.2.0.zip
+        URL_MD5 a6c76f8fd0d393370bf4b32a29273114
         SOURCE_SUBDIR cmake
     )
 
@@ -69,15 +66,12 @@ if(WIN32)
     link_directories("${PROTOBUF_PREFIX}/src/protobuf-ext-build/${CMAKE_BUILD_TYPE}")
     set(PROTOBUF_BIN_DIR "${PROTOBUF_PREFIX}/src/protobuf-ext-build/${CMAKE_BUILD_TYPE}")
 
-    set(SUITESPARSE_COMMIT "232acd3f6c2ab2539167043e31c22a1ac1f599b8")
     set(SUITESPARSE_DIR "${CMAKE_CURRENT_BINARY_DIR}/suitesparse-metis-for-windows")
-    set(SUITESPARSE_URL "https://github.com/jlblancoc/suitesparse-metis-for-windows/archive/${SUITESPARSE_COMMIT}.zip")
-    set(SUITESPARSE_MD5 "1e9b5fcdc38ec0c2aebe3d3cbd1ee8cd")
 
     ExternalProject_Add(suitesparse-ext
         PREFIX ${SUITESPARSE_DIR}
-        URL ${SUITESPARSE_URL}
-        URL_MD5 ${SUITESPARSE_MD5}
+        URL https://github.com/jlblancoc/suitesparse-metis-for-windows/archive/232acd3f6c2ab2539167043e31c22a1ac1f599b8.zip
+        URL_MD5 1e9b5fcdc38ec0c2aebe3d3cbd1ee8cd
     )
 
     include_directories(${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/include)
@@ -87,9 +81,6 @@ if(WIN32)
     link_directories(${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib64)
     # Pick up the prebuild libblas for Win64
     link_directories(${SUITESPARSE_DIR}/src/suitesparse-ext/lapack_windows/x64)
-
-        include_directories(${CMAKE_CURRENT_SOURCE_DIR}/3dparty/zeromq/4.2.0-master/include)
-        link_directories(${CMAKE_CURRENT_SOURCE_DIR}/3dparty/zeromq/4.2.0-master/cl32-11)
 
     set(HDF5_DIR "${CMAKE_CURRENT_BINARY_DIR}/hdf5")
     ExternalProject_Add(hdf5-ext
@@ -105,6 +96,18 @@ if(WIN32)
     include_directories(${HDF5_DIR}/src/hdf5-ext/hdf5-1.8.17/hl/src)
     include_directories(${HDF5_DIR}/src/hdf5-ext-build)
     link_directories(${HDF5_DIR}/src/hdf5-ext-build/bin/${BUILD_DIR})
+
+    set(ZMQ_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/zeromq-4.2.0")
+
+    ExternalProject_Add(zmq-ext
+        PREFIX "${ZMQ_PREFIX}"
+        URL https://github.com/zeromq/libzmq/releases/download/v4.2.0/zeromq-4.2.0.zip
+        URL_MD5 1569d8173783d39462907324317febd0
+    )
+
+    include_directories("${ZMQ_PREFIX}/src/zmq-ext/include")
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/3dparty/zeromq/4.2.0-master/include) #zmq.hpp
+    link_directories("${ZMQ_PREFIX}/src/zmq-ext-build/lib/${CMAKE_BUILD_TYPE}")
 
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/3dparty/zeromq/4.2.0-master/include)
@@ -139,8 +142,8 @@ add_dependencies(fmigo-mpi    fmilib)
 
 if (WIN32)
     add_dependencies(sc suitesparse-ext)
-    add_dependencies(fmigo-master protobuf-ext hdf5-ext)
-    add_dependencies(fmigo-mpi    protobuf-ext hdf5-ext)
+    add_dependencies(fmigo-master protobuf-ext hdf5-ext zmq-ext)
+    add_dependencies(fmigo-mpi    protobuf-ext hdf5-ext zmq-ext)
 endif ()
 
 if (BUILD_FMUS)

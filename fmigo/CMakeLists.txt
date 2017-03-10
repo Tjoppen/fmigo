@@ -84,6 +84,8 @@ add_executable(${MPI_MASTER_NAME} ${MASTER_HEADERS} ${MASTER_SRCS}              
 set_target_properties(${MPI_MASTER_NAME} PROPERTIES COMPILE_FLAGS -DUSE_MPI)
 
 IF(WIN32)
+    # Multi-threade
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MT")
     SET(WINLIBS
         fmilib
         shlwapi
@@ -97,7 +99,7 @@ IF(WIN32)
         libprotobuf
         libhdf5
         libhdf5_hl
-        libzmq
+        libzmq-static-v120-mt-s-4_2_0
         ${CMAKE_THREAD_LIBS_INIT})
     if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
         set(WINLIBS ${WINLIBS} ${EXTRALIBS} sc libumfpackd libamdd libblas libcholmodd libcolamdd libccolamdd libcamdd metisd suitesparseconfigd)
@@ -114,7 +116,6 @@ IF(WIN32)
         ${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib/lapack_blas_windows/libgfortran-3.dll
         ${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib/lapack_blas_windows/libquadmath-0.dll
         DESTINATION bin)
-    INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../3dparty/zeromq/4.2.0-master/cl32-11/libzmq.dll DESTINATION bin)
     set(PROTOC ${PROTOBUF_BIN_DIR}/protoc)
 ELSE(WIN32)
     SET(LINUXLIBS

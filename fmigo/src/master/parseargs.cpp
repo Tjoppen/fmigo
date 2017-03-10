@@ -468,7 +468,7 @@ int fmitcp_master::parseArguments( int argc,
 
               fmigo_csv_fmu csv_matrix;
 
-              csv_matrix[values.at(0)] = fmigo_CSV_matrix(values.at(1),',');
+              csv_matrix[atoi(values.at(0).c_str())] = fmigo_CSV_matrix(values.at(1),',');
               //printCSVmatrix(csv_matrix[values.at(0)]);
             }
             break;

@@ -50,7 +50,7 @@ fmigo_csv_matrix fmigo_CSV_matrix(string csvf, char c){
         fprintf(stderr,"Error: fmigo CSV-parser.cpp: missmatching format - \"%s\" in file \"%s\"\n",head.str().c_str(), csvf.c_str());
         exit(1);
       }
-      params[matrix.headers.at(i++)] = strtof(line.c_str(),0) ;
+      params[matrix.headers.at(i++)] = line;
     }
     if(i != matrix.headers.size()){
       fprintf(stderr,"Error: fmigo CSV-parser.cpp: missmatching format - \"%s\" in file \"%s\"\n",head.str().c_str(), csvf.c_str());
@@ -76,7 +76,7 @@ void printCSVmatrix(fmigo_csv_matrix m){
   for(auto r: m.time){
     fprintf(stderr,"%s", r.c_str());
     for(auto c: m.headers){
-      fprintf(stderr,", %f", m.matrix[r][c]);
+      fprintf(stderr,", %s", m.matrix[r][c].c_str());
     }
     fprintf(stderr,"\n");
   }

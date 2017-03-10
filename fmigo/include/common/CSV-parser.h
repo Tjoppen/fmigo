@@ -1,3 +1,5 @@
+#ifndef FMIGO_CSV_PARSER_H
+#define FMIGO_CSV_PARSER_H
 #include <map>
 #include <string>
 #include <vector>
@@ -15,3 +17,4 @@ typedef std::map<int, fmigo_csv_matrix> fmigo_csv_fmu;
 fmigo_csv_matrix fmigo_CSV_matrix(std::string csvf, char c);
 
 void printCSVmatrix(fmigo_csv_matrix m);
+#endif

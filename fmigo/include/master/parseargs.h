@@ -35,6 +35,7 @@ struct strongconnection {
 struct param {
     int fmuIndex;
     int valueReference;                 // Value reference to apply to
+    std::string vrORname;               // Value reference or name of the variable
     fmi2_base_type_enu_t type;
     std::string stringValue;            // String version, always set to what the user wrote
     int intValue;                       // Integer

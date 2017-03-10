@@ -2,6 +2,7 @@
 #ifndef MODELDESCRIPTION_H
 #define MODELDESCRIPTION_H
 #include "FMI2/fmi2Functions.h" //for fmi2Real etc.
+#include <stdio.h> //for snprintf()
 
 #define MODEL_IDENTIFIER add
 #define MODEL_GUID "{1483b59e-81de-4786-bf22-c7b5e3cedb07}"
@@ -11,15 +12,17 @@
 #define NUMBER_OF_REALS 3
 #define NUMBER_OF_INTEGERS 0
 #define NUMBER_OF_BOOLEANS 0
+#define NUMBER_OF_STRINGS 0
 #define NUMBER_OF_STATES 0
 #define NUMBER_OF_EVENT_INDICATORS 0
 
 
 #define HAVE_MODELDESCRIPTION_STRUCT
 typedef struct {
-    fmi2Real in1; //VR=1
-    fmi2Real in2; //VR=2
-    fmi2Real out; //VR=3
+    fmi2Real    in1; //VR=1
+    fmi2Real    in2; //VR=2
+    fmi2Real    out; //VR=3
+
 
 
 } modelDescription_t;
@@ -27,9 +30,10 @@ typedef struct {
 
 #define HAVE_DEFAULTS
 static const modelDescription_t defaults = {
-    0.0, //in1
-    0.0, //in2
-    0, //out
+    0.000000, //in1
+    0.000000, //in2
+    0.000000, //out
+
 
 
 };
@@ -38,6 +42,7 @@ static const modelDescription_t defaults = {
 #define VR_IN1 1
 #define VR_IN2 2
 #define VR_OUT 3
+
 
 
 
@@ -106,6 +111,28 @@ static fmi2Status generated_fmi2GetBoolean(const modelDescription_t *md, const f
 }
 
 static fmi2Status generated_fmi2SetBoolean(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Boolean value[]) {
+    int i;
+    for (i = 0; i < nvr; i++) {
+        switch (vr[i]) {
+
+        default: return fmi2Error;
+        }
+    }
+    return fmi2OK;
+}
+
+static fmi2Status generated_fmi2GetString(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2String value[]) {
+    int i;
+    for (i = 0; i < nvr; i++) {
+        switch (vr[i]) {
+
+        default: return fmi2Error;
+        }
+    }
+    return fmi2OK;
+}
+
+static fmi2Status generated_fmi2SetString(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2String value[]) {
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {

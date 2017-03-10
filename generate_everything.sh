@@ -18,7 +18,6 @@ GSLFMUS="
 "
 
 FMUS="
-    typeconvtest
     impulse
     lumpedrod
     kinematictruck/body
@@ -27,9 +26,11 @@ FMUS="
     kinematictruck/kinclutch
     forcevelocitytruck/fvbody
     forcevelocitytruck/gearbox
-    loopsolvetest/add
-    loopsolvetest/sub
-    loopsolvetest/mul
+    testfmus/typeconvtest
+    testfmus/loopsolvetest/add
+    testfmus/loopsolvetest/sub
+    testfmus/loopsolvetest/mul
+    testfmus/stringtest
 "
 
 cat <<END>CMakeLists.txt

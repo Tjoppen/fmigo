@@ -4,13 +4,13 @@
 #include "FMI2/fmi2Functions.h" //for fmi2Real etc.
 #include <stdio.h> //for snprintf()
 
-#define MODEL_IDENTIFIER clutch
-#define MODEL_GUID "{5ef23f51-b93d-46d4-aad9-c45a9cc44121}"
+#define MODEL_IDENTIFIER mul
+#define MODEL_GUID "{dd5eb5f9-04f7-4bd7-a3b1-929353f0e5de}"
 #define FMI_COSIMULATION
 #define HAVE_DIRECTIONAL_DERIVATIVE 0
 #define CAN_GET_SET_FMU_STATE 1
-#define NUMBER_OF_REALS 10
-#define NUMBER_OF_INTEGERS 1
+#define NUMBER_OF_REALS 3
+#define NUMBER_OF_INTEGERS 0
 #define NUMBER_OF_BOOLEANS 0
 #define NUMBER_OF_STRINGS 0
 #define NUMBER_OF_STATES 0
@@ -19,17 +19,10 @@
 
 #define HAVE_MODELDESCRIPTION_STRUCT
 typedef struct {
-    fmi2Real    x0; //VR=0
-    fmi2Real    v0; //VR=1
-    fmi2Real    dx0; //VR=2
-    fmi2Real    mass; //VR=3
-    fmi2Real    gamma; //VR=4
-    fmi2Real    clutch_damping; //VR=5
-    fmi2Real    v_in; //VR=6
-    fmi2Real    force_in; //VR=7
-    fmi2Real    v; //VR=8
-    fmi2Real    force_clutch; //VR=9
-    fmi2Integer filter_length; //VR=98
+    fmi2Real    in1; //VR=1
+    fmi2Real    in2; //VR=2
+    fmi2Real    out; //VR=3
+
 
 
 } modelDescription_t;
@@ -37,33 +30,19 @@ typedef struct {
 
 #define HAVE_DEFAULTS
 static const modelDescription_t defaults = {
-    0.000000, //x0
-    0.000000, //v0
-    0.000000, //dx0
-    1.000000, //mass
-    1.000000, //gamma
-    1.000000, //clutch_damping
-    0.000000, //v_in
-    0.000000, //force_in
-    0.000000, //v
-    0.000000, //force_clutch
-    0, //filter_length
+    0.000000, //in1
+    0.000000, //in2
+    0.000000, //out
+
 
 
 };
 
 
-#define VR_X0 0
-#define VR_V0 1
-#define VR_DX0 2
-#define VR_MASS 3
-#define VR_GAMMA 4
-#define VR_CLUTCH_DAMPING 5
-#define VR_V_IN 6
-#define VR_FORCE_IN 7
-#define VR_V 8
-#define VR_FORCE_CLUTCH 9
-#define VR_FILTER_LENGTH 98
+#define VR_IN1 1
+#define VR_IN2 2
+#define VR_OUT 3
+
 
 
 
@@ -76,16 +55,9 @@ static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case 0: value[i] = md->x0; break;
-        case 1: value[i] = md->v0; break;
-        case 2: value[i] = md->dx0; break;
-        case 3: value[i] = md->mass; break;
-        case 4: value[i] = md->gamma; break;
-        case 5: value[i] = md->clutch_damping; break;
-        case 6: value[i] = md->v_in; break;
-        case 7: value[i] = md->force_in; break;
-        case 8: value[i] = md->v; break;
-        case 9: value[i] = md->force_clutch; break;
+        case 1: value[i] = md->in1; break;
+        case 2: value[i] = md->in2; break;
+        case 3: value[i] = md->out; break;
         default: return fmi2Error;
         }
     }
@@ -96,16 +68,9 @@ static fmi2Status generated_fmi2SetReal(modelDescription_t *md, const fmi2ValueR
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case 0: md->x0 = value[i]; break;
-        case 1: md->v0 = value[i]; break;
-        case 2: md->dx0 = value[i]; break;
-        case 3: md->mass = value[i]; break;
-        case 4: md->gamma = value[i]; break;
-        case 5: md->clutch_damping = value[i]; break;
-        case 6: md->v_in = value[i]; break;
-        case 7: md->force_in = value[i]; break;
-        case 8: md->v = value[i]; break;
-        case 9: md->force_clutch = value[i]; break;
+        case 1: md->in1 = value[i]; break;
+        case 2: md->in2 = value[i]; break;
+        case 3: md->out = value[i]; break;
         default: return fmi2Error;
         }
     }
@@ -116,7 +81,7 @@ static fmi2Status generated_fmi2GetInteger(const modelDescription_t *md, const f
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case 98: value[i] = md->filter_length; break;
+
         default: return fmi2Error;
         }
     }
@@ -127,7 +92,7 @@ static fmi2Status generated_fmi2SetInteger(modelDescription_t *md, const fmi2Val
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case 98: md->filter_length = value[i]; break;
+
         default: return fmi2Error;
         }
     }

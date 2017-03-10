@@ -2,6 +2,7 @@
 #ifndef MODELDESCRIPTION_H
 #define MODELDESCRIPTION_H
 #include "FMI2/fmi2Functions.h" //for fmi2Real etc.
+#include <stdio.h> //for snprintf()
 
 #define MODEL_IDENTIFIER clutch_ef
 #define MODEL_GUID "{95857e9e-77b7-4d00-aef0-0836cffe26d0}"
@@ -11,50 +12,53 @@
 #define NUMBER_OF_REALS 14
 #define NUMBER_OF_INTEGERS 2
 #define NUMBER_OF_BOOLEANS 0
+#define NUMBER_OF_STRINGS 0
 #define NUMBER_OF_STATES 0
 #define NUMBER_OF_EVENT_INDICATORS 0
 
 
 #define HAVE_MODELDESCRIPTION_STRUCT
 typedef struct {
-    fmi2Real xi0; //VR=0
-    fmi2Real vi0; //VR=1
-    fmi2Real xo0; //VR=2
-    fmi2Real vo0; //VR=3
-    fmi2Real mass1; //VR=4
-    fmi2Real gamma1; //VR=5
-    fmi2Real mass2; //VR=6
-    fmi2Real gamma2; //VR=7
-    fmi2Real clutch_damping; //VR=8
-    fmi2Real force_in1; //VR=9
-    fmi2Real force_in2; //VR=10
-    fmi2Real v1; //VR=11
-    fmi2Real v2; //VR=12
-    fmi2Real on_off; //VR=13
+    fmi2Real    xi0; //VR=0
+    fmi2Real    vi0; //VR=1
+    fmi2Real    xo0; //VR=2
+    fmi2Real    vo0; //VR=3
+    fmi2Real    mass1; //VR=4
+    fmi2Real    gamma1; //VR=5
+    fmi2Real    mass2; //VR=6
+    fmi2Real    gamma2; //VR=7
+    fmi2Real    clutch_damping; //VR=8
+    fmi2Real    force_in1; //VR=9
+    fmi2Real    force_in2; //VR=10
+    fmi2Real    v1; //VR=11
+    fmi2Real    v2; //VR=12
+    fmi2Real    on_off; //VR=13
     fmi2Integer filter_length; //VR=98
     fmi2Integer integrator_type; //VR=99
+
 
 } modelDescription_t;
 
 
 #define HAVE_DEFAULTS
 static const modelDescription_t defaults = {
-    0.0, //xi0
-    0.0, //vi0
-    0.0, //xo0
-    0.0, //vo0
-    1.0, //mass1
-    1.0, //gamma1
-    1.0, //mass2
-    1.0, //gamma2
-    100.0, //clutch_damping
-    0.0, //force_in1
-    0.0, //force_in2
-    0, //v1
-    0, //v2
-    1.0, //on_off
+    0.000000, //xi0
+    0.000000, //vi0
+    0.000000, //xo0
+    0.000000, //vo0
+    1.000000, //mass1
+    1.000000, //gamma1
+    1.000000, //mass2
+    1.000000, //gamma2
+    100.000000, //clutch_damping
+    0.000000, //force_in1
+    0.000000, //force_in2
+    0.000000, //v1
+    0.000000, //v2
+    1.000000, //on_off
     0, //filter_length
     6, //integrator_type
+
 
 };
 
@@ -75,6 +79,7 @@ static const modelDescription_t defaults = {
 #define VR_ON_OFF 13
 #define VR_FILTER_LENGTH 98
 #define VR_INTEGRATOR_TYPE 99
+
 
 
 //the following getters and setters are static to avoid getting linking errors if this file is included in more than one place
@@ -166,6 +171,28 @@ static fmi2Status generated_fmi2GetBoolean(const modelDescription_t *md, const f
 }
 
 static fmi2Status generated_fmi2SetBoolean(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Boolean value[]) {
+    int i;
+    for (i = 0; i < nvr; i++) {
+        switch (vr[i]) {
+
+        default: return fmi2Error;
+        }
+    }
+    return fmi2OK;
+}
+
+static fmi2Status generated_fmi2GetString(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2String value[]) {
+    int i;
+    for (i = 0; i < nvr; i++) {
+        switch (vr[i]) {
+
+        default: return fmi2Error;
+        }
+    }
+    return fmi2OK;
+}
+
+static fmi2Status generated_fmi2SetString(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2String value[]) {
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {

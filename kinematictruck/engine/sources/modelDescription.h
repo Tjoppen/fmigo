@@ -2,6 +2,7 @@
 #ifndef MODELDESCRIPTION_H
 #define MODELDESCRIPTION_H
 #include "FMI2/fmi2Functions.h" //for fmi2Real etc.
+#include <stdio.h> //for snprintf()
 
 #define MODEL_IDENTIFIER engine
 #define MODEL_GUID "{a6a01bd9-863d-4a7c-ac09-58b7f438895b}"
@@ -11,43 +12,46 @@
 #define NUMBER_OF_REALS 11
 #define NUMBER_OF_INTEGERS 0
 #define NUMBER_OF_BOOLEANS 1
+#define NUMBER_OF_STRINGS 0
 #define NUMBER_OF_STATES 0
 #define NUMBER_OF_EVENT_INDICATORS 0
 
 
 #define HAVE_MODELDESCRIPTION_STRUCT
 typedef struct {
-    fmi2Real theta; //VR=0
-    fmi2Real omega; //VR=1
-    fmi2Real alpha; //VR=2
-    fmi2Real tau; //VR=3
-    fmi2Real jinv; //VR=4
-    fmi2Real d; //VR=5
-    fmi2Real omega_l; //VR=6
-    fmi2Real omega_l0; //VR=7
-    fmi2Real kp; //VR=8
-    fmi2Real tau_max; //VR=9
-    fmi2Real beta; //VR=10
+    fmi2Real    theta; //VR=0
+    fmi2Real    omega; //VR=1
+    fmi2Real    alpha; //VR=2
+    fmi2Real    tau; //VR=3
+    fmi2Real    jinv; //VR=4
+    fmi2Real    d; //VR=5
+    fmi2Real    omega_l; //VR=6
+    fmi2Real    omega_l0; //VR=7
+    fmi2Real    kp; //VR=8
+    fmi2Real    tau_max; //VR=9
+    fmi2Real    beta; //VR=10
 
     fmi2Boolean clamp_beta; //VR=0
+
 } modelDescription_t;
 
 
 #define HAVE_DEFAULTS
 static const modelDescription_t defaults = {
-    0.0, //theta
-    0.0, //omega
-    0.0, //alpha
-    0.0, //tau
-    0.25, //jinv
-    1.0, //d
-    0.0, //omega_l
-    38.8888888889, //omega_l0
-    20.0, //kp
-    1350.0, //tau_max
-    0.0, //beta
+    0.000000, //theta
+    0.000000, //omega
+    0.000000, //alpha
+    0.000000, //tau
+    0.250000, //jinv
+    1.000000, //d
+    0.000000, //omega_l
+    38.888889, //omega_l0
+    20.000000, //kp
+    1350.000000, //tau_max
+    0.000000, //beta
 
     1, //clamp_beta
+
 };
 
 
@@ -64,6 +68,7 @@ static const modelDescription_t defaults = {
 #define VR_BETA 10
 
 #define VR_CLAMP_BETA 0
+
 
 //the following getters and setters are static to avoid getting linking errors if this file is included in more than one place
 
@@ -150,6 +155,28 @@ static fmi2Status generated_fmi2SetBoolean(modelDescription_t *md, const fmi2Val
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
         case 0: md->clamp_beta = value[i]; break;
+        default: return fmi2Error;
+        }
+    }
+    return fmi2OK;
+}
+
+static fmi2Status generated_fmi2GetString(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2String value[]) {
+    int i;
+    for (i = 0; i < nvr; i++) {
+        switch (vr[i]) {
+
+        default: return fmi2Error;
+        }
+    }
+    return fmi2OK;
+}
+
+static fmi2Status generated_fmi2SetString(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2String value[]) {
+    int i;
+    for (i = 0; i < nvr; i++) {
+        switch (vr[i]) {
+
         default: return fmi2Error;
         }
     }

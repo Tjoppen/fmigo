@@ -2,6 +2,7 @@
 #ifndef MODELDESCRIPTION_H
 #define MODELDESCRIPTION_H
 #include "FMI2/fmi2Functions.h" //for fmi2Real etc.
+#include <stdio.h> //for snprintf()
 
 #define MODEL_IDENTIFIER gearbox2
 #define MODEL_GUID "{9b727233-c36a-4ede-a3e9-ec1ab2cee17b}"
@@ -11,25 +12,27 @@
 #define NUMBER_OF_REALS 13
 #define NUMBER_OF_INTEGERS 0
 #define NUMBER_OF_BOOLEANS 0
+#define NUMBER_OF_STRINGS 0
 #define NUMBER_OF_STATES 0
 #define NUMBER_OF_EVENT_INDICATORS 0
 
 
 #define HAVE_MODELDESCRIPTION_STRUCT
 typedef struct {
-    fmi2Real theta_e; //VR=0
-    fmi2Real omega_e; //VR=1
-    fmi2Real omegadot_e; //VR=2
-    fmi2Real tau_e; //VR=3
-    fmi2Real j1; //VR=4
-    fmi2Real d1; //VR=5
-    fmi2Real theta_l; //VR=6
-    fmi2Real omega_l; //VR=7
-    fmi2Real omegadot_l; //VR=8
-    fmi2Real tau_l; //VR=9
-    fmi2Real alpha; //VR=10
-    fmi2Real j2; //VR=11
-    fmi2Real d2; //VR=12
+    fmi2Real    theta_e; //VR=0
+    fmi2Real    omega_e; //VR=1
+    fmi2Real    omegadot_e; //VR=2
+    fmi2Real    tau_e; //VR=3
+    fmi2Real    j1; //VR=4
+    fmi2Real    d1; //VR=5
+    fmi2Real    theta_l; //VR=6
+    fmi2Real    omega_l; //VR=7
+    fmi2Real    omegadot_l; //VR=8
+    fmi2Real    tau_l; //VR=9
+    fmi2Real    alpha; //VR=10
+    fmi2Real    j2; //VR=11
+    fmi2Real    d2; //VR=12
+
 
 
 } modelDescription_t;
@@ -37,19 +40,20 @@ typedef struct {
 
 #define HAVE_DEFAULTS
 static const modelDescription_t defaults = {
-    0.0, //theta_e
-    0.0, //omega_e
-    0.0, //omegadot_e
-    0.0, //tau_e
-    1.0, //j1
-    1.0, //d1
-    0.0, //theta_l
-    0.0, //omega_l
-    0.0, //omegadot_l
-    0.0, //tau_l
-    4.3, //alpha
-    1.0, //j2
-    1.0, //d2
+    0.000000, //theta_e
+    0.000000, //omega_e
+    0.000000, //omegadot_e
+    0.000000, //tau_e
+    1.000000, //j1
+    1.000000, //d1
+    0.000000, //theta_l
+    0.000000, //omega_l
+    0.000000, //omegadot_l
+    0.000000, //tau_l
+    4.300000, //alpha
+    1.000000, //j2
+    1.000000, //d2
+
 
 
 };
@@ -68,6 +72,7 @@ static const modelDescription_t defaults = {
 #define VR_ALPHA 10
 #define VR_J2 11
 #define VR_D2 12
+
 
 
 
@@ -156,6 +161,28 @@ static fmi2Status generated_fmi2GetBoolean(const modelDescription_t *md, const f
 }
 
 static fmi2Status generated_fmi2SetBoolean(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Boolean value[]) {
+    int i;
+    for (i = 0; i < nvr; i++) {
+        switch (vr[i]) {
+
+        default: return fmi2Error;
+        }
+    }
+    return fmi2OK;
+}
+
+static fmi2Status generated_fmi2GetString(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2String value[]) {
+    int i;
+    for (i = 0; i < nvr; i++) {
+        switch (vr[i]) {
+
+        default: return fmi2Error;
+        }
+    }
+    return fmi2OK;
+}
+
+static fmi2Status generated_fmi2SetString(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2String value[]) {
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {

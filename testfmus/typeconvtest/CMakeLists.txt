@@ -2,14 +2,14 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 SET(ARCH "linux64" CACHE STRING "Architecture: linux64, linux32, win32...")
 SET(TARGET typeconvtest)
 SET(SRCS
-    ${CMAKE_CURRENT_SOURCE_DIR}/../templates/fmi2/fmuTemplate.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/../templates/fmi2/fmuTemplate_impl.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/fmi2/fmuTemplate.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/fmi2/fmuTemplate_impl.h
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/typeconvtest.c
 )
 ADD_CUSTOM_COMMAND(
   OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
-  COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/../../fmu-builder/bin/modeldescription2header
+  COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/../../../fmu-builder/bin/modeldescription2header
     ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml >
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml )
@@ -17,8 +17,8 @@ ADD_CUSTOM_COMMAND(
 ADD_DEFINITIONS(  )
 ADD_LIBRARY(${TARGET} SHARED ${SRCS})
 INCLUDE_DIRECTORIES(
-    ../../FMILibrary-2.0.1/ThirdParty/FMI/default
-    ../templates/fmi2
+    ../../../FMILibrary-2.0.1/ThirdParty/FMI/default
+    ../../templates/fmi2
 )
 SET_TARGET_PROPERTIES(${TARGET} PROPERTIES PREFIX "")
 SET_TARGET_PROPERTIES(${TARGET} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/binaries/${ARCH}")

@@ -343,6 +343,7 @@ static void printOutputs(double t, BaseMaster *master, vector<FMIClient*>& clien
                     }
                 }
                 printf(",\"%s\"", oss.str().c_str());
+                client->m_getStringValues.pop_front();
                 break;
             }
             case fmi2_base_type_enum:

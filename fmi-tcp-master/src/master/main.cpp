@@ -203,12 +203,33 @@ static void setupConstraintsAndSolver(vector<strongconnection> strongConnections
    }
 }
 
+bool isNumeric(const std::string& input) {
+    return std::all_of(input.begin(), input.end(), ::isdigit);
+}
+
+int vrFromKeyName(FMIClient* client, string key){
+
+  if(isNumeric(key))
+    return atoi(key.c_str());
+  switch (client->getVariables().count(key)){
+  case 0:{
+    fprintf(stderr,"Error: client(%d):%s\n", client->getId(), key.c_str());
+    exit(1);
+  }
+  case 1:  return client->getVariables()[key].vr;
+  default:{
+    fprintf(stderr,"Error: Not uniq - client(%d):%s\n", client->getId(), key.c_str());
+    exit(1);
+  }
+  }
+}
+
 static void sendUserParams(BaseMaster *master, vector<FMIClient*> clients, map<pair<int,fmi2_base_type_enu_t>, vector<param> > params) {
     for (auto it = params.begin(); it != params.end(); it++) {
         FMIClient *client = clients[it->first.first];
         vector<int> vrs;
         for (auto it2 = it->second.begin(); it2 != it->second.end(); it2++) {
-            vrs.push_back(it2->valueReference);
+          vrs.push_back(vrFromKeyName(client, it2->vrORname));
         }
 
         switch (it->first.second) {
@@ -414,27 +435,6 @@ static void pushResults(int step, double t, double endTime, double timeStep, zmq
     zmq::message_t rep(str.length());
     memcpy(rep.data(), str.data(), str.length());
     push_socket.send(rep);
-}
-
-bool isNumeric(const std::string& input) {
-    return std::all_of(input.begin(), input.end(), ::isdigit);
-}
-
-int vrFromKeyName(FMIClient* client, string key){
-
-  if(isNumeric(key))
-    return atoi(key.c_str());
-  switch (client->getVariables().count(key)){
-  case 0:{
-    fprintf(stderr,"Error: client(%d):%s\n", client->getId(), key.c_str());
-    exit(1);
-  }
-  case 1:  return client->getVariables()[key].vr;
-  default:{
-    fprintf(stderr,"Error: Not uniq - client(%d):%s\n", client->getId(), key.c_str());
-    exit(1);
-  }
-  }
 }
 
 int connectionNamesToVr(std::vector<connection> &connections,

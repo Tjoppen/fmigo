@@ -103,6 +103,7 @@ void FMIClient::on_get_xml_res(fmitcp_proto::jm_log_level_enu_t logLevel, string
   free(dir);
   if (m_fmi2Instance) {
     m_fmi2Outputs = fmi2_import_get_outputs_list(m_fmi2Instance);
+    setVariables();
   } else {
     m_logger.log(fmitcp::Logger::LOG_ERROR, "Error parsing the modelDescription.xml file contained in %s\n", m_workingDir.c_str());
   }
@@ -113,8 +114,10 @@ std::string FMIClient::getModelName() const {
 }
 
 variable_map FMIClient::getVariables() const {
-    variable_map ret;
+  return m_variables;
+}
 
+void FMIClient::setVariables() {
     if (!m_fmi2Instance) {
         fprintf(stderr, "!m_fmi2Instance in FMIClient::getVariables() - get_xml() failed?\n");
         exit(1);
@@ -133,14 +136,12 @@ variable_map FMIClient::getVariables() const {
 
         //fprintf(stderr, "VR %i, type %i, causality %i: %s \"%s\"\n", var2.vr, var2.type, var2.causality, name.c_str(), fmi2_import_get_variable_description(var));
 
-        if (ret.find(name) != ret.end()) {
+        if (m_variables.find(name) != m_variables.end()) {
             fprintf(stderr, "WARNING: Two or variables named \"%s\"\n", name.c_str());
         }
-        ret[name] = var2;
+        m_variables[name] = var2;
     }
     fmi2_import_free_variable_list(vl);
-
-    return ret;
 }
 
 vector<variable> FMIClient::getOutputs() const {

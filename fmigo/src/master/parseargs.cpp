@@ -366,7 +366,6 @@ int fmitcp_master::parseArguments( int argc,
                 }
 
                 p.fmuIndex       = atoi(values[0].c_str());
-                p.valueReference = atoi(values[1].c_str());
                 p.vrORname = values[1];
 
                 switch (p.type) {

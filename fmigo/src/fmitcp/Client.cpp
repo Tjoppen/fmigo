@@ -44,15 +44,15 @@ static bool statusIsOK(fmitcp_proto::fmi2_status_t fmi2) {
     return fmi2 == fmitcp_proto::fmi2_status_ok;
 }
 
-template<typename T, typename R> void handle_get_value_res(Client *c, Logger logger, void (Client::*callback)(int,const deque<T>&,fmitcp_proto::fmi2_status_t), R &r) {
+template<typename T, typename R> void handle_get_value_res(Client *c, Logger logger, void (Client::*callback)(const deque<T>&,fmitcp_proto::fmi2_status_t), R &r) {
     std::deque<T> values = values_to_deque<T>(r);
     if (!statusIsOK(r.status())) {
-        logger.log(Logger::LOG_NETWORK,"< %s(mid=%d,values=...,status=%d)\n",r.GetTypeName().c_str(), r.message_id(), r.status());
+        logger.log(Logger::LOG_NETWORK,"< %s(values=...,status=%d)\n",r.GetTypeName().c_str(), r.status());
         fprintf(stderr, "FMI call %s failed with status=%d\nMaybe a connection or <Output> was specified incorrectly?",
             r.GetTypeName().c_str(), r.status());
         exit(1);
     }
-    (c->*callback)(r.message_id(),values,r.status());
+    (c->*callback)(values,r.status());
 }
 
 void Client::clientData(const char* data, long size){
@@ -71,20 +71,20 @@ void Client::clientData(const char* data, long size){
 #define CHECK_WITH_STR(type, str) {\
         type##_res r;\
         r.ParseFromArray(data, size);\
-        m_logger.log(Logger::LOG_NETWORK,"< "#type"_res(mid=%d,status=%d)\n",r.message_id(),r.status());\
+        m_logger.log(Logger::LOG_NETWORK,"< "#type"_res(status=%d)\n",r.status());\
         if (!statusIsOK(r.status())) {\
             fprintf(stderr, "FMI call "#type"() failed with status=%d\n" str, r.status());\
             exit(1);\
         }\
-        on_##type##_res(r.message_id(),r.status());\
+        on_##type##_res(r.status());\
     }
 
 #define NORMAL_CASE(type) CHECK_WITH_STR(type, "")
 #define NOSTAT_CASE(type) {\
         type##_res r;\
         r.ParseFromArray(data, size);\
-        m_logger.log(Logger::LOG_NETWORK,"< "#type"_res(mid=%d)\n",r.message_id());\
-        on_##type##_res(r.message_id());\
+        m_logger.log(Logger::LOG_NETWORK,"< "#type"_res()\n");\
+        on_##type##_res();\
     }
 
 #define CLIENT_VALUE_CASE(type){                                        \
@@ -93,7 +93,7 @@ void Client::clientData(const char* data, long size){
     std::ostringstream stream;                                          \
     stream << "< "#type"_res(value=" << r.value() << ")\n";             \
     m_logger.log(Logger::LOG_NETWORK, stream.str().c_str());            \
-    on_##type##_res(r.message_id(), r.value());                         \
+    on_##type##_res( r.value());                         \
     }
 
 #define SETX_HINT "Maybe a parameter or a connection was specified incorrectly?\n"
@@ -101,8 +101,8 @@ void Client::clientData(const char* data, long size){
     switch (type) {
     case type_fmi2_import_get_version_res: {
         fmi2_import_get_version_res r; r.ParseFromArray(data, size);
-        m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_version_res(mid=%d,version=%s)\n",r.message_id(), r.version().c_str());
-        on_fmi2_import_get_version_res(r.message_id(),r.version());
+        m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_version_res(version=%s)\n", r.version().c_str());
+        on_fmi2_import_get_version_res(r.version());
 
         break;
     }
@@ -144,8 +144,8 @@ void Client::clientData(const char* data, long size){
     case type_fmi2_import_set_string_res:                   CHECK_WITH_STR(fmi2_import_set_string, SETX_HINT); break;
     case type_fmi2_import_get_fmu_state_res: {
         fmi2_import_get_fmu_state_res r; r.ParseFromArray(data, size);
-        m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_fmu_state_res(mid=%d,stateId=%d,status=%d)\n",r.message_id(), r.stateid(), r.status());
-        on_fmi2_import_get_fmu_state_res(r.message_id(),r.stateid(),r.status());
+        m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_fmu_state_res(stateId=%d,status=%d)\n", r.stateid(), r.status());
+        on_fmi2_import_get_fmu_state_res(r.stateid(),r.status());
 
         break;
     }
@@ -171,20 +171,19 @@ void Client::clientData(const char* data, long size){
         std::vector<double> dz;
         for(int i=0; i<r.dz_size(); i++)
             dz.push_back(r.dz(i));
-        m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_directional_derivative_res(mid=%d,dz=...,status=%d)\n",r.message_id(), r.status());
-        on_fmi2_import_get_directional_derivative_res(r.message_id(),dz,r.status());
+        m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_directional_derivative_res(dz=...,status=%d)\n", r.status());
+        on_fmi2_import_get_directional_derivative_res(dz,r.status());
 
         break;
-    
+
       /* Model exchange */
     }case type_fmi2_import_enter_event_mode_res:            NORMAL_CASE(fmi2_import_enter_event_mode);
     case type_fmi2_import_new_discrete_states_res:{
-      
+
         fmi2_import_new_discrete_states_res r; r.ParseFromArray(data, size);
         ::fmi2_event_info_t eventInfo = protoEventInfoToFmi2EventInfo(r.eventinfo());
-        
-        m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_new_discrete_states_res(mid=%d, newDiscreteStatesNeeded=%d, terminateSimulation=%d, nominalsOfContinuousStatesChanged=%d, valuesOfContinuousStatusChanged=%d, nextEventTimeDefined=%d, nextEventTime=%f )\n",
-                     r.message_id(),
+
+        m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_new_discrete_states_res(newDiscreteStatesNeeded=%d, terminateSimulation=%d, nominalsOfContinuousStatesChanged=%d, valuesOfContinuousStatusChanged=%d, nextEventTimeDefined=%d, nextEventTime=%f )\n",
                      eventInfo.newDiscreteStatesNeeded,
                      eventInfo.terminateSimulation,
                      eventInfo.nominalsOfContinuousStatesChanged,
@@ -194,16 +193,16 @@ void Client::clientData(const char* data, long size){
                      );
 
 
-        on_fmi2_import_new_discrete_states_res(r.message_id(),r.eventinfo());
+        on_fmi2_import_new_discrete_states_res(r.eventinfo());
 
         break;
-    
-            
+
+
     }case type_fmi2_import_enter_continuous_time_mode_res:  NORMAL_CASE(fmi2_import_enter_continuous_time_mode); break;
     case type_fmi2_import_completed_integrator_step_res: {
         fmi2_import_completed_integrator_step_res r; r.ParseFromArray(data, size);
-        m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_completed_integrator_step_res(mid=%d,callEventUpdate=%d,status=%d)\n",r.message_id(), r.calleventupdate(), r.status());
-        on_fmi2_import_completed_integrator_step_res(r.message_id(),r.calleventupdate(),r.status());
+        m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_completed_integrator_step_res(mid=%d,callEventUpdate=%d,status=%d)\n", r.calleventupdate(), r.status());
+        on_fmi2_import_completed_integrator_step_res(r.calleventupdate(),r.status());
 
         break;
     }
@@ -212,36 +211,36 @@ void Client::clientData(const char* data, long size){
     case type_fmi2_import_get_event_indicators_res: {
         m_logger.log(Logger::LOG_NETWORK,"This command is NOT TESTED\n");
         fmi2_import_get_event_indicators_res r; r.ParseFromArray(data, size);
-        m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_event_indicators_res(mid=%d, status=%d)\n",r.message_id(), r.status());
-        
+        m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_event_indicators_res(mid=%d, status=%d)\n", r.status());
+
         break;
     }
     case type_fmi2_import_get_continuous_states_res: {
         m_logger.log(Logger::LOG_NETWORK,"This command is NOT TESTED\n");
         fmi2_import_get_continuous_states_res r; r.ParseFromArray(data, size);
-        m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_continuous_states_res(mid=%d, states=%d)\n",r.message_id(), r.status());
+        m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_continuous_states_res(mid=%d, states=%d)\n", r.status());
         break;
     }
     case type_fmi2_import_get_derivatives_res: {
         m_logger.log(Logger::LOG_NETWORK,"This command is NOT TESTED\n");
         fmi2_import_get_derivatives_res r; r.ParseFromArray(data, size);
-        m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_derivatives_res(mid=%d, status=%d)\n",r.message_id(), r.status());
-        //        on_fmi2_import_get_derivatives_res(r.message_id(),repeated_to_vector<double>(r.derivatives()),r.status());
-        
+        m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_derivatives_res(mid=%d, status=%d)\n", r.status());
+        //        on_fmi2_import_get_derivatives_res(repeated_to_vector<double>(r.derivatives()),r.status());
+
         break;
     }
     case type_fmi2_import_get_nominal_continuous_states_res: {
         m_logger.log(Logger::LOG_NETWORK,"This command is NOT TESTED\n");
         fmi2_import_get_nominal_continuous_states_res r; r.ParseFromArray(data, size);
-        m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_nominal_continuous_states_res(mid=%d, states=%d)\n",r.message_id(), r.status());
+        m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_nominal_continuous_states_res(mid=%d, states=%d)\n", r.status());
         break;
     }
       /* Co-simulation */
     case type_fmi2_import_set_real_input_derivatives_res:   NORMAL_CASE(fmi2_import_set_real_input_derivatives); break;
     case type_fmi2_import_get_real_output_derivatives_res: {
         fmi2_import_get_real_output_derivatives_res r; r.ParseFromArray(data, size);
-        m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_real_output_derivatives_res(mid=%d,status=%d,values=...)\n",r.message_id(),r.status());
-        on_fmi2_import_get_real_output_derivatives_res(r.message_id(),r.status(),values_to_vector<double>(r));
+        m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_real_output_derivatives_res(mid=%d,status=%d,values=...)\n",r.status());
+        on_fmi2_import_get_real_output_derivatives_res(r.status(),values_to_vector<double>(r));
 
         break;
     }
@@ -255,8 +254,8 @@ void Client::clientData(const char* data, long size){
     case type_get_xml_res: {
 
         get_xml_res r; r.ParseFromArray(data, size);
-        m_logger.log(Logger::LOG_NETWORK,"< get_xml_res(mid=%d,xml=...)\n",r.message_id());
-        on_get_xml_res(r.message_id(), r.loglevel(), r.xml());
+        m_logger.log(Logger::LOG_NETWORK,"< get_xml_res(mid=%d,xml=...)\n");
+        on_get_xml_res( r.loglevel(), r.xml());
 
         break;
     }

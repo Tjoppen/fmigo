@@ -140,6 +140,9 @@ int vrFromKeyName(FMIClient* client, string key){
   }
 }
 
+#define toVR(type, index)                                   \
+  vrFromKeyName(clients[it->type##FMU],it->vrORname[index])
+
 static void setupConstraintsAndSolver(vector<strongconnection> strongConnections, vector<FMIClient*> clients, Solver *solver) {
     for (auto it = strongConnections.begin(); it != strongConnections.end(); it++) {
         //NOTE: this leaks memory, but I don't really care since it's only setup
@@ -150,27 +153,27 @@ static void setupConstraintsAndSolver(vector<strongconnection> strongConnections
         case 'b':
         case 'l':
         {
-            if (it->vrs.size() != 38) {
+            if (it->vrORname.size() != 38) {
                 fprintf(stderr, "Bad %s specification: need 38 VRs ([XYZpos + XYZacc + XYZforce + Quat + XYZrotAcc + XYZtorque] x 2), got %zu\n",
-                        t == 'b' ? "ball joint" : "lock", it->vrs.size());
+                        t == 'b' ? "ball joint" : "lock", it->vrORname.size());
                 exit(1);
             }
 
             StrongConnector *scA = findOrCreateBallLockConnector(clients[it->fromFMU],
-                                                 it->vrs[0], it->vrs[1], it->vrs[2],
-                                                 it->vrs[3], it->vrs[4], it->vrs[5],
-                                                 it->vrs[6], it->vrs[7], it->vrs[8],
-                                                 it->vrs[9], it->vrs[10],it->vrs[11],it->vrs[12],
-                                                 it->vrs[13],it->vrs[14],it->vrs[15],
-                                                 it->vrs[16],it->vrs[17],it->vrs[18]);
+                                       toVR(from,0), toVR(from,1), toVR(from,2),
+                                       toVR(from,3), toVR(from,4), toVR(from,5),
+                                       toVR(from,6), toVR(from,7), toVR(from,8),
+                                       toVR(from,9), toVR(from,10), toVR(from,11), toVR(from,12),
+                                       toVR(from,13), toVR(from,14), toVR(from,15),
+                                       toVR(from,16), toVR(from,17), toVR(from,18) );
 
             StrongConnector *scB = findOrCreateBallLockConnector(clients[it->toFMU],
-                                                 it->vrs[19],it->vrs[20],it->vrs[21],
-                                                 it->vrs[22],it->vrs[23],it->vrs[24],
-                                                 it->vrs[25],it->vrs[26],it->vrs[27],
-                                                 it->vrs[28],it->vrs[29],it->vrs[30],it->vrs[31],
-                                                 it->vrs[32],it->vrs[33],it->vrs[34],
-                                                 it->vrs[35],it->vrs[36],it->vrs[37]);
+                                       toVR(to,19), toVR(to,20), toVR(to,21),
+                                       toVR(to,22), toVR(to,23), toVR(to,24),
+                                       toVR(to,25), toVR(to,26), toVR(to,27),
+                                       toVR(to,28), toVR(to,29), toVR(to,30), toVR(to,31),
+                                       toVR(to,32), toVR(to,33), toVR(to,34),
+                                       toVR(to,35), toVR(to,36), toVR(to,37) );
 
             con = t == 'b' ? new BallJointConstraint(scA, scB, Vec3(), Vec3())
                            : new LockConstraint(scA, scB, Vec3(), Vec3(), Quat(), Quat());
@@ -180,20 +183,20 @@ static void setupConstraintsAndSolver(vector<strongconnection> strongConnections
         case 's':
         {
             int ofs = 0;
-            if (it->vrs.size() != 8) {
+            if (it->vrORname.size() != 8) {
                 //maybe it's the old type of specification?
                 ofs = 1;
-                if (it->vrs.size() != 9) {
+                if (it->vrORname.size() != 9) {
                     fprintf(stderr, "Bad shaft specification: need 8 VRs ([shaft angle + angular velocity + angular acceleration + torque] x 2)\n");
                     exit(1);
                 }
             }
 
             StrongConnector *scA = findOrCreateShaftConnector(clients[it->fromFMU],
-                    it->vrs[ofs+0], it->vrs[ofs+1], it->vrs[ofs+2], it->vrs[ofs+3]);
+                                       toVR(from,ofs+0), toVR(from,ofs+1), toVR(from,ofs+2), toVR(from,ofs+3));
 
             StrongConnector *scB = findOrCreateShaftConnector(clients[it->toFMU],
-                    it->vrs[ofs+4], it->vrs[ofs+5], it->vrs[ofs+6], it->vrs[ofs+7]);
+                                       toVR(to,ofs+4), toVR(to,ofs+5), toVR(to,ofs+6), toVR(to,ofs+7));
 
             con = new ShaftConstraint(scA, scB);
             break;
@@ -443,10 +446,6 @@ int connectionNamesToVr(std::vector<connection> &connections,
         fprintf(stderr,"Error: strong connection needs even number of connections for fmu0 and fmu1\n");
         exit(1);
       }
-      for(; j < strongConnections[i].vrORname.size()/2; j++)
-        strongConnections[i].vrs.push_back(vrFromKeyName(clients[strongConnections[i].fromFMU],strongConnections[i].vrORname[j]));
-      for(; j < strongConnections[i].vrORname.size(); j++)
-        strongConnections[i].vrs.push_back(vrFromKeyName(clients[strongConnections[i].toFMU],strongConnections[i].vrORname[j]));
     }
   return 0;
 }

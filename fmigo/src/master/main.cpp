@@ -238,10 +238,10 @@ static void sendUserParams(BaseMaster *master, vector<FMIClient*> clients, map<p
 
 static string getFieldnames(vector<FMIClient*> clients) {
     ostringstream oss;
-    oss << "t";
+    oss << "#t";
     for (auto client : clients) {
         ostringstream prefix;
-        prefix << " " << "fmu" << client->getId() << "_";
+        prefix << "," << "fmu" << client->getId() << "_";
         oss << client->getSpaceSeparatedFieldNames(prefix.str());
     }
     return oss.str();

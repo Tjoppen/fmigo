@@ -630,140 +630,162 @@ def unzip_ssp(dest_dir, ssp_filename):
                 z.extract(MODELDESCRIPTION, d)
 
 
-dry_run = sys.argv[1] == '--dry-run'
+def parse_ssp(ssp_path, cleanup_zip = True):
 
-if dry_run and len(sys.argv) < 3:
-    print('ERROR: missing ssp-name')
-    exit(1)
+    global fmus, system, parameters, SSD_NAME, d
+    fmus = []
+    systems = []
+    parameters = {}
 
-# Check if we run master directly from an SSD XML file instead of an SSP zip archive
-if os.path.basename(sys.argv[-1]) == SSD_NAME:
-    d = os.path.dirname(sys.argv[-1])
-    unzipped_ssp = False
-else:
-    unzip_ssp(d, sys.argv[-1])
-    unzipped_ssp = True
+    file_ext = os.path.splitext(ssp_path)[1].lower()
 
-root = System.fromfile(d, SSD_NAME)
+    # Allow custom named ssd files
+    if file_ext == '.ssd':
+       SSD_NAME = os.path.basename(ssp_path) 
 
-root.resolve_dictionary_inputs()
-
-# Figure out connections, parse modelDescriptions
-connectionmultimap = {} # Multimap of outputs to inputs
-mds = []
-fmumap = {}  #maps fmu names to IDs
-for fmu in fmus:
-    fmumap[fmu.get_name()] = fmu.id
-    fmu.connect(connectionmultimap)
-
-    with zipfile.ZipFile(fmu.path) as z:
-        md_data = z.read('modelDescription.xml')
-
-    # Parse modelDescription, turn variable list into map
-    # tree = etree.parse(os.path.join(os.path.splitext(fmu.path)[0], MODELDESCRIPTION))
-    # root = tree.getroot()
-    # print(md_data)
-    root = etree.XML(md_data)
-
-    svs = {}
-    for sv in root.find('ModelVariables').findall('ScalarVariable'):
-        name = sv.attrib['name']
-        if name in svs:
-            print(fmu.path + ' contains multiple variables named "' + name + '"!')
-            exit(1)
-
-        causality = ''
-
-        if not CAUSALITY in sv.attrib:
-            if 'variability' in sv.attrib and sv.attrib['variability'] == 'parameter':
-                #this happens with SampleSystemSubSystemDictionary.ssp
-                print(('WARNING: Found variable %s without causality and variability="parameter". ' % name)+
-                      'This violates the spec. Treating as a parameter')
-                causality = 'parameter'
-            else:
-                print('WARNING: FMU %s has variable %s without causality - ignoring' % (fmu.get_name(), name))
-                continue
-        else:
-            causality = sv.attrib[CAUSALITY]
-
-        t = ''
-        if sv.find('Real')      != None: t = 'r'
-        elif sv.find('Integer') != None: t = 'i'
-        elif sv.find('Boolean') != None: t = 'b'
-        elif sv.find('Enum')    != None: t = 'e'
-        elif sv.find('String')  != None: t = 's'
-        else:
-            print(fmu.path + ' variable "' + name + '" has unknown type')
-            exit(1)
-
-        svs[name] = {
-            'vr': int(sv.attrib['valueReference']),
-            CAUSALITY: causality,
-            'type': t,
-        }
-    mds.append(svs)
-
-flatparams = []
-for key,value in parameters.iteritems():
-    parts = key.split('.')
-    fmuname = '.'.join(parts[0:-1])
-    paramname = parts[-1]
-    if fmuname in fmumap:
-        fmu = fmus[fmumap[fmuname]]
-        if paramname in mds[fmu.id]:
-            p = mds[fmu.id][paramname]
-            if p[CAUSALITY] == 'input' or p[CAUSALITY] == 'parameter':
-                flatparams.extend([
-                    '-p','%s,%i,%i,%s' % (
-                        value['type'],
-                        fmu.id,
-                        p['vr'],
-                        # Escape backslashes and colons
-                        str(value['value']).replace('\\','\\\\').replace(':','\\:').replace(',','\\,')
-                    )
-                ])
-            else:
-                print('WARNING: FMU %s, tried to set variable %s which is neither an input nor a parameter' % (fmuname, paramname))
-        else:
-            print('WARNING: FMU %s has no variable called %s' % (fmuname, paramname))
+    # Check if we run master directly from an SSD XML file instead of an SSP zip archive
+    if os.path.basename(ssp_path) == SSD_NAME:
+        d = os.path.dirname(ssp_path)
+        unzipped_ssp = False
     else:
-        print('WARNING: No FMU called %s for parameter %s' % (fmuname, paramname))
+        unzip_ssp(d, ssp_path)
+        unzipped_ssp = True
 
-#print connections
-#print mds
+    root = System.fromfile(d, SSD_NAME)
 
-# Build command line
-flatconns = []
-for key in connectionmultimap.keys():
-    fr = key
-    to1 = connectionmultimap[key]  
-    for to in to1:
-        #print str((fr,to)) + ' vs ' + str(mds[fr[0]])
-        f = mds[fr[0]]
-        fv = f[fr[1]]
-        t = mds[to[0]]
-        tv = t[to[1]]
+    root.resolve_dictionary_inputs()
 
-        connstr = '%s,%i,%i,%s,%i,%i' % (fv['type'], fr[0], fv['vr'], tv['type'], to[0], tv['vr'])
-        flatconns.extend(['-c', connstr])
+    # Figure out connections, parse modelDescriptions
+    connectionmultimap = {} # Multimap of outputs to inputs
+    mds = []
+    fmumap = {}  #maps fmu names to IDs
+    for fmu in fmus:
+        fmumap[fmu.get_name()] = fmu.id
+        fmu.connect(connectionmultimap)
 
-#read connections and parameters from stdin, since they can be quite many
-#stdin because we want to avoid leaving useless files on the filesystem
-args = ['mpiexec','-np',str(len(fmus)+1),'fmigo-mpi','-t','9.9','-d','0.1','-a','-'] + [fmu.path for fmu in fmus]
-print(" ".join(args) + " <<< " + '"' + " ".join(flatconns+flatparams) + '"')
+        with zipfile.ZipFile(fmu.path) as z:
+            md_data = z.read('modelDescription.xml')
 
-if dry_run:
-    ret = 0
-else:
-    #pipe arguments to master, leave stdout and stderr alone
-    p = subprocess.Popen(args, stdin=subprocess.PIPE)
-    p.communicate(input=" ".join(flatconns).encode('utf-8'))
-    ret = p.returncode  #ret can be None
+        # Parse modelDescription, turn variable list into map
+        # tree = etree.parse(os.path.join(os.path.splitext(fmu.path)[0], MODELDESCRIPTION))
+        # root = tree.getroot()
+        # print(md_data)
+        root = etree.XML(md_data)
 
-if ret == 0:
-    if unzipped_ssp:
+        svs = {}
+        for sv in root.find('ModelVariables').findall('ScalarVariable'):
+            name = sv.attrib['name']
+            if name in svs:
+                print(fmu.path + ' contains multiple variables named "' + name + '"!')
+                exit(1)
+
+            causality = ''
+
+            if not CAUSALITY in sv.attrib:
+                if 'variability' in sv.attrib and sv.attrib['variability'] == 'parameter':
+                    #this happens with SampleSystemSubSystemDictionary.ssp
+                    print(('WARNING: Found variable %s without causality and variability="parameter". ' % name)+
+                          'This violates the spec. Treating as a parameter')
+                    causality = 'parameter'
+                else:
+                    print('WARNING: FMU %s has variable %s without causality - ignoring' % (fmu.get_name(), name))
+                    continue
+            else:
+                causality = sv.attrib[CAUSALITY]
+
+            t = ''
+            if sv.find('Real')      != None: t = 'r'
+            elif sv.find('Integer') != None: t = 'i'
+            elif sv.find('Boolean') != None: t = 'b'
+            elif sv.find('Enum')    != None: t = 'e'
+            elif sv.find('String')  != None: t = 's'
+            else:
+                print(fmu.path + ' variable "' + name + '" has unknown type')
+                exit(1)
+
+            svs[name] = {
+                'vr': int(sv.attrib['valueReference']),
+                CAUSALITY: causality,
+                'type': t,
+            }
+        mds.append(svs)
+
+    flatparams = []
+    for key,value in parameters.iteritems():
+        parts = key.split('.')
+        fmuname = '.'.join(parts[0:-1])
+        paramname = parts[-1]
+        if fmuname in fmumap:
+            fmu = fmus[fmumap[fmuname]]
+            if paramname in mds[fmu.id]:
+                p = mds[fmu.id][paramname]
+                if p[CAUSALITY] == 'input' or p[CAUSALITY] == 'parameter':
+                    flatparams.extend([
+                        '-p','%s,%i,%i,%s' % (
+                            value['type'],
+                            fmu.id,
+                            p['vr'],
+                            # Escape backslashes and colons
+                            str(value['value']).replace('\\','\\\\').replace(':','\\:').replace(',','\\,')
+                        )
+                    ])
+                else:
+                    print('WARNING: FMU %s, tried to set variable %s which is neither an input nor a parameter' % (fmuname, paramname))
+            else:
+                print('WARNING: FMU %s has no variable called %s' % (fmuname, paramname))
+        else:
+            print('WARNING: No FMU called %s for parameter %s' % (fmuname, paramname))
+
+    #print connections
+    #print mds
+
+    # Build command line
+    flatconns = []
+    for key in connectionmultimap.keys():
+        fr = key
+        to1 = connectionmultimap[key]  
+        for to in to1:
+            #print str((fr,to)) + ' vs ' + str(mds[fr[0]])
+            f = mds[fr[0]]
+            fv = f[fr[1]]
+            t = mds[to[0]]
+            tv = t[to[1]]
+
+            connstr = '%s,%i,%i,%s,%i,%i' % (fv['type'], fr[0], fv['vr'], tv['type'], to[0], tv['vr'])
+            flatconns.extend(['-c', connstr])
+
+    if unzipped_ssp and cleanup_zip:
         shutil.rmtree(d)
-else:
-    print('An error occured (returncode = ' + str(ret) + '). Check ' + d)
 
-exit(ret)
+    return flatconns, flatparams, unzipped_ssp, d
+
+if __name__ == '__main__':
+
+    dry_run = sys.argv[1] == '--dry-run'
+
+    if dry_run and len(sys.argv) < 3:
+        print('ERROR: missing ssp-name')
+        exit(1)
+
+    flatconns, flatparams, unzipped_ssp, d = parse_ssp(sys.argv[-1], False)
+
+    #read connections and parameters from stdin, since they can be quite many
+    #stdin because we want to avoid leaving useless files on the filesystem
+    args = ['mpiexec','-np',str(len(fmus)+1),'fmigo-mpi','-t','9.9','-d','0.1','-a','-'] + [fmu.path for fmu in fmus]
+    print(" ".join(args) + " <<< " + '"' + " ".join(flatconns+flatparams) + '"')
+
+    if dry_run:
+        ret = 0
+    else:
+        #pipe arguments to master, leave stdout and stderr alone
+        p = subprocess.Popen(args, stdin=subprocess.PIPE)
+        p.communicate(input=" ".join(flatconns).encode('utf-8'))
+        ret = p.returncode  #ret can be None
+
+    if ret == 0:
+        if unzipped_ssp:
+            shutil.rmtree(d)
+    else:
+        print('An error occured (returncode = ' + str(ret) + '). Check ' + d)
+
+    exit(ret)

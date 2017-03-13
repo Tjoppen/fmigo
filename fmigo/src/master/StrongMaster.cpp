@@ -293,15 +293,15 @@ string StrongMaster::getForceFieldnames() const {
             basename << "fmu" << i << "_conn" << j << "_";
 
             if (sc->hasForce()) {
-                oss << " " << basename.str() << "force_x";
-                oss << " " << basename.str() << "force_y";
-                oss << " " << basename.str() << "force_z";
+                oss << "," << basename.str() << "force_x";
+                oss << "," << basename.str() << "force_y";
+                oss << "," << basename.str() << "force_z";
             }
 
             if (sc->hasTorque()) {
-                oss << " " << basename.str() << "torque_x";
-                oss << " " << basename.str() << "torque_y";
-                oss << " " << basename.str() << "torque_z";
+                oss << "," << basename.str() << "torque_x";
+                oss << "," << basename.str() << "torque_y";
+                oss << "," << basename.str() << "torque_z";
             }
         }
     }

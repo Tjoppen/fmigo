@@ -465,6 +465,7 @@ int main(int argc, char *argv[] ) {
     string hdf5Filename;
     string fieldnameFilename;
     bool holonomic = true;
+    bool useHeadersInCSV = false;
     int command_port = 0, results_port = 0;
     bool paused = false, running = true, solveLoops = false;
 
@@ -473,7 +474,7 @@ int main(int argc, char *argv[] ) {
             &loglevel, &csv_separator, &outFilePath, &quietMode, &fileFormat,
             &method, &realtimeMode, &printXML, &stepOrder, &fmuVisibilities,
             &scs, &hdf5Filename, &fieldnameFilename, &holonomic, &compliance,
-            &command_port, &results_port, &paused, &solveLoops)) {
+            &command_port, &results_port, &paused, &solveLoops, &useHeadersInCSV)) {
         return 1;
     }
 
@@ -556,6 +557,10 @@ int main(int argc, char *argv[] ) {
     } else {
         master = (method == gs) ?           (BaseMaster*)new GaussSeidelMaster(clients, weakConnections, stepOrder) :
                                             (BaseMaster*)new JacobiMaster(clients, weakConnections);
+    }
+
+    if(!useHeadersInCSV){
+        fprintf(stderr, "%s\n",fieldnames.c_str());
     }
 
     if (fieldnameFilename.length() > 0) {

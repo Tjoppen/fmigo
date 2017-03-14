@@ -363,7 +363,7 @@ class SystemStructure:
 class System:
     '''
     A System is a tree of Systems and FMUs
-    In each System there are Connections between 
+    In each System there are Connections between
     '''
 
     @classmethod
@@ -641,7 +641,7 @@ def parse_ssp(ssp_path, cleanup_zip = True):
 
     # Allow custom named ssd files
     if file_ext == '.ssd':
-       SSD_NAME = os.path.basename(ssp_path) 
+       SSD_NAME = os.path.basename(ssp_path)
 
     # Check if we run master directly from an SSD XML file instead of an SSP zip archive
     if os.path.basename(ssp_path) == SSD_NAME:
@@ -743,7 +743,7 @@ def parse_ssp(ssp_path, cleanup_zip = True):
     flatconns = []
     for key in connectionmultimap.keys():
         fr = key
-        to1 = connectionmultimap[key]  
+        to1 = connectionmultimap[key]
         for to in to1:
             #print str((fr,to)) + ' vs ' + str(mds[fr[0]])
             f = mds[fr[0]]

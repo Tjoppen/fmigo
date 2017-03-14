@@ -8,10 +8,11 @@ import glob
 from lxml import etree
 import subprocess
 import shutil
+import psutil
 
 if len(sys.argv) < 2:
     #TODO: we probably want to know which of TCP and MPI is wanted
-    print('USAGE: %s [--dry-run] ssp-file' % sys.argv[0])
+    print('USAGE: %s [--dry-run --tcp:localhost1:localhost2:... --MPI] ssp-file' % sys.argv[0])
     exit(1)
 
 RESOURCE_DIR='resources'
@@ -761,17 +762,64 @@ def parse_ssp(ssp_path, cleanup_zip = True):
 
 if __name__ == '__main__':
 
-    dry_run = sys.argv[1] == '--dry-run'
+    dry_run = '--dry-run' in sys.argv
 
-    if dry_run and len(sys.argv) < 3:
+    #count number of input parameters before the ssp file
+    args = ['--dry_run', '--MPI', '--tcp']
+    check_ssp = 2;
+    for string in sys.argv:
+        for arg in args:
+            if arg in string:
+                check_ssp += 1
+
+    if len(sys.argv) < check_ssp:
         print('ERROR: missing ssp-name')
         exit(1)
 
     flatconns, flatparams, unzipped_ssp, d = parse_ssp(sys.argv[-1], False)
 
-    #read connections and parameters from stdin, since they can be quite many
-    #stdin because we want to avoid leaving useless files on the filesystem
-    args = ['mpiexec','-np',str(len(fmus)+1),'fmigo-mpi','-t','9.9','-d','0.1','-a','-'] + [fmu.path for fmu in fmus]
+    #list all tcp ports that are not available
+    tcpportsinuse = []
+    for con in psutil.net_connections():
+        tcpportsinuse.append(con.laddr[1])
+
+    #split up all IP adresses
+    ipAdress = []
+    TCP = False
+    for string in sys.argv:
+        if '--tcp' in string:
+            TCP = True
+            ipAdress += (string.split(":"))
+
+    #If we are working with TCP, create tcp://localhost:port for all given local hosts
+    if TCP:
+        #nuke --tcp from ipAdress
+        while "--tcp" in ipAdress:
+            ipAdress.remove("--tcp")
+
+        #make sure the ipAdress is on a correct format
+        for tcp in ipAdress:
+            if len(tcp.split(".")) != 4:
+                print("Error: invalid syntax --tpc:%s, expect --tcp:X.X.X.X" %tcp)
+                exit(1)
+
+        tcpIPport = []
+        port = 1025 #lowest possible port
+        for ip in ipAdress:
+            while port < 65536:
+                if port not in tcpportsinuse:
+                    tcpIPport.append("tcp://" + ip + ":" + str(port))
+                    break;
+                port +=1
+
+        #read connections and parameters from stdin, since they can be quite many
+        #stdin because we want to avoid leaving useless files on the filesystem
+        args = ['fmigo-master','-t','9.9','-d','0.1','-a','-'] + [tcpconnect for tcpconnect in tcpIPport]
+    else:
+        #read connections and parameters from stdin, since they can be quite many
+        #stdin because we want to avoid leaving useless files on the filesystem
+        args = ['mpiexec','-np',str(len(fmus)+1),'fmigo-mpi','-t','9.9','-d','0.1','-a','-'] + [fmu.path for fmu in fmus]
+
     print(" ".join(args) + " <<< " + '"' + " ".join(flatconns+flatparams) + '"')
 
     if dry_run:

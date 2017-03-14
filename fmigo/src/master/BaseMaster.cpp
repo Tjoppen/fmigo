@@ -171,8 +171,8 @@ size_t BaseMaster::getNumPendingRequests() const {
 }
 
 void BaseMaster::wait() {
-    //allow polling once for each request, plus ten seconds more
-    int maxPolls = getNumPendingRequests() + 10;
+    //allow polling once for each request, plus 60 seconds more
+    int maxPolls = getNumPendingRequests() + 60;
     int numPolls = 0;
 
     while (getNumPendingRequests() > 0) {

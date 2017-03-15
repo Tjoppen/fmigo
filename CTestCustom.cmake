@@ -1,0 +1,26 @@
+set(CTEST_CUSTOM_TESTS_IGNORE
+  ctest_build_all
+  ctest_fmi_zip_zip_test
+  ctest_fmi_zip_unzip_test
+  ctest_fmi_import_me_test
+  ctest_fmi_import_cs_test
+  ctest_fmi_import_cs_tc_test
+  ctest_fmi_import_xml_test_empty
+  ctest_fmi_import_xml_test
+  ctest_fmi_import_xml_test_mf
+  ctest_fmi1_capi_cs_test
+  ctest_fmi1_capi_me_test
+  ctest_fmi1_logger_test_run
+  ctest_fmi1_logger_test_check
+  ctest_fmi2_import_xml_test_empty
+  ctest_fmi2_import_xml_test_me
+  ctest_fmi2_import_xml_test_cs
+  ctest_fmi2_import_xml_test_mf
+  ctest_fmi2_import_test_me
+  ctest_fmi2_import_test_cs
+  ctest_fmi_import_test_no_xml
+  ctest_fmi_import_test_me_1
+  ctest_fmi_import_test_cs_1
+  ctest_fmi_import_test_me_2
+  ctest_fmi_import_test_cs_2
+)

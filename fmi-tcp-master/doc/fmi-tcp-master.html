@@ -1,0 +1,372 @@
+Content-type: text/html; charset=UTF-8
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML><HEAD><TITLE>Man page of FMI-TCP-MASTER</TITLE>
+</HEAD><BODY>
+<H1>FMI-TCP-MASTER</H1>
+Section: User Commands  (1)<BR>Updated: local<BR><A HREF="#index">Index</A>
+<A HREF="/cgi-bin/man/man2html">Return to Main Contents</A><HR>
+
+<A NAME="lbAB">&nbsp;</A>
+<H2>NAME</H2>
+
+fmi-tcp-master - simulate FMUs
+<A NAME="lbAC">&nbsp;</A>
+<H2>SYNOPSIS</H2>
+
+
+<B>fmi-tcp-master</B>
+
+[<B> -xrlvqhtcdsopfmgwC5FNMazZL </B>]
+
+[
+<I>URLs ...</I>
+
+]
+
+<BR>
+
+<A NAME="lbAD">&nbsp;</A>
+<H2>DESCRIPTION</H2>
+
+<I>fmi-tcp-master</I>
+
+simulates FMUs using the FMILibrary from JModelica.org
+over TCP/IP, with optional strong coupling between simulation units.
+<A NAME="lbAE">&nbsp;</A>
+<H2>FLAGS</H2>
+
+<DL COMPACT>
+<DT><B>-h</B>
+
+<DD>
+Show help and quit.
+<DT><B>-q</B>
+
+<DD>
+Quiet mode, do not print simulation info to STDOUT. This flag should be used together with -r.
+<DT><B>-r</B>
+
+<DD>
+Real time mode. Will usleep() in between communication steps if the execution was faster than real time.
+<DT><B>-v</B>
+
+<DD>
+Show version and quit.
+<DT><B>-x</B>
+
+<DD>
+Print XML and quit.
+<DT><B>-N</B>
+
+<DD>
+Make kinematic connectors nonholonomic rather than holonomic.
+In other words, only lock spatial/angular velocities, not positions or angles.
+</DL>
+<A NAME="lbAF">&nbsp;</A>
+<H2>OPTIONS</H2>
+
+First note that some options specify lists of values.
+These can either be specified as colon separated lists (like &quot;-w 0:1:0&quot;) in one long option, or multiple times for each one (&quot;-w 0 -w 1 -w 0&quot;), or any combination of the two (&quot;-w 0 -w 1:0&quot;).
+This is convenient when building command lines in script, especially when lengthy strong connection specifications (-C) are involved. 
+<DL COMPACT>
+<DT><B>-l [0..7]</B>
+
+<DD>
+Set FMILibrary log level. Levels are as follows:
+<P>
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;0&nbsp;=&nbsp;nothing&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(default)
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;1&nbsp;=&nbsp;fatal&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Unrecoverable&nbsp;errors
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;2&nbsp;=&nbsp;error&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Errors&nbsp;that&nbsp;may&nbsp;be&nbsp;not&nbsp;critical&nbsp;for&nbsp;some&nbsp;FMUs
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;3&nbsp;=&nbsp;warning&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Non-critical&nbsp;issues
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;4&nbsp;=&nbsp;info&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Informative&nbsp;messages
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;5&nbsp;=&nbsp;verbose&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Verbose&nbsp;messages
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;6&nbsp;=&nbsp;debug&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Debug&nbsp;messages.&nbsp;Only&nbsp;enabled&nbsp;if&nbsp;FMILibrary&nbsp;is&nbsp;configured&nbsp;with&nbsp;FMILIB_ENABLE_LOG_LEVEL_DEBUG
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;7&nbsp;=&nbsp;all
+<P>
+<DT><B>-w [VISIBILITIES]</B>
+
+<DD>
+Visibility specification list. Specifies which FMUs should show their simulator application windows. Syntax is
+<P>
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;-w&nbsp;VIS0:VIS1:VIS2...
+<P>
+where VISX is 1 or 0 depending on whether FMUX's window should be shown or not.
+Example:
+<P>
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;-w&nbsp;0:1:1:0
+<P>
+which means: show simulator windows for FMU1 and FMU2, but not FMU0 or FMU3.
+Note that multiple &quot;-w&quot;'s can be used to break up a list:
+<P>
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;-w&nbsp;0&nbsp;-w&nbsp;1&nbsp;-w&nbsp;1&nbsp;-w&nbsp;0
+<P>
+Unlike -p, -c and -C order is significant for visibility lists. The following is *not* equivalent to the previous example:
+<P>
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;-w&nbsp;1&nbsp;-w&nbsp;1&nbsp;-w&nbsp;0&nbsp;-w&nbsp;0
+<P>
+By default no windows are shown (batch mode).
+<DT><B>-g [STEPPING ORDER SPEC]</B>
+
+<DD>
+FMU stepping order list. Used in serial algorithms. Should be a comma separated list of FMU indices. If the list starts with 0, then the first FMU will be stepped, and its output values will be transferred through their connections (if any).
+Example:
+<P>
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;-g&nbsp;0,2,1
+<P>
+Which means: step FMU0 -&gt; FMU2 -&gt; FMU1.
+Like other lists stepping order lists can also be broken up. This is equivalent to the previous example:
+<P>
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;-g&nbsp;0&nbsp;-g&nbsp;2&nbsp;-g&nbsp;1
+<P>
+Order is significant, just like visibility lists. If no -g is specified then FMUs are stepped in numerical order (FMU0 -&gt; FMU1 -&gt; FMU2 etc.).
+<DT><B>-c [WEAK CONNECTIONS]</B>
+
+<DD>
+Weak connection specification list. Represents which FMU and value reference to connect from and what to connect to. Syntax is
+<P>
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;-c&nbsp;WCONN1:WCONN2:WCONN3...
+<P>
+where the syntax of each WCONNX is as follows:
+<P>
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;WCONNX=[TYPE,]FMUFROM,VRFROM,FMUTO,VRTO.
+<P>
+TYPE is a single character specifying the value type on the connection.
+If TYPE is absent then the connection is assumed to be of type real.
+Possible types:
+<P>
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;r&nbsp;-&nbsp;Real
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;i&nbsp;-&nbsp;Integer
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;b&nbsp;-&nbsp;Boolean
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;s&nbsp;-&nbsp;String
+<P>
+FMUFROM and FMUTO are the indexes of the FMUs to read values from and to respectively.
+VRFROM and VRTO are the corresponding value references. Example:
+<P>
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;-c&nbsp;0,0,1,0:r,0,1,1,1:i,0,1,1,2
+<P>
+This means: connect real values FMU0 (value reference 0) to FMU1 (vr 0) and FMU0 (vr 1) to FMU1 (vr 1), and connect integer value FMU0 (vr 1) to FMU1 (vr 2).
+This is a little hard to read though, so breaking connection lists with multiple &quot;-c&quot;'s is recommended.
+Weak connections can also be specified in any order, so the following specifies the exact same set of connections:
+<P>
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;-c&nbsp;i,0,1,1,2&nbsp;-c&nbsp;0,1,1,1&nbsp;-c&nbsp;r,0,0,1,0
+<P>
+Default is no connections.
+<DT><B>-p [PARAMS]</B>
+
+<DD>
+Parameter specification list. Specifies parameters to send to FMUs before initialization. Format is:
+<P>
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;-p&nbsp;PARAM1:PARAM2:PARAM3...
+<P>
+where each PARAMX has the following syntax:
+<P>
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;PARAMX=[TYPE,]FMU,VR,VALUE
+<P>
+Comma, colon and backslash characters in VALUE must be escaped with backslash.
+A typical use case is paths on Windows, which might look something like this in bash syntax:
+<P>
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;-p&nbsp;'s,0,0,C\:\\foo&nbsp;bar\\woo.tx'
+<P>
+Note that extra escaping may be necessary in order to pass through your shell properly.
+If using double quotes in bash:
+<P>
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;-p&nbsp;&quot;s,0,0,C\\:\\\\foo&nbsp;bar\\\\woo.tx&quot;
+<P>
+No characters other than comma, colon and backslash may be escaped.
+Having a single trailing backslash in an option is an error (&quot;C\:\\foo\&quot;).
+<P>
+If TYPE is not specified then real values are assumed, just like with weak connections.
+Example:
+<P>
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;-p&nbsp;b,0,0,true:r,0,0,0:s,0,0,hello
+<P>
+which means set FMU0 boolean VR0 to true, FMU0 real VR0 to zero and FMU0 string VR0 to &quot;hello&quot;.
+Note that despite identical value references these entries refer to different parameters since VRs apply with respect to a base type.
+See -c option for a list of possible types (i, r, s, b).
+Parameters can be specified in any order, and like all lists they can be broken up, so the following specifies the exact same set of parameters:
+<P>
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;-p&nbsp;s,0,0,hello&nbsp;-p&nbsp;b,0,0,true&nbsp;-p&nbsp;0,0,0
+<P>
+Default is no parameters.
+<DT><B>-C [STRONG CONNECTIONS]</B>
+
+<DD>
+Strong coupling specification. Syntax is
+<P>
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;-C&nbsp;SCONN1:SCONN2:SCONN3...
+<P>
+where SCONNX has the following syntax:
+<P>
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;SCONNX=TYPE,FMU0,FMU1,[PARAMS]
+<P>
+FMU0 and FMU1 are the two sides of the strong coupling.
+PARAMS depend on TYPE, and TYPE is the type of connection:
+<P>
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;[ball|lock]:
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PARAMS=pos0,acc0,force0,quat0,angAcc0,torque0,pos1,acc1,force1,quat1,angAcc1,torque1
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;where&nbsp;posX/accX/forceX/angAccX/torqueX&nbsp;are&nbsp;VR&nbsp;triplets&nbsp;(X,Y,Z)&nbsp;and&nbsp;quatX&nbsp;are&nbsp;VR&nbsp;quadruplets&nbsp;(X,Y,Z,W),&nbsp;giving&nbsp;a&nbsp;total&nbsp;of&nbsp;(3+3+3+4+3+3)&nbsp;x&nbsp;2&nbsp;=&nbsp;38&nbsp;value&nbsp;references.
+<P>
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;difference&nbsp;between&nbsp;&quot;ball&quot;&nbsp;and&nbsp;&quot;lock&quot;&nbsp;is&nbsp;that&nbsp;lock&nbsp;tries&nbsp;to&nbsp;lock&nbsp;the&nbsp;orientation&nbsp;of&nbsp;both&nbsp;connectors&nbsp;(ball&nbsp;only&nbsp;cares&nbsp;about&nbsp;position).&nbsp;
+<P>
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;shaft:
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PARAMS=shaftAngle0,angularVelocity0,angularAcceleration0,torque0,shaftAngle1,angularVelocity1,angularAcceleration1,torque1
+<P>
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The&nbsp;connection&nbsp;tries&nbsp;to&nbsp;keep&nbsp;both&nbsp;shaftAngles&nbsp;equal.
+<P>
+Examples:
+<P>
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;-C&nbsp;shaft,0,1,20,19,14,17,20,19,14,17
+<P>
+Meaning: Connect a shaft between FMU0 and FMU1, with VRs shaftAngle=20, angularVelocity=19, angularAcceleration=14 and torque=17 on both sides
+<P>
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;-C&nbsp;lock,0,1,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18
+<P>
+Meaning: Create a lock constraints between FMU0 and FMU1 with VRs pos={0,1,2}, acc={3,4,5}, force={6,7,8}, quat={9,10,11,12}, angAcc={13,14,15} and torque={16,17,18} on both sides.
+<P>
+Note that like all lists you can concatenate the strong connection specifications with colon characters, but the result is hardly readable:
+<P>
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;-C&nbsp;shaft,0,1,20,19,14,17,20,19,14,17:lock,0,1,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18:ball,1,2,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18
+<P>
+Default is no strong connections. Specifying strong connections is incompatible with using the Gauss-Seidel stepper (-m gs).
+<DT><B>-d [TIMESTEP]</B>
+
+<DD>
+Timestep size. Default is 0.1.
+<DT><B>-f [OUTFORMAT]</B>
+
+<DD>
+Output file format. Currently only &quot;csv&quot; is supported, and it is also the default.
+<DT><B>-m [METHOD]</B>
+
+<DD>
+Stepping method. Available methods are &quot;jacobi&quot; (Jacobi, parallel) and &quot;gs&quot; (Gauss-Seidel, serial). Default is &quot;jacobi&quot;.
+When strong coupling is used only &quot;jacobi&quot; is possible.
+<DT><B>-o [OUTFILE]</B>
+
+<DD>
+Result output file. Default is STDOUT.
+<DT><B>-s [SEPARATOR]</B>
+
+<DD>
+CSV separator character. Default is comma (,).
+<DT><B>-t [ENDTIME]</B>
+
+<DD>
+End simulation time in seconds. Default is 1.0.
+<DT><B>-5 [HDF5FILENAME]</B>
+
+<DD>
+Dump timing information to HDF5 file with given filename.
+<DT><B>-F [FIELDNAMEFILENAME]</B>
+
+<DD>
+Dump space separated output column names in file with given name, matching the columns in the CSV output.
+This is useful for generating .ssv files for plotting with tikz.
+<DT><B>-M [COMPLIANCE]</B>
+
+<DD>
+Set compliance for kinematic solver (real value, default = 0.0).
+<DT><B>-a [ARGSFILENAME]</B>
+
+<DD>
+Add extra arguments parsed from file with given name, or stdin if filename is -.
+This is useful for large systems where the total size of the connection specification exceeds the operating system's limit for program arguments (2 KiB of Windows).
+The arguments in the file may be separated by anything std::ifstream::operator&gt;&gt;(std::string) considers a white space (space, newline, tab etc.).
+The parsed tokens effectively replace the &quot;-a [ARGSFILENAME]&quot; in the list of arguments.
+Recursive files are not allowed - if the argument file itself contains a &quot;-a&quot; token then the program stops.
+Example:
+<P>
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;fmi-tcp-master&nbsp;-t&nbsp;100&nbsp;-a&nbsp;args&nbsp;-p&nbsp;0,1,123
+<P>
+Contents of file args:
+<P>
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;-C&nbsp;shaft,0,1,0,1,2,3,0,1,2,3
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;-C&nbsp;shaft,1,2,6,7,8,9,0,1,2,3
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;-c&nbsp;2,1,0,6
+<P>
+Resulting equivalent command line:
+<P>
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;fmi-tcp-master&nbsp;-t&nbsp;100&nbsp;-C&nbsp;shaft,0,1,0,1,2,3,0,1,2,3&nbsp;-C&nbsp;shaft,1,2,6,7,8,9,0,1,2,3&nbsp;-c&nbsp;2,1,0,6&nbsp;-p&nbsp;0,1,123
+<P>
+stdin example producing the same command line (bash style here-document):
+<P>
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;fmi-tcp-master&nbsp;-t&nbsp;100&nbsp;-a&nbsp;-&nbsp;-p&nbsp;0,1,123&nbsp;&lt;&lt;&nbsp;EOF
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;-C&nbsp;shaft,0,1,0,1,2,3,0,1,2,3
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;-C&nbsp;shaft,1,2,6,7,8,9,0,1,2,3
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;-c&nbsp;2,1,0,6
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;EOF
+<P>
+<DT><B>-z [command_port:results_port]</B>
+
+<DD>
+Set up ZMQ command (REQ/REP) and results (PUSH/PULL) ports.
+Allows controlling master and PULLing results over ZMQ.
+Messages are serialized using protobuf.
+For more information, see src/master/control.proto.
+<DT><B>-Z</B>
+
+<DD>
+Start master in paused state.
+Use ZMQ &quot;unpause&quot; command to start simulation.
+Requires -z.
+<DT><B>-L</B>
+
+<DD>
+Solve algebraic loops in initialization mode.
+</DL>
+<A NAME="lbAG">&nbsp;</A>
+<H2>URLs</H2>
+
+Each URL specifies the address and TCP port of an FMU. The syntax is:
+<P>
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;tcp://&lt;address&gt;:&lt;port&gt;
+<P>
+Examples:
+<P>
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;<A HREF="tcp://localhost:3000">tcp://localhost:3000</A>
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;<A HREF="tcp://192.168.0.2:3000">tcp://192.168.0.2:3000</A>
+<BR>&nbsp;
+<A NAME="lbAH">&nbsp;</A>
+<H2>EXAMPLES</H2>
+
+To run an FMU simulation from time 0 to 5 with timestep 0.01:
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;fmi-tcp-master&nbsp;-t&nbsp;5&nbsp;-d&nbsp;0.01&nbsp;<A HREF="tcp://localhost:3000">tcp://localhost:3000</A>
+<P>
+To simulate two FMUs connected from the first output of the first FMU to the first input of the second:
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;fmi-tcp-master&nbsp;-c&nbsp;0,0,1,0&nbsp;<A HREF="tcp://localhost:3000">tcp://localhost:3000</A>&nbsp;<A HREF="tcp://localhost:3001">tcp://localhost:3001</A>
+<P>
+Simulating four strongly coupled spring systems for 100 s at 100 Hz and writing the result to a CSV file:
+<P>
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;fmi-tcp-master&nbsp;-t&nbsp;100&nbsp;-d&nbsp;0.01\
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-p&nbsp;0,3,0&nbsp;-p&nbsp;0,0,0:0,6,1&nbsp;-p&nbsp;0,9,2&nbsp;-p&nbsp;1,0,1:1,6,2&nbsp;-p&nbsp;1,3,2&nbsp;-p&nbsp;1,9,2&nbsp;-p&nbsp;2,0,2:2,6,3&nbsp;-p&nbsp;2,3,2&nbsp;-p&nbsp;2,9,2&nbsp;-p&nbsp;3,0,3:3,6,4\
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-C&nbsp;ball,0,1,6,16,16,8,16,16,10,16,16,16,16,16,16,16,16,16,16,16,16,0,16,16,2,16,16,4,16,16,16,16,16,16,16,16,16,16,16,16\
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-C&nbsp;ball,1,2,6,16,16,8,16,16,10,16,16,16,16,16,16,16,16,16,16,16,16,0,16,16,2,16,16,4,16,16,16,16,16,16,16,16,16,16,16,16\
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-C&nbsp;ball,2,3,6,16,16,8,16,16,10,16,16,16,16,16,16,16,16,16,16,16,16,0,16,16,2,16,16,4,16,16,16,16,16,16,16,16,16,16,16,16\
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<A HREF="tcp://localhost:3000">tcp://localhost:3000</A>&nbsp;<A HREF="tcp://localhost:3001">tcp://localhost:3001</A>&nbsp;<A HREF="tcp://localhost:3002">tcp://localhost:3002</A>&nbsp;<A HREF="tcp://localhost:3003">tcp://localhost:3003</A>&nbsp;&gt;&nbsp;results/output-N4-h0.01.csv
+<P>
+<A NAME="lbAI">&nbsp;</A>
+<H2>ABOUT</H2>
+
+The app was built by Stefan Hedman at UMIT Research Lab 2013. Large parts were rewritten by Tomas Härdin at UMIT Research Lab 2014.
+
+<HR>
+<A NAME="index">&nbsp;</A><H2>Index</H2>
+<DL>
+<DT><A HREF="#lbAB">NAME</A><DD>
+<DT><A HREF="#lbAC">SYNOPSIS</A><DD>
+<DT><A HREF="#lbAD">DESCRIPTION</A><DD>
+<DT><A HREF="#lbAE">FLAGS</A><DD>
+<DT><A HREF="#lbAF">OPTIONS</A><DD>
+<DT><A HREF="#lbAG">URLs</A><DD>
+<DT><A HREF="#lbAH">EXAMPLES</A><DD>
+<DT><A HREF="#lbAI">ABOUT</A><DD>
+</DL>
+<HR>
+This document was created by
+<A HREF="/cgi-bin/man/man2html">man2html</A>,
+using the manual pages.<BR>
+Time: 10:16:08 GMT, March 03, 2017
+</BODY>
+</HTML>

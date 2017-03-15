@@ -40,6 +40,7 @@ namespace fmitcp_master {
         fmi2_import_t* m_fmi2Instance;
         fmi2_import_variable_list_t* m_fmi2Outputs;
         variable_map m_variables;
+        void setVariables();
 
     public:
         int m_stateId;
@@ -60,8 +61,7 @@ namespace fmitcp_master {
         jm_log_level_enu_t m_loglevel;
 
         std::string getModelName() const;
-        void setVariables();
-        variable_map getVariables() const;
+        const variable_map& getVariables() const;
         std::vector<variable> getOutputs() const;   //outputs in the same order as specified in the modelDescription
 
 #ifdef USE_MPI

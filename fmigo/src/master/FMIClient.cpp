@@ -113,7 +113,7 @@ std::string FMIClient::getModelName() const {
     return fmi2_import_get_model_name(m_fmi2Instance);
 }
 
-variable_map FMIClient::getVariables() const {
+const variable_map& FMIClient::getVariables() const {
   return m_variables;
 }
 

@@ -5,6 +5,10 @@
 
 #include "simulate.h"
 
+#ifdef __APPLE__
+#include <mach/mach_time.h>
+#endif
+
 /**
  * Computes time difference between start and end timespecs, and stores the result in diffTime.
  */
@@ -75,6 +79,12 @@ int fmi1simulate(fmi1_import_t** fmus,
     int nSteps = 0;                                             // Number of steps taken
     char* fmuNames[MAX_FMUS];                                   // Result file names
 
+    #ifdef __APPLE__
+    mach_timebase_info_data_t timebase;
+    mach_timebase_info(&timebase);
+    double conversion_factor = (double)timebase.numer / (double)timebase.denom;
+    #endif
+
     // Open result file
     FILE * f;
     if(strcmp(outFilePath,"stdout")==0){
@@ -87,7 +97,7 @@ int fmi1simulate(fmi1_import_t** fmus,
     }
 
     // Init FMU names
-    for(i=0; i<numFMUs; i++){ 
+    for(i=0; i<numFMUs; i++){
         fmuNames[i] = calloc(sizeof(char),100);
         sprintf(fmuNames[i],"%s%d",fmi1_import_get_model_name(fmus[i]),i);
     }
@@ -100,7 +110,7 @@ int fmi1simulate(fmi1_import_t** fmus,
     printf("  PARAMETERS (%d)\n", numParameters);
 
     // Init all the FMUs
-    for(i=0; i<numFMUs; i++){ 
+    for(i=0; i<numFMUs; i++){
 
         //char * a = fmi_import_create_URL_from_abs_path(&callbacks, fmuPaths[i]);
         fmuLocation = fmi_import_create_URL_from_abs_path(&callbacks, (const char*)fmuPaths[i]);
@@ -151,12 +161,19 @@ int fmi1simulate(fmi1_import_t** fmus,
 
     int simulationStatus = 0; // Success
 
-    struct timespec time1, time2, diffTime;
-
+#ifdef __APPLE__
+  uint64_t time1, time2;
+#else
+  struct timespec time1, time2, diffTime;
+#endif
     while (time < tEnd && status==fmi1_status_ok) {
 
         if(realTimeMode){
+          #ifdef __APPLE__
+            time1 = mach_absolute_time();
+          #else
             clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time1);
+          #endif
         }
 
         // Step the system of FMUs
@@ -179,16 +196,23 @@ int fmi1simulate(fmi1_import_t** fmus,
         nSteps++;
 
         if(realTimeMode){
+          #ifdef __APPLE__
+            time2 = mach_absolute_time();
+            double duration_ns = (double)(time2 - time1) * conversion_factor;
+            useconds_t s = (useconds_t)duration_ns / 1000;
+          #else
+
             clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time2);
 
-            diff(time1,time2, &diffTime);            
+            diff(time1,time2, &diffTime);
             long int s = timeStep*1e6 - diffTime.tv_sec * 1e6 + diffTime.tv_nsec / 1e3;
+          #endif
             if(s < 0) s = 0;
             usleep(s);
         }
     }
     printf("\n");
-    
+
     // end simulation
     for(i=0; i<numFMUs; i++){
         fmi1_status_t s = fmi1_import_terminate_slave(fmus[i]);
@@ -252,7 +276,7 @@ void setInitialValues(fmi1_import_t* fmu){
                 striing[0] = fmi1_import_get_string_variable_start((fmi1_import_string_variable_t*) v);
                 fmi1_import_set_string(fmu,   vr,   1, striing);
                 break;
-            default: 
+            default:
                 fprintf(stderr,"Could not determine type of value reference %d in FMU. Continuing without setting initial value...\n", vr[0]);
                 break;
             }
@@ -284,7 +308,7 @@ int setParams(fmi1_import_t * fmu, int fmuIndex, int numParams, param params[MAX
 
                     printf("    FMU %d, VR %d (%s) = ", fmuIndex, params[j].valueReference, fmi1_import_get_variable_name(v));
                     switch (params[j].type){
-                    
+
                     case fmi1_base_type_real: // Real
                         lol[0] = params[j].realValue;
                         printf("%f\n", params[j].realValue);
@@ -312,7 +336,7 @@ int setParams(fmi1_import_t * fmu, int fmuIndex, int numParams, param params[MAX
                         fmi1_import_set_string(fmu, &params[j].valueReference,   1, striing);
                         break;
 
-                    default: 
+                    default:
                         fprintf(stderr, "Could not determine type of value reference %d in FMU %d.\n", params[j].valueReference,fmuIndex);
                         return 1;
                     }

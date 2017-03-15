@@ -10,11 +10,13 @@ if(CMAKE_VERSION VERSION_GREATER "3.3")
     cmake_policy(SET CMP0058 OLD)
 endif()
 
+# cmake_policy(SET CMP0045 OLD)
+cmake_policy(SET CMP0042 NEW)
 
 # Set default build type
 if(NOT CMAKE_BUILD_TYPE)
-  message(STATUS "CMake build type set to RELEASE.")
-  set(CMAKE_BUILD_TYPE Release CACHE String "" FORCE)
+    message(STATUS "CMake build type set to RELEASE.")
+    set(CMAKE_BUILD_TYPE Release CACHE String "" FORCE)
 endif()
 
 SET(FMIGO_MAJOR_VERSION 0)
@@ -130,9 +132,9 @@ else(WIN32)
 	include_directories(${PROTOBUF_INCLUDE_DIR})
 	link_directories(${PROTOBUF_LIBRARY_DIR})
 
-  include_directories(/usr/include/hdf5/serial)
-  include_directories(/usr/include/suitesparse)
-  link_directories(/usr/lib/x86_64-linux-gnu/hdf5/serial)
+    include_directories(/usr/include/hdf5/serial)
+    include_directories(/usr/include/suitesparse)
+    link_directories(/usr/lib/x86_64-linux-gnu/hdf5/serial)
 endif(WIN32)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/strong-coupling-core/include)
@@ -145,6 +147,19 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_VERSION}/src/Util/i
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_VERSION}/src/XML/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_VERSION}/src/ZIP/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_VERSION}/ThirdParty/FMI/default)
+
+if (APPLE)
+    # For Macports
+  
+    if (EXISTS /opt/local/include)
+        include_directories(/opt/local/include)
+    endif()
+
+    if (EXISTS /opt/local/lib)
+        link_directories(/opt/local/lib)
+    endif()
+
+endif()
 
 add_subdirectory(strong-coupling-core)
 add_subdirectory(${FMILIBRARY_VERSION})

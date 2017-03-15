@@ -18,6 +18,8 @@ cmake_minimum_required (VERSION 2.8.6 FATAL_ERROR)
 # Shut CMake 3.5.x up about a bunch of things
 if (CMAKE_VERSION VERSION_GREATER "2.8.12")
     cmake_policy(SET CMP0022 OLD)
+    cmake_policy(SET CMP0045 OLD)
+    cmake_policy(SET CMP0042 NEW)
 endif ()
 if (CMAKE_VERSION VERSION_GREATER "3.0")
     cmake_policy(SET CMP0026 OLD)

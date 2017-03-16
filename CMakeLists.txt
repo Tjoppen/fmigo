@@ -17,7 +17,6 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release CACHE String "" FORCE)
 endif()
 
-
 option(BUILD_FMUS "Build example FMUs in umit-fmus/?" ON)
 option(USE_GPL "Enable GPL? Needed for GNU GSL support in master (algebraic loop solver, ModelExchange integrator)" ON)
 
@@ -40,6 +39,7 @@ endif ()
 # Download/install protobuf, umfpack as needed
 if(WIN32)
     add_definitions(-D_SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS) # required by protobuf-ext
+    add_definitions(-DPROTOBUF_USE_DLLS) # required to use protobuf, now that we've switched to DLLs
 
     if (MSVC14)
         set(MSVC_TOOLCHAIN_VERSION "/p:VisualStudioVersion=14.0")
@@ -59,6 +59,8 @@ if(WIN32)
         URL https://github.com/google/protobuf/releases/download/v3.2.0/protobuf-cpp-3.2.0.zip
         URL_MD5 a6c76f8fd0d393370bf4b32a29273114
         SOURCE_SUBDIR cmake
+        CONFIGURE_COMMAND ${CMAKE_COMMAND} ${PROTOBUF_PREFIX}/src/protobuf-ext/cmake -G ${CMAKE_GENERATOR} -DBUILD_SHARED_LIBS=ON
+        INSTALL_COMMAND ""
     )
 
     include_directories("${PROTOBUF_PREFIX}/src/protobuf-ext/src")
@@ -74,13 +76,18 @@ if(WIN32)
         URL_MD5 1e9b5fcdc38ec0c2aebe3d3cbd1ee8cd
     )
 
+    if (CMAKE_GENERATOR MATCHES "^.*Win64") # Maybe there is a better way to detect 64-bit builds?
+        link_directories($ENV{MSMPI_LIB64})
+        set(SUITESPARSE_LIBDIR ${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib64)
+    else ()
+        link_directories($ENV{MSMPI_LIB32})
+        set(SUITESPARSE_LIBDIR ${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib)
+    endif ()
+
     include_directories(${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/include)
     include_directories(${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/include/suitesparse)
-    link_directories(${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib)
-    link_directories(${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib/lapack_blas_windows)
-    link_directories(${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib64)
-    # Pick up the prebuild libblas for Win64
-    link_directories(${SUITESPARSE_DIR}/src/suitesparse-ext/lapack_windows/x64)
+    link_directories(${SUITESPARSE_LIBDIR})
+    link_directories(${SUITESPARSE_LIBDIR}/lapack_blas_windows)
 
     set(HDF5_DIR "${CMAKE_CURRENT_BINARY_DIR}/hdf5")
     ExternalProject_Add(hdf5-ext
@@ -103,6 +110,7 @@ if(WIN32)
         PREFIX "${ZMQ_PREFIX}"
         URL https://github.com/zeromq/libzmq/releases/download/v4.2.0/zeromq-4.2.0.zip
         URL_MD5 1569d8173783d39462907324317febd0
+        INSTALL_COMMAND ""
     )
 
     include_directories("${ZMQ_PREFIX}/src/zmq-ext/include")

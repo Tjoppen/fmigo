@@ -12,10 +12,6 @@ endif ()
 INCLUDE_DIRECTORIES(${FMIL_INCLUDE_DIR} ${STRONG_COUPLING_INCLUDE_DIR} ${FMITCP_INCLUDE_DIR} include include/fmitcp src/fmitcp)
 LINK_DIRECTORIES   (${FMIL_LIBS_DIR}    ${STRONG_COUPLING_LIBS_DIR}    ${FMITCP_LIBS_DIR})
 
-if (WIN32)
-    link_directories($ENV{MSMPI_LIB32})
-endif()
-
 set(FMITCP_SRCS
     src/fmitcp/Client.cpp
     src/fmitcp/common.cpp
@@ -99,7 +95,7 @@ IF(WIN32)
         libprotobuf
         libhdf5
         libhdf5_hl
-        libzmq-static-v120-mt-s-4_2_0
+        libzmq-v120-mt-4_2_0
         ${CMAKE_THREAD_LIBS_INIT})
     if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
         set(WINLIBS ${WINLIBS} ${EXTRALIBS} sc libumfpackd libamdd libblas libcholmodd libcolamdd libccolamdd libcamdd metisd suitesparseconfigd)
@@ -107,14 +103,23 @@ IF(WIN32)
         set(WINLIBS ${WINLIBS} ${EXTRALIBS} sc libumfpack  libamd  libblas libcholmod  libcolamd  libccolamd  libcamd  metis  suitesparseconfig)
     endif()
     include_directories($ENV{MSMPI_INC} $ENV{MSMPI_INC}x86)
+
+    if (CMAKE_GENERATOR MATCHES "^.*Win64") # Maybe there is a better way to detect 64-bit builds?
+        install(FILES ${SUITESPARSE_LIBDIR}/lapack_blas_windows/libgcc_s_sjlj-1.dll DESTINATION bin)
+    else ()
+        install(FILES ${SUITESPARSE_LIBDIR}/lapack_blas_windows/libgcc_s_dw2-1.dll DESTINATION bin)
+    endif ()
+
     TARGET_LINK_LIBRARIES(${TCP_MASTER_NAME} ${WINLIBS})
     TARGET_LINK_LIBRARIES(${TCP_SERVER_NAME}  ${WINLIBS})
     target_link_libraries(${MPI_MASTER_NAME} ${WINLIBS} msmpi)
+
     INSTALL (FILES
-        ${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib/lapack_blas_windows/libblas.dll
-        ${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib/lapack_blas_windows/libgcc_s_dw2-1.dll
-        ${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib/lapack_blas_windows/libgfortran-3.dll
-        ${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib/lapack_blas_windows/libquadmath-0.dll
+        ${SUITESPARSE_LIBDIR}/lapack_blas_windows/libblas.dll
+        ${SUITESPARSE_LIBDIR}/lapack_blas_windows/libgfortran-3.dll
+        ${SUITESPARSE_LIBDIR}/lapack_blas_windows/libquadmath-0.dll
+        ${PROTOBUF_PREFIX}/src/protobuf-ext-build/${CMAKE_BUILD_TYPE}/libprotobuf.dll
+        ${ZMQ_PREFIX}/src/zmq-ext-build/bin/${CMAKE_BUILD_TYPE}/libzmq-v120-mt-4_2_0.dll
         DESTINATION bin)
     set(PROTOC ${PROTOBUF_BIN_DIR}/protoc)
 ELSE(WIN32)

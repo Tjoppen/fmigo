@@ -119,11 +119,11 @@ static StrongConnector* findOrCreateShaftConnector(FMIClient *client,
     return sc;
 }
 
-bool isNumeric(const std::string& input) {
+static bool isNumeric(const std::string& input) {
     return std::all_of(input.begin(), input.end(), ::isdigit);
 }
 
-int vrFromKeyName(FMIClient* client, string key){
+static int vrFromKeyName(FMIClient* client, string key){
 
   if(isNumeric(key))
     return atoi(key.c_str());
@@ -434,7 +434,7 @@ static void pushResults(int step, double t, double endTime, double timeStep, zmq
     push_socket.send(rep);
 }
 
-int connectionNamesToVr(std::vector<connection> &connections,
+static int connectionNamesToVr(std::vector<connection> &connections,
                         vector<strongconnection> &strongConnections,
                         const vector<FMIClient*> clients // could not get this to compile when defined in parseargs
                         ){

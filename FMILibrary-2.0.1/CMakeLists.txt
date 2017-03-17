@@ -18,7 +18,17 @@ cmake_minimum_required (VERSION 2.8.6 FATAL_ERROR)
 # Shut CMake 3.5.x up about a bunch of things
 if (CMAKE_VERSION VERSION_GREATER "2.8.12")
     cmake_policy(SET CMP0022 OLD)
+
+    # CMake Warning (dev) at FMILibrary-2.0.1/ThirdParty/CMakeModules/UseDoxygen/UseDoxygen.cmake:140 (get_target_property):
+    #   Policy CMP0045 is not set: Error on non-existent target in
+    #   get_target_property.  Run "cmake --help-policy CMP0045" for policy details.
+    #   Use the cmake_policy command to set the policy and suppress this warning.
     cmake_policy(SET CMP0045 OLD)
+
+    # CMake Warning (dev):
+    #   Policy CMP0042 is not set: MACOSX_RPATH is enabled by default.  Run "cmake
+    #   --help-policy CMP0042" for policy details.  Use the cmake_policy command to
+    #   set the policy and suppress this warning.
     cmake_policy(SET CMP0042 NEW)
 endif ()
 if (CMAKE_VERSION VERSION_GREATER "3.0")

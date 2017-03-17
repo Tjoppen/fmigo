@@ -70,6 +70,7 @@ add_custom_command(TARGET ${TARGET} POST_BUILD
        '\n    '.join('${'+str(r).upper()+'_FMU}' for r in resources),
     sspname.lower(),
     sspname.upper(),
+    sspname.lower(),
 ))
     f.write( cmakestuff )
     f.close()

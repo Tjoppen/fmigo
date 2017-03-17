@@ -76,6 +76,7 @@ def traverse(startsystem, startkey, target_kind, use_sigdictrefs):
 
     while True:
         #print 'key = ' + str(key) + ', sys = ' + sys.name
+        print( 'CONNECTIONS: %s' %sys.connections)
         if not key in sys.connections:
             print( 'No connection %s in system %s' % (str(key), sys.name))
             return None, None
@@ -152,9 +153,11 @@ def find_elements(s, first, second):
 
 def parse_parameter_bindings(path, baseprefix, parameterbindings):
     for pb in parameterbindings[1]:
+        pb_prefix = get_attrib(pb, 'prefix', '')
         prefix = baseprefix + get_attrib(pb, 'prefix', '')
+        if(len(pb_prefix) > 0):
+            prefix = prefix + '.' + pb_prefix
 
-        #print('prefix: '+prefix)
         pvs = (pb, pb.findall('ssd:ParameterValues', ns))
 
         x_ssp_parameter_set = 'application/x-ssp-parameter-set'
@@ -189,7 +192,7 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
             b = pv.find('ssv:Boolean', ns)
             s = pv.find('ssv:String', ns)
             e = pv.find('ssv:Enumeration', ns)
-            name = prefix+pv.attrib['name']
+            name = prefix+'.'+pv.attrib['name']
 
             if r != None:
                 if 'unit' in r.attrib:
@@ -222,6 +225,9 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
                 print('Unsupported parameter type: ' + str(pv[0].tag))
                 exit(1)
 
+            parameters[name]['paramname'] = pv.attrib['name']
+            parameters[name]['fmuname'] = prefix
+
             remove_if_empty(pvs[0], pv)
 
         #deal with any ssm
@@ -241,9 +247,11 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
             tree = parse_and_validate('SSM', os.path.join(path, get_attrib(pm, 'source')))
             mes = tree.getroot().findall('ssm:MappingEntry', ns)
 
+            print('mes: ' +mes)
             for me in mes:
                 source = prefix+me.attrib['source']
                 target = prefix+me.attrib['target']
+                print('target: ' +target)
 
                 p = parameters[source]
                 del parameters[source]
@@ -358,7 +366,7 @@ class SystemStructure:
 class System:
     '''
     A System is a tree of Systems and FMUs
-    In each System there are Connections between 
+    In each System there are Connections between
     '''
 
     @classmethod
@@ -487,7 +495,7 @@ class System:
 
             #parse parameters after subsystems so their values get overriden properly
             cparams = find_elements(comp, 'ssd:ParameterBindings', 'ssd:ParameterBinding')
-            parse_parameter_bindings(self.d, self.get_name() + '.' + name + '.', cparams)
+            parse_parameter_bindings(self.d, self.get_name() + '.' + name , cparams)
             remove_if_empty(comp, cparams[0])
             remove_if_empty(components[0], comp)
 
@@ -556,7 +564,7 @@ class System:
         remove_if_empty(s, elements)
 
         #parse parameters after subsystems so their values get overriden properly
-        parse_parameter_bindings(self.d, self.get_name() + '.', params)
+        parse_parameter_bindings(self.d, self.get_name() , params)
         remove_if_empty(s, params[0])
 
     def find_signal_dictionary(self, dictionary_name):
@@ -636,7 +644,7 @@ def parse_ssp(ssp_path, cleanup_zip = True):
 
     # Allow custom named ssd files
     if file_ext == '.ssd':
-       SSD_NAME = os.path.basename(ssp_path) 
+       SSD_NAME = os.path.basename(ssp_path)
 
     # Check if we run master directly from an SSD XML file instead of an SSP zip archive
     if os.path.basename(ssp_path) == SSD_NAME:
@@ -707,9 +715,8 @@ def parse_ssp(ssp_path, cleanup_zip = True):
 
     flatparams = []
     for key,value in parameters.iteritems():
-        parts = key.split('.')
-        fmuname = '.'.join(parts[0:-1])
-        paramname = parts[-1]
+        fmuname   = value['fmuname']
+        paramname = value['paramname']
         if fmuname in fmumap:
             fmu = fmus[fmumap[fmuname]]
             if paramname in mds[fmu.id]:
@@ -738,7 +745,7 @@ def parse_ssp(ssp_path, cleanup_zip = True):
     flatconns = []
     for key in connectionmultimap.keys():
         fr = key
-        to1 = connectionmultimap[key]  
+        to1 = connectionmultimap[key]
         for to in to1:
             #print str((fr,to)) + ' vs ' + str(mds[fr[0]])
             f = mds[fr[0]]

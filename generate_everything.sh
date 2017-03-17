@@ -36,6 +36,7 @@ FMUS="
 SSPDIR=../ssp/
 SSDS="
     ssp-test
+    ssp-work-reports
 "
 
 cat <<END>CMakeLists.txt

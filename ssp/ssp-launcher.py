@@ -67,7 +67,11 @@ def traverse(startsystem, startkey, target_kind, use_sigdictrefs):
     global fmus, systems
     ttl = len(fmus) + len(systems)
     sys = startsystem
+    print('SYS: %s' %sys)
     key = startkey
+    for keey in sys.connections:
+        print('KEY: %s' %keey)
+
 
     #TODO: deal with unit conversion
     factor = 1
@@ -719,6 +723,7 @@ def parse_ssp(ssp_path, cleanup_zip = True):
         paramname = value['paramname']
         if fmuname in fmumap:
             fmu = fmus[fmumap[fmuname]]
+            print('mds: %s' %mds[fmu.id])
             if paramname in mds[fmu.id]:
                 p = mds[fmu.id][paramname]
                 if p[CAUSALITY] == 'input' or p[CAUSALITY] == 'parameter':

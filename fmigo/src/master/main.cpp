@@ -127,12 +127,15 @@ int vrFromKeyName(FMIClient* client, string key){
 
   if(isNumeric(key))
     return atoi(key.c_str());
-  switch (client->getVariables().count(key)){
+
+  const variable_map& vars = client->getVariables();
+
+  switch (vars.count(key)){
   case 0:{
     fprintf(stderr,"Error: client(%d):%s\n", client->getId(), key.c_str());
     exit(1);
   }
-  case 1:  return client->getVariables()[key].vr;
+  case 1:  return vars.find(key)->second.vr;
   default:{
     fprintf(stderr,"Error: Not uniq - client(%d):%s\n", client->getId(), key.c_str());
     exit(1);
@@ -391,7 +394,7 @@ static void pushResults(int step, double t, double endTime, double timeStep, zmq
     results.set_dt(timeStep);
 
     for (auto client : clients) {
-        variable_map vars = client->getVariables();
+        const variable_map& vars = client->getVariables();
         SendGetXType getVariables;
 
         //figure out what values we need to fetch from the FMU

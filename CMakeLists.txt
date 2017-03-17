@@ -107,7 +107,7 @@ if(WIN32)
     include_directories(${HDF5_DIR}/src/hdf5-ext/hdf5-1.8.17/src)
     include_directories(${HDF5_DIR}/src/hdf5-ext/hdf5-1.8.17/hl/src)
     include_directories(${HDF5_DIR}/src/hdf5-ext-build)
-    link_directories(${HDF5_DIR}/src/hdf5-ext-build/bin/${BUILD_DIR})
+    link_directories(${HDF5_DIR}/src/hdf5-ext-build/bin/${CMAKE_BUILD_TYPE})
 
     set(ZMQ_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/zeromq-4.2.0")
 

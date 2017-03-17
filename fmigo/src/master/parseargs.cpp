@@ -263,6 +263,8 @@ int fmitcp_master::parseArguments( int argc,
         case 'f':
             if(strcmp(optarg,"csv") == 0){
                 *fileFormat = csv;
+            } else if( strcmp(optarg,"tikz") == 0){
+                *fileFormat = tikz;
             } else {
                 fprintf(stderr,"File format \"%s\" not recognized.\n",optarg);
                 return 1;

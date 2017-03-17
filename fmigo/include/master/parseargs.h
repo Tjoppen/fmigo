@@ -43,7 +43,8 @@ struct param {
 };
 
 enum FILEFORMAT {
-    csv
+    csv,
+    tikz
 };
 
 enum METHOD {

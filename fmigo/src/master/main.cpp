@@ -236,12 +236,18 @@ static void sendUserParams(BaseMaster *master, vector<FMIClient*> clients, map<p
     }
 }
 
-static string getFieldnames(vector<FMIClient*> clients) {
+static string getFieldnames(vector<FMIClient*> clients, FILEFORMAT format) {
     ostringstream oss;
+    string separator;
+    switch (format){
+    case csv:   separator = ",";break;
+    case tikz:  separator = " ";break;
+    default:    separator = ",";
+    }
     oss << "#t";
     for (auto client : clients) {
         ostringstream prefix;
-        prefix << "," << "fmu" << client->getId() << "_";
+        prefix << separator << "fmu" << client->getId() << "_";
         oss << client->getSpaceSeparatedFieldNames(prefix.str());
     }
     return oss.str();
@@ -300,8 +306,14 @@ template<typename RFType, typename From> void addVectorToRepeatedField(RFType* r
     }
 }
 
-static void printOutputs(double t, BaseMaster *master, vector<FMIClient*>& clients) {
+static void printOutputs(double t, BaseMaster *master, vector<FMIClient*>& clients, enum FILEFORMAT format) {
     vector<vector<variable> > clientOutputs;
+    string separator;
+    switch (format){
+    case csv:   separator = ",";break;
+    case tikz:  separator = " ";break;
+    default:    separator = ",";
+    }
 
     for (auto client : clients) {
         vector<variable> vars = client->getOutputs();
@@ -323,15 +335,15 @@ static void printOutputs(double t, BaseMaster *master, vector<FMIClient*>& clien
         for (auto out : clientOutputs[x]) {
             switch (out.type) {
             case fmi2_base_type_real:
-                printf(",%f", client->m_getRealValues.front());
+                printf("%s%f", separator.c_str(), client->m_getRealValues.front());
                 client->m_getRealValues.pop_front();
                 break;
             case fmi2_base_type_int:
-                printf(",%i", client->m_getIntegerValues.front());
+                printf("%s%i", separator.c_str(), client->m_getIntegerValues.front());
                 client->m_getIntegerValues.pop_front();
                 break;
             case fmi2_base_type_bool:
-                printf(",%i", client->m_getBooleanValues.front());
+                printf("%s%i", separator.c_str(), client->m_getBooleanValues.front());
                 client->m_getBooleanValues.pop_front();
                 break;
             case fmi2_base_type_str: {
@@ -342,7 +354,7 @@ static void printOutputs(double t, BaseMaster *master, vector<FMIClient*>& clien
                     default: oss << c;
                     }
                 }
-                printf(",\"%s\"", oss.str().c_str());
+                printf("%s\"%s\"", separator.c_str(), oss.str().c_str());
                 client->m_getStringValues.pop_front();
                 break;
             }
@@ -542,7 +554,7 @@ int main(int argc, char *argv[] ) {
     setupConstraintsAndSolver(scs, clients, &solver);
 
     BaseMaster *master;
-    string fieldnames = getFieldnames(clients);
+    string fieldnames = getFieldnames(clients,fileFormat);
 
     if (scs.size()) {
         if (method != jacobi) {
@@ -673,7 +685,7 @@ int main(int argc, char *argv[] ) {
         }
 
         if (!zmqControl) {
-            printOutputs(t, master, clients);
+            printOutputs(t, master, clients, fileFormat);
         }
 
         master->runIteration(t, timeStep);
@@ -693,12 +705,17 @@ int main(int argc, char *argv[] ) {
     }
 
     if (!zmqControl) {
-      printOutputs(endTime, master, clients);
-
+      printOutputs(endTime, master, clients, fileFormat);
+      string separator;
+      switch (fileFormat){
+      case csv:   separator = ",";break;
+      case tikz:  separator = " ";break;
+      default:    separator = ",";
+      }
       //finish off with zeroes for any extra forces
       int n = master->getNumForceOutputs();
       for (int i = 0; i < n; i++) {
-        printf(",0");
+          printf("%s0",separator.c_str());
       }
 
       printf("\n");

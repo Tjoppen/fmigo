@@ -2,7 +2,7 @@
 #ifndef MODELDESCRIPTION_H
 #define MODELDESCRIPTION_H
 #include "FMI2/fmi2Functions.h" //for fmi2Real etc.
-#include <stdio.h> //for snprintf()
+#include "strlcpy.h" //for strlcpy()
 
 #define MODEL_IDENTIFIER gearbox
 #define MODEL_GUID "{16176ce9-5941-49b2-9f50-b6870dd10c46}"

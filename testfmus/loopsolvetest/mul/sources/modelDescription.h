@@ -2,7 +2,7 @@
 #ifndef MODELDESCRIPTION_H
 #define MODELDESCRIPTION_H
 #include "FMI2/fmi2Functions.h" //for fmi2Real etc.
-#include <stdio.h> //for snprintf()
+#include "strlcpy.h" //for strlcpy()
 
 #define MODEL_IDENTIFIER mul
 #define MODEL_GUID "{dd5eb5f9-04f7-4bd7-a3b1-929353f0e5de}"

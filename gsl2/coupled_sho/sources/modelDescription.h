@@ -2,7 +2,7 @@
 #ifndef MODELDESCRIPTION_H
 #define MODELDESCRIPTION_H
 #include "FMI2/fmi2Functions.h" //for fmi2Real etc.
-#include <stdio.h> //for snprintf()
+#include "strlcpy.h" //for strlcpy()
 
 #define MODEL_IDENTIFIER coupled_sho
 #define MODEL_GUID "{e447a3ab-8844-4206-a525-ec659bee2e37}"

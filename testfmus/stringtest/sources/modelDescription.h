@@ -2,7 +2,7 @@
 #ifndef MODELDESCRIPTION_H
 #define MODELDESCRIPTION_H
 #include "FMI2/fmi2Functions.h" //for fmi2Real etc.
-#include <stdio.h> //for snprintf()
+#include "strlcpy.h" //for strlcpy()
 
 #define MODEL_IDENTIFIER stringtest
 #define MODEL_GUID "{2d07cf22-6bf8-440a-ba89-dff56b193db7}"
@@ -146,12 +146,12 @@ static fmi2Status generated_fmi2SetString(modelDescription_t *md, const fmi2Valu
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case 1: if (snprintf(md->s_out, sizeof(md->s_out), "%s", value[i]) >= sizeof(md->s_out)) { return fmi2Error; } break;
-        case 2: if (snprintf(md->s_out2, sizeof(md->s_out2), "%s", value[i]) >= sizeof(md->s_out2)) { return fmi2Error; } break;
-        case 3: if (snprintf(md->s_in, sizeof(md->s_in), "%s", value[i]) >= sizeof(md->s_in)) { return fmi2Error; } break;
-        case 4: if (snprintf(md->s_in2, sizeof(md->s_in2), "%s", value[i]) >= sizeof(md->s_in2)) { return fmi2Error; } break;
-        case 5: if (snprintf(md->s0, sizeof(md->s0), "%s", value[i]) >= sizeof(md->s0)) { return fmi2Error; } break;
-        case 6: if (snprintf(md->s02, sizeof(md->s02), "%s", value[i]) >= sizeof(md->s02)) { return fmi2Error; } break;
+        case 1: if (strlcpy(md->s_out, value[i], sizeof(md->s_out)) >= sizeof(md->s_out)) { return fmi2Error; } break;
+        case 2: if (strlcpy(md->s_out2, value[i], sizeof(md->s_out2)) >= sizeof(md->s_out2)) { return fmi2Error; } break;
+        case 3: if (strlcpy(md->s_in, value[i], sizeof(md->s_in)) >= sizeof(md->s_in)) { return fmi2Error; } break;
+        case 4: if (strlcpy(md->s_in2, value[i], sizeof(md->s_in2)) >= sizeof(md->s_in2)) { return fmi2Error; } break;
+        case 5: if (strlcpy(md->s0, value[i], sizeof(md->s0)) >= sizeof(md->s0)) { return fmi2Error; } break;
+        case 6: if (strlcpy(md->s02, value[i], sizeof(md->s02)) >= sizeof(md->s02)) { return fmi2Error; } break;
         default: return fmi2Error;
         }
     }

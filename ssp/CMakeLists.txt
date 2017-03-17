@@ -8,3 +8,4 @@ install(FILES
   DESTINATION bin)
 
 add_subdirectory(ssp-test)
+add_subdirectory(ssp-work-reports)

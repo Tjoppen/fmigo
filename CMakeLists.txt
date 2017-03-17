@@ -17,6 +17,11 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release CACHE String "" FORCE)
 endif()
 
+SET(FMIGO_MAJOR_VERSION 0)
+SET(FMIGO_MINOR_VERSION 5)
+SET(FMIGO_PATCH_VERSION 0)
+SET(FMIGO_VERSION ${FMIGO_MAJOR_VERSION}.${FMIGO_MINOR_VERSION}.${FMIGO_PATCH_VERSION} )
+
 option(BUILD_FMUS "Build example FMUs in umit-fmus/?" ON)
 option(USE_GPL "Enable GPL? Needed for GNU GSL support in master (algebraic loop solver, ModelExchange integrator)" ON)
 
@@ -152,6 +157,8 @@ if (WIN32)
     add_dependencies(sc suitesparse-ext)
     add_dependencies(fmigo-master protobuf-ext hdf5-ext zmq-ext)
     add_dependencies(fmigo-mpi    protobuf-ext hdf5-ext zmq-ext)
+    add_dependencies(fmitcp_pb    protobuf-ext)
+    add_dependencies(control_pb   protobuf-ext)
 endif ()
 
 if (BUILD_FMUS)
@@ -159,3 +166,14 @@ if (BUILD_FMUS)
 endif ()
 
 add_subdirectory(ssp)
+
+# CPack setup
+set(CPACK_PACKAGE_NAME "fmigo")
+# set(CPACK_PACKAGE_VENDOR "")
+set(CPACK_PACKAGE_VERSION ${FMIGO_VERSION})
+set(CPACK_PACKAGE_VERSION_MAJOR ${FMIGO_MAJOR_VERSION})
+set(CPACK_PACKAGE_VERSION_MINOR ${FMIGO_MINOR_VERSION})
+set(CPACK_PACKAGE_VERSION_PATCH ${FMIGO_RELEASE_VERSION})
+# set(CPACK_RESOURCE_FILE_LICENSE ${LICENSE_FILE})
+set(CPACK_GENERATOR "ZIP")
+include(CPack)

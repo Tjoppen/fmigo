@@ -204,7 +204,7 @@ static void sendUserParams(BaseMaster *master, vector<FMIClient*> clients, map<p
             for (auto it2 = it->second.begin(); it2 != it->second.end(); it2++) {
                 values.push_back(it2->realValue);
             }
-            master->send(client, fmi2_import_set_real(0, 0, vrs, values));
+            master->send(client, fmi2_import_set_real(vrs, values));
             break;
         }
         case fmi2_base_type_enum:
@@ -213,7 +213,7 @@ static void sendUserParams(BaseMaster *master, vector<FMIClient*> clients, map<p
             for (auto it2 = it->second.begin(); it2 != it->second.end(); it2++) {
                 values.push_back(it2->intValue);
             }
-            master->send(client, fmi2_import_set_integer(0, 0, vrs, values));
+            master->send(client, fmi2_import_set_integer(vrs, values));
             break;
         }
         case fmi2_base_type_bool: {
@@ -221,7 +221,7 @@ static void sendUserParams(BaseMaster *master, vector<FMIClient*> clients, map<p
             for (auto it2 = it->second.begin(); it2 != it->second.end(); it2++) {
                 values.push_back(it2->boolValue);
             }
-            master->send(client, fmi2_import_set_boolean(0, 0, vrs, values));
+            master->send(client, fmi2_import_set_boolean(vrs, values));
             break;
         }
         case fmi2_base_type_str: {
@@ -229,7 +229,7 @@ static void sendUserParams(BaseMaster *master, vector<FMIClient*> clients, map<p
             for (auto it2 = it->second.begin(); it2 != it->second.end(); it2++) {
                 values.push_back(it2->stringValue);
             }
-            master->send(client, fmi2_import_set_string(0, 0, vrs, values));
+            master->send(client, fmi2_import_set_string(vrs, values));
             break;
         }
         }
@@ -572,11 +572,11 @@ int main(int argc, char *argv[] ) {
     //init
     for (size_t x = 0; x < clients.size(); x++) {
         //set visibility based on command line
-        master->send(clients[x], fmi2_import_instantiate2(0, x < fmuVisibilities.size() ? fmuVisibilities[x] : false));
+        master->send(clients[x], fmi2_import_instantiate2( x < fmuVisibilities.size() ? fmuVisibilities[x] : false));
     }
 
-    master->send(clients, fmi2_import_setup_experiment(0, 0, true, relativeTolerance, 0, endTime >= 0, endTime));
-    master->send(clients, fmi2_import_enter_initialization_mode(0, 0));
+    master->send(clients, fmi2_import_setup_experiment(true, relativeTolerance, 0, endTime >= 0, endTime));
+    master->send(clients, fmi2_import_enter_initialization_mode());
 
     //send user-defined parameters
     sendUserParams(master, clients, params);
@@ -598,7 +598,7 @@ int main(int argc, char *argv[] ) {
     //prepare solver and all that
     master->prepare();
 
-    master->send(clients, fmi2_import_exit_initialization_mode(0, 0));
+    master->send(clients, fmi2_import_exit_initialization_mode());
     master->wait();
 
     //double t = 0;

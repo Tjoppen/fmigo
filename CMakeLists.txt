@@ -93,6 +93,7 @@ if(WIN32)
     include_directories(${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/include/suitesparse)
     link_directories(${SUITESPARSE_LIBDIR})
     link_directories(${SUITESPARSE_LIBDIR}/lapack_blas_windows)
+    link_directories(${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib64) # libmetis.lib always ends up in lib64
 
     set(HDF5_DIR "${CMAKE_CURRENT_BINARY_DIR}/hdf5")
     ExternalProject_Add(hdf5-ext

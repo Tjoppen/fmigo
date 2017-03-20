@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ssd:SystemStructureDescription version="Draft20160502"
+    xmlns:ssd="http://www.pmsf.net/xsd/SystemStructureDescriptionDraft"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.pmsf.net/xsd/SystemStructureDescriptionDraft http://www.pmsf.net/xsd/SystemStructureDescriptionDraft/Draft20150721/SystemStructureDescription.xsd"
+    name="SpringChainSystem2">
+    <ssd:System name="SpringChainSystem" description="Spring chain system using fmi2displacementdisplacementcoupling.fmu">
+        <!--ssd:Connectors>
+            <ssd:Connector name="In1" kind="input"/>
+            <ssd:Connector name="Out1" kind="output"/>
+            <ssd:Connector name="Out2" kind="output"/>
+        </ssd:Connectors-->
+        <ssd:Elements>
+            <ssd:Component name="FMU0" source="resources/clutch2.fmu" type="application/x-fmu-sharedlibrary">
+                <ssd:Connectors>
+                    <!--ssd:Connector name="xinl"    kind="input"/>
+                    <ssd:Connector name="xdotinl" kind="input"/-->
+                    <ssd:Connector name="xinr"    kind="input"/>
+                    <ssd:Connector name="xdotinr" kind="input"/>
+                    <ssd:Connector name="x"       kind="output"/>
+                    <ssd:Connector name="xdot"    kind="output"/>
+                </ssd:Connectors>
+            </ssd:Component>
+            <ssd:Component name="FMU1" source="resources/mass_force.fmu" type="application/x-fmu-sharedlibrary">
+                <ssd:Connectors>
+                    <ssd:Connector name="xinl"    kind="input"/>
+                    <ssd:Connector name="xdotinl" kind="input"/>
+                    <ssd:Connector name="xinr"    kind="input"/>
+                    <ssd:Connector name="xdotinr" kind="input"/>
+                    <ssd:Connector name="x"       kind="output"/>
+                    <ssd:Connector name="xdot"    kind="output"/>
+                </ssd:Connectors>
+            </ssd:Component>
+            <ssd:Component name="FMU2" source="resources/mass_force_fe.fmu" type="application/x-fmu-sharedlibrary">
+                <ssd:Connectors>
+                    <ssd:Connector name="xinl"    kind="input"/>
+                    <ssd:Connector name="xdotinl" kind="input"/>
+                    <!--ssd:Connector name="xinr"    kind="input"/>
+                    <ssd:Connector name="xdotinr" kind="input"/-->
+                    <ssd:Connector name="x"       kind="output"/>
+                    <ssd:Connector name="xdot"    kind="output"/>
+                </ssd:Connectors>
+            </ssd:Component>
+        </ssd:Elements>
+        <ssd:Connections>
+            <ssd:Connection startElement="FMU0" startConnector="x"    endElement="FMU1" endConnector="xinl"/>
+            <ssd:Connection startElement="FMU0" startConnector="xdot" endElement="FMU1" endConnector="xdotinl"/>
+            <ssd:Connection startElement="FMU1" startConnector="x"    endElement="FMU0" endConnector="xinr"/>
+            <ssd:Connection startElement="FMU1" startConnector="xdot" endElement="FMU0" endConnector="xdotinr"/>
+            <ssd:Connection startElement="FMU1" startConnector="x"    endElement="FMU2" endConnector="xinl"/>
+            <ssd:Connection startElement="FMU1" startConnector="xdot" endElement="FMU2" endConnector="xdotinl"/>
+            <ssd:Connection startElement="FMU2" startConnector="x"    endElement="FMU1" endConnector="xinr"/>
+            <ssd:Connection startElement="FMU2" startConnector="xdot" endElement="FMU1" endConnector="xdotinr"/>
+        </ssd:Connections>
+    </ssd:System>
+</ssd:SystemStructureDescription>

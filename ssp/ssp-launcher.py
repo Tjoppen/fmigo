@@ -9,11 +9,6 @@ from lxml import etree
 import subprocess
 import shutil
 
-if len(sys.argv) < 2:
-    #TODO: we probably want to know which of TCP and MPI is wanted
-    print('USAGE: %s [--dry-run] ssp-file' % sys.argv[0])
-    exit(1)
-
 RESOURCE_DIR='resources'
 SSD_NAME='SystemStructure.ssd'
 CAUSALITY='causality'
@@ -760,6 +755,12 @@ def parse_ssp(ssp_path, cleanup_zip = True):
     return flatconns, flatparams, unzipped_ssp, d
 
 if __name__ == '__main__':
+
+    if len(sys.argv) < 2:
+        #TODO: we probably want to know which of TCP and MPI is wanted
+        print('USAGE: %s [--dry-run] ssp-file' % sys.argv[0])
+        exit(1)
+
 
     dry_run = sys.argv[1] == '--dry-run'
 

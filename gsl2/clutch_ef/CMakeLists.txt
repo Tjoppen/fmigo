@@ -7,6 +7,7 @@ SET(CLUTCH_EF_FMU ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}.fmu CACHE INTERNAL "" FO
 SET(SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/fmi2/fmuTemplate.h
     ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/fmi2/fmuTemplate_impl.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/fmi2/strlcpy.h
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/clutch_ef.c
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
 )

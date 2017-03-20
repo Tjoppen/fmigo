@@ -7,6 +7,7 @@ SET(DRIVETRAIN_G5IO_M_FUNCTION_ONLY_FMU ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}.fm
 SET(SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/fmi2/fmuTemplate.h
     ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/fmi2/fmuTemplate_impl.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/fmi2/strlcpy.h
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/scania-driveline.c
 )

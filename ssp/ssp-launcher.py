@@ -9,10 +9,42 @@ from lxml import etree
 import subprocess
 import shutil
 import psutil
+import socket
+
+if os.name != "nt":
+    import fcntl
+    import struct
+
+    def get_interface_ip(ifname):
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        return socket.inet_ntoa(fcntl.ioctl(s.fileno(), 0x8915, struct.pack('256s',
+                                ifname[:15]))[20:24])
+
+def get_lan_ip():
+    ip = socket.gethostbyname(socket.gethostname())
+    if ip.startswith("127.") and os.name != "nt":
+        interfaces = [
+            "eth0",
+            "eth1",
+            "eth2",
+            "wlan0",
+            "wlan1",
+            "wifi0",
+            "ath0",
+            "ath1",
+            "ppp0",
+            ]
+        for ifname in interfaces:
+            try:
+                ip = get_interface_ip(ifname)
+                break
+            except IOError:
+                pass
+    return ip
 
 if len(sys.argv) < 2:
     #TODO: we probably want to know which of TCP and MPI is wanted
-    print('USAGE: %s [--dry-run --tcp:localhost1:localhost2:... --MPI] ssp-file' % sys.argv[0])
+    print('USAGE: %s [--dry-run --tcp:port1:port2:... --MPI] ssp-file' % sys.argv[0])
     exit(1)
 
 RESOURCE_DIR='resources'
@@ -784,43 +816,60 @@ if __name__ == '__main__':
         tcpportsinuse.append(con.laddr[1])
 
     #split up all IP adresses
-    ipAdress = []
+    ports = []
     TCP = False
     for string in sys.argv:
         if '--tcp' in string:
             TCP = True
-            ipAdress += (string.split(":"))
+            ports += (string.split(":"))
 
     #If we are working with TCP, create tcp://localhost:port for all given local hosts
     if TCP:
-        #nuke --tcp from ipAdress
-        while "--tcp" in ipAdress:
-            ipAdress.remove("--tcp")
+        #nuke --tcp from ports
+        while "--tcp" in ports:
+            ports.remove("--tcp")
 
-        #make sure the ipAdress is on a correct format
-        for tcp in ipAdress:
-            if len(tcp.split(".")) != 4:
-                print("Error: invalid syntax --tpc:%s, expect --tcp:X.X.X.X" %tcp)
+        #make sure the ports is on a correct format
+        for tcp in ports:
+            if len(tcp.split(".")) != 1:
+                print("Error: invalid syntax --tpc:%s, expect --tcp:X:X:..." %tcp)
                 exit(1)
 
+        if len(fmus) > len(ports):
+            print('WARNING: Not given one port for each FMU')
+        elif len(fmus) < len(ports):
+            print('WARNING: Given too many ports')
+
+
+        localhost = get_lan_ip()
         tcpIPport = []
-        port = 1025 #lowest possible port
-        for ip in ipAdress:
-            while port < 65536:
-                if port not in tcpportsinuse:
-                    tcpIPport.append("tcp://" + ip + ":" + str(port))
-                    break;
-                port +=1
+        port = 1024 #lowest possible port
+        for fmu in fmus:
+            if len(ports) >0:
+                tcpIPport.append("tcp://" + localhost + ":" + str(ports.pop(0)))
+            else:
+                while port < 65536:
+                    port +=1
+                    if port not in tcpportsinuse:
+                        tcpIPport.append("tcp://" + localhost + ":" + str(port))
+                        break;
+
+        print ('ports: %s'%  ports)
+        print('lan ip %s' %tcpIPport)
 
         #read connections and parameters from stdin, since they can be quite many
         #stdin because we want to avoid leaving useless files on the filesystem
-        args = ['fmigo-master','-t','9.9','-d','0.1','-a','-'] + [tcpconnect for tcpconnect in tcpIPport]
+        args  = ['fmigo-master','-t','9.9','-d','0.1','-a','-']
+        args += [tcpconnect for tcpconnect in tcpIPport]
+        print('ARGS: %s'%args)
     else:
         #read connections and parameters from stdin, since they can be quite many
         #stdin because we want to avoid leaving useless files on the filesystem
-        args = ['mpiexec','-np',str(len(fmus)+1),'fmigo-mpi','-t','9.9','-d','0.1','-a','-'] + [fmu.path for fmu in fmus]
+        args  = ['mpiexec','-np',str(len(fmus)+1),'fmigo-mpi','-t','9.9','-d','0.1','-a','-']
+        args += [fmu.path for fmu in fmus]
 
     print(" ".join(args) + " <<< " + '"' + " ".join(flatconns+flatparams) + '"')
+
 
     if dry_run:
         ret = 0

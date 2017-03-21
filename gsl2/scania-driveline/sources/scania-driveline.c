@@ -61,7 +61,6 @@ int  fcn( double t, const double * x, double *dxdt, void * params){
   // the external load is translated to a torque at the input shaft and
   // the mass of the vehicle is translated to an equivalent rotational inertia
   // at transmission input shaft
-
   double J_atInShaft;
   double tq_loadAtInShaft;
 
@@ -139,39 +138,22 @@ int  fcn( double t, const double * x, double *dxdt, void * params){
   outputs->w_wheel_out = outputs->w_out;
   outputs->f_wheel_out = tq_sumWheel;
 
-  return 0;
+  return GSL_SUCCESS;
 }
 
 #define HAVE_INITIALIZATION_MODE
 static int get_initial_states_size(state_t *s) {
-  return 19;
+    return 2;
 }
 
 static void get_initial_states(state_t *s, double *initials) {
   initials[0] = s->md.w_inShaftNeutral;
   initials[1] = s->md.w_wheel;
-  initials[2] = s->md.w_inShaftOld;
-  initials[3] = s->md.tq_retarder;
-  initials[4] = s->md.tq_fricLoss;
-  initials[5] = s->md.tq_env;
-  initials[6] = s->md.gear_ratio;
-  initials[7] = s->md.tq_clutchMax;
-  initials[8] = s->md.tq_losses;
-  initials[9] = s->md.r_tire;
-  initials[10] = s->md.m_vehicle;
-  initials[11] = s->md.final_gear_ratio;
-  initials[12] = s->md.w_eng;
-  initials[13] = s->md.tq_eng;
-  initials[14] = s->md.J_eng;
-  initials[15] = s->md.J_neutral;
-  initials[16] = s->md.tq_brake;
-  initials[17] = s->md.ts;
-  initials[18] = s->md.r_slipFilt;
 }
 
 static int sync_out(int n, const double out[], void * params) {
   state_t *s = ( state_t * ) params;
-  double * dxdt = (double * ) alloca( sizeof(double) * n );
+  double dxdt[n];
 
   fcn (0, out, dxdt,  params );
 
@@ -180,16 +162,15 @@ static int sync_out(int n, const double out[], void * params) {
 
 
 static void scania_driveline_init(state_t *s) {
-
-  double initials[19];
+    double initials[get_initial_states_size(s)];
   get_initial_states(s, initials);
 
   s->simulation = cgsl_init_simulation(
     cgsl_epce_default_model_init(
-      cgsl_model_default_alloc(get_initial_states_size(s), initials, s, fcn, NULL, NULL, NULL, 0),
+      cgsl_model_default_alloc(2, initials, s, fcn, NULL, NULL, NULL, 0),
       0,//s->md.filter_length,
-      sync_out,
-      s
+      NULL,NULL
+      //sync_out,s
     ),
     rkf45, 1e-5, 0, 0, 0, NULL
   );

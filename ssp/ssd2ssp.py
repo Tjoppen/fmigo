@@ -67,6 +67,7 @@ endif ()
 
 add_custom_target(${TARGET} ALL)
 add_custom_command(TARGET ${TARGET} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E echo Packing ${TARGET}.ssp
     COMMAND ${CMAKE_COMMAND} -E make_directory ${ZIPDIR}
     COMMAND ${CMAKE_COMMAND} -E make_directory ${ZIPDIR}/resources
     COMMAND ${COPY_SSD_COMMAND}

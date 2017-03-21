@@ -671,9 +671,7 @@ int main(int argc, char *argv[] ) {
             printOutputs(t, master, clients);
         }
 
-        fprintf(stderr,"MAIN: t %f\n",t);
         master->runIteration(t, timeStep);
-        fprintf(stderr,"MAIN: compleated step %f\n",t);
 
         step++;
 

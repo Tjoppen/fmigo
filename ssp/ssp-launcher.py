@@ -9,11 +9,6 @@ from lxml import etree
 import subprocess
 import shutil
 
-if len(sys.argv) < 2:
-    #TODO: we probably want to know which of TCP and MPI is wanted
-    print('USAGE: %s [--dry-run] ssp-file' % sys.argv[0])
-    exit(1)
-
 RESOURCE_DIR='resources'
 SSD_NAME='SystemStructure.ssd'
 CAUSALITY='causality'
@@ -31,7 +26,6 @@ print(d)
 fmus = []
 systems = []
 parameters = {}
-shaftconstraints = []
 
 schema_names = {
     'SSD': 'SystemStructureDescription.xsd',
@@ -289,7 +283,9 @@ class FMU:
                 if len(conn) > 1:
                     print('More then one sub-element of Connector - bailing out')
                     exit(1)
-                unit = get_attrib(conn[0], 'unit')
+                unit = get_attrib(conn[0], 'unit', False)
+                if unit == False:
+                    unit = None
                 remove_if_empty(conn, conn[0])
 
             remove_if_empty(connectors[0], conn)
@@ -328,7 +324,7 @@ class SystemStructure:
         self.name = get_attrib(root, 'name')
 
         #not sure what to use schemaLocation for, or if we should even require it
-        self.schemaLocation = get_attrib(root, '{http://www.w3.org/2001/XMLSchema-instance}schemaLocation')
+        # self.schemaLocation = get_attrib(root, '{http://www.w3.org/2001/XMLSchema-instance}schemaLocation')
 
         # Units keyed on name. Like {name: {'units': (units,), 'factor': 1, 'offset': 0}}
         self.unitsbyname = {}
@@ -531,29 +527,19 @@ class System:
                 if 'UMIT' in schemas:
                     schemas['UMIT'].assertValid(annotation[0])
 
-                # Grab all shaft constraints, holonomic and nonholonomic
-                shafts  = find_elements(annotation, 'umit:KinematicConstraints', 'umit:ShaftConstraint')[1]
-                shafts += find_elements(annotation, 'umit:KinematicConstraints', 'umit:HolonomicShaftConstraint')[1]
-                for shaft in shafts:
-                    # Use tag to figure out if this shaft is holonomic or not
-                    holonomic = shaft.tag == '{%s}%s' % (ns['umit'], 'HolonomicShaftConstraint')
-                    shaftconstraint = []
-                    for i in [1,2]:
-                        # Full name
-                        name = self.get_name() + '.' + get_attrib(shaft, 'element%i' % i)
-
-                        # List connector names in order expected by -C option
-                        # If holonomic, graph 'angleN' as well
-                        connectors = [
-                            get_attrib(shaft, '%s%i' % (k,i))
-                                for k in (['angle'] if holonomic else []) + ['angularVelocity', 'angularAcceleration', 'torque']
-                        ]
-                        shaftconstraint.append((name, connectors))
-
-                    # Add to global list of shaft constraints
-                    shaftconstraints.append(shaftconstraint)
-
+                for shaft in find_elements(annotation, 'umit:KinematicConstraints', 'umit:ShaftConstraint')[1]:
+                    get_attrib(shaft, 'element1')
+                    get_attrib(shaft, 'element2')
+                    get_attrib(shaft, 'angle1', '')
+                    get_attrib(shaft, 'angle2', '')
+                    get_attrib(shaft, 'angularVelocity1')
+                    get_attrib(shaft, 'angularVelocity2')
+                    get_attrib(shaft, 'angularAcceleration1')
+                    get_attrib(shaft, 'angularAcceleration2')
+                    get_attrib(shaft, 'torque1')
+                    get_attrib(shaft, 'torque2')
                     remove_if_empty(annotation[0], shaft)
+
                 remove_if_empty(annotation, annotation[0])
             else:
                 print('WARNING: Found unknown Annotation of type "%s"' % type)
@@ -639,156 +625,168 @@ def unzip_ssp(dest_dir, ssp_filename):
                 z.extract(MODELDESCRIPTION, d)
 
 
-dry_run = sys.argv[1] == '--dry-run'
+def parse_ssp(ssp_path, cleanup_zip = True):
 
-if dry_run and len(sys.argv) < 3:
-    print('ERROR: missing ssp-name')
-    exit(1)
+    global fmus, system, parameters, SSD_NAME, d
+    fmus = []
+    systems = []
+    parameters = {}
 
-# Check if we run master directly from an SSD XML file instead of an SSP zip archive
-if os.path.basename(sys.argv[-1]) == SSD_NAME:
-    d = os.path.dirname(sys.argv[-1])
-    unzipped_ssp = False
-else:
-    unzip_ssp(d, sys.argv[-1])
-    unzipped_ssp = True
+    file_ext = os.path.splitext(ssp_path)[1].lower()
 
-root = System.fromfile(d, SSD_NAME)
+    # Allow custom named ssd files
+    if file_ext == '.ssd':
+       SSD_NAME = os.path.basename(ssp_path) 
 
-root.resolve_dictionary_inputs()
-
-# Figure out connections, parse modelDescriptions
-connectionmultimap = {} # Multimap of outputs to inputs
-mds = []
-fmumap = {}  #maps fmu names to IDs
-for fmu in fmus:
-    fmumap[fmu.get_name()] = fmu.id
-    fmu.connect(connectionmultimap)
-
-    with zipfile.ZipFile(fmu.path) as z:
-        md_data = z.read('modelDescription.xml')
-
-    # Parse modelDescription, turn variable list into map
-    # tree = etree.parse(os.path.join(os.path.splitext(fmu.path)[0], MODELDESCRIPTION))
-    # root = tree.getroot()
-    # print(md_data)
-    root = etree.XML(md_data)
-
-    svs = {}
-    for sv in root.find('ModelVariables').findall('ScalarVariable'):
-        name = sv.attrib['name']
-        if name in svs:
-            print(fmu.path + ' contains multiple variables named "' + name + '"!')
-            exit(1)
-
-        causality = ''
-
-        if not CAUSALITY in sv.attrib:
-            if 'variability' in sv.attrib and sv.attrib['variability'] == 'parameter':
-                #this happens with SampleSystemSubSystemDictionary.ssp
-                print(('WARNING: Found variable %s without causality and variability="parameter". ' % name)+
-                      'This violates the spec. Treating as a parameter')
-                causality = 'parameter'
-            else:
-                print('WARNING: FMU %s has variable %s without causality - ignoring' % (fmu.get_name(), name))
-                continue
-        else:
-            causality = sv.attrib[CAUSALITY]
-
-        t = ''
-        if sv.find('Real')      != None: t = 'r'
-        elif sv.find('Integer') != None: t = 'i'
-        elif sv.find('Boolean') != None: t = 'b'
-        elif sv.find('Enum')    != None: t = 'e'
-        elif sv.find('String')  != None: t = 's'
-        else:
-            print(fmu.path + ' variable "' + name + '" has unknown type')
-            exit(1)
-
-        svs[name] = {
-            'vr': int(sv.attrib['valueReference']),
-            CAUSALITY: causality,
-            'type': t,
-        }
-    mds.append(svs)
-
-flatparams = []
-for key,value in parameters.iteritems():
-    parts = key.split('.')
-    fmuname = '.'.join(parts[0:-1])
-    paramname = parts[-1]
-    if fmuname in fmumap:
-        fmu = fmus[fmumap[fmuname]]
-        if paramname in mds[fmu.id]:
-            p = mds[fmu.id][paramname]
-            if p[CAUSALITY] == 'input' or p[CAUSALITY] == 'parameter':
-                flatparams.extend([
-                    '-p','%s,%i,%i,%s' % (
-                        value['type'],
-                        fmu.id,
-                        p['vr'],
-                        # Escape backslashes and colons
-                        str(value['value']).replace('\\','\\\\').replace(':','\\:').replace(',','\\,')
-                    )
-                ])
-            else:
-                print('WARNING: FMU %s, tried to set variable %s which is neither an input nor a parameter' % (fmuname, paramname))
-        else:
-            print('WARNING: FMU %s has no variable called %s' % (fmuname, paramname))
+    # Check if we run master directly from an SSD XML file instead of an SSP zip archive
+    if os.path.basename(ssp_path) == SSD_NAME:
+        d = os.path.dirname(ssp_path)
+        unzipped_ssp = False
     else:
-        print('WARNING: No FMU called %s for parameter %s' % (fmuname, paramname))
+        unzip_ssp(d, ssp_path)
+        unzipped_ssp = True
 
-#print connections
-#print mds
+    root = System.fromfile(d, SSD_NAME)
 
-# Build command line
-flatconns = []
-for key in connectionmultimap.keys():
-    fr = key
-    to1 = connectionmultimap[key]  
-    for to in to1:
-        #print str((fr,to)) + ' vs ' + str(mds[fr[0]])
-        f = mds[fr[0]]
-        fv = f[fr[1]]
-        t = mds[to[0]]
-        tv = t[to[1]]
+    root.resolve_dictionary_inputs()
 
-        connstr = '%s,%i,%i,%s,%i,%i' % (fv['type'], fr[0], fv['vr'], tv['type'], to[0], tv['vr'])
-        flatconns.extend(['-c', connstr])
+    # Figure out connections, parse modelDescriptions
+    connectionmultimap = {} # Multimap of outputs to inputs
+    mds = []
+    fmumap = {}  #maps fmu names to IDs
+    for fmu in fmus:
+        fmumap[fmu.get_name()] = fmu.id
+        fmu.connect(connectionmultimap)
 
-# Resolve kinetic connections
-kineticconns = []
-for shaft in shaftconstraints:
-    ids = (fmumap[shaft[0][0]], fmumap[shaft[1][0]])
-    connstr = 'shaft,%i,%i' % ids
+        with zipfile.ZipFile(fmu.path) as z:
+            md_data = z.read('modelDescription.xml')
 
-    for i in range(2):
-        for key in shaft[i][1]:
-            connstr += ',%i' % mds[ids[i]][key]['vr']
+        # Parse modelDescription, turn variable list into map
+        # tree = etree.parse(os.path.join(os.path.splitext(fmu.path)[0], MODELDESCRIPTION))
+        # root = tree.getroot()
+        # print(md_data)
+        root = etree.XML(md_data)
 
-    kineticconns.extend(['-C', connstr])
+        svs = {}
+        for sv in root.find('ModelVariables').findall('ScalarVariable'):
+            name = sv.attrib['name']
+            if name in svs:
+                print(fmu.path + ' contains multiple variables named "' + name + '"!')
+                exit(1)
 
-servers = []
-for fmu in fmus:
-    servers.extend([':','-np','1','fmi-mpi-server',fmu.path])
+            causality = ''
 
-#read connections and parameters from stdin, since they can be quite many
-#stdin because we want to avoid leaving useless files on the filesystem
-args = ['mpiexec','-np','1','fmi-mpi-master','-t','9.9','-d','0.1','-a','-'] + servers
-print(" ".join(args) + " <<< " + '"' + " ".join(flatconns+flatparams+kineticconns) + '"')
+            if not CAUSALITY in sv.attrib:
+                if 'variability' in sv.attrib and sv.attrib['variability'] == 'parameter':
+                    #this happens with SampleSystemSubSystemDictionary.ssp
+                    print(('WARNING: Found variable %s without causality and variability="parameter". ' % name)+
+                          'This violates the spec. Treating as a parameter')
+                    causality = 'parameter'
+                else:
+                    print('WARNING: FMU %s has variable %s without causality - ignoring' % (fmu.get_name(), name))
+                    continue
+            else:
+                causality = sv.attrib[CAUSALITY]
 
-if dry_run:
-    ret = 0
-else:
-    #pipe arguments to master, leave stdout and stderr alone
-    p = subprocess.Popen(args, stdin=subprocess.PIPE)
-    p.communicate(input=" ".join(flatconns).encode('utf-8'))
-    ret = p.returncode  #ret can be None
+            t = ''
+            if sv.find('Real')      != None: t = 'r'
+            elif sv.find('Integer') != None: t = 'i'
+            elif sv.find('Boolean') != None: t = 'b'
+            elif sv.find('Enum')    != None: t = 'e'
+            elif sv.find('String')  != None: t = 's'
+            else:
+                print(fmu.path + ' variable "' + name + '" has unknown type')
+                exit(1)
 
-if ret == 0:
-    if unzipped_ssp:
+            svs[name] = {
+                'vr': int(sv.attrib['valueReference']),
+                CAUSALITY: causality,
+                'type': t,
+            }
+        mds.append(svs)
+
+    flatparams = []
+    for key,value in parameters.iteritems():
+        parts = key.split('.')
+        fmuname = '.'.join(parts[0:-1])
+        paramname = parts[-1]
+        if fmuname in fmumap:
+            fmu = fmus[fmumap[fmuname]]
+            if paramname in mds[fmu.id]:
+                p = mds[fmu.id][paramname]
+                if p[CAUSALITY] == 'input' or p[CAUSALITY] == 'parameter':
+                    flatparams.extend([
+                        '-p','%s,%i,%i,%s' % (
+                            value['type'],
+                            fmu.id,
+                            p['vr'],
+                            # Escape backslashes and colons
+                            str(value['value']).replace('\\','\\\\').replace(':','\\:').replace(',','\\,')
+                        )
+                    ])
+                else:
+                    print('WARNING: FMU %s, tried to set variable %s which is neither an input nor a parameter' % (fmuname, paramname))
+            else:
+                print('WARNING: FMU %s has no variable called %s' % (fmuname, paramname))
+        else:
+            print('WARNING: No FMU called %s for parameter %s' % (fmuname, paramname))
+
+    #print connections
+    #print mds
+
+    # Build command line
+    flatconns = []
+    for key in connectionmultimap.keys():
+        fr = key
+        to1 = connectionmultimap[key]  
+        for to in to1:
+            #print str((fr,to)) + ' vs ' + str(mds[fr[0]])
+            f = mds[fr[0]]
+            fv = f[fr[1]]
+            t = mds[to[0]]
+            tv = t[to[1]]
+
+            connstr = '%s,%i,%i,%s,%i,%i' % (fv['type'], fr[0], fv['vr'], tv['type'], to[0], tv['vr'])
+            flatconns.extend(['-c', connstr])
+
+    if unzipped_ssp and cleanup_zip:
         shutil.rmtree(d)
-else:
-    print('An error occured (returncode = ' + str(ret) + '). Check ' + d)
 
-exit(ret)
+    return flatconns, flatparams, unzipped_ssp, d
+
+if __name__ == '__main__':
+
+    if len(sys.argv) < 2:
+        #TODO: we probably want to know which of TCP and MPI is wanted
+        print('USAGE: %s [--dry-run] ssp-file' % sys.argv[0])
+        exit(1)
+
+
+    dry_run = sys.argv[1] == '--dry-run'
+
+    if dry_run and len(sys.argv) < 3:
+        print('ERROR: missing ssp-name')
+        exit(1)
+
+    flatconns, flatparams, unzipped_ssp, d = parse_ssp(sys.argv[-1], False)
+
+    #read connections and parameters from stdin, since they can be quite many
+    #stdin because we want to avoid leaving useless files on the filesystem
+    args = ['mpiexec','-np',str(len(fmus)+1),'fmigo-mpi','-t','9.9','-d','0.1','-a','-'] + [fmu.path for fmu in fmus]
+    print(" ".join(args) + " <<< " + '"' + " ".join(flatconns+flatparams) + '"')
+
+    if dry_run:
+        ret = 0
+    else:
+        #pipe arguments to master, leave stdout and stderr alone
+        p = subprocess.Popen(args, stdin=subprocess.PIPE)
+        p.communicate(input=" ".join(flatconns).encode('utf-8'))
+        ret = p.returncode  #ret can be None
+
+    if ret == 0:
+        if unzipped_ssp:
+            shutil.rmtree(d)
+    else:
+        print('An error occured (returncode = ' + str(ret) + '). Check ' + d)
+
+    exit(ret)

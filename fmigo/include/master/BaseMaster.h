@@ -25,6 +25,8 @@ namespace fmitcp_master {
     public:
         //number of pending requests sent to clients
         size_t getNumPendingRequests() const;
+        double m_response_time_do_step;
+        double m_response_time_in_out_puts;
 
         explicit BaseMaster(std::vector<FMIClient*> clients, std::vector<WeakConnection> weakConnections);
         virtual ~BaseMaster();

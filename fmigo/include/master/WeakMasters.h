@@ -50,7 +50,12 @@ public:
             it->first->sendSetX(it->second);
         }
 
-        sendWait(m_clients, fmi2_import_do_step(t, dt, true));
+        //sendWait(m_clients, fmi2_import_do_step(t, dt, true));
+        int d =0;
+        for(auto client: m_clients){
+            fprintf(stderr,"Weak Do STep: %d\n",d++);
+            sendWait(client, fmi2_import_do_step(t, dt, true));
+        }
     }
 };
 
@@ -82,6 +87,7 @@ public:
             wait();
             const SendSetXType refValues = getInputWeakRefsAndValues(m_weakConnections, client);
             client->sendSetX(refValues);
+
             sendWait(client, fmi2_import_do_step(t, dt, true));
         }
         //fprintf(stderr, "\n\n");

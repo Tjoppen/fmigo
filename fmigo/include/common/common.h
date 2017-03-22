@@ -16,6 +16,7 @@
 #include <string>
 #include <vector>
 #include <deque>
+#include <stdio.h>
 
 #define FMILIB_BUILDING_LIBRARY
 #include <fmilib.h>
@@ -31,6 +32,35 @@ extern std::vector<int> timelog;
 extern int columnofs;
 extern std::map<int, const char*> columnnames;
 #define MAX_TIME_COLS 20    //for estimating the size of timelog
+
+#define fmigo_nothing 0
+#define fmigo_fatal   1
+#define fmigo_error   2
+#define fmigo_warning 3
+#define fmigo_info    4
+#define fmigo_debug   5
+#define fmigo_all     6
+
+#define ANSI_COLOR_RED     "\x1b[31m"
+#define ANSI_COLOR_GREEN   "\x1b[32m"
+#define ANSI_COLOR_YELLOW  "\x1b[33m"
+#define ANSI_COLOR_BLUE    "\x1b[34m"
+#define ANSI_COLOR_MAGENTA "\x1b[35m"
+#define ANSI_COLOR_CYAN    "\x1b[36m"
+#define ANSI_COLOR_RESET   "\x1b[0m"
+
+extern int fmigo_loglevel;
+//errors are printed in red
+#define error(fmt, args...) do { if (fmigo_loglevel >= fmigo_error) { fprintf(stderr, ANSI_COLOR_RED "Error: " fmt ANSI_COLOR_RESET, ##args); } } while(0)
+//warnings yellow
+#define warning(fmt, args...) do { if (fmigo_loglevel >= fmigo_warning) { fprintf(stderr, ANSI_COLOR_YELLOW "Warning: " fmt ANSI_COLOR_RESET , ##args); } } while(0)
+//info normal
+#define info(fmt, args...) do { if (fmigo_loglevel >= fmigo_info) { fprintf(stderr, "Info: " fmt, ##args); } } while(0)
+#ifdef DEBUG
+#define debug(fmt, args...) do { if (fmigo_loglevel >= fmigo_debug) { fprintf(stderr, "Debug: " fmt "\n", ##args } } while(0)
+#else
+#define debug(fmt, ...)
+#endif
 
 //measures and logs elapsed time in microseconds
 #define PRINT_HDF5_DELTA(label) do {\

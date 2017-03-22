@@ -39,7 +39,7 @@ SET(HEADERS
 INCLUDE_DIRECTORIES(${UMFPACK_INCLUDE_DIR} include /usr/include/suitesparse)
 LINK_DIRECTORIES(${UMFPACK_LIBRARY_DIR})
 
-ADD_LIBRARY(sc ${HEADERS} ${SRCS})
+ADD_LIBRARY(sc STATIC ${HEADERS} ${SRCS})
 
 # OSX
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
@@ -53,6 +53,11 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
   ## on Arch, this is enough
     TARGET_LINK_LIBRARIES(sc m umfpack amd blas cholmod colamd suitesparseconfig)
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+
+if (WIN32)
+    # No libm on Windows
+    target_link_libraries(sc libumfpack  libamd  libblas libcholmod  libcolamd  libccolamd  libcamd  metis  suitesparseconfig)
+endif ()
 
 #TODO: Fix test build on Windows
 IF(NOT WIN32)

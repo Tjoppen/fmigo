@@ -204,7 +204,6 @@ int fmitcp_master::parseArguments( int argc,
                     a = 1; b = 2;  c = 4; d = 5;
                 } else if (values.size() == 6) {
                     //TYPEFROM,FMUFROM,VRFROM,TYPETO,FMUTO,VRTO
-                    //or
                     //FMUFROM,NAMEFROM,FMUTO,NAMETO,k,m
                     if (isNumeric(values[1])) {
                         conn.fromType = type_from_char(values[0]);
@@ -216,10 +215,15 @@ int fmitcp_master::parseArguments( int argc,
                     }
                 } else  if (values.size() == 5) {
                     //TYPE,FMUFROM,VRFROM,FMUTO,VRTO
+                    //TYPE,FMUFROM,NAMEFROM,FMUTO,NAMETO (undocumented, not recommended)
+                    if (!isNumeric(values[1]) || !isNumeric(values[4])) {
+                      fprintf(stderr, "WARNING: TYPE,FMUFROM,NAMEFROM,FMUTO,NAMETO syntax not recommended\n");
+                    }
                     conn.fromType = conn.toType = type_from_char(values[0]);
                     values.pop_front();
                 } else if (values.size() == 4) {
                     //FMUFROM,VRFROM,FMUTO,VRTO
+                    //FMUFROM,NAMEFROM,FMUTO,NAMETO
                     conn.fromType = conn.toType = type_from_char("r");
                 } else {
                     fprintf(stderr, "Bad param: %s\n", it->c_str());

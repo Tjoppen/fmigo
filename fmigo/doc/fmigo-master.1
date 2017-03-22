@@ -91,12 +91,17 @@ Weak connection specification list. Represents which FMU and value reference to 
 
     -c WCONN1:WCONN2:WCONN3...
 
-where the syntax of each WCONNX is as follows:
+where the syntax of each WCONNX is one of the following:
 
-    WCONNX=[TYPE,]FMUFROM,VRFROM,FMUTO,VRTO.
+    FMUFROM,VRFROM,FMUTO,VRTO
+    FMUFROM,NAMEFROM,FMUTO,NAMETO
+    TYPE,FMUFROM,VRFROM,FMUTO,VRTO
+    TYPEFROM,FMUFROM,VRFROM,TYPETO,FMUTO,VRTO
+    TYPEFROM,FMUFROM,VRFROM,TYPETO,FMUTO,VRTO,k,m
+    FMUFROM,NAMEFROM,FMUTO,NAMETO,k,m
 
 TYPE is a single character specifying the value type on the connection.
-If TYPE is absent then the connection is assumed to be of type real.
+If TYPE is absent then the connection is assumed to be of type real, unless a NAMEs are specified (more on this further down).
 Possible types:
 
     r - Real
@@ -115,16 +120,58 @@ Weak connections can also be specified in any order, so the following specifies 
 
     -c i,0,1,1,2 -c 0,1,1,1 -c r,0,0,1,0
 
+It is possible to specify types on either side of the connection, by which type conversion may be performed.
+For example:
+
+    -c r,0,1,i,1,0 -c b,0,2,r,1,2
+
+Means: connect FMU0 VR1 to FMU1 VR0, truncating each real to an integer.
+Connect FMU0 VR2 to FMU1 VR2, converting false to 0 and true to 1.
+More information on type conversion is given at the end of this section.
+
+NAMEFROM and NAMETO are alternatives to VRFROM and VRTO.
+They allow you to specify connections (and infer TYPE) by NAME rather than value reference.
+It is required that the FMU has exactly one connection with any given name.
+Example:
+
+    -c 0,x_out,1,x_in
+
+Connects variable x_out in FMU0 to variable x_in in FMU1.
+Each name must have at least one non-numeric character to count as such, or the argument parser won't be able to tell what's what.
+
+Finally k (slope) and m (intercept) are used for transforming values linearly.
+They can be any real value.
+This can be combined with data type conversion, for instance taking fixed point integers from one FMU,
+converting them to real and scaling by 1.0/65536 before passing the resulting scaled real values to the other FMU.
+This would look something like this:
+
+    -c i,0,1,r,1,2,1.5259e-05,0
+    -c 0,some_integer,1,some_real,1.5259e-05,0
+
+Before transformation every type is converted to real.
+This conversion follows C conventions.
+Strings or enums may not be converted, in any direction.
+The converted real values (x) are scaled and offset by k and m respectively:
+
+    y = k*x + m
+
+The resulting values (y) are then converted to the target type.
+For reals no further conversion is required.
+For integers this means truncation.
+For booleans, abs(y) > 0.5 is considered true.
+
 Default is no connections.
 .TP
 .B \-p [PARAMS]
-Parameter specification list. Specifies parameters to send to FMUs before initialization. Format is:
+Parameter specification list. Specifies parameters to send to FMUs during initialization. Format is:
 
     -p PARAM1:PARAM2:PARAM3...
 
-where each PARAMX has the following syntax:
+where each PARAMX is one of the following:
 
-    PARAMX=[TYPE,]FMU,VR,VALUE
+    FMU,VR,VALUE
+    TYPE,FMU,VR,VALUE
+    FMU,NAME,VALUE
 
 Comma, colon and backslash characters in VALUE must be escaped with backslash.
 A typical use case is paths on Windows, which might look something like this in bash syntax:
@@ -140,6 +187,7 @@ No characters other than comma, colon and backslash may be escaped.
 Having a single trailing backslash in an option is an error ("C\\:\\\\foo\\").
 
 If TYPE is not specified then real values are assumed, just like with weak connections.
+If NAME is non-numeric then the value reference and type is looked up by name.
 Example:
 
     -p b,0,0,true:r,0,0,0:s,0,0,hello
@@ -150,6 +198,12 @@ See -c option for a list of possible types (i, r, s, b).
 Parameters can be specified in any order, and like all lists they can be broken up, so the following specifies the exact same set of parameters:
 
     -p s,0,0,hello -p b,0,0,true -p 0,0,0
+
+Finally, some examples using names:
+
+    -p 0,some_boolean,true
+    -p 1,some_integer,123
+    -p 2,participant1,Alice:2,participant2,Bob
 
 Default is no parameters.
 .TP
@@ -190,6 +244,10 @@ Meaning: Create a lock constraints between FMU0 and FMU1 with VRs pos={0,1,2}, a
 Note that like all lists you can concatenate the strong connection specifications with colon characters, but the result is hardly readable:
 
     -C\ shaft,0,1,20,19,14,17,20,19,14,17:lock,0,1,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18:ball,1,2,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18
+
+Just like weak connections, variable references can be resolved by name. So the following is also OK:
+
+    -C\ shaft,0,1,theta1,omega1,alpha1,tau1,angle2,angularVelocity2,angularAcceleration2,torque2
 
 Default is no strong connections. Specifying strong connections is incompatible with using the Gauss-Seidel stepper (-m gs).
 .TP

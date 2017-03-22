@@ -4,9 +4,6 @@
 #include "modelDescription.h"
 #include "gsl-interface.h"
 
-#if defined(_WIN32)
-#define alloca _alloca
-#endif
 #define SIMULATION_TYPE cgsl_simulation
 #define SIMULATION_INIT scania_driveline_init
 #define SIMULATION_FREE cgsl_free_simulation
@@ -25,8 +22,10 @@
 #define min(x,y)  ( ( x ) < ( y ) )?  x : y
 #define max(x,y)  ( ( x ) > ( y ) )?  x : y
 
+
+
 #define inputs (s->md)
-#define outputs (s->md)
+#define outputs (&s->md)
 int  fcn( double t, const double * x, double *dxdt, void * params){
 
   state_t *s = (state_t*)params;
@@ -41,7 +40,7 @@ int  fcn( double t, const double * x, double *dxdt, void * params){
   inputs.w_inShaftNeutral = x[0];
   inputs.w_wheel          = x[1];
 
-  outputs.w_inShaft = inputs.w_inShaftOld;
+  outputs->w_inShaft = inputs.w_inShaftOld;
 
   // torque from input springs
   double tq_inputWheel = inputs.w_wheel_in * inputs.k1 + inputs.f_wheel_in;
@@ -62,6 +61,7 @@ int  fcn( double t, const double * x, double *dxdt, void * params){
   // the external load is translated to a torque at the input shaft and
   // the mass of the vehicle is translated to an equivalent rotational inertia
   // at transmission input shaft
+
   double J_atInShaft;
   double tq_loadAtInShaft;
 
@@ -74,7 +74,7 @@ int  fcn( double t, const double * x, double *dxdt, void * params){
     // when in neutral the transmission input shaft is disconnected and the
     // speed is then integrated and the shaft inertia is set to J_neutral
     // w_inShaftNeutral is the integration result during  outside
-    outputs.w_inShaft = inputs.w_inShaftNeutral;
+    outputs->w_inShaft = inputs.w_inShaftNeutral;
     tq_loadAtInShaft = 0; // TODO + tq_inputShaft;???
     J_atInShaft = inputs.J_neutral;
   }
@@ -83,7 +83,7 @@ int  fcn( double t, const double * x, double *dxdt, void * params){
   // if simplifying the engine and the vehicle as two spinning flywheels attached
   // to each plate of the clutch and then closing the clutch, the resulting
   // rotational speed of the clutch w_bal would be the weighted average
-  double w_bal = (inputs.J_eng*inputs.w_eng + J_atInShaft*outputs.w_inShaft )/(inputs.J_eng+J_atInShaft);
+  double w_bal = (inputs.J_eng*inputs.w_eng + J_atInShaft*outputs->w_inShaft )/(inputs.J_eng+J_atInShaft);
 
   // calculate the torque required to accelerate the engine to w_bal in two
   // timesteps
@@ -94,57 +94,61 @@ int  fcn( double t, const double * x, double *dxdt, void * params){
   double tq_bal =  (inputs.w_eng-w_bal) * inputs.J_eng / (2*inputs.ts);
   double tq_clutchUnLim = tq_bal + tq_loadBal;
 
-  outputs.tq_clutch = min(max(tq_clutchUnLim,-inputs.tq_clutchMax),inputs.tq_clutchMax);
+  outputs->tq_clutch = min(max(tq_clutchUnLim,-inputs.tq_clutchMax),inputs.tq_clutchMax);
 
   // transmission losses are given as input shaft torque loss
-  double tq_inTransmission = (outputs.tq_clutch - inputs.tq_losses);
+  double tq_inTransmission = (outputs->tq_clutch - inputs.tq_losses);
 
-  outputs.tq_outTransmission = tq_inTransmission * inputs.gear_ratio;
+  outputs->tq_outTransmission = tq_inTransmission * inputs.gear_ratio;
 
-  double tq_sumWheel = outputs.tq_outTransmission * inputs.final_gear_ratio - tq_loadWheelShaft;
+  double tq_sumWheel = outputs->tq_outTransmission * inputs.final_gear_ratio - tq_loadWheelShaft;
 
   // w_wheel is integrate outside
-  outputs.w_wheelDer = tq_sumWheel / ( inputs.m_vehicle * SQ( inputs.r_tire ) );
+  outputs->w_wheelDer = tq_sumWheel / ( inputs.m_vehicle * SQ( inputs.r_tire ) );
 
-  outputs.v_vehicle = inputs.w_wheel * inputs.r_tire;
+  outputs->v_vehicle = inputs.w_wheel * inputs.r_tire;
 
   // slip estimation (r_slipFilt filtered outside this m-function)
-  outputs.r_slip = (inputs.tq_env + tq_sumWheel) / ( inputs.m_vehicle * 8 );
+  outputs->r_slip = (inputs.tq_env + tq_sumWheel) / ( inputs.m_vehicle * 8 );
 
-  outputs.v_driveWheel = (inputs.r_slipFilt + 1) * outputs.v_vehicle;
+  outputs->v_driveWheel = (inputs.r_slipFilt + 1) * outputs->v_vehicle;
 
-  outputs.w_out = outputs.v_driveWheel * inputs.final_gear_ratio / inputs.r_tire;
+  outputs->w_out = outputs->v_driveWheel * inputs.final_gear_ratio / inputs.r_tire;
 
   if (inputs.gear_ratio == 0){
     // when gear is in neutral the input shaft speed is integrated using the
     // torque coming from the clutch
-    outputs.w_inShaftDer = tq_inTransmission / inputs.J_neutral;
+    outputs->w_inShaftDer = tq_inTransmission / inputs.J_neutral;
   }
   else{
     // When a gear is engaged the transmission input shaft speed is calculated
     // from the output shaft speed scaled with gear ratio, (the result from
     // the inputshaft neutral integration is ignored)
-    outputs.w_inShaft = outputs.w_out * inputs.gear_ratio;
+    outputs->w_inShaft = outputs->w_out * inputs.gear_ratio;
 
     // when not in neutral, set the inputShaft derivative so that the
     // integrator follows the actual speed aproximately
-    outputs.w_inShaftDer = 0.5*(outputs.w_inShaft-inputs.w_inShaftNeutral)/inputs.ts;
+    outputs->w_inShaftDer = 0.5*(outputs->w_inShaft-inputs.w_inShaftNeutral)/inputs.ts;
   }
 
-  dxdt[ 0 ]  = outputs.w_inShaftDer;
-  dxdt[ 1 ]  = outputs.w_wheelDer;
-  outputs.f_shaft_out = outputs.tq_clutch;
-  outputs.w_shaft_out = outputs.w_inShaft;
+  dxdt[ 0 ]  = outputs->w_inShaftDer;
+  dxdt[ 1 ]  = outputs->w_wheelDer;
+  outputs->f_shaft_out = outputs->tq_clutch;
+  outputs->w_shaft_out = outputs->w_inShaft;
 
-  outputs.w_wheel_out = outputs.w_out;
-  outputs.f_wheel_out = tq_sumWheel;
+  outputs->w_wheel_out = outputs->w_out;
+  outputs->f_wheel_out = tq_sumWheel;
 
-  return GSL_SUCCESS;
+  return 0;
 }
+
+#define HAVE_INITIALIZATION_MODE
+
+
 
 static int sync_out(int n, const double out[], void * params) {
   state_t *s = ( state_t * ) params;
-  double * dxdt = ( double * ) alloca( ( (size_t) n ) * sizeof(double));
+  double * dxdt = (double * ) alloca( sizeof(double) * n );
 
   fcn (0, out, dxdt,  params );
 
@@ -153,18 +157,36 @@ static int sync_out(int n, const double out[], void * params) {
 
 
 static void scania_driveline_init(state_t *s) {
-    double initials[] = {
-      s->md.w_inShaftNeutral,
-      s->md.w_wheel
-    };
+
+  double initials[] = {
+    s->md.w_inShaftNeutral,
+    s->md.w_wheel,
+    s->md.w_inShaftOld,
+    s->md.tq_retarder,
+    s->md.tq_fricLoss,
+    s->md.tq_env,
+    s->md.gear_ratio,
+    s->md.tq_clutchMax,
+    s->md.tq_losses,
+    s->md.r_tire,
+    s->md.m_vehicle,
+    s->md.final_gear_ratio,
+    s->md.w_eng,
+    s->md.tq_eng,
+    s->md.J_eng,
+    s->md.J_neutral,
+    s->md.tq_brake,
+    s->md.ts,
+    s->md.r_slipFilt
+  };
 
   s->simulation = cgsl_init_simulation(
     cgsl_epce_default_model_init(
       cgsl_model_default_alloc(sizeof(initials)/sizeof(initials[0]), initials, s, fcn, NULL, NULL, NULL, 0),
       0,//s->md.filter_length,
-      NULL,NULL
-      //sync_out,s
-    ),
+      sync_out,
+      s
+      ),
     rkf45, 1e-5, 0, 0, 0, NULL
     );
 }

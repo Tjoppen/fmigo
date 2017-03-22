@@ -159,7 +159,8 @@ int fmitcp_master::parseArguments( int argc,
                     int *command_port,
                     int *results_port,
                     bool *paused,
-                    bool *solveLoops
+                    bool *solveLoops,
+                    int *fmigo_loglevel
         ) {
     int index, c;
     opterr = 0;
@@ -270,6 +271,7 @@ int fmitcp_master::parseArguments( int argc,
 
         case 'l':
             *loglevel = logOptionToJMLogLevel(optarg);
+            *fmigo_loglevel = atoi(optarg);
             break;
 
         case 'm':
@@ -278,7 +280,7 @@ int fmitcp_master::parseArguments( int argc,
             } else if(strcmp(optarg,"gs") == 0){
                 *method = gs;
             } else if(strcmp(optarg,"me") == 0){
-                *method = me; 
+                *method = me;
             } else {
                 fprintf(stderr,"Method \"%s\" not recognized. Use \"jacobi\" or \"gs\".\n",optarg);
                 return 1;

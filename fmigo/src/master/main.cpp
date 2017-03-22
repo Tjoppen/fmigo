@@ -38,6 +38,8 @@ vector<int> timelog;
 int columnofs;
 std::map<int, const char*> columnnames;
 #endif
+//int fmigo_loglevel = fmigo_nothing;
+int fmigo_loglevel = fmigo_all;
 
 typedef map<pair<int,fmi2_base_type_enu_t>, vector<param> > parameter_map;
 
@@ -59,7 +61,7 @@ static vector<FMIClient*> setupClients(vector<string> fmuURIs, zmq::context_t &c
         FMIClient *client = new FMIClient(context, clientId, *it);
 
         if (!client) {
-            fprintf(stderr, "Failed to connect client with URI %s\n", it->c_str());
+            error("Failed to connect client with URI %s\n", it->c_str());
             exit(1);
         }
 
@@ -107,7 +109,7 @@ static StrongConnector* findOrCreateShaftConnector(FMIClient *client,
     for (int x = 0; x < client->numConnectors(); x++) {
         StrongConnector *sc = client->getConnector(x);
         if (sc->matchesShaftConnector(angle, angularVel, angularAcc, torque)) {
-            fprintf(stderr, "Match! id = %i\n", sc->m_index);
+            debug("Match! id = %i\n", sc->m_index);
             return sc;
         }
     }
@@ -130,7 +132,7 @@ static void setupConstraintsAndSolver(vector<strongconnection> strongConnections
         case 'l':
         {
             if (it->vrs.size() != 38) {
-                fprintf(stderr, "Bad %s specification: need 38 VRs ([XYZpos + XYZacc + XYZforce + Quat + XYZrotAcc + XYZtorque] x 2), got %zu\n",
+                error("Bad %s specification: need 38 VRs ([XYZpos + XYZacc + XYZforce + Quat + XYZrotAcc + XYZtorque] x 2), got %zu\n",
                         t == 'b' ? "ball joint" : "lock", it->vrs.size());
                 exit(1);
             }
@@ -163,7 +165,7 @@ static void setupConstraintsAndSolver(vector<strongconnection> strongConnections
                 //maybe it's the old type of specification?
                 ofs = 1;
                 if (it->vrs.size() != 9) {
-                    fprintf(stderr, "Bad shaft specification: need 8 VRs ([shaft angle + angular velocity + angular acceleration + torque] x 2)\n");
+                    error("Bad shaft specification: need 8 VRs ([shaft angle + angular velocity + angular acceleration + torque] x 2)\n");
                     exit(1);
                 }
             }
@@ -178,7 +180,7 @@ static void setupConstraintsAndSolver(vector<strongconnection> strongConnections
             break;
         }
         default:
-            fprintf(stderr, "Unknown strong connector type: %s\n", it->type.c_str());
+            error("Unknown strong connector type: %s\n", it->type.c_str());
             exit(1);
         }
 
@@ -347,7 +349,7 @@ static void printOutputs(double t, BaseMaster *master, vector<FMIClient*>& clien
                 break;
             }
             case fmi2_base_type_enum:
-                fprintf(stderr, "Enum outputs not allowed for now\n");
+                error("Enum outputs not allowed for now\n");
                 exit(1);
             }
         }
@@ -480,16 +482,16 @@ int main(int argc, char *argv[] ) {
     bool zmqControl = command_port > 0 && results_port > 0;
 
     if (printXML) {
-        fprintf(stderr, "XML mode not implemented\n");
+        error("XML mode not implemented\n");
         return 1;
     }
 
     if (quietMode) {
-        fprintf(stderr, "WARNING: -q not implemented\n");
+        warning("-q not implemented\n");
     }
 
     if (outFilePath != DEFAULT_OUTFILE) {
-        fprintf(stderr, "WARNING: -o not implemented (output always goes to stdout)\n");
+        warning("-o not implemented (output always goes to stdout)\n");
     }
 
 #ifdef USE_MPI
@@ -509,14 +511,14 @@ int main(int argc, char *argv[] ) {
     zmq::socket_t push_socket(context, ZMQ_PUSH);
 
     if (zmqControl) {
-        fprintf(stderr, "Init zmq control on ports %i and %i\n", command_port, results_port);
+        info("Init zmq control on ports %i and %i\n", command_port, results_port);
         char addr[128];
         snprintf(addr, sizeof(addr), "tcp://*:%i", command_port);
         rep_socket.bind(addr);
         snprintf(addr, sizeof(addr), "tcp://*:%i", results_port);
         push_socket.bind(addr);
     } else if (paused) {
-        fprintf(stderr, "-Z requires -z\n");
+        error("-Z requires -z\n");
         return 1;
     }
 
@@ -545,7 +547,7 @@ int main(int argc, char *argv[] ) {
 
     if (scs.size()) {
         if (method != jacobi) {
-            fprintf(stderr, "Can only do Jacobi stepping for weak connections when also doing strong coupling\n");
+            error("Can only do Jacobi stepping for weak connections when also doing strong coupling\n");
             return 1;
         }
 

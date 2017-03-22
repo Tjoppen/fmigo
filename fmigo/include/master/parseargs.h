@@ -102,8 +102,7 @@ int parseArguments( int argc,
                     int *command_port,
                     int *results_port,
                     bool *paused,
-                    bool *solveLoops,
-                    int *fmigo_loglevel
+                    bool *solveLoops
                     );
 }
 

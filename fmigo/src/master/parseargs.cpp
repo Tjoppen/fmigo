@@ -20,17 +20,17 @@ using namespace common;
 using namespace std;
 
 static void printHelp(){
-  fprintf(stderr, "Check manpage for help, \"man fmigo-master\"\n");
+  info("Check manpage for help, \"man fmigo-master\"\n");
 }
 
 static void printInvalidArg(char option){
-  fprintf(stderr, "Invalid argument of -%c\n",option);
+  error("Invalid argument of -%c\n",option);
   printHelp();
 }
 
 static fmi2_base_type_enu_t type_from_char(string type) {
     if (type.size() != 1) {
-        fprintf(stderr, "Bad type: %s\n", type.c_str());
+        error("Bad type: %s\n", type.c_str());
         exit(1);
     }
 
@@ -45,11 +45,11 @@ static fmi2_base_type_enu_t type_from_char(string type) {
 
 template<typename T> int checkFMUIndex(T it, int i, size_t numFMUs) {
     if(it->fromFMU < 0 || (size_t)it->fromFMU >= numFMUs){
-        fprintf(stderr,"Connection %d connects from FMU %d, which does not exist.\n", i, it->fromFMU);
+        error("Connection %d connects from FMU %d, which does not exist.\n", i, it->fromFMU);
         return 1;
     }
     if(it->toFMU < 0 || (size_t)it->toFMU >= numFMUs){
-        fprintf(stderr,"Connection %d connects to FMU %d, which does not exist.\n", i, it->toFMU);
+        error("Connection %d connects to FMU %d, which does not exist.\n", i, it->toFMU);
         return 1;
     }
 
@@ -72,7 +72,7 @@ template<typename T> void add_args_internal(T& ifs, vector<string>& argvstore, v
     //read tokens, insert into argvstore/argv2
     while (ifs >> token) {
         if (token == "-a") {
-            fprintf(stderr, "Found -a token in argument file, which might lead to recursive list of arguments. Stopping.\n");
+            error("Found -a token in argument file, which might lead to recursive list of arguments. Stopping.\n");
             exit(1);
         }
 
@@ -89,7 +89,7 @@ static void add_args(vector<string>& argvstore, vector<char*>& argv2, string fil
     } else {
         ifstream ifs(filename.c_str());
         if (!ifs) {
-            fprintf(stderr, "Couldn't open %s to parse more arguments!\n", filename.c_str());
+            error("Couldn't open %s to parse more arguments!\n", filename.c_str());
             exit(1);
         }
         add_args_internal(ifs, argvstore, argv2, position);
@@ -107,7 +107,7 @@ static deque<string> escapeSplit(string str, char delim) {
   for (char c : str) {
     if (escaped) {
       if (c != ',' && c != ':' && c != '\\') {
-        fprintf(stderr, "ERROR: Only comma, colon and backslash (\",:\\\") may be escaped in program options (\"%s\")\n", str.c_str());
+        error("Only comma, colon and backslash (\",:\\\") may be escaped in program options (\"%s\")\n", str.c_str());
         exit(1);
       }
       oss << c;
@@ -124,7 +124,7 @@ static deque<string> escapeSplit(string str, char delim) {
   }
 
   if (escaped) {
-    fprintf(stderr, "ERROR: Trailing backslash in program option (\"%s\")\n", str.c_str());
+    error("Trailing backslash in program option (\"%s\")\n", str.c_str());
     exit(1);
   }
 
@@ -159,8 +159,7 @@ int fmitcp_master::parseArguments( int argc,
                     int *command_port,
                     int *results_port,
                     bool *paused,
-                    bool *solveLoops,
-                    int *fmigo_loglevel
+                    bool *solveLoops
         ) {
     int index, c;
     opterr = 0;
@@ -216,7 +215,7 @@ int fmitcp_master::parseArguments( int argc,
                     //FMUFROM,VRFROM,FMUTO,VRTO
                     conn.fromType = conn.toType = type_from_char("r");
                 } else {
-                    fprintf(stderr, "Bad param: %s\n", it->c_str());
+                    error("Bad param: %s\n", it->c_str());
                     return 1;
                 }
 
@@ -236,7 +235,7 @@ int fmitcp_master::parseArguments( int argc,
                 strongconnection sc;
 
                 if (values.size() < 3) {
-                    fprintf(stderr, "Bad strong connection specification: %s\n", it->c_str());
+                    error("Bad strong connection specification: %s\n", it->c_str());
                     exit(1);
                 }
 
@@ -264,14 +263,14 @@ int fmitcp_master::parseArguments( int argc,
             if(strcmp(optarg,"csv") == 0){
                 *fileFormat = csv;
             } else {
-                fprintf(stderr,"File format \"%s\" not recognized.\n",optarg);
+                error("File format \"%s\" not recognized.\n",optarg);
                 return 1;
             }
             break;
 
         case 'l':
             *loglevel = logOptionToJMLogLevel(optarg);
-            *fmigo_loglevel = atoi(optarg);
+            fmigo_loglevel = atoi(optarg);
             break;
 
         case 'm':

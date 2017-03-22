@@ -207,9 +207,9 @@ int fmitcp_master::parseArguments( int argc,
                     //or
                     //FMUFROM,NAMEFROM,FMUTO,NAMETO,k,m
                     if (isNumeric(values[1])) {
-                    conn.fromType = type_from_char(values[0]);
-                    conn.toType   = type_from_char(values[3]);
-                    a = 1; b = 2;  c = 4; d = 5;
+                        conn.fromType = type_from_char(values[0]);
+                        conn.toType   = type_from_char(values[3]);
+                        a = 1; b = 2;  c = 4; d = 5;
                     } else {
                         conn.slope    = atof(values[4].c_str());
                         conn.intercept= atof(values[5].c_str());

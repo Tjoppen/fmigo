@@ -31,6 +31,7 @@ using namespace fmitcp_master;
 using namespace fmitcp;
 using namespace fmitcp::serialize;
 using namespace sc;
+using namespace common;
 
 #ifndef WIN32
 timeval tl1, tl2;

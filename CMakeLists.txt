@@ -12,11 +12,13 @@ endif()
 
 # cmake_policy(SET CMP0045 OLD)
 
-# CMake Warning (dev):
-#   Policy CMP0042 is not set: MACOSX_RPATH is enabled by default.  Run "cmake
-#   --help-policy CMP0042" for policy details.  Use the cmake_policy command to
-#   set the policy and suppress this warning.
-cmake_policy(SET CMP0042 NEW)
+if (CMAKE_VERSION VERSION_GREATER "3.0")
+    # CMake Warning (dev):
+    #   Policy CMP0042 is not set: MACOSX_RPATH is enabled by default.  Run "cmake
+    #   --help-policy CMP0042" for policy details.  Use the cmake_policy command to
+    #   set the policy and suppress this warning.
+    cmake_policy(SET CMP0042 NEW)
+endif ()
 
 # Set default build type
 if(NOT CMAKE_BUILD_TYPE)

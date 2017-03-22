@@ -5,5 +5,5 @@ mpirun \
     -c 1,8,2,0 -c 2,8,1,7 -c 2,3,0,6 \
     -p 2,5,1 \
     ./kinematictruck/engine/engine.fmu \
-    ./gsl2/clutch/clutch.fmu \
-    ./gsl2/mass_force_fe/mass_force_fe.fmu
+    ./../build/umit-fmus/gsl2/clutch/clutch.fmu \
+    ./../build/umit-fmus/gsl2/mass_force_fe/mass_force_fe.fmu

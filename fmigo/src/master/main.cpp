@@ -185,21 +185,16 @@ static void setupConstraintsAndSolver(vector<strongconnection> strongConnections
         }
         case 's':
         {
-            int ofs = 0;
             if (it->vrORname.size() != 8) {
-                //maybe it's the old type of specification?
-                ofs = 1;
-                if (it->vrORname.size() != 9) {
-                    fprintf(stderr, "Bad shaft specification: need 8 VRs ([shaft angle + angular velocity + angular acceleration + torque] x 2)\n");
-                    exit(1);
-                }
+                fprintf(stderr, "Bad shaft specification: need 8 VRs ([shaft angle + angular velocity + angular acceleration + torque] x 2)\n");
+                exit(1);
             }
 
             StrongConnector *scA = findOrCreateShaftConnector(clients[it->fromFMU],
-                                       toVR(from,ofs+0), toVR(from,ofs+1), toVR(from,ofs+2), toVR(from,ofs+3));
+                                       toVR(from,0), toVR(from,1), toVR(from,2), toVR(from,3));
 
             StrongConnector *scB = findOrCreateShaftConnector(clients[it->toFMU],
-                                       toVR(to,ofs+4), toVR(to,ofs+5), toVR(to,ofs+6), toVR(to,ofs+7));
+                                       toVR(to,4), toVR(to,5), toVR(to,6), toVR(to,7));
 
             con = new ShaftConstraint(scA, scB);
             break;

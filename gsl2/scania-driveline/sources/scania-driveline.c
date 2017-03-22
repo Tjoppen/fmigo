@@ -4,9 +4,9 @@
 #include "modelDescription.h"
 #include "gsl-interface.h"
 
-#if defined(_WIN32) 
+#if defined(_WIN32)
 #define alloca _alloca
-#endif 
+#endif
 #define SIMULATION_TYPE cgsl_simulation
 #define SIMULATION_INIT scania_driveline_init
 #define SIMULATION_FREE cgsl_free_simulation
@@ -24,8 +24,6 @@
 #define SQ(x)  ( x ) * ( x )
 #define min(x,y)  ( ( x ) < ( y ) )?  x : y
 #define max(x,y)  ( ( x ) > ( y ) )?  x : y
-
-
 
 #define inputs (s->md)
 #define outputs (s->md)
@@ -144,11 +142,9 @@ int  fcn( double t, const double * x, double *dxdt, void * params){
   return GSL_SUCCESS;
 }
 
-#define HAVE_INITIALIZATION_MODE
-
 static int sync_out(int n, const double out[], void * params) {
   state_t *s = ( state_t * ) params;
-  double * dxdt = ( double * ) alloca( ( (size_t) n ) * sizeof(double))
+  double * dxdt = ( double * ) alloca( ( (size_t) n ) * sizeof(double));
 
   fcn (0, out, dxdt,  params );
 
@@ -158,10 +154,10 @@ static int sync_out(int n, const double out[], void * params) {
 
 static void scania_driveline_init(state_t *s) {
     double initials[] = {
-      s->md.w_inShaftNeutral, 
+      s->md.w_inShaftNeutral,
       s->md.w_wheel
     };
-    
+
   s->simulation = cgsl_init_simulation(
     cgsl_epce_default_model_init(
       cgsl_model_default_alloc(sizeof(initials)/sizeof(initials[0]), initials, s, fcn, NULL, NULL, NULL, 0),
@@ -170,7 +166,7 @@ static void scania_driveline_init(state_t *s) {
       //sync_out,s
     ),
     rkf45, 1e-5, 0, 0, 0, NULL
-  );
+    );
 }
 
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {

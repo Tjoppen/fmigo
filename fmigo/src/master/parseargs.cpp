@@ -204,9 +204,16 @@ int fmitcp_master::parseArguments( int argc,
                     a = 1; b = 2;  c = 4; d = 5;
                 } else if (values.size() == 6) {
                     //TYPEFROM,FMUFROM,VRFROM,TYPETO,FMUTO,VRTO
+                    //or
+                    //FMUFROM,NAMEFROM,FMUTO,NAMETO,k,m
+                    if (isNumeric(values[1])) {
                     conn.fromType = type_from_char(values[0]);
                     conn.toType   = type_from_char(values[3]);
                     a = 1; b = 2;  c = 4; d = 5;
+                    } else {
+                        conn.slope    = atof(values[4].c_str());
+                        conn.intercept= atof(values[5].c_str());
+                    }
                 } else  if (values.size() == 5) {
                     //TYPE,FMUFROM,VRFROM,FMUTO,VRTO
                     conn.fromType = conn.toType = type_from_char(values[0]);

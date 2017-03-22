@@ -119,10 +119,6 @@ static StrongConnector* findOrCreateShaftConnector(FMIClient *client,
     return sc;
 }
 
-static bool isNumeric(const std::string& input) {
-    return std::all_of(input.begin(), input.end(), ::isdigit);
-}
-
 static int vrFromKeyName(FMIClient* client, string key){
 
   if(isNumeric(key))

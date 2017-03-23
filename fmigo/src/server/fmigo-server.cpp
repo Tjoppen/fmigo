@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
   parse_server_args(argc, argv, &fmuPath, &hdf5Filename, &debugLogging, &log_level, &port);
   int fmigo_loglevel = log_level;
 
-  FMIServer server(fmuPath, debugLogging, log_level, hdf5Filename);
+  FMIServer server(fmuPath, log_level, hdf5Filename);
   if (!server.isFmuParsed())
     return EXIT_FAILURE;
 

@@ -1,4 +1,4 @@
-/* 
+/*
  * File:   fmi-server.h
  * Author: thardin
  *
@@ -19,8 +19,8 @@
 // Define own server
 class FMIServer : public fmitcp::Server {
 public:
-  FMIServer(string fmuPath, bool debugLogging, jm_log_level_enu_t logLevel, string hdf5Filename)
-   : Server(fmuPath, debugLogging, logLevel, hdf5Filename) {}
+  FMIServer(string fmuPath, jm_log_level_enu_t logLevel, string hdf5Filename)
+   : Server(fmuPath, logLevel, hdf5Filename) {}
   ~FMIServer() {};
   void onClientConnect() {
     printf("MyFMIServer::onConnect\n");
@@ -37,4 +37,3 @@ public:
 };
 
 #endif	/* FMI_SERVER_H */
-

@@ -408,7 +408,7 @@ static void pushResults(int step, double t, double endTime, double timeStep, zmq
 #ifdef USE_MPI
 void run_server(string fmuPath, jm_log_level_enu_t loglevel) {
     string hdf5Filename; //TODO?
-    FMIServer server(fmuPath, loglevel >= jm_log_level_debug, loglevel, hdf5Filename);
+    FMIServer server(fmuPath, loglevel, hdf5Filename);
 
     for (;;) {
         int rank, tag;

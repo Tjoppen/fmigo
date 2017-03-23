@@ -59,7 +59,7 @@ namespace fmitcp {
 
   public:
 
-    Server(string fmuPath, bool debugLogging, jm_log_level_enu_t logLevel, std::string hdf5Filename = "", const Logger &logger = Logger());
+    Server(string fmuPath, jm_log_level_enu_t logLevel, std::string hdf5Filename = "", const Logger &logger = Logger());
     virtual ~Server();
 
     /// To be implemented in subclass

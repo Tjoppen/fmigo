@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include <algorithm>
 
 using namespace std;
 
@@ -73,6 +74,10 @@ jm_log_level_enu_t logOptionToJMLogLevel(const char* option) {
         fprintf(stderr, "Invalid logging (%s). Possible options are from 0 to 7.\n", option);
         exit(EXIT_FAILURE);
     }
+}
+
+bool isNumeric(const std::string& input) {
+    return std::all_of(input.begin(), input.end(), ::isdigit);
 }
 
 }

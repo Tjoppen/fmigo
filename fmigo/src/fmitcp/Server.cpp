@@ -265,7 +265,7 @@ string Server::clientData(const char *data, size_t size) {
         categories[i] = fmi2_import_get_log_category(m_fmi2Instance, i);
       }
       // set debug logging. We don't care about its result.
-      status = fmi2_import_set_debug_logging(m_fmi2Instance, fmigo_loglevel = jm_log_level_debug? 1 : 0, nCategories, categories.data());
+      status = fmi2_import_set_debug_logging(m_fmi2Instance, fmigo_loglevel >= jm_log_level_debug, nCategories, categories.data());
     }
 
     SERVER_NORMAL_RESPONSE(set_debug_logging);

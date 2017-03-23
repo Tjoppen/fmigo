@@ -51,6 +51,8 @@ extern std::map<int, const char*> columnnames;
 
 extern int fmigo_loglevel;
 //errors are printed in red
+#define fatal(fmt, args...) do { if (fmigo_loglevel >= fmigo_fatal) { fprintf(stderr, ANSI_COLOR_RED "Fatal: " fmt ANSI_COLOR_RESET, ##args); exit(1);} } while(0)
+//errors are printed in red
 #define error(fmt, args...) do { if (fmigo_loglevel >= fmigo_error) { fprintf(stderr, ANSI_COLOR_RED "Error: " fmt ANSI_COLOR_RESET, ##args); } } while(0)
 //warnings yellow
 #define warning(fmt, args...) do { if (fmigo_loglevel >= fmigo_warning) { fprintf(stderr, ANSI_COLOR_YELLOW "Warning: " fmt ANSI_COLOR_RESET , ##args); } } while(0)

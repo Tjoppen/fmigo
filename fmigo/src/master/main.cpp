@@ -61,8 +61,7 @@ static vector<FMIClient*> setupClients(vector<string> fmuURIs, zmq::context_t &c
         FMIClient *client = new FMIClient(context, clientId, *it);
 
         if (!client) {
-            error("Failed to connect client with URI %s\n", it->c_str());
-            exit(1);
+            fatal("Failed to connect client with URI %s\n", it->c_str());
         }
 
         clients.push_back(client);
@@ -132,9 +131,8 @@ static void setupConstraintsAndSolver(vector<strongconnection> strongConnections
         case 'l':
         {
             if (it->vrs.size() != 38) {
-                error("Bad %s specification: need 38 VRs ([XYZpos + XYZacc + XYZforce + Quat + XYZrotAcc + XYZtorque] x 2), got %zu\n",
+                fatal("Bad %s specification: need 38 VRs ([XYZpos + XYZacc + XYZforce + Quat + XYZrotAcc + XYZtorque] x 2), got %zu\n",
                         t == 'b' ? "ball joint" : "lock", it->vrs.size());
-                exit(1);
             }
 
             StrongConnector *scA = findOrCreateBallLockConnector(clients[it->fromFMU],
@@ -165,8 +163,7 @@ static void setupConstraintsAndSolver(vector<strongconnection> strongConnections
                 //maybe it's the old type of specification?
                 ofs = 1;
                 if (it->vrs.size() != 9) {
-                    error("Bad shaft specification: need 8 VRs ([shaft angle + angular velocity + angular acceleration + torque] x 2)\n");
-                    exit(1);
+                    fatal("Bad shaft specification: need 8 VRs ([shaft angle + angular velocity + angular acceleration + torque] x 2)\n");
                 }
             }
 
@@ -180,8 +177,7 @@ static void setupConstraintsAndSolver(vector<strongconnection> strongConnections
             break;
         }
         default:
-            error("Unknown strong connector type: %s\n", it->type.c_str());
-            exit(1);
+            fatal("Unknown strong connector type: %s\n", it->type.c_str());
         }
 
         solver->addConstraint(con);
@@ -349,8 +345,7 @@ static void printOutputs(double t, BaseMaster *master, vector<FMIClient*>& clien
                 break;
             }
             case fmi2_base_type_enum:
-                error("Enum outputs not allowed for now\n");
-                exit(1);
+                fatal("Enum outputs not allowed for now\n");
             }
         }
     }
@@ -482,8 +477,7 @@ int main(int argc, char *argv[] ) {
     bool zmqControl = command_port > 0 && results_port > 0;
 
     if (printXML) {
-        error("XML mode not implemented\n");
-        return 1;
+        fatal("XML mode not implemented\n");
     }
 
     if (quietMode) {

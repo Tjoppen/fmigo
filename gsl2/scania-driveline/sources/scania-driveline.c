@@ -48,7 +48,7 @@ int  fcn( double t, const double * x, double *dxdt, void * params){
   double tq_inputShaft =  -outputs.f_shaft_out + inputs.f_shaft_in;
 
   // coupling force on wheel from input springs or force
-  outputs.f_wheel_out = k1 * ( inputs.w_wheel - inputs.w_wheel_in ); 
+  outputs.f_wheel_out = inputs.k1 * ( inputs.w_wheel - inputs.w_wheel_in ); 
   double tq_inputWheel = -outputs.f_wheel_out +  inputs.f_wheel_in;
   
 

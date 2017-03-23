@@ -18,8 +18,7 @@ namespace fmitcp {
   class Server {
 
   private:
-      int fmigo_loglevel;
-      //Logger m_logger;
+    int fmigo_loglevel;
     bool m_sendDummyResponses;
     bool m_fmuParsed;
     ::google::protobuf::int32 nextStateId;

@@ -14,6 +14,7 @@ using namespace fmitcp;
 
 #include "parse_server_args.cpp"
 
+int fmigo_loglevel;
 class mymonitor : public zmq::monitor_t {
 public:
   virtual void on_event_disconnected(const zmq_event_t &event_, const char* addr_) {
@@ -49,7 +50,7 @@ int main(int argc, char *argv[]) {
   string hdf5Filename;
 
   parse_server_args(argc, argv, &fmuPath, &hdf5Filename, &debugLogging, &log_level, &port);
-  int fmigo_loglevel = log_level;
+  fmigo_loglevel = log_level;
 
   FMIServer server(fmuPath, log_level, hdf5Filename);
   if (!server.isFmuParsed())

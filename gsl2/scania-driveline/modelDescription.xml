@@ -91,7 +91,7 @@
                     causality      = "input"
                     variability    = "discrete"
                     initial        = "approx">
-        <Real start="0" />
+        <Real start="10" /> <!-- monkey ass value to get something for default experiment -->
     </ScalarVariable>  <!--index="10" -->
     <ScalarVariable name           = "tq_losses"
                     valueReference = "9"
@@ -99,7 +99,7 @@
                     causality      = "input"
                     variability    = "discrete"
                     initial        = "approx">
-        <Real start="0" />
+        <Real start="1" /><!-- monkey ass value to get something for default experiment -->
     </ScalarVariable>  <!--index="11" -->
     <ScalarVariable name           = "r_tire"
                     valueReference = "10"
@@ -107,7 +107,7 @@
                     causality      = "input"
                     variability    = "discrete"
                     initial        = "approx">
-        <Real start="0" />
+        <Real start="1" />
     </ScalarVariable>  <!--index="12" -->
     <ScalarVariable name           = "m_vehicle"
                     valueReference = "11"
@@ -115,7 +115,7 @@
                     causality      = "input"
                     variability    = "discrete"
                     initial        = "approx">
-        <Real start="0" />
+        <Real start="100" />
     </ScalarVariable>  <!--index="13" -->
     <ScalarVariable name           = "final_gear_ratio"
                     valueReference = "12"
@@ -123,7 +123,7 @@
                     causality      = "input"
                     variability    = "discrete"
                     initial        = "approx">
-        <Real start="0" />
+        <Real start="10" />
     </ScalarVariable>  <!--index="14" -->
     <ScalarVariable name           = "w_eng"
                     valueReference = "13"
@@ -131,7 +131,7 @@
                     causality      = "input"
                     variability    = "discrete"
                     initial        = "approx">
-        <Real start="0" />
+        <Real start="10" />
     </ScalarVariable>  <!--index="15" -->
     <ScalarVariable name           = "tq_eng"
                     valueReference = "14"
@@ -139,7 +139,7 @@
                     causality      = "input"
                     variability    = "discrete"
                     initial        = "approx">
-        <Real start="0" />
+        <Real start="1000" />
     </ScalarVariable>  <!--index="16" -->
     <ScalarVariable name           = "J_eng"
                     valueReference = "15"
@@ -147,7 +147,7 @@
                     causality      = "input"
                     variability    = "discrete"
                     initial        = "approx">
-        <Real start="0" />
+        <Real start="4" />
     </ScalarVariable>  <!--index="17" -->
     <ScalarVariable name           = "J_neutral"
                     valueReference = "16"
@@ -155,7 +155,7 @@
                     causality      = "input"
                     variability    = "discrete"
                     initial        = "approx">
-        <Real start="0" />
+        <Real start="10" />
     </ScalarVariable>  <!--index="18" -->
     <ScalarVariable name           = "tq_brake"
                     valueReference = "17"
@@ -171,7 +171,7 @@
                     causality      = "input"
                     variability    = "discrete"
                     initial        = "approx">
-        <Real start="0" />
+        <Real start="10" />
     </ScalarVariable>  <!--index="20" -->
     <ScalarVariable name           = "r_slipFilt"
                     valueReference = "19"
@@ -243,25 +243,29 @@
                     causality      = "output"
                     variability    = "discrete">
           <Real />
-    </ScalarVariable>  <!--index="30" -->
+    </ScalarVariable>
+
+    <!--index="30" -->
     <ScalarVariable name           = "k1"
                     valueReference = "30"
-                    description    = "spring constant"
+                    description    = "coupling spring constant on the shaft"
                     causality      = "parameter"
                     variability    = "fixed"
                     initial        = "exact">
-        <Real start="0"/>
-    </ScalarVariable>  <!--index="31" -->
+        <Real start="100"/>
+    </ScalarVariable>
+
+    <!--index="31" -->
     <ScalarVariable name           = "f_shaft_out"
                     valueReference = "31"
-                    description    = "r_slip"
+                    description    = "coupling force out"
                     causality      = "output"
                     variability    = "discrete">
           <Real />
     </ScalarVariable>  <!--index="32" -->
     <ScalarVariable name           = "w_shaft_in"
                     valueReference = "32"
-                    description    = "r_slip"
+                    description    = "velocity of coupled FMU"
                     causality      = "input"
                     variability    = "discrete"
                     initial        = "approx">
@@ -269,14 +273,14 @@
     </ScalarVariable>  <!--index="33" -->
     <ScalarVariable name           = "w_wheel_out"
                     valueReference = "33"
-                    description    = "r_slip"
+                    description    = "output velocity of wheel"
                     causality      = "output"
                     variability    = "discrete">
           <Real />
     </ScalarVariable>  <!--index="34" -->
     <ScalarVariable name           = "f_wheel_in"
                     valueReference = "34"
-                    description    = "r_slip"
+                    description    = "input coupling force on wheel"
                     causality      = "input"
                     variability    = "discrete"
                     initial        = "approx">
@@ -284,7 +288,7 @@
     </ScalarVariable>  <!--index="35" -->
     <ScalarVariable name           = "k2"
                     valueReference = "35"
-                    description    = "Model time [s]"
+                    description    = "coupling spring on the wheel"
                     causality      = "parameter"
                     variability    = "fixed"
                     initial        = "exact">
@@ -292,14 +296,14 @@
     </ScalarVariable>  <!--index="36" -->
     <ScalarVariable name           = "w_shaft_out"
                     valueReference = "36"
-                    description    = "r_slip"
+                    description    = "output shaft angular velocity"
                     causality      = "output"
                     variability    = "discrete">
           <Real />
     </ScalarVariable>  <!--index="37" -->
     <ScalarVariable name           = "f_shaft_in"
                     valueReference = "37"
-                    description    = "r_slip"
+                    description    = "coupling input force"
                     causality      = "input"
                     variability    = "discrete"
                     initial        = "approx">
@@ -307,14 +311,14 @@
     </ScalarVariable>  <!--index="38" -->
     <ScalarVariable name           = "f_wheel_out"
                     valueReference = "38"
-                    description    = "r_slip"
+                    description    = "output coupling force at wheel"
                     causality      = "output"
                     variability    = "discrete">
           <Real />
     </ScalarVariable>  <!--index="39" -->
     <ScalarVariable name           = "w_wheel_in"
                     valueReference = "39"
-                    description    = "r_slip"
+                    description    = "coupling input angular velocity"
                     causality      = "input"
                     variability    = "discrete"
                     initial        = "approx">

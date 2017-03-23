@@ -43,9 +43,14 @@ int  fcn( double t, const double * x, double *dxdt, void * params){
 
   outputs.w_inShaft = inputs.w_inShaftOld;
 
-  // torque from input springs
-  double tq_inputWheel = inputs.w_wheel_in * inputs.k1 + inputs.f_wheel_in;
-  double tq_inputShaft = inputs.w_shaft_in * inputs.k2 + inputs.f_shaft_in;
+  // coupling torque on shaft from input springs or torque
+  outputs.f_shaft_out =    inputs.k2 * (  inputs.w_inShaft - inputs.w_shaft_in  );
+  double tq_inputShaft =  -outputs.f_shaft_out + inputs.f_shaft_in;
+
+  // coupling force on wheel from input springs or force
+  outputs.f_wheel_out = k1 * ( inputs.w_wheel - inputs.w_wheel_in ); 
+  double tq_inputWheel = -outputs.f_wheel_out +  inputs.f_wheel_in;
+  
 
   double tq_retWheel = inputs.tq_retarder * inputs.final_gear_ratio;
 
@@ -67,7 +72,6 @@ int  fcn( double t, const double * x, double *dxdt, void * params){
 
   if ( inputs.gear_ratio != 0 ){
     tq_loadAtInShaft = tq_loadPropShaft / inputs.gear_ratio;
-    tq_loadAtInShaft += tq_inputShaft;// TODO place after if statement???
 
     J_atInShaft = inputs.m_vehicle * SQ ( ( inputs.r_tire / (inputs.final_gear_ratio*inputs.gear_ratio) ) );
   } else {
@@ -75,9 +79,10 @@ int  fcn( double t, const double * x, double *dxdt, void * params){
     // speed is then integrated and the shaft inertia is set to J_neutral
     // w_inShaftNeutral is the integration result during  outside
     outputs.w_inShaft = inputs.w_inShaftNeutral;
-    tq_loadAtInShaft = 0; // TODO + tq_inputShaft;???
+    tq_loadAtInShaft = 0; 
     J_atInShaft = inputs.J_neutral;
   }
+  tq_loadAtInShaft += tq_inputShaft;
 
   // Clutch balance speed
   // if simplifying the engine and the vehicle as two spinning flywheels attached
@@ -101,7 +106,8 @@ int  fcn( double t, const double * x, double *dxdt, void * params){
 
   outputs.tq_outTransmission = tq_inTransmission * inputs.gear_ratio;
 
-  double tq_sumWheel = outputs.tq_outTransmission * inputs.final_gear_ratio - tq_loadWheelShaft;
+  double tq_sumWheel = outputs.tq_outTransmission * inputs.final_gear_ratio
+  - tq_loadWheelShaft;
 
   // w_wheel is integrate outside
   outputs.w_wheelDer = tq_sumWheel / ( inputs.m_vehicle * SQ( inputs.r_tire ) );
@@ -133,11 +139,8 @@ int  fcn( double t, const double * x, double *dxdt, void * params){
 
   dxdt[ 0 ]  = outputs.w_inShaftDer;
   dxdt[ 1 ]  = outputs.w_wheelDer;
-  outputs.f_shaft_out = outputs.tq_clutch;
   outputs.w_shaft_out = outputs.w_inShaft;
-
   outputs.w_wheel_out = outputs.w_out;
-  outputs.f_wheel_out = tq_sumWheel;
 
   return GSL_SUCCESS;
 }

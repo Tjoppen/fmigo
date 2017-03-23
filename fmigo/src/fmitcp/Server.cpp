@@ -233,7 +233,7 @@ string Server::clientData(const char *data, size_t size) {
 
     // Unpack message
     fmitcp_proto::fmi2_import_get_version_req r; r.ParseFromArray(data, size);
-    debug("< fmi2_import_get_version_req()\n");
+    debug("fmi2_import_get_version_req()\n");
 
     const char* version = "VeRsIoN";
     if (!m_sendDummyResponses) {
@@ -252,7 +252,7 @@ string Server::clientData(const char *data, size_t size) {
 
     // Unpack message
     fmitcp_proto::fmi2_import_set_debug_logging_req r; r.ParseFromArray(data, size);
-    debug("< fmi2_import_set_debug_logging_req(loggingOn=%d,categories=...)\n",r.loggingon());
+    debug("fmi2_import_set_debug_logging_req(loggingOn=%d,categories=...)\n",r.loggingon());
 
     fmi2_status_t status = fmi2_status_ok;
     if (!m_sendDummyResponses) {
@@ -276,7 +276,7 @@ string Server::clientData(const char *data, size_t size) {
     fmitcp_proto::fmi2_import_instantiate_req r; r.ParseFromArray(data, size);
     fmi2_boolean_t visible = r.visible();
 
-    debug("< fmi2_import_instantiate_req(visible=%d)\n", visible);
+    debug("fmi2_import_instantiate_req(visible=%d)\n", visible);
 
     jm_status_enu_t status = jm_status_success;
     if (!m_sendDummyResponses) {

@@ -1132,8 +1132,7 @@ static size_t fmi2_type_size(fmi2_base_type_enu_t type) {
     case fmi2_base_type_int:  return sizeof(fmi2_integer_t);
     case fmi2_base_type_bool: return sizeof(fmi2_boolean_t);
     default:
-        fprintf(stderr, "Type not supported for HDF5 output\n");
-        exit(1);
+        fatal("Type not supported for HDF5 output\n");
     }
 }
 
@@ -1143,8 +1142,7 @@ static hid_t fmi2_type_to_hdf5(fmi2_base_type_enu_t type) {
     case fmi2_base_type_int:  return H5T_NATIVE_INT;
     case fmi2_base_type_bool: return H5T_NATIVE_INT;
     default:
-        fprintf(stderr, "Type not supported for HDF5 output\n");
-        exit(1);
+        fatal("Type not supported for HDF5 output\n");
     }
 }
 
@@ -1191,8 +1189,7 @@ void Server::fillHDF5Row(char *dest, double t) {
         case fmi2_base_type_int:  fmi2_import_get_integer(m_fmi2Instance, &vr, 1, reinterpret_cast<fmi2_integer_t*>(dest + field_offset[x+1])); break;
         case fmi2_base_type_bool: fmi2_import_get_boolean(m_fmi2Instance, &vr, 1, reinterpret_cast<fmi2_boolean_t*>(dest + field_offset[x+1])); break;
         default:
-            fprintf(stderr, "Type not supported for HDF5 output\n");
-            exit(1);
+            fatal("Type not supported for HDF5 output\n");
         }
     }
 }

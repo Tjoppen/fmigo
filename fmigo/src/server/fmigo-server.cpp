@@ -1,3 +1,4 @@
+#include "common/common.h"
 #include <stdio.h>
 #include <sstream>
 #include <stdlib.h>
@@ -48,6 +49,7 @@ int main(int argc, char *argv[]) {
   string hdf5Filename;
 
   parse_server_args(argc, argv, &fmuPath, &hdf5Filename, &debugLogging, &log_level, &port);
+  int fmigo_loglevel = log_level;
 
   FMIServer server(fmuPath, debugLogging, log_level, hdf5Filename);
   if (!server.isFmuParsed())
@@ -56,8 +58,8 @@ int main(int argc, char *argv[]) {
   ostringstream oss;
   oss << "tcp://*:" << port;
 
-  printf("FMI Server %s - %s <-- %s\n",FMITCP_VERSION, oss.str().c_str(), fmuPath.c_str());
-  server.getLogger()->setPrefix("Server: ");
+  info("FMI Server %s - %s <-- %s\n",FMITCP_VERSION, oss.str().c_str(), fmuPath.c_str());
+  //server.getLogger()->setPrefix("Server: ");
 
   zmq::socket_t socket(context, ZMQ_PAIR);
   socket.bind(oss.str().c_str());

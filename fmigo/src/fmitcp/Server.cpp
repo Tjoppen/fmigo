@@ -25,7 +25,6 @@ Server::Server(string fmuPath, bool debugLogging, jm_log_level_enu_t logLevel, s
   m_fmi2Outputs = NULL;
   m_fmuParsed = true;
   m_fmuPath = fmuPath;
-  m_debugLogging = debugLogging;
   m_logLevel = logLevel;
   fmigo_loglevel = logLevel;
   this->hdf5Filename = hdf5Filename;
@@ -266,7 +265,7 @@ string Server::clientData(const char *data, size_t size) {
         categories[i] = fmi2_import_get_log_category(m_fmi2Instance, i);
       }
       // set debug logging. We don't care about its result.
-      status = fmi2_import_set_debug_logging(m_fmi2Instance, m_debugLogging, nCategories, categories.data());
+      status = fmi2_import_set_debug_logging(m_fmi2Instance, fmigo_loglevel = jm_log_level_debug? 1 : 0, nCategories, categories.data());
     }
 
     SERVER_NORMAL_RESPONSE(set_debug_logging);

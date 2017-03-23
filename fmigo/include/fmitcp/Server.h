@@ -34,7 +34,6 @@ namespace fmitcp {
 
     /// FMU logging level
     jm_log_level_enu_t m_logLevel;
-    bool m_debugLogging;
     jm_callbacks m_jmCallbacks;
 
     /// Directory for the unpacked FMU

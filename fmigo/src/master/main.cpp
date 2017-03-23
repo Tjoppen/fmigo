@@ -177,7 +177,8 @@ static void setupConstraintsAndSolver(vector<strongconnection> strongConnections
             break;
         }
         default:
-            fatal("Unknown strong connector type: %s\n", it->type.c_str());
+            error("Unknown strong connector type: %s\n", it->type.c_str());
+            exit(1);
         }
 
         solver->addConstraint(con);
@@ -465,14 +466,12 @@ int main(int argc, char *argv[] ) {
     int command_port = 0, results_port = 0;
     bool paused = false, running = true, solveLoops = false;
 
-    if (parseArguments(
+    parseArguments(
             argc, argv, &fmuURIs, &connections, &params, &endTime, &timeStep,
             &loglevel, &csv_separator, &outFilePath, &quietMode, &fileFormat,
             &method, &realtimeMode, &printXML, &stepOrder, &fmuVisibilities,
             &scs, &hdf5Filename, &fieldnameFilename, &holonomic, &compliance,
-            &command_port, &results_port, &paused, &solveLoops)) {
-        return 1;
-    }
+            &command_port, &results_port, &paused, &solveLoops) ;
 
     bool zmqControl = command_port > 0 && results_port > 0;
 
@@ -512,8 +511,7 @@ int main(int argc, char *argv[] ) {
         snprintf(addr, sizeof(addr), "tcp://*:%i", results_port);
         push_socket.bind(addr);
     } else if (paused) {
-        error("-Z requires -z\n");
-        return 1;
+        fatal("-Z requires -z\n");
     }
 
 #ifdef USE_MPI
@@ -541,8 +539,7 @@ int main(int argc, char *argv[] ) {
 
     if (scs.size()) {
         if (method != jacobi) {
-            error("Can only do Jacobi stepping for weak connections when also doing strong coupling\n");
-            return 1;
+            fatal("Can only do Jacobi stepping for weak connections when also doing strong coupling\n");
         }
 
         solver.setSpookParams(relaxation,compliance,timeStep);

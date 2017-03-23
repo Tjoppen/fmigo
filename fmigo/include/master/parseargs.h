@@ -77,7 +77,7 @@ enum METHOD {
  * @param numStepOrder
  * @return int Returns 0 if the program should proceed, 1 if the program should end.
  */
-int parseArguments( int argc,
+void parseArguments( int argc,
                     char *argv[],
                     std::vector<std::string> *fmuFilePaths,
                     std::vector<connection> *connections,

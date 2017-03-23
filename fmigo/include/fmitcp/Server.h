@@ -18,7 +18,8 @@ namespace fmitcp {
   class Server {
 
   private:
-    Logger m_logger;
+      int fmigo_loglevel;
+      //Logger m_logger;
     bool m_sendDummyResponses;
     bool m_fmuParsed;
     ::google::protobuf::int32 nextStateId;
@@ -78,9 +79,6 @@ namespace fmitcp {
 
     /// Set to true to start ignoring the local FMU and just send back dummy responses. Good for debugging the protocol.
     void sendDummyResponses(bool);
-
-    Logger* getLogger() {return &m_logger;}
-    void setLogger(const Logger &logger) {m_logger = logger;}
 
     bool isFmuParsed() {return m_fmuParsed;}
 

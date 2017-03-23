@@ -1,7 +1,6 @@
 #include <fstream>
 #include <sstream>
 #include <fmitcp/Client.h>
-#include <fmitcp/Logger.h>
 #include <fmitcp/serialize.h>
 
 #include "master/BaseMaster.h"

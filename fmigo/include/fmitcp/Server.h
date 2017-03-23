@@ -4,7 +4,6 @@
 #include <string>
 #define FMILIB_BUILDING_LIBRARY
 #include <fmilib.h>
-#include "Logger.h"
 #include "fmitcp.pb.h"
 #include "common.h"
 #include <map>
@@ -59,7 +58,7 @@ namespace fmitcp {
 
   public:
 
-    Server(string fmuPath, jm_log_level_enu_t logLevel, std::string hdf5Filename = "", const Logger &logger = Logger());
+    Server(string fmuPath, jm_log_level_enu_t logLevel, std::string hdf5Filename = "");
     virtual ~Server();
 
     /// To be implemented in subclass

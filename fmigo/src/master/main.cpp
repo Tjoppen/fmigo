@@ -1,7 +1,6 @@
 #include <string>
 #include <fmitcp/Client.h>
 #include <fmitcp/common.h>
-#include <fmitcp/Logger.h>
 #ifdef USE_MPI
 #include <mpi.h>
 #include "common/mpi_tools.h"

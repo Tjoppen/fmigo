@@ -1,5 +1,4 @@
 #include "Client.h"
-#include "Logger.h"
 #include "common.h"
 #include <stdio.h>
 #ifndef WIN32

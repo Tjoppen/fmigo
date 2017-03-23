@@ -21,7 +21,7 @@ void jmCallbacksLogger(jm_callbacks* c, jm_string module, jm_log_level_enu_t log
   fflush(NULL);
 }
 
-Server::Server(string fmuPath, jm_log_level_enu_t logLevel, std::string hdf5Filename, const Logger &logger) {
+Server::Server(string fmuPath, jm_log_level_enu_t logLevel, std::string hdf5Filename) {
   m_fmi2Outputs = NULL;
   m_fmuParsed = true;
   m_fmuPath = fmuPath;

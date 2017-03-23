@@ -94,8 +94,7 @@ int main(int argc, char *argv[]) {
     if (items[0].revents & ZMQ_POLLIN) {
       zmq::message_t msg;
       if (!socket.recv(&msg)) {
-          fprintf(stderr, "Port %i: !socket.recv(&msg)\n", port);
-          exit(1);
+          fatal("Port %i: !socket.recv(&msg)\n", port);
       }
       string str = server.clientData(static_cast<char*>(msg.data()), msg.size());
 
@@ -117,7 +116,7 @@ int main(int argc, char *argv[]) {
  } catch (zmq::error_t e) {
       //catch any stray ZMQ exceptions
       //this should prevent "program stopped working" messages on Windows when fmigo-servers are taskkill'd
-      fprintf(stderr, "zmq::error_t: %s\n", e.what());
-      return 1;
+     error("zmq::error_t: %s\n", e.what());
+     return 1;
  }
 }

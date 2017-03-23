@@ -18,7 +18,7 @@ ns = {
     'ssd': 'http://www.pmsf.net/xsd/SystemStructureDescriptionDraft',
     'ssv': 'http://www.pmsf.net/xsd/SystemStructureParameterValuesDraft',
     'ssm': 'http://www.pmsf.net/xsd/SystemStructureParameterMappingDraft',
-    'umit':'http://umit.math.umu.se/UMITSSD',
+    'fmigo':'http://umit.math.umu.se/FmiGo.xsd',
 }
 d = tempfile.mkdtemp(prefix='ssp')
 print(d)
@@ -31,7 +31,7 @@ schema_names = {
     'SSD': 'SystemStructureDescription.xsd',
     'SSM': 'SystemStructureParameterMapping.xsd',
     'SSV': 'SystemStructureParameterValues.xsd',
-    'UMIT':'UMITSSD.xsd',
+    'FmiGo':'FmiGo.xsd',
 }
 schemas = {}
 
@@ -323,8 +323,8 @@ class SystemStructure:
         units = find_elements(root, 'ssd:Units', 'ssd:Unit')
         self.name = get_attrib(root, 'name')
 
-        #not sure what to use schemaLocation for, or if we should even require it
-        # self.schemaLocation = get_attrib(root, '{http://www.w3.org/2001/XMLSchema-instance}schemaLocation')
+        # Get schemaLocation if set. This avoids some residual XML
+        self.schemaLocation = get_attrib(root, '{http://www.w3.org/2001/XMLSchema-instance}schemaLocation', '')
 
         # Units keyed on name. Like {name: {'units': (units,), 'factor': 1, 'offset': 0}}
         self.unitsbyname = {}
@@ -489,6 +489,25 @@ class System:
             cparams = find_elements(comp, 'ssd:ParameterBindings', 'ssd:ParameterBinding')
             parse_parameter_bindings(self.d, self.get_name() + '.' + name + '.', cparams)
             remove_if_empty(comp, cparams[0])
+
+            cannotations = find_elements(comp, 'ssd:Annotations', 'ssd:Annotation')
+            for cannotation in cannotations[1]:
+                type = get_attrib(cannotation, 'type')
+                if type == 'se.umu.math.umit.ssp.physicalconnectors':
+                    if 'FmiGo' in schemas:
+                        schemas['FmiGo'].assertValid(cannotation[0])
+
+                    for pc in cannotation.findall('fmigo:PhysicalConnector1D', ns):
+                        get_attrib(pc, 'name')
+                        get_attrib(pc, 'stateVariable')
+                        get_attrib(pc, 'flowVariable')
+                        get_attrib(pc, 'accelerationVariable')
+                        get_attrib(pc, 'effortVariable')
+                        remove_if_empty(cannotation, pc)
+                else:
+                    print('WARNING: Found unknown Annotation of type "%s"' % type)
+                remove_if_empty(cannotations[0], cannotation)
+            remove_if_empty(comp, cannotations[0])
             remove_if_empty(components[0], comp)
 
         self.signaldicts = {}
@@ -524,23 +543,16 @@ class System:
         for annotation in annotations[1]:
             type = get_attrib(annotation, 'type')
             if type == 'se.umu.math.umit.ssp.kinematicconstraints':
-                if 'UMIT' in schemas:
-                    schemas['UMIT'].assertValid(annotation[0])
+                if 'FmiGo' in schemas:
+                    schemas['FmiGo'].assertValid(annotation[0])
 
-                for shaft in find_elements(annotation, 'umit:KinematicConstraints', 'umit:ShaftConstraint')[1]:
+                for shaft in annotation.findall('fmigo:ShaftConstraint', ns):
                     get_attrib(shaft, 'element1')
                     get_attrib(shaft, 'element2')
-                    get_attrib(shaft, 'angle1', '')
-                    get_attrib(shaft, 'angle2', '')
-                    get_attrib(shaft, 'angularVelocity1')
-                    get_attrib(shaft, 'angularVelocity2')
-                    get_attrib(shaft, 'angularAcceleration1')
-                    get_attrib(shaft, 'angularAcceleration2')
-                    get_attrib(shaft, 'torque1')
-                    get_attrib(shaft, 'torque2')
-                    remove_if_empty(annotation[0], shaft)
-
-                remove_if_empty(annotation, annotation[0])
+                    get_attrib(shaft, 'connector1')
+                    get_attrib(shaft, 'connector2')
+                    get_attrib(shaft, 'holonomic')
+                    remove_if_empty(annotation, shaft)
             else:
                 print('WARNING: Found unknown Annotation of type "%s"' % type)
             remove_if_empty(annotations[0], annotation)

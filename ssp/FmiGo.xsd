@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Annotations for SystemStructureDescription files -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
+    xmlns:fmigo="http://umit.math.umu.se/FmiGo.xsd"
+    targetNamespace="http://umit.math.umu.se/FmiGo.xsd">
+
+  <xs:element name="PhysicalConnector1D">
+    <xs:complexType>
+      <xs:attribute name="name" type="xs:string" use="required"/>
+      <xs:attribute name="stateVariable" type="xs:string" use="optional">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">
+            stateVariable may be omitted if a connector is only used in non-holonomic constraints.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="flowVariable" type="xs:string" use="required"/>
+      <xs:attribute name="accelerationVariable" type="xs:string" use="required"/>
+      <xs:attribute name="effortVariable" type="xs:string" use="required"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="ShaftConstraint">
+    <xs:complexType>
+      <xs:attribute name="element1" type="xs:string" use="required"/>
+      <xs:attribute name="element2" type="xs:string" use="required"/>
+      <xs:attribute name="connector1" type="xs:string" use="required"/>
+      <xs:attribute name="connector2" type="xs:string" use="required"/>
+      <xs:attribute name="holonomic" type="xs:boolean" use="required"/>
+    </xs:complexType>
+  </xs:element>
+
+</xs:schema>

@@ -16,7 +16,7 @@ using namespace common;
  * Callback function for FMILibrary. Logs the FMILibrary operations.
  */
 void jmCallbacksLoggerClient(jm_callbacks* c, jm_string module, jm_log_level_enu_t log_level, jm_string message) {
-  fprintf(stderr, "[module = %s][log level = %s] %s\n", module, jm_log_level_to_string(log_level), message);fflush(NULL);
+    info("[module = %s][log level = %s] %s\n", module, jm_log_level_to_string(log_level), message);fflush(NULL);
 }
 
 #ifdef USE_MPI
@@ -119,8 +119,7 @@ const variable_map& FMIClient::getVariables() const {
 
 void FMIClient::setVariables() {
     if (!m_fmi2Instance) {
-        fprintf(stderr, "!m_fmi2Instance in FMIClient::getVariables() - get_xml() failed?\n");
-        exit(1);
+        fatal("!m_fmi2Instance in FMIClient::getVariables() - get_xml() failed?\n");
     }
 
     fmi2_import_variable_list_t *vl = fmi2_import_get_variable_list(m_fmi2Instance, 0);
@@ -137,7 +136,7 @@ void FMIClient::setVariables() {
         //fprintf(stderr, "VR %i, type %i, causality %i: %s \"%s\"\n", var2.vr, var2.type, var2.causality, name.c_str(), fmi2_import_get_variable_description(var));
 
         if (m_variables.find(name) != m_variables.end()) {
-            fprintf(stderr, "WARNING: Two or variables named \"%s\"\n", name.c_str());
+            warning("Two or variables named \"%s\"\n", name.c_str());
         }
         m_variables[name] = var2;
     }
@@ -371,8 +370,7 @@ void FMIClient::sendGetX(const SendGetXType& typeRefs) {
                 sendMessage(fmi2_import_get_string(it->second));
                 break;
             case fmi2_base_type_enum:
-                fprintf(stderr, "fmi2_base_type_enum snuck its way into FMIClient::sendGetX() somehow\n");
-                exit(1);
+                fatal("fmi2_base_type_enum snuck its way into FMIClient::sendGetX() somehow\n");
             }
         }
     }
@@ -390,8 +388,7 @@ template<typename T> vector<T> vectorToBaseType(const vector<MultiValue>& in, T 
 void FMIClient::sendSetX(const SendSetXType& typeRefsValues) {
     for (auto it = typeRefsValues.begin(); it != typeRefsValues.end(); it++) {
         if (it->second.first.size() != it->second.second.size()) {
-            fprintf(stderr, "VR-values count mismatch - something is wrong\n");
-            exit(1);
+            fatal("VR-values count mismatch - something is wrong\n");
         }
 
         if (it->second.first.size() > 0) {
@@ -409,8 +406,7 @@ void FMIClient::sendSetX(const SendSetXType& typeRefsValues) {
                 sendMessage(fmi2_import_set_string (it->second.first, vectorToBaseType(it->second.second, &MultiValue::s)));
                 break;
             case fmi2_base_type_enum:
-                fprintf(stderr, "fmi2_base_type_enum snuck its way into FMIClient::sendSetX() somehow\n");
-                exit(1);
+                fatal("fmi2_base_type_enum snuck its way into FMIClient::sendSetX() somehow\n");
             }
         }
     }

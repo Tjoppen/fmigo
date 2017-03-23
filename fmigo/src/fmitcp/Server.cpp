@@ -2,7 +2,6 @@
 
 #include "Server.h"
 #include "common.h"
-#include "common/common.h"
 #include "fmitcp.pb.h"
 #include <FMI2/fmi2_xml_variable.h>
 #ifndef WIN32
@@ -57,8 +56,7 @@ Server::Server(string fmuPath, jm_log_level_enu_t logLevel, std::string hdf5File
   // working directory
   char* dir;
   if (!(dir = fmi_import_mk_temp_dir(&m_jmCallbacks, NULL, "fmitcp_"))) {
-    fprintf(stderr, "fmi_import_mk_temp_dir() failed\n");
-    exit(1);
+    fatal("fmi_import_mk_temp_dir() failed\n");
   }
   m_workingDir = dir; // convert to std::string
   free(dir);
@@ -160,31 +158,31 @@ void Server::setStartValues() {
             case fmi2_base_type_real: {
                 fmi2_real_t r = fmi2_xml_get_real_variable_start(fmi2_xml_get_variable_as_real(var));
                 fmi2_import_set_real(m_fmi2Instance, &vr, 1, &r);
-                //fprintf(stderr, "Setting start=%f for VR=%i\n", r, vr);
+                debug("Setting start=%f for VR=%i\n", r, vr);
                 break;
             }
             case fmi2_base_type_int: {
                 fmi2_integer_t i = fmi2_xml_get_integer_variable_start(fmi2_xml_get_variable_as_integer(var));
                 fmi2_import_set_integer(m_fmi2Instance, &vr, 1, &i);
-                //fprintf(stderr, "Setting start=%i for VR=%i\n", i, vr);
+                debug("Setting start=%i for VR=%i\n", i, vr);
                 break;
             }
             case fmi2_base_type_bool: {
                 fmi2_boolean_t b = fmi2_xml_get_boolean_variable_start(fmi2_xml_get_variable_as_boolean(var));
                 fmi2_import_set_boolean(m_fmi2Instance, &vr, 1, &b);
-                //fprintf(stderr, "Setting start=%i for VR=%i\n", b, vr);
+                debug("Setting start=%i for VR=%i\n", b, vr);
                 break;
             }
             case fmi2_base_type_str: {
                 fmi2_string_t s = fmi2_xml_get_string_variable_start(fmi2_xml_get_variable_as_string(var));
                 fmi2_import_set_string(m_fmi2Instance, &vr, 1, &s);
-                //fprintf(stderr, "Setting start=%s for VR=%i\n", s, vr);
+                debug("Setting start=%s for VR=%i\n", s, vr);
                 break;
             }
             case fmi2_base_type_enum: {
                 fmi2_integer_t i = fmi2_xml_get_enum_variable_start(fmi2_xml_get_variable_as_enum(var));
                 fmi2_import_set_integer(m_fmi2Instance, &vr, 1, &i);
-                //fprintf(stderr, "Setting start=%i for VR=%i\n", i, vr);
+                debug("Setting start=%i for VR=%i\n", i, vr);
                 break;
             }
             }
@@ -192,7 +190,7 @@ void Server::setStartValues() {
     }
 
     if (nstart) {
-        fprintf(stderr, "%s: Initialized %i variables with values from modelDescription.xml\n", m_instanceName, nstart);
+        info("%s: Initialized %i variables with values from modelDescription.xml\n", m_instanceName, nstart);
     }
 }
 
@@ -296,7 +294,7 @@ string Server::clientData(const char *data, size_t size) {
     if (hdf5Filename.length()) {
         //dump hdf5 data
         //NOTE: this will only work if we have exactly one FMU instance on this server
-        fprintf(stderr, "Gathered %li B HDF5 data\n", nrecords*rowsz);
+        info("Gathered %li B HDF5 data\n", nrecords*rowsz);
         writeHDF5File(hdf5Filename, field_offset, field_types, field_names, "FMU", "fmu", nrecords, rowsz, hdf5data.data());
         nrecords = 0;
         hdf5data.clear();
@@ -1112,8 +1110,7 @@ string Server::clientData(const char *data, size_t size) {
   }
 
   if (ret.second == "error") {
-    fprintf(stderr, "error!: %i\n", ret.first);
-    exit(1);
+    fatal("error!: %i\n", ret.first);
   }
 
   if (sendResponse) {

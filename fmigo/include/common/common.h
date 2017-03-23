@@ -33,13 +33,13 @@ extern int columnofs;
 extern std::map<int, const char*> columnnames;
 #define MAX_TIME_COLS 20    //for estimating the size of timelog
 
-#define fmigo_nothing 0
-#define fmigo_fatal   1
-#define fmigo_error   2
-#define fmigo_warning 3
-#define fmigo_info    4
-#define fmigo_debug   5
-#define fmigo_all     6
+/* #define jm_log_level_nothing 0 */
+/* #define jm_log_level_fatal   1 */
+/* #define jm_log_level_error   2 */
+/* #define jm_log_level_warning 3 */
+/* #define jm_log_level_info    4 */
+/* #define jm_log_level_debug   5 */
+/* #define jm_log_level_all     6 */
 
 #define ANSI_COLOR_RED     "\x1b[31m"
 #define ANSI_COLOR_GREEN   "\x1b[32m"
@@ -49,17 +49,17 @@ extern std::map<int, const char*> columnnames;
 #define ANSI_COLOR_CYAN    "\x1b[36m"
 #define ANSI_COLOR_RESET   "\x1b[0m"
 
-extern int fmigo_loglevel;
+extern int fmigo_loglevel ;
+//fatal are printed in red
+#define fatal(fmt, args...) do { if (fmigo_loglevel >= jm_log_level_fatal) { fprintf(stderr, ANSI_COLOR_RED "Fatal: " fmt ANSI_COLOR_RESET, ##args); exit(1);} } while(0)
 //errors are printed in red
-#define fatal(fmt, args...) do { if (fmigo_loglevel >= fmigo_fatal) { fprintf(stderr, ANSI_COLOR_RED "Fatal: " fmt ANSI_COLOR_RESET, ##args); exit(1);} } while(0)
-//errors are printed in red
-#define error(fmt, args...) do { if (fmigo_loglevel >= fmigo_error) { fprintf(stderr, ANSI_COLOR_RED "Error: " fmt ANSI_COLOR_RESET, ##args); } } while(0)
+#define error(fmt, args...) do { if (fmigo_loglevel >= jm_log_level_error) { fprintf(stderr, ANSI_COLOR_RED "Error: " fmt ANSI_COLOR_RESET, ##args); } } while(0)
 //warnings yellow
-#define warning(fmt, args...) do { if (fmigo_loglevel >= fmigo_warning) { fprintf(stderr, ANSI_COLOR_YELLOW "Warning: " fmt ANSI_COLOR_RESET , ##args); } } while(0)
+#define warning(fmt, args...) do { if (fmigo_loglevel >= jm_log_level_warning) { fprintf(stderr, ANSI_COLOR_YELLOW "Warning: " fmt ANSI_COLOR_RESET , ##args); } } while(0)
 //info normal
-#define info(fmt, args...) do { if (fmigo_loglevel >= fmigo_info) { fprintf(stderr, "Info: " fmt, ##args); } } while(0)
+#define info(fmt, args...) do { if (fmigo_loglevel >= jm_log_level_info) { fprintf(stderr, "Info: " fmt, ##args); } } while(0)
 #ifdef DEBUG
-#define debug(fmt, args...) do { if (fmigo_loglevel >= fmigo_debug) { fprintf(stderr, "Debug: " fmt "\n", ##args } } while(0)
+#define debug(fmt, args...) do { if (fmigo_loglevel >= jm_log_level_debug) { fprintf(stderr, "Debug: " fmt "\n", ##args } } while(0)
 #else
 #define debug(fmt, ...)
 #endif

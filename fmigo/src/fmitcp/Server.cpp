@@ -1,7 +1,6 @@
 #include <fstream>
 
 #include "Server.h"
-//#include "Logger.h"
 #include "common.h"
 #include "common/common.h"
 #include "fmitcp.pb.h"
@@ -18,7 +17,9 @@ using namespace fmitcp;
  * Callback function for FMILibrary. Logs the FMILibrary operations.
  */
 void jmCallbacksLogger(jm_callbacks* c, jm_string module, jm_log_level_enu_t log_level, jm_string message) {
-  fprintf(stderr, "[module = %s][log level = %s] %s\n", module, jm_log_level_to_string(log_level), message);fflush(NULL);
+  int fmigo_loglevel = log_level;
+  debug("[module = %s][log level = %s] %s\n", module, jm_log_level_to_string(log_level), message);
+  fflush(NULL);
 }
 
 Server::Server(string fmuPath, jm_log_level_enu_t logLevel, std::string hdf5Filename, const Logger &logger) {

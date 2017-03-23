@@ -71,8 +71,7 @@ jm_log_level_enu_t logOptionToJMLogLevel(const char* option) {
     case 6: return jm_log_level_debug;
     case 7: return jm_log_level_all;
     default:
-        fprintf(stderr, "Invalid logging (%s). Possible options are from 0 to 7.\n", option);
-        exit(EXIT_FAILURE);
+        fatal("Invalid logging (%s). Possible options are from 0 to 7.\n", option);
     }
 }
 

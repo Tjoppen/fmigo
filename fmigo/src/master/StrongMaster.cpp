@@ -19,7 +19,7 @@ using namespace sc;
 StrongMaster::StrongMaster(vector<FMIClient*> clients, vector<WeakConnection> weakConnections, Solver strongCouplingSolver, bool holonomic) :
         JacobiMaster(clients, weakConnections),
         m_strongCouplingSolver(strongCouplingSolver), holonomic(holonomic) {
-    fprintf(stderr, "StrongMaster (%s)\n", holonomic ? "holonomic" : "non-holonomic");
+    info("StrongMaster (%s)\n", holonomic ? "holonomic" : "non-holonomic");
 }
 
 void StrongMaster::prepare() {
@@ -67,10 +67,8 @@ void StrongMaster::runIteration(double t, double dt) {
     for(size_t i=0; i<m_clients.size(); i++){
         //check m_getDirectionalDerivativeValues while we're at it
         if (m_clients[i]->m_getDirectionalDerivativeValues.size() > 0) {
-            fprintf(stderr, "WARNING: Client %zu had %zu unprocessed directional derivative results\n", i,
+            fatal("Client %zu had %zu unprocessed directional derivative results\n", i,
                     m_clients[i]->m_getDirectionalDerivativeValues.size());
-            exit(1);
-            m_clients[i]->m_getDirectionalDerivativeValues.clear();
         }
 
         const vector<int> valueRefs = m_clients[i]->getStrongConnectorValueReferences();
@@ -84,9 +82,9 @@ void StrongMaster::runIteration(double t, double dt) {
     for (size_t i=0; i<m_clients.size(); i++){
         FMIClient *client = m_clients[i];
         vector<int> vrs = client->getStrongConnectorValueReferences();
-        /*fprintf(stderr, "m_getRealValues:\n");
+        /*debug("m_getRealValues:\n");
         for (int j = 0; j < client->m_getRealValues.size(); j++) {
-            fprintf(stderr, "VR %i = %f\n", vrs[j], client->m_getRealValues[j]);
+             debug("VR %i = %f\n", vrs[j], client->m_getRealValues[j]);
         }*/
 
         client->setConnectorValues(vrs, vector<double>(client->m_getRealValues.begin(), client->m_getRealValues.end()));
@@ -172,8 +170,7 @@ void StrongMaster::runIteration(double t, double dt) {
                             //the reason this is a problem is because we can't always get the positional mobilities for rotational constraints and vice versa
                             //in theory we can though, by just putting zeroes in the relevant places
                             //it's just very hairy, so i'm not doing it right now
-                            fprintf(stderr, "Can't deal with different types of kinematic connections to the same FMU\n");
-                            exit(1);
+                            fatal("Can't deal with different types of kinematic connections to the same FMU\n");
                         }
 
                         if (step == 0) {
@@ -182,8 +179,7 @@ void StrongMaster::runIteration(double t, double dt) {
                                 if (accelerationConnector->hasAcceleration() && forceConnector->hasForce()) {
                                     getDirectionalDerivative(client, eq->jacobianElementForConnector(forceConnector).getSpatial(), accelerationConnector->getAccelerationValueRefs(), forceConnector->getForceValueRefs());
                                 } else {
-                                    fprintf(stderr, "Strong coupling requires acceleration outputs for now\n");
-                                    exit(1);
+                                    fatal("Strong coupling requires acceleration outputs for now\n");
                                 }
                             }
 
@@ -191,8 +187,7 @@ void StrongMaster::runIteration(double t, double dt) {
                                 if (accelerationConnector->hasAngularAcceleration() && forceConnector->hasTorque()) {
                                     getDirectionalDerivative(client, eq->jacobianElementForConnector(forceConnector).getRotational(), accelerationConnector->getAngularAccelerationValueRefs(), forceConnector->getTorqueValueRefs());
                                 } else {
-                                    fprintf(stderr, "Strong coupling requires angular acceleration outputs for now\n");
-                                    exit(1);
+                                    fatal("Strong coupling requires angular acceleration outputs for now\n");
                                 }
                             }
                         } else {
@@ -217,7 +212,7 @@ void StrongMaster::runIteration(double t, double dt) {
                             if (eq->m_isRotational) {
                                 //1-D?
                                 if (accelerationConnector->getAngularAccelerationValueRefs().size() == 1) {
-                                    //fprintf(stderr, "J(%i,%i) = %f\n", I, J, client->m_getDirectionalDerivativeValues.front()[0]);
+                                    //debug("J(%i,%i) = %f\n", I, J, client->m_getDirectionalDerivativeValues.front()[0]);
                                     el.setRotational( client->m_getDirectionalDerivativeValues.front()[0], 0, 0);
                                 } else {
                                     el.setRotational( client->m_getDirectionalDerivativeValues.front()[0],

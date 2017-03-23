@@ -22,7 +22,7 @@ class JacobiMaster : public BaseMaster {
 public:
     JacobiMaster(vector<FMIClient*> clients, vector<WeakConnection> weakConnections) :
             BaseMaster(clients, weakConnections) {
-        fprintf(stderr, "JacobiMaster\n");
+                info("JacobiMaster\n");
     }
 
     void prepare() {
@@ -39,7 +39,7 @@ public:
         /*for (auto it = clientWeakRefs.begin(); it != clientWeakRefs.end(); it++) {
             int i = 0;
             for (auto it2 = it->first->m_getRealValues.begin(); it2 != it->first->m_getRealValues.end(); it2++, i++) {
-                fprintf(stderr, "%i real VR %i = %f\n", it->first->getId(), it->second[i], *it2);
+                debug("%i real VR %i = %f\n", it->first->getId(), it->second[i], *it2);
             }
         }*/
 
@@ -61,7 +61,7 @@ class GaussSeidelMaster : public BaseMaster {
 public:
     GaussSeidelMaster(vector<FMIClient*> clients, vector<WeakConnection> weakConnections, std::vector<int> stepOrder) :
         BaseMaster(clients, weakConnections), stepOrder(stepOrder) {
-        fprintf(stderr, "GSMaster\n");
+            info("GSMaster\n");
     }
 
     void prepare() {
@@ -72,7 +72,6 @@ public:
     }
 
     void runIteration(double t, double dt) {
-        //fprintf(stderr, "\n\n");
         for (int o : stepOrder) {
             FMIClient *client = m_clients[o];
 
@@ -84,7 +83,6 @@ public:
             client->sendSetX(refValues);
             sendWait(client, fmi2_import_do_step(t, dt, true));
         }
-        //fprintf(stderr, "\n\n");
     }
 };
 }

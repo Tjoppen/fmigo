@@ -1,4 +1,5 @@
 #include "common.h"
+#include "common/common.h"
 #include <vector>
 #include <string>
 #include <stdint.h>
@@ -85,11 +86,11 @@ void fmitcp::writeHDF5File(
         const void *buf) {
     //HDF5
     if (hdf5Filename.length()) {
-        fprintf(stderr, "Writing HDF5 file \"%s\"\n", hdf5Filename.c_str());
-        fprintf(stderr, "HDF5 column names:\n");
+        info("Writing HDF5 file \"%s\"\n", hdf5Filename.c_str());
+        info("HDF5 column names:\n");
 
         for (size_t x = 0; x < field_names.size(); x++) {
-            fprintf(stderr, "%2li: %s\n", x, field_names[x]);
+            info("%2li: %s\n", x, field_names[x]);
         }
 
         hid_t file_id = H5Fcreate(hdf5Filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT );
@@ -128,13 +129,11 @@ fmi2_event_info_t fmitcp::protoEventInfoToFmi2EventInfo(fmitcp_proto::fmi2_event
 
 fmitcp_proto::fmitcp_message_Type fmitcp::parseType(const char* data, long size) {
     if (size < 2) {
-        fprintf(stderr, "Client::clientData() needs at least 2 bytes\n");
-        exit(1);
+        fatal("Client::clientData() needs at least 2 bytes\n");
     }
     int t = (uint8_t)data[0] + 256*(uint8_t)data[1];
     if (!fmitcp_proto::fmitcp_message_Type_IsValid(t)) {
-        fprintf(stderr, "Message type %i invalid\n", t);
-        exit(1);
+        fatal("Message type %i invalid\n", t);
     }
     return (fmitcp_proto::fmitcp_message_Type)t;
 }

@@ -129,13 +129,11 @@ static int vrFromKeyName(FMIClient* client, string key){
 
   switch (vars.count(key)){
   case 0:{
-    fprintf(stderr,"Error: client(%d):%s\n", client->getId(), key.c_str());
-    exit(1);
+    fatal("client(%d):%s\n", client->getId(), key.c_str());
   }
   case 1:  return vars.find(key)->second.vr;
   default:{
-    fprintf(stderr,"Error: Not uniq - client(%d):%s\n", client->getId(), key.c_str());
-    exit(1);
+    fatal("Not uniq - client(%d):%s\n", client->getId(), key.c_str());
   }
   }
 }
@@ -154,9 +152,8 @@ static void setupConstraintsAndSolver(vector<strongconnection> strongConnections
         case 'l':
         {
             if (it->vrORname.size() != 38) {
-                fprintf(stderr, "Bad %s specification: need 38 VRs ([XYZpos + XYZacc + XYZforce + Quat + XYZrotAcc + XYZtorque] x 2), got %zu\n",
+                fatal("Bad %s specification: need 38 VRs ([XYZpos + XYZacc + XYZforce + Quat + XYZrotAcc + XYZtorque] x 2), got %zu\n",
                         t == 'b' ? "ball joint" : "lock", it->vrORname.size());
-                exit(1);
             }
 
             StrongConnector *scA = findOrCreateBallLockConnector(clients[it->fromFMU],
@@ -196,8 +193,7 @@ static void setupConstraintsAndSolver(vector<strongconnection> strongConnections
             break;
         }
         default:
-            error("Unknown strong connector type: %s\n", it->type.c_str());
-            exit(1);
+            fatal("Unknown strong connector type: %s\n", it->type.c_str());
         }
 
         solver->addConstraint(con);
@@ -436,8 +432,7 @@ static int connectionNamesToVr(std::vector<connection> &connections,
     for(size_t i = 0; i < strongConnections.size(); i++){
       size_t j = 0;
       if(strongConnections[i].vrORname.size()%2 != 0){
-        fprintf(stderr,"Error: strong connection needs even number of connections for fmu0 and fmu1\n");
-        exit(1);
+        fatal("strong connection needs even number of connections for fmu0 and fmu1\n");
       }
     }
   return 0;

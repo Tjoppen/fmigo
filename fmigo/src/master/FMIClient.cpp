@@ -132,7 +132,7 @@ void FMIClient::setVariables() {
         var2.type = fmi2_import_get_variable_base_type(var);
         var2.causality = fmi2_import_get_causality(var);
 
-        //fprintf(stderr, "VR %i, type %i, causality %i: %s \"%s\"\n", var2.vr, var2.type, var2.causality, name.c_str(), fmi2_import_get_variable_description(var));
+        //debug("VR %i, type %i, causality %i: %s \"%s\"\n", var2.vr, var2.type, var2.causality, name.c_str(), fmi2_import_get_variable_description(var));
 
         if (m_variables.find(name) != m_variables.end()) {
             warning("Two or variables named \"%s\"\n", name.c_str());
@@ -228,9 +228,9 @@ void FMIClient::on_fmi2_import_free_fmu_state_res(fmitcp_proto::fmi2_status_t st
 
 void FMIClient::on_fmi2_import_get_directional_derivative_res(const vector<double>& dz, fmitcp_proto::fmi2_status_t status){
     /*for (size_t x = 0; x < dz.size(); x++) {
-        fprintf(stderr, "%f ", dz[x]);
+         debug("%f ", dz[x]);
     }
-    fprintf(stderr, "\n");*/
+     debug("\n");*/
 
     m_getDirectionalDerivativeValues.push_back(dz);
     m_master->onSlaveDirectionalDerivative(this);

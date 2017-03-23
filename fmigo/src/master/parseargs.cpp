@@ -208,7 +208,7 @@ void fmitcp_master::parseArguments( int argc,
                     //TYPE,FMUFROM,VRFROM,FMUTO,VRTO
                     //TYPE,FMUFROM,NAMEFROM,FMUTO,NAMETO (undocumented, not recommended)
                     if (!isNumeric(values[1]) || !isNumeric(values[4])) {
-                      fprintf(stderr, "WARNING: TYPE,FMUFROM,NAMEFROM,FMUTO,NAMETO syntax not recommended\n");
+                        warning("TYPE,FMUFROM,NAMEFROM,FMUTO,NAMETO syntax not recommended\n");
                     }
                     conn.fromType = conn.toType = type_from_char(values[0]);
                     values.pop_front();
@@ -425,7 +425,7 @@ void fmitcp_master::parseArguments( int argc,
             break;
 
         case 'Z':
-            fprintf(stderr, "Starting master in paused state\n");
+            info("Starting master in paused state\n");
             *paused = true;
             break;
 

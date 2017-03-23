@@ -14,7 +14,7 @@ using namespace fmitcp;
 
 #include "parse_server_args.cpp"
 
-int fmigo_loglevel;
+fmigo_loglevel_type fmigo_loglevel;
 class mymonitor : public zmq::monitor_t {
 public:
   virtual void on_event_disconnected(const zmq_event_t &event_, const char* addr_) {

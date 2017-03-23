@@ -60,12 +60,12 @@ void FMIClient::onConnect(){
 };
 
 void FMIClient::onDisconnect(){
-    m_logger.log(fmitcp::Logger::LOG_DEBUG,"onDisconnect\n");
+    debug("onDisconnect\n");
     m_master->slaveDisconnected(this);
 };
 
 void FMIClient::onError(string err){
-    m_logger.log(fmitcp::Logger::LOG_DEBUG,"onError\n");
+    debug("onError\n");
     m_master->slaveError(this);
 };
 
@@ -105,7 +105,7 @@ void FMIClient::on_get_xml_res(fmitcp_proto::jm_log_level_enu_t logLevel, string
     m_fmi2Outputs = fmi2_import_get_outputs_list(m_fmi2Instance);
     setVariables();
   } else {
-    m_logger.log(fmitcp::Logger::LOG_ERROR, "Error parsing the modelDescription.xml file contained in %s\n", m_workingDir.c_str());
+    error("Error parsing the modelDescription.xml file contained in %s\n", m_workingDir.c_str());
   }
 };
 

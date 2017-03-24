@@ -161,6 +161,10 @@ def check_name(name):
         print('ERROR: FMU/System name "%s" contains a dot, which is not allowed' % name)
         exit(1)
 
+# Escapes a variable name or value
+def escape(s):
+    return s.replace('\\','\\\\').replace(':','\\:').replace(',','\\,')
+
 def parse_parameter_bindings(path, baseprefix, parameterbindings):
     for pb in parameterbindings[1]:
         pb_prefix = get_attrib(pb, 'prefix', '')
@@ -337,10 +341,10 @@ class FMU:
 
                 for pc in find_elements(cannotation, 'fmigo:PhysicalConnectors', 'fmigo:PhysicalConnector1D')[1]:
                     name = get_attrib(pc, 'name')
-                    pcdict = {'type': '1d'}
-
-                    for ss in ['stateVariable', 'flowVariable', 'accelerationVariable', 'effortVariable']:
-                        pcdict[ss] = get_attrib(pc, ss)
+                    pcdict = {
+                    'type': '1d',
+                    'vars': [get_attrib(pc, ss) for ss in ['stateVariable', 'flowVariable', 'accelerationVariable', 'effortVariable']]
+                    }
 
                     self.physicalconnectors[name] = pcdict
                     remove_if_empty(cannotation[0], pc)
@@ -798,7 +802,7 @@ def parse_ssp(ssp_path, cleanup_zip = True):
                             fmu.id,
                             p['vr'],
                             # Escape backslashes and colons
-                            str(value['value']).replace('\\','\\\\').replace(':','\\:').replace(',','\\,')
+                            escape(str(value['value']))
                         )
                     ])
                 else:
@@ -826,16 +830,38 @@ def parse_ssp(ssp_path, cleanup_zip = True):
             connstr = '%s,%i,%i,%s,%i,%i' % (fv['type'], fr[0], fv['vr'], tv['type'], to[0], tv['vr'])
             flatconns.extend(['-c', connstr])
 
-    kineticconns = []
+    kinematicconns = []
     for shaft in shaftconstraints:
         ids = [fmumap[shaft['element%i' % i]] for i in [1,2]]
-        connstr = 'shaft,%i,%i' % tuple(ids)
-        print ids
+        conn = ['shaft'] + [str(id) for id in ids]
+
+        for i in [1,2]:
+            fmu     = fmus[ids[i-1]]
+            fmuname = fmu.get_name()
+            pcs     = fmu.physicalconnectors
+            name    = shaft['connector%i' % i]
+
+            if not name in pcs:
+                print('ERROR: Shaft constraint refers to physical connector %s in %s, which does not exist' % (name, fmuname))
+                exit(1)
+
+            pc = pcs[name]
+
+            if pc['type'] != '1d':
+                print('ERROR: Physical connector %s in %s of type %s, not 1d' % (name, fmuname, pc['type']))
+                exit(1)
+
+            # NOTE: We could resolve variables using mds[] here, but fmigo now has
+            # support for looking variables up based on name, so there's no need to
+            # TODO: Non-holonomic shaft constraints
+            conn += [escape(key) for key in pc['vars']]
+
+        kinematicconns.extend(['-C', ','.join(conn)])
 
     if unzipped_ssp and cleanup_zip:
         shutil.rmtree(d)
 
-    return flatconns, flatparams, unzipped_ssp, d, root_system.structure.timestep, root_system.structure.duration
+    return flatconns, flatparams, kinematicconns, unzipped_ssp, d, root_system.structure.timestep, root_system.structure.duration
 
 if __name__ == '__main__':
 
@@ -851,12 +877,12 @@ if __name__ == '__main__':
         print('ERROR: missing ssp-name')
         exit(1)
 
-    flatconns, flatparams, unzipped_ssp, d, timestep, duration = parse_ssp(sys.argv[-1], False)
+    flatconns, flatparams, kinematicconns, unzipped_ssp, d, timestep, duration = parse_ssp(sys.argv[-1], False)
 
     #read connections and parameters from stdin, since they can be quite many
     #stdin because we want to avoid leaving useless files on the filesystem
     args = ['mpiexec','-np',str(len(fmus)+1),'fmigo-mpi','-t',str(duration),'-d',str(timestep),'-a','-'] + [fmu.path for fmu in fmus]
-    print(" ".join(args) + " <<< " + '"' + " ".join(flatconns+flatparams) + '"')
+    print(" ".join(args) + " <<< " + '"' + " ".join(flatconns+flatparams+kinematicconns) + '"')
 
     if dry_run:
         ret = 0

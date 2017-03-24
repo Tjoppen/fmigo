@@ -3,5 +3,5 @@ install(FILES
   SystemStructureDescription.xsd
   SystemStructureParameterMapping.xsd
   SystemStructureParameterValues.xsd
-  UMITSSD.xsd
+  FmiGo.xsd
   DESTINATION bin)

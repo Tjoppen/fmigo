@@ -153,9 +153,16 @@ def find_elements(s, first, second):
 def parse_parameter_bindings(path, baseprefix, parameterbindings):
     for pb in parameterbindings[1]:
         pb_prefix = get_attrib(pb, 'prefix', '')
-        prefix = baseprefix + get_attrib(pb, 'prefix', '')
-        if(len(pb_prefix) > 0):
-            prefix = prefix + '.' + pb_prefix
+        prefix = baseprefix
+
+        # Spec says to use prefix="Foo." to address parameters in subsystems
+        # We've split FMU names from variable names, so the case where a prefix would not have a trailing dot is nonsensical
+        if len(pb_prefix) > 0:
+            # Expect a trailing dot and strip it
+            if pb_prefix[-1] != '.':
+                print('ERROR: ParameterBinding prefix must end in dot (%s -> "%s")' % (baseprefix, pb_prefix) )
+                exit(1)
+            prefix = baseprefix + '.' + pb_prefix[0:-1]
 
         pvs = (pb, pb.findall('ssd:ParameterValues', ns))
 

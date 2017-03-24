@@ -7,6 +7,62 @@
 
 using namespace std;
 
+void info(const char* fmt, ...){
+    if (fmigo_loglevel >= ::jm_log_level_info) {
+        va_list argptr;
+        va_start(argptr, fmt);
+        fprintf(stderr,"Info: ");
+        vfprintf(stderr, fmt, argptr);
+        va_end(argptr);
+    }
+}
+
+void fatal_(const char* fmt, ...){
+    if (fmigo_loglevel >= ::jm_log_level_fatal) {
+        va_list argptr;
+        va_start(argptr, fmt);
+        fprintf(stderr,ANSI_COLOR_RED "Fatal: ");
+        vfprintf(stderr, fmt, argptr);
+        fprintf(stderr,ANSI_COLOR_RESET);
+        va_end(argptr);
+    }
+}
+
+void error(const char*fmt,...){
+    if (fmigo_loglevel >= ::jm_log_level_error) {
+        va_list argptr;
+        va_start(argptr, fmt);
+        fprintf(stderr,ANSI_COLOR_RED "Error: ");
+        vfprintf(stderr, fmt, argptr);
+        fprintf(stderr,ANSI_COLOR_RESET);
+        va_end(argptr);
+    }
+}
+
+void warning(const char*fmt,...){
+    if (fmigo_loglevel >= ::jm_log_level_warning) {
+        va_list argptr;
+        va_start(argptr, fmt);
+        fprintf(stderr,ANSI_COLOR_YELLOW "Warning: ");
+        vfprintf(stderr, fmt, argptr);
+        fprintf(stderr,ANSI_COLOR_RESET);
+        va_end(argptr);
+    }
+}
+
+#ifdef DEBUG
+void debug(const char*fmt,...){
+    if (fmigo_loglevel >= ::jm_log_level_debug) {
+        va_list argptr;
+        va_start(argptr, fmt);
+        fprintf(stderr,ANSI_COLOR_MAGENTA "Debug: ");
+        vfprintf(stderr, fmt, argptr);
+        fprintf(stderr,ANSI_COLOR_RESET);
+        va_end(argptr);
+    }
+}
+#endif
+
 namespace common {
 
 deque<string> split(const string &s, char delim) {

@@ -13,10 +13,8 @@
 #endif
 #endif
 
-#include <string>
 #include <vector>
 #include <deque>
-#include <stdio.h>
 
 #define FMILIB_BUILDING_LIBRARY
 #include <fmilib.h>
@@ -44,16 +42,14 @@ extern std::map<int, const char*> columnnames;
 typedef jm_log_level_enu_t fmigo_loglevel_type;
 extern fmigo_loglevel_type fmigo_loglevel ;
 
-//fatal are printed in red
-#define fatal(fmt, args...) { do { if (fmigo_loglevel >= ::jm_log_level_fatal) { fprintf(stderr, ANSI_COLOR_RED "Fatal: " fmt ANSI_COLOR_RESET, ##args); } } while(0); exit(1);}
-//errors are printed in red
-#define error(fmt, args...) do { if (fmigo_loglevel >= ::jm_log_level_error) { fprintf(stderr, ANSI_COLOR_RED "Error: " fmt ANSI_COLOR_RESET, ##args); } } while(0)
-//warnings yellow
-#define warning(fmt, args...) do { if (fmigo_loglevel >= ::jm_log_level_warning) { fprintf(stderr, ANSI_COLOR_YELLOW "Warning: " fmt ANSI_COLOR_RESET , ##args); } } while(0)
-//info normal
-#define info(fmt, args...) do { if (fmigo_loglevel >= ::jm_log_level_info) { fprintf(stderr, "Info: " fmt, ##args); } } while(0)
+void info(const char* fmt, ...);
+void fatal_(const char* fmt, ...);
+void error(const char* fmt, ...);
+void warning(const char* fmt, ...);
+#define fatal(fmt,args...){fatal_(fmt,##args);exit(1);}
+
 #ifdef DEBUG
-#define debug(fmt, args...) do { if (fmigo_loglevel >= ::jm_log_level_debug) { fprintf(stderr, "Debug: " fmt "\n", ##args } } while(0)
+void debug(const char* fmt, ...);
 #else
 #define debug(fmt, ...)
 #endif

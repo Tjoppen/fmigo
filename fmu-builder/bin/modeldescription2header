@@ -57,6 +57,7 @@ strs  = {}
 
 for sv in root.find('ModelVariables').findall('ScalarVariable'):
     name = sv.attrib['name']
+    name = '_'.join(name.split('.'))
     vr = int(sv.attrib['valueReference'])
 
     if name in reals.values() or name in ints.values() or name in bools.values():

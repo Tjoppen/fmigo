@@ -48,9 +48,9 @@ int  fcn( double t, const double * x, double *dxdt, void * params){
   double tq_inputShaft =  -outputs.f_shaft_out + inputs.f_shaft_in;
 
   // coupling force on wheel from input springs or force
-  outputs.f_wheel_out = inputs.k1 * ( inputs.w_wheel - inputs.w_wheel_in ); 
+  outputs.f_wheel_out = inputs.k1 * ( inputs.w_wheel - inputs.w_wheel_in );
   double tq_inputWheel = -outputs.f_wheel_out +  inputs.f_wheel_in;
-  
+
 
   double tq_retWheel = inputs.tq_retarder * inputs.final_gear_ratio;
 
@@ -79,7 +79,7 @@ int  fcn( double t, const double * x, double *dxdt, void * params){
     // speed is then integrated and the shaft inertia is set to J_neutral
     // w_inShaftNeutral is the integration result during  outside
     outputs.w_inShaft = inputs.w_inShaftNeutral;
-    tq_loadAtInShaft = 0; 
+    tq_loadAtInShaft = 0;
     J_atInShaft = inputs.J_neutral;
   }
   tq_loadAtInShaft += tq_inputShaft;
@@ -163,13 +163,13 @@ static void scania_driveline_init(state_t *s) {
 
   s->simulation = cgsl_init_simulation(
     cgsl_epce_default_model_init(
-      cgsl_model_default_alloc(sizeof(initials)/sizeof(initials[0]), initials, s, fcn, NULL, NULL, NULL, 0),
+                                 cgsl_model_default_alloc(sizeof(initials)/sizeof(initials[0]), initials, s, fcn, NULL, NULL, NULL, 0),
       0,//s->md.filter_length,
       NULL,NULL
       //sync_out,s
     ),
     rkf45, 1e-5, 0, 0, 0, NULL
-    );
+  );
 }
 
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {

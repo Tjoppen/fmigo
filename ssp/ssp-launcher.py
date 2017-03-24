@@ -255,7 +255,7 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
             tree = parse_and_validate('SSM', os.path.join(path, get_attrib(pm, 'source')))
             mes = tree.getroot().findall('ssm:MappingEntry', ns)
 
-            print('mes: ' +mes)
+            #print('mes: ' +mes)
             for me in mes:
                 sourcekey = str([prefix, me.attrib['source']])
                 targetkey = str([prefix, me.attrib['target']])

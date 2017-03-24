@@ -4,8 +4,49 @@
     xmlns:fmigo="http://umit.math.umu.se/FmiGo.xsd"
     targetNamespace="http://umit.math.umu.se/FmiGo.xsd">
 
-  <xs:element name="PhysicalConnector1D">
+  <xs:element name="PhysicalConnectors">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+        SSD annotation type: se.umu.math.umit.ssp.physicalconnectors
+      </xs:documentation>
+    </xs:annotation>
     <xs:complexType>
+      <xs:sequence>
+        <xs:element name="PhysicalConnector1D" type="fmigo:TPhysicalConnector1D" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="KinematicConstraints">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+        SSD annotation type: se.umu.math.umit.ssp.kinematicconstraints
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="ShaftConstraint" type="fmigo:TShaftConstraint" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="MasterArguments">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+        SSD annotation type: se.umu.math.umit.fmigo-master.arguments
+        <!-- Putting this under umit.fmigo-master instead of umit.ssp since the arguments are necessarily fmigo-master/fmigo-mpi specific -->
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <!--xs:sequence>
+        <xs:element name="arg" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence-->
+      <xs:attribute name="timestep" type="xs:double" use="optional"/>
+      <xs:attribute name="duration" type="xs:double" use="optional"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:complexType name="TPhysicalConnector1D">
       <xs:attribute name="name" type="xs:string" use="required"/>
       <xs:attribute name="stateVariable" type="xs:string" use="optional">
         <xs:annotation>
@@ -17,17 +58,18 @@
       <xs:attribute name="flowVariable" type="xs:string" use="required"/>
       <xs:attribute name="accelerationVariable" type="xs:string" use="required"/>
       <xs:attribute name="effortVariable" type="xs:string" use="required"/>
-    </xs:complexType>
-  </xs:element>
+  </xs:complexType>
 
-  <xs:element name="ShaftConstraint">
-    <xs:complexType>
-      <xs:attribute name="element1" type="xs:string" use="required"/>
-      <xs:attribute name="element2" type="xs:string" use="required"/>
-      <xs:attribute name="connector1" type="xs:string" use="required"/>
-      <xs:attribute name="connector2" type="xs:string" use="required"/>
-      <xs:attribute name="holonomic" type="xs:boolean" use="required"/>
-    </xs:complexType>
-  </xs:element>
+  <xs:complexType name="TShaftConstraint">
+    <xs:attribute name="element1" type="xs:string" use="required"/>
+    <xs:attribute name="element2" type="xs:string" use="required"/>
+    <xs:attribute name="connector1" type="xs:string" use="required"/>
+    <xs:attribute name="connector2" type="xs:string" use="required"/>
+    <xs:attribute name="holonomic" type="xs:boolean" use="required"/>
+  </xs:complexType>
+
+  <!--xs:element name="arg">
+    <xs:simpleContent type="xs:string"/>
+  </xs:element-->
 
 </xs:schema>

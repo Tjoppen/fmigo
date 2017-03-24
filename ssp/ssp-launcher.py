@@ -9,6 +9,9 @@ from lxml import etree
 import subprocess
 import shutil
 
+default_timestep = 0.1
+default_duration = 10
+
 RESOURCE_DIR='resources'
 SSD_NAME='SystemStructure.ssd'
 CAUSALITY='causality'
@@ -142,8 +145,8 @@ def get_attrib(s, name, default=None):
         return default
 
 def remove_if_empty(parent, node):
-    #remove if all attributes and subnodes have been dealt with
-    if node != None and len(node.attrib) == 0 and len(node) == 0:
+    #remove if all attributes, subnodes and text have been dealt with
+    if node != None and len(node.attrib) == 0 and len(node) == 0 and (node.text == None or node.text.strip() == ''):
         parent.remove(node)
 
 def find_elements(s, first, second):
@@ -355,6 +358,32 @@ class SystemStructure:
         #print('unitsbyname: '+str(self.unitsbyname))
         #print('unitsbyunits: '+str(self.unitsbyunits))
 
+        self.timestep = default_timestep
+        self.duration = default_duration
+        #self.arguments = []
+
+        annotations = find_elements(root, 'ssd:Annotations', 'ssd:Annotation')
+        for annotation in annotations[1]:
+            type = get_attrib(annotation, 'type')
+            if type == 'se.umu.math.umit.fmigo-master.arguments':
+                if 'FmiGo' in schemas:
+                    schemas['FmiGo'].assertValid(annotation[0])
+
+                self.timestep = float(get_attrib(annotation[0], 'timestep'))
+                self.duration = float(get_attrib(annotation[0], 'duration'))
+
+                # We might do this later
+                #for arg in find_elements(annotation, 'fmigo:MasterArguments', 'fmigo:arg')[1]:
+                #    self.arguments.append(arg.text)
+                #    arg.text = None
+                #    remove_if_empty(annotation[0], arg)
+
+                remove_if_empty(annotation, annotation[0])
+            else:
+                print('WARNING: Found unknown Annotation of type "%s"' % type)
+            remove_if_empty(annotations[0], annotation)
+        remove_if_empty(root, annotations[0])
+
 class System:
     '''
     A System is a tree of Systems and FMUs
@@ -497,13 +526,14 @@ class System:
                     if 'FmiGo' in schemas:
                         schemas['FmiGo'].assertValid(cannotation[0])
 
-                    for pc in cannotation.findall('fmigo:PhysicalConnector1D', ns):
+                    for pc in find_elements(cannotation, 'fmigo:PhysicalConnectors', 'fmigo:PhysicalConnector1D')[1]:
                         get_attrib(pc, 'name')
                         get_attrib(pc, 'stateVariable')
                         get_attrib(pc, 'flowVariable')
                         get_attrib(pc, 'accelerationVariable')
                         get_attrib(pc, 'effortVariable')
-                        remove_if_empty(cannotation, pc)
+                        remove_if_empty(cannotation[0], pc)
+                    remove_if_empty(cannotation, cannotation[0])
                 else:
                     print('WARNING: Found unknown Annotation of type "%s"' % type)
                 remove_if_empty(cannotations[0], cannotation)
@@ -546,13 +576,14 @@ class System:
                 if 'FmiGo' in schemas:
                     schemas['FmiGo'].assertValid(annotation[0])
 
-                for shaft in annotation.findall('fmigo:ShaftConstraint', ns):
+                for shaft in find_elements(annotation, 'fmigo:KinematicConstraints', 'fmigo:ShaftConstraint')[1]:
                     get_attrib(shaft, 'element1')
                     get_attrib(shaft, 'element2')
                     get_attrib(shaft, 'connector1')
                     get_attrib(shaft, 'connector2')
                     get_attrib(shaft, 'holonomic')
-                    remove_if_empty(annotation, shaft)
+                    remove_if_empty(annotation[0], shaft)
+                remove_if_empty(annotation, annotation[0])
             else:
                 print('WARNING: Found unknown Annotation of type "%s"' % type)
             remove_if_empty(annotations[0], annotation)
@@ -658,9 +689,9 @@ def parse_ssp(ssp_path, cleanup_zip = True):
         unzip_ssp(d, ssp_path)
         unzipped_ssp = True
 
-    root = System.fromfile(d, SSD_NAME)
+    root_system = System.fromfile(d, SSD_NAME)
 
-    root.resolve_dictionary_inputs()
+    root_system.resolve_dictionary_inputs()
 
     # Figure out connections, parse modelDescriptions
     connectionmultimap = {} # Multimap of outputs to inputs
@@ -764,7 +795,7 @@ def parse_ssp(ssp_path, cleanup_zip = True):
     if unzipped_ssp and cleanup_zip:
         shutil.rmtree(d)
 
-    return flatconns, flatparams, unzipped_ssp, d
+    return flatconns, flatparams, unzipped_ssp, d, root_system.structure.timestep, root_system.structure.duration
 
 if __name__ == '__main__':
 
@@ -780,11 +811,11 @@ if __name__ == '__main__':
         print('ERROR: missing ssp-name')
         exit(1)
 
-    flatconns, flatparams, unzipped_ssp, d = parse_ssp(sys.argv[-1], False)
+    flatconns, flatparams, unzipped_ssp, d, timestep, duration = parse_ssp(sys.argv[-1], False)
 
     #read connections and parameters from stdin, since they can be quite many
     #stdin because we want to avoid leaving useless files on the filesystem
-    args = ['mpiexec','-np',str(len(fmus)+1),'fmigo-mpi','-t','9.9','-d','0.1','-a','-'] + [fmu.path for fmu in fmus]
+    args = ['mpiexec','-np',str(len(fmus)+1),'fmigo-mpi','-t',str(duration),'-d',str(timestep),'-a','-'] + [fmu.path for fmu in fmus]
     print(" ".join(args) + " <<< " + '"' + " ".join(flatconns+flatparams) + '"')
 
     if dry_run:

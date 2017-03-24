@@ -150,6 +150,12 @@ def find_elements(s, first, second):
     a = s.find(first,  ns)
     return a, a.findall(second,  ns) if a != None else []
 
+def check_name(name):
+    if '.' in name:
+        # We might allow this at some point
+        print('ERROR: FMU/System name "%s" contains a dot, which is not allowed' % name)
+        exit(1)
+
 def parse_parameter_bindings(path, baseprefix, parameterbindings):
     for pb in parameterbindings[1]:
         pb_prefix = get_attrib(pb, 'prefix', '')
@@ -286,6 +292,7 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
 
 class FMU:
     def __init__(self, name, path, connectors, system):
+        check_name(name)
         self.name = name
         self.path = path
         self.connectors = {}
@@ -338,6 +345,7 @@ class SystemStructure:
     def __init__(self, root):
         units = find_elements(root, 'ssd:Units', 'ssd:Unit')
         self.name = get_attrib(root, 'name')
+        check_name(self.name)
 
         #not sure what to use schemaLocation for, or if we should even require it
         # self.schemaLocation = get_attrib(root, '{http://www.w3.org/2001/XMLSchema-instance}schemaLocation')
@@ -421,6 +429,7 @@ class System:
         self.d = d
         self.version = version
         self.name = get_attrib(s, 'name')
+        check_name(self.name)
         self.description = get_attrib(s, 'description', '')
         self.parent = parent
         self.structure = structure
@@ -480,6 +489,7 @@ class System:
             #print comp
             t    = get_attrib(comp, 'type')
             name = get_attrib(comp, 'name')
+            check_name(name)
             #print t
 
             if t == 'application/x-ssp-package':

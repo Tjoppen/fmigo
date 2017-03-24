@@ -191,32 +191,36 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
             b = pv.find('ssv:Boolean', ns)
             s = pv.find('ssv:String', ns)
             e = pv.find('ssv:Enumeration', ns)
-            name = prefix+'.'+pv.attrib['name']
+            key = str([prefix,pv.attrib['name']])
+            param = {
+            'paramname': pv.attrib['name'],
+            'fmuname':   prefix,
+            }
 
             if r != None:
                 if 'unit' in r.attrib:
                     print('Not dealing with parameters with units yet')
                     exit(1)
 
-                parameters[name] = {
+                param.update({
                     'type': 'r',
                     'value': float(r.attrib['value']),
-                }
+                })
             elif i != None:
-                parameters[name] = {
+                param.update({
                     'type': 'i',
                     'value': int(i.attrib['value']),
-                }
+                })
             elif b != None:
-                parameters[name] = {
+                param.update({
                     'type': 'b',
                     'value': b.attrib['value'], #keep booleans as-is
-                }
+                })
             elif s != None:
-                parameters[name] = {
+                param.update({
                     'type': 's',
                     'value': s.attrib['value'],
-                }
+                })
             elif e != None:
                 print('Enumerations not supported')
                 exit(1)
@@ -224,9 +228,7 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
                 print('Unsupported parameter type: ' + str(pv[0].tag))
                 exit(1)
 
-            parameters[name]['paramname'] = pv.attrib['name']
-            parameters[name]['fmuname'] = prefix
-
+            parameters[key] = param
             remove_if_empty(pvs[0], pv)
 
         #deal with any ssm
@@ -248,12 +250,12 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
 
             print('mes: ' +mes)
             for me in mes:
-                source = prefix+me.attrib['source']
-                target = prefix+me.attrib['target']
-                print('target: ' +target)
+                sourcekey = str([prefix, me.attrib['source']])
+                targetkey = str([prefix, me.attrib['target']])
+                #print('target: ' +target)
 
-                p = parameters[source]
-                del parameters[source]
+                p = parameters[sourcekey]
+                del parameters[sourcekey]
 
                 lt = me.find('ssm:LinearTransformation', ns)
                 if lt != None:
@@ -269,7 +271,7 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
                     print("Found MappingEntry with sub-element which isn't LinearTransformation, which is not yet supported")
                     exit(1)
 
-                parameters[target] = p
+                parameters[targetkey] = p
 
             remove_if_empty(pb, pm)
 
@@ -713,7 +715,7 @@ def parse_ssp(ssp_path, cleanup_zip = True):
         mds.append(svs)
 
     flatparams = []
-    for key,value in parameters.iteritems():
+    for value in parameters.values():
         fmuname   = value['fmuname']
         paramname = value['paramname']
         if fmuname in fmumap:

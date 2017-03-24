@@ -26,9 +26,11 @@ ns = {
 d = tempfile.mkdtemp(prefix='ssp')
 print(d)
 
+# FIXME: these should not be global if the intent is to use this file as a module
 fmus = []
 systems = []
 parameters = {}
+shaftconstraints = []
 
 schema_names = {
     'SSD': 'SystemStructureDescription.xsd',
@@ -272,11 +274,15 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
         remove_if_empty(parameterbindings[0], pb)
 
 class FMU:
-    def __init__(self, name, path, connectors, system):
+    def __init__(self, name, comp, path, system):
         self.name = name
         self.path = path
-        self.connectors = {}
+        self.system = system
 
+        self.connectors = {}
+        self.physicalconnectors = {}
+
+        connectors = find_elements(comp, 'ssd:Connectors', 'ssd:Connector')
         for conn in connectors[1]:
             name = get_attrib(conn, 'name')
             kind = get_attrib(conn, 'kind')
@@ -297,8 +303,29 @@ class FMU:
                 'kind': kind,
                 'unit': unit,
             }
+        remove_if_empty(comp, connectors[0])
 
-        self.system = system
+        cannotations = find_elements(comp, 'ssd:Annotations', 'ssd:Annotation')
+        for cannotation in cannotations[1]:
+            type = get_attrib(cannotation, 'type')
+            if type == 'se.umu.math.umit.ssp.physicalconnectors':
+                if 'FmiGo' in schemas:
+                    schemas['FmiGo'].assertValid(cannotation[0])
+
+                for pc in find_elements(cannotation, 'fmigo:PhysicalConnectors', 'fmigo:PhysicalConnector1D')[1]:
+                    name = get_attrib(pc, 'name')
+                    pcdict = {'type': '1d'}
+
+                    for ss in ['stateVariable', 'flowVariable', 'accelerationVariable', 'effortVariable']:
+                        pcdict[ss] = get_attrib(pc, ss)
+
+                    self.physicalconnectors[name] = pcdict
+                    remove_if_empty(cannotation[0], pc)
+                remove_if_empty(cannotation, cannotation[0])
+            else:
+                print('WARNING: Found unknown Annotation of type "%s"' % type)
+            remove_if_empty(cannotations[0], cannotation)
+        remove_if_empty(comp, cannotations[0])
 
         global fmus
         self.id = len(fmus)
@@ -502,14 +529,12 @@ class System:
                 self.subsystems[name] = child
             elif t == 'application/x-fmu-sharedlibrary':
                 source = os.path.join(d, get_attrib(comp, 'source'))
-                connectors = find_elements(comp, 'ssd:Connectors', 'ssd:Connector')
                 self.fmus[name] = FMU(
                     name,
+                    comp,
                     source,
-                    connectors,
                     self,
                 )
-                remove_if_empty(comp, connectors[0])
             else:
                 print('unknown type: ' + t)
                 exit(1)
@@ -518,26 +543,6 @@ class System:
             cparams = find_elements(comp, 'ssd:ParameterBindings', 'ssd:ParameterBinding')
             parse_parameter_bindings(self.d, self.get_name() + '.' + name + '.', cparams)
             remove_if_empty(comp, cparams[0])
-
-            cannotations = find_elements(comp, 'ssd:Annotations', 'ssd:Annotation')
-            for cannotation in cannotations[1]:
-                type = get_attrib(cannotation, 'type')
-                if type == 'se.umu.math.umit.ssp.physicalconnectors':
-                    if 'FmiGo' in schemas:
-                        schemas['FmiGo'].assertValid(cannotation[0])
-
-                    for pc in find_elements(cannotation, 'fmigo:PhysicalConnectors', 'fmigo:PhysicalConnector1D')[1]:
-                        get_attrib(pc, 'name')
-                        get_attrib(pc, 'stateVariable')
-                        get_attrib(pc, 'flowVariable')
-                        get_attrib(pc, 'accelerationVariable')
-                        get_attrib(pc, 'effortVariable')
-                        remove_if_empty(cannotation[0], pc)
-                    remove_if_empty(cannotation, cannotation[0])
-                else:
-                    print('WARNING: Found unknown Annotation of type "%s"' % type)
-                remove_if_empty(cannotations[0], cannotation)
-            remove_if_empty(comp, cannotations[0])
             remove_if_empty(components[0], comp)
 
         self.signaldicts = {}
@@ -577,11 +582,15 @@ class System:
                     schemas['FmiGo'].assertValid(annotation[0])
 
                 for shaft in find_elements(annotation, 'fmigo:KinematicConstraints', 'fmigo:ShaftConstraint')[1]:
-                    get_attrib(shaft, 'element1')
-                    get_attrib(shaft, 'element2')
-                    get_attrib(shaft, 'connector1')
-                    get_attrib(shaft, 'connector2')
-                    get_attrib(shaft, 'holonomic')
+                    shaftconstraint = {
+                    'holonomic': get_attrib(shaft, 'holonomic') == 'true'
+                    }
+
+                    for i in [1,2]:
+                        shaftconstraint['element%i' % i]   = self.get_name() + '.' + get_attrib(shaft, 'element%i' % i)
+                        shaftconstraint['connector%i' % i] = get_attrib(shaft, 'connector%i' % i)
+
+                    shaftconstraints.append(shaftconstraint)
                     remove_if_empty(annotation[0], shaft)
                 remove_if_empty(annotation, annotation[0])
             else:
@@ -791,6 +800,12 @@ def parse_ssp(ssp_path, cleanup_zip = True):
 
             connstr = '%s,%i,%i,%s,%i,%i' % (fv['type'], fr[0], fv['vr'], tv['type'], to[0], tv['vr'])
             flatconns.extend(['-c', connstr])
+
+    kineticconns = []
+    for shaft in shaftconstraints:
+        ids = [fmumap[shaft['element%i' % i]] for i in [1,2]]
+        connstr = 'shaft,%i,%i' % tuple(ids)
+        print ids
 
     if unzipped_ssp and cleanup_zip:
         shutil.rmtree(d)

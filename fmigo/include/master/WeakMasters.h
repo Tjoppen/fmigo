@@ -576,10 +576,17 @@ class ModelExchangeStepper : public BaseMaster {
             timeLoop.dt_new = timeLoop.t_end - sim.t;
     }
 
+    void getSafeTime(const std::vector<FMIClient*> clients, double &dt){
+        for(auto client: clients)
+            if(client->m_event_info.nextEventTimeDefined)
+                dt = min(dt,client->m_event_info.nextEventTime);
+    }
+
     void runIteration(double t, double dt) {
         timeLoop.t_safe = t;
         timeLoop.t_end = t + dt;
-        timeLoop.dt_new= dt;
+        timeLoop.dt_new = dt;
+        getSafeTime(m_clients, timeLoop.dt_new);
         get_p(m_sim)->sim_started = true;
         newDiscreteStates();
         int iter = 2;

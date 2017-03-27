@@ -105,11 +105,6 @@ class ModelExchangeStepper : public BaseMaster {
         double h;
         double *dydt;
         unsigned long failed_steps;
-
-#ifdef DEBUG_MODEL_EXCHANGE
-        FILE* result_file;
-        long size_of_file;
-#endif
     };
     struct fmu_parameters{
 
@@ -188,7 +183,8 @@ class ModelExchangeStepper : public BaseMaster {
 
         p->baseMaster->wait();
 
-        //p->baseMaster->get_storage().print(p->baseMaster->get_storage().get_current_states());
+        //p->baseMaster->get_storage().print(states);
+        //fprintf(stderr,"x[0] %f x[1] %f\n",x[0],x[1]);
         for(auto client: p->clients){
             if(client->getNumEventIndicators()){
                 if(p->baseMaster->get_storage().past_event(client->getId())){
@@ -241,7 +237,6 @@ class ModelExchangeStepper : public BaseMaster {
         m.model->x_backup = (double*)calloc(m.model->n_variables, sizeof(double));
 
         m_p.backup.dydt = (double*)calloc(m.model->n_variables, sizeof(double));
-        //m_p.backup.result_file = (FILE*)calloc(1, sizeof(FILE));
 
         if(!m.model->x || !m_p.backup.dydt){
             //freeFMUModel(m);
@@ -265,14 +260,6 @@ class ModelExchangeStepper : public BaseMaster {
         m.model->get_model_parameters = get_model_parameters;
         fmu_parameters* p = get_p(m);
 
-#ifdef DEBUG_MODEL_EXCHANGE
-        ostringstream prefix;
-        prefix << "/home/jonas/work/umit/data/resultFile.mat";
-        if ( ( p->backup.result_file = fopen(prefix.str().c_str(), "w+") ) == NULL){
-            cerr << "Could not open file " << prefix.str() << endl;
-            exit(1);
-        }
-#endif
         p->t_ok = 0;
         p->t_past = 0;
         p->baseMaster = this;
@@ -283,9 +270,6 @@ class ModelExchangeStepper : public BaseMaster {
 
         p->backup.t = 0;
         p->backup.h = 0;
-#ifdef DEBUG_MODEL_EXCHANGE
-        p->backup.size_of_file = 0;
-#endif
         p->clients = m_clients;
 
         m.model->function = fmu_function;
@@ -374,12 +358,7 @@ class ModelExchangeStepper : public BaseMaster {
                                      1e-10,
                                      0,
                                      0,
-#ifdef DEBUG_MODEL_EXCHANGE
-                                     1,     /* write to file: YES! */
-                                     p->backup.result_file
-#else
                                      0, NULL
-#endif
                                      );
         // might not be needed
         get_storage().sync();
@@ -407,16 +386,6 @@ class ModelExchangeStepper : public BaseMaster {
         sim.i.evolution->failed_steps = p->backup.failed_steps;
         sim.t = p->backup.t;
         sim.h = p->backup.h;
-
-#ifdef DEBUG_MODEL_EXCHANGE
-        // reset position in the result file
-        fseek(p->backup.result_file, p->backup.size_of_file, SEEK_SET);
-
-        // truncate the result file to have the previous result file size
-        int trunc = ftruncate(fileno(p->backup.result_file), p->backup.size_of_file);
-        if(0 > trunc )
-            perror("storeStates: ftruncate");
-#endif
     }
 
     /** storeStates
@@ -436,10 +405,6 @@ class ModelExchangeStepper : public BaseMaster {
 
         memcpy(p->backup.dydt, sim.i.evolution->dydt_out,
                sim.model->n_variables * sizeof(p->backup.dydt[0]));
-
-#ifdef DEBUG_MODEL_EXCHANGE
-        p->backup.size_of_file = ftell(p->backup.result_file);
-#endif
 
         wait();
         for(auto client: m_clients)

@@ -16,6 +16,17 @@
 #ifndef DIAG4
 #define DIAG4
 
+#define USE_OCTAVE_IO
+
+
+#ifdef USE_IOH5
+#include "ioh5.h"
+#endif
+#ifdef USE_OCTAVE_IO
+#include "octaveio.h"
+#include <iostream>
+#endif
+
 #include <numeric>
 /**
    \mainpage The mainpage documentation
@@ -24,6 +35,11 @@
 */
 
 
+#ifndef AGXDATA_REAL_H
+typedef double Real;
+#else
+using namespace agx;
+#endif
 #include <iostream>
 #include <vector>
 #include <valarray>
@@ -31,7 +47,7 @@
 #include <ctime>
 #include <functional>
 #include <assert.h>
-#include <types.h>
+#include "types.h"
 
 
 /// needed for linking with octave
@@ -86,7 +102,7 @@ class octave_scalar_map;
  * anchor.
  */
 
-struct qp_diag4 {
+struct qp_matrix {
   ///
   /// Enumeration of the states of variables as needed in the lcp solver.
   /// This is intrusive but yet needed for various operations best
@@ -119,7 +135,10 @@ struct qp_diag4 {
                                 /// flipped.
                                 ///
 
-  inline virtual void flip( std::valarray<Real> & x ) = 0; //! \brief Flips the signs of all variables which need it
+  virtual void negate( size_t i ) = 0; //! \brief Sets which variables
+  //! have to be negated to account
+  //! for bisymmetry
+  virtual void flip( std::valarray<Real> & x ) = 0; //! \brief Flips the signs of all variables which need it
 
 ///
 /// Whether or not a variable is active, i.e., the variable is free (solved
@@ -135,34 +154,51 @@ struct qp_diag4 {
 
 
 ///
-/// Minimal constructor to the the bisymmetric state and allocate memory
+/// Assign bisymmetric state and allocate memory
 /// for the active state as well as tmp arrays.
 ///
-  qp_diag4(size_t _n, bool b  = false, bool d = true  ) :
-    bisymmetric( b ), dirty( d ), flip_sign( ( b ) ? Real(-1.0) : Real(1.0) ),
+  qp_matrix(size_t _n, bool b  = false ) :
+    bisymmetric( b ),  flip_sign( ( b ) ? Real(-1.0) : Real(1.0) ), dirty( true ),
     active(true, _n ), tmp_sub( _n ), tmp_search( _n ) { }
 
+  /// Minimal constructor: only bisymmetric state set
+  qp_matrix(bool b  = false ) :
+    bisymmetric( b ), dirty( true ), flip_sign( ( b ) ? Real(-1.0) : Real(1.0) ) { }
 
-  virtual size_t size() const { return active.size() ; } //! \brief Number of variable
+  virtual ~qp_matrix() {}
+
+  virtual size_t size() const { return active.size() ; } //! \brief Number
+                                                         //! of variables
 
 ///
 /// Self-explanatory: used by LCP solver, and is *variable* based, not
 /// *block* based.  Subclasses have `blockwise'  version of these where
 /// the index is the index of a Lagrange multiplier, not just a variable.
 ///
-  inline bool toggle_active( size_t i ){
+  virtual bool toggle_active( size_t i ){
     dirty = true;
     active[ i ] = ! active[ i ] ;
     return active[ i ];
   }
 
+  virtual bool is_active( size_t i ) const { return active[ i ]; }
+
+  virtual void set_active( ){
+    dirty = true;
+    active = true;
+  }
+ 
+  virtual void set_active( size_t i, bool a ){
+    dirty = true;
+    active[ i ] = a;
+  } 
 ///
 /// self-explanatory: for LCP solver: variable based, not  block  based.
 ///
-  inline size_t set_active( const std::valarray<int>& idx ){
+  virtual void set_active( const std::valarray<int>& idx ){
     dirty = true;
     active[ idx <= 0 ] = true;
-    return active.size();
+    return ;
   }
 
 /// Factorize or update/downdate a factorization if  variable
@@ -173,7 +209,7 @@ struct qp_diag4 {
   virtual void factor( int variable = -1) = 0 ;
 
 /// Fetch the column  variable
-  virtual void get_column( std::valarray<Real> & v, size_t variable  ) = 0;
+  virtual void get_column( std::valarray<Real> & v, size_t variable, Real sign   ) = 0;
 ///
   virtual void multiply_add_column( std::valarray<Real> & v, Real alpha , size_t variable  ) = 0;
 
@@ -202,13 +238,20 @@ struct qp_diag4 {
 /// Multiply add operations with submatrices, given a set of active and
 /// inactive variables.  The following four cases are covered.
 ///
+///  In all cases, the other variables in x are left untouched
+///
+  /// To do this, we zero out the part of b that isn't wanted.  This
+  /// however will still write on x in unwanted places, i.e., for the first
+  /// case, if we set b(~active) = 0, then we will write over x(~active)
+  /// which we don't want.
+  /// Therefore, we cache x as well and restore the parts we overwrite
 /// x( active ) = alpha * x( active ) + beta * M( active, active ) * b( active )
 ///
 /// x( active ) = alpha * x( active ) + beta * M( active, ~active ) * b( ~active )
 ///
-/// x(~active) = alpha * x(~active) + beta * M(~active, active ) b( active )
+/// x(~active)  = alpha * x(~active) + beta * M(~active, active ) b( active )
 ///
-/// x(~active) = alpha * x(~active) + beta * M(~active, ~active ) b( ~active )
+/// x(~active)  = alpha * x(~active) + beta * M(~active, ~active ) b( ~active )
 ///
 /// We use two bool's to control whether we use `active'  or `!active',
 /// one on each side.  `true'  corresponds to `active', `false' to
@@ -223,35 +266,29 @@ struct qp_diag4 {
                                     double alpha = 0.0, double beta = 1.0,
                                     int  left_set = ALL, int right_set = ALL ){
 
-    tmp_sub = b;
+    tmp_sub    = b;
+    tmp_search = x;
 
     if ( right_set != ALL){
       for ( size_t i = 0;  i < b.size(); ++i ) {
-
-        if ( right_set == FREE  && ! active[ i ] ){
+        bool a = is_active( i ); // call this only once
+        if ( ( right_set == FREE  && ! a ) || ( right_set == TIGHT && a ) ) {
           tmp_sub[ i ] =  Real(0.0) ;
         }
-        else if ( right_set == TIGHT &&  active[ i ] ){
-          tmp_sub[  i ] =  Real(0.0) ;
-        }
       }
-    }
-    multiply(tmp_sub, x, alpha, beta, left_set, right_set);
-    // filter variables according to active variables or the reverse
-    if ( left_set == FREE ){
-      for ( size_t i = 0; i < x.size(); ++i ) { 
-        if ( ! active[ i ] )
-          x[ i ] = 0.0;
-      }
-    }
-    else if ( left_set == TIGHT ){
-      for ( size_t i = 0; i < x.size(); ++i ) { 
-        if (  active[ i ] )
-          x[ i ] = 0.0;
-      }
-    }
-  }
 
+    }
+
+    multiply(tmp_sub, x, alpha, beta, left_set, right_set);
+
+    // Restore variables which should have been left alone
+    for ( size_t i = 0; i < x.size(); ++i ) { 
+      
+      if ( ( left_set == FREE && ! is_active( i ) ) || ( left_set == TIGHT && is_active( i ) ) )
+        x[ i ] = tmp_search[ i ];
+    }
+
+  }
 
 
 ///
@@ -268,10 +305,8 @@ struct qp_diag4 {
     if ( tmp_search.size() != v.size( ) )
       tmp_search.resize( v.size( ) );
 
-    /// This is likely to be very very sparse
-    /// The assumption is that we are getting the *negative* of the
-    /// column. 
-    get_column( v , variable );
+    /// We want the negative of the column
+    get_column( v , variable, Real(-1.0) );
 
     /// This is however dense
     /// TODO: there is an assumption about block structure here which
@@ -298,11 +333,12 @@ struct qp_diag4 {
   virtual bool do_step(std::valarray<Real> & z, std::valarray<Real> & w,
                        std::valarray<Real> & v, Real step, size_t driving){
 
+
 ///
 /// move free variables in the search direction
 ///
     for( size_t i = 0; i < z.size( ); ++i ) {
-      if ( active[ i ] )
+      if ( is_active( i ) )
         z[ i ] += step * v[ i ];
     }
 
@@ -320,21 +356,28 @@ struct qp_diag4 {
 /// \todo a lot of time is spent here
     multiply_submatrix(v, w, 1.0, step, TIGHT, FREE );
 
+    tmp_sub = w;
 
 ///
 /// This is the second time we fetch this column
 ///  \todo  TEST THE RESULTS OF THIS: speedup isn't great
 #if 1
 
-    multiply_add_column( w, -step, driving );
+    multiply_add_column( w, step, driving );
+    /// reset the active variables to what they were previously
+    for ( size_t i = 0; i < w.size(); ++i  ) {
+      if (  is_active( i ) )
+        w[ i ] =  tmp_sub[ i ] ;
+          
+    }
 
 #else
 
-    get_column( tmp_sub, driving );
+    get_column( tmp_sub, driving, Real( -1.0 ) );
 
     for ( size_t i = 0; i < tmp_sub.size(); ++i ){
 
-      if ( ! active[ i ] ){
+      if ( ! is_active( i ) ){
         w[ i ] -= step * tmp_sub[ i ];
       }
 
@@ -351,9 +394,9 @@ struct qp_diag4 {
 /// where z(T) are the variables at their bounds.  This is to support the
 /// LCP solver
 ///
-  void solve_subproblem(const std::valarray<Real>& q,
-                        const std::valarray<Real>& l, const std::valarray<Real>& u,
-                        const std::valarray<int> & idx, std::valarray<Real>& z){
+  virtual void solve_subproblem(const std::valarray<Real>& q,
+                                const std::valarray<Real>& l, const std::valarray<Real>& u,
+                                const std::valarray<int> & idx, std::valarray<Real>& z){
 
 
     z = -q;
@@ -363,15 +406,15 @@ struct qp_diag4 {
     for ( size_t i = 0; i < tmp_search.size(); ++i ){
       if ( idx[ i ] ==  ( int ) LOWER  ){
         tmp_search[ i ] = -l[ i ];
-        if ( active[ i ] ) toggle_active( i );
+        if ( is_active( i ) ) toggle_active( i );
       }
       else if ( idx[ i ] ==  ( int ) UPPER  ){
         tmp_search[ i ] = -u[ i ];
-        if ( active[ i ] ) toggle_active( i );
+        if ( is_active( i ) ) toggle_active( i );
       }
       else{
         tmp_search[ i ] = Real(0.0);
-        if ( ! active[ i ] ) toggle_active( i );
+        if ( ! is_active( i ) ) toggle_active( i );
       }
     }
 
@@ -407,6 +450,20 @@ struct qp_diag4 {
 ///
   virtual void convert_matrix_oct(octave_scalar_map & st) = 0;
 
+#endif
+#ifdef USE_IOH5
+  virtual void write_hdf5( std::string & filename, std::string prefix = "matrix"  ) { };
+  
+  virtual void write_hdf5( H5::Group &g, std::string & name = "matrix" ) {};
+  
+  virtual void read_hdf5 ( std::string & filename, std::string & prefix, int id  ) {};
+
+  virtual void read_hdf5 ( H5::Group &g ) {};
+#endif
+#ifdef USE_OCTAVE_IO
+  virtual void write_octave( const std::string & filename, const std::string & name  ) {return ;}
+  virtual std::ostream &  write_octave( std::ostream & os, const std::string & name){ return os; }
+  virtual std::ostream & write_cpp( std::ostream& os, std::string name ) {return os; };
 #endif
 };
 
@@ -444,7 +501,7 @@ struct diag_data {
 /// factorization
 ///
 
-struct diag4 : public qp_diag4 {
+struct diag4 : public qp_matrix {
 
   size_t n_blocks;             ///  number of blocks
   std::valarray<Real> diag;    /// main diagonal: 2 entries per block
@@ -454,7 +511,7 @@ struct diag4 : public qp_diag4 {
   std::valarray<Real> fill;    /// second subdiagonal: odd entries, one per
 /// block except for the last block.
 
-  std::slice even;              /// slices for valarray. Avoids continuous
+  //std::slice even;              /// slices for valarray. Avoids continuous
 /// reallocation
   std::slice odd;               /// Same.
 
@@ -462,11 +519,15 @@ struct diag4 : public qp_diag4 {
 /// multiply and to simplify update/downdate
 
 
+  inline void negate( size_t i ) {} /// This does nothing because the
+  /// internal structure of this matrix
+  /// already determines what is and
+  /// what isn't negated.
 ///
 /// default constructor.
 /// @TODO Find a way to get rid of this
 ///
-  diag4() : qp_diag4(0), n_blocks(0), diag(0), sub(0), ssub(0), fill(0), original()  {  }
+  diag4() : qp_matrix(size_t( 0 )), n_blocks(0), diag(0), sub(0), ssub(0), fill(0), original()  {  }
 
 ///
 /// Allocate all arrays as well as the matrix to hold the original data.
@@ -477,17 +538,17 @@ struct diag4 : public qp_diag4 {
 
 ///
 /// Here we allocate the diag4 matrix with the right size but also make
-/// sure that the diag4qp class allocates the basic data with the right
+/// sure that the qp_solver class allocates the basic data with the right
 /// sizes, as defined by inherited classes which can add rows and columns
 /// to this.
-/// The point here is that qp_diag4 might have a different size from diag4
+/// The point here is that qp_matrix might have a different size from diag4
 /// This will be invoked by inherited classes in which case _n will not be
 /// equal to _na
 ///
   inline diag4(size_t _n, size_t _na , bool _bisymmetric = false ) :
-    qp_diag4( _na, _bisymmetric ),
+    qp_matrix( _na, _bisymmetric ),
     n_blocks(_n), diag( 2 * _n ), sub( _n ), ssub( _n - 1 ),
-    fill( _n - 1 ), even(0, _n, 2), odd(1, _n, 2), original( _n ) {
+    fill( _n - 1 )/*, even(0, _n, 2)*/, odd(1, _n, 2), original( _n ) {
   }
 
 
@@ -821,7 +882,7 @@ struct diag4 : public qp_diag4 {
         /// repeated multiplications
         ///  first block: looks forward only
         x[  j  ] +=
-            beta  * original.diag[ j ] * b[ j     ]
+          beta  * original.diag[ j ] * b[ j     ]
           + beta  * original.ssub[ i ] * b[ j + 2 ]
           + beta1 * original.sub [ i ] * b[ j + 1 ];
 
@@ -829,14 +890,14 @@ struct diag4 : public qp_diag4 {
         i = n_blocks - 1;  j = 2 * i ;
 
         x[  j  ] +=
-            beta  * original.diag[ j     ] * b[ j     ]
+          beta  * original.diag[ j     ] * b[ j     ]
           + beta  * original.ssub[ i - 1 ] * b[ j - 2 ]
           + beta1 * original.sub [ i     ] * b[ j + 1 ] ;
         /// everything in the middle
 
         for (  i = 1, j = 2;   i < ssub.size(); ++i, j+=2 ) {
           x[ j ]  +=
-              beta  * original.diag[ j    ] * b[ j ]
+            beta  * original.diag[ j    ] * b[ j ]
             + beta  * original.ssub[ i    ] * b[ j + 2 ]
             + beta  * original.ssub[ i -1 ] * b[ j - 2 ]
             + beta1 * original.sub [ i    ] * b[ j + 1 ];
@@ -931,18 +992,18 @@ struct diag4 : public qp_diag4 {
 /// active variables.
 /// \todo: this needs to allow for a sparse version so that optimization
 /// from the calee can be made.
-  virtual void get_column( std::valarray<Real> & v, size_t variable ) {
-    v[ variable - 1] = - flip_sign * original.sub [ ( variable - 1 ) / 2];
-    v[ variable    ] = - flip_sign * original.diag[ variable ];
+  virtual void get_column( std::valarray<Real> & v, size_t variable, Real sign ) {
+    v[ variable - 1] = sign * flip_sign * original.sub [ ( variable - 1 ) / 2];
+    v[ variable    ] = sign * flip_sign * original.diag[ variable ];
   }
 
   inline virtual void multiply_add_column( std::valarray<Real> & w, Real alpha, size_t variable  ){
 
     if ( ! active[ variable -1  ] ){
-      w[ variable - 1 ] -= alpha * flip_sign * original.sub [ ( variable - 1 ) / 2];
+      w[ variable - 1 ] += alpha * flip_sign * original.sub [ ( variable - 1 ) / 2];
     }
     if ( ! active[ variable    ] ){
-      w[ variable    ] -=  alpha *  flip_sign * original.diag[ variable ];
+      w[ variable    ] +=  alpha *  flip_sign * original.diag[ variable ];
     }
 
   }
@@ -962,13 +1023,15 @@ struct diag4 : public qp_diag4 {
 ///
 
 struct diag4length : public diag4 {
-  std::valarray<Real> J0;       // original data: Jacobian + diagonal
-  std::valarray<Real> J;        // the Jacobian for the length part and
+  std::valarray<Real> J0;       /// original data: Jacobian + diagonal
+  std::valarray<Real> J;        /// the Jacobian for the length part and
 // diagonal element.  This gets overwritten
 // with inv(M) * J0 to compute the Schur
 // complement.
-  Real i_schur;                  // inverse of  the Schur complement
+  Real i_schur;                  /// inverse of  the Schur complement
 
+  virtual void negate( size_t i ) { }  /// Does  nothing since sign structure is
+  /// already implied in this special matrix.
   inline size_t last() const {
     if (J0.size() == 0) {
       return std::numeric_limits<size_t>::max();
@@ -1084,17 +1147,17 @@ struct diag4length : public diag4 {
       return  flip_sign * J0[ last() ];
   }
 
-  virtual void get_column( std::valarray<Real> & v, size_t variable ) {
+  virtual void get_column( std::valarray<Real> & v, size_t variable, Real sign ) {
 
     if ( variable < last() ) {
-      diag4::get_column( v, variable );
+      diag4::get_column( v, variable, sign );
       /// WARNING: explicit assumption that the last row is never negated
       /// by bisimmetry
-      v[ last() ] = J0[ variable ];
+      v[ last() ] = sign * J0[ variable ];
     }
     else {
-      for ( size_t i = 0; i < J0.size(); i+=2 )
-        v[ i ] = flip_sign * J0[ i ];
+      for ( size_t i = 0; i < J0.size(); ++i )
+        v[ i ] = sign * flip_sign * J0[ i ];
     }
   }
   ///
@@ -1122,7 +1185,213 @@ struct diag4length : public diag4 {
 
 } ;
 
+ 
 
+
+////
+/// qp_matrix_length class extends any qp_matrix to also contain a global
+/// length constraint, i.e., an extra row and column.  
+///
+/// This delegates most of the work to a qp_matrix allocated outside of
+/// this class.
+///
+/// TODO: biggest problem here is the semantic of the active variables.
+/// The current method wastes memory by double allocating the arrays in the
+/// qp_matrix base class. 
+///
+
+struct qp_matrix_length : public qp_matrix {
+  qp_matrix * M;
+  std::valarray<Real> J0;       // original data: Jacobian + diagonal
+  std::valarray<Real> J;        // the Jacobian for the length part and
+// diagonal element.  This gets overwritten
+// with inv(M) * J0 to compute the Schur
+// complement.
+  Real i_schur;                  // inverse of  the Schur complement
+
+  inline size_t last() const {
+    if (J0.size() == 0) {
+      return std::numeric_limits<size_t>::max();
+    }
+    return J0.size() - 1;
+  }
+  qp_matrix_length() : qp_matrix(),  J0( 0 ), J( J0 ), i_schur( 0 ) {}
+
+/// start with all empty
+  qp_matrix_length(qp_matrix * _M ) :
+    qp_matrix( _M->bisymmetric ), M( _M ), J0( _M->size() + 1 ), J( _M->size() + 1 ), i_schur( 0 ) {
+  }
+
+  virtual size_t size() const  { return J0.size(); }
+
+
+
+///
+/// Self-explanatory: used by LCP solver, and is *variable* based, not
+/// *block* based.  Subclasses have `blockwise'  version of these where
+/// the index is the index of a Lagrange multiplier, not just a variable.
+///
+  virtual bool toggle_active( size_t i ){
+    dirty = true;
+    if ( i < size() - 1 )
+      return M->toggle_active( i );
+    else
+      return true;
+  }
+
+  virtual void set_active( ){
+    M->set_active();
+    return;
+  }
+  
+///
+/// self-explanatory: for LCP solver: variable based, not  block  based.
+///
+  virtual void set_active( const std::valarray<int>& idx ){
+    dirty = true;
+    for ( size_t i = 0; i < M->size(); ++i )
+      M->set_active( i,  idx[ i ] <= 0 );
+    return ;
+  }
+  
+
+#if 0
+//#ifdef OCTAVE
+/// utility to work from octave
+  XXXX TODO 
+  diag4length(ColumnVector _diag, ColumnVector _sub, ColumnVector _ssub, ColumnVector _fill,
+              ColumnVector _J, ColumnVector _active, bool _bisymmetric = false);
+  virtual void convert_matrix_oct(octave_scalar_map & st);
+/// utility to work from octave: sets the factor directly
+  virtual void read_factor(const octave_value_list& args, int arg) ;
+#endif
+
+  virtual void multiply(  const std::valarray<Real>& b,   std::valarray<Real>& x, double alpha = 0.0, double beta = 1.0,
+                          int  /*left_set*/ = ALL, int /*right_set*/ = ALL ){
+    Real xl = 0;
+
+    if ( alpha != 0.0 ) {
+      xl = alpha * x[ last() ];
+    } else {
+      xl = 0;
+
+    }
+
+/// this will yield M * b where M is the underlying diag4 matrix
+    M->multiply( b,   x, alpha, beta);
+/// now we add  b(end) * J0
+    x +=  flip_sign *beta * b[ last() ] * J0;
+/// And here we get  J0(1:end-1)'*b(1:end-1) + J0(end) * b(end)
+    xl += beta * (
+      std::inner_product ( std::begin( J0 ), std::end( J0 ) -(size_t)1 , std::begin( b ), Real( 0 ) )
+      + flip_sign * J0[ last() ] * b[ last() ]
+      );
+    x[ last() ] = xl;
+
+  }
+
+  virtual void negate ( size_t i ) {
+    if ( i < J0.size() - 1 ){
+      M->negate( i );
+    }
+  }
+
+/// Just as the name says.  This is straight forward.  We cache
+/// inv(M)*J0(1:end-1) since that's used when solving.
+  virtual void get_schur_complement(){
+    J = J0;
+    J[ !active ]= 0;
+    J[ last() ] = 0;
+    M->solve( J );        //  now we have J = inv(M) * J0'
+/// there is no sign flip here: for the bisymmetric case, the last
+/// element will be negative, and all signs are absorbed in the
+/// 'solve' method..
+    i_schur = Real( 1.0 ) / (  std::inner_product( std::begin(J0), std::end(J0), std::begin( J),  Real( 0.0 ) -J0[ last() ] ) );
+  }
+
+  virtual void factor( int variable = -1){
+    M->factor( variable );
+    get_schur_complement();     // this will automatically factor via
+    dirty = false;
+  }
+
+
+  virtual void solve(  std::valarray<Real>  & x, size_t start = 1){
+
+    if ( dirty )
+      factor( );
+
+    M->solve( x, start );    // x is now  inv(M) * x
+
+    if (  active[ last() ] ){
+
+      double a = x[ last ( ) ]; // save this to solve for separately
+      x[ last() ] = 0;          // nix this for safety: we are still doing
+// inner products all the way
+
+      x[ !active ] = 0 ;
+
+/// This line below gives: G * inv(M) * x0, with x0 original x
+      double gamma =  std::inner_product ( std::begin( J0 ), std::end( J0 ), std::begin( x ), Real( 0.0 ) );
+
+      double alpha =   flip_sign *  i_schur * ( gamma - a  );
+
+/// update x with the last variable
+      x -= flip_sign * alpha * J ;
+      x[ last( ) ] = alpha;
+
+    }
+  }
+
+/// For the bisymmetric case, the alternate entries on the diagonal are
+/// negated in comparison to the unsymmetrized matrix.  Needed for the
+/// LCP solver.
+  inline virtual Real get_diagonal_element( size_t i ) const {
+    if ( i < last() )
+      return M->get_diagonal_element( i );
+    else
+      return  flip_sign * J0[ last() ];
+  }
+
+  virtual void get_column( std::valarray<Real> & v, size_t variable , Real sign ) {
+
+    if ( variable < last() ) {
+      M->get_column( v, variable, sign );
+      /// WARNING: explicit assumption that the last row is never negated
+      /// by bisimmetry
+      v[ last() ] = sign * J0[ variable ];
+    }
+    else {
+      for ( size_t i = 0; i < J0.size(); i+=2 )
+        v[ i ] = sign * flip_sign * J0[ i ];
+    }
+  }
+  ///
+  ///  Multiply and add a column to a vector, making use of the fact that
+  ///  the columns are sparse here.
+  ///
+  inline virtual void multiply_add_column( std::valarray<Real> & w, Real alpha, size_t variable  ){
+
+    /// Delegate to banded matrix
+    if ( variable < last() ) {
+      M->multiply_add_column( w, alpha, variable );
+      if ( ! active[ last() ])
+        w[ last() ] += alpha * J0[ variable ];
+    }
+    /// Handle the last column.
+    else {
+      for ( size_t i = 0; i < J0.size(); i+=2 ) {
+        if ( ! active[ i ] ) {
+          w[ i ] += flip_sign * alpha * J0[ i ];
+        }
+      }
+    }
+  }
+
+
+} ;
+
+ 
 
 
 #endif

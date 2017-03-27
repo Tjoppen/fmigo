@@ -36,8 +36,9 @@ extern "C" {
   
 struct nonsmooth_clutch_params {
 
-  double masses[4];             /* masses for the 4 bodies: first three on engine side, last one is second plate */
-  double first_spring;          /* spring constant for the first set of soft springs */
+  double masses[ 4 ];           /* masses for the 4 bodies: first three on engine side, last one is second plate */
+  double first_spring;          /* spring constant for the first set of
+                                 * soft springs */
   double second_spring;         /* spring constant for the second set of stiff springs */
   double plate_pressure;        /* force between the clutch plates */
   double friction_coefficient;  /* friction of the plates */
@@ -45,13 +46,21 @@ struct nonsmooth_clutch_params {
   double torque_out;		/* applied torque on the output shaft */
   double step;			/* time step: this moves at fixed step and a change of time step */
   double tau;                   /* Damping rate: this should be approximately twice the time step. */
-  double spring_lo[2];          /* Lower bounds for the motion range of the  two first bodies. */
-  double spring_up[2];          /* Upper bounds for motion range of same. */
+  double spring_lo[ 2 ];        /* Lower bounds for the motion range of the  two first bodies. */
+  double spring_up[ 2 ];        /* Upper bounds for motion range of same. */
   double compliance_1;          /* compliance for first limit: both up and down. */
   double compliance_2;		/* compliance for second limit: both up and down. */
   double plate_slip;		/* clutch slip */
   double x[ 4 ];		/* positions (angles) */
   double v[ 4 ];		/* (angular) velocity */
+  double drive_torque;          /* the torque pushing the output shaft:
+                                 * output value */
+  double constraint_state[ 5 ];              /* diagnostic ouput: state of constraints * */
+  double lambda[ 5 ];           /* diagnostic output: constraint forces */
+  double constraints[ 5 ];           /* diagnostic output: constraint forces */
+  int has_impact;			/* diagnostic output: whether the step had
+  an impact */
+  
 };
   
 

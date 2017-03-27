@@ -1,4 +1,4 @@
-#include"diag4.h"
+#include <diag4.h>
 #include <iostream>
 using namespace std;
 
@@ -71,7 +71,7 @@ inline void diag4length::read_factor(const octave_value_list& args, int arg) {
 /// A wrapper for the previous constructor.  Transforms a struct to a diag4
 /// matrix
 
-inline qp_diag4 * read_matrix(const octave_value_list& args, int arg) {
+inline qp_matrix * read_matrix(const octave_value_list& args, int arg) {
   octave_scalar_map diag_struct = args(arg).scalar_map_value ();
   ColumnVector  diag   = static_cast<ColumnVector>(diag_struct.contents(string("diag")).column_vector_value());
   ColumnVector  sub    = static_cast<ColumnVector>(diag_struct.contents(string("sub")).column_vector_value());

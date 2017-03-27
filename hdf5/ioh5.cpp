@@ -430,6 +430,9 @@ namespace h5 {
 #else   // fallback to the C API
       {
         hid_t file = g.getId();
+        if ( H5Iis_valid( file ) <= 0 ){
+          std::cerr << " bad group id  " << std::endl;
+        }
         hid_t       datatype, dataspace, dataset, type_id, plist;   /* handles for dump*/
         int rank = 2; 
         hsize_t dims[] = {(hsize_t)m, (hsize_t)n}; 
@@ -443,10 +446,28 @@ namespace h5 {
         }
         else{
           dataspace = H5Screate_simple(rank, dims, dims); 
+#if 0 
+          if ( dataspace < 0 ){
+          std::cerr << " can't create dataspace " << std::endl;
+        }
+#endif
           H5Pset_chunk(plist, rank, dims);
         }
         dataset = H5Dcreate2(file, name.c_str(),  datatype, dataspace, H5P_DEFAULT, plist, H5P_DEFAULT);
-        H5Dwrite(dataset, datatype, H5S_ALL, H5S_ALL, H5P_DEFAULT, a);
+#if 0 
+          if ( dataset < 0 ){
+          std::cerr << " can't create dataset " << std::endl;
+        }
+#endif
+        herr_t err = H5Dwrite(dataset, datatype, H5S_ALL, H5S_ALL, H5P_DEFAULT, a);
+#if 0 
+        if ( err < 0 ){
+          std::cerr << " fuckup!  " << std::endl;
+        } else {
+          std::cerr << " Sucessful write? " << endl;
+          
+        }
+#endif
         /* Close/release resources. */
         H5Dclose(dataset);
         H5Sclose(dataspace);
@@ -525,6 +546,15 @@ typedef std::map<std::string, int, std::less<std::string> > map_type;
     return o; 
   }
 
+  void print_type_list ( ) { 
+    size_t size = sizeof( h5_type_list ) / sizeof( h5_type_list[ 0 ] ) ;
+    
+    for ( size_t i = 0; i < size; ++i ) { 
+      std::cerr <<   h5_type_list[ i ].name <<  "   " <<    h5_type_list[ i ].type_c << std::endl;
+    }
+  
+  }
+  
 
 }  /* namespace H5 */
 

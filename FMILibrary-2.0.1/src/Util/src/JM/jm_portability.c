@@ -131,17 +131,8 @@ const char* jm_get_system_temp_dir() {
 }
 
 #ifdef WIN32
-#include <io.h>
-#define mktemp _mktemp
-#else
-char* mktemp(char*);
-#endif
- 
-char* jm_mktemp(char* tmplt) {
-	return mktemp(tmplt);
-}
-
-#ifdef WIN32
+#include <io.h> //for _mktemp
+#include <errno.h>
 #include <direct.h>
 #define MKDIR(dir) _mkdir(dir)
 #else
@@ -256,22 +247,42 @@ char* jm_mk_temp_dir(jm_callbacks* cb, const char* systemTempDir, const char* te
 		jm_log_fatal(cb,module, "Canonical name for the temporary files directory is too long (system limit for path length is %d)", FILENAME_MAX);
 		return 0;
 	}
-	tmpPath = (char*)cb->malloc(len + 7);
+	tmpPath = (char*)cb->malloc(len + 9);
 	if(!tmpPath) {
 		jm_log_fatal(cb, module,"Could not allocate memory");
 		return 0;
 	}
-	sprintf(tmpPath,"%s%sXXXXXX",tmpDir,tempPrefix);/*safe*/
+	sprintf(tmpPath,"%s%sXXXXXXXX",tmpDir,tempPrefix);/*safe*/
 
-	if(!jm_mktemp(tmpPath)) {
-		jm_log_fatal(cb, module,"Could not create a unique temporary directory name");
+#ifdef WIN32
+	//no mkdtemp() on Windows
+	//keep going until we succeed or get some error which isn't EEXIST
+	for (;;) {
+		if(!_mktemp(tmpPath)) {
+			jm_log_fatal(cb, module,"Could not create a unique temporary directory name");
+			cb->free(tmpPath);
+			return 0;
+		}
+
+		jm_status_enu_t ret = jm_mkdir(cb,tmpPath);
+		if(ret != jm_status_success && errno != EEXIST) {
+			cb->free(tmpPath);
+			return 0;
+		} else if (ret == jm_status_success) {
+			//done
+			break;
+		}
+
+		//EEXIST -> try again with a different name
+		sprintf(tmpPath,"%s%sXXXXXXXX",tmpDir,tempPrefix);
+	}
+#else
+	if(!mkdtemp(tmpPath)) {
+		jm_log_fatal(cb, module,"Could not create a unique temporary directory");
 		cb->free(tmpPath);
 		return 0;
 	}
-	if(jm_mkdir(cb,tmpPath) != jm_status_success) {
-		cb->free(tmpPath);
-		return 0;
-	}
+#endif
 	return tmpPath;
 }
 
@@ -331,17 +342,27 @@ char* jm_create_URL_from_abs_path(jm_callbacks* cb, const char* path) {
 	return url;
 }
 
+#ifndef HAVE_VSNPRINTF
  int rpl_vsnprintf(char *, size_t, const char *, va_list);
+#endif
 
  int jm_vsnprintf(char * str, size_t size, const char * fmt, va_list al) {
+#ifdef HAVE_VSNPRINTF
+     return vsnprintf(str, size, fmt, al);
+#else
      return rpl_vsnprintf(str, size, fmt, al);
+#endif
  }
 
  int jm_snprintf(char * str, size_t size, const char * fmt, ...) {
     va_list args;
     int ret;
     va_start (args, fmt);
+#ifdef HAVE_VSNPRINTF
+    ret = vsnprintf(str, size, fmt, args);
+#else
     ret = rpl_vsnprintf(str, size, fmt, args);
+#endif
     va_end (args);
     return ret;
  }

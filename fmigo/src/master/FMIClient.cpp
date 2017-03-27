@@ -240,8 +240,13 @@ void FMIClient::on_fmi2_import_get_directional_derivative_res(const vector<doubl
     m_getDirectionalDerivativeValues.push_back(dz);
     m_master->onSlaveDirectionalDerivative(this);
 }
-void FMIClient::on_fmi2_import_new_discrete_states_res             (fmitcp_proto::fmi2_event_info_t eventInfo){
-  //m_fmi2EventInfo = eventInfo;
+void FMIClient::on_fmi2_import_new_discrete_states_res             (fmitcp_proto::fmi2_event_info_t event_info){
+    m_event_info.newDiscreteStatesNeeded           = event_info.newdiscretestatesneeded();
+    m_event_info.terminateSimulation               = event_info.terminatesimulation();
+    m_event_info.nominalsOfContinuousStatesChanged = event_info.nominalsofcontinuousstateschanged();
+    m_event_info.valuesOfContinuousStatesChanged   = event_info.valuesofcontinuousstateschanged();
+    m_event_info.nextEventTimeDefined              = event_info.nexteventtimedefined();
+    m_event_info.nextEventTime                     = event_info.nexteventtime();
 }
 
 // TODO:

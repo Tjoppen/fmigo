@@ -17,6 +17,14 @@ namespace fmitcp_master {
         fmi2_base_type_enu_t type;
         fmi2_causality_enu_t causality;
     };
+    struct event_info_t{
+        bool   newDiscreteStatesNeeded;
+        bool   terminateSimulation;
+        bool   nominalsOfContinuousStatesChanged;
+        bool   valuesOfContinuousStatesChanged;
+        double nextEventTimeDefined;
+        double nextEventTime;
+    };
     typedef std::map<std::string, variable> variable_map;
 
     class BaseMaster;
@@ -45,6 +53,7 @@ namespace fmitcp_master {
         int m_stateId;
 
         BaseMaster * m_master;
+        event_info_t m_event_info;
 
         /// Last fetched result from getX
         std::deque<double>      m_getRealValues;

@@ -742,7 +742,6 @@ string Server::clientData(const char *data, size_t size) {
     ret.first = fmitcp_proto::type_fmi2_import_new_discrete_states_res;
     ret.second = response.SerializeAsString();
     m_logger.log(Logger::LOG_NETWORK,"> fmi2_import_new_discrete_states_res()\n");
-    sendResponse = false;
   break; } case fmitcp_proto::type_fmi2_import_enter_continuous_time_mode_req: {
     // TODO
     SERVER_NORMAL_MESSAGE(enter_continuous_time_mode);

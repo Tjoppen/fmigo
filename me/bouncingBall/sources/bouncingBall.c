@@ -42,11 +42,13 @@ static void eventUpdate(ModelInstance *comp, fmi2EventInfo *eventInfo) {
     modelDescription_t* md = &comp->s.md;
     if (md->h<0 && md->v<0) {
         md->v = - md->e * md->v;
+        eventInfo->valuesOfContinuousStatesChanged = fmi2True;
     }
-    eventInfo->valuesOfContinuousStatesChanged   = fmi2True;
+    eventInfo->newDiscreteStatesNeeded           = fmi2False;
+    eventInfo->terminateSimulation               = fmi2False;
     eventInfo->nominalsOfContinuousStatesChanged = fmi2False;
-    eventInfo->terminateSimulation   = fmi2False;
-    eventInfo->nextEventTimeDefined  = fmi2False;
+    eventInfo->nextEventTimeDefined              = fmi2False;
+
 }
 
 

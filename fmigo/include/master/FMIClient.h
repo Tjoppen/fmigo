@@ -22,7 +22,7 @@ namespace fmitcp_master {
         bool   terminateSimulation;
         bool   nominalsOfContinuousStatesChanged;
         bool   valuesOfContinuousStatesChanged;
-        double nextEventTimeDefined;
+        bool   nextEventTimeDefined;
         double nextEventTime;
     };
     typedef std::map<std::string, variable> variable_map;

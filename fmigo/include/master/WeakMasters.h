@@ -543,7 +543,15 @@ class ModelExchangeStepper : public BaseMaster {
         // start at a new state
         sendWait(m_clients, fmi2_import_enter_event_mode());
         // todo loop until newDiscreteStatesNeeded == false
-        sendWait(m_clients, fmi2_import_new_discrete_states());
+        bool newDiscreteStatesNeeded = true;
+
+        while(newDiscreteStatesNeeded){
+            newDiscreteStatesNeeded = false;
+            sendWait(m_clients, fmi2_import_new_discrete_states());
+            for(auto client: m_clients)
+                    newDiscreteStatesNeeded += client->m_event_info.newDiscreteStatesNeeded;
+        }
+
         sendWait(m_clients, fmi2_import_enter_continuous_time_mode());
 
         for(auto client: m_clients)

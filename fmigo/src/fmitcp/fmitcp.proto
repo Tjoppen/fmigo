@@ -143,8 +143,8 @@ message fmi2_event_info_t {
     required bool   terminateSimulation = 2;
     required bool   nominalsOfContinuousStatesChanged = 3;
     required bool   valuesOfContinuousStatesChanged = 4;
-    required double nextEventTimeDefined = 5;
-    required double nextEventTime = 6;
+    required bool   nextEventTimeDefined = 5;
+    optional double nextEventTime = 6;
 }
 
 // ============== FMI 2.0 CS ==============

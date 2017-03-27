@@ -24,7 +24,6 @@ MEFMUS="
     me/fixedPoint
 "
 CSFMUS="
-    typeconvtest
     impulse
     lumpedrod
     kinematictruck/body
@@ -33,9 +32,11 @@ CSFMUS="
     kinematictruck/kinclutch
     forcevelocitytruck/fvbody
     forcevelocitytruck/gearbox
-    loopsolvetest/add
-    loopsolvetest/sub
-    loopsolvetest/mul
+    testfmus/typeconvtest
+    testfmus/loopsolvetest/add
+    testfmus/loopsolvetest/sub
+    testfmus/loopsolvetest/mul
+    testfmus/stringtest
 "
 
 cat <<END>CMakeLists.txt
@@ -48,6 +49,11 @@ if (WIN32)
     include_directories(\${CMAKE_CURRENT_SOURCE_DIR}/wingsl/include)
     set(CMAKE_SHARED_LINKER_FLAGS "/SAFESEH:NO")
     set(CMAKE_EXE_LINKER_FLAGS "/SAFESEH:NO")
+endif ()
+
+if (UNIX)
+    # Treat warnings as errors, especially implicit-function-declaration
+    set(CMAKE_C_FLAGS "\${CMAKE_C_FLAGS} -Werror")
 endif ()
 
 # Don't add cgsl twice

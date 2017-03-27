@@ -2,6 +2,7 @@
 #ifndef MODELDESCRIPTION_H
 #define MODELDESCRIPTION_H
 #include "FMI2/fmi2Functions.h" //for fmi2Real etc.
+#include "strlcpy.h" //for strlcpy()
 
 #define MODEL_IDENTIFIER engine2
 #define MODEL_GUID "{cbbffdc6-77a2-4783-bdc5-e23a26787c3f}"
@@ -12,29 +13,30 @@
 #define NUMBER_OF_REALS 17
 #define NUMBER_OF_INTEGERS 1
 #define NUMBER_OF_BOOLEANS 1
+#define NUMBER_OF_STRINGS 0
 #define NUMBER_OF_STATES 0
 #define NUMBER_OF_EVENT_INDICATORS 0
 
 
 #define HAVE_MODELDESCRIPTION_STRUCT
 typedef struct {
-    fmi2Real theta_out; //VR=1
-    fmi2Real omega_out; //VR=2
-    fmi2Real alpha_out; //VR=3
-    fmi2Real tau_out; //VR=4
-    fmi2Real theta_in; //VR=5
-    fmi2Real omega_in; //VR=6
-    fmi2Real tau_in; //VR=7
-    fmi2Real theta0; //VR=8
-    fmi2Real omega0; //VR=9
-    fmi2Real kp; //VR=10
-    fmi2Real tau_max; //VR=11
-    fmi2Real omega_target; //VR=12
-    fmi2Real jinv; //VR=13
-    fmi2Real k1; //VR=14
-    fmi2Real k2; //VR=15
-    fmi2Real k_in; //VR=16
-    fmi2Real d_in; //VR=17
+    fmi2Real    theta_out; //VR=1
+    fmi2Real    omega_out; //VR=2
+    fmi2Real    alpha_out; //VR=3
+    fmi2Real    tau_out; //VR=4
+    fmi2Real    theta_in; //VR=5
+    fmi2Real    omega_in; //VR=6
+    fmi2Real    tau_in; //VR=7
+    fmi2Real    theta0; //VR=8
+    fmi2Real    omega0; //VR=9
+    fmi2Real    kp; //VR=10
+    fmi2Real    tau_max; //VR=11
+    fmi2Real    omega_target; //VR=12
+    fmi2Real    jinv; //VR=13
+    fmi2Real    k1; //VR=14
+    fmi2Real    k2; //VR=15
+    fmi2Real    k_in; //VR=16
+    fmi2Real    d_in; //VR=17
     fmi2Integer filter_length; //VR=98
     fmi2Boolean integrate_dtheta; //VR=18
 
@@ -43,23 +45,23 @@ typedef struct {
 
 #define HAVE_DEFAULTS
 static const modelDescription_t defaults = {
-    0, //theta_out
-    0, //omega_out
-    0, //alpha_out
-    0, //tau_out
-    0.0, //theta_in
-    0.0, //omega_in
-    0.0, //tau_in
-    0.0, //theta0
-    0.0, //omega0
-    20.0, //kp
-    1350.0, //tau_max
-    38.8888888889, //omega_target
-    0.25, //jinv
-    1.0, //k1
-    0.1, //k2
-    0.0, //k_in
-    0.0, //d_in
+    0.000000, //theta_out
+    0.000000, //omega_out
+    0.000000, //alpha_out
+    0.000000, //tau_out
+    0.000000, //theta_in
+    0.000000, //omega_in
+    0.000000, //tau_in
+    0.000000, //theta0
+    0.000000, //omega0
+    20.000000, //kp
+    1350.000000, //tau_max
+    38.888889, //omega_target
+    0.250000, //jinv
+    1.000000, //k1
+    0.100000, //k2
+    0.000000, //k_in
+    0.000000, //d_in
     0, //filter_length
     0, //integrate_dtheta
 
@@ -190,6 +192,28 @@ static fmi2Status generated_fmi2SetBoolean(modelDescription_t *md, const fmi2Val
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
         case VR_INTEGRATE_DTHETA: md->integrate_dtheta = value[i]; break;
+
+        default: return fmi2Error;
+        }
+    }
+    return fmi2OK;
+}
+
+static fmi2Status generated_fmi2GetString(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2String value[]) {
+    int i;
+    for (i = 0; i < nvr; i++) {
+        switch (vr[i]) {
+
+        default: return fmi2Error;
+        }
+    }
+    return fmi2OK;
+}
+
+static fmi2Status generated_fmi2SetString(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2String value[]) {
+    int i;
+    for (i = 0; i < nvr; i++) {
+        switch (vr[i]) {
 
         default: return fmi2Error;
         }

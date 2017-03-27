@@ -2,6 +2,7 @@
 #ifndef MODELDESCRIPTION_H
 #define MODELDESCRIPTION_H
 #include "FMI2/fmi2Functions.h" //for fmi2Real etc.
+#include "strlcpy.h" //for strlcpy()
 
 #define MODEL_IDENTIFIER lumpedrod
 #define MODEL_GUID "{b8998512-96a7-4e6d-8350-6d1f9aeae4a1}"
@@ -12,84 +13,87 @@
 #define NUMBER_OF_REALS 32
 #define NUMBER_OF_INTEGERS 1
 #define NUMBER_OF_BOOLEANS 0
+#define NUMBER_OF_STRINGS 0
 #define NUMBER_OF_STATES 0
 #define NUMBER_OF_EVENT_INDICATORS 0
 
 
 #define HAVE_MODELDESCRIPTION_STRUCT
 typedef struct {
-    fmi2Real theta1; //VR=0
-    fmi2Real theta2; //VR=1
-    fmi2Real omega1; //VR=2
-    fmi2Real omega2; //VR=3
-    fmi2Real alpha1; //VR=4
-    fmi2Real alpha2; //VR=5
-    fmi2Real dtheta1; //VR=6
-    fmi2Real dtheta2; //VR=7
-    fmi2Real out_torque1; //VR=8
-    fmi2Real out_torque2; //VR=9
-    fmi2Real tau1; //VR=10
-    fmi2Real tau2; //VR=11
-    fmi2Real theta_drive1; //VR=12
-    fmi2Real omega_drive1; //VR=13
-    fmi2Real theta_drive2; //VR=14
-    fmi2Real omega_drive2; //VR=15
-    fmi2Real J; //VR=16
-    fmi2Real compliance; //VR=17
-    fmi2Real D; //VR=18
-    fmi2Real K_drive1; //VR=19
-    fmi2Real D_drive1; //VR=20
-    fmi2Real K_drive2; //VR=21
-    fmi2Real D_drive2; //VR=22
-    fmi2Real driver_sign1; //VR=23
-    fmi2Real driver_sign2; //VR=24
-    fmi2Real integrate_dt1; //VR=25
-    fmi2Real integrate_dt2; //VR=26
-    fmi2Real step; //VR=27
-    fmi2Real theta01; //VR=29
-    fmi2Real theta02; //VR=30
-    fmi2Real omega01; //VR=31
-    fmi2Real omega02; //VR=32
+    fmi2Real    theta1; //VR=0
+    fmi2Real    theta2; //VR=1
+    fmi2Real    omega1; //VR=2
+    fmi2Real    omega2; //VR=3
+    fmi2Real    alpha1; //VR=4
+    fmi2Real    alpha2; //VR=5
+    fmi2Real    dtheta1; //VR=6
+    fmi2Real    dtheta2; //VR=7
+    fmi2Real    out_torque1; //VR=8
+    fmi2Real    out_torque2; //VR=9
+    fmi2Real    tau1; //VR=10
+    fmi2Real    tau2; //VR=11
+    fmi2Real    theta_drive1; //VR=12
+    fmi2Real    omega_drive1; //VR=13
+    fmi2Real    theta_drive2; //VR=14
+    fmi2Real    omega_drive2; //VR=15
+    fmi2Real    J; //VR=16
+    fmi2Real    compliance; //VR=17
+    fmi2Real    D; //VR=18
+    fmi2Real    K_drive1; //VR=19
+    fmi2Real    D_drive1; //VR=20
+    fmi2Real    K_drive2; //VR=21
+    fmi2Real    D_drive2; //VR=22
+    fmi2Real    driver_sign1; //VR=23
+    fmi2Real    driver_sign2; //VR=24
+    fmi2Real    integrate_dt1; //VR=25
+    fmi2Real    integrate_dt2; //VR=26
+    fmi2Real    step; //VR=27
+    fmi2Real    theta01; //VR=29
+    fmi2Real    theta02; //VR=30
+    fmi2Real    omega01; //VR=31
+    fmi2Real    omega02; //VR=32
     fmi2Integer n_elements; //VR=28
+
 
 } modelDescription_t;
 
 
 #define HAVE_DEFAULTS
 static const modelDescription_t defaults = {
-    0.0, //theta1
-    0.0, //theta2
-    0.0, //omega1
-    0.0, //omega2
-    0.0, //alpha1
-    0.0, //alpha2
-    0.0, //dtheta1
-    0.0, //dtheta2
-    0.0, //out_torque1
-    0.0, //out_torque2
-    0.0, //tau1
-    0.0, //tau2
-    0.0, //theta_drive1
-    0.0, //omega_drive1
-    0.0, //theta_drive2
-    0.0, //omega_drive2
-    10.0, //J
-    0.0001, //compliance
-    2.0, //D
-    0.0, //K_drive1
-    0.0, //D_drive1
-    0.0, //K_drive2
-    0.0, //D_drive2
-    1.0, //driver_sign1
-    1.0, //driver_sign2
-    1.0, //integrate_dt1
-    1.0, //integrate_dt2
-    0.1, //step
-    0.0, //theta01
-    0.0, //theta02
-    0.0, //omega01
-    0.0, //omega02
+    0.000000, //theta1
+    0.000000, //theta2
+    0.000000, //omega1
+    0.000000, //omega2
+    0.000000, //alpha1
+    0.000000, //alpha2
+    0.000000, //dtheta1
+    0.000000, //dtheta2
+    0.000000, //out_torque1
+    0.000000, //out_torque2
+    0.000000, //tau1
+    0.000000, //tau2
+    0.000000, //theta_drive1
+    0.000000, //omega_drive1
+    0.000000, //theta_drive2
+    0.000000, //omega_drive2
+    10.000000, //J
+    0.000100, //compliance
+    2.000000, //D
+    0.000000, //K_drive1
+    0.000000, //D_drive1
+    0.000000, //K_drive2
+    0.000000, //D_drive2
+    1.000000, //driver_sign1
+    1.000000, //driver_sign2
+    1.000000, //integrate_dt1
+    1.000000, //integrate_dt2
+    0.100000, //step
+    0.000000, //theta01
+    0.000000, //theta02
+    0.000000, //omega01
+    0.000000, //omega02
     10, //n_elements
+
 
 };
 
@@ -127,6 +131,7 @@ static const modelDescription_t defaults = {
 #define VR_OMEGA01 31
 #define VR_OMEGA02 32
 #define VR_N_ELEMENTS 28
+
 
 
 //the following getters and setters are static to avoid getting linking errors if this file is included in more than one place
@@ -258,6 +263,28 @@ static fmi2Status generated_fmi2GetBoolean(const modelDescription_t *md, const f
 
 static fmi2Status generated_fmi2SetBoolean(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Boolean value[]) {
         int i;
+    for (i = 0; i < nvr; i++) {
+        switch (vr[i]) {
+
+        default: return fmi2Error;
+        }
+    }
+    return fmi2OK;
+}
+
+static fmi2Status generated_fmi2GetString(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2String value[]) {
+    int i;
+    for (i = 0; i < nvr; i++) {
+        switch (vr[i]) {
+
+        default: return fmi2Error;
+        }
+    }
+    return fmi2OK;
+}
+
+static fmi2Status generated_fmi2SetString(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2String value[]) {
+    int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
 

@@ -352,8 +352,20 @@ fmi2Status fmi2GetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t
 }
 
 fmi2Status fmi2GetString (fmi2Component c, const fmi2ValueReference vr[], size_t nvr, fmi2String value[]) {
+#ifndef HAVE_GENERATED_GETTERS_SETTERS
     return unsupportedFunction(c, "fmi2GetString",
         modelInitializationMode|modelInitialized|modelStepping|modelError);
+#else
+    ModelInstance *comp = (ModelInstance *)c;
+    if (invalidState(comp, "fmi2GetString", modelInitializationMode|modelInitialized|modelStepping|modelError))
+        return fmi2Error;
+    if (nvr > 0 && nullPointer(comp, "fmi2GetString", "vr[]", vr))
+            return fmi2Error;
+    if (nvr > 0 && nullPointer(comp, "fmi2GetString", "value[]", value))
+            return fmi2Error;
+    return generated_fmi2GetString(&comp->s.md, vr, nvr, value);
+#endif
+
 }
 
 fmi2Status fmi2SetReal (fmi2Component c, const fmi2ValueReference vr[], size_t nvr, const fmi2Real value[]) {
@@ -439,8 +451,21 @@ fmi2Status fmi2SetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t
 }
 
 fmi2Status fmi2SetString (fmi2Component c, const fmi2ValueReference vr[], size_t nvr, const fmi2String value[]) {
+#ifndef HAVE_GENERATED_GETTERS_SETTERS
     return unsupportedFunction(c, "fmi2SetString",
-        modelInstantiated|modelInitializationMode|modelInitialized|modelStepping|modelContinuousTimeMode);
+                               // modelInstantiated|modelInitializationMode|modelInitialized|modelStepping|modelContinuousTimeMode);
+        modelInstantiated|modelInitializationMode|modelInitialized|modelStepping);
+#else
+    ModelInstance *comp = (ModelInstance *)c;
+    if (invalidState(comp, "fmi2SetString", modelInstantiated|modelInitializationMode|modelInitialized|modelStepping))
+        return fmi2Error;
+    if (nvr>0 && nullPointer(comp, "fmi2SetString", "vr[]", vr))
+        return fmi2Error;
+    if (nvr>0 && nullPointer(comp, "fmi2SetString", "value[]", value))
+        return fmi2Error;
+    FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2SetString: nvr = %d", nvr)
+    return generated_fmi2SetString(&comp->s.md, vr, nvr, value);
+#endif
 }
 
 fmi2Status fmi2GetFMUstate (fmi2Component c, fmi2FMUstate* FMUstate) {

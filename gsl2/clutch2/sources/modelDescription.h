@@ -2,6 +2,7 @@
 #ifndef MODELDESCRIPTION_H
 #define MODELDESCRIPTION_H
 #include "FMI2/fmi2Functions.h" //for fmi2Real etc.
+#include "strlcpy.h" //for strlcpy()
 
 #define MODEL_IDENTIFIER clutch2
 #define MODEL_GUID "{6985712a-2b8e-4ebb-9b6c-05d89b0ec1c8}"
@@ -12,46 +13,47 @@
 #define NUMBER_OF_REALS 34
 #define NUMBER_OF_INTEGERS 2
 #define NUMBER_OF_BOOLEANS 4
+#define NUMBER_OF_STRINGS 0
 #define NUMBER_OF_STATES 0
 #define NUMBER_OF_EVENT_INDICATORS 0
 
 
 #define HAVE_MODELDESCRIPTION_STRUCT
 typedef struct {
-    fmi2Real x0_e; //VR=0
-    fmi2Real v0_e; //VR=1
-    fmi2Real dx0_e; //VR=2
-    fmi2Real x0_s; //VR=3
-    fmi2Real v0_s; //VR=4
-    fmi2Real dx0_s; //VR=5
-    fmi2Real k_ec; //VR=6
-    fmi2Real gamma_ec; //VR=7
-    fmi2Real k_sc; //VR=9
-    fmi2Real gamma_sc; //VR=10
-    fmi2Real mass_e; //VR=12
-    fmi2Real gamma_e; //VR=13
-    fmi2Real mass_s; //VR=14
-    fmi2Real gamma_s; //VR=15
-    fmi2Real clutch_damping; //VR=16
-    fmi2Real gear_k; //VR=18
-    fmi2Real gear_d; //VR=19
-    fmi2Real x_in_e; //VR=20
-    fmi2Real v_in_e; //VR=21
-    fmi2Real force_in_e; //VR=22
-    fmi2Real force_in_ex; //VR=23
-    fmi2Real x_in_s; //VR=24
-    fmi2Real v_in_s; //VR=25
-    fmi2Real force_in_s; //VR=26
-    fmi2Real force_in_sx; //VR=27
-    fmi2Real clutch_position; //VR=28
-    fmi2Real x_e; //VR=30
-    fmi2Real v_e; //VR=31
-    fmi2Real a_e; //VR=32
-    fmi2Real force_e; //VR=33
-    fmi2Real x_s; //VR=34
-    fmi2Real v_s; //VR=35
-    fmi2Real a_s; //VR=36
-    fmi2Real force_s; //VR=37
+    fmi2Real    x0_e; //VR=0
+    fmi2Real    v0_e; //VR=1
+    fmi2Real    dx0_e; //VR=2
+    fmi2Real    x0_s; //VR=3
+    fmi2Real    v0_s; //VR=4
+    fmi2Real    dx0_s; //VR=5
+    fmi2Real    k_ec; //VR=6
+    fmi2Real    gamma_ec; //VR=7
+    fmi2Real    k_sc; //VR=9
+    fmi2Real    gamma_sc; //VR=10
+    fmi2Real    mass_e; //VR=12
+    fmi2Real    gamma_e; //VR=13
+    fmi2Real    mass_s; //VR=14
+    fmi2Real    gamma_s; //VR=15
+    fmi2Real    clutch_damping; //VR=16
+    fmi2Real    gear_k; //VR=18
+    fmi2Real    gear_d; //VR=19
+    fmi2Real    x_in_e; //VR=20
+    fmi2Real    v_in_e; //VR=21
+    fmi2Real    force_in_e; //VR=22
+    fmi2Real    force_in_ex; //VR=23
+    fmi2Real    x_in_s; //VR=24
+    fmi2Real    v_in_s; //VR=25
+    fmi2Real    force_in_s; //VR=26
+    fmi2Real    force_in_sx; //VR=27
+    fmi2Real    clutch_position; //VR=28
+    fmi2Real    x_e; //VR=30
+    fmi2Real    v_e; //VR=31
+    fmi2Real    a_e; //VR=32
+    fmi2Real    force_e; //VR=33
+    fmi2Real    x_s; //VR=34
+    fmi2Real    v_s; //VR=35
+    fmi2Real    a_s; //VR=36
+    fmi2Real    force_s; //VR=37
     fmi2Integer filter_length; //VR=98
     fmi2Integer gear; //VR=29
     fmi2Boolean integrate_dx_e; //VR=8
@@ -64,40 +66,40 @@ typedef struct {
 
 #define HAVE_DEFAULTS
 static const modelDescription_t defaults = {
-    0.0, //x0_e
-    0.0, //v0_e
-    0.0, //dx0_e
-    0.0, //x0_s
-    0.0, //v0_s
-    0.0, //dx0_s
-    0.0, //k_ec
-    0.0, //gamma_ec
-    0.0, //k_sc
-    0.0, //gamma_sc
-    1.0, //mass_e
-    1.0, //gamma_e
-    1.0, //mass_s
-    1.0, //gamma_s
-    1.0, //clutch_damping
-    10000.0, //gear_k
-    0.0, //gear_d
-    0.0, //x_in_e
-    0.0, //v_in_e
-    0.0, //force_in_e
-    0.0, //force_in_ex
-    0.0, //x_in_s
-    0.0, //v_in_s
-    0.0, //force_in_s
-    0.0, //force_in_sx
-    0.0, //clutch_position
-    0, //x_e
-    0, //v_e
-    0, //a_e
-    0, //force_e
-    0, //x_s
-    0, //v_s
-    0, //a_s
-    0, //force_s
+    0.000000, //x0_e
+    0.000000, //v0_e
+    0.000000, //dx0_e
+    0.000000, //x0_s
+    0.000000, //v0_s
+    0.000000, //dx0_s
+    0.000000, //k_ec
+    0.000000, //gamma_ec
+    0.000000, //k_sc
+    0.000000, //gamma_sc
+    1.000000, //mass_e
+    1.000000, //gamma_e
+    1.000000, //mass_s
+    1.000000, //gamma_s
+    1.000000, //clutch_damping
+    10000.000000, //gear_k
+    0.000000, //gear_d
+    0.000000, //x_in_e
+    0.000000, //v_in_e
+    0.000000, //force_in_e
+    0.000000, //force_in_ex
+    0.000000, //x_in_s
+    0.000000, //v_in_s
+    0.000000, //force_in_s
+    0.000000, //force_in_sx
+    0.000000, //clutch_position
+    0.000000, //x_e
+    0.000000, //v_e
+    0.000000, //a_e
+    0.000000, //force_e
+    0.000000, //x_s
+    0.000000, //v_s
+    0.000000, //a_s
+    0.000000, //force_s
     0, //filter_length
     1, //gear
     0, //integrate_dx_e
@@ -295,6 +297,28 @@ static fmi2Status generated_fmi2SetBoolean(modelDescription_t *md, const fmi2Val
         case VR_IS_GEARBOX: md->is_gearbox = value[i]; break;
         case VR_INTEGRATE_DX_S: md->integrate_dx_s = value[i]; break;
         case VR_OCTAVE_OUTPUT: md->octave_output = value[i]; break;
+
+        default: return fmi2Error;
+        }
+    }
+    return fmi2OK;
+}
+
+static fmi2Status generated_fmi2GetString(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2String value[]) {
+    int i;
+    for (i = 0; i < nvr; i++) {
+        switch (vr[i]) {
+
+        default: return fmi2Error;
+        }
+    }
+    return fmi2OK;
+}
+
+static fmi2Status generated_fmi2SetString(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2String value[]) {
+    int i;
+    for (i = 0; i < nvr; i++) {
+        switch (vr[i]) {
 
         default: return fmi2Error;
         }

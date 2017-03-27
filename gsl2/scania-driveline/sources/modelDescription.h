@@ -7,7 +7,6 @@
 #define MODEL_IDENTIFIER drivetrain_G5IO_m_function_only
 #define MODEL_GUID "{df4d45a1-9637-428f-9266-e6cb20143adb}"
 #define FMI_COSIMULATION
-
 #define HAVE_DIRECTIONAL_DERIVATIVE 0
 #define CAN_GET_SET_FMU_STATE 0
 #define NUMBER_OF_REALS 39
@@ -20,94 +19,92 @@
 
 #define HAVE_MODELDESCRIPTION_STRUCT
 typedef struct {
-    fmi2Real    current_time; //VR=0
-    fmi2Real    w_inShaftNeutral; //VR=1
-    fmi2Real    w_wheel; //VR=2
-    fmi2Real    w_inShaftOld; //VR=3
-    fmi2Real    tq_retarder; //VR=4
-    fmi2Real    tq_fricLoss; //VR=5
-    fmi2Real    tq_env; //VR=6
-    fmi2Real    gear_ratio; //VR=7
-    fmi2Real    tq_clutchMax; //VR=8
-    fmi2Real    tq_losses; //VR=9
-    fmi2Real    r_tire; //VR=10
-    fmi2Real    m_vehicle; //VR=11
-    fmi2Real    final_gear_ratio; //VR=12
-    fmi2Real    w_eng; //VR=13
-    fmi2Real    tq_eng; //VR=14
-    fmi2Real    J_eng; //VR=15
-    fmi2Real    J_neutral; //VR=16
-    fmi2Real    tq_brake; //VR=17
-    fmi2Real    ts; //VR=18
-    fmi2Real    r_slipFilt; //VR=19
-    fmi2Real    w_inShaftDer; //VR=20
-    fmi2Real    w_wheelDer; //VR=21
-    fmi2Real    tq_clutch; //VR=22
-    fmi2Real    v_vehicle; //VR=23
-    fmi2Real    w_out; //VR=24
-    fmi2Real    w_inShaft; //VR=25
-    fmi2Real    tq_outTransmission; //VR=26
-    fmi2Real    v_driveWheel; //VR=27
-    fmi2Real    r_slip; //VR=28
-    fmi2Real    k1; //VR=30
-    fmi2Real    f_shaft_out; //VR=31
-    fmi2Real    w_shaft_in; //VR=32
-    fmi2Real    w_wheel_out; //VR=33
-    fmi2Real    f_wheel_in; //VR=34
-    fmi2Real    k2; //VR=35
-    fmi2Real    w_shaft_out; //VR=36
-    fmi2Real    f_shaft_in; //VR=37
-    fmi2Real    f_wheel_out; //VR=38
-    fmi2Real    w_wheel_in; //VR=39
+    fmi2Real current_time; //VR=0
+    fmi2Real w_inShaftNeutral; //VR=1
+    fmi2Real w_wheel; //VR=2
+    fmi2Real w_inShaftOld; //VR=3
+    fmi2Real tq_retarder; //VR=4
+    fmi2Real tq_fricLoss; //VR=5
+    fmi2Real tq_env; //VR=6
+    fmi2Real gear_ratio; //VR=7
+    fmi2Real tq_clutchMax; //VR=8
+    fmi2Real tq_losses; //VR=9
+    fmi2Real r_tire; //VR=10
+    fmi2Real m_vehicle; //VR=11
+    fmi2Real final_gear_ratio; //VR=12
+    fmi2Real w_eng; //VR=13
+    fmi2Real tq_eng; //VR=14
+    fmi2Real J_eng; //VR=15
+    fmi2Real J_neutral; //VR=16
+    fmi2Real tq_brake; //VR=17
+    fmi2Real ts; //VR=18
+    fmi2Real r_slipFilt; //VR=19
+    fmi2Real w_inShaftDer; //VR=20
+    fmi2Real w_wheelDer; //VR=21
+    fmi2Real tq_clutch; //VR=22
+    fmi2Real v_vehicle; //VR=23
+    fmi2Real w_out; //VR=24
+    fmi2Real w_inShaft; //VR=25
+    fmi2Real tq_outTransmission; //VR=26
+    fmi2Real v_driveWheel; //VR=27
+    fmi2Real r_slip; //VR=28
+    fmi2Real k1; //VR=30
+    fmi2Real f_shaft_out; //VR=31
+    fmi2Real w_shaft_in; //VR=32
+    fmi2Real w_wheel_out; //VR=33
+    fmi2Real f_wheel_in; //VR=34
+    fmi2Real k2; //VR=35
+    fmi2Real w_shaft_out; //VR=36
+    fmi2Real f_shaft_in; //VR=37
+    fmi2Real f_wheel_out; //VR=38
+    fmi2Real w_wheel_in; //VR=39
     fmi2Integer simulation_ticks; //VR=0
-
 
 } modelDescription_t;
 
 
 #define HAVE_DEFAULTS
 static const modelDescription_t defaults = {
-    0.000000, //current_time
-    0.000000, //w_inShaftNeutral
-    0.000000, //w_wheel
-    0.000000, //w_inShaftOld
-    0.000000, //tq_retarder
-    0.000000, //tq_fricLoss
-    0.000000, //tq_env
-    0.000000, //gear_ratio
-    0.000000, //tq_clutchMax
-    0.000000, //tq_losses
-    0.000000, //r_tire
-    0.000000, //m_vehicle
-    0.000000, //final_gear_ratio
-    0.000000, //w_eng
-    0.000000, //tq_eng
-    0.000000, //J_eng
-    0.000000, //J_neutral
-    0.000000, //tq_brake
-    0.000000, //ts
-    0.000000, //r_slipFilt
-    0.000000, //w_inShaftDer
-    0.000000, //w_wheelDer
-    0.000000, //tq_clutch
-    0.000000, //v_vehicle
-    0.000000, //w_out
-    0.000000, //w_inShaft
-    0.000000, //tq_outTransmission
-    0.000000, //v_driveWheel
-    0.000000, //r_slip
-    0.000000, //k1
-    0.000000, //f_shaft_out
-    0.000000, //w_shaft_in
-    0.000000, //w_wheel_out
-    0.000000, //f_wheel_in
-    0.000000, //k2
-    0.000000, //w_shaft_out
-    0.000000, //f_shaft_in
-    0.000000, //f_wheel_out
-    0.000000, //w_wheel_in
+    0, //current_time
+    0.0, //w_inShaftNeutral
+    0.0, //w_wheel
+    0.0, //w_inShaftOld
+    0.0, //tq_retarder
+    0.0, //tq_fricLoss
+    0.0, //tq_env
+    0.0, //gear_ratio
+    0.0, //tq_clutchMax
+    0.0, //tq_losses
+    0.0, //r_tire
+    0.0, //m_vehicle
+    0.0, //final_gear_ratio
+    0.0, //w_eng
+    0.0, //tq_eng
+    0.0, //J_eng
+    0.0, //J_neutral
+    0.0, //tq_brake
+    0.0, //ts
+    0.0, //r_slipFilt
+    0, //w_inShaftDer
+    0, //w_wheelDer
+    0, //tq_clutch
+    0, //v_vehicle
+    0, //w_out
+    0, //w_inShaft
+    0, //tq_outTransmission
+    0, //v_driveWheel
+    0, //r_slip
+    0.0, //k1
+    0, //f_shaft_out
+    0.0, //w_shaft_in
+    0, //w_wheel_out
+    0.0, //f_wheel_in
+    0.0, //k2
+    0, //w_shaft_out
+    0.0, //f_shaft_in
+    0, //f_wheel_out
+    0.0, //w_wheel_in
     0, //simulation_ticks
-
 
 };
 
@@ -154,15 +151,13 @@ static const modelDescription_t defaults = {
 #define VR_SIMULATION_TICKS 0
 
 
-
 //the following getters and setters are static to avoid getting linking errors if this file is included in more than one place
 
 #define HAVE_GENERATED_GETTERS_SETTERS  //for letting the template know that we have our own getters and setters
 
 
-
 static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Real value[]) {
-        int i;
+    int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
         case VR_CURRENT_TIME: value[i] = md->current_time; break;
@@ -212,57 +207,55 @@ static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2
 }
 
 static fmi2Status generated_fmi2SetReal(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Real value[]) {
-        int i;
+    int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case VR_CURRENT_TIME: md->current_time = value[i]; break;
-        case VR_W_INSHAFTNEUTRAL: md->w_inShaftNeutral = value[i]; break;
-        case VR_W_WHEEL: md->w_wheel = value[i]; break;
-        case VR_W_INSHAFTOLD: md->w_inShaftOld = value[i]; break;
-        case VR_TQ_RETARDER: md->tq_retarder = value[i]; break;
-        case VR_TQ_FRICLOSS: md->tq_fricLoss = value[i]; break;
-        case VR_TQ_ENV: md->tq_env = value[i]; break;
-        case VR_GEAR_RATIO: md->gear_ratio = value[i]; break;
-        case VR_TQ_CLUTCHMAX: md->tq_clutchMax = value[i]; break;
-        case VR_TQ_LOSSES: md->tq_losses = value[i]; break;
-        case VR_R_TIRE: md->r_tire = value[i]; break;
-        case VR_M_VEHICLE: md->m_vehicle = value[i]; break;
-        case VR_FINAL_GEAR_RATIO: md->final_gear_ratio = value[i]; break;
-        case VR_W_ENG: md->w_eng = value[i]; break;
-        case VR_TQ_ENG: md->tq_eng = value[i]; break;
-        case VR_J_ENG: md->J_eng = value[i]; break;
-        case VR_J_NEUTRAL: md->J_neutral = value[i]; break;
-        case VR_TQ_BRAKE: md->tq_brake = value[i]; break;
-        case VR_TS: md->ts = value[i]; break;
-        case VR_R_SLIPFILT: md->r_slipFilt = value[i]; break;
-        case VR_W_INSHAFTDER: md->w_inShaftDer = value[i]; break;
-        case VR_W_WHEELDER: md->w_wheelDer = value[i]; break;
-        case VR_TQ_CLUTCH: md->tq_clutch = value[i]; break;
-        case VR_V_VEHICLE: md->v_vehicle = value[i]; break;
-        case VR_W_OUT: md->w_out = value[i]; break;
-        case VR_W_INSHAFT: md->w_inShaft = value[i]; break;
-        case VR_TQ_OUTTRANSMISSION: md->tq_outTransmission = value[i]; break;
-        case VR_V_DRIVEWHEEL: md->v_driveWheel = value[i]; break;
-        case VR_R_SLIP: md->r_slip = value[i]; break;
-        case VR_K1: md->k1 = value[i]; break;
-        case VR_F_SHAFT_OUT: md->f_shaft_out = value[i]; break;
-        case VR_W_SHAFT_IN: md->w_shaft_in = value[i]; break;
-        case VR_W_WHEEL_OUT: md->w_wheel_out = value[i]; break;
-        case VR_F_WHEEL_IN: md->f_wheel_in = value[i]; break;
-        case VR_K2: md->k2 = value[i]; break;
-        case VR_W_SHAFT_OUT: md->w_shaft_out = value[i]; break;
-        case VR_F_SHAFT_IN: md->f_shaft_in = value[i]; break;
-        case VR_F_WHEEL_OUT: md->f_wheel_out = value[i]; break;
-        case VR_W_WHEEL_IN: md->w_wheel_in = value[i]; break;
-
+        case 0: md->current_time = value[i]; break;
+        case 1: md->w_inShaftNeutral = value[i]; break;
+        case 2: md->w_wheel = value[i]; break;
+        case 3: md->w_inShaftOld = value[i]; break;
+        case 4: md->tq_retarder = value[i]; break;
+        case 5: md->tq_fricLoss = value[i]; break;
+        case 6: md->tq_env = value[i]; break;
+        case 7: md->gear_ratio = value[i]; break;
+        case 8: md->tq_clutchMax = value[i]; break;
+        case 9: md->tq_losses = value[i]; break;
+        case 10: md->r_tire = value[i]; break;
+        case 11: md->m_vehicle = value[i]; break;
+        case 12: md->final_gear_ratio = value[i]; break;
+        case 13: md->w_eng = value[i]; break;
+        case 14: md->tq_eng = value[i]; break;
+        case 15: md->J_eng = value[i]; break;
+        case 16: md->J_neutral = value[i]; break;
+        case 17: md->tq_brake = value[i]; break;
+        case 18: md->ts = value[i]; break;
+        case 19: md->r_slipFilt = value[i]; break;
+        case 20: md->w_inShaftDer = value[i]; break;
+        case 21: md->w_wheelDer = value[i]; break;
+        case 22: md->tq_clutch = value[i]; break;
+        case 23: md->v_vehicle = value[i]; break;
+        case 24: md->w_out = value[i]; break;
+        case 25: md->w_inShaft = value[i]; break;
+        case 26: md->tq_outTransmission = value[i]; break;
+        case 27: md->v_driveWheel = value[i]; break;
+        case 28: md->r_slip = value[i]; break;
+        case 30: md->k1 = value[i]; break;
+        case 31: md->f_shaft_out = value[i]; break;
+        case 32: md->w_shaft_in = value[i]; break;
+        case 33: md->w_wheel_out = value[i]; break;
+        case 34: md->f_wheel_in = value[i]; break;
+        case 35: md->k2 = value[i]; break;
+        case 36: md->w_shaft_out = value[i]; break;
+        case 37: md->f_shaft_in = value[i]; break;
+        case 38: md->f_wheel_out = value[i]; break;
+        case 39: md->w_wheel_in = value[i]; break;
         default: return fmi2Error;
         }
     }
     return fmi2OK;
 }
-
 static fmi2Status generated_fmi2GetInteger(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Integer value[]) {
-        int i;
+    int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
         case VR_SIMULATION_TICKS: value[i] = md->simulation_ticks; break;
@@ -274,19 +267,17 @@ static fmi2Status generated_fmi2GetInteger(const modelDescription_t *md, const f
 }
 
 static fmi2Status generated_fmi2SetInteger(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Integer value[]) {
-        int i;
+    int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case VR_SIMULATION_TICKS: md->simulation_ticks = value[i]; break;
-
+        case 0: md->simulation_ticks = value[i]; break;
         default: return fmi2Error;
         }
     }
     return fmi2OK;
 }
-
 static fmi2Status generated_fmi2GetBoolean(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Boolean value[]) {
-        int i;
+    int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
 
@@ -297,7 +288,7 @@ static fmi2Status generated_fmi2GetBoolean(const modelDescription_t *md, const f
 }
 
 static fmi2Status generated_fmi2SetBoolean(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Boolean value[]) {
-        int i;
+    int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
 
@@ -306,7 +297,6 @@ static fmi2Status generated_fmi2SetBoolean(modelDescription_t *md, const fmi2Val
     }
     return fmi2OK;
 }
-
 static fmi2Status generated_fmi2GetString(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2String value[]) {
     int i;
     for (i = 0; i < nvr; i++) {

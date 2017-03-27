@@ -7,7 +7,6 @@
 #define MODEL_IDENTIFIER gearbox
 #define MODEL_GUID "{16176ce9-5941-49b2-9f50-b6870dd10c46}"
 #define FMI_COSIMULATION
-
 #define HAVE_DIRECTIONAL_DERIVATIVE 0
 #define CAN_GET_SET_FMU_STATE 1
 #define NUMBER_OF_REALS 8
@@ -20,32 +19,30 @@
 
 #define HAVE_MODELDESCRIPTION_STRUCT
 typedef struct {
-    fmi2Real    theta_e; //VR=0
-    fmi2Real    omega_e; //VR=1
-    fmi2Real    tau_e; //VR=2
-    fmi2Real    d1; //VR=3
-    fmi2Real    theta_l; //VR=4
-    fmi2Real    omega_l; //VR=5
-    fmi2Real    tau_l; //VR=6
-    fmi2Real    d2; //VR=7
+    fmi2Real theta_e; //VR=0
+    fmi2Real omega_e; //VR=1
+    fmi2Real tau_e; //VR=2
+    fmi2Real d1; //VR=3
+    fmi2Real theta_l; //VR=4
+    fmi2Real omega_l; //VR=5
+    fmi2Real tau_l; //VR=6
+    fmi2Real d2; //VR=7
     fmi2Integer gear; //VR=8
-
 
 } modelDescription_t;
 
 
 #define HAVE_DEFAULTS
 static const modelDescription_t defaults = {
-    0.000000, //theta_e
-    0.000000, //omega_e
-    0.000000, //tau_e
-    1.000000, //d1
-    0.000000, //theta_l
-    0.000000, //omega_l
-    0.000000, //tau_l
-    1.000000, //d2
+    0.0, //theta_e
+    0.0, //omega_e
+    0, //tau_e
+    1.0, //d1
+    0, //theta_l
+    0, //omega_l
+    0.0, //tau_l
+    1.0, //d2
     1, //gear
-
 
 };
 
@@ -61,15 +58,13 @@ static const modelDescription_t defaults = {
 #define VR_GEAR 8
 
 
-
 //the following getters and setters are static to avoid getting linking errors if this file is included in more than one place
 
 #define HAVE_GENERATED_GETTERS_SETTERS  //for letting the template know that we have our own getters and setters
 
 
-
 static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Real value[]) {
-        int i;
+    int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
         case VR_THETA_E: value[i] = md->theta_e; break;
@@ -88,26 +83,24 @@ static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2
 }
 
 static fmi2Status generated_fmi2SetReal(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Real value[]) {
-        int i;
+    int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case VR_THETA_E: md->theta_e = value[i]; break;
-        case VR_OMEGA_E: md->omega_e = value[i]; break;
-        case VR_TAU_E: md->tau_e = value[i]; break;
-        case VR_D1: md->d1 = value[i]; break;
-        case VR_THETA_L: md->theta_l = value[i]; break;
-        case VR_OMEGA_L: md->omega_l = value[i]; break;
-        case VR_TAU_L: md->tau_l = value[i]; break;
-        case VR_D2: md->d2 = value[i]; break;
-
+        case 0: md->theta_e = value[i]; break;
+        case 1: md->omega_e = value[i]; break;
+        case 2: md->tau_e = value[i]; break;
+        case 3: md->d1 = value[i]; break;
+        case 4: md->theta_l = value[i]; break;
+        case 5: md->omega_l = value[i]; break;
+        case 6: md->tau_l = value[i]; break;
+        case 7: md->d2 = value[i]; break;
         default: return fmi2Error;
         }
     }
     return fmi2OK;
 }
-
 static fmi2Status generated_fmi2GetInteger(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Integer value[]) {
-        int i;
+    int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
         case VR_GEAR: value[i] = md->gear; break;
@@ -119,19 +112,17 @@ static fmi2Status generated_fmi2GetInteger(const modelDescription_t *md, const f
 }
 
 static fmi2Status generated_fmi2SetInteger(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Integer value[]) {
-        int i;
+    int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case VR_GEAR: md->gear = value[i]; break;
-
+        case 8: md->gear = value[i]; break;
         default: return fmi2Error;
         }
     }
     return fmi2OK;
 }
-
 static fmi2Status generated_fmi2GetBoolean(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Boolean value[]) {
-        int i;
+    int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
 
@@ -142,7 +133,7 @@ static fmi2Status generated_fmi2GetBoolean(const modelDescription_t *md, const f
 }
 
 static fmi2Status generated_fmi2SetBoolean(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Boolean value[]) {
-        int i;
+    int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
 
@@ -151,7 +142,6 @@ static fmi2Status generated_fmi2SetBoolean(modelDescription_t *md, const fmi2Val
     }
     return fmi2OK;
 }
-
 static fmi2Status generated_fmi2GetString(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2String value[]) {
     int i;
     for (i = 0; i < nvr; i++) {

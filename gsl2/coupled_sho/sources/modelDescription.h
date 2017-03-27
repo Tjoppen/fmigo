@@ -7,7 +7,6 @@
 #define MODEL_IDENTIFIER coupled_sho
 #define MODEL_GUID "{e447a3ab-8844-4206-a525-ec659bee2e37}"
 #define FMI_COSIMULATION
-
 #define HAVE_DIRECTIONAL_DERIVATIVE 0
 #define CAN_GET_SET_FMU_STATE 1
 #define NUMBER_OF_REALS 14
@@ -20,20 +19,20 @@
 
 #define HAVE_MODELDESCRIPTION_STRUCT
 typedef struct {
-    fmi2Real    mu; //VR=0
-    fmi2Real    omega_c; //VR=1
-    fmi2Real    zeta_c; //VR=2
-    fmi2Real    x0; //VR=3
-    fmi2Real    zeta_i; //VR=4
-    fmi2Real    v0; //VR=5
-    fmi2Real    force; //VR=6
-    fmi2Real    xstart; //VR=7
-    fmi2Real    vstart; //VR=8
-    fmi2Real    dxstart; //VR=9
-    fmi2Real    force_c; //VR=10
-    fmi2Real    x; //VR=11
-    fmi2Real    v; //VR=12
-    fmi2Real    omega_i; //VR=95
+    fmi2Real mu; //VR=0
+    fmi2Real omega_c; //VR=1
+    fmi2Real zeta_c; //VR=2
+    fmi2Real x0; //VR=3
+    fmi2Real zeta_i; //VR=4
+    fmi2Real v0; //VR=5
+    fmi2Real force; //VR=6
+    fmi2Real xstart; //VR=7
+    fmi2Real vstart; //VR=8
+    fmi2Real dxstart; //VR=9
+    fmi2Real force_c; //VR=10
+    fmi2Real x; //VR=11
+    fmi2Real v; //VR=12
+    fmi2Real omega_i; //VR=95
     fmi2Integer iterations; //VR=96
     fmi2Integer filter_length; //VR=98
     fmi2Boolean dump_data; //VR=97
@@ -43,20 +42,20 @@ typedef struct {
 
 #define HAVE_DEFAULTS
 static const modelDescription_t defaults = {
-    1.000000, //mu
-    1.000000, //omega_c
-    1.000000, //zeta_c
-    1.000000, //x0
-    1.000000, //zeta_i
-    0.000000, //v0
-    0.000000, //force
-    1.000000, //xstart
-    1.000000, //vstart
-    1.000000, //dxstart
-    0.000000, //force_c
-    0.000000, //x
-    0.000000, //v
-    1.000000, //omega_i
+    1.0, //mu
+    1.0, //omega_c
+    1.0, //zeta_c
+    1.0, //x0
+    1.0, //zeta_i
+    0.0, //v0
+    0.0, //force
+    1.0, //xstart
+    1.0, //vstart
+    1.0, //dxstart
+    0, //force_c
+    0, //x
+    0, //v
+    1.0, //omega_i
     0, //iterations
     0, //filter_length
     0, //dump_data
@@ -88,9 +87,8 @@ static const modelDescription_t defaults = {
 #define HAVE_GENERATED_GETTERS_SETTERS  //for letting the template know that we have our own getters and setters
 
 
-
 static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Real value[]) {
-        int i;
+    int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
         case VR_MU: value[i] = md->mu; break;
@@ -115,32 +113,30 @@ static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2
 }
 
 static fmi2Status generated_fmi2SetReal(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Real value[]) {
-        int i;
+    int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case VR_MU: md->mu = value[i]; break;
-        case VR_OMEGA_C: md->omega_c = value[i]; break;
-        case VR_ZETA_C: md->zeta_c = value[i]; break;
-        case VR_X0: md->x0 = value[i]; break;
-        case VR_ZETA_I: md->zeta_i = value[i]; break;
-        case VR_V0: md->v0 = value[i]; break;
-        case VR_FORCE: md->force = value[i]; break;
-        case VR_XSTART: md->xstart = value[i]; break;
-        case VR_VSTART: md->vstart = value[i]; break;
-        case VR_DXSTART: md->dxstart = value[i]; break;
-        case VR_FORCE_C: md->force_c = value[i]; break;
-        case VR_X: md->x = value[i]; break;
-        case VR_V: md->v = value[i]; break;
-        case VR_OMEGA_I: md->omega_i = value[i]; break;
-
+        case 0: md->mu = value[i]; break;
+        case 1: md->omega_c = value[i]; break;
+        case 2: md->zeta_c = value[i]; break;
+        case 3: md->x0 = value[i]; break;
+        case 4: md->zeta_i = value[i]; break;
+        case 5: md->v0 = value[i]; break;
+        case 6: md->force = value[i]; break;
+        case 7: md->xstart = value[i]; break;
+        case 8: md->vstart = value[i]; break;
+        case 9: md->dxstart = value[i]; break;
+        case 10: md->force_c = value[i]; break;
+        case 11: md->x = value[i]; break;
+        case 12: md->v = value[i]; break;
+        case 95: md->omega_i = value[i]; break;
         default: return fmi2Error;
         }
     }
     return fmi2OK;
 }
-
 static fmi2Status generated_fmi2GetInteger(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Integer value[]) {
-        int i;
+    int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
         case VR_ITERATIONS: value[i] = md->iterations; break;
@@ -153,20 +149,18 @@ static fmi2Status generated_fmi2GetInteger(const modelDescription_t *md, const f
 }
 
 static fmi2Status generated_fmi2SetInteger(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Integer value[]) {
-        int i;
+    int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case VR_ITERATIONS: md->iterations = value[i]; break;
-        case VR_FILTER_LENGTH: md->filter_length = value[i]; break;
-
+        case 96: md->iterations = value[i]; break;
+        case 98: md->filter_length = value[i]; break;
         default: return fmi2Error;
         }
     }
     return fmi2OK;
 }
-
 static fmi2Status generated_fmi2GetBoolean(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Boolean value[]) {
-        int i;
+    int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
         case VR_DUMP_DATA: value[i] = md->dump_data; break;
@@ -178,17 +172,15 @@ static fmi2Status generated_fmi2GetBoolean(const modelDescription_t *md, const f
 }
 
 static fmi2Status generated_fmi2SetBoolean(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Boolean value[]) {
-        int i;
+    int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case VR_DUMP_DATA: md->dump_data = value[i]; break;
-
+        case 97: md->dump_data = value[i]; break;
         default: return fmi2Error;
         }
     }
     return fmi2OK;
 }
-
 static fmi2Status generated_fmi2GetString(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2String value[]) {
     int i;
     for (i = 0; i < nvr; i++) {

@@ -58,7 +58,7 @@ public:
             it->first->sendSetX(it->second);
         }
 
-        sendWait(m_clients, fmi2_import_do_step(0, 0, t, dt, true));
+        sendWait(m_clients, fmi2_import_do_step(t, dt, true));
     }
 };
 
@@ -89,7 +89,7 @@ public:
             wait();
             const SendSetXType refValues = getInputWeakRefsAndValues(m_weakConnections, client);
             client->sendSetX(refValues);
-            sendWait(client, fmi2_import_do_step(0, 0, t, dt, true));
+            sendWait(client, fmi2_import_do_step(t, dt, true));
         }
     }
 };
@@ -167,16 +167,15 @@ class ModelExchangeStepper : public BaseMaster {
         if(p->stateEvent)return GSL_SUCCESS;
 
         for(auto client: p->clients){
-            p->baseMaster->send(client, fmi2_import_set_time(0,0,t));
-            p->baseMaster->send(client, fmi2_import_set_continuous_states(0,0,
-                                                                          x + p->baseMaster->get_storage().get_offset(client->getId(), STORAGE::states),
+            p->baseMaster->send(client, fmi2_import_set_time(t));
+            p->baseMaster->send(client, fmi2_import_set_continuous_states(x + p->baseMaster->get_storage().get_offset(client->getId(), STORAGE::states),
                                             client->getNumContinuousStates()));
         }
         p->baseMaster->wait();
         p->baseMaster->solveLoops();
 
         for(auto client: p->clients)
-            p->baseMaster->send(client, fmi2_import_get_derivatives(0,0,(int)client->getNumContinuousStates()));
+            p->baseMaster->send(client, fmi2_import_get_derivatives((int)client->getNumContinuousStates()));
         p->baseMaster->wait();
 
         for(auto client: p->clients)
@@ -184,7 +183,7 @@ class ModelExchangeStepper : public BaseMaster {
 
         for(auto client: p->clients){
             if(client->getNumEventIndicators())
-                p->baseMaster->send(client, fmi2_import_get_event_indicators(0,0,(int)client->getNumEventIndicators()));
+                p->baseMaster->send(client, fmi2_import_get_event_indicators((int)client->getNumEventIndicators()));
         }
 
         p->baseMaster->wait();
@@ -296,7 +295,7 @@ class ModelExchangeStepper : public BaseMaster {
         m.model->free = cgsl_model_default_free;//freeFMUModel;
 
         for(auto client: clients)
-            send(client, fmi2_import_get_continuous_states(0,0,(int)client->getNumContinuousStates()));
+            send(client, fmi2_import_get_continuous_states((int)client->getNumContinuousStates()));
         wait();
 
         for(auto client: clients)
@@ -306,11 +305,11 @@ class ModelExchangeStepper : public BaseMaster {
 #define STATIC_GET_CLIENT_OFFSET(name)                                  \
    p->baseMaster->get_storage().get_offset(client->getId(), STORAGE::name)
 #define STATIC_SET_(name, name2, data)                                       \
-    p->baseMaster->send(client, fmi2_import_set_##name##_##name2(0,0,     \
+    p->baseMaster->send(client, fmi2_import_set_##name##_##name2(     \
                                                        data + STATIC_GET_CLIENT_OFFSET(name2), \
                                                        client->getNumContinuousStates()));
 #define STATIC_GET_(name)                                               \
-    p->baseMaster->send(client, fmi2_import_get_##name(0,0,(int)client->getNumContinuousStates()))
+    p->baseMaster->send(client, fmi2_import_get_##name((int)client->getNumContinuousStates()))
 
     static int epce_post_step(int n, const double outputs[], void * params) {
         // make local variables
@@ -429,7 +428,7 @@ class ModelExchangeStepper : public BaseMaster {
     void storeStates(cgsl_simulation &sim){
         fmu_parameters* p = get_p(sim);
         for(auto client: m_clients)
-            send(client, fmi2_import_get_continuous_states(0,0,(int)client->getNumContinuousStates()));
+            send(client, fmi2_import_get_continuous_states((int)client->getNumContinuousStates()));
 
         p->backup.failed_steps = sim.i.evolution->failed_steps;
         p->backup.t = sim.t;
@@ -542,13 +541,13 @@ class ModelExchangeStepper : public BaseMaster {
      */
     void newDiscreteStates(){
         // start at a new state
-        sendWait(m_clients, fmi2_import_enter_event_mode(0,0));
+        sendWait(m_clients, fmi2_import_enter_event_mode());
         // todo loop until newDiscreteStatesNeeded == false
-        sendWait(m_clients, fmi2_import_new_discrete_states(0,0));
-        sendWait(m_clients, fmi2_import_enter_continuous_time_mode(0,0));
+        sendWait(m_clients, fmi2_import_new_discrete_states());
+        sendWait(m_clients, fmi2_import_enter_continuous_time_mode());
 
         for(auto client: m_clients)
-            send(client, fmi2_import_get_event_indicators(0,0,(int)client->getNumEventIndicators()));
+            send(client, fmi2_import_get_event_indicators((int)client->getNumEventIndicators()));
 
         wait();
 

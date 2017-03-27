@@ -204,15 +204,26 @@ int fmitcp_master::parseArguments( int argc,
                     a = 1; b = 2;  c = 4; d = 5;
                 } else if (values.size() == 6) {
                     //TYPEFROM,FMUFROM,VRFROM,TYPETO,FMUTO,VRTO
-                    conn.fromType = type_from_char(values[0]);
-                    conn.toType   = type_from_char(values[3]);
-                    a = 1; b = 2;  c = 4; d = 5;
+                    //FMUFROM,NAMEFROM,FMUTO,NAMETO,k,m
+                    if (isNumeric(values[1])) {
+                        conn.fromType = type_from_char(values[0]);
+                        conn.toType   = type_from_char(values[3]);
+                        a = 1; b = 2;  c = 4; d = 5;
+                    } else {
+                        conn.slope    = atof(values[4].c_str());
+                        conn.intercept= atof(values[5].c_str());
+                    }
                 } else  if (values.size() == 5) {
                     //TYPE,FMUFROM,VRFROM,FMUTO,VRTO
+                    //TYPE,FMUFROM,NAMEFROM,FMUTO,NAMETO (undocumented, not recommended)
+                    if (!isNumeric(values[1]) || !isNumeric(values[4])) {
+                      fprintf(stderr, "WARNING: TYPE,FMUFROM,NAMEFROM,FMUTO,NAMETO syntax not recommended\n");
+                    }
                     conn.fromType = conn.toType = type_from_char(values[0]);
                     values.pop_front();
                 } else if (values.size() == 4) {
                     //FMUFROM,VRFROM,FMUTO,VRTO
+                    //FMUFROM,NAMEFROM,FMUTO,NAMETO
                     conn.fromType = conn.toType = type_from_char("r");
                 } else {
                     fprintf(stderr, "Bad param: %s\n", it->c_str());
@@ -220,9 +231,9 @@ int fmitcp_master::parseArguments( int argc,
                 }
 
                 conn.fromFMU      = atoi(values[a].c_str());
-                conn.fromOutputVR = atoi(values[b].c_str());
                 conn.toFMU        = atoi(values[c].c_str());
-                conn.toInputVR    = atoi(values[d].c_str());
+                conn.fromOutputVRorNAME = values[b];
+                conn.toInputVRorNAME    = values[d];
 
                 connections->push_back(conn);
             }
@@ -244,7 +255,7 @@ int fmitcp_master::parseArguments( int argc,
                 sc.toFMU   = atoi(values[2].c_str());
 
                 for (auto it2 = values.begin() + 3; it2 != values.end(); it2++) {
-                    sc.vrs.push_back(atoi(it2->c_str()));
+                    sc.vrORname.push_back(it2->c_str());
                 }
 
                 strongConnections->push_back(sc);
@@ -366,7 +377,7 @@ int fmitcp_master::parseArguments( int argc,
                 }
 
                 p.fmuIndex       = atoi(values[0].c_str());
-                p.valueReference = atoi(values[1].c_str());
+                p.vrORname = values[1];
 
                 switch (p.type) {
                 case fmi2_base_type_real: p.realValue = atof(values[2].c_str()); break;

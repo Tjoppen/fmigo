@@ -6,6 +6,10 @@ import xml.etree.ElementTree as e
 def warning(*objs):
     print("WARNING: ", *objs, file=sys.stderr)
 
+def error(*objs):
+    print('#error ',*objs)
+    print("ERROR: ", *objs, file=sys.stderr)
+
 if len(sys.argv) < 2:
     print('USAGE: '+sys.argv[0] +' modelDescription-filename > header-filename', file=sys.stderr)
     print('Example: '+sys.argv[0]+' modelDescription.xml > header.h', file=sys.stderr)
@@ -57,23 +61,25 @@ states = {}
 derivatives = {}
 
 SV = root.find('ModelVariables').findall('ScalarVariable')
+strs  = {}
 
 for sv in SV:
     name = sv.attrib['name']
     vr = int(sv.attrib['valueReference'])
 
     if name in reals.values() or name in ints.values() or name in bools.values():
-        warning(sys.argv[1]+' contains multiple variables named "' + name + '"!')
+        error(sys.argv[1]+' contains multiple variables named "' + name + '"!')
         exit(1)
 
     R = sv.find('Real')
     I = sv.find('Integer')
     E = sv.find('Enum')
     B = sv.find('Boolean')
+    S = sv.find('String')
 
     if R != None:
         if vr in reals:
-            warning(sys.argv[1]+' contains multiple Reals with VR='+str(vr))
+            error(sys.argv[1]+' contains multiple Reals with VR='+str(vr))
             exit(1)
         start = float(R.attrib['start']) if 'start' in R.attrib else 0
         if meFmuType:
@@ -85,46 +91,56 @@ for sv in SV:
 
     elif I != None or E != None:
         if vr in ints:
-            warning(sys.argv[1]+' contains multiple Integers/Enums with VR='+str(vr))
+            error(sys.argv[1]+' contains multiple Integers/Enums with VR='+str(vr))
             exit(1)
         IE = I if I != None else E
         start = int(IE.attrib['start']) if 'start' in IE.attrib else 0
         ints[vr] = (name, start)
     elif B != None:
         if vr in bools:
-            warning(sys.argv[1]+' contains multiple Booleans with VR='+str(vr))
+            error(sys.argv[1]+' contains multiple Booleans with VR='+str(vr))
             exit(1)
         start = B.attrib['start'] if 'start' in B.attrib else '0'
         bools[vr] = (name, 1 if start == '1' or start == 'true' else 0)
+    elif S != None:
+        start = S.attrib['start'] if 'start' in S.attrib else ''
+        if 'size' in S.attrib:
+            size = int(S.attrib['size'])
+        else:
+            error('String variable "%s" missing size' % name)
+            exit(1)
+        strs[vr] = (name, start, size)
     else:
-        warning('Variable "' + sv.attrib['name'] + '" has unknown/unsupported type')
+        error('Variable "%s" has unknown/unsupported type' % name)
         exit(1)
 
 print('''#ifndef MODELDESCRIPTION_H
 #define MODELDESCRIPTION_H
 #include "FMI2/fmi2Functions.h" //for fmi2Real etc.
+#include "strlcpy.h" //for strlcpy()
 
 #define MODEL_IDENTIFIER %s
 #define MODEL_GUID "%s"
-%s
 %s
 #define HAVE_DIRECTIONAL_DERIVATIVE %i
 #define CAN_GET_SET_FMU_STATE %i
 #define NUMBER_OF_REALS %i
 #define NUMBER_OF_INTEGERS %i
 #define NUMBER_OF_BOOLEANS %i
+#define NUMBER_OF_STRINGS %i
 #define NUMBER_OF_STATES %i
 #define NUMBER_OF_EVENT_INDICATORS %s
 ''' % (
     modelIdentifier,
     root.get('guid'),
-    '#define FMI_COSIMULATION' if csFmuType else '',
+    '#define FMI_COSIMULATION' if csFmuType else
     '#define FMI_MODELEXCHANGE' if meFmuType else '',
     1 if providesDirectionalDerivative else 0,
     1 if canGetAndSetFMUstate else 0,
     len(reals),
     len(ints),
     len(bools),
+    len(strs),
     len(states),
     ni,
 ))
@@ -132,32 +148,35 @@ print('''#ifndef MODELDESCRIPTION_H
 print('''
 #define HAVE_MODELDESCRIPTION_STRUCT
 typedef struct {
-%s%s%s%s
+%s%s%s%s%s
 } modelDescription_t;
 ''' % (
     ''.join(['    fmi2Real '+value[0]+'; //VR='+str(key)+'\n' for key,value in reals.items()]),
     ''.join(['    fmi2Integer '+value[0]+'; //VR='+str(key)+'\n' for key,value in ints.items()]),
     ''.join(['    fmi2Boolean '+value[0]+'; //VR='+str(key)+'\n' for key,value in bools.items()]),
+    ''.join(['    fmi2Char    '+value[0]+'[256]; //VR='+str(key)+'\n' for key,value in strs.items()]),
     '    fmi2Boolean dirty;' if meFmuType else '',
 ))
 
 print('''
 #define HAVE_DEFAULTS
 static const modelDescription_t defaults = {
-%s%s%s%s
+%s%s%s%s%s
 };
 ''' % (
     ''.join(['    '+str(value[1])+', //'+value[0]+'\n' for key,value in reals.items()]),
     ''.join(['    '+str(value[1])+', //'+value[0]+'\n' for key,value in ints.items()]),
     ''.join(['    '+str(value[1])+', //'+value[0]+'\n' for key,value in bools.items()]),
+    ''.join(['    "", //'+value[0]+'\n' for key,value in strs.items()]),
     '    1,' if meFmuType else '',
 ))
 
 print('''
-%s%s%s''' % (
+%s%s%s%s''' % (
     ''.join(['#define VR_'+value[0].upper()+' '+str(key)+'\n' for key,value in reals.items()]),
     ''.join(['#define VR_'+value[0].upper()+' '+str(key)+'\n' for key,value in ints.items()]),
     ''.join(['#define VR_'+value[0].upper()+' '+str(key)+'\n' for key,value in bools.items()]),
+    ''.join(['#define VR_'+value[0].upper()+' '+str(key)+'\n' for key,value in strs.items()]),
 ))
 
 
@@ -181,9 +200,8 @@ print('''%s'''%(
     '\nstatic void update_all(modelDescription_t *md);\n' if meFmuType else '',))
 
 def gen_getters_setters(t, d):
-    print('''
-static fmi2Status generated_fmi2Get%s(%smodelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2%s value[]) {
-    %s    int i;
+    print('''static fmi2Status generated_fmi2Get%s(%smodelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2%s value[]) {
+    %sint i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
 %s
@@ -194,7 +212,7 @@ static fmi2Status generated_fmi2Get%s(%smodelDescription_t *md, const fmi2ValueR
 }
 
 static fmi2Status generated_fmi2Set%s(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2%s value[]) {
-    %s    int i;
+    %sint i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
 %s
@@ -210,11 +228,16 @@ static fmi2Status generated_fmi2Set%s(modelDescription_t *md, const fmi2ValueRef
         ''.join(['        case VR_%s: value[i] = md->%s; break;\n' % (value[0].upper(), value[0]) for key,value in d.items()]),
         t,t,
         'md->dirty = 1;\n' if meFmuType else '',
-        ''.join(['        case VR_%s: md->%s = value[i]; break;\n' % (value[0].upper(), value[0]) for key,value in d.items()]),
+        # A bit convoluted maybe, but it works.
+        # This makes sure settings strings larger than the FMU can handle results in an error, not a crash
+        '\n'.join(['        case %i: if (strlcpy(md->%s, value[i], sizeof(md->%s)) >= sizeof(md->%s)) { return fmi2Error; } break;' %
+                                                  (key, value[0], value[0], value[0]) for key,value in d.items()]) if t == 'String' else
+        '\n'.join(['        case %i: md->%s = value[i]; break;' % (key, value[0]) for key,value in d.items()]),
     ))
 
 gen_getters_setters('Real',    reals)
 gen_getters_setters('Integer', ints)
 gen_getters_setters('Boolean', bools)
+gen_getters_setters('String',  strs)
 
 print('#endif //MODELDESCRIPTION_H')

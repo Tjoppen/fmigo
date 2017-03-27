@@ -10,50 +10,37 @@ template<typename T> std::string pack(fmitcp_message_Type type, T &req) {
   return string(reinterpret_cast<char*>(bytes), 2) + req.SerializeAsString();
 }
 
-std::string fmitcp::serialize::fmi2_import_instantiate(int message_id) {
-    return fmi2_import_instantiate2(message_id, false, 0);
-}
 #define SERIALIZE_NORMAL_MESSAGE_(type, extra)                          \
     /* Contruct message */                                              \
     type##_req req;                                                     \
-    req.set_message_id(message_id);                                     \
-    req.set_fmuid(fmuId);                                               \
     req.set_##extra(extra);                                             \
     return pack(type_##type##_req, req);
 
 #define SERIALIZE_NORMAL_MESSAGE(type)                                  \
     /* Contruct message */                                              \
     type##_req req;                                                     \
-    req.set_message_id(message_id);                                     \
-    req.set_fmuid(fmuId);                                               \
     return pack(type_##type##_req, req);
 
-std::string fmitcp::serialize::fmi2_import_instantiate2(int message_id, bool visible, int type) {
+std::string fmitcp::serialize::fmi2_import_instantiate2(bool visible) {
   fmi2_import_instantiate_req req;
-  req.set_message_id(message_id);
   req.set_visible(visible);
-  req.set_fmutype(type);
 
   return pack(type_fmi2_import_instantiate_req, req);
 }
 
 //implementation for all messages to FMI function that take no arguments (void)
 #define FMU_VOID_REQ_IMPL(name)\
-std::string fmitcp::serialize::name(int message_id, int fmuId){\
+std::string fmitcp::serialize::name(){\
     name##_req req;\
-    req.set_message_id(message_id);\
-    req.set_fmuid(fmuId);\
 \
     return pack(type_##name##_req, req);\
 }
 
 FMU_VOID_REQ_IMPL(fmi2_import_free_instance)
 
-std::string fmitcp::serialize::fmi2_import_setup_experiment(int message_id, int fmuId, bool toleranceDefined, double tolerance, double startTime,
+std::string fmitcp::serialize::fmi2_import_setup_experiment(bool toleranceDefined, double tolerance, double startTime,
     bool stopTimeDefined, double stopTime) {
     fmi2_import_setup_experiment_req req;
-    req.set_message_id(message_id);
-    req.set_fmuid(fmuId);
     req.set_tolerancedefined(toleranceDefined);
     req.set_tolerance(tolerance);
     req.set_starttime(startTime);
@@ -68,37 +55,28 @@ FMU_VOID_REQ_IMPL(fmi2_import_exit_initialization_mode)
 FMU_VOID_REQ_IMPL(fmi2_import_terminate)
 FMU_VOID_REQ_IMPL(fmi2_import_reset)
 
-std::string fmitcp::serialize::fmi2_import_set_real_input_derivatives(int message_id, int fmuId,
-                                                    std::vector<int> valueRefs,
-                                                    std::vector<int> orders,
-                                                    std::vector<double> values){
+std::string fmitcp::serialize::fmi2_import_set_real_input_derivatives(std::vector<int> valueRefs,
+                                                                      std::vector<int> orders,
+                                                                      std::vector<double> values){
     fmi2_import_set_real_input_derivatives_req req;
-    req.set_message_id(message_id);
-    req.set_fmuid(fmuId);
 
     // TODO: SET the derivatives in message
 
     return pack(type_fmi2_import_set_real_input_derivatives_req, req);
 }
 
-std::string fmitcp::serialize::fmi2_import_get_real_output_derivatives(int message_id, int fmuId, std::vector<int> valueRefs, std::vector<int> orders){
+std::string fmitcp::serialize::fmi2_import_get_real_output_derivatives(std::vector<int> valueRefs, std::vector<int> orders){
     fmi2_import_get_real_output_derivatives_req req;
-    req.set_message_id(message_id);
-    req.set_fmuid(fmuId);
 
     return pack(type_fmi2_import_get_real_output_derivatives_req, req);
 }
 
 FMU_VOID_REQ_IMPL(fmi2_import_cancel_step)
 
-std::string fmitcp::serialize::fmi2_import_do_step(int message_id,
-                                 int fmuId,
-                                 double currentCommunicationPoint,
-                                 double communicationStepSize,
-                                 bool newStep){
+std::string fmitcp::serialize::fmi2_import_do_step(double currentCommunicationPoint,
+                                                   double communicationStepSize,
+                                                   bool newStep){
     fmi2_import_do_step_req req;
-    req.set_message_id(message_id);
-    req.set_fmuid(fmuId);
     req.set_currentcommunicationpoint(currentCommunicationPoint);
     req.set_communicationstepsize(communicationStepSize);
     req.set_newstep(newStep);
@@ -106,47 +84,37 @@ std::string fmitcp::serialize::fmi2_import_do_step(int message_id,
     return pack(type_fmi2_import_do_step_req, req);
 }
 
-std::string fmitcp::serialize::fmi2_import_get_status(int message_id, int fmuId, fmitcp_proto::fmi2_status_kind_t s){
+std::string fmitcp::serialize::fmi2_import_get_status(fmitcp_proto::fmi2_status_kind_t s){
     fmi2_import_get_status_req req;
-    req.set_message_id(message_id);
-    req.set_fmuid(fmuId);
     req.set_status(s);
 
     return pack(type_fmi2_import_get_status_req, req);
 }
 
-std::string fmitcp::serialize::fmi2_import_get_real_status(int message_id, int fmuId, fmitcp_proto::fmi2_status_kind_t s){
+std::string fmitcp::serialize::fmi2_import_get_real_status(fmitcp_proto::fmi2_status_kind_t s){
     fmi2_import_get_real_status_req req;
-    req.set_message_id(message_id);
-    req.set_fmuid(fmuId);
     req.set_kind(s);
 
     return pack(type_fmi2_import_get_real_status_req, req);
 }
 
-std::string fmitcp::serialize::fmi2_import_get_integer_status(int message_id, int fmuId, fmitcp_proto::fmi2_status_kind_t s){
+std::string fmitcp::serialize::fmi2_import_get_integer_status(fmitcp_proto::fmi2_status_kind_t s){
     fmi2_import_get_integer_status_req req;
-    req.set_message_id(message_id);
-    req.set_fmuid(fmuId);
     req.set_kind(s);
 
     return pack(type_fmi2_import_get_integer_status_req, req);
 }
 
 
-std::string fmitcp::serialize::fmi2_import_get_boolean_status(int message_id, int fmuId, fmitcp_proto::fmi2_status_kind_t s){
+std::string fmitcp::serialize::fmi2_import_get_boolean_status(fmitcp_proto::fmi2_status_kind_t s){
     fmi2_import_get_boolean_status_req req;
-    req.set_message_id(message_id);
-    req.set_fmuid(fmuId);
     req.set_kind(s);
 
     return pack(type_fmi2_import_get_boolean_status_req, req);
 }
 
-std::string fmitcp::serialize::fmi2_import_get_string_status(int message_id, int fmuId, fmitcp_proto::fmi2_status_kind_t s){
+std::string fmitcp::serialize::fmi2_import_get_string_status(fmitcp_proto::fmi2_status_kind_t s){
     fmi2_import_get_string_status_req req;
-    req.set_message_id(message_id);
-    req.set_fmuid(fmuId);
     req.set_kind(s);
 
     return pack(type_fmi2_import_get_string_status_req, req);
@@ -154,30 +122,28 @@ std::string fmitcp::serialize::fmi2_import_get_string_status(int message_id, int
 
         // =========== FMI 2.0 (ME) Model Exchange functions ===========
 
-std::string fmitcp::serialize::fmi2_import_enter_event_mode(int message_id, int fmuId){
+std::string fmitcp::serialize::fmi2_import_enter_event_mode(){
     SERIALIZE_NORMAL_MESSAGE(fmi2_import_enter_event_mode);
 }
 
-std::string fmitcp::serialize::fmi2_import_new_discrete_states(int message_id, int fmuId){
+std::string fmitcp::serialize::fmi2_import_new_discrete_states(){
     SERIALIZE_NORMAL_MESSAGE(fmi2_import_new_discrete_states);
 }
 
-std::string fmitcp::serialize::fmi2_import_enter_continuous_time_mode(int message_id, int fmuId){
+std::string fmitcp::serialize::fmi2_import_enter_continuous_time_mode(){
     SERIALIZE_NORMAL_MESSAGE(fmi2_import_enter_continuous_time_mode);
 }
 
-std::string fmitcp::serialize::fmi2_import_completed_integrator_step(int message_id, int fmuId){
+std::string fmitcp::serialize::fmi2_import_completed_integrator_step(){
     SERIALIZE_NORMAL_MESSAGE(fmi2_import_completed_integrator_step);
 }
 
-std::string fmitcp::serialize::fmi2_import_set_time(int message_id, int fmuId, double time){
+std::string fmitcp::serialize::fmi2_import_set_time(double time){
     SERIALIZE_NORMAL_MESSAGE_(fmi2_import_set_time, time);
 }
 
-std::string fmitcp::serialize::fmi2_import_set_continuous_states(int message_id, int fmuId, const double* x, int nx){
+std::string fmitcp::serialize::fmi2_import_set_continuous_states(const double* x, int nx){
     fmi2_import_set_continuous_states_req req;
-    req.set_message_id(message_id);
-    req.set_fmuid(fmuId);
     req.set_nx(nx);
 
     for(int i = 0; i < nx; i++)
@@ -186,29 +152,26 @@ std::string fmitcp::serialize::fmi2_import_set_continuous_states(int message_id,
     return pack(type_fmi2_import_set_continuous_states_req, req);
 }
 
-std::string fmitcp::serialize::fmi2_import_get_event_indicators(int message_id, int fmuId, int nz){
+std::string fmitcp::serialize::fmi2_import_get_event_indicators(int nz){
     SERIALIZE_NORMAL_MESSAGE_(fmi2_import_get_event_indicators,nz);
 }
 
-std::string fmitcp::serialize::fmi2_import_get_continuous_states(int message_id, int fmuId, int nx){
+std::string fmitcp::serialize::fmi2_import_get_continuous_states(int nx){
     SERIALIZE_NORMAL_MESSAGE_(fmi2_import_get_continuous_states,nx);
 }
 
-std::string fmitcp::serialize::fmi2_import_get_derivatives(int message_id, int fmuId, int nderivatives){
+std::string fmitcp::serialize::fmi2_import_get_derivatives(int nderivatives){
     SERIALIZE_NORMAL_MESSAGE_(fmi2_import_get_derivatives,nderivatives);
 }
 
-std::string fmitcp::serialize::fmi2_import_get_nominal_continuous_states(int message_id, int fmuId, int nx){
+std::string fmitcp::serialize::fmi2_import_get_nominal_continuous_states(int nx){
     SERIALIZE_NORMAL_MESSAGE_(fmi2_import_get_nominal_continuous_states,nx);
 }
 
 FMU_VOID_REQ_IMPL(fmi2_import_get_version)
 
-
-std::string fmitcp::serialize::fmi2_import_set_debug_logging(int message_id, int fmuId, bool loggingOn, const std::vector<string> categories){
+std::string fmitcp::serialize::fmi2_import_set_debug_logging(bool loggingOn, const std::vector<string> categories){
     fmi2_import_set_debug_logging_req req;
-    req.set_message_id(message_id);
-    req.set_fmuid(fmuId);
     req.set_loggingon(loggingOn);
     for(size_t i=0; i<categories.size(); i++)
         req.add_categories(categories[i]);
@@ -216,10 +179,8 @@ std::string fmitcp::serialize::fmi2_import_set_debug_logging(int message_id, int
     return pack(type_fmi2_import_set_debug_logging_req, req);
 }
 
-std::string fmitcp::serialize::fmi2_import_set_real(int message_id, int fmuId, const vector<int>& valueRefs, const vector<double>& values){
+std::string fmitcp::serialize::fmi2_import_set_real(const vector<int>& valueRefs, const vector<double>& values){
     fmi2_import_set_real_req req;
-    req.set_message_id(message_id);
-    req.set_fmuid(fmuId);
     for(size_t i=0; i<valueRefs.size(); i++)
         req.add_valuereferences(valueRefs[i]);
     for(size_t i=0; i<values.size(); i++)
@@ -228,10 +189,8 @@ std::string fmitcp::serialize::fmi2_import_set_real(int message_id, int fmuId, c
     return pack(type_fmi2_import_set_real_req, req);
 }
 
-std::string fmitcp::serialize::fmi2_import_set_integer(int message_id, int fmuId, const vector<int>& valueRefs, const vector<int>& values){
+std::string fmitcp::serialize::fmi2_import_set_integer(const vector<int>& valueRefs, const vector<int>& values){
     fmi2_import_set_integer_req req;
-    req.set_message_id(message_id);
-    req.set_fmuid(fmuId);
     for(size_t i=0; i<valueRefs.size(); i++)
         req.add_valuereferences(valueRefs[i]);
     for(size_t i=0; i<values.size(); i++)
@@ -240,10 +199,8 @@ std::string fmitcp::serialize::fmi2_import_set_integer(int message_id, int fmuId
     return pack(type_fmi2_import_set_integer_req, req);
 }
 
-std::string fmitcp::serialize::fmi2_import_set_boolean(int message_id, int fmuId, const vector<int>& valueRefs, const vector<bool>& values){
+std::string fmitcp::serialize::fmi2_import_set_boolean(const vector<int>& valueRefs, const vector<bool>& values){
     fmi2_import_set_boolean_req req;
-    req.set_message_id(message_id);
-    req.set_fmuid(fmuId);
     for(size_t i=0; i<valueRefs.size(); i++)
         req.add_valuereferences(valueRefs[i]);
     for(size_t i=0; i<values.size(); i++)
@@ -253,10 +210,8 @@ std::string fmitcp::serialize::fmi2_import_set_boolean(int message_id, int fmuId
 }
 
 
-std::string fmitcp::serialize::fmi2_import_set_string(int message_id, int fmuId, const vector<int>& valueRefs, const vector<string>& values){
+std::string fmitcp::serialize::fmi2_import_set_string(const vector<int>& valueRefs, const vector<string>& values){
     fmi2_import_set_string_req req;
-    req.set_message_id(message_id);
-    req.set_fmuid(fmuId);
     for(size_t i=0; i<valueRefs.size(); i++)
         req.add_valuereferences(valueRefs[i]);
     for(size_t i=0; i<values.size(); i++)
@@ -265,40 +220,32 @@ std::string fmitcp::serialize::fmi2_import_set_string(int message_id, int fmuId,
     return pack(type_fmi2_import_set_string_req, req);
 }
 
-std::string fmitcp::serialize::fmi2_import_get_real(int message_id, int fmuId, const vector<int>& valueRefs){
+std::string fmitcp::serialize::fmi2_import_get_real(const vector<int>& valueRefs){
     fmi2_import_get_real_req req;
-    req.set_message_id(message_id);
-    req.set_fmuid(fmuId);
     for(size_t i=0; i<valueRefs.size(); i++)
         req.add_valuereferences(valueRefs[i]);
 
     return pack(type_fmi2_import_get_real_req, req);
 }
 
-std::string fmitcp::serialize::fmi2_import_get_integer(int message_id, int fmuId, const vector<int>& valueRefs){
+std::string fmitcp::serialize::fmi2_import_get_integer(const vector<int>& valueRefs){
     fmi2_import_get_integer_req req;
-    req.set_message_id(message_id);
-    req.set_fmuid(fmuId);
     for(size_t i=0; i<valueRefs.size(); i++)
         req.add_valuereferences(valueRefs[i]);
 
     return pack(type_fmi2_import_get_integer_req, req);
 }
 
-std::string fmitcp::serialize::fmi2_import_get_boolean(int message_id, int fmuId, const vector<int>& valueRefs){
+std::string fmitcp::serialize::fmi2_import_get_boolean(const vector<int>& valueRefs){
     fmi2_import_get_boolean_req req;
-    req.set_message_id(message_id);
-    req.set_fmuid(fmuId);
     for(size_t i=0; i<valueRefs.size(); i++)
         req.add_valuereferences(valueRefs[i]);
 
     return pack(type_fmi2_import_get_boolean_req, req);
 }
 
-std::string fmitcp::serialize::fmi2_import_get_string (int message_id, int fmuId, const vector<int>& valueRefs){
+std::string fmitcp::serialize::fmi2_import_get_string (const vector<int>& valueRefs){
     fmi2_import_get_string_req req;
-    req.set_message_id(message_id);
-    req.set_fmuid(fmuId);
     for(size_t i=0; i<valueRefs.size(); i++)
         req.add_valuereferences(valueRefs[i]);
 
@@ -307,31 +254,25 @@ std::string fmitcp::serialize::fmi2_import_get_string (int message_id, int fmuId
 
 FMU_VOID_REQ_IMPL(fmi2_import_get_fmu_state)
 
-std::string fmitcp::serialize::fmi2_import_set_fmu_state(int message_id, int fmuId, int stateId){
+std::string fmitcp::serialize::fmi2_import_set_fmu_state(int stateId){
     fmi2_import_set_fmu_state_req req;
-    req.set_message_id(message_id);
     req.set_stateid(stateId);
-    req.set_fmuid(fmuId);
 
     return pack(type_fmi2_import_set_fmu_state_req, req);
 }
 
-std::string fmitcp::serialize::fmi2_import_free_fmu_state(int message_id, int fmuId, int stateId) {
+std::string fmitcp::serialize::fmi2_import_free_fmu_state(int stateId) {
     fmi2_import_free_fmu_state_req req;
-    req.set_message_id(message_id);
     req.set_stateid(stateId);
-    req.set_fmuid(fmuId);
 
     return pack(type_fmi2_import_free_fmu_state_req, req);
 }
 
-std::string fmitcp::serialize::fmi2_import_get_directional_derivative(int message_id, int fmuId,
+std::string fmitcp::serialize::fmi2_import_get_directional_derivative(
                                                     const vector<int>& z_ref,
                                                     const vector<int>& v_ref,
                                                     const vector<double>& dv){
     fmi2_import_get_directional_derivative_req req;
-    req.set_message_id(message_id);
-    req.set_fmuid(fmuId);
     for(size_t i=0; i<v_ref.size(); i++)
         req.add_v_ref(v_ref[i]);
     for(size_t i=0; i<z_ref.size(); i++)

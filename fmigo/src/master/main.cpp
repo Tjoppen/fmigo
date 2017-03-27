@@ -620,14 +620,6 @@ int main(int argc, char *argv[] ) {
     //send user-defined parameters
     sendUserParams(master, clients, params);
 
-#ifdef WIN32
-    LARGE_INTEGER freq, t1;
-    QueryPerformanceFrequency(&freq);
-    QueryPerformanceCounter(&t1);
-#else
-    timeval t1;
-    gettimeofday(&t1, NULL);
-#endif
 
     if (solveLoops) {
       //solve initial algebraic loops
@@ -655,6 +647,15 @@ int main(int argc, char *argv[] ) {
     if (zmqControl) {
         pushResults(step, 0, endTime, timeStep, push_socket, master, clients, true);
     }
+
+    #ifdef WIN32
+        LARGE_INTEGER freq, t1;
+        QueryPerformanceFrequency(&freq);
+        QueryPerformanceCounter(&t1);
+    #else
+        timeval t1;
+        gettimeofday(&t1, NULL);
+    #endif
 
     //run
     while ((endTime < 0 || step < nsteps) && running) {

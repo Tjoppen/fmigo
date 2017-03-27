@@ -780,7 +780,7 @@ if __name__ == '__main__':
     else:
         #pipe arguments to master, leave stdout and stderr alone
         p = subprocess.Popen(args, stdin=subprocess.PIPE)
-        p.communicate(input=" ".join(flatconns).encode('utf-8'))
+        p.communicate(input=" ".join(flatconns+flatparams).encode('utf-8'))
         ret = p.returncode  #ret can be None
 
     if ret == 0:

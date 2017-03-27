@@ -230,7 +230,7 @@ class ModelExchangeStepper : public BaseMaster {
      */
     void allocateMemory(fmu_model &m, const std::vector<FMIClient*> &clients){
         m.model = (cgsl_model*)calloc(1,sizeof(cgsl_model));
-        fmu_alloc(clients);
+        storage_alloc(clients);
         m.model->n_variables = get_storage().get_current_states().size();
         if(m.model->n_variables == 0){
             cerr << "ModelExchangeStepper nothing to integrate" << endl;

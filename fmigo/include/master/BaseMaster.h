@@ -44,7 +44,7 @@ namespace fmitcp_master {
         void slaveError                     (FMIClient* slave){exit(1);}
 
         inline FmigoStorage & get_storage(){return m_fmigoStorage;}
-        void fmu_alloc(const std::vector<FMIClient*> &clients){
+        void storage_alloc(const std::vector<FMIClient*> &clients){
             vector<size_t> states({});
             vector<size_t> indicators({});
             for(auto client: clients) {

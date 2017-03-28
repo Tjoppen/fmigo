@@ -52,9 +52,9 @@ std::vector<FMIClient*> m_clients;
     ~ModelExchangeStepper();
 
     void runIteration(double t, double dt);
-    void prepare();
 
  private:
+    void prepare();
 
     /** allocate Memory
      *  Allocates memory needed by the fmu_model

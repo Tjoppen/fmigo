@@ -58,7 +58,19 @@ public:
             it->first->sendSetX(it->second);
         }
 
-        sendWait(m_clients, fmi2_import_do_step(t, dt, true));
+        for( auto client: m_clients){
+            switch client->getFmuKind(){
+                case fmi2_fmu_kind_cs:
+                    send(client, fmi2_import_do_step(t, dt, true));
+                    break;
+                case fmi2_fmu_kind_me:
+                    break;
+                default:
+                    fprintf(stderr,"Fatal: fmigo only supports co-simulation and model exchange fmus\n");
+                    exit(1);
+                }
+        }
+        wait();
     }
 };
 

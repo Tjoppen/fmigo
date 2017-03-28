@@ -43,6 +43,10 @@
 </ModelVariables>
 
 <ModelStructure>
+    <Outputs>
+      <Unknown index="1"/>
+      <Unknown index="2"/>
+    </Outputs>
   <Derivatives>
     <Unknown index="2" />
     <Unknown index="4" />

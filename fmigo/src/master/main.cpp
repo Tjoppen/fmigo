@@ -72,8 +72,8 @@ static vector<FMIClient*> setupClients(vector<string> fmuURIs, zmq::context_t &c
 
 static vector<WeakConnection> setupWeakConnections(vector<connection> connections, vector<FMIClient*> clients) {
     vector<WeakConnection> weakConnections;
-    for (auto it = connections.begin(); it != connections.end(); it++) {
-        weakConnections.push_back(WeakConnection(*it, clients[it->fromFMU], clients[it->toFMU]));
+    for(auto conn: connections){
+        weakConnections.push_back(WeakConnection(conn, clients[conn.fromFMU], clients[conn.toFMU]));
     }
     return weakConnections;
 }

@@ -113,6 +113,10 @@ const variable_map& FMIClient::getVariables() {
   return m_variables;
 }
 
+inline fmi2_fmu_kind_enu_t FMIClient::getFmuKind() const{
+  return fmi2_import_get_fmu_kind(m_fmi2Instance);
+}
+
 void FMIClient::setVariables() {
     if (!m_fmi2Instance) {
         fprintf(stderr, "!m_fmi2Instance in FMIClient::getVariables() - get_xml() failed?\n");

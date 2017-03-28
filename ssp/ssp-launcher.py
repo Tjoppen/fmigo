@@ -8,7 +8,27 @@ import glob
 from lxml import etree
 import subprocess
 import shutil
+import argparse
 import psutil
+
+parser = argparse.ArgumentParser(
+    description='%s: Launch an ssp with either mpi or tpc' %sys.argv[0],
+    epilog="""epilog """
+    )
+parser.add_argument('-d','--dry-run',
+                    help='Run without starting the simulation',
+                    action='store_true')
+parser.add_argument('-p','--ports',
+                    help='Ports to be used when run over tcp, default use mpi',
+                    default=[],
+                    nargs='+',
+                    type=int)
+parser.add_argument('-s','--ssp',
+                    help='SSP file to be launched',
+                    type=str,
+                    required=True)
+
+parse = parser.parse_args()
 RESOURCE_DIR='resources'
 SSD_NAME='SystemStructure.ssd'
 CAUSALITY='causality'
@@ -756,83 +776,46 @@ def parse_ssp(ssp_path, cleanup_zip = True):
 
 if __name__ == '__main__':
 
-    dry_run = '--dry-run' in sys.argv
-
-    #count number of input parameters before the ssp file
-    args = ['--dry_run', '--MPI', '--tcp']
-    check_ssp = 2;
-    for string in sys.argv:
-        for arg in args:
-            if arg in string:
-                check_ssp += 1
-
-    if len(sys.argv) < check_ssp:
-        print('ERROR: missing ssp-name')
-        exit(1)
-
-    flatconns, flatparams, unzipped_ssp, d = parse_ssp(sys.argv[-1], False)
-
-    #list all tcp ports that are not available
-    tcpportsinuse = []
-    for con in psutil.net_connections():
-        tcpportsinuse.append(con.laddr[1])
-
-    #split up all IP adresses
-    ports = []
-    TCP = False
-    for string in sys.argv:
-        if '--tcp' in string:
-            TCP = True
-            ports += (string.split(":"))
+    flatconns, flatparams, unzipped_ssp, d = parse_ssp(parse.ssp, False)
 
     #If we are working with TCP, create tcp://localhost:port for all given local hosts
-    if TCP:
-        #nuke --tcp from ports
-        while "--tcp" in ports:
-            ports.remove("--tcp")
+    if len(parse.ports):
 
-        #make sure the ports is on a correct format
-        for tcp in ports:
-            if len(tcp.split(".")) != 1:
-                print("Error: invalid syntax --tpc:%s, expect --tcp:X:X:..." %tcp)
-                exit(1)
+        if len(fmus) > len(parse.ports):
+            print('Error: Not given one port for each FMU, expected %d' %len(fmus))
+            exit(1)
+        elif len(fmus) < len(parse.ports):
+            print('Error: Given too many ports, expected %d' %len(fmus))
+            exit(1)
 
-        if len(fmus) > len(ports):
-            print('WARNING: Not given one port for each FMU')
-        elif len(fmus) < len(ports):
-            print('WARNING: Given too many ports')
-
+        #list all tcp ports that are not available
+        tcpportsinuse = []
+        for con in psutil.net_connections():
+            tcpportsinuse.append(con.laddr[1])
 
         tcpIPport = []
-        port = 1024 #lowest possible port
         for fmu in fmus:
-            if len(ports) >0:
-                tcpIPport.append("tcp://" + localhost + ":" + str(ports.pop(0)))
-            else:
-                while port < 65536:
-                    port +=1
-                    if port not in tcpportsinuse:
-                        tcpIPport.append("tcp://" + localhost + ":" + str(port))
-                        break;
-
-        print ('ports: %s'%  ports)
-        print('lan ip %s' %tcpIPport)
+            if parse.ports[0] in tcpportsinuse:
+                print('%s: port %d already in use' %(sys.argv[0], parse.ports[0]))
+                exit(1)
+            tcpIPport.append("tcp://localhost:" + str(parse.ports.pop(0)))
 
         #read connections and parameters from stdin, since they can be quite many
         #stdin because we want to avoid leaving useless files on the filesystem
-        args  = ['fmigo-master','-t','9.9','-d','0.1','-a','-']
-        args += [tcpconnect for tcpconnect in tcpIPport]
-        print('ARGS: %s'%args)
+        args   = ['fmigo-master']
+        append = [tcpconnect for tcpconnect in tcpIPport]
     else:
         #read connections and parameters from stdin, since they can be quite many
         #stdin because we want to avoid leaving useless files on the filesystem
-        args  = ['mpiexec','-np',str(len(fmus)+1),'fmigo-mpi','-t','9.9','-d','0.1','-a','-']
-        args += [fmu.path for fmu in fmus]
+        args   = ['mpiexec','-np',str(len(fmus)+1),'fmigo-mpi']
+        append = [fmu.path for fmu in fmus]
+
+    args += ['-t','9.9','-d','0.1','-a','-']
+    args += append
 
     print(" ".join(args) + " <<< " + '"' + " ".join(flatconns+flatparams) + '"')
 
-
-    if dry_run:
+    if parse.dry_run:
         ret = 0
     else:
         #pipe arguments to master, leave stdout and stderr alone

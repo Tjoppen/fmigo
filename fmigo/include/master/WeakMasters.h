@@ -30,7 +30,6 @@ namespace fmitcp_master {
 class JacobiMaster : public BaseMaster {
  private:
     ModelExchangeStepper* m_modelexchange;
-    std::vector<FMIClient*> me_clients;
 public:
     JacobiMaster(vector<FMIClient*> clients, vector<WeakConnection> weakConnections) :
             BaseMaster(clients, weakConnections) {
@@ -38,10 +37,17 @@ public:
     }
 
     void prepare() {
+        std::vector<WeakConnection> me_weakConnections;
+        std::vector<FMIClient*>     me_clients;
         for(auto client: m_clients)
             if(client->getFmuKind() == fmi2_fmu_kind_me)
                 me_clients.push_back(client);
-        m_modelexchange = new ModelExchangeStepper(me_clients,m_weakConnections,this);
+        //TODO make sure that solve loops for model exchange only uses me_weakConnections
+        for(auto wc: m_weakConnections)
+            if(wc.from->getFmuKind() == fmi2_fmu_kind_me &&
+               wc.to->getFmuKind()   == fmi2_fmu_kind_me )
+                me_weakConnections.push_back(wc);
+        m_modelexchange = new ModelExchangeStepper(me_clients,me_weakConnections,this);
     }
 
     void runIteration(double t, double dt) {

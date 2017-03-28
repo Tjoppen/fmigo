@@ -41,6 +41,7 @@ SET(MASTER_SRCS
     src/master/BaseMaster.cpp
     src/master/parseargs.cpp
     src/master/StrongMaster.cpp
+    src/master/modelExchange.cpp
     ${FMITCP_SRCS}
     src/master/control.pb.cc
 )
@@ -49,6 +50,7 @@ SET(MASTER_HEADERS
     include/master/StrongConnector.h
     include/master/WeakConnection.h
     include/master/WeakMasters.h
+    include/master/modelExchange.h
     include/common/common.h
     include/common/fmigo_storage.h
     ${FMITCP_HEADERS}

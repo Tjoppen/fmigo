@@ -70,7 +70,7 @@ namespace fmitcp_master {
 
         std::string getModelName() const;
         variable_map getVariables() const;
-        inline fmi2_fmu_kind_enu_t getFmuKind() const;
+        fmi2_fmu_kind_enu_t getFmuKind();
         std::vector<variable> getOutputs() const;   //outputs in the same order as specified in the modelDescription
 
 #ifdef USE_MPI

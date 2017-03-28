@@ -113,7 +113,7 @@ const variable_map& FMIClient::getVariables() {
   return m_variables;
 }
 
-inline fmi2_fmu_kind_enu_t FMIClient::getFmuKind() const{
+fmi2_fmu_kind_enu_t FMIClient::getFmuKind(){
   return fmi2_import_get_fmu_kind(m_fmi2Instance);
 }
 

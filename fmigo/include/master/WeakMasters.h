@@ -30,6 +30,7 @@ namespace fmitcp_master {
 class JacobiMaster : public BaseMaster {
  private:
     ModelExchangeStepper* m_modelexchange;
+    std::vector<FMIClient*> me_clients;
 public:
     JacobiMaster(vector<FMIClient*> clients, vector<WeakConnection> weakConnections) :
             BaseMaster(clients, weakConnections) {
@@ -37,7 +38,10 @@ public:
     }
 
     void prepare() {
-        m_modelexchange = new ModelExchangeStepper(m_clients,m_weakConnections,this);
+        for(auto client: m_clients)
+            if(client->getFmuKind() == fmi2_fmu_kind_me)
+                me_clients.push_back(client);
+        m_modelexchange = new ModelExchangeStepper(me_clients,m_weakConnections,this);
     }
 
     void runIteration(double t, double dt) {
@@ -69,6 +73,7 @@ public:
                     send(client, fmi2_import_do_step(t, dt, true));
                     break;
                 case fmi2_fmu_kind_me:
+                    m_modelexchange->runIteration(t,dt);
                     break;
                 default:
                     fprintf(stderr,"Fatal: fmigo only supports co-simulation and model exchange fmus\n");

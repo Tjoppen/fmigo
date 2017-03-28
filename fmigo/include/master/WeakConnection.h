@@ -1,4 +1,4 @@
-/* 
+/*
  * File:   WeakConnection.h
  * Author: thardin
  *
@@ -63,4 +63,3 @@ SendSetXType        getInputWeakRefsAndValues(std::vector<WeakConnection> weakCo
 }
 
 #endif	/* WEAKCONNECTION_H */
-

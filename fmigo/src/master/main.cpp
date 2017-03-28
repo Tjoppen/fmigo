@@ -88,6 +88,14 @@ static vector<WeakConnection> setupMEWeakConnections(vector<connection> connecti
     return weakConnections;
 }
 
+static vector<FMIClient*> meClients(vector<FMIClient*> clients){
+    vector<FMIClient*> meclients;
+    for(auto client: clients)
+        if(client->getFmuKind() == fmi2_fmu_kind_me)
+            meclients.push_back(client);
+    return meclients;
+}
+
 static StrongConnector* findOrCreateBallLockConnector(FMIClient *client,
         int posX, int posY, int posZ,
         int accX, int accY, int accZ,

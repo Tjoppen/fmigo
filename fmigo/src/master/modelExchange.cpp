@@ -1,4 +1,5 @@
 #include "master/modelExchange.h"
+#include"modelExchangeFmiInterface.h"
 #define storage_alloc m_baseMaster->storage_alloc
 //#define get_storage m_baseMaster->get_storage
 using namespace fmitcp::serialize;
@@ -77,26 +78,25 @@ static int fmu_function(double t, const double x[], double dxdt[], void* params)
     if(p->stateEvent)return GSL_SUCCESS;
 
     for(auto client: p->clients){
-        p->baseMaster->send(client, fmi2_import_set_time(t));
-        p->baseMaster->send(client, fmi2_import_set_continuous_states(x + p->baseMaster->get_storage().get_offset(client->getId(), STORAGE::states),
-                                                                      client->getNumContinuousStates()));
+        p->FMIGO_ME_SET_TIME(client);
+        p->FMIGO_ME_SET_CONTINUOUS_STATES(client, x);
     }
-    p->baseMaster->wait();
+    p->FMIGO_ME_WAIT();
     p->baseMaster->solveLoops();
 
     for(auto client: p->clients)
-        p->baseMaster->send(client, fmi2_import_get_derivatives((int)client->getNumContinuousStates()));
-    p->baseMaster->wait();
+        p-> FMIGO_ME_GET_DERIVATIVES(client);
+    p->FMIGO_ME_WAIT();
 
     for(auto client: p->clients)
         p->baseMaster->get_storage().get_current_derivatives(dxdt, client->getId());
 
     for(auto client: p->clients){
         if(client->getNumEventIndicators())
-            p->baseMaster->send(client, fmi2_import_get_event_indicators((int)client->getNumEventIndicators()));
+            p->FMIGO_ME_GET_EVENT_INDICATORS(client);
     }
 
-    p->baseMaster->wait();
+    p->FMIGO_ME_WAIT();
 
     //p->baseMaster->get_storage().print(states);
     //fprintf(stderr,"x[0] %f x[1] %f\n",x[0],x[1]);
@@ -174,21 +174,12 @@ void ModelExchangeStepper::init_fmu_model(fmu_model &m,  const std::vector<FMICl
     m.model->free = cgsl_model_default_free;//freeFMUModel;
 
     for(auto client: clients)
-        m_baseMaster->send(client, fmi2_import_get_continuous_states((int)client->getNumContinuousStates()));
+        p->FMIGO_ME_GET_CONTINUOUS_STATES(client);
     wait();
 
     for(auto client: clients)
         m_baseMaster->get_storage().get_current_states(m.model->x, client->getId());
 }
-
-#define STATIC_GET_CLIENT_OFFSET(name)                                  \
-    p->baseMaster->get_storage().get_offset(client->getId(), STORAGE::name)
-#define STATIC_SET_(name, name2, data)                                  \
-    p->baseMaster->send(client, fmi2_import_set_##name##_##name2(       \
-                                                                 data + STATIC_GET_CLIENT_OFFSET(name2), \
-                                                                 client->getNumContinuousStates()));
-#define STATIC_GET_(name)                                               \
-    p->baseMaster->send(client, fmi2_import_get_##name((int)client->getNumContinuousStates()))
 
 /** epce_post_step()
  *  Sync_out
@@ -204,25 +195,25 @@ static int epce_post_step(int n, const double outputs[], void * params) {
         fprintf(stderr,"\nepce_post_step %f %f \n",outputs[0],outputs[1]);
         // extract current states to restore after outputs are changed
         for(auto client: p->clients)
-            STATIC_GET_(continuous_states);
+            p->FMIGO_ME_GET_CONTINUOUS_STATES(client);
         std::vector<double> tmp(p->baseMaster->get_storage().get_current_states().size());
         p->baseMaster->get_storage().get_current_states(tmp.data());
 
         //set filtered states
         for(auto client: p->clients){
-            STATIC_SET_(continuous,states,outputs);
+          p->FMIGO_ME_SET_CONTINUOUS_STATES(client, outputs);
         }
-        p->baseMaster->wait();
+        p->FMIGO_ME_WAIT();
         p->baseMaster->solveLoops();
 
         // send get_ to update outputs. TODO use one function call instead
         for(auto client: p->clients)
-            STATIC_GET_(derivatives);
-        p->baseMaster->wait();
+            p->FMIGO_ME_GET_DERIVATIVES(client);
+        p->FMIGO_ME_WAIT();
 
         //reset old states
         for(auto client: p->clients){
-            STATIC_SET_(continuous,states,tmp.data());
+          p->FMIGO_ME_SET_CONTINUOUS_STATES(client,tmp.data());
         }
     }
 
@@ -293,7 +284,7 @@ void ModelExchangeStepper::restoreStates(cgsl_simulation &sim){
 void ModelExchangeStepper::storeStates(cgsl_simulation &sim){
     fmu_parameters* p = get_p(sim);
     for(auto client: m_clients)
-        m_baseMaster->send(client, fmi2_import_get_continuous_states((int)client->getNumContinuousStates()));
+        p->FMIGO_ME_GET_CONTINUOUS_STATES(client);
 
     p->backup.failed_steps = sim.i.evolution->failed_steps;
     p->backup.t = sim.t;
@@ -398,14 +389,15 @@ void ModelExchangeStepper::stepToEvent(cgsl_simulation &sim){
  *  Store the current state of the simulation
  */
 void ModelExchangeStepper::newDiscreteStates(){
+    fmu_parameters* p = get_p(m_sim);
     // start at a new state
-    m_baseMaster->sendWait(m_clients, fmi2_import_enter_event_mode());
+    p->FMIGO_ME_ENTER_EVENT_MODE(m_clients);
     // todo loop until newDiscreteStatesNeeded == false
     bool newDiscreteStatesNeeded = true;
 
     while(newDiscreteStatesNeeded){
         newDiscreteStatesNeeded = false;
-        m_baseMaster->sendWait(m_clients, fmi2_import_new_discrete_states());
+        p->FMIGO_ME_NEW_DISCRETE_STATES(m_clients);
         for(auto client: m_clients){
             newDiscreteStatesNeeded += client->m_event_info.newDiscreteStatesNeeded;
             if(client->m_event_info.terminateSimulation){
@@ -415,10 +407,10 @@ void ModelExchangeStepper::newDiscreteStates(){
         }
     }
 
-    m_baseMaster->sendWait(m_clients, fmi2_import_enter_continuous_time_mode());
+    p->FMIGO_ME_ENTER_CONTINUOUS_TIME_MODE(m_clients);
 
     for(auto client: m_clients)
-        m_baseMaster->send(client, fmi2_import_get_event_indicators((int)client->getNumEventIndicators()));
+        p->FMIGO_ME_GET_EVENT_INDICATORS(client);
 
     wait();
 

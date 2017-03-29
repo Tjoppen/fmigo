@@ -200,8 +200,6 @@ static int epce_post_step(int n, const double outputs[], void * params) {
 }
 
 void ModelExchangeStepper::prepare() {
-    if(m_clients.size() == 0)
-        return;
 #ifdef USE_GPL
     // set up a gsl_simulation for each client
     init_fmu_model(m_model, m_clients);
@@ -426,9 +424,6 @@ void ModelExchangeStepper::getSafeTime(const std::vector<FMIClient*> clients, do
 }
 
 void ModelExchangeStepper::runIteration(double t, double dt) {
-    if(m_clients.size() == 0)
-        return;
-
     timeLoop.t_safe = t;
     timeLoop.t_end = t + dt;
     timeLoop.dt_new = dt;

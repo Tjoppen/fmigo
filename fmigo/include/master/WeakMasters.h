@@ -29,7 +29,9 @@ namespace fmitcp_master {
 //aka parallel stepper
 class JacobiMaster : public BaseMaster {
  private:
-    ModelExchangeStepper* m_modelexchange;
+    ModelExchangeStepper*       m_modelexchange;
+    std::vector<FMIClient*>     cs_clients;
+    std::vector<FMIClient*>     me_clients;
 public:
     JacobiMaster(vector<FMIClient*> clients, vector<WeakConnection> weakConnections) :
             BaseMaster(clients, weakConnections) {
@@ -38,16 +40,22 @@ public:
 
     void prepare() {
         std::vector<WeakConnection> me_weakConnections;
-        std::vector<FMIClient*>     me_clients;
         for(auto client: m_clients)
-            if(client->getFmuKind() == fmi2_fmu_kind_me)
-                me_clients.push_back(client);
+            switch (client->getFmuKind()){
+                case fmi2_fmu_kind_cs: cs_clients.push_back(client); break;
+                case fmi2_fmu_kind_me: me_clients.push_back(client); break;
+                default:
+                    fprintf(stderr,"Fatal: fmigo only supports co-simulation and model exchange fmus\n");
+                    exit(1);
+                }
+
         //TODO make sure that solve loops for model exchange only uses me_weakConnections
         for(auto wc: m_weakConnections)
             if(wc.from->getFmuKind() == fmi2_fmu_kind_me &&
                wc.to->getFmuKind()   == fmi2_fmu_kind_me )
                 me_weakConnections.push_back(wc);
-        m_modelexchange = new ModelExchangeStepper(me_clients,me_weakConnections,this);
+        if(me_clients.size())
+            m_modelexchange = new ModelExchangeStepper(me_clients,me_weakConnections,this);
     }
 
     void runIteration(double t, double dt) {
@@ -73,19 +81,10 @@ public:
             it->first->sendSetX(it->second);
         }
 
-        for( auto client: m_clients){
-            switch (client->getFmuKind()){
-                case fmi2_fmu_kind_cs:
-                    send(client, fmi2_import_do_step(t, dt, true));
-                    break;
-                case fmi2_fmu_kind_me:
-                    m_modelexchange->runIteration(t,dt);
-                    break;
-                default:
-                    fprintf(stderr,"Fatal: fmigo only supports co-simulation and model exchange fmus\n");
-                    exit(1);
-                }
-        }
+        if(cs_clients.size())
+            send(cs_clients, fmi2_import_do_step(t, dt, true));
+        if(me_clients.size())
+            m_modelexchange->runIteration(t,dt);
         wait();
     }
 };

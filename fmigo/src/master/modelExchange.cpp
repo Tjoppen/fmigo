@@ -378,8 +378,13 @@ void ModelExchangeStepper::newDiscreteStates(){
     while(newDiscreteStatesNeeded){
         newDiscreteStatesNeeded = false;
         m_baseMaster->sendWait(m_clients, fmi2_import_new_discrete_states());
-        for(auto client: m_clients)
+        for(auto client: m_clients){
             newDiscreteStatesNeeded += client->m_event_info.newDiscreteStatesNeeded;
+            if(client->m_event_info.terminateSimulation){
+                fprintf(stderr,"modelExchange.cpp: client %d terminated simulation\n",client->getId());
+                exit(1);
+            }
+        }
     }
 
     m_baseMaster->sendWait(m_clients, fmi2_import_enter_continuous_time_mode());

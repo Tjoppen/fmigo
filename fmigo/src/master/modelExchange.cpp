@@ -22,6 +22,13 @@ inline fmu_parameters* get_p(cgsl_simulation s){
     return get_p(s.model);
 }
 
+ModelExchangeStepper::ModelExchangeStepper(FMIClient* client, std::vector<WeakConnection> weakConnections, BaseMaster* baseMaster){
+    m_baseMaster = baseMaster;
+    m_clients.push_back(client);
+    m_weakConnections = weakConnections;
+    prepare();
+}
+
 ModelExchangeStepper::ModelExchangeStepper(std::vector<FMIClient*> clients, std::vector<WeakConnection> weakConnections, BaseMaster* baseMaster){
     m_baseMaster = baseMaster;
     m_clients = clients;

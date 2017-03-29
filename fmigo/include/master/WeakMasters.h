@@ -92,6 +92,7 @@ public:
 //aka serial stepper
 class GaussSeidelMaster : public BaseMaster {
     map<FMIClient*, OutputRefsType> clientGetXs;  //one OutputRefsType for each client
+    map<FMIClient*,ModelExchangeStepper*> me_map;
     std::vector<int> stepOrder;
 public:
     GaussSeidelMaster(vector<FMIClient*> clients, vector<WeakConnection> weakConnections, std::vector<int> stepOrder) :
@@ -100,6 +101,17 @@ public:
     }
 
     void prepare() {
+        for(auto client: m_clients)
+            switch (client->getFmuKind()){
+            case fmi2_fmu_kind_cs: break;
+            case fmi2_fmu_kind_me:{
+                me_map[client] = new ModelExchangeStepper(client,m_weakConnections,this);
+                break;
+            }default:
+                fprintf(stderr,"Fatal: fmigo only supports co-simulation and model exchange fmus\n");
+                exit(1);
+            }
+
         for (size_t x = 0; x < m_weakConnections.size(); x++) {
             WeakConnection wc = m_weakConnections[x];
             clientGetXs[wc.to][wc.from][wc.conn.fromType].push_back(wc.conn.fromOutputVR);
@@ -116,7 +128,13 @@ public:
             wait();
             const SendSetXType refValues = getInputWeakRefsAndValues(m_weakConnections, client);
             client->sendSetX(refValues);
-            sendWait(client, fmi2_import_do_step(t, dt, true));
+            switch (client->getFmuKind()){
+            case fmi2_fmu_kind_cs: sendWait(client, fmi2_import_do_step(t, dt, true)); break;
+            case fmi2_fmu_kind_me: me_map[client]->runIteration(t,dt); break;
+            default:
+                fprintf(stderr,"Fatal: fmigo only supports co-simulation and model exchange fmus\n");
+                exit(1);
+            }
         }
     }
 };

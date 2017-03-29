@@ -47,6 +47,7 @@ std::vector<WeakConnection> m_weakConnections;
 std::vector<FMIClient*> m_clients;
 
  public:
+    ModelExchangeStepper(FMIClient* client, std::vector<WeakConnection> weakConnections, BaseMaster* baseMaster);
     ModelExchangeStepper(std::vector<FMIClient*> clients, std::vector<WeakConnection> weakConnections,BaseMaster* baseMaster);
     ModelExchangeStepper(){}
     ~ModelExchangeStepper();

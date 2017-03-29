@@ -468,7 +468,7 @@ void ModelExchangeStepper::runIteration(double t, double dt) {
     timeLoop.t_safe = t;
     timeLoop.t_end = t + dt;
     timeLoop.dt_new = dt;
-    getSafeTime(m_clients, timeLoop.dt_new);
+    getSafeTime(m_clients, t, timeLoop.dt_new);
     get_p(m_sim)->sim_started = true;
     newDiscreteStates();
     int iter = 2;

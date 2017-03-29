@@ -147,7 +147,7 @@ std::vector<FMIClient*> m_clients;
 
     void safeTimeStep(cgsl_simulation &sim);
 
-    void getSafeTime(const std::vector<FMIClient*> clients, double &dt);
+    void getSafeTime(const std::vector<FMIClient*> clients, double t, double &dt);
 };
 }
 #endif

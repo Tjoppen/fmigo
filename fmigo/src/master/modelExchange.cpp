@@ -22,6 +22,13 @@ inline fmu_parameters* get_p(cgsl_simulation s){
     return get_p(s.model);
 }
 
+/** ModelExchangeStepper()
+ *  Class initializer
+ *
+ *  @param client A client
+ *  @param weakConnections WeakConnections.. not used
+ *  @param baseMaster The baseMaster we're working for
+ */
 ModelExchangeStepper::ModelExchangeStepper(FMIClient* client, std::vector<WeakConnection> weakConnections, BaseMaster* baseMaster){
     m_baseMaster = baseMaster;
     m_clients.push_back(client);
@@ -29,6 +36,13 @@ ModelExchangeStepper::ModelExchangeStepper(FMIClient* client, std::vector<WeakCo
     prepare();
 }
 
+/** ModelExchangeStepper()
+ *  Class initializer
+ *
+ *  @param clients Vector with clients
+ *  @param weakConnections WeakConnections.. not used
+ *  @param baseMaster The baseMaster we're working for
+ */
 ModelExchangeStepper::ModelExchangeStepper(std::vector<FMIClient*> clients, std::vector<WeakConnection> weakConnections, BaseMaster* baseMaster){
     m_baseMaster = baseMaster;
     m_clients = clients;
@@ -36,6 +50,9 @@ ModelExchangeStepper::ModelExchangeStepper(std::vector<FMIClient*> clients, std:
     prepare();
 }
 
+/** ~ModelExchangeStepper()
+ *  Class destructor
+ */
 ModelExchangeStepper::~ModelExchangeStepper(){
     cgsl_free_simulation(m_sim);
     free(m_p.backup.dydt);
@@ -102,7 +119,8 @@ static int fmu_function(double t, const double x[], double dxdt[], void* params)
 /** allocate Memory
  *  Allocates memory needed by the fmu_model
  *
- *  @param m Pointer to a fmu_model
+ *  @param m The fmu_model
+ *  @param clients Vector with clients
  */
 void ModelExchangeStepper::allocateMemory(fmu_model &m, const std::vector<FMIClient*> &clients){
     m.model = (cgsl_model*)calloc(1,sizeof(cgsl_model));
@@ -126,9 +144,10 @@ void ModelExchangeStepper::allocateMemory(fmu_model &m, const std::vector<FMICli
 }
 
 /** init_fmu_model
- *  Creates the fmu_model and sets the parameters
+ *  Setup all parameters and function pointers needed by fmu_model
  *
- *  @param client A pointer to a fmi client
+ *  @param m The fmu_model we are working on
+ *  @param client A vector with clients
  */
 void ModelExchangeStepper::init_fmu_model(fmu_model &m,  const std::vector<FMIClient*> &clients){
     allocateMemory(m, clients);
@@ -171,6 +190,10 @@ void ModelExchangeStepper::init_fmu_model(fmu_model &m,  const std::vector<FMICl
 #define STATIC_GET_(name)                                               \
     p->baseMaster->send(client, fmi2_import_get_##name((int)client->getNumContinuousStates()))
 
+/** epce_post_step()
+ *  Sync_out
+ *  Does not work yet
+ */
 static int epce_post_step(int n, const double outputs[], void * params) {
     // make local variables
     fmu_parameters* p = (fmu_parameters*)params;
@@ -206,6 +229,9 @@ static int epce_post_step(int n, const double outputs[], void * params) {
     return GSL_SUCCESS;
 }
 
+/** prepare()
+ *  Setup everything
+ */
 void ModelExchangeStepper::prepare() {
 #ifdef USE_GPL
     // set up a gsl_simulation for each client
@@ -235,9 +261,9 @@ void ModelExchangeStepper::prepare() {
 #endif
 }
 
-/** restoreStates
- *  restores all values needed by the simulations to restart
- *  from a known safe time.
+/** restoreStates()
+ *  Restores all values needed by the simulations to restart
+ *  before the event
  *
  *  @param sim The simulation
  */
@@ -258,9 +284,9 @@ void ModelExchangeStepper::restoreStates(cgsl_simulation &sim){
     sim.h = p->backup.h;
 }
 
-/** storeStates
- *  stores all values needed by the simulations to restart
- *  from a known safe time.
+/** storeStates()
+ *  Stores all values needed by the simulations to restart
+ *  from a state before an event
  *
  *  @param sim The simulation
  */
@@ -282,8 +308,9 @@ void ModelExchangeStepper::storeStates(cgsl_simulation &sim){
     m_baseMaster->get_storage().sync();
 }
 
-/** hasStateEvent:
- ** returns true if at least one simulation has an event
+/** hasStateEvent()
+ *  Retrieve stateEvent status
+ *  Returns true if at least one simulation crossed an event
  *
  *  @param sim The simulation
  */
@@ -291,11 +318,12 @@ bool ModelExchangeStepper::hasStateEvent(cgsl_simulation &sim){
     return get_p(sim)->stateEvent;
 }
 
-/** getSafeTime:
- *  caluclates a "safe" time, uses the golden ratio to get
- *  t_crossed and t_safe to converge towards same value
+/** getSafeTime()
+ *  Calculates a time step which brings solution closer to the event
+ *  Uses the golden ratio to get t_crossed and t_safe to converge
+ *  to the event time
  *
- *  @param sim A cgsl simulation
+ *  @param sim The simulation
  */
 void ModelExchangeStepper::getGoldenNewTime(cgsl_simulation &sim){
     // golden ratio
@@ -312,8 +340,8 @@ void ModelExchangeStepper::getGoldenNewTime(cgsl_simulation &sim){
     }
 }
 
-/** step
- *  run cgsl_step_to on all simulations
+/** step()
+ *  Run cgsl_step_to the simulation
  *
  *  @param sim The simulation
  */
@@ -327,12 +355,11 @@ void ModelExchangeStepper::step(cgsl_simulation &sim){
     cgsl_step_to(&sim, sim.t, timeLoop.dt_new);
 }
 
-/** stepToEvent
- *  if there is an event, find the event and return
- *  the time at where the time event occured
+/** stepToEvent()
+ *  To be runned when an event is crossed.
+ *  Finds the event and returns a state immediately after the event
  *
  *  @param sim The simulation
- *  @return Returns the time immediatly after the event
  */
 void ModelExchangeStepper::stepToEvent(cgsl_simulation &sim){
     double tol = 1e-9;
@@ -366,13 +393,9 @@ void ModelExchangeStepper::stepToEvent(cgsl_simulation &sim){
     }
 }
 
-/** newDiscreteStates
- *  Should be used where a new discrete state ends
- *  and another begins. Resets the loop variables
- *  and store all states of the simulation
- *
- *  @param t The current time
- *  @param t_new New next time
+/** newDiscreteStates()
+ *  Should be used where a new discrete state ends and another begins.
+ *  Store the current state of the simulation
  */
 void ModelExchangeStepper::newDiscreteStates(){
     // start at a new state
@@ -403,18 +426,19 @@ void ModelExchangeStepper::newDiscreteStates(){
     storeStates(m_sim);
 }
 
-void ModelExchangeStepper::printStates(void){
-    fprintf(stderr,"      states     ");
-    m_baseMaster->get_storage().print(STORAGE::states);
-    fprintf(stderr,"      indicator  ");
-    m_baseMaster->get_storage().print(STORAGE::indicators);
-}
+/** getSafeAndCrossed()
+ *  Extracts safe and crossed time found by fmu_function
+ */
 void ModelExchangeStepper::getSafeAndCrossed(){
     fmu_parameters *p = get_p(m_sim);
     timeLoop.t_safe    = p->t_ok;//max( timeLoop.t_safe,    t_ok);
     timeLoop.t_crossed = p->t_past;//min( timeLoop.t_crossed, t_past);
 }
 
+/** safeTimeStep()
+ *  Make sure we take small first step when we're at on event
+ *  @param sim The simulation
+ */
 void ModelExchangeStepper::safeTimeStep(cgsl_simulation &sim){
     // if sims has a state event do not step to far
     if(hasStateEvent(sim)){
@@ -424,12 +448,22 @@ void ModelExchangeStepper::safeTimeStep(cgsl_simulation &sim){
         timeLoop.dt_new = timeLoop.t_end - sim.t;
 }
 
-void ModelExchangeStepper::getSafeTime(const std::vector<FMIClient*> clients, double &dt){
+/** getSafeTime()
+ *
+ *  @param clients Vector with clients
+ *  @param t The current time
+ *  @param dt Timestep, input and output
+ */
+void ModelExchangeStepper::getSafeTime(const std::vector<FMIClient*> clients, double t, double &dt){
     for(auto client: clients)
         if(client->m_event_info.nextEventTimeDefined)
-            dt = min(dt,client->m_event_info.nextEventTime);
+            dt = min(dt, t - client->m_event_info.nextEventTime);
 }
 
+/** runIteration()
+ *  @param t The current time
+ *  @param dt The timestep to be taken
+ */
 void ModelExchangeStepper::runIteration(double t, double dt) {
     timeLoop.t_safe = t;
     timeLoop.t_end = t + dt;

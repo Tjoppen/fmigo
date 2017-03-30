@@ -133,7 +133,6 @@ static deque<string> escapeSplit(string str, char delim) {
   return ret;
 }
 
-
 int fmitcp_master::parseArguments( int argc,
                     char *argv[],
                     std::vector<std::string> *fmuFilePaths,
@@ -403,6 +402,7 @@ int fmitcp_master::parseArguments( int argc,
             break;
 
         case 'F':
+            fprintf(stderr, "WARNING: -F option is deprecated and will be removed soon\n");
             *fieldnameFilename = optarg;
             break;
 

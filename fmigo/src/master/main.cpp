@@ -26,6 +26,7 @@
 #endif
 #include <fstream>
 #include "control.pb.h"
+#include "master/globals.h"
 
 using namespace fmitcp_master;
 using namespace fmitcp;
@@ -236,13 +237,13 @@ static void sendUserParams(BaseMaster *master, vector<FMIClient*> clients, map<p
     }
 }
 
-static string getFieldnames(vector<FMIClient*> clients, FILEFORMAT format) {
+static string getFieldnames(vector<FMIClient*> clients) {
     ostringstream oss;
-    string separator;
-    switch (format){
+    char separator = fmigo::globals::getSeparator();
+    switch (fmigo::globals::fileFormat){
     default:
-    case csv:   separator = ","; oss << "#t"; break;
-    case tikz:  separator = " "; oss << "t";  break;
+    case csv:   oss << "#t"; break;
+    case tikz:  oss << "t";  break;
     }
 
     for (auto client : clients) {
@@ -306,14 +307,9 @@ template<typename RFType, typename From> void addVectorToRepeatedField(RFType* r
     }
 }
 
-static void printOutputs(double t, BaseMaster *master, vector<FMIClient*>& clients, enum FILEFORMAT format) {
+static void printOutputs(double t, BaseMaster *master, vector<FMIClient*>& clients) {
     vector<vector<variable> > clientOutputs;
-    string separator;
-    switch (format){
-    default:
-    case csv:   separator = ",";break;
-    case tikz:  separator = " ";break;
-    }
+    char separator = fmigo::globals::getSeparator();
 
     for (auto client : clients) {
         vector<variable> vars = client->getOutputs();
@@ -335,15 +331,15 @@ static void printOutputs(double t, BaseMaster *master, vector<FMIClient*>& clien
         for (auto out : clientOutputs[x]) {
             switch (out.type) {
             case fmi2_base_type_real:
-                printf("%s%f", separator.c_str(), client->m_getRealValues.front());
+                printf("%c%f", separator, client->m_getRealValues.front());
                 client->m_getRealValues.pop_front();
                 break;
             case fmi2_base_type_int:
-                printf("%s%i", separator.c_str(), client->m_getIntegerValues.front());
+                printf("%c%i", separator, client->m_getIntegerValues.front());
                 client->m_getIntegerValues.pop_front();
                 break;
             case fmi2_base_type_bool:
-                printf("%s%i", separator.c_str(), client->m_getBooleanValues.front());
+                printf("%c%i", separator, client->m_getBooleanValues.front());
                 client->m_getBooleanValues.pop_front();
                 break;
             case fmi2_base_type_str: {
@@ -354,7 +350,7 @@ static void printOutputs(double t, BaseMaster *master, vector<FMIClient*>& clien
                     default: oss << c;
                     }
                 }
-                printf("%s\"%s\"", separator.c_str(), oss.str().c_str());
+                printf("%c\"%s\"", separator, oss.str().c_str());
                 client->m_getStringValues.pop_front();
                 break;
             }
@@ -466,7 +462,6 @@ int main(int argc, char *argv[] ) {
     char csv_separator = ',';
     string outFilePath = DEFAULT_OUTFILE;
     int quietMode = 0;
-    FILEFORMAT fileFormat = csv;
     METHOD method = jacobi;
     int realtimeMode = 0;
     int printXML = 0;
@@ -483,7 +478,7 @@ int main(int argc, char *argv[] ) {
 
     if (parseArguments(
             argc, argv, &fmuURIs, &connections, &params, &endTime, &timeStep,
-            &loglevel, &csv_separator, &outFilePath, &quietMode, &fileFormat,
+            &loglevel, &csv_separator, &outFilePath, &quietMode, &fmigo::globals::fileFormat,
             &method, &realtimeMode, &printXML, &stepOrder, &fmuVisibilities,
             &scs, &hdf5Filename, &fieldnameFilename, &holonomic, &compliance,
             &command_port, &results_port, &paused, &solveLoops, &useHeadersInCSV)) {
@@ -554,7 +549,7 @@ int main(int argc, char *argv[] ) {
     setupConstraintsAndSolver(scs, clients, &solver);
 
     BaseMaster *master;
-    string fieldnames = getFieldnames(clients,fileFormat);
+    string fieldnames = getFieldnames(clients);
 
     if (scs.size()) {
         if (method != jacobi) {
@@ -571,8 +566,8 @@ int main(int argc, char *argv[] ) {
                                             (BaseMaster*)new JacobiMaster(clients, weakConnections);
     }
 
-    if(!useHeadersInCSV){
-        fprintf(stderr, "%s\n",fieldnames.c_str());
+    if (useHeadersInCSV || fmigo::globals::fileFormat == tikz) {
+        printf("%s\n",fieldnames.c_str());
     }
 
     if (fieldnameFilename.length() > 0) {
@@ -685,7 +680,7 @@ int main(int argc, char *argv[] ) {
         }
 
         if (!zmqControl) {
-            printOutputs(t, master, clients, fileFormat);
+            printOutputs(t, master, clients);
         }
 
         master->runIteration(t, timeStep);
@@ -705,17 +700,13 @@ int main(int argc, char *argv[] ) {
     }
 
     if (!zmqControl) {
-      printOutputs(endTime, master, clients, fileFormat);
-      string separator;
-      switch (fileFormat){
-      default:
-      case csv:   separator = ",";break;
-      case tikz:  separator = " ";break;
-      }
+      printOutputs(endTime, master, clients);
+      char separator = fmigo::globals::getSeparator();
+
       //finish off with zeroes for any extra forces
       int n = master->getNumForceOutputs();
       for (int i = 0; i < n; i++) {
-          printf("%s0",separator.c_str());
+          printf("%c0", separator);
       }
 
       printf("\n");

@@ -14,7 +14,8 @@ using namespace fmitcp;
 
 #include "parse_server_args.cpp"
 
-fmigo_loglevel_type fmigo_loglevel;
+jm_log_level_enu_t fmigo_loglevel = jm_log_level_info;
+
 class mymonitor : public zmq::monitor_t {
 public:
   virtual void on_event_disconnected(const zmq_event_t &event_, const char* addr_) {
@@ -58,7 +59,6 @@ int main(int argc, char *argv[]) {
   oss << "tcp://*:" << port;
 
   info("FMI Server %s - %s <-- %s\n",FMITCP_VERSION, oss.str().c_str(), fmuPath.c_str());
-  //server.getLogger()->setPrefix("Server: ");
 
   zmq::socket_t socket(context, ZMQ_PAIR);
   socket.bind(oss.str().c_str());

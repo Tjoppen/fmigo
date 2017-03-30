@@ -271,7 +271,6 @@ void fmitcp_master::parseArguments( int argc,
 
         case 'l':
             *loglevel = logOptionToJMLogLevel(optarg);
-            fmigo_loglevel = (fmigo_loglevel_type)atoi(optarg);
             break;
 
         case 'm':

@@ -39,8 +39,7 @@ extern std::map<int, const char*> columnnames;
 #define ANSI_COLOR_CYAN    "\x1b[36m"
 #define ANSI_COLOR_RESET   "\x1b[0m"
 
-typedef jm_log_level_enu_t fmigo_loglevel_type;
-extern fmigo_loglevel_type fmigo_loglevel ;
+extern jm_log_level_enu_t fmigo_loglevel ;
 
 void info(const char* fmt, ...);
 void fatal_(const char* fmt, ...);

@@ -39,8 +39,8 @@ vector<int> timelog;
 int columnofs;
 std::map<int, const char*> columnnames;
 #endif
-//int fmigo_loglevel = fmigo_nothing;
-fmigo_loglevel_type fmigo_loglevel = jm_log_level_all;
+
+jm_log_level_enu_t fmigo_loglevel = jm_log_level_info;
 
 typedef map<pair<int,fmi2_base_type_enu_t>, vector<param> > parameter_map;
 
@@ -489,7 +489,6 @@ int main(int argc, char *argv[] ) {
     vector<string> fmuURIs;
     vector<connection> connections;
     parameter_map params;
-    jm_log_level_enu_t loglevel = jm_log_level_nothing;
     char csv_separator = ',';
     string outFilePath = DEFAULT_OUTFILE;
     int quietMode = 0;
@@ -509,7 +508,7 @@ int main(int argc, char *argv[] ) {
 
     parseArguments(
             argc, argv, &fmuURIs, &connections, &params, &endTime, &timeStep,
-            &loglevel, &csv_separator, &outFilePath, &quietMode, &fmigo::globals::fileFormat,
+            &fmigo_loglevel, &csv_separator, &outFilePath, &quietMode, &fmigo::globals::fileFormat,
             &method, &realtimeMode, &printXML, &stepOrder, &fmuVisibilities,
             &scs, &hdf5Filename, &fieldnameFilename, &holonomic, &compliance,
             &command_port, &results_port, &paused, &solveLoops, &useHeadersInCSV
@@ -569,7 +568,7 @@ int main(int argc, char *argv[] ) {
 
     //connect, get modelDescription XML (was important for connconf)
     for (auto it = clients.begin(); it != clients.end(); it++) {
-        (*it)->m_loglevel = loglevel;
+        (*it)->m_loglevel = fmigo_loglevel;
         (*it)->connect();
     }
 

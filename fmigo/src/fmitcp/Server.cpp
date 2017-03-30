@@ -16,17 +16,14 @@ using namespace fmitcp;
  * Callback function for FMILibrary. Logs the FMILibrary operations.
  */
 void jmCallbacksLogger(jm_callbacks* c, jm_string module, jm_log_level_enu_t log_level, jm_string message) {
-  int fmigo_loglevel = log_level;
   debug("[module = %s][log level = %s] %s\n", module, jm_log_level_to_string(log_level), message);
   fflush(NULL);
 }
 
-Server::Server(string fmuPath, jm_log_level_enu_t logLevel, std::string hdf5Filename) {
+Server::Server(string fmuPath, std::string hdf5Filename) {
   m_fmi2Outputs = NULL;
   m_fmuParsed = true;
   m_fmuPath = fmuPath;
-  m_logLevel = logLevel;
-  fmigo_loglevel = logLevel;
   this->hdf5Filename = hdf5Filename;
   nextStateId = 0;
   m_sendDummyResponses = false;
@@ -51,7 +48,7 @@ Server::Server(string fmuPath, jm_log_level_enu_t logLevel, std::string hdf5File
   m_jmCallbacks.realloc = realloc;
   m_jmCallbacks.free = free;
   m_jmCallbacks.logger = jmCallbacksLogger;
-  m_jmCallbacks.log_level = m_logLevel;
+  m_jmCallbacks.log_level = fmigo_loglevel;
   m_jmCallbacks.context = 0;
   // working directory
   char* dir;
@@ -1096,7 +1093,7 @@ string Server::clientData(const char *data, size_t size) {
     // Create response
     fmitcp_proto::get_xml_res response;
     ret.first = fmitcp_proto::type_get_xml_res;
-    response.set_loglevel(fmiJMLogLevelToProtoJMLogLevel(m_logLevel));
+    response.set_loglevel(fmiJMLogLevelToProtoJMLogLevel(fmigo_loglevel));
     response.set_xml(xml);
     ret.second = response.SerializeAsString();
     // only printing the first 38 characters of xml.

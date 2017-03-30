@@ -45,14 +45,12 @@ int main(int argc, char *argv[]) {
 
   int port = 3000;
   bool debugLogging = false;
-  jm_log_level_enu_t log_level = jm_log_level_error;
   string fmuPath = "";
   string hdf5Filename;
 
-  parse_server_args(argc, argv, &fmuPath, &hdf5Filename, &debugLogging, &log_level, &port);
-  fmigo_loglevel = log_level;
+  parse_server_args(argc, argv, &fmuPath, &hdf5Filename, &debugLogging, &fmigo_loglevel, &port);
 
-  FMIServer server(fmuPath, log_level, hdf5Filename);
+  FMIServer server(fmuPath, hdf5Filename);
   if (!server.isFmuParsed())
     return EXIT_FAILURE;
 

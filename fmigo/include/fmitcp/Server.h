@@ -31,7 +31,6 @@ namespace fmitcp {
     string m_fmuPath;
 
     /// FMU logging level
-    jm_log_level_enu_t m_logLevel;
     jm_callbacks m_jmCallbacks;
 
     /// Directory for the unpacked FMU
@@ -58,7 +57,7 @@ namespace fmitcp {
 
   public:
 
-    Server(string fmuPath, jm_log_level_enu_t logLevel, std::string hdf5Filename = "");
+    Server(string fmuPath, std::string hdf5Filename = "");
     virtual ~Server();
 
     /// To be implemented in subclass

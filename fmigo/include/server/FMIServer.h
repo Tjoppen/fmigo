@@ -19,8 +19,8 @@
 // Define own server
 class FMIServer : public fmitcp::Server {
 public:
-  FMIServer(string fmuPath, jm_log_level_enu_t logLevel, string hdf5Filename)
-   : Server(fmuPath, logLevel, hdf5Filename) {}
+  FMIServer(string fmuPath, string hdf5Filename)
+   : Server(fmuPath, hdf5Filename) {}
   ~FMIServer() {};
   void onClientConnect() {
     printf("MyFMIServer::onConnect\n");

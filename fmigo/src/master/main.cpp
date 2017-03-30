@@ -447,9 +447,9 @@ static int connectionNamesToVr(std::vector<connection> &connections,
 }
 
 #ifdef USE_MPI
-void run_server(string fmuPath, jm_log_level_enu_t loglevel) {
+static void run_server(string fmuPath) {
     string hdf5Filename; //TODO?
-    FMIServer server(fmuPath, loglevel, hdf5Filename);
+    FMIServer server(fmuPath, hdf5Filename);
 
     for (;;) {
         int rank, tag;
@@ -534,7 +534,7 @@ int main(int argc, char *argv[] ) {
         //we're a server
         //in MPI mode, treat fmuURIs as a list of paths
         //for each server node, fmuURIs[world_rank-1] is the corresponding FMU path
-        run_server(fmuURIs[world_rank-1], loglevel);
+        run_server(fmuURIs[world_rank-1]);
         return 0;
     }
     //world_rank == 0 below

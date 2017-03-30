@@ -5,7 +5,7 @@
 #define FMILIB_BUILDING_LIBRARY
 #include <fmilib.h>
 #include "fmitcp.pb.h"
-#include "common.h"
+#include "fmitcp-common.h"
 #include <map>
 #include <list>
 #include "common/common.h"

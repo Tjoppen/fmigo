@@ -13,7 +13,7 @@
 #include <stdlib.h>
 #include <string>
 #include <fmitcp/Server.h>
-#include <fmitcp/common.h>
+#include <fmitcp/fmitcp-common.h>
 #include <zmq.hpp>
 
 // Define own server

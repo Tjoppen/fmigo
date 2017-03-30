@@ -15,7 +15,7 @@ LINK_DIRECTORIES   (${FMIL_LIBS_DIR}    ${STRONG_COUPLING_LIBS_DIR}    ${FMITCP_
 
 set(FMITCP_SRCS
     src/fmitcp/Client.cpp
-    src/fmitcp/common.cpp
+    src/fmitcp/fmitcp-common.cpp
     src/fmitcp/fmitcp.pb.cc
     src/fmitcp/serialize.cpp
     src/fmitcp/Server.cpp
@@ -23,7 +23,7 @@ set(FMITCP_SRCS
 
 set(FMITCP_HEADERS
     include/fmitcp/Client.h
-    include/fmitcp/common.h
+    include/fmitcp/fmitcp-common.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.pb.h
     include/fmitcp/serialize.h
     include/fmitcp/Server.h

@@ -1,7 +1,7 @@
 #include <fstream>
 
 #include "Server.h"
-#include "common.h"
+#include "fmitcp-common.h"
 #include "fmitcp.pb.h"
 #include <FMI2/fmi2_xml_variable.h>
 #ifndef WIN32

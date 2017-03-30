@@ -1,5 +1,5 @@
 #include "Client.h"
-#include "common.h"
+#include "fmitcp-common.h"
 #include <stdio.h>
 #ifndef WIN32
 #include <unistd.h>

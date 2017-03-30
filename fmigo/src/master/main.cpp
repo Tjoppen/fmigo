@@ -240,11 +240,11 @@ static string getFieldnames(vector<FMIClient*> clients, FILEFORMAT format) {
     ostringstream oss;
     string separator;
     switch (format){
-    case csv:   separator = ",";break;
-    case tikz:  separator = " ";break;
-    default:    separator = ",";
+    default:
+    case csv:   separator = ","; oss << "#t"; break;
+    case tikz:  separator = " "; oss << "t";  break;
     }
-    oss << "#t";
+
     for (auto client : clients) {
         ostringstream prefix;
         prefix << separator << "fmu" << client->getId() << "_";
@@ -310,9 +310,9 @@ static void printOutputs(double t, BaseMaster *master, vector<FMIClient*>& clien
     vector<vector<variable> > clientOutputs;
     string separator;
     switch (format){
+    default:
     case csv:   separator = ",";break;
     case tikz:  separator = " ";break;
-    default:    separator = ",";
     }
 
     for (auto client : clients) {
@@ -708,9 +708,9 @@ int main(int argc, char *argv[] ) {
       printOutputs(endTime, master, clients, fileFormat);
       string separator;
       switch (fileFormat){
+      default:
       case csv:   separator = ",";break;
       case tikz:  separator = " ";break;
-      default:    separator = ",";
       }
       //finish off with zeroes for any extra forces
       int n = master->getNumForceOutputs();

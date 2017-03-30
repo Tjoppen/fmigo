@@ -822,11 +822,15 @@ if __name__ == '__main__':
             tcpportsinuse.append(con.laddr[1])
 
         tcpIPport = []
-        for fmu in fmus:
-            if parse.ports[0] in tcpportsinuse:
-                print('%s: port %d already in use' %(sys.argv[0], parse.ports[0]))
+        for i in range(len(fmus)):
+            if parse.ports[i] in tcpportsinuse:
+                print('%s: port %d already in use' %(sys.argv[0], parse.ports[i]))
                 exit(1)
-            tcpIPport.append("tcp://localhost:" + str(parse.ports.pop(0)))
+            tcpIPport.append("tcp://localhost:" + str(parse.ports[i]))
+
+        # Everything looks OK; start servers
+        for i in range(len(fmus)):
+            subprocess.Popen(['fmigo-server','-p', str(parse.ports[i]), fmus[i].path])
 
         #read connections and parameters from stdin, since they can be quite many
         #stdin because we want to avoid leaving useless files on the filesystem

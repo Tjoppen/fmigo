@@ -124,7 +124,6 @@ static deque<string> escapeSplit(string str, char delim) {
   return ret;
 }
 
-
 void fmitcp_master::parseArguments( int argc,
                     char *argv[],
                     std::vector<std::string> *fmuFilePaths,
@@ -150,7 +149,8 @@ void fmitcp_master::parseArguments( int argc,
                     int *command_port,
                     int *results_port,
                     bool *paused,
-                    bool *solveLoops
+                    bool *solveLoops,
+                    bool *useHeadersInCSV
         ) {
     int index, c;
     opterr = 0;
@@ -171,7 +171,7 @@ void fmitcp_master::parseArguments( int argc,
 
     vector<char*> argv2 = make_char_vector(argvstore);
 
-    while ((c = getopt (argv2.size(), argv2.data(), "xrl:vqht:c:d:s:o:p:f:m:g:w:C:5:F:NM:a:z:ZL")) != -1){
+    while ((c = getopt (argv2.size(), argv2.data(), "xrl:vqht:c:d:s:o:p:f:m:g:w:C:5:F:NM:a:z:ZLH")) != -1){
         int n, skip, l, cont, i, numScanned, stop, vis;
         deque<string> parts;
         if (optarg) parts = escapeSplit(optarg, ':');
@@ -262,6 +262,8 @@ void fmitcp_master::parseArguments( int argc,
         case 'f':
             if(strcmp(optarg,"csv") == 0){
                 *fileFormat = csv;
+            } else if( strcmp(optarg,"tikz") == 0){
+                *fileFormat = tikz;
             } else {
                 fatal("File format \"%s\" not recognized.\n",optarg);
             }
@@ -393,7 +395,12 @@ void fmitcp_master::parseArguments( int argc,
             *hdf5Filename = optarg;
             break;
 
+        case 'H':
+            *useHeadersInCSV = true;
+            break;
+
         case 'F':
+            warning("-F option is deprecated and will be removed soon\n");
             *fieldnameFilename = optarg;
             break;
 

@@ -10,6 +10,7 @@
 #include <fmitcp/serialize.h>
 #include <sstream>
 #include "common/common.h"
+#include "master/globals.h"
 
 using namespace fmitcp_master;
 using namespace fmitcp;
@@ -241,6 +242,7 @@ void StrongMaster::runIteration(double t, double dt) {
     PRINT_HDF5_DELTA("run_solver");
 
     //distribute forces
+    char separator = fmigo::globals::getSeparator();
     for (size_t i=0; i<m_clients.size(); i++){
         FMIClient *client = m_clients[i];
         for (int j = 0; j < client->numConnectors(); j++) {
@@ -249,14 +251,14 @@ void StrongMaster::runIteration(double t, double dt) {
 
             //dump force/torque
             if (sc->hasForce()) {
-                printf(",%f,%f,%f", sc->m_force.x(), sc->m_force.y(), sc->m_force.z());
+                printf("%c%f%c%f%c%f", separator, sc->m_force.x(), separator, sc->m_force.y(), separator, sc->m_force.z());
                 vec.push_back(sc->m_force.x());
                 vec.push_back(sc->m_force.y());
                 vec.push_back(sc->m_force.z());
             }
 
             if (sc->hasTorque()) {
-                printf(",%f,%f,%f", sc->m_torque.x(),sc->m_torque.y(),sc->m_torque.z());
+                printf("%c%f%c%f%c%f", separator, sc->m_torque.x(), separator, sc->m_torque.y(), separator, sc->m_torque.z());
                 vec.push_back(sc->m_torque.x());
                 vec.push_back(sc->m_torque.y());
                 vec.push_back(sc->m_torque.z());
@@ -279,6 +281,8 @@ void StrongMaster::runIteration(double t, double dt) {
 }
 
 string StrongMaster::getForceFieldnames() const {
+    char separator = fmigo::globals::getSeparator();
+
     ostringstream oss;
     for (size_t i=0; i<m_clients.size(); i++){
         FMIClient *client = m_clients[i];
@@ -288,15 +292,15 @@ string StrongMaster::getForceFieldnames() const {
             basename << "fmu" << i << "_conn" << j << "_";
 
             if (sc->hasForce()) {
-                oss << " " << basename.str() << "force_x";
-                oss << " " << basename.str() << "force_y";
-                oss << " " << basename.str() << "force_z";
+                oss << separator << basename.str() << "force_x";
+                oss << separator << basename.str() << "force_y";
+                oss << separator << basename.str() << "force_z";
             }
 
             if (sc->hasTorque()) {
-                oss << " " << basename.str() << "torque_x";
-                oss << " " << basename.str() << "torque_y";
-                oss << " " << basename.str() << "torque_z";
+                oss << separator << basename.str() << "torque_x";
+                oss << separator << basename.str() << "torque_y";
+                oss << separator << basename.str() << "torque_z";
             }
         }
     }

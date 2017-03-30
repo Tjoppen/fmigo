@@ -37,6 +37,7 @@ CSFMUS="
     testfmus/loopsolvetest/sub
     testfmus/loopsolvetest/mul
     testfmus/stringtest
+    meWrapper/wrapper
 "
 
 cat <<END>CMakeLists.txt

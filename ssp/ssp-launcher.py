@@ -831,7 +831,7 @@ if __name__ == '__main__':
         #read connections and parameters from stdin, since they can be quite many
         #stdin because we want to avoid leaving useless files on the filesystem
         args   = ['fmigo-master']
-        append = [tcpconnect for tcpconnect in tcpIPport]
+        append = tcpIPport
     else:
         #read connections and parameters from stdin, since they can be quite many
         #stdin because we want to avoid leaving useless files on the filesystem

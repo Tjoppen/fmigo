@@ -568,7 +568,6 @@ int main(int argc, char *argv[] ) {
 
     //connect, get modelDescription XML (was important for connconf)
     for (auto it = clients.begin(); it != clients.end(); it++) {
-        (*it)->m_loglevel = fmigo_loglevel;
         (*it)->connect();
     }
 

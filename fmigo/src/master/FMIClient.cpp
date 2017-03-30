@@ -31,7 +31,6 @@ FMIClient::FMIClient(zmq::context_t &context, int id, string uri) : fmitcp::Clie
     m_context = NULL;
     m_fmi2Outputs = NULL;
     m_stateId = 0;
-    m_loglevel = jm_log_level_nothing;
 };
 
 FMIClient::~FMIClient() {
@@ -85,7 +84,7 @@ void FMIClient::on_get_xml_res(fmitcp_proto::jm_log_level_enu_t logLevel, string
   m_jmCallbacks.realloc = realloc;
   m_jmCallbacks.free = free;
   m_jmCallbacks.logger = jmCallbacksLoggerClient;
-  m_jmCallbacks.log_level = m_loglevel;
+  m_jmCallbacks.log_level = fmigo_loglevel;
   m_jmCallbacks.context = 0;
   // working directory
   char* dir = fmi_import_mk_temp_dir(&m_jmCallbacks, NULL, "fmitcp_master_");

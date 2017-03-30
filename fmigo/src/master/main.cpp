@@ -26,11 +26,13 @@
 #endif
 #include <fstream>
 #include "control.pb.h"
+#include "master/globals.h"
 
 using namespace fmitcp_master;
 using namespace fmitcp;
 using namespace fmitcp::serialize;
 using namespace sc;
+using namespace common;
 
 #ifndef WIN32
 timeval tl1, tl2;
@@ -119,6 +121,29 @@ static StrongConnector* findOrCreateShaftConnector(FMIClient *client,
     return sc;
 }
 
+static int vrFromKeyName(FMIClient* client, string key){
+
+  if(isNumeric(key))
+    return atoi(key.c_str());
+
+  const variable_map& vars = client->getVariables();
+
+  switch (vars.count(key)){
+  case 0:{
+    fprintf(stderr,"Error: client(%d):%s\n", client->getId(), key.c_str());
+    exit(1);
+  }
+  case 1:  return vars.find(key)->second.vr;
+  default:{
+    fprintf(stderr,"Error: Not uniq - client(%d):%s\n", client->getId(), key.c_str());
+    exit(1);
+  }
+  }
+}
+
+#define toVR(type, index)                                   \
+  vrFromKeyName(clients[it->type##FMU],it->vrORname[index])
+
 static void setupConstraintsAndSolver(vector<strongconnection> strongConnections, vector<FMIClient*> clients, Solver *solver) {
     for (auto it = strongConnections.begin(); it != strongConnections.end(); it++) {
         //NOTE: this leaks memory, but I don't really care since it's only setup
@@ -129,27 +154,27 @@ static void setupConstraintsAndSolver(vector<strongconnection> strongConnections
         case 'b':
         case 'l':
         {
-            if (it->vrs.size() != 38) {
+            if (it->vrORname.size() != 38) {
                 fprintf(stderr, "Bad %s specification: need 38 VRs ([XYZpos + XYZacc + XYZforce + Quat + XYZrotAcc + XYZtorque] x 2), got %zu\n",
-                        t == 'b' ? "ball joint" : "lock", it->vrs.size());
+                        t == 'b' ? "ball joint" : "lock", it->vrORname.size());
                 exit(1);
             }
 
             StrongConnector *scA = findOrCreateBallLockConnector(clients[it->fromFMU],
-                                                 it->vrs[0], it->vrs[1], it->vrs[2],
-                                                 it->vrs[3], it->vrs[4], it->vrs[5],
-                                                 it->vrs[6], it->vrs[7], it->vrs[8],
-                                                 it->vrs[9], it->vrs[10],it->vrs[11],it->vrs[12],
-                                                 it->vrs[13],it->vrs[14],it->vrs[15],
-                                                 it->vrs[16],it->vrs[17],it->vrs[18]);
+                                       toVR(from,0), toVR(from,1), toVR(from,2),
+                                       toVR(from,3), toVR(from,4), toVR(from,5),
+                                       toVR(from,6), toVR(from,7), toVR(from,8),
+                                       toVR(from,9), toVR(from,10), toVR(from,11), toVR(from,12),
+                                       toVR(from,13), toVR(from,14), toVR(from,15),
+                                       toVR(from,16), toVR(from,17), toVR(from,18) );
 
             StrongConnector *scB = findOrCreateBallLockConnector(clients[it->toFMU],
-                                                 it->vrs[19],it->vrs[20],it->vrs[21],
-                                                 it->vrs[22],it->vrs[23],it->vrs[24],
-                                                 it->vrs[25],it->vrs[26],it->vrs[27],
-                                                 it->vrs[28],it->vrs[29],it->vrs[30],it->vrs[31],
-                                                 it->vrs[32],it->vrs[33],it->vrs[34],
-                                                 it->vrs[35],it->vrs[36],it->vrs[37]);
+                                       toVR(to,19), toVR(to,20), toVR(to,21),
+                                       toVR(to,22), toVR(to,23), toVR(to,24),
+                                       toVR(to,25), toVR(to,26), toVR(to,27),
+                                       toVR(to,28), toVR(to,29), toVR(to,30), toVR(to,31),
+                                       toVR(to,32), toVR(to,33), toVR(to,34),
+                                       toVR(to,35), toVR(to,36), toVR(to,37) );
 
             con = t == 'b' ? new BallJointConstraint(scA, scB, Vec3(), Vec3())
                            : new LockConstraint(scA, scB, Vec3(), Vec3(), Quat(), Quat());
@@ -158,21 +183,16 @@ static void setupConstraintsAndSolver(vector<strongconnection> strongConnections
         }
         case 's':
         {
-            int ofs = 0;
-            if (it->vrs.size() != 8) {
-                //maybe it's the old type of specification?
-                ofs = 1;
-                if (it->vrs.size() != 9) {
-                    fprintf(stderr, "Bad shaft specification: need 8 VRs ([shaft angle + angular velocity + angular acceleration + torque] x 2)\n");
-                    exit(1);
-                }
+            if (it->vrORname.size() != 8) {
+                fprintf(stderr, "Bad shaft specification: need 8 VRs ([shaft angle + angular velocity + angular acceleration + torque] x 2)\n");
+                exit(1);
             }
 
             StrongConnector *scA = findOrCreateShaftConnector(clients[it->fromFMU],
-                    it->vrs[ofs+0], it->vrs[ofs+1], it->vrs[ofs+2], it->vrs[ofs+3]);
+                                       toVR(from,0), toVR(from,1), toVR(from,2), toVR(from,3));
 
             StrongConnector *scB = findOrCreateShaftConnector(clients[it->toFMU],
-                    it->vrs[ofs+4], it->vrs[ofs+5], it->vrs[ofs+6], it->vrs[ofs+7]);
+                                       toVR(to,4), toVR(to,5), toVR(to,6), toVR(to,7));
 
             con = new ShaftConstraint(scA, scB);
             break;
@@ -195,7 +215,7 @@ static void sendUserParams(BaseMaster *master, vector<FMIClient*> clients, map<p
         FMIClient *client = clients[it->first.first];
         vector<int> vrs;
         for (auto it2 = it->second.begin(); it2 != it->second.end(); it2++) {
-            vrs.push_back(it2->valueReference);
+          vrs.push_back(vrFromKeyName(client, it2->vrORname));
         }
 
         switch (it->first.second) {
@@ -238,10 +258,16 @@ static void sendUserParams(BaseMaster *master, vector<FMIClient*> clients, map<p
 
 static string getFieldnames(vector<FMIClient*> clients) {
     ostringstream oss;
-    oss << "t";
+    char separator = fmigo::globals::getSeparator();
+    switch (fmigo::globals::fileFormat){
+    default:
+    case csv:   oss << "#t"; break;
+    case tikz:  oss << "t";  break;
+    }
+
     for (auto client : clients) {
         ostringstream prefix;
-        prefix << " " << "fmu" << client->getId() << "_";
+        prefix << separator << "fmu" << client->getId() << "_";
         oss << client->getSpaceSeparatedFieldNames(prefix.str());
     }
     return oss.str();
@@ -302,6 +328,7 @@ template<typename RFType, typename From> void addVectorToRepeatedField(RFType* r
 
 static void printOutputs(double t, BaseMaster *master, vector<FMIClient*>& clients) {
     vector<vector<variable> > clientOutputs;
+    char separator = fmigo::globals::getSeparator();
 
     for (auto client : clients) {
         vector<variable> vars = client->getOutputs();
@@ -323,15 +350,15 @@ static void printOutputs(double t, BaseMaster *master, vector<FMIClient*>& clien
         for (auto out : clientOutputs[x]) {
             switch (out.type) {
             case fmi2_base_type_real:
-                printf(",%f", client->m_getRealValues.front());
+                printf("%c%f", separator, client->m_getRealValues.front());
                 client->m_getRealValues.pop_front();
                 break;
             case fmi2_base_type_int:
-                printf(",%i", client->m_getIntegerValues.front());
+                printf("%c%i", separator, client->m_getIntegerValues.front());
                 client->m_getIntegerValues.pop_front();
                 break;
             case fmi2_base_type_bool:
-                printf(",%i", client->m_getBooleanValues.front());
+                printf("%c%i", separator, client->m_getBooleanValues.front());
                 client->m_getBooleanValues.pop_front();
                 break;
             case fmi2_base_type_str: {
@@ -342,7 +369,7 @@ static void printOutputs(double t, BaseMaster *master, vector<FMIClient*>& clien
                     default: oss << c;
                     }
                 }
-                printf(",\"%s\"", oss.str().c_str());
+                printf("%c\"%s\"", separator, oss.str().c_str());
                 client->m_getStringValues.pop_front();
                 break;
             }
@@ -367,7 +394,7 @@ static void pushResults(int step, double t, double endTime, double timeStep, zmq
     results.set_dt(timeStep);
 
     for (auto client : clients) {
-        variable_map vars = client->getVariables();
+        const variable_map& vars = client->getVariables();
         SendGetXType getVariables;
 
         //figure out what values we need to fetch from the FMU
@@ -405,6 +432,25 @@ static void pushResults(int step, double t, double endTime, double timeStep, zmq
     zmq::message_t rep(str.length());
     memcpy(rep.data(), str.data(), str.length());
     push_socket.send(rep);
+}
+
+static int connectionNamesToVr(std::vector<connection> &connections,
+                        vector<strongconnection> &strongConnections,
+                        const vector<FMIClient*> clients // could not get this to compile when defined in parseargs
+                        ){
+    for(size_t i = 0; i < connections.size(); i++){
+      connections[i].fromOutputVR = vrFromKeyName(clients[connections[i].fromFMU], connections[i].fromOutputVRorNAME);
+      connections[i].toInputVR = vrFromKeyName(clients[connections[i].toFMU], connections[i].toInputVRorNAME);
+    }
+
+    for(size_t i = 0; i < strongConnections.size(); i++){
+      size_t j = 0;
+      if(strongConnections[i].vrORname.size()%2 != 0){
+        fprintf(stderr,"Error: strong connection needs even number of connections for fmu0 and fmu1\n");
+        exit(1);
+      }
+    }
+  return 0;
 }
 
 #ifdef USE_MPI
@@ -454,7 +500,6 @@ int main(int argc, char *argv[] ) {
     char csv_separator = ',';
     string outFilePath = DEFAULT_OUTFILE;
     int quietMode = 0;
-    FILEFORMAT fileFormat = csv;
     METHOD method = jacobi;
     int realtimeMode = 0;
     int printXML = 0;
@@ -465,15 +510,16 @@ int main(int argc, char *argv[] ) {
     string hdf5Filename;
     string fieldnameFilename;
     bool holonomic = true;
+    bool useHeadersInCSV = false;
     int command_port = 0, results_port = 0;
     bool paused = false, running = true, solveLoops = false;
 
     if (parseArguments(
             argc, argv, &fmuURIs, &connections, &params, &endTime, &timeStep,
-            &loglevel, &csv_separator, &outFilePath, &quietMode, &fileFormat,
+            &loglevel, &csv_separator, &outFilePath, &quietMode, &fmigo::globals::fileFormat,
             &method, &realtimeMode, &printXML, &stepOrder, &fmuVisibilities,
             &scs, &hdf5Filename, &fieldnameFilename, &holonomic, &compliance,
-            &command_port, &results_port, &paused, &solveLoops)) {
+            &command_port, &results_port, &paused, &solveLoops, &useHeadersInCSV)) {
         return 1;
     }
 
@@ -537,6 +583,7 @@ int main(int argc, char *argv[] ) {
         (*it)->connect();
     }
 
+    connectionNamesToVr(connections,scs,clients);
     vector<WeakConnection> weakConnections = setupWeakConnections(connections, clients);
     setupConstraintsAndSolver(scs, clients, &solver);
 
@@ -556,6 +603,10 @@ int main(int argc, char *argv[] ) {
     } else {
         master = (method == gs) ?           (BaseMaster*)new GaussSeidelMaster(clients, weakConnections, stepOrder) :
                                             (BaseMaster*)new JacobiMaster(clients, weakConnections);
+    }
+
+    if (useHeadersInCSV || fmigo::globals::fileFormat == tikz) {
+        printf("%s\n",fieldnames.c_str());
     }
 
     if (fieldnameFilename.length() > 0) {
@@ -689,11 +740,12 @@ int main(int argc, char *argv[] ) {
 
     if (!zmqControl) {
       printOutputs(endTime, master, clients);
+      char separator = fmigo::globals::getSeparator();
 
       //finish off with zeroes for any extra forces
       int n = master->getNumForceOutputs();
       for (int i = 0; i < n; i++) {
-        printf(",0");
+          printf("%c0", separator);
       }
 
       printf("\n");

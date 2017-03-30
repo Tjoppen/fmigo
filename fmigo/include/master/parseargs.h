@@ -23,18 +23,20 @@ struct connection {
     int toFMU;                  // FMU index
     int toInputVR;              // Value reference
     double slope, intercept;    // for unit conversion. y = slope*x + intercept
+    std::string fromOutputVRorNAME;           // Value reference
+    std::string toInputVRorNAME;              // Value reference
 };
 
 struct strongconnection {
     std::string type;
     int fromFMU;
     int toFMU;
-    std::vector<int> vrs;
+    std::vector<std::string> vrORname;              // Value reference
 };
 
 struct param {
     int fmuIndex;
-    int valueReference;                 // Value reference to apply to
+    std::string vrORname;                 // Parameter value reference OR parameter name
     fmi2_base_type_enu_t type;
     std::string stringValue;            // String version, always set to what the user wrote
     int intValue;                       // Integer
@@ -43,7 +45,8 @@ struct param {
 };
 
 enum FILEFORMAT {
-    csv
+    csv,
+    tikz
 };
 
 enum METHOD {
@@ -102,7 +105,8 @@ int parseArguments( int argc,
                     int *command_port,
                     int *results_port,
                     bool *paused,
-                    bool *solveLoops
+                    bool *solveLoops,
+                    bool *useHeadersInCSV
                     );
 }
 

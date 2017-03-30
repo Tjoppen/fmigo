@@ -57,6 +57,7 @@ strs  = {}
 
 for sv in root.find('ModelVariables').findall('ScalarVariable'):
     name = sv.attrib['name']
+    name = '_'.join(name.split('.'))
     vr = int(sv.attrib['valueReference'])
 
     if name in reals.values() or name in ints.values() or name in bools.values():
@@ -103,7 +104,7 @@ for sv in root.find('ModelVariables').findall('ScalarVariable'):
 print('''#ifndef MODELDESCRIPTION_H
 #define MODELDESCRIPTION_H
 #include "FMI2/fmi2Functions.h" //for fmi2Real etc.
-#include <stdio.h> //for snprintf()
+#include "strlcpy.h" //for strlcpy()
 
 #define MODEL_IDENTIFIER %s
 #define MODEL_GUID "%s"
@@ -203,7 +204,7 @@ static fmi2Status generated_fmi2Set%s(modelDescription_t *md, const fmi2ValueRef
         t,t,
         # A bit convoluted maybe, but it works.
         # This makes sure settings strings larger than the FMU can handle results in an error, not a crash
-        '\n'.join(['        case %i: if (snprintf(md->%s, sizeof(md->%s), "%%s", value[i]) >= sizeof(md->%s)) { return fmi2Error; } break;' %
+        '\n'.join(['        case %i: if (strlcpy(md->%s, value[i], sizeof(md->%s)) >= sizeof(md->%s)) { return fmi2Error; } break;' %
                                                   (key, value[0], value[0], value[0]) for key,value in d.items()]) if t == 'String' else
         '\n'.join(['        case %i: md->%s = value[i]; break;' % (key, value[0]) for key,value in d.items()]),
     ))

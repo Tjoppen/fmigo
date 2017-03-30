@@ -1,3 +1,5 @@
+#include "gsl-interface.h"
+
 #define FMIGO_ME_SET_TIME(client) baseMaster->send(client, fmi2_import_set_time(t))
 #define FMIGO_ME_SET_CONTINUOUS_STATES(client,data) baseMaster->send(client, fmi2_import_set_continuous_states(data + p->baseMaster->get_storage().get_offset(client->getId(), STORAGE::states), client->getNumContinuousStates()))
 #define FMIGO_ME_GET_DERIVATIVES(client) baseMaster->send(client, fmi2_import_get_derivatives((int)client->getNumContinuousStates()))

@@ -45,7 +45,8 @@ struct param {
 };
 
 enum FILEFORMAT {
-    csv
+    csv,
+    tikz
 };
 
 enum METHOD {
@@ -104,7 +105,8 @@ int parseArguments( int argc,
                     int *command_port,
                     int *results_port,
                     bool *paused,
-                    bool *solveLoops
+                    bool *solveLoops,
+                    bool *useHeadersInCSV
                     );
 }
 

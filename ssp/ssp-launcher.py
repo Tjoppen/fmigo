@@ -12,21 +12,23 @@ import argparse
 import psutil
 
 parser = argparse.ArgumentParser(
-    description='%s: Launch an ssp with either mpi or tpc' %sys.argv[0],
-    epilog="""epilog """
+    description='%s: Launch an SSP with either MPI or TCP' %sys.argv[0],
     )
 parser.add_argument('-d','--dry-run',
                     help='Run without starting the simulation',
                     action='store_true')
-parser.add_argument('-p','--ports',
-                    help='Ports to be used when run over tcp, default use mpi',
+parser.add_argument('-p','--ports', metavar="PORT",
+                    help='If set, run over TCP with the specified ports. If not set, use MPI (default). Use another argument or -- to separate from SSP name',
                     default=[],
                     nargs='+',
                     type=int)
-parser.add_argument('-s','--ssp',
-                    help='SSP file to be launched',
-                    type=str,
-                    required=True)
+parser.add_argument('ssp', metavar='ssp-filename',
+                    help='SSP file to be launched')
+
+parser.add_argument('args',
+                    metavar='...',
+                    help='Remaining positional arguments, passed to fmigo-master',
+                    nargs=argparse.REMAINDER)
 
 parse = parser.parse_args()
 
@@ -836,7 +838,7 @@ if __name__ == '__main__':
         args   = ['mpiexec','-np',str(len(fmus)+1),'fmigo-mpi']
         append = [fmu.path for fmu in fmus]
 
-    args += ['-t','9.9','-d','0.1','-a','-']
+    args += ['-t','9.9','-d','0.1'] + parse.args + ['-a','-']
     args += append
 
     print(" ".join(args) + " <<< " + '"' + " ".join(flatconns+flatparams) + '"')

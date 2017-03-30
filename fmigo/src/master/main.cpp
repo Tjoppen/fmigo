@@ -40,7 +40,7 @@ int columnofs;
 std::map<int, const char*> columnnames;
 #endif
 
-jm_log_level_enu_t fmigo_loglevel = jm_log_level_info;
+jm_log_level_enu_t fmigo_loglevel = jm_log_level_warning;
 
 typedef map<pair<int,fmi2_base_type_enu_t>, vector<param> > parameter_map;
 

@@ -93,7 +93,12 @@ Server::Server(string fmuPath, std::string hdf5Filename) {
     m_fmi2CallbackFunctions.allocateMemory = calloc;
     m_fmi2CallbackFunctions.freeMemory = free;
     m_fmi2CallbackFunctions.stepFinished = 0;
-    m_fmi2CallbackFunctions.componentEnvironment = 0;
+
+    //give FMU a handle to our import context
+    //this is needed for fmi2_log_forwarding() to get our loglevel
+    //this took some digging, because componentEnvironment is entirely undocumented
+    m_fmi2CallbackFunctions.componentEnvironment = m_fmi2Instance;
+
     // Load the binary (dll/so)
     jm_status_enu_t status = fmi2_import_create_dllfmu(m_fmi2Instance, fmuType, &m_fmi2CallbackFunctions);
     if (status == jm_status_error) {

@@ -1,3 +1,5 @@
+#include <fmilib.h>
+#include <stdbool.h>
 #include "gsl-interface.h"
 
 #define FMIGO_ME_SET_TIME(client) baseMaster->send(client, fmi2_import_set_time(t))

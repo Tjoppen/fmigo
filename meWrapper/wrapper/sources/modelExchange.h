@@ -1,11 +1,7 @@
 #ifndef MODELEXCHANGE_H
 #define MODELEXCHANGE_H
-#include <fmilib.h>
 #include "modelDescription.h"
-//#include "fmuTemplate.h"
 #include "modelExchangeFmiInterface.h"
-#include <stdbool.h>
-#include "gsl-interface.h"
 typedef struct TimeLoop
 {
     fmi2_real_t t_safe, dt_new, t_crossed, t_end;

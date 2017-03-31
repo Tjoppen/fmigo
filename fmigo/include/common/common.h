@@ -42,10 +42,14 @@ extern std::map<int, const char*> columnnames;
 extern jm_log_level_enu_t fmigo_loglevel ;
 
 void info(const char* fmt, ...);
-void fatal_(const char* fmt, ...);
 void error(const char* fmt, ...);
 void warning(const char* fmt, ...);
-#define fatal(fmt,args...) do{fatal_(fmt,##args);exit(1);}while(0)
+
+#ifdef WIN32
+__declspec(noreturn) void fatal(const char* fmt, ...);
+#else //assume GCC or Clang
+void fatal(const char* fmt, ...) __attribute__ ((__noreturn__));
+#endif
 
 #ifdef DEBUG
 void debug(const char* fmt, ...);

@@ -16,7 +16,7 @@ void info(const char* fmt, ...){
     }
 }
 
-void fatal_(const char* fmt, ...){
+void fatal(const char* fmt, ...){
     if (fmigo_loglevel >= ::jm_log_level_fatal) {
         va_list argptr;
         va_start(argptr, fmt);
@@ -25,6 +25,7 @@ void fatal_(const char* fmt, ...){
         fprintf(stderr,ANSI_COLOR_RESET);
         va_end(argptr);
     }
+    exit(1);
 }
 
 void error(const char*fmt,...){

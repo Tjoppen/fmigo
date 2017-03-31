@@ -9,6 +9,8 @@ SET(SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/gsl-interface.c
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/gsl-interface.h
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelExchange.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelExchange.h
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelExchangeFmiInterface.h
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelExchange_impl.h
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/wrapper.c

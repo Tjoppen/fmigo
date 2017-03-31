@@ -178,6 +178,7 @@ void Client::clientData(const char* data, long size){
     case type_fmi2_import_new_discrete_states_res:{
 
         fmi2_import_new_discrete_states_res r; r.ParseFromArray(data, size);
+#ifdef DEBUG
         ::fmi2_event_info_t eventInfo = protoEventInfoToFmi2EventInfo(r.eventinfo());
 
         debug("< fmi2_import_new_discrete_states_res(newDiscreteStatesNeeded=%d, terminateSimulation=%d, nominalsOfContinuousStatesChanged=%d, valuesOfContinuousStatusChanged=%d, nextEventTimeDefined=%d, nextEventTime=%f )\n",
@@ -188,7 +189,7 @@ void Client::clientData(const char* data, long size){
                      eventInfo.nextEventTimeDefined,
                      eventInfo.nextEventTime
                      );
-
+#endif
 
         on_fmi2_import_new_discrete_states_res(r.eventinfo());
 

@@ -446,8 +446,13 @@ class SystemStructure:
                 if 'FmiGo' in schemas:
                     schemas['FmiGo'].assertValid(annotation[0])
 
-                self.timestep = float(get_attrib(annotation[0], 'timestep'))
-                self.duration = float(get_attrib(annotation[0], 'duration'))
+                timestep = get_attrib(annotation[0], 'timestep', '')
+                if len(timestep) > 0:
+                    self.timestep = float(timestep)
+
+                duration = get_attrib(annotation[0], 'duration', '')
+                if len(duration) > 0:
+                    self.duration = float(duration)
 
                 # We might do this later
                 #for arg in find_elements(annotation, 'fmigo:MasterArguments', 'fmigo:arg')[1]:

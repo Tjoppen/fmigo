@@ -146,25 +146,29 @@ void wrapper_init(state_t *s)  {
   free(dir);
   free(m_resourcePath);
   free(m_fmuPath);
-  fprintf(stderr, "wrapper m_fmi2Callback.logger %p \n",&wrapper.m_fmi2CallbackFunctions.logger);
-  fprintf(stderr, "wrapper m_fmi2instance %p \n",wrapper.m_fmi2Instance);
-    // FMI callback functions
-  const fmi2CallbackFunctions m_fmi2CallbackFunctions = {testLogger, calloc, free, 0, NULL};
-  wrapper.m_fmi2Component = fmi2Instantiate(m_instanceName, fmi2_fmu_kind_me, MODEL_GUID, "", &m_fmi2CallbackFunctions, 0, 0);
-  fprintf(stderr, "wrapper m_fmi2instance %p \n",wrapper.m_fmi2Instance);
-  fprintf(stderr, "wrapper m_fmi2Callback.logger %p \n",&wrapper.m_fmi2CallbackFunctions.logger);
+
+ fmi2Status status = fmi2_import_instantiate(wrapper.m_fmi2Instance , m_instanceName, fmi2_fmu_kind_me, m_resourcePath, 0);
+  if(status == fmi2Error){
+      fprintf(stderr,"Wrapper: instatiate faild\n");
+      exit(1);
+  }
 
   //setup_experiment
-  fmi2Status status = fmi2SetupExperiment(wrapper.m_fmi2Component, true, 1e-6, 0, false, 0) ;
+  status = fmi2_import_setup_experiment(wrapper.m_fmi2Instance, true, 1e-6, 0, false, 0) ;
   if(status == fmi2Error){
       fprintf(stderr,"Wrapper: setup Experiment faild\n");
       exit(1);
   }
-  status = fmi2EnterInitializationMode(wrapper.m_fmi2Component) ;
+
+  status = fmi2_import_enter_initialization_mode(wrapper.m_fmi2Instance) ;
   if(status == fmi2Error){
       fprintf(stderr,"Wrapper: enter initialization mode faild\n");
       exit(1);
   }
   prepare();
-  //status = fmi2ExitInitializationMode(wrapper.m_fmi2Instance);
+  status = fmi2_import_exit_initialization_mode(wrapper.m_fmi2Instance);
+  if(status == fmi2Error){
+      fprintf(stderr,"Wrapper: exit initialization mode faild\n");
+      exit(1);
+  }
 }

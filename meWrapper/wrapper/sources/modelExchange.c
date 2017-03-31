@@ -44,13 +44,13 @@ static int fmu_function(double t, const double x[], double dxdt[], void* params)
     ++p->count; /* count function evaluations */
     if(p->stateEvent)return GSL_SUCCESS;
 
-    fmi2SetTime(wrapper.m_fmi2Instance,t);
-    fmi2SetContinuousStates(wrapper.m_fmi2Instance,x,p->nx);
+    fmi2_import_set_time(wrapper.m_fmi2Instance,t);
+    fmi2_import_set_continuous_states(wrapper.m_fmi2Instance,x,p->nx);
 
-    fmi2GetDerivatives(wrapper.m_fmi2Instance,dxdt,p->nx);
+    fmi2_import_get_derivatives(wrapper.m_fmi2Instance,dxdt,p->nx);
 
     if(p->ni){
-        fmi2GetEventIndicators(wrapper.m_fmi2Instance,p->ei,p->ni);
+        fmi2_import_get_event_indicators(wrapper.m_fmi2Instance,p->ei,p->ni);
         if(past_event(p->ei,p->ei_backup,p->ni)){
             p->stateEvent = true;
             p->t_past = t;
@@ -121,15 +121,14 @@ void init_fmu_model(fmu_model *m){
     p->backup.h = 0;
 
     // FAILS HERE
-    //fprintf(stderr,"fmu_func: %p\n",fmu_function);
-    //m->model->function = fmu_function;
+    m->model->function = fmu_function;
     m->model->jacobian = NULL;
     m->model->post_step = NULL;
     m->model->pre_step = NULL;
     m->model->free = cgsl_model_default_free;//freeFMUModel;
 
     // FAILS HERE
-    //fmi2_status_t status = fmi2GetContinuousStates(wrapper.m_fmi2Instance, m->model->x, m->model->n_variables);
+    fmi2_status_t status = fmi2_import_get_continuous_states(wrapper.m_fmi2Instance, m->model->x, m->model->n_variables);
 
     memcpy(m->model->x_backup,m->model->x,m->model->n_variables);
 }
@@ -287,22 +286,23 @@ void stepToEvent(cgsl_simulation *sim){
 void newDiscreteStates(){
     fmu_parameters* p = get_p((fmu_model*)&m_sim.model);
     // start at a new state
-    //p->FMIGO_ME_ENTER_EVENT_MODE(m_clients);
-    //fmi2EnterEventMode(wrapper.m_fmi2Instance);
+    fmi2_import_enter_event_mode(wrapper.m_fmi2Instance);
     // todo loop until newDiscreteStatesNeeded == false
 
-    p->eventInfo.newDiscreteStatesNeeded = true;
-    while(p->eventInfo.newDiscreteStatesNeeded){
-        //fmi2NewDiscreteStates(wrapper.m_fmi2Instance,&p->eventInfo);
-        if(p->eventInfo.terminateSimulation){
+    fmi2_event_info_t eventInfo;
+    eventInfo.newDiscreteStatesNeeded = true;
+
+    while(eventInfo.newDiscreteStatesNeeded){
+        fmi2_import_new_discrete_states(wrapper.m_fmi2Instance,&eventInfo);
+        if(eventInfo.terminateSimulation){
                 fprintf(stderr,"modelExchange.c: terminated simulation\n");
                 exit(1);
         }
     }
 
-    fmi2EnterContinuousTimeMode(wrapper.m_fmi2Instance);
+    fmi2_import_enter_continuous_time_mode(wrapper.m_fmi2Instance);
 
-    fmi2GetEventIndicators(wrapper.m_fmi2Instance,p->ei,p->ni);
+    fmi2_import_get_event_indicators(wrapper.m_fmi2Instance,p->ei,p->ni);
 
     // store the current state of all running FMUs
     storeStates(&m_sim);

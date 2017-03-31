@@ -4,7 +4,7 @@ fmigo-master \- simulate FMUs
 .SH SYNOPSIS
 .ll +8
 .B fmigo-master
-.RB [ " \-xrlvqhtcdsopfmgwC5FNMazZL " ]
+.RB [ " \-xrlvqhtcdsopfmgwC5NMazZLH " ]
 [
 .I "URLs \&..."
 ]
@@ -255,7 +255,7 @@ Default is no strong connections. Specifying strong connections is incompatible 
 Timestep size. Default is 0.1.
 .TP
 .B \-f [OUTFORMAT]
-Output file format. Currently only "csv" is supported, and it is also the default.
+Output file format. Can be "csv" (default) or "tikz". Use -H to print header with CSV output. TikZ output always uses a header.
 .TP
 .B \-m [METHOD]
 Stepping method. Available methods are "jacobi" (Jacobi, parallel) and "gs" (Gauss-Seidel, serial). Default is "jacobi".
@@ -272,10 +272,6 @@ End simulation time in seconds. Default is 1.0.
 .TP
 .B \-5 [HDF5FILENAME]
 Dump timing information to HDF5 file with given filename.
-.TP
-.B \-F [FIELDNAMEFILENAME]
-Dump space separated output column names in file with given name, matching the columns in the CSV output.
-This is useful for generating .ssv files for plotting with tikz.
 .TP
 .B \-M [COMPLIANCE]
 Set compliance for kinematic solver (real value, default = 0.0).
@@ -331,7 +327,10 @@ Examples:
 
     tcp://localhost:3000
     tcp://192.168.0.2:3000
- 
+.TP
+.B \-H
+Print CSV header.
+
 .SH EXAMPLES
 To run an FMU simulation from time 0 to 5 with timestep 0.01:
     fmigo-master -t 5 -d 0.01 tcp://localhost:3000

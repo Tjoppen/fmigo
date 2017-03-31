@@ -45,7 +45,7 @@ void info(const char* fmt, ...);
 void fatal_(const char* fmt, ...);
 void error(const char* fmt, ...);
 void warning(const char* fmt, ...);
-#define fatal(fmt,args...){fatal_(fmt,##args);exit(1);}
+#define fatal(fmt,args...) do{fatal_(fmt,##args);exit(1);}while(0)
 
 #ifdef DEBUG
 void debug(const char* fmt, ...);

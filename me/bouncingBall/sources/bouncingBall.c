@@ -44,6 +44,7 @@ static void eventUpdate(ModelInstance *comp, fmi2EventInfo *eventInfo) {
         md->v = - md->e * md->v;
         eventInfo->valuesOfContinuousStatesChanged = fmi2True;
     }
+    fprintf(stderr,"eventUpdate for bouncingBall\n");
     eventInfo->newDiscreteStatesNeeded           = fmi2False;
     eventInfo->terminateSimulation               = fmi2False;
     eventInfo->nominalsOfContinuousStatesChanged = fmi2False;

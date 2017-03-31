@@ -773,14 +773,15 @@ if __name__ == '__main__':
     #read connections and parameters from stdin, since they can be quite many
     #stdin because we want to avoid leaving useless files on the filesystem
     args = ['mpiexec','-np',str(len(fmus)+1),'fmigo-mpi','-t','9.9','-d','0.1','-a','-'] + [fmu.path for fmu in fmus]
-    print(" ".join(args) + " <<< " + '"' + " ".join(flatconns+flatparams) + '"')
+    pipeinput = " ".join(flatconns+flatparams)
+    print(" ".join(args) + (' <<< "%s"' % pipeinput))
 
     if dry_run:
         ret = 0
     else:
         #pipe arguments to master, leave stdout and stderr alone
         p = subprocess.Popen(args, stdin=subprocess.PIPE)
-        p.communicate(input=" ".join(flatconns+flatparams).encode('utf-8'))
+        p.communicate(input=pipeinput.encode('utf-8'))
         ret = p.returncode  #ret can be None
 
     if ret == 0:

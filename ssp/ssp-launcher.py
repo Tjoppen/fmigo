@@ -8,6 +8,29 @@ import glob
 from lxml import etree
 import subprocess
 import shutil
+import argparse
+import psutil
+
+parser = argparse.ArgumentParser(
+    description='%s: Launch an SSP with either MPI or TCP' %sys.argv[0],
+    )
+parser.add_argument('-d','--dry-run',
+                    help='Run without starting the simulation',
+                    action='store_true')
+parser.add_argument('-p','--ports', metavar="PORT",
+                    help='If set, run over TCP with the specified ports. If not set, use MPI (default). Use another argument or -- to separate from SSP name',
+                    default=[],
+                    nargs='+',
+                    type=int)
+parser.add_argument('ssp', metavar='ssp-filename',
+                    help='SSP file to be launched')
+
+parser.add_argument('args',
+                    metavar='...',
+                    help='Remaining positional arguments, passed to fmigo-master',
+                    nargs=argparse.REMAINDER)
+
+parse = parser.parse_args()
 
 RESOURCE_DIR='resources'
 SSD_NAME='SystemStructure.ssd'
@@ -781,31 +804,56 @@ def parse_ssp(ssp_path, cleanup_zip = True):
 
 if __name__ == '__main__':
 
-    if len(sys.argv) < 2:
-        #TODO: we probably want to know which of TCP and MPI is wanted
-        print('USAGE: %s [--dry-run] ssp-file' % sys.argv[0])
-        exit(1)
+    flatconns, flatparams, unzipped_ssp, d = parse_ssp(parse.ssp, False)
 
+    #If we are working with TCP, create tcp://localhost:port for all given local hosts
+    if len(parse.ports):
 
-    dry_run = sys.argv[1] == '--dry-run'
+        if len(fmus) > len(parse.ports):
+            print('Error: Not given one port for each FMU, expected %d' %len(fmus))
+            exit(1)
+        elif len(fmus) < len(parse.ports):
+            print('Error: Given too many ports, expected %d' %len(fmus))
+            exit(1)
 
-    if dry_run and len(sys.argv) < 3:
-        print('ERROR: missing ssp-name')
-        exit(1)
+        #list all tcp ports that are not available
+        tcpportsinuse = []
+        for con in psutil.net_connections():
+            tcpportsinuse.append(con.laddr[1])
 
-    flatconns, flatparams, unzipped_ssp, d = parse_ssp(sys.argv[-1], False)
+        tcpIPport = []
+        for i in range(len(fmus)):
+            if parse.ports[i] in tcpportsinuse:
+                print('%s: port %d already in use' %(sys.argv[0], parse.ports[i]))
+                exit(1)
+            tcpIPport.append("tcp://localhost:" + str(parse.ports[i]))
 
-    #read connections and parameters from stdin, since they can be quite many
-    #stdin because we want to avoid leaving useless files on the filesystem
-    args = ['mpiexec','-np',str(len(fmus)+1),'fmigo-mpi','-t','9.9','-d','0.1','-a','-'] + [fmu.path for fmu in fmus]
-    print(" ".join(args) + " <<< " + '"' + " ".join(flatconns+flatparams) + '"')
+        # Everything looks OK; start servers
+        for i in range(len(fmus)):
+            subprocess.Popen(['fmigo-server','-p', str(parse.ports[i]), fmus[i].path])
 
-    if dry_run:
+        #read connections and parameters from stdin, since they can be quite many
+        #stdin because we want to avoid leaving useless files on the filesystem
+        args   = ['fmigo-master']
+        append = tcpIPport
+    else:
+        #read connections and parameters from stdin, since they can be quite many
+        #stdin because we want to avoid leaving useless files on the filesystem
+        args   = ['mpiexec','-np',str(len(fmus)+1),'fmigo-mpi']
+        append = [fmu.path for fmu in fmus]
+
+    args += ['-t','9.9','-d','0.1'] + parse.args + ['-a','-']
+    args += append
+
+    pipeinput = " ".join(flatconns+flatparams)
+    print(" ".join(args) + (' <<< "%s"' % pipeinput))
+
+    if parse.dry_run:
         ret = 0
     else:
         #pipe arguments to master, leave stdout and stderr alone
         p = subprocess.Popen(args, stdin=subprocess.PIPE)
-        p.communicate(input=" ".join(flatconns).encode('utf-8'))
+        p.communicate(input=pipeinput.encode('utf-8'))
         ret = p.returncode  #ret can be None
 
     if ret == 0:

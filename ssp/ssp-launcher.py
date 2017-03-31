@@ -881,6 +881,10 @@ def parse_ssp(ssp_path, cleanup_zip = True):
             # NOTE: We could resolve variables using mds[] here, but fmigo now has
             # support for looking variables up based on name, so there's no need to
             # TODO: Non-holonomic shaft constraints
+            if not shaft['holonomic']:
+                print('ERROR: ShaftConstraints must be holonomic for now')
+                exit(1)
+
             conn += [escape(key) for key in pc['vars']]
 
         kinematicconns.extend(['-C', ','.join(conn)])

@@ -31,6 +31,18 @@ extern int columnofs;
 extern std::map<int, const char*> columnnames;
 #define MAX_TIME_COLS 20    //for estimating the size of timelog
 
+//measures and logs elapsed time in microseconds
+#define PRINT_HDF5_DELTA(label) do {\
+        gettimeofday(&tl2, NULL);\
+        int dt = 1000000*(tl2.tv_sec-tl1.tv_sec) + tl2.tv_usec-tl1.tv_usec;\
+        timelog.push_back(dt);\
+        columnnames[columnofs++] = label;\
+        gettimeofday(&tl1, NULL);\
+    } while (0)
+#else
+#define PRINT_HDF5_DELTA(label)
+#endif
+
 #define ANSI_COLOR_RED     "\x1b[31m"
 #define ANSI_COLOR_GREEN   "\x1b[32m"
 #define ANSI_COLOR_YELLOW  "\x1b[33m"
@@ -54,19 +66,8 @@ void fatal(const char* fmt, ...) __attribute__ ((__noreturn__));
 #ifdef DEBUG
 void debug(const char* fmt, ...);
 #else
-#define debug(fmt, ...)
-#endif
-
-//measures and logs elapsed time in microseconds
-#define PRINT_HDF5_DELTA(label) do {\
-        gettimeofday(&tl2, NULL);\
-        int dt = 1000000*(tl2.tv_sec-tl1.tv_sec) + tl2.tv_usec-tl1.tv_usec;\
-        timelog.push_back(dt);\
-        columnnames[columnofs++] = label;\
-        gettimeofday(&tl1, NULL);\
-    } while (0)
-#else
-#define PRINT_HDF5_DELTA(label)
+//use do{}while(0) construct to consume the semicolon the user puts after debug();
+#define debug(fmt, ...) do{}while(0)
 #endif
 
 namespace common {

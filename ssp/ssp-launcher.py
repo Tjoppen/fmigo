@@ -845,14 +845,15 @@ if __name__ == '__main__':
     args += ['-t','9.9','-d','0.1'] + parse.args + ['-a','-']
     args += append
 
-    print(" ".join(args) + " <<< " + '"' + " ".join(flatconns+flatparams) + '"')
+    pipeinput = " ".join(flatconns+flatparams)
+    print(" ".join(args) + (' <<< "%s"' % pipeinput))
 
     if parse.dry_run:
         ret = 0
     else:
         #pipe arguments to master, leave stdout and stderr alone
         p = subprocess.Popen(args, stdin=subprocess.PIPE)
-        p.communicate(input=" ".join(flatconns).encode('utf-8'))
+        p.communicate(input=pipeinput.encode('utf-8'))
         ret = p.returncode  #ret can be None
 
     if ret == 0:

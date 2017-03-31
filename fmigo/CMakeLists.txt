@@ -42,6 +42,7 @@ SET(MASTER_SRCS
     src/master/StrongMaster.cpp
     ${FMITCP_SRCS}
     src/master/control.pb.cc
+    src/master/globals.cpp
 )
 SET(MASTER_HEADERS
     include/master/FMIClient.h
@@ -51,6 +52,7 @@ SET(MASTER_HEADERS
     include/common/common.h
     ${FMITCP_HEADERS}
     ${CMAKE_CURRENT_SOURCE_DIR}/src/master/control.pb.h
+    include/master/globals.h
 )
 
 if(WIN32)

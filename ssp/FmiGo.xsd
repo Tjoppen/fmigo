@@ -72,8 +72,4 @@
     <xs:attribute name="holonomic" type="xs:boolean" use="required"/>
   </xs:complexType>
 
-  <!--xs:element name="arg">
-    <xs:simpleContent type="xs:string"/>
-  </xs:element-->
-
 </xs:schema>

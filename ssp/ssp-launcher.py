@@ -438,7 +438,6 @@ class SystemStructure:
 
         self.timestep = default_timestep
         self.duration = default_duration
-        #self.arguments = []
 
         annotations = find_elements(root, 'ssd:Annotations', 'ssd:Annotation')
         for annotation in annotations[1]:

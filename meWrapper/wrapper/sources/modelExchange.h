@@ -38,13 +38,12 @@ typedef struct wrapper{
     fmi_import_context_t* m_context;
     fmi_version_enu_t m_version;
     fmi2_import_t* m_fmi2Instance;
+    fmi2Component m_fmi2Component;
     //fmi2_callback_functions_t m_fmi2CallbackFunctions;
     fmi2CallbackFunctions m_fmi2CallbackFunctions;
     fmi2_import_variable_list_t *m_fmi2Variables, *m_fmi2Outputs;
     jm_callbacks m_jmCallbacks;
 }Wrapper;
-
-Wrapper wrapper;
 
     void runIteration(double t, double dt);
 
@@ -68,15 +67,6 @@ Wrapper wrapper;
      */
     void init_fmu_model(fmu_model *m);
 
-#define STATIC_GET_CLIENT_OFFSET(name)                                  \
-   p->baseMaster->get_storage().get_offset(client->getId(), STORAGE::name)
-#define STATIC_SET_(name, name2, data)                                       \
-    p->baseMaster->send(client, fmi2_import_set_##name##_##name2(     \
-                                                       data + STATIC_GET_CLIENT_OFFSET(name2), \
-                                                       client->getNumContinuousStates()));
-#define STATIC_GET_(name)                                               \
-    p->baseMaster->send(client, fmi2_import_get_##name((int)client->getNumContinuousStates()))
-
     /** restoreStates
      *  restores all values needed by the simulations to restart
      *  from a known safe time.
@@ -94,7 +84,7 @@ Wrapper wrapper;
     void storeStates(cgsl_simulation *sim);
 
     /** hasStateEvent:
-     ** returns true if at least one simulation has an event
+     *  returns true if at least one simulation has an event
      *
      *  @param sim The simulation
      */

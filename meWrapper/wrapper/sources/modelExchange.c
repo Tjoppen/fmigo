@@ -1,7 +1,10 @@
 #include "modelExchange.h"
+//#include "include/fmi2.h"
 #include "math.h"
 #ifndef max
 #define max(a,b) ((a>b) ? a : b)
+#endif
+#ifndef min
 #define min(a,b) ((a<b) ? a : b)
 #endif
 /* //#define get_storage m_baseMaster->get_storage */
@@ -13,6 +16,8 @@
 inline fmu_parameters* get_p(fmu_model* m){
     return (fmu_parameters*)(m->model->get_model_parameters(m->model));
 }
+
+extern Wrapper wrapper;
 
 bool past_event(fmi2Real* a, fmi2Real* b, int i){
     for(;i>0;--i){
@@ -59,7 +64,6 @@ static int fmu_function(double t, const double x[], double dxdt[], void* params)
     return GSL_SUCCESS;
 }
 
-
 /* /\** allocate Memory */
 /*  *  Allocates memory needed by the fmu_model */
 /*  * */
@@ -68,7 +72,11 @@ static int fmu_function(double t, const double x[], double dxdt[], void* params)
 /*  *\/ */
 void allocateMemory(fmu_model *m){
     m->model = (cgsl_model*)calloc(1,sizeof(cgsl_model));
+    fprintf(stderr,"allocate: %p\n",m);
+    fprintf(stderr,"allocate: %p\n",&wrapper);
+    fprintf(stderr,"allocate: %p\n",wrapper.m_fmi2Instance);
     m->model->n_variables = fmi2_import_get_number_of_continuous_states(wrapper.m_fmi2Instance);;
+    fprintf(stderr,"allocate: got number of continiuous states\n");
     if(m->model->n_variables == 0){
         fprintf(stderr,"ModelExchangeStepper nothing to integrate\n");
         exit(0);
@@ -97,7 +105,9 @@ void allocateMemory(fmu_model *m){
 /*  *\/ */
 
 void init_fmu_model(fmu_model *m){
+    fprintf(stderr,"init_fmu_model %p\n",m);
     allocateMemory(m);
+    fprintf(stderr,"init here\n");
     m->model->parameters = (void*)&m_p;
     m->model->get_model_parameters = get_model_parameters;
     fmu_parameters* p = get_p(m);
@@ -110,12 +120,15 @@ void init_fmu_model(fmu_model *m){
     p->backup.t = 0;
     p->backup.h = 0;
 
+    // FAILS HERE
+    //fprintf(stderr,"fmu_func: %p\n",fmu_function);
     //m->model->function = fmu_function;
     m->model->jacobian = NULL;
     m->model->post_step = NULL;
     m->model->pre_step = NULL;
     m->model->free = cgsl_model_default_free;//freeFMUModel;
 
+    // FAILS HERE
     //fmi2_status_t status = fmi2GetContinuousStates(wrapper.m_fmi2Instance, m->model->x, m->model->n_variables);
 
     memcpy(m->model->x_backup,m->model->x,m->model->n_variables);
@@ -128,6 +141,7 @@ void init_fmu_model(fmu_model *m){
 void prepare() {
     fprintf(stderr,"prepare \n");
     init_fmu_model(&m_model);
+    fprintf(stderr,"cgsl_init_simulation \n");
     // set up a gsl_simulation for each client
     fmu_parameters* p = get_p(&m_model);
 
@@ -279,7 +293,7 @@ void newDiscreteStates(){
 
     p->eventInfo.newDiscreteStatesNeeded = true;
     while(p->eventInfo.newDiscreteStatesNeeded){
-        //   fmi2NewDiscreteStates(wrapper.m_fmi2Instance,&p->eventInfo);
+        //fmi2NewDiscreteStates(wrapper.m_fmi2Instance,&p->eventInfo);
         if(p->eventInfo.terminateSimulation){
                 fprintf(stderr,"modelExchange.c: terminated simulation\n");
                 exit(1);

@@ -32,24 +32,13 @@
                   causality="local" variability="continuous" initial="exact">
     <Real start="1"/>
   </ScalarVariable>
-  <ScalarVariable name="unziped"
-                  valueReference="1"
-                  description=""
-                  causality="parameter">
-      <String size="256" start="helloWorld"/>
-  </ScalarVariable>
   <ScalarVariable name="fmu"
                   valueReference="2"
                   description=""
                   causality="parameter">
       <String size="56" start="sources/bouncingBall.fmu"/>
   </ScalarVariable>
-
   </ModelVariables>
-
-
-
-
   <ModelStructure>
     <Outputs>
     </Outputs>

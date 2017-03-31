@@ -4,7 +4,6 @@
 #ifndef USE_MPI
 #include <zmq.hpp>
 #endif
-#include "Logger.h"
 #include "fmitcp.pb.h"
 #include <string>
 #include <deque>
@@ -20,9 +19,6 @@ namespace fmitcp {
     class Client {
 
     protected:
-
-        /// For logging
-        Logger m_logger;
 
     private:
         size_t m_pendingRequests;
@@ -41,8 +37,6 @@ namespace fmitcp {
         Client(zmq::context_t &context);
 #endif
         virtual ~Client();
-
-        Logger * getLogger();
 
 #ifndef USE_MPI
         /// Connect the client to a server

@@ -13,7 +13,6 @@
 #endif
 #endif
 
-#include <string>
 #include <vector>
 #include <deque>
 
@@ -42,6 +41,33 @@ extern std::map<int, const char*> columnnames;
     } while (0)
 #else
 #define PRINT_HDF5_DELTA(label)
+#endif
+
+#define ANSI_COLOR_RED     "\x1b[31m"
+#define ANSI_COLOR_GREEN   "\x1b[32m"
+#define ANSI_COLOR_YELLOW  "\x1b[33m"
+#define ANSI_COLOR_BLUE    "\x1b[34m"
+#define ANSI_COLOR_MAGENTA "\x1b[35m"
+#define ANSI_COLOR_CYAN    "\x1b[36m"
+#define ANSI_COLOR_RESET   "\x1b[0m"
+
+extern jm_log_level_enu_t fmigo_loglevel ;
+
+void info(const char* fmt, ...);
+void error(const char* fmt, ...);
+void warning(const char* fmt, ...);
+
+#ifdef WIN32
+__declspec(noreturn) void fatal(const char* fmt, ...);
+#else //assume GCC or Clang
+void fatal(const char* fmt, ...) __attribute__ ((__noreturn__));
+#endif
+
+#ifdef DEBUG
+void debug(const char* fmt, ...);
+#else
+//use do{}while(0) construct to consume the semicolon the user puts after debug();
+#define debug(fmt, ...) do{}while(0)
 #endif
 
 namespace common {

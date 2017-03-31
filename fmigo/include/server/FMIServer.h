@@ -1,4 +1,4 @@
-/* 
+/*
  * File:   fmi-server.h
  * Author: thardin
  *
@@ -13,14 +13,14 @@
 #include <stdlib.h>
 #include <string>
 #include <fmitcp/Server.h>
-#include <fmitcp/common.h>
+#include <fmitcp/fmitcp-common.h>
 #include <zmq.hpp>
 
 // Define own server
 class FMIServer : public fmitcp::Server {
 public:
-  FMIServer(string fmuPath, bool debugLogging, jm_log_level_enu_t logLevel, string hdf5Filename)
-   : Server(fmuPath, debugLogging, logLevel, hdf5Filename) {}
+  FMIServer(string fmuPath, string hdf5Filename)
+   : Server(fmuPath, hdf5Filename) {}
   ~FMIServer() {};
   void onClientConnect() {
     printf("MyFMIServer::onConnect\n");
@@ -37,4 +37,3 @@ public:
 };
 
 #endif	/* FMI_SERVER_H */
-

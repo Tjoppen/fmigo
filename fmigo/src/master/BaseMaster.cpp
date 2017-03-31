@@ -46,8 +46,7 @@ int BaseMaster::loop_residual_f(const gsl_vector *x, void *params, gsl_vector *f
   }
   if (k != (int)x->size) {
     //this shouldn't happen
-    fprintf(stderr, "loop solver ordering logic inconsistent\n");
-    exit(1);
+    fatal("loop solver ordering logic inconsistent\n");
   }
 
   //set the x's we got and see what kind of inputs that gives rise to
@@ -70,21 +69,20 @@ int BaseMaster::loop_residual_f(const gsl_vector *x, void *params, gsl_vector *f
           //residual = A*f(x) - x = scaled output - input
           double r = mvs1[j].r - gsl_vector_get(x, k);
           //rtot += r*r;
-          //fprintf(stderr, "r[%i] = %-.9f - %-.9f = %-.9f\n", k, mvs1[j].r, gsl_vector_get(x, k), r);
-          //if (k>0)fprintf(stderr, ",");
-          //fprintf(stderr, "%-.12f", r);
+          //debug("r[%i] = %-.9f - %-.9f = %-.9f\n", k, mvs1[j].r, gsl_vector_get(x, k), r);
+          //if (k>0) debug( ",");
+          //debug("%-.12f", r);
           gsl_vector_set(f, k, r);
         }
       } else {
         //check that all non-real inputs remain unchanged
         if (it2.second != master->initialNonReals[it.first][it2.first]) {
-          fprintf(stderr, "non-real input changed in loop solver. unable to guarantee convergence\n");
-          exit(1);
+          fatal("non-real input changed in loop solver. unable to guarantee convergence\n");
         }
       }
     }
   }
-  //fprintf(stderr, "\nrtot = %.9f\n", rtot);
+  //debug("\nrtot = %.9f\n", rtot);
 
   return GSL_SUCCESS;
 }
@@ -113,7 +111,7 @@ void BaseMaster::solveLoops() {
     return;
   }
 
-  //fprintf(stderr, "n=%zu reals\n", n);
+  //debug("n=%zu reals\n", n);
 
 #ifdef USE_GPL
   //use GSL if GPL is enabled
@@ -124,7 +122,7 @@ void BaseMaster::solveLoops() {
   int ofs = 0;
   for (auto it : initialNonReals) {
       for (auto multivalue : it.second[fmi2_base_type_real].second) {
-          //fprintf(stderr, "x0[%i] = %f\n", ofs, multivalue.r);
+          //debug("x0[%i] = %f\n", ofs, multivalue.r);
           gsl_vector_set(x0, ofs++, multivalue.r);
       }
   }
@@ -141,24 +139,22 @@ void BaseMaster::solveLoops() {
       status = gsl_multiroot_test_residual(s->f, 1e-7);
   } while (status == GSL_CONTINUE && ++i < imax);
 
-  //fprintf(stderr, "status = %i\n", status);
+  //debug("status = %i\n", status);
 
   if (i >= imax || status != GSL_SUCCESS) {
-      fprintf(stderr, "Can't solve the loop, giving up!\n");
-      exit(1);
+      fatal("Can't solve the loop, giving up!\n");
   }
 
-  /*fprintf(stderr, "solution (%i iterations):\n", i);
+  /*debug("solution (%i iterations):\n", i);
   gsl_vector *root = gsl_multiroot_fsolver_root(s);
   for (size_t i = 0; i < root->size; i++) {
-    fprintf(stderr, "root[%zu] = %f\n", i, gsl_vector_get(root, i));
+     debug("root[%zu] = %f\n", i, gsl_vector_get(root, i));
   }*/
 
   gsl_multiroot_fsolver_free(s);
   gsl_vector_free(x0);
 #else
-  fprintf(stderr, "Can't solve algebraic loops without GPL at the moment\n");
-  exit(1);
+  fatal("Can't solve algebraic loops without GPL at the moment\n");
 #endif
 }
 
@@ -181,8 +177,7 @@ void BaseMaster::wait() {
         std::string str = mpi_recv_string(MPI_ANY_SOURCE, &rank, NULL);
 
         if (rank < 1 || rank > (int)m_clients.size()) {
-            fprintf(stderr, "MPI rank out of bounds: %i\n", rank);
-            exit(1);
+            fatal("MPI rank out of bounds: %i\n", rank);
         }
 
         m_clients[rank-1]->Client::clientData(str.c_str(), str.length());
@@ -202,24 +197,23 @@ void BaseMaster::wait() {
 
     int n = zmq::poll(items.data(), m_clients.size(), ZMQ_POLL_MSEC*1000);
     if (!n) {
-        fprintf(stderr, "polled %li sockets, %li pending (%i/%i), no new events\n", m_clients.size(), getNumPendingRequests(), numPolls, maxPolls);
+        debug("polled %li sockets, %li pending (%i/%i), no new events\n", m_clients.size(), getNumPendingRequests(), numPolls, maxPolls);
     }
     for (size_t x = 0; x < m_clients.size(); x++) {
         if (items[x].revents & ZMQ_POLLIN) {
             zmq::message_t msg;
             m_clients[x]->m_socket.recv(&msg);
-            //fprintf(stderr, "Got message of size %li\n", msg.size());
+            //debug("Got message of size %li\n", msg.size());
             m_clients[x]->Client::clientData(static_cast<char*>(msg.data()), msg.size());
         }
     }
     if (getNumPendingRequests() > 0) {
         if (++numPolls >= maxPolls) {
             //Jenkins caught something like this, I think
-            fprintf(stderr, "Exceeded max number of polls (%i) - stuck?\n", maxPolls);
-            exit(1);
+            fatal("Exceeded max number of polls (%i) - stuck?\n", maxPolls);
         }
     } else {
-        //fprintf(stderr, "wait() done\n");
+        //debug("wait() done\n");
     }
 #endif
     }

@@ -1,6 +1,5 @@
 #ifndef MODELEXCHANGE_H
 #define MODELEXCHANGE_H
-#include "modelDescription.h"
 #include "modelExchangeFmiInterface.h"
 typedef struct TimeLoop
 {
@@ -12,14 +11,14 @@ typedef struct Backup
     double h;
     double *dydt;
     unsigned long failed_steps;
-    fmi2EventInfo eventInfo;
+    fmi2_event_info_t eventInfo;
 }Backup;
 typedef struct fmu_parameters{
     int nx;
     int ni;
 
-    fmi2Real* ei;
-    fmi2Real* ei_backup;
+    fmi2_real_t* ei;
+    fmi2_real_t* ei_backup;
     fmi2_import_t* fmi2Instance;
     double t_ok;
     double t_past;
@@ -34,6 +33,7 @@ typedef struct fmu_model{
 
 fmi2_import_t** getfmi2Instance();
 double* getContinuousStates();
+void meGetReal(const fmi2_value_reference_t* vr, int nvr,  fmi2_real_t* value);
 
 void setFmi2Instance(fmi2_import_t* instance);
 

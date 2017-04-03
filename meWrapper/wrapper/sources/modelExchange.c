@@ -24,13 +24,16 @@ fmi2_import_t** getfmi2Instance(){
 double* getContinuousStates(){
     return m_sim.model->x;
 }
+void meGetReal(const fmi2_value_reference_t* vr, int nvr,  fmi2_real_t* value){
+    fmi2_import_get_real(MEFMU,vr,nvr,value);
+}
 
 inline fmu_parameters* get_p(fmu_model* m){
     return (fmu_parameters*)(m->model->parameters);
 }
 
 void getSafeAndCrossed();
-bool past_event(fmi2Real* a, fmi2Real* b, int i){
+bool past_event(fmi2_real_t* a, fmi2_real_t* b, int i){
     for(;i>0;--i){
         if(signbit( a[i] ) != signbit( b[i] ))
             return true;
@@ -95,8 +98,8 @@ void allocateMemory(fmu_model *m){
     p->nx = m->model->n_variables;
 
     p->ni = fmi2_import_get_number_of_event_indicators(MEFMU);
-    p->ei             = (fmi2Real*)calloc(p->ni, sizeof(fmi2_real_t));
-    p->ei_backup      = (fmi2Real*)calloc(p->ni, sizeof(fmi2_real_t));
+    p->ei             = (fmi2_real_t*)calloc(p->ni, sizeof(fmi2_real_t));
+    p->ei_backup      = (fmi2_real_t*)calloc(p->ni, sizeof(fmi2_real_t));
     m->model->x        = (double*)calloc(m->model->n_variables, sizeof(double));
     m->model->x_backup = (double*)calloc(m->model->n_variables, sizeof(double));
     p->backup.dydt    = (double*)calloc(m->model->n_variables, sizeof(double));

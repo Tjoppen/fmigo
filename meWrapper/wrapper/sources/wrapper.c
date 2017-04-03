@@ -2,7 +2,7 @@
 #define SIMULATION_INIT wrapper_init
 #include <unistd.h>
 #include <fmilib.h>
-#include "modelExchange.h"
+//#include "modelDescription_me.h"
 #include "modelDescription.h"
 #include "fmuTemplate.h"
 /* typedef struct wrapper{ */

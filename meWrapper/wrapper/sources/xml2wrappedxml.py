@@ -16,7 +16,7 @@ if len(sys.argv) < 2:
     exit(1)
 
 # Parse xml file
-tree = e.parse(sys.argv[1])
+tree = e.parse(sys.argv[1] + 'modelDescription.xml')
 root = tree.getroot()
 
 # Get FMU version
@@ -58,6 +58,7 @@ print('''<?xml version="1.0" encoding="UTF-8"?>
 ))
 SV = root.find('ModelVariables').findall('ScalarVariable')
 print('  <ModelVariables>')
+vrs = []
 for sv in SV:
     type = 'Real'
     start = sv.find(type)
@@ -76,15 +77,25 @@ for sv in SV:
 
         error(start)
     if 'derivative' not in start.attrib:
+        vrs +=[sv.get('valueReference')]
         print('''    <ScalarVariable%s>'''% (''.join(['\n       '+name+'="' + sv.attrib[name]+'"' for name in sv.attrib])))
 
-        vor = [s + '="' + start.attrib[s]+'"' for s in start.attrib]
         print('      <%s %s/>' %( type,
                            ' '.join([s + '="' + start.attrib[s]+'"' for s in start.attrib])
         ))
 
         print('''    </ScalarVariable>
 ''')
+vr = 0
+while vr in vrs: vr +=1
+print('''
+    <ScalarVariable
+        name="fmu"
+        valueReference="%d"
+        description=""
+        causality="parameter">
+      <String size="56" start="%s"/>
+    </ScalarVariable>'''%(vr, 'sources/*.fmu'))
 
 outputs = root.find('ModelStructure').find('Outputs')
 print('''

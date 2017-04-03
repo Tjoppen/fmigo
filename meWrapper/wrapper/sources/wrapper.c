@@ -83,7 +83,8 @@ void wrapper_init(state_t *s)  {
     m_context = fmi_import_allocate_context(&m_jmCallbacks);
     // unzip the real fmu
     m_version = fmi_import_get_fmi_version(m_context, m_fmuPath, dir);
-    fprintf(stderr,"got version %d\n",m_version);
+    fprintf(stderr,"%s\n",m_fmuPath);
+    fprintf(stderr,"wrapper: got version %d\n",m_version);
 
     if ((m_version <= fmi_version_unknown_enu) || (m_version >= fmi_version_unsupported_enu)) {
 

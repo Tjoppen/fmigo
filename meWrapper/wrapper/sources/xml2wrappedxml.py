@@ -16,7 +16,7 @@ if len(sys.argv) < 2:
     exit(1)
 
 # Parse xml file
-tree = e.parse(sys.argv[1] + 'modelDescription.xml')
+tree = e.parse(sys.argv[1])
 root = tree.getroot()
 
 # Get FMU version
@@ -26,6 +26,7 @@ me = root.find('ModelExchange')
 if me == None:
     error('wrapper only supports model exchange')
     exit(1)
+modelName = root.get('modelName')
 
 print('''<?xml version="1.0" encoding="UTF-8"?>
 <fmiModelDescription
@@ -51,9 +52,9 @@ print('''<?xml version="1.0" encoding="UTF-8"?>
   <DefaultExperiment startTime="0" stopTime="10" stepSize="0.1"/>
 '''%(root.get('fmiVersion'),
      root.get('description'),
-     "wrapper_"+ root.get('modelName'),
+     "wrapper_" + modelName,
      uuid.uuid4(),
-     "wrapper_"+ root.get('modelName'),
+     "wrapper_"+ modelName,
 
 ))
 SV = root.find('ModelVariables').findall('ScalarVariable')
@@ -95,7 +96,7 @@ print('''
         description=""
         causality="parameter">
       <String size="56" start="%s"/>
-    </ScalarVariable>'''%(vr, 'sources/*.fmu'))
+</ScalarVariable>'''%(vr, 'sources/' + modelName +'.fmu'))
 
 outputs = root.find('ModelStructure').find('Outputs')
 print('''

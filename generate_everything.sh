@@ -3,6 +3,8 @@ set -e
 MD2HDR="`pwd`/../fmu-builder/bin/modeldescription2header"
 GENERATOR="`pwd`/../fmu-builder/bin/cmake-generator -t `pwd`/templates/fmi2/ -i `pwd`/../FMILibrary-2.0.1/ThirdParty/FMI/default -m ${MD2HDR}"
 GENERATORME="`pwd`/../fmu-builder/bin/cmake-generator -t `pwd`/templates/fmi2/ -i `pwd`/../FMILibrary-2.0.1/ThirdParty/FMI/default -m ${MD2HDR} -f me"
+GENERATORWRAPPER="`pwd`/../umit-fmus/meWrapper/wrapper/sources/modeldescription2headerWrapper.py"
+GENERATORXML="`pwd`/../umit-fmus/meWrapper/wrapper/sources/xml2wrappedxml.py"
 
 GSLFMUS="
     gsl2/clutch2
@@ -37,6 +39,9 @@ CSFMUS="
     testfmus/loopsolvetest/sub
     testfmus/loopsolvetest/mul
     testfmus/stringtest
+"
+
+WRAPPERS="
     meWrapper/wrapper
 "
 
@@ -98,5 +103,15 @@ do
     pushd $d
         python ${MD2HDR} modelDescription.xml > sources/modelDescription.h
         python ${GENERATOR}
+    popd
+done
+
+# Wrappers
+for d in $WRAPPERS
+do
+    echo "add_subdirectory($d)" >> CMakeLists.txt
+    pushd $d
+        python ${GENERATORXML} sources/modelDescription.xml > modelDescription.xml
+        python ${GENERATORWRAPPER} modelDescription.xml > sources/modelDescription.h
     popd
 done

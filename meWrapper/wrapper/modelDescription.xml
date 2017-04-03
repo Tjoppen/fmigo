@@ -1,22 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <fmiModelDescription
     fmiVersion="2.0"
-    description="A two plates clutch with GSL integrator and
-                 piecewise linear torque model.  Either plate can be
-                 coupled to another module via force, velocity or
-                 displacements.  In case of force-velocity couplings, the
-                 position difference between this module and the coupled
-                 one is estimated by integrating the velocity difference
-                 internally."
-    modelName="wrapper"
-    guid="{6985712a-2b8e-4ebb-9b6c-05d89b0ec1c8}"
+    description="None"
+    modelName="wrapper_bouncingBall"
+    guid="c42102ef-0592-43d2-a28b-2c51126c551c"
     numberOfEventIndicators="0">
 
   <CoSimulation
-      modelIdentifier="wrapper"
-      canHandleVariableCommunicationStepSize="true"
-      canGetAndSetFMUstate="true"
-      providesDirectionalDerivative="false"/>
+    modelIdentifier="wrapper_bouncingBall"
+    canHandleVariableCommunicationStepSize="true"
+    canGetAndSetFMUstate="true"
+    providesDirectionalDerivative="false"/>
 
   <LogCategories>
     <Category name="logAll"/>
@@ -28,23 +22,65 @@
   <DefaultExperiment startTime="0" stopTime="10" stepSize="0.1"/>
 
   <ModelVariables>
-  <ScalarVariable name="h" valueReference="0" description="height, used as state"
-                  causality="local" variability="continuous" initial="exact">
-    <Real start="1"/>
-  </ScalarVariable>
-  <ScalarVariable name="fmu"
-                  valueReference="2"
-                  description=""
-                  causality="parameter">
+    <ScalarVariable
+       variability="continuous"
+       causality="local"
+       name="h"
+       valueReference="0"
+       initial="exact"
+       description="height, used as state">
+      <Real start="1"/>
+    </ScalarVariable>
+
+    <ScalarVariable
+       variability="continuous"
+       causality="local"
+       name="v"
+       valueReference="2"
+       initial="exact"
+       description="velocity of ball, used as state">
+      <Real start="0" reinit="true"/>
+    </ScalarVariable>
+
+    <ScalarVariable
+       variability="fixed"
+       causality="parameter"
+       name="g"
+       valueReference="4"
+       initial="exact"
+       description="acceleration of gravity">
+      <Real start="9.81"/>
+    </ScalarVariable>
+
+    <ScalarVariable
+       variability="fixed"
+       causality="parameter"
+       name="e"
+       valueReference="5"
+       initial="exact"
+       description="dimensionless parameter">
+      <Real start="0.7"/>
+    </ScalarVariable>
+
+
+    <ScalarVariable
+        name="fmu"
+        valueReference="0"
+        description=""
+        causality="parameter">
       <String size="56" start="sources/bouncingBall.fmu"/>
-  </ScalarVariable>
+</ScalarVariable>
+
   </ModelVariables>
   <ModelStructure>
     <Outputs>
+      <Unknown index="1"/>
+      <Unknown index="2"/>
     </Outputs>
+
     <Derivatives/>
     <DiscreteStates/>
-    <InitialUnknowns />
+    <InitialUnknowns/>
   </ModelStructure>
-
 </fmiModelDescription>
+

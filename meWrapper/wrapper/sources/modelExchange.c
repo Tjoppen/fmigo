@@ -7,18 +7,29 @@
 #ifndef min
 #define min(a,b) ((a<b) ? a : b)
 #endif
+static fmi2_import_t* FMU;
+static cgsl_simulation m_sim;
+static TimeLoop timeLoop;
+static fmu_model m_model;
+#define MEFMU *getfmi2Instance()
 /* //#define get_storage m_baseMaster->get_storage */
 /* /\** get_p */
 /*  *  Extracts the parameters from the model */
 /*  * */
 /*  *  @param m Model */
 /*  *\/ */
-inline fmu_parameters* get_p(fmu_model* m){
-    return (fmu_parameters*)(m->model->get_model_parameters(m->model));
+fmi2_import_t** getfmi2Instance(){
+    return &FMU;
+}
+double* getContinuousStates(){
+    return m_sim.model->x;
 }
 
-extern Wrapper wrapper;
+inline fmu_parameters* get_p(fmu_model* m){
+    return (fmu_parameters*)(m->model->parameters);
+}
 
+void getSafeAndCrossed();
 bool past_event(fmi2Real* a, fmi2Real* b, int i){
     for(;i>0;--i){
         if(signbit( a[i] ) != signbit( b[i] ))
@@ -44,13 +55,13 @@ static int fmu_function(double t, const double x[], double dxdt[], void* params)
     ++p->count; /* count function evaluations */
     if(p->stateEvent)return GSL_SUCCESS;
 
-    fmi2_import_set_time(wrapper.m_fmi2Instance,t);
-    fmi2_import_set_continuous_states(wrapper.m_fmi2Instance,x,p->nx);
+    fmi2_import_set_time(MEFMU,t);
+    fmi2_import_set_continuous_states(MEFMU,x,p->nx);
 
-    fmi2_import_get_derivatives(wrapper.m_fmi2Instance,dxdt,p->nx);
+    fmi2_import_get_derivatives(MEFMU,dxdt,p->nx);
 
     if(p->ni){
-        fmi2_import_get_event_indicators(wrapper.m_fmi2Instance,p->ei,p->ni);
+        fmi2_import_get_event_indicators(MEFMU,p->ei,p->ni);
         if(past_event(p->ei,p->ei_backup,p->ni)){
             p->stateEvent = true;
             p->t_past = t;
@@ -71,26 +82,26 @@ static int fmu_function(double t, const double x[], double dxdt[], void* params)
 /*  *  @param clients Vector with clients */
 /*  *\/ */
 void allocateMemory(fmu_model *m){
+    //fprintf(stderr,"init_fmu_model %p \n",p->fmi2Instance);
     m->model = (cgsl_model*)calloc(1,sizeof(cgsl_model));
-    fprintf(stderr,"allocate: %p\n",m);
-    fprintf(stderr,"allocate: %p\n",&wrapper);
-    fprintf(stderr,"allocate: %p\n",wrapper.m_fmi2Instance);
-    m->model->n_variables = fmi2_import_get_number_of_continuous_states(wrapper.m_fmi2Instance);;
-    fprintf(stderr,"allocate: got number of continiuous states\n");
+    fmu_parameters* p = (fmu_parameters*)calloc(1,sizeof(fmu_parameters));
+    m->model->parameters = p;
+    m->model->n_variables = fmi2_import_get_number_of_continuous_states(MEFMU);;
     if(m->model->n_variables == 0){
         fprintf(stderr,"ModelExchangeStepper nothing to integrate\n");
         exit(0);
     }
 
-    m_p.nx = m->model->n_variables;
-    m_p.ni = fmi2_import_get_number_of_event_indicators(wrapper.m_fmi2Instance);;
-    m_p.ei             = (fmi2Real*)calloc(m_p.ni, sizeof(fmi2_real_t));
-    m_p.ei_backup      = (fmi2Real*)calloc(m_p.ni, sizeof(fmi2_real_t));
+    p->nx = m->model->n_variables;
+
+    p->ni = fmi2_import_get_number_of_event_indicators(MEFMU);
+    p->ei             = (fmi2Real*)calloc(p->ni, sizeof(fmi2_real_t));
+    p->ei_backup      = (fmi2Real*)calloc(p->ni, sizeof(fmi2_real_t));
     m->model->x        = (double*)calloc(m->model->n_variables, sizeof(double));
     m->model->x_backup = (double*)calloc(m->model->n_variables, sizeof(double));
-    m_p.backup.dydt    = (double*)calloc(m->model->n_variables, sizeof(double));
+    p->backup.dydt    = (double*)calloc(m->model->n_variables, sizeof(double));
 
-    if(!m->model->x || !m->model->x_backup || !m_p.backup.dydt){
+    if(!m->model->x || !m->model->x_backup || !p->backup.dydt){
         //freeFMUModel(m);
         perror("WeakMaster:ModelExchange:allocateMemory ERROR -  could not allocate memory");
         exit(1);
@@ -105,12 +116,10 @@ void allocateMemory(fmu_model *m){
 /*  *\/ */
 
 void init_fmu_model(fmu_model *m){
-    fprintf(stderr,"init_fmu_model %p\n",m);
+    //(p->fmi2Instance) = MEFMU;
     allocateMemory(m);
-    fprintf(stderr,"init here\n");
-    m->model->parameters = (void*)&m_p;
-    m->model->get_model_parameters = get_model_parameters;
     fmu_parameters* p = get_p(m);
+    //m->model->get_model_parameters = get_model_parameters;
 
     p->t_ok = 0;
     p->t_past = 0;
@@ -120,27 +129,22 @@ void init_fmu_model(fmu_model *m){
     p->backup.t = 0;
     p->backup.h = 0;
 
-    // FAILS HERE
     m->model->function = fmu_function;
     m->model->jacobian = NULL;
     m->model->post_step = NULL;
     m->model->pre_step = NULL;
     m->model->free = cgsl_model_default_free;//freeFMUModel;
 
-    // FAILS HERE
-    fmi2_status_t status = fmi2_import_get_continuous_states(wrapper.m_fmi2Instance, m->model->x, m->model->n_variables);
+    fmi2_status_t status = fmi2_import_get_continuous_states(MEFMU, m->model->x, p->nx);
 
     memcpy(m->model->x_backup,m->model->x,m->model->n_variables);
 }
-
 
 /* /\** prepare() */
 /*  *  Setup everything */
 /*  *\/ */
 void prepare() {
-    fprintf(stderr,"prepare \n");
     init_fmu_model(&m_model);
-    fprintf(stderr,"cgsl_init_simulation \n");
     // set up a gsl_simulation for each client
     fmu_parameters* p = get_p(&m_model);
 
@@ -184,7 +188,7 @@ void restoreStates(cgsl_simulation *sim){
 /*  *  @param sim The simulation */
 /*  *\/ */
 void storeStates(cgsl_simulation *sim){
-    fmu_parameters* p = get_p((fmu_model*)sim->model);
+    fmu_parameters* p = get_p((fmu_model*)&sim->model);
     memcpy(sim->model->x_backup, sim->model->x, sim->model->n_variables);
 
     p->backup.failed_steps = sim->i.evolution->failed_steps;
@@ -202,7 +206,7 @@ void storeStates(cgsl_simulation *sim){
 /*  *  @param sim The simulation */
 /*  *\/ */
 bool hasStateEvent(cgsl_simulation *sim){
-    return get_p((fmu_model*)sim->model)->stateEvent;
+    return get_p((fmu_model*)&sim->model)->stateEvent;
 }
 
 /* /\** getGoldenNewTime() */
@@ -227,19 +231,19 @@ void getGoldenNewTime(cgsl_simulation *sim){
     }
 }
 
-/* /\** step() */
+/* /\** me_step() */
 /*  *  Run cgsl_step_to the simulation */
 /*  * */
 /*  *  @param sim The simulation */
 /*  *\/ */
-void step(cgsl_simulation *sim){
+void me_step(cgsl_simulation *sim){
     fmu_parameters *p;
-    p = get_p((fmu_model*)sim->model);
+    p = get_p((fmu_model*)(&sim->model));
     p->stateEvent = false;
     p->t_past = max(p->t_past, sim->t + timeLoop.dt_new);
     p->t_ok = sim->t;
 
-    cgsl_step_to(&sim, sim->t, timeLoop.dt_new);
+    cgsl_step_to(sim, sim->t, timeLoop.dt_new);
 }
 
 /* /\** stepToEvent() */
@@ -253,7 +257,7 @@ void stepToEvent(cgsl_simulation *sim){
     while(!hasStateEvent(sim) &&(
           /*!(m_baseMaster->get_storage().absmin(STORAGE::indicators) < tol || */timeLoop.dt_new < tol)){
         getGoldenNewTime(sim);
-        step(sim);
+        me_step(sim);
         if(timeLoop.dt_new == 0){
             fprintf(stderr,"stepToEvent: dt == 0, abort\n");
             exit(1);
@@ -263,14 +267,14 @@ void stepToEvent(cgsl_simulation *sim){
             restoreStates(sim);
             getSafeAndCrossed();
             timeLoop.dt_new = timeLoop.t_safe - sim->t;
-            step(sim);
+            me_step(sim);
             if(!hasStateEvent(sim)) storeStates(sim);
             else{
                 fprintf(stderr,"stepToEvent: failed at stepping to safe time, aborting\n");
                 exit(1);
             }
             timeLoop.dt_new = timeLoop.t_crossed - sim->t;
-            step(sim);
+            me_step(sim);
             if(!hasStateEvent(sim)){
                 fprintf(stderr,"stepToEvent: failed at stepping to event \n");
                 exit(1);
@@ -286,23 +290,26 @@ void stepToEvent(cgsl_simulation *sim){
 void newDiscreteStates(){
     fmu_parameters* p = get_p((fmu_model*)&m_sim.model);
     // start at a new state
-    fmi2_import_enter_event_mode(wrapper.m_fmi2Instance);
+    fmi2_import_enter_event_mode(MEFMU);
+
     // todo loop until newDiscreteStatesNeeded == false
 
     fmi2_event_info_t eventInfo;
     eventInfo.newDiscreteStatesNeeded = true;
+    eventInfo.terminateSimulation = false;
 
     while(eventInfo.newDiscreteStatesNeeded){
-        fmi2_import_new_discrete_states(wrapper.m_fmi2Instance,&eventInfo);
+        fmi2_import_new_discrete_states(MEFMU,&eventInfo);
+
         if(eventInfo.terminateSimulation){
                 fprintf(stderr,"modelExchange.c: terminated simulation\n");
                 exit(1);
         }
     }
 
-    fmi2_import_enter_continuous_time_mode(wrapper.m_fmi2Instance);
+    fmi2_import_enter_continuous_time_mode(MEFMU);
 
-    fmi2_import_get_event_indicators(wrapper.m_fmi2Instance,p->ei,p->ni);
+    fmi2_import_get_event_indicators(MEFMU,p->ei,p->ni);
 
     // store the current state of all running FMUs
     storeStates(&m_sim);
@@ -338,8 +345,8 @@ void safeTimeStep(cgsl_simulation *sim){
 /*  *\/ */
 void getSafeTime(double t, double *dt){
     fmu_parameters* p = get_p((fmu_model*)&m_sim.model);
-    if(p->eventInfo.nextEventTimeDefined)
-        *dt = min(*dt, t - p->eventInfo.nextEventTime);
+    if(p->backup.eventInfo.nextEventTimeDefined)
+        *dt = min(*dt, t - p->backup.eventInfo.nextEventTime);
 }
 
 /* /\** runIteration() */
@@ -354,19 +361,21 @@ void runIteration(double t, double dt) {
     newDiscreteStates();
     int iter = 2;
     while( timeLoop.t_safe < timeLoop.t_end ){
-        step(&m_sim);
+        me_step(&m_sim);
+
         if (hasStateEvent(&m_sim)){
+
             getSafeAndCrossed();
 
             // restore and step to before the event
             restoreStates(&m_sim);
             timeLoop.dt_new = timeLoop.t_safe - m_sim.t;
-            step(&m_sim);
+            me_step(&m_sim);
 
             // store and step to the event
             if(!hasStateEvent(&m_sim)) storeStates(&m_sim);
             timeLoop.dt_new = timeLoop.t_crossed - m_sim.t;
-            step(&m_sim);
+            me_step(&m_sim);
 
             // step closer to the event location
             if(hasStateEvent(&m_sim))

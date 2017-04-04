@@ -36,12 +36,9 @@ inline fmu_parameters* get_p(fmu_model* m){
 void getSafeAndCrossed();
 bool past_event(fmi2_real_t* a, fmi2_real_t* b, int i){
 
-    fprintf(stderr,"%d\n",i);
     i--;
     for(;i>=0;i--){
-        fprintf(stderr,"past_event: %d %d %d\n",signbit((double)-1),signbit((double)1),i);
         if(signbit( a[i] ) != signbit( b[i] ))
-        //if(signbits(a[i],b[i]))
             return true;
     }
     return false;
@@ -70,14 +67,10 @@ static int fmu_function(double t, const double x[], double dxdt[], void* params)
     fmi2_import_get_derivatives(MEFMU,dxdt,p->nx);
 
     if(p->ni){
-        fprintf(stderr,"checkingEventIndicators: %f %f\n",p->ei[0],p->ei_backup[0]);
         fmi2_import_get_event_indicators(MEFMU,p->ei,p->ni);
         if(past_event(p->ei,p->ei_backup,p->ni)){
-            fprintf(stderr,"pastEvent:\n");
             p->stateEvent = true;
-            fprintf(stderr,"pastEvent:\n");
             p->t_past = t;
-            fprintf(stderr,"pastEvent:\n");
             return GSL_SUCCESS;
         } else{
             p->stateEvent = false;
@@ -221,7 +214,6 @@ void storeStates(cgsl_simulation *sim){
 /*  *  @param sim The simulation */
 /*  *\/ */
 bool hasStateEvent(cgsl_simulation *sim){
-    fprintf(stderr,"hasStateEvent: %d\n", get_p((fmu_model*)&sim->model)->stateEvent);
     return get_p((fmu_model*)&sim->model)->stateEvent;
 }
 
@@ -233,7 +225,6 @@ bool hasStateEvent(cgsl_simulation *sim){
 /*  *  @param sim The simulation */
 /*  *\/ */
 void getGoldenNewTime(cgsl_simulation *sim){
-    fprintf(stderr,"getGolden_new:\n");
     // golden ratio
     double phi = (1 + sqrt(5)) / 2;
     /* passed solution, need to reduce tEnd */
@@ -277,7 +268,6 @@ fmi2_real_t absmin(fmi2_real_t* v, size_t n){
 /*  *  @param sim The simulation */
 /*  *\/ */
 void stepToEvent(cgsl_simulation *sim){
-    fprintf(stderr,"stepToEvent:\n");
     double tol = 1e-9;
     fmu_parameters* p = get_p((fmu_model*)&sim->model);
     while(!hasStateEvent(sim) && !(absmin(p->ei,p->ni) < tol || timeLoop.dt_new < tol)){
@@ -390,9 +380,7 @@ void runIteration(double t, double dt) {
 
         if (hasStateEvent(&m_sim)){
 
-            fprintf(stderr,"getSafeAndCrossed:\n");
             getSafeAndCrossed();
-            fprintf(stderr,"getSafeAndCrossed: done\n");
 
             // restore and step to before the event
             restoreStates(&m_sim);
@@ -404,10 +392,14 @@ void runIteration(double t, double dt) {
             timeLoop.dt_new = timeLoop.t_crossed - m_sim.t;
             me_step(&m_sim);
 
-            fprintf(stderr,"runIteration: hasStateEvent");
             // step closer to the event location
             if(hasStateEvent(&m_sim))
+                {
+                    fprintf(stderr,"stepToEvent: ");
                 stepToEvent(&m_sim);
+                fprintf(stderr," done %0.32f %d\n", m_sim.t, hasStateEvent(&m_sim));
+
+                }
 
         }
         else {
@@ -420,4 +412,5 @@ void runIteration(double t, double dt) {
             newDiscreteStates();
         storeStates(&m_sim);
     }
+    fprintf(stderr,"runIteration: time %f\n",m_sim.t);
 }

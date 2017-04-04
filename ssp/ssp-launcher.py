@@ -22,7 +22,7 @@ parser.add_argument('-p','--ports', metavar="PORT",
                     default=[],
                     nargs='+',
                     type=int)
-parser.add_argument('ssp', metavar='ssp-filename',
+parser.add_argument('-s','--ssp', metavar='ssp-filename',
                     help='SSP file to be launched')
 
 parser.add_argument('args',

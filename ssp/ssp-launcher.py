@@ -10,6 +10,8 @@ import subprocess
 import shutil
 import argparse
 import psutil
+import platform
+from zipfile import ZipFile
 
 parser = argparse.ArgumentParser(
     description='%s: Launch an SSP with either MPI or TCP' %sys.argv[0],
@@ -802,6 +804,65 @@ def parse_ssp(ssp_path, cleanup_zip = True):
 
     return flatconns, flatparams, unzipped_ssp, d
 
+def get_fmu_platforms(fmu_path):
+    zip = ZipFile(fmu_path)
+    platforms = []
+    for fileName in zip.namelist():
+        if fileName.startswith('binaries/'):
+            platforms.append(fileName.split('/')[1])
+        elif fileName.startswith('binaries\\'):
+            platforms.append(fileName.split('\\')[1])
+    return platforms
+
+def get_fmigo_binary(executable, install_env_name):
+    fmigo_install_dir = os.environ.get(install_env_name)
+
+    if sys.platform == "win32":
+        executable += '.exe'
+
+    if fmigo_install_dir is None:
+        raise Exception("FmiGo master environment variable {} not specified!".format(install_env_name))
+
+    if not os.path.exists(fmigo_install_dir):
+        raise Exception("{}: {} does not exist".format(install_env_name, str(umit_install_dir)))
+
+    binary_full_path = os.path.join(fmigo_install_dir, 'bin', executable)
+
+    if not os.path.exists(binary_full_path):
+        raise Exception("Unable to locate FmiGo binary {}".format(str(binary_full_path)))
+
+    return binary_full_path
+
+def get_fmu_server(fmu_path, executable):
+
+    platforms = get_fmu_platforms(fmu_path)
+
+    plaform_prefix_table = {
+        'win32': 'win',
+        'darwin': 'darwin',
+        'linux2': 'linux'
+    }
+
+    plaform_prefix = plaform_prefix_table[sys.platform]
+
+    if not ('FMIGO_64_INSTALL_DIR' in os.environ and 'FMIGO_32_INSTALL_DIR' in os.environ):
+        # Make sure FMU has same architecture as fmigo-server
+        bits, linkage = platform.architecture(executable)
+        if (plaform_prefix + '64') in platforms and bits != '64bit':
+            raise Exception('Trying to start 64bit FMU using 32bit FmiGo. Please specify FMIGO_64_INSTALL_DIR and FMIGO_32_INSTALL_DIR environment variables')
+        elif (plaform_prefix + '32') in platforms and bits != '32bit':
+            raise Exception('Trying to start 32bit FMU using 64bit FmiGo. Please specify FMIGO_64_INSTALL_DIR and FMIGO_32_INSTALL_DIR environment variables')
+        return executable
+
+
+    if (plaform_prefix + '64') in platforms:
+        fmigo_server = get_fmigo_binary(executable, 'FMIGO_64_INSTALL_DIR')
+    else:
+        fmigo_server = get_fmigo_binary(executable, 'FMIGO_32_INSTALL_DIR')
+
+    return fmigo_server
+
+
 if __name__ == '__main__':
 
     flatconns, flatparams, unzipped_ssp, d = parse_ssp(parse.ssp, False)
@@ -830,7 +891,8 @@ if __name__ == '__main__':
 
         # Everything looks OK; start servers
         for i in range(len(fmus)):
-            subprocess.Popen(['fmigo-server','-p', str(parse.ports[i]), fmus[i].path])
+            fmigo_server = get_fmu_server(fmus[i].path, 'fmigo-server')
+            subprocess.Popen([fmigo_server,'-p', str(parse.ports[i]), fmus[i].path])
 
         #read connections and parameters from stdin, since they can be quite many
         #stdin because we want to avoid leaving useless files on the filesystem
@@ -839,11 +901,22 @@ if __name__ == '__main__':
     else:
         #read connections and parameters from stdin, since they can be quite many
         #stdin because we want to avoid leaving useless files on the filesystem
-        args   = ['mpiexec','-np',str(len(fmus)+1),'fmigo-mpi']
-        append = [fmu.path for fmu in fmus]
+        args   = ['mpiexec','-n', '1','fmigo-mpi']
+        fmu_paths = [fmu.path for fmu in fmus]
+        append = list(fmu_paths)
+        append += [':']
+
+        for fmu in fmus:
+            fmigo_mpi = get_fmu_server(fmu.path, 'fmigo-mpi')
+            append += ['-n', '1', fmigo_mpi]
+            append += fmu_paths
+
+            if fmu != fmus[-1]:
+                append += [':']
 
     args += ['-t','9.9','-d','0.1'] + parse.args + ['-a','-']
     args += append
+
 
     pipeinput = " ".join(flatconns+flatparams)
     print(" ".join(args) + (' <<< "%s"' % pipeinput))

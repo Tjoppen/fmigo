@@ -7,18 +7,18 @@
 #ifndef min
 #define min(a,b) ((a<b) ? a : b)
 #endif
-static fmi2_import_t* FMU;
+fmi2_import_t* FMU;
 static cgsl_simulation m_sim;
 static TimeLoop timeLoop;
 static fmu_model m_model;
-#define MEFMU *getfmi2Instance()
+#define MEFMU *getFMU()
 //#define signbits(a,b) ((a > 0)? ( (b > 0) ? 1 : 0) : (b<=0)? 1: 0)
 /** get_p
  *  Extracts the parameters from the model
  *
  *  @param m Model
  */
-fmi2_import_t** getfmi2Instance(){
+fmi2_import_t** getFMU(){
     return &FMU;
 }
 double* getContinuousStates(){

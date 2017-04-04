@@ -6,7 +6,7 @@
 #include "commonWrapper/modelExchange.h"
 
 #define MODEL_IDENTIFIER wrapper_bouncingBall
-#define MODEL_GUID "f6785920-ebc5-41bd-ac75-f5088db28762"
+#define MODEL_GUID "6d9c52be-3c01-492d-8adf-e6e7aaa892fc"
 #define FMI_COSIMULATION
 #define HAVE_DIRECTIONAL_DERIVATIVE 0
 #define CAN_GET_SET_FMU_STATE 1
@@ -53,46 +53,46 @@ static const modelDescription_t defaults = {
 
 
 static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Real value[]) {
-    fmi2_import_get_real(*getfmi2Instance(),vr,nvr,value);
+    fmi2_import_get_real(*getFMU(),vr,nvr,value);
     return fmi2OK;
 }
 
 static fmi2Status generated_fmi2SetReal(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Real value[]) {
-    //if( *getfmi2Instance() != NULL)
-        fmi2_import_set_real(*getfmi2Instance(),vr,nvr,value);
+    if( *getFMU() != NULL)
+        fmi2_import_set_real(*getFMU(),vr,nvr,value);
     return fmi2OK;
 }
 
 static fmi2Status generated_fmi2GetInteger(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Integer value[]) {
-    fmi2_import_get_integer(*getfmi2Instance(),vr,nvr,value);
+    fmi2_import_get_integer(*getFMU(),vr,nvr,value);
     return fmi2OK;
 }
 
 static fmi2Status generated_fmi2SetInteger(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Integer value[]) {
-    //if( *getfmi2Instance() != NULL)
-        fmi2_import_set_integer(*getfmi2Instance(),vr,nvr,value);
+    if( *getFMU() != NULL)
+        fmi2_import_set_integer(*getFMU(),vr,nvr,value);
     return fmi2OK;
 }
 
 static fmi2Status generated_fmi2GetBoolean(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Boolean value[]) {
-    fmi2_import_get_boolean(*getfmi2Instance(),vr,nvr,value);
+    fmi2_import_get_boolean(*getFMU(),vr,nvr,value);
     return fmi2OK;
 }
 
 static fmi2Status generated_fmi2SetBoolean(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Boolean value[]) {
-    //if( *getfmi2Instance() != NULL)
-        fmi2_import_set_boolean(*getfmi2Instance(),vr,nvr,value);
+    if( *getFMU() != NULL)
+        fmi2_import_set_boolean(*getFMU(),vr,nvr,value);
     return fmi2OK;
 }
 
 static fmi2Status generated_fmi2GetString(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2String value[]) {
-    fmi2_import_get_string(*getfmi2Instance(),vr,nvr,value);
+    fmi2_import_get_string(*getFMU(),vr,nvr,value);
     return fmi2OK;
 }
 
 static fmi2Status generated_fmi2SetString(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2String value[]) {
-    //if( *getfmi2Instance() != NULL)
-        fmi2_import_set_string(*getfmi2Instance(),vr,nvr,value);
+    if( *getFMU() != NULL)
+        fmi2_import_set_string(*getFMU(),vr,nvr,value);
     return fmi2OK;
 }
 #endif //MODELDESCRIPTION_H

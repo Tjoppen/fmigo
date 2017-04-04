@@ -31,7 +31,7 @@ typedef struct fmu_model{
     cgsl_model *model;
 }fmu_model;
 
-fmi2_import_t** getfmi2Instance();
+fmi2_import_t** getFMU();
 void runIteration(double t, double dt);
 void prepare();
 #endif

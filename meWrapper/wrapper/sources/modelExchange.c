@@ -197,7 +197,7 @@ void restoreStates(cgsl_simulation *sim){
 void storeStates(cgsl_simulation *sim){
     fmu_parameters* p = get_p((fmu_model*)&sim->model);
     memcpy(sim->model->x_backup, sim->model->x, sim->model->n_variables);
-    memcpy(p->ei_backup,p->ei,p->ni);
+    fmi2_import_get_event_indicators(MEFMU,p->ei_backup,p->ni);
 
     p->backup.failed_steps = sim->i.evolution->failed_steps;
     p->backup.t = sim->t;
@@ -323,8 +323,6 @@ void newDiscreteStates(){
     }
 
     fmi2_import_enter_continuous_time_mode(MEFMU);
-
-    fmi2_import_get_event_indicators(MEFMU,p->ei,p->ni);
 
     // store the current state of all running FMUs
     storeStates(&m_sim);

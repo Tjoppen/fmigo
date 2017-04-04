@@ -196,8 +196,10 @@ void restoreStates(cgsl_simulation *sim){
 /*  *\/ */
 void storeStates(cgsl_simulation *sim){
     fmu_parameters* p = get_p((fmu_model*)&sim->model);
-    memcpy(sim->model->x_backup, sim->model->x, sim->model->n_variables);
+
+    fmi2_import_get_continuous_states(MEFMU,sim->model->x_backup,p->nx);
     fmi2_import_get_event_indicators(MEFMU,p->ei_backup,p->ni);
+    memcpy(sim->model->x,sim->model->x_backup,p->nx * sizeof(sim->model->x[0]));
 
     p->backup.failed_steps = sim->i.evolution->failed_steps;
     p->backup.t = sim->t;

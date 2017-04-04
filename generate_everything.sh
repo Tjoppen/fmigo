@@ -111,6 +111,7 @@ for d in $WRAPPERS
 do
     echo "add_subdirectory($d)" >> CMakeLists.txt
     pushd $d
+        python ${GENERATOR}
         python ${GENERATORXML} sources/modelDescription.xml > modelDescription.xml
         python ${GENERATORWRAPPER} modelDescription.xml > sources/modelDescription.h
     popd

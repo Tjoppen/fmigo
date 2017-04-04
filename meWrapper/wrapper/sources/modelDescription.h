@@ -3,10 +3,10 @@
 #define MODELDESCRIPTION_H
 #include "FMI2/fmi2Functions.h" //for fmi2Real etc.
 #include "strlcpy.h" //for strlcpy()
-#include "modelExchange.h"
+#include "commonWrapper/modelExchange.h"
 
 #define MODEL_IDENTIFIER wrapper_bouncingBall
-#define MODEL_GUID "fd79201a-8655-4ab6-aef5-469c5ffe1fad"
+#define MODEL_GUID "f6785920-ebc5-41bd-ac75-f5088db28762"
 #define FMI_COSIMULATION
 #define HAVE_DIRECTIONAL_DERIVATIVE 0
 #define CAN_GET_SET_FMU_STATE 1

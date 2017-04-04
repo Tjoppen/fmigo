@@ -3,6 +3,20 @@ from __future__ import print_function
 import sys
 import uuid
 import xml.etree.ElementTree as e
+# import os
+# from os import listdir
+# from os.path import isfile, join
+# import zipfile
+
+# sources= 'sources/'
+# cwd = os.getcwd() + '/' +  sources
+# print('cwd %s'%cwd)
+# onlyfiles = [sources + f for f in listdir(cwd) if isfile(join(cwd, f))]
+
+# for files in onlyfiles:
+#     if '.fmu' in files:
+#         fmufile = files
+# zipfile.namelist(fmuFile)
 
 def warning(*objs):
     print("WARNING: ", *objs, file=sys.stderr)
@@ -11,8 +25,8 @@ def error(*objs):
     print("ERROR: ", *objs, file=sys.stderr)
 
 if len(sys.argv) < 2:
-    print('USAGE: '+sys.argv[0] +' modelDescription-filename > header-filename', file=sys.stderr)
-    print('Example: '+sys.argv[0]+' modelDescription.xml > header.h', file=sys.stderr)
+    print('USAGE: '+sys.argv[0] +' sources/modelDescription-filename > modelDescription-filename', file=sys.stderr)
+    print('Example: '+sys.argv[0]+' sources/modelDescription.xml > modelDescription.xml', file=sys.stderr)
     exit(1)
 
 # Parse xml file

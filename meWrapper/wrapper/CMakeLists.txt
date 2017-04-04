@@ -7,14 +7,12 @@ SET(SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/fmi2/strlcpy.h
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/bouncingBall.fmu
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/fmi2Functions.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/sources/gsl-interface.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/sources/gsl-interface.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/sources/commonWrapper/gsl-interface.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/sources/commonWrapper/gsl-interface.h
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription_me.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelExchange.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelExchange.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelExchangeFmiInterface.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelExchange_impl.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/sources/commonWrapper/modelExchange.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/sources/commonWrapper/modelExchange.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/sources/commonWrapper/modelExchangeFmiInterface.h
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/wrapper.c
 )
 ADD_CUSTOM_COMMAND(

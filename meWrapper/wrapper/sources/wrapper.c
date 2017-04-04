@@ -1,5 +1,6 @@
 //TODO: add some kind of flag that switches this one between a clutch and a gearbox, to reduce the amount of code needed
-#define SIMULATION_INIT wrapper_init
+//#define SIMULATION_INIT wrapper_init
+#define SIMULATION_WRAPPER wrapper_init
 #include <unistd.h>
 #include <fmilib.h>
 //#include "modelDescription_me.h"

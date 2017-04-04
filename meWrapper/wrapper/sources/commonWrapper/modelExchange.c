@@ -13,12 +13,11 @@ static TimeLoop timeLoop;
 static fmu_model m_model;
 #define MEFMU *getfmi2Instance()
 //#define signbits(a,b) ((a > 0)? ( (b > 0) ? 1 : 0) : (b<=0)? 1: 0)
-/* //#define get_storage m_baseMaster->get_storage */
-/* /\** get_p */
-/*  *  Extracts the parameters from the model */
-/*  * */
-/*  *  @param m Model */
-/*  *\/ */
+/** get_p
+ *  Extracts the parameters from the model
+ *
+ *  @param m Model
+ */
 fmi2_import_t** getfmi2Instance(){
     return &FMU;
 }
@@ -44,15 +43,15 @@ bool past_event(fmi2_real_t* a, fmi2_real_t* b, int i){
     return false;
 }
 
-/* /\** fmu_function */
-/*  *  function needed by cgsl_simulation to get and set the current */
-/*  *  states and derivatives */
-/*  * */
-/*  *  @param t Input time */
-/*  *  @param x Input states vector */
-/*  *  @param dxdt Output derivatives */
-/*  *  @param params Contains model specific parameters */
-/*  *\/ */
+/** fmu_function
+ *  function needed by cgsl_simulation to get and set the current
+ *  states and derivatives
+ *
+ *  @param t Input time
+ *  @param x Input states vector
+ *  @param dxdt Output derivatives
+ *  @param params Contains model specific parameters
+ */
 static int fmu_function(double t, const double x[], double dxdt[], void* params)
 {
     // make local variables
@@ -81,12 +80,12 @@ static int fmu_function(double t, const double x[], double dxdt[], void* params)
     return GSL_SUCCESS;
 }
 
-/* /\** allocate Memory */
-/*  *  Allocates memory needed by the fmu_model */
-/*  * */
-/*  *  @param m The fmu_model */
-/*  *  @param clients Vector with clients */
-/*  *\/ */
+/** allocate Memory
+ *  Allocates memory needed by the fmu_model
+ *
+ *  @param m The fmu_model
+ *  @param clients Vector with clients
+ */
 void allocateMemory(fmu_model *m){
     //fprintf(stderr,"init_fmu_model %p \n",p->fmi2Instance);
     m->model = (cgsl_model*)calloc(1,sizeof(cgsl_model));
@@ -114,12 +113,12 @@ void allocateMemory(fmu_model *m){
     }
 }
 
-/* /\** init_fmu_model */
-/*  *  Setup all parameters and function pointers needed by fmu_model */
-/*  * */
-/*  *  @param m The fmu_model we are working on */
-/*  *  @param client A vector with clients */
-/*  *\/ */
+/** init_fmu_model
+ *  Setup all parameters and function pointers needed by fmu_model
+ *
+ *  @param m The fmu_model we are working on
+ *  @param client A vector with clients
+ */
 
 void init_fmu_model(fmu_model *m){
     //(p->fmi2Instance) = MEFMU;
@@ -147,9 +146,9 @@ void init_fmu_model(fmu_model *m){
     memcpy(m->model->x_backup,m->model->x,m->model->n_variables);
 }
 
-/* /\** prepare() */
-/*  *  Setup everything */
-/*  *\/ */
+/** prepare()
+ *  Setup everything
+ */
 void prepare() {
     init_fmu_model(&m_model);
     // set up a gsl_simulation for each client
@@ -167,12 +166,12 @@ void prepare() {
 #endif
 }
 
-/* /\** restoreStates() */
-/*  *  Restores all values needed by the simulations to restart */
-/*  *  before the event */
-/*  * */
-/*  *  @param sim The simulation */
-/*  *\/ */
+/** restoreStates()
+ *  Restores all values needed by the simulations to restart
+ *  before the event
+ *
+ *  @param sim The simulation
+ */
 void restoreStates(cgsl_simulation *sim){
     fmu_parameters* p = get_p((fmu_model*)&sim->model);
     //restore previous states
@@ -188,12 +187,12 @@ void restoreStates(cgsl_simulation *sim){
     sim->h = p->backup.h;
 }
 
-/* /\** storeStates() */
-/*  *  Stores all values needed by the simulations to restart */
-/*  *  from a state before an event */
-/*  * */
-/*  *  @param sim The simulation */
-/*  *\/ */
+/** storeStates()
+ *  Stores all values needed by the simulations to restart
+ *  from a state before an event
+ *
+ *  @param sim The simulation
+ */
 void storeStates(cgsl_simulation *sim){
     fmu_parameters* p = get_p((fmu_model*)&sim->model);
 
@@ -209,23 +208,23 @@ void storeStates(cgsl_simulation *sim){
            sim->model->n_variables * sizeof(p->backup.dydt[0]));
 }
 
-/* /\** hasStateEvent() */
-/*  *  Retrieve stateEvent status */
-/*  *  Returns true if at least one simulation crossed an event */
-/*  * */
-/*  *  @param sim The simulation */
-/*  *\/ */
+/** hasStateEvent()
+ *  Retrieve stateEvent status
+ *  Returns true if at least one simulation crossed an event
+ *
+ *  @param sim The simulation
+ */
 bool hasStateEvent(cgsl_simulation *sim){
     return get_p((fmu_model*)&sim->model)->stateEvent;
 }
 
-/* /\** getGoldenNewTime() */
-/*  *  Calculates a time step which brings solution closer to the event */
-/*  *  Uses the golden ratio to get t_crossed and t_safe to converge */
-/*  *  to the event time */
-/*  * */
-/*  *  @param sim The simulation */
-/*  *\/ */
+/** getGoldenNewTime()
+ *  Calculates a time step which brings solution closer to the event
+ *  Uses the golden ratio to get t_crossed and t_safe to converge
+ *  to the event time
+ *
+ *  @param sim The simulation
+ */
 void getGoldenNewTime(cgsl_simulation *sim){
     // golden ratio
     double phi = (1 + sqrt(5)) / 2;
@@ -241,11 +240,11 @@ void getGoldenNewTime(cgsl_simulation *sim){
     }
 }
 
-/* /\** me_step() */
-/*  *  Run cgsl_step_to the simulation */
-/*  * */
-/*  *  @param sim The simulation */
-/*  *\/ */
+/** me_step()
+ *  Run cgsl_step_to the simulation
+ *
+ *  @param sim The simulation
+ */
 void me_step(cgsl_simulation *sim){
     fmu_parameters *p;
     p = get_p((fmu_model*)(&sim->model));
@@ -263,12 +262,12 @@ fmi2_real_t absmin(fmi2_real_t* v, size_t n){
     }
     return min;
 }
-/* /\** stepToEvent() */
-/*  *  To be runned when an event is crossed. */
-/*  *  Finds the event and returns a state immediately after the event */
-/*  * */
-/*  *  @param sim The simulation */
-/*  *\/ */
+/** stepToEvent()
+ *  To be runned when an event is crossed.
+ *  Finds the event and returns a state immediately after the event
+ *
+ *  @param sim The simulation
+ */
 void stepToEvent(cgsl_simulation *sim){
     double tol = 1e-9;
     fmu_parameters* p = get_p((fmu_model*)&sim->model);
@@ -300,10 +299,10 @@ void stepToEvent(cgsl_simulation *sim){
     }
 }
 
-/* /\** newDiscreteStates() */
-/*  *  Should be used where a new discrete state ends and another begins. */
-/*  *  Store the current state of the simulation */
-/*  *\/ */
+/** newDiscreteStates()
+ *  Should be used where a new discrete state ends and another begins.
+ *  Store the current state of the simulation
+ */
 void newDiscreteStates(){
     fmu_parameters* p = get_p((fmu_model*)&m_sim.model);
     // start at a new state
@@ -330,19 +329,19 @@ void newDiscreteStates(){
     storeStates(&m_sim);
 }
 
-/* /\** getSafeAndCrossed() */
-/*  *  Extracts safe and crossed time found by fmu_function */
-/*  *\/ */
+/** getSafeAndCrossed()
+ *  Extracts safe and crossed time found by fmu_function
+ */
 void getSafeAndCrossed(){
     fmu_parameters *p = get_p((fmu_model*)&m_sim.model);
     timeLoop.t_safe    = p->t_ok;//max( timeLoop.t_safe,    t_ok);
     timeLoop.t_crossed = p->t_past;//min( timeLoop.t_crossed, t_past);
 }
 
-/* /\** safeTimeStep() */
-/*  *  Make sure we take small first step when we're at on event */
-/*  *  @param sim The simulation */
-/*  *\/ */
+/** safeTimeStep()
+ *  Make sure we take small first step when we're at on event
+ *  @param sim The simulation
+ */
 void safeTimeStep(cgsl_simulation *sim){
     // if sims has a state event do not step to far
     if(hasStateEvent(sim)){
@@ -352,22 +351,22 @@ void safeTimeStep(cgsl_simulation *sim){
         timeLoop.dt_new = timeLoop.t_end - sim->t;
 }
 
-/* /\** getSafeTime() */
-/*  * */
-/*  *  @param clients Vector with clients */
-/*  *  @param t The current time */
-/*  *  @param dt Timestep, input and output */
-/*  *\/ */
+/** getSafeTime()
+ *
+ *  @param clients Vector with clients
+ *  @param t The current time
+ *  @param dt Timestep, input and output
+ */
 void getSafeTime(double t, double *dt){
     fmu_parameters* p = get_p((fmu_model*)&m_sim.model);
     if(p->backup.eventInfo.nextEventTimeDefined)
         *dt = min(*dt, t - p->backup.eventInfo.nextEventTime);
 }
 
-/* /\** runIteration() */
-/*  *  @param t The current time */
-/*  *  @param dt The timestep to be taken */
-/*  *\/ */
+/** runIteration()
+ *  @param t The current time
+ *  @param dt The timestep to be taken
+ */
 void runIteration(double t, double dt) {
     timeLoop.t_safe = t;
     timeLoop.t_end = t + dt;

@@ -32,11 +32,6 @@ typedef struct fmu_model{
 }fmu_model;
 
 fmi2_import_t** getfmi2Instance();
-double* getContinuousStates();
-void meGetReal(const fmi2_value_reference_t* vr, int nvr,  fmi2_real_t* value);
-
-void setFmi2Instance(fmi2_import_t* instance);
-
 void runIteration(double t, double dt);
 void prepare();
 #endif

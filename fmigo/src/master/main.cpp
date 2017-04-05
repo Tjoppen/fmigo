@@ -779,7 +779,7 @@ int main(int argc, char *argv[] ) {
             if (it != csvParam.begin()) {
                 it--;
             }
-            sendUserParams(master, clients, *it);
+            sendUserParams(master, clients, it->second);
         }
 
         if (realtimeMode) {

@@ -42,8 +42,6 @@ std::map<int, const char*> columnnames;
 
 jm_log_level_enu_t fmigo_loglevel = jm_log_level_warning;
 
-typedef map<pair<int,fmi2_base_type_enu_t>, vector<param> > parameter_map;
-
 #ifdef USE_MPI
 static vector<FMIClient*> setupClients(int numFMUs) {
     vector<FMIClient*> clients;
@@ -205,12 +203,101 @@ static void setupConstraintsAndSolver(vector<strongconnection> strongConnections
    }
 }
 
+static param param_from_vr_type_string(int vr, fmi2_base_type_enu_t type, string s) {
+    param p;
+    p.valueReference = vr;
+    p.type = type;
+
+    switch (p.type) {
+    case fmi2_base_type_real: p.realValue = atof(s.c_str()); break;
+    case fmi2_base_type_int:  p.intValue = atoi(s.c_str()); break;
+    case fmi2_base_type_bool: p.boolValue = (s == "true"); break;
+    case fmi2_base_type_str:  p.stringValue = s; break;
+    case fmi2_base_type_enum: fatal("An enum snuck its way into -p\n");
+    }
+
+    return p;
+}
+
+static param_map resolve_string_params(const vector<deque<string> > &params, vector<FMIClient*> clients) {
+    param_map ret;
+
+    int i = 0;
+    for (auto parts : params) {
+        int fmuIndex = atoi(parts[parts.size()-3].c_str());
+
+        if (fmuIndex < 0 || (size_t)fmuIndex >= clients.size()) {
+            fatal("Parameter %d refers to FMU %d, which does not exist.\n", i, fmuIndex);
+        }
+
+        FMIClient *client = clients[fmuIndex];
+        param p;
+        fmi2_base_type_enu_t type = fmi2_base_type_real;
+
+        if (parts.size() == 3) {
+            //FMU,VR,value  [type=real]
+            //FMU,NAME,value
+            int vr = vrFromKeyName(client, parts[1]);
+
+            if (!isNumeric(parts[1])) {
+                const variable_map& vars = client->getVariables();
+                type = vars.find(parts[1])->second.type;
+            }
+
+            p = param_from_vr_type_string(vr, type, parts[2]);
+        } else if (parts.size() == 4) {
+            //type,FMU,VR,value
+            type = type_from_char(parts[0]);
+
+            if (!isNumeric(parts[2])) {
+                fatal("Must use VRs when specifying parameters with explicit types (-p %s,%s,%s,%s)\n",
+                    parts[0].c_str(), parts[1].c_str(), parts[2].c_str(), parts[3].c_str());
+            }
+
+            int vr = atoi(parts[2].c_str());
+            p = param_from_vr_type_string(vr, type, parts[3]);
+        }
+
+        ret[make_pair(fmuIndex,type)].push_back(p);
+        i++;
+    }
+
+    return ret;
+}
+
+map<double, param_map > param_mapFromCSV(fmigo_csv_fmu csvfmus, vector<FMIClient*> clients){
+  map<double, param_map > pairmap;
+    for (auto it = csvfmus.begin(); it != csvfmus.end(); it++) {
+      variable_map vmap = clients[it->first]->getVariables();
+      for (auto time: it->second.time) {
+        for (auto header: it->second.headers) {
+          param p;
+          int fmuIndex = it->first;
+          p.valueReference = vmap[header].vr;
+          p.type = vmap[header].type;
+
+          string s = it->second.matrix[time][header];
+          switch (p.type) {
+          case fmi2_base_type_real: p.realValue = atof(s.c_str()); break;
+          case fmi2_base_type_int:  p.intValue = atoi(s.c_str()); break;
+          case fmi2_base_type_bool: p.boolValue = (s == "true"); break;
+          case fmi2_base_type_str:  p.stringValue = s; break;
+          case fmi2_base_type_enum: fprintf(stderr, "An enum snuck its way into -p\n"); exit(1);
+          }
+          pairmap[atof(time.c_str())][make_pair(fmuIndex,p.type)].push_back(p);
+        }
+      }
+    }
+
+  return pairmap;
+}
+
 static void sendUserParams(BaseMaster *master, vector<FMIClient*> clients, map<pair<int,fmi2_base_type_enu_t>, vector<param> > params) {
     for (auto it = params.begin(); it != params.end(); it++) {
         FMIClient *client = clients[it->first.first];
         vector<int> vrs;
         for (auto it2 = it->second.begin(); it2 != it->second.end(); it2++) {
-          vrs.push_back(vrFromKeyName(client, it2->vrORname));
+          vrs.push_back(it2->valueReference);
         }
 
         switch (it->first.second) {
@@ -435,6 +522,12 @@ static int connectionNamesToVr(std::vector<connection> &connections,
     for(size_t i = 0; i < connections.size(); i++){
       connections[i].fromOutputVR = vrFromKeyName(clients[connections[i].fromFMU], connections[i].fromOutputVRorNAME);
       connections[i].toInputVR = vrFromKeyName(clients[connections[i].toFMU], connections[i].toInputVRorNAME);
+
+      if (connections[i].needs_type) {
+          //resolve types
+          connections[i].fromType = clients[connections[i].fromFMU]->getVariables().find(connections[i].fromOutputVRorNAME)->second.type;
+          connections[i].toType   = clients[connections[i].toFMU  ]->getVariables().find(connections[i].toInputVRorNAME   )->second.type;
+      }
     }
 
     for(size_t i = 0; i < strongConnections.size(); i++){
@@ -488,7 +581,7 @@ int main(int argc, char *argv[] ) {
            compliance = 0;
     vector<string> fmuURIs;
     vector<connection> connections;
-    parameter_map params;
+    vector<deque<string> > params;
     char csv_separator = ',';
     string outFilePath = DEFAULT_OUTFILE;
     int quietMode = 0;
@@ -505,13 +598,14 @@ int main(int argc, char *argv[] ) {
     bool useHeadersInCSV = false;
     int command_port = 0, results_port = 0;
     bool paused = false, running = true, solveLoops = false;
+    fmigo_csv_fmu csv_fmu;
 
     parseArguments(
             argc, argv, &fmuURIs, &connections, &params, &endTime, &timeStep,
             &fmigo_loglevel, &csv_separator, &outFilePath, &quietMode, &fmigo::globals::fileFormat,
             &method, &realtimeMode, &printXML, &stepOrder, &fmuVisibilities,
             &scs, &hdf5Filename, &fieldnameFilename, &holonomic, &compliance,
-            &command_port, &results_port, &paused, &solveLoops, &useHeadersInCSV
+            &command_port, &results_port, &paused, &solveLoops, &useHeadersInCSV, &csv_fmu
     );
 
     bool zmqControl = command_port > 0 && results_port > 0;
@@ -617,8 +711,9 @@ int main(int argc, char *argv[] ) {
     master->send(clients, fmi2_import_enter_initialization_mode());
 
     //send user-defined parameters
-    sendUserParams(master, clients, params);
+    sendUserParams(master, clients, resolve_string_params(params, clients));
 
+    map<double, param_map> csvParam = param_mapFromCSV(csv_fmu, clients);
 
     if (solveLoops) {
       //solve initial algebraic loops
@@ -677,6 +772,16 @@ int main(int argc, char *argv[] ) {
         //HDF5
         columnofs = 0;
 #endif
+
+        if (csvParam.size() > 0) {
+            //zero order hold
+            auto it = csvParam.upper_bound(t);
+            if (it != csvParam.begin()) {
+                it--;
+            }
+            sendUserParams(master, clients, it->second);
+        }
+
         if (realtimeMode) {
             double t_wall;
 

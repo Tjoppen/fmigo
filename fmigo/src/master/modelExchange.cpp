@@ -48,15 +48,19 @@ ModelExchangeStepper::ModelExchangeStepper(std::vector<FMIClient*> clients, std:
             me_weakConnections.push_back(wc);
     }
 
-    prepareME();
+    if (me_clients.size() > 0) {
+        prepareME();
+    }
 }
 
 /** ~ModelExchangeStepper()
  *  Class destructor
  */
 ModelExchangeStepper::~ModelExchangeStepper(){
-    cgsl_free_simulation(m_sim);
-    free(m_p.backup.dydt);
+    if (me_clients.size() > 0) {
+        cgsl_free_simulation(m_sim);
+        free(m_p.backup.dydt);
+    }
 }
 
 /** fmu_function

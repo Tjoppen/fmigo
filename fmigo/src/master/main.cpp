@@ -43,21 +43,21 @@ std::map<int, const char*> columnnames;
 typedef map<pair<int,fmi2_base_type_enu_t>, vector<param> > parameter_map;
 
 #ifdef USE_MPI
-static vector<FMIClient*> setupClients(int numFMUs, BaseMaster *baseMaster) {
+static vector<FMIClient*> setupClients(int numFMUs) {
     vector<FMIClient*> clients;
     for (int x = 0; x < numFMUs; x++) {
-        FMIClient* client = new FMIClient(x+1 /* world_rank */, x /* clientId */, baseMaster);
+        FMIClient* client = new FMIClient(x+1 /* world_rank */, x /* clientId */);
         clients.push_back(client);
     }
     return clients;
 }
 #else
-static vector<FMIClient*> setupClients(vector<string> fmuURIs, zmq::context_t &context, BaseMaster* baseMaster) {
+static vector<FMIClient*> setupClients(vector<string> fmuURIs, zmq::context_t &context) {
     vector<FMIClient*> clients;
     int clientId = 0;
     for (auto it = fmuURIs.begin(); it != fmuURIs.end(); it++, clientId++) {
         // Assume URI to client
-        FMIClient *client = new FMIClient(context, clientId, *it, baseMaster);
+        FMIClient *client = new FMIClient(context, clientId, *it);
 
         if (!client) {
             fprintf(stderr, "Failed to connect client with URI %s\n", it->c_str());
@@ -579,14 +579,14 @@ int main(int argc, char *argv[] ) {
 
     BaseMaster *master = NULL;
 #ifdef USE_MPI
-    vector<FMIClient*> clients = setupClients(world_size-1, master);
+    vector<FMIClient*> clients = setupClients(world_size-1);
 #else
     //without this the maximum number of clients tops out at 300 on Linux,
     //around 63 on Windows (according to Web searches)
 #ifdef ZMQ_MAX_SOCKETS
     zmq_ctx_set((void *)context, ZMQ_MAX_SOCKETS, fmuURIs.size() + (zmqControl ? 2 : 0));
 #endif
-    vector<FMIClient*> clients = setupClients(fmuURIs, context, master);
+    vector<FMIClient*> clients = setupClients(fmuURIs, context);
 #endif
 
     //connect, get modelDescription XML (was important for connconf)
@@ -620,10 +620,6 @@ int main(int argc, char *argv[] ) {
         ofstream ofs(fieldnameFilename.c_str());
         ofs << fieldnames;
         ofs << endl;
-    }
-    //hook clients to master
-    for (auto it = clients.begin(); it != clients.end(); it++) {
-        (*it)->m_master = master;
     }
 
     //init

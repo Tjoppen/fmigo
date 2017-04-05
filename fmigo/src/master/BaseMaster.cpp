@@ -20,6 +20,8 @@ BaseMaster::BaseMaster(vector<FMIClient*> clients, vector<WeakConnection> weakCo
         m_clients(clients),
         m_weakConnections(weakConnections),
         clientWeakRefs(getOutputWeakRefs(m_weakConnections)) {
+    for(auto client: m_clients)
+        client->m_master = this;
 }
 
 BaseMaster::~BaseMaster() {

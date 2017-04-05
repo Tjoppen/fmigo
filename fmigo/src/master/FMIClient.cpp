@@ -21,13 +21,13 @@ void jmCallbacksLoggerClient(jm_callbacks* c, jm_string module, jm_log_level_enu
 }
 
 #ifdef USE_MPI
-FMIClient::FMIClient(int world_rank, int id, BaseMaster *baseMaster) : fmitcp::Client(world_rank), sc::Slave() {
+FMIClient::FMIClient(int world_rank, int id) : fmitcp::Client(world_rank), sc::Slave() {
 #else
-    FMIClient::FMIClient(zmq::context_t &context, int id, string uri, BaseMaster *baseMaster) : fmitcp::Client(context), sc::Slave() {
+FMIClient::FMIClient(zmq::context_t &context, int id, string uri) : fmitcp::Client(context), sc::Slave() {
     m_uri = uri;
 #endif
     m_id = id;
-    m_master = baseMaster;
+    m_master = NULL;
     m_fmi2Instance = NULL;
     m_context = NULL;
     m_fmi2Outputs = NULL;

@@ -17,7 +17,9 @@ struct connection {
     connection() {
         slope = 1;
         intercept = 0;
+        needs_type = true;
     }
+    bool needs_type;
     fmi2_base_type_enu_t fromType;
     int fromFMU;                // Index of FMU
     int fromOutputVR;           // Value reference

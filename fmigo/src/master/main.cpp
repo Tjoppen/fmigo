@@ -249,6 +249,12 @@ static param_map resolve_string_params(const vector<deque<string> > &params, vec
         } else if (parts.size() == 4) {
             //type,FMU,VR,value
             type = type_from_char(parts[0]);
+
+            if (!isNumeric(parts[2])) {
+                fatal("Must use VRs when specifying parameters with explicit types (-p %s,%s,%s,%s)\n",
+                    parts[0].c_str(), parts[1].c_str(), parts[2].c_str(), parts[3].c_str());
+            }
+
             int vr = atoi(parts[2].c_str());
             p = param_from_vr_type_string(vr, type, parts[3]);
         }
@@ -517,6 +523,12 @@ static int connectionNamesToVr(std::vector<connection> &connections,
     for(size_t i = 0; i < connections.size(); i++){
       connections[i].fromOutputVR = vrFromKeyName(clients[connections[i].fromFMU], connections[i].fromOutputVRorNAME);
       connections[i].toInputVR = vrFromKeyName(clients[connections[i].toFMU], connections[i].toInputVRorNAME);
+
+      if (connections[i].needs_type) {
+          //resolve types
+          connections[i].fromType = clients[connections[i].fromFMU]->getVariables().find(connections[i].fromOutputVRorNAME)->second.type;
+          connections[i].toType   = clients[connections[i].toFMU  ]->getVariables().find(connections[i].toInputVRorNAME   )->second.type;
+      }
     }
 
     for(size_t i = 0; i < strongConnections.size(); i++){

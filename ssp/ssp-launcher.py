@@ -11,26 +11,6 @@ import shutil
 import argparse
 import psutil
 
-parser = argparse.ArgumentParser(
-    description='%s: Launch an SSP with either MPI or TCP' %sys.argv[0],
-    )
-parser.add_argument('-d','--dry-run',
-                    help='Run without starting the simulation',
-                    action='store_true')
-parser.add_argument('-p','--ports', metavar="PORT",
-                    help='If set, run over TCP with the specified ports. If not set, use MPI (default). Use another argument or -- to separate from SSP name',
-                    default=[],
-                    nargs='+',
-                    type=int)
-parser.add_argument('-s','--ssp', metavar='ssp-filename',
-                    help='SSP file to be launched')
-
-parser.add_argument('args',
-                    metavar='...',
-                    help='Remaining positional arguments, passed to fmigo-master',
-                    nargs=argparse.REMAINDER)
-
-parse = parser.parse_args()
 
 RESOURCE_DIR='resources'
 SSD_NAME='SystemStructure.ssd'
@@ -803,6 +783,27 @@ def parse_ssp(ssp_path, cleanup_zip = True):
     return flatconns, flatparams, unzipped_ssp, d
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(
+        description='%s: Launch an SSP with either MPI or TCP' %sys.argv[0],
+        )
+    parser.add_argument('-d','--dry-run',
+                        help='Run without starting the simulation',
+                        action='store_true')
+    parser.add_argument('-p','--ports', metavar="PORT",
+                        help='If set, run over TCP with the specified ports. If not set, use MPI (default). Use another argument or -- to separate from SSP name',
+                        default=[],
+                        nargs='+',
+                        type=int)
+    parser.add_argument('-s','--ssp', metavar='ssp-filename',
+                        help='SSP file to be launched')
+
+    parser.add_argument('args',
+                        metavar='...',
+                        help='Remaining positional arguments, passed to fmigo-master',
+                        nargs=argparse.REMAINDER)
+
+    parse = parser.parse_args()
+
 
     flatconns, flatparams, unzipped_ssp, d = parse_ssp(parse.ssp, False)
 

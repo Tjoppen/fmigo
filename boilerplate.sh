@@ -1,6 +1,6 @@
 export BUILD_DIR=$(pwd)/build
 export FMUS_DIR=$(pwd)/umit-fmus
-export PATH=$PATH:$BUILD_DIR/install/bin
+export PATH=$BUILD_DIR/install/bin:$PATH
 export SERVER=fmigo-server
 export MASTER=fmigo-master
 export MPI_MASTER=fmigo-mpi

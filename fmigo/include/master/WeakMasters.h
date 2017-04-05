@@ -47,7 +47,7 @@ public:
         /*for (auto it = clientWeakRefs.begin(); it != clientWeakRefs.end(); it++) {
             int i = 0;
             for (auto it2 = it->first->m_getRealValues.begin(); it2 != it->first->m_getRealValues.end(); it2++, i++) {
-                fprintf(stderr, "%i real VR %i = %f\n", it->first->getId(), it->second[i], *it2);
+                debug("%i real VR %i = %f\n", it->first->getId(), it->second[i], *it2);
             }
         }*/
 
@@ -96,7 +96,6 @@ public:
                 sendWait(client, fmi2_import_do_step(t, dt, true));
             } //else modelExchange, solve all further down simultaneously
         }
-
         solveME(t,dt);
     }
 };

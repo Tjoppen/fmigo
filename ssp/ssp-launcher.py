@@ -8,6 +8,29 @@ import glob
 from lxml import etree
 import subprocess
 import shutil
+import argparse
+import psutil
+
+parser = argparse.ArgumentParser(
+    description='%s: Launch an SSP with either MPI or TCP' %sys.argv[0],
+    )
+parser.add_argument('-d','--dry-run',
+                    help='Run without starting the simulation',
+                    action='store_true')
+parser.add_argument('-p','--ports', metavar="PORT",
+                    help='If set, run over TCP with the specified ports. If not set, use MPI (default). Use another argument or -- to separate from SSP name',
+                    default=[],
+                    nargs='+',
+                    type=int)
+parser.add_argument('-s','--ssp', metavar='ssp-filename',
+                    help='SSP file to be launched')
+
+parser.add_argument('args',
+                    metavar='...',
+                    help='Remaining positional arguments, passed to fmigo-master',
+                    nargs=argparse.REMAINDER)
+
+parse = parser.parse_args()
 
 RESOURCE_DIR='resources'
 SSD_NAME='SystemStructure.ssd'
@@ -150,11 +173,26 @@ def find_elements(s, first, second):
     a = s.find(first,  ns)
     return a, a.findall(second,  ns) if a != None else []
 
+def check_name(name):
+    if '.' in name:
+        # We might allow this at some point
+        print('ERROR: FMU/System name "%s" contains a dot, which is not allowed' % name)
+        exit(1)
+
 def parse_parameter_bindings(path, baseprefix, parameterbindings):
     for pb in parameterbindings[1]:
-        prefix = baseprefix + get_attrib(pb, 'prefix', '')
+        pb_prefix = get_attrib(pb, 'prefix', '')
+        prefix = baseprefix
 
-        #print('prefix: '+prefix)
+        # Spec says to use prefix="Foo." to address parameters in subsystems
+        # We've split FMU names from variable names, so the case where a prefix would not have a trailing dot is nonsensical
+        if len(pb_prefix) > 0:
+            # Expect a trailing dot and strip it
+            if pb_prefix[-1] != '.':
+                print('ERROR: ParameterBinding prefix must end in dot (%s -> "%s")' % (baseprefix, pb_prefix) )
+                exit(1)
+            prefix = baseprefix + '.' + pb_prefix[0:-1]
+
         pvs = (pb, pb.findall('ssd:ParameterValues', ns))
 
         x_ssp_parameter_set = 'application/x-ssp-parameter-set'
@@ -189,32 +227,36 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
             b = pv.find('ssv:Boolean', ns)
             s = pv.find('ssv:String', ns)
             e = pv.find('ssv:Enumeration', ns)
-            name = prefix+pv.attrib['name']
+            key = str([prefix,pv.attrib['name']])
+            param = {
+            'paramname': pv.attrib['name'],
+            'fmuname':   prefix,
+            }
 
             if r != None:
                 if 'unit' in r.attrib:
                     print('Not dealing with parameters with units yet')
                     exit(1)
 
-                parameters[name] = {
+                param.update({
                     'type': 'r',
                     'value': float(r.attrib['value']),
-                }
+                })
             elif i != None:
-                parameters[name] = {
+                param.update({
                     'type': 'i',
                     'value': int(i.attrib['value']),
-                }
+                })
             elif b != None:
-                parameters[name] = {
+                param.update({
                     'type': 'b',
                     'value': b.attrib['value'], #keep booleans as-is
-                }
+                })
             elif s != None:
-                parameters[name] = {
+                param.update({
                     'type': 's',
                     'value': s.attrib['value'],
-                }
+                })
             elif e != None:
                 print('Enumerations not supported')
                 exit(1)
@@ -222,6 +264,7 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
                 print('Unsupported parameter type: ' + str(pv[0].tag))
                 exit(1)
 
+            parameters[key] = param
             remove_if_empty(pvs[0], pv)
 
         #deal with any ssm
@@ -241,12 +284,14 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
             tree = parse_and_validate('SSM', os.path.join(path, get_attrib(pm, 'source')))
             mes = tree.getroot().findall('ssm:MappingEntry', ns)
 
+            #print('mes: ' +mes)
             for me in mes:
-                source = prefix+me.attrib['source']
-                target = prefix+me.attrib['target']
+                sourcekey = str([prefix, me.attrib['source']])
+                targetkey = str([prefix, me.attrib['target']])
+                #print('target: ' +target)
 
-                p = parameters[source]
-                del parameters[source]
+                p = parameters[sourcekey]
+                del parameters[sourcekey]
 
                 lt = me.find('ssm:LinearTransformation', ns)
                 if lt != None:
@@ -262,7 +307,7 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
                     print("Found MappingEntry with sub-element which isn't LinearTransformation, which is not yet supported")
                     exit(1)
 
-                parameters[target] = p
+                parameters[targetkey] = p
 
             remove_if_empty(pb, pm)
 
@@ -270,6 +315,7 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
 
 class FMU:
     def __init__(self, name, path, connectors, system):
+        check_name(name)
         self.name = name
         self.path = path
         self.connectors = {}
@@ -322,6 +368,7 @@ class SystemStructure:
     def __init__(self, root):
         units = find_elements(root, 'ssd:Units', 'ssd:Unit')
         self.name = get_attrib(root, 'name')
+        check_name(self.name)
 
         #not sure what to use schemaLocation for, or if we should even require it
         # self.schemaLocation = get_attrib(root, '{http://www.w3.org/2001/XMLSchema-instance}schemaLocation')
@@ -358,7 +405,7 @@ class SystemStructure:
 class System:
     '''
     A System is a tree of Systems and FMUs
-    In each System there are Connections between 
+    In each System there are Connections between
     '''
 
     @classmethod
@@ -405,6 +452,7 @@ class System:
         self.d = d
         self.version = version
         self.name = get_attrib(s, 'name')
+        check_name(self.name)
         self.description = get_attrib(s, 'description', '')
         self.parent = parent
         self.structure = structure
@@ -464,6 +512,7 @@ class System:
             #print comp
             t    = get_attrib(comp, 'type')
             name = get_attrib(comp, 'name')
+            check_name(name)
             #print t
 
             if t == 'application/x-ssp-package':
@@ -487,7 +536,7 @@ class System:
 
             #parse parameters after subsystems so their values get overriden properly
             cparams = find_elements(comp, 'ssd:ParameterBindings', 'ssd:ParameterBinding')
-            parse_parameter_bindings(self.d, self.get_name() + '.' + name + '.', cparams)
+            parse_parameter_bindings(self.d, self.get_name() + '.' + name , cparams)
             remove_if_empty(comp, cparams[0])
             remove_if_empty(components[0], comp)
 
@@ -556,7 +605,7 @@ class System:
         remove_if_empty(s, elements)
 
         #parse parameters after subsystems so their values get overriden properly
-        parse_parameter_bindings(self.d, self.get_name() + '.', params)
+        parse_parameter_bindings(self.d, self.get_name() , params)
         remove_if_empty(s, params[0])
 
     def find_signal_dictionary(self, dictionary_name):
@@ -636,7 +685,7 @@ def parse_ssp(ssp_path, cleanup_zip = True):
 
     # Allow custom named ssd files
     if file_ext == '.ssd':
-       SSD_NAME = os.path.basename(ssp_path) 
+       SSD_NAME = os.path.basename(ssp_path)
 
     # Check if we run master directly from an SSD XML file instead of an SSP zip archive
     if os.path.basename(ssp_path) == SSD_NAME:
@@ -706,10 +755,9 @@ def parse_ssp(ssp_path, cleanup_zip = True):
         mds.append(svs)
 
     flatparams = []
-    for key,value in parameters.iteritems():
-        parts = key.split('.')
-        fmuname = '.'.join(parts[0:-1])
-        paramname = parts[-1]
+    for value in parameters.values():
+        fmuname   = value['fmuname']
+        paramname = value['paramname']
         if fmuname in fmumap:
             fmu = fmus[fmumap[fmuname]]
             if paramname in mds[fmu.id]:
@@ -738,7 +786,7 @@ def parse_ssp(ssp_path, cleanup_zip = True):
     flatconns = []
     for key in connectionmultimap.keys():
         fr = key
-        to1 = connectionmultimap[key]  
+        to1 = connectionmultimap[key]
         for to in to1:
             #print str((fr,to)) + ' vs ' + str(mds[fr[0]])
             f = mds[fr[0]]
@@ -756,31 +804,56 @@ def parse_ssp(ssp_path, cleanup_zip = True):
 
 if __name__ == '__main__':
 
-    if len(sys.argv) < 2:
-        #TODO: we probably want to know which of TCP and MPI is wanted
-        print('USAGE: %s [--dry-run] ssp-file' % sys.argv[0])
-        exit(1)
+    flatconns, flatparams, unzipped_ssp, d = parse_ssp(parse.ssp, False)
 
+    #If we are working with TCP, create tcp://localhost:port for all given local hosts
+    if len(parse.ports):
 
-    dry_run = sys.argv[1] == '--dry-run'
+        if len(fmus) > len(parse.ports):
+            print('Error: Not given one port for each FMU, expected %d' %len(fmus))
+            exit(1)
+        elif len(fmus) < len(parse.ports):
+            print('Error: Given too many ports, expected %d' %len(fmus))
+            exit(1)
 
-    if dry_run and len(sys.argv) < 3:
-        print('ERROR: missing ssp-name')
-        exit(1)
+        #list all tcp ports that are not available
+        tcpportsinuse = []
+        for con in psutil.net_connections():
+            tcpportsinuse.append(con.laddr[1])
 
-    flatconns, flatparams, unzipped_ssp, d = parse_ssp(sys.argv[-1], False)
+        tcpIPport = []
+        for i in range(len(fmus)):
+            if parse.ports[i] in tcpportsinuse:
+                print('%s: port %d already in use' %(sys.argv[0], parse.ports[i]))
+                exit(1)
+            tcpIPport.append("tcp://localhost:" + str(parse.ports[i]))
 
-    #read connections and parameters from stdin, since they can be quite many
-    #stdin because we want to avoid leaving useless files on the filesystem
-    args = ['mpiexec','-np',str(len(fmus)+1),'fmigo-mpi','-t','9.9','-d','0.1','-a','-'] + [fmu.path for fmu in fmus]
-    print(" ".join(args) + " <<< " + '"' + " ".join(flatconns+flatparams) + '"')
+        # Everything looks OK; start servers
+        for i in range(len(fmus)):
+            subprocess.Popen(['fmigo-server','-p', str(parse.ports[i]), fmus[i].path])
 
-    if dry_run:
+        #read connections and parameters from stdin, since they can be quite many
+        #stdin because we want to avoid leaving useless files on the filesystem
+        args   = ['fmigo-master']
+        append = tcpIPport
+    else:
+        #read connections and parameters from stdin, since they can be quite many
+        #stdin because we want to avoid leaving useless files on the filesystem
+        args   = ['mpiexec','-np',str(len(fmus)+1),'fmigo-mpi']
+        append = [fmu.path for fmu in fmus]
+
+    args += ['-t','9.9','-d','0.1'] + parse.args + ['-a','-']
+    args += append
+
+    pipeinput = " ".join(flatconns+flatparams)
+    print(" ".join(args) + (' <<< "%s"' % pipeinput))
+
+    if parse.dry_run:
         ret = 0
     else:
         #pipe arguments to master, leave stdout and stderr alone
         p = subprocess.Popen(args, stdin=subprocess.PIPE)
-        p.communicate(input=" ".join(flatconns).encode('utf-8'))
+        p.communicate(input=pipeinput.encode('utf-8'))
         ret = p.returncode  #ret can be None
 
     if ret == 0:

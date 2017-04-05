@@ -1,6 +1,5 @@
 #include "Client.h"
-#include "Logger.h"
-#include "common.h"
+#include "fmitcp-common.h"
 #include <stdio.h>
 #ifndef WIN32
 #include <unistd.h>
@@ -8,6 +7,7 @@
 #ifdef USE_MPI
 #include "common/mpi_tools.h"
 #endif
+#include "common/common.h"
 
 using namespace std;
 using namespace fmitcp;
@@ -44,13 +44,12 @@ static bool statusIsOK(fmitcp_proto::fmi2_status_t fmi2) {
     return fmi2 == fmitcp_proto::fmi2_status_ok;
 }
 
-template<typename T, typename R> void handle_get_value_res(Client *c, Logger logger, void (Client::*callback)(const deque<T>&,fmitcp_proto::fmi2_status_t), R &r) {
+template<typename T, typename R> void handle_get_value_res(Client *c, void (Client::*callback)(const deque<T>&,fmitcp_proto::fmi2_status_t), R &r) {
     std::deque<T> values = values_to_deque<T>(r);
     if (!statusIsOK(r.status())) {
-        logger.log(Logger::LOG_NETWORK,"< %s(values=...,status=%d)\n",r.GetTypeName().c_str(), r.status());
-        fprintf(stderr, "FMI call %s failed with status=%d\nMaybe a connection or <Output> was specified incorrectly?",
+        debug("< %s(values=...,status=%d)\n",r.GetTypeName().c_str(), r.status());
+        fatal("FMI call %s failed with status=%d\nMaybe a connection or <Output> was specified incorrectly?",
             r.GetTypeName().c_str(), r.status());
-        exit(1);
     }
     (c->*callback)(values,r.status());
 }
@@ -62,8 +61,7 @@ void Client::clientData(const char* data, long size){
     size -= 2;
 
     if (m_pendingRequests == 0) {
-        fprintf(stderr, "Got response while m_pendingRequests = 0\n");
-        exit(1);
+        fatal("Got response while m_pendingRequests = 0\n");
     }
     m_pendingRequests--;
 
@@ -71,10 +69,9 @@ void Client::clientData(const char* data, long size){
 #define CHECK_WITH_STR(type, str) {\
         type##_res r;\
         r.ParseFromArray(data, size);\
-        m_logger.log(Logger::LOG_NETWORK,"< "#type"_res(status=%d)\n",r.status());\
+        debug("< "#type"_res(status=%d)\n",r.status()); \
         if (!statusIsOK(r.status())) {\
-            fprintf(stderr, "FMI call "#type"() failed with status=%d\n" str, r.status());\
-            exit(1);\
+            fatal("FMI call "#type"() failed with status=%d\n" str, r.status()); \
         }\
         on_##type##_res(r.status());\
     }
@@ -83,7 +80,7 @@ void Client::clientData(const char* data, long size){
 #define NOSTAT_CASE(type) {\
         type##_res r;\
         r.ParseFromArray(data, size);\
-        m_logger.log(Logger::LOG_NETWORK,"< "#type"_res()\n");\
+        debug("< "#type"_res()\n");\
         on_##type##_res();\
     }
 
@@ -92,7 +89,7 @@ void Client::clientData(const char* data, long size){
     r.ParseFromArray(data, size);                                       \
     std::ostringstream stream;                                          \
     stream << "< "#type"_res(value=" << r.value() << ")\n";             \
-    m_logger.log(Logger::LOG_NETWORK, stream.str().c_str());            \
+    debug( stream.str().c_str());            \
     on_##type##_res( r.value());                         \
     }
 
@@ -101,7 +98,7 @@ void Client::clientData(const char* data, long size){
     switch (type) {
     case type_fmi2_import_get_version_res: {
         fmi2_import_get_version_res r; r.ParseFromArray(data, size);
-        m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_version_res(version=%s)\n", r.version().c_str());
+        debug("< fmi2_import_get_version_res(version=%s)\n", r.version().c_str());
         on_fmi2_import_get_version_res(r.version());
 
         break;
@@ -117,25 +114,25 @@ void Client::clientData(const char* data, long size){
     case type_fmi2_import_get_real_res: {
         fmi2_import_get_real_res r;
         r.ParseFromArray(data, size);
-        handle_get_value_res(this, m_logger, &Client::on_fmi2_import_get_real_res, r);
+        handle_get_value_res(this, &Client::on_fmi2_import_get_real_res, r);
         break;
     }
     case type_fmi2_import_get_integer_res: {
         fmi2_import_get_integer_res r;
         r.ParseFromArray(data, size);
-        handle_get_value_res(this, m_logger, &Client::on_fmi2_import_get_integer_res, r);
+        handle_get_value_res(this, &Client::on_fmi2_import_get_integer_res, r);
         break;
     }
     case type_fmi2_import_get_boolean_res: {
         fmi2_import_get_boolean_res r;
         r.ParseFromArray(data, size);
-        handle_get_value_res(this, m_logger, &Client::on_fmi2_import_get_boolean_res, r);
+        handle_get_value_res(this, &Client::on_fmi2_import_get_boolean_res, r);
         break;
     }
     case type_fmi2_import_get_string_res: {
         fmi2_import_get_string_res r;
         r.ParseFromArray(data, size);
-        handle_get_value_res(this, m_logger, &Client::on_fmi2_import_get_string_res, r);
+        handle_get_value_res(this, &Client::on_fmi2_import_get_string_res, r);
         break;
     }
     case type_fmi2_import_set_real_res:                     CHECK_WITH_STR(fmi2_import_set_real, SETX_HINT); break;
@@ -144,26 +141,26 @@ void Client::clientData(const char* data, long size){
     case type_fmi2_import_set_string_res:                   CHECK_WITH_STR(fmi2_import_set_string, SETX_HINT); break;
     case type_fmi2_import_get_fmu_state_res: {
         fmi2_import_get_fmu_state_res r; r.ParseFromArray(data, size);
-        m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_fmu_state_res(stateId=%d,status=%d)\n", r.stateid(), r.status());
+        debug("< fmi2_import_get_fmu_state_res(stateId=%d,status=%d)\n", r.stateid(), r.status());
         on_fmi2_import_get_fmu_state_res(r.stateid(),r.status());
 
         break;
     }
     case type_fmi2_import_set_fmu_state_res:                NORMAL_CASE(fmi2_import_set_fmu_state); break;
     case type_fmi2_import_free_fmu_state_res: {
-        m_logger.log(Logger::LOG_NETWORK,"This command is TODO\n");
+        debug("This command is TODO\n");
         break;
     }
     // case type_fmi2_import_serialized_fmu_state_size_res: {
-    //     m_logger.log(Logger::LOG_NETWORK,"This command is TODO\n");
+    //     debug("This command is TODO\n");
     //     break;
     // }
     // case type_fmi2_import_serialize_fmu_state_res: {
-    //     m_logger.log(Logger::LOG_NETWORK,"This command is TODO\n");
+    //     debug("This command is TODO\n");
     //     break;
     // }
     // case type_fmi2_import_de_serialize_fmu_state_res: {
-    //     m_logger.log(Logger::LOG_NETWORK,"This command is TODO\n");
+    //     debug("This command is TODO\n");
     //     break;
     // }
     case type_fmi2_import_get_directional_derivative_res: {
@@ -171,7 +168,7 @@ void Client::clientData(const char* data, long size){
         std::vector<double> dz;
         for(int i=0; i<r.dz_size(); i++)
             dz.push_back(r.dz(i));
-        m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_directional_derivative_res(dz=...,status=%d)\n", r.status());
+        debug("< fmi2_import_get_directional_derivative_res(dz=...,status=%d)\n", r.status());
         on_fmi2_import_get_directional_derivative_res(dz,r.status());
 
         break;
@@ -181,9 +178,10 @@ void Client::clientData(const char* data, long size){
     case type_fmi2_import_new_discrete_states_res:{
 
         fmi2_import_new_discrete_states_res r; r.ParseFromArray(data, size);
+#ifdef DEBUG
         ::fmi2_event_info_t eventInfo = protoEventInfoToFmi2EventInfo(r.eventinfo());
 
-        m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_new_discrete_states_res(newDiscreteStatesNeeded=%d, terminateSimulation=%d, nominalsOfContinuousStatesChanged=%d, valuesOfContinuousStatusChanged=%d, nextEventTimeDefined=%d, nextEventTime=%f )\n",
+        debug("< fmi2_import_new_discrete_states_res(newDiscreteStatesNeeded=%d, terminateSimulation=%d, nominalsOfContinuousStatesChanged=%d, valuesOfContinuousStatusChanged=%d, nextEventTimeDefined=%d, nextEventTime=%f )\n",
                      eventInfo.newDiscreteStatesNeeded,
                      eventInfo.terminateSimulation,
                      eventInfo.nominalsOfContinuousStatesChanged,
@@ -191,7 +189,7 @@ void Client::clientData(const char* data, long size){
                      eventInfo.nextEventTimeDefined,
                      eventInfo.nextEventTime
                      );
-
+#endif
 
         on_fmi2_import_new_discrete_states_res(r.eventinfo());
 
@@ -201,7 +199,7 @@ void Client::clientData(const char* data, long size){
     }case type_fmi2_import_enter_continuous_time_mode_res:  NORMAL_CASE(fmi2_import_enter_continuous_time_mode); break;
     case type_fmi2_import_completed_integrator_step_res: {
         fmi2_import_completed_integrator_step_res r; r.ParseFromArray(data, size);
-        m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_completed_integrator_step_res(mid=%d,callEventUpdate=%d,status=%d)\n", r.calleventupdate(), r.status());
+        debug("< fmi2_import_completed_integrator_step_res(mid=%d,callEventUpdate=%d,status=%d)\n", r.calleventupdate(), r.status());
         on_fmi2_import_completed_integrator_step_res(r.calleventupdate(),r.status());
 
         break;
@@ -209,53 +207,52 @@ void Client::clientData(const char* data, long size){
     case type_fmi2_import_set_time_res:                     NORMAL_CASE(fmi2_import_set_time); break;
     case type_fmi2_import_set_continuous_states_res:        NORMAL_CASE(fmi2_import_set_continuous_states); break;
     case type_fmi2_import_get_event_indicators_res: {
-        m_logger.log(Logger::LOG_NETWORK,"This command is NOT TESTED\n");
+        debug("This command is NOT TESTED\n");
         fmi2_import_get_event_indicators_res r; r.ParseFromArray(data, size);
-
         std::vector<double> z;
         for(int i=0; i<r.z_size(); i++)
             z.push_back(r.z(i));
 
         on_fmi2_import_get_event_indicators_res(z,r.status());
-        m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_event_indicators_res(mid=%d, status=%d)\n", r.status());
+        debug("< fmi2_import_get_event_indicators_res(mid=%d, status=%d)\n", r.status());
 
         break;
     }
     case type_fmi2_import_get_continuous_states_res: {
-        m_logger.log(Logger::LOG_NETWORK,"This command is NOT TESTED\n");
+        debug("This command is NOT TESTED\n");
         fmi2_import_get_continuous_states_res r; r.ParseFromArray(data, size);
         std::vector<double> x;
         for(int i=0; i<r.x_size(); i++)
             x.push_back(r.x(i));
         on_fmi2_import_get_continuous_states_res(x,r.status());
-        m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_continuous_states_res(states=%d)\n", r.status());
+        debug("< fmi2_import_get_continuous_states_res(mid=%d, states=%d)\n", r.status());
         break;
     }
     case type_fmi2_import_get_derivatives_res: {
-        m_logger.log(Logger::LOG_NETWORK,"This command is NOT TESTED\n");
+        debug("This command is NOT TESTED\n");
         fmi2_import_get_derivatives_res r; r.ParseFromArray(data, size);
         std::vector<double> derivatives;
         for(int i=0; i<r.derivatives_size(); i++)
             derivatives.push_back(r.derivatives(i));
         on_fmi2_import_get_derivatives_res(derivatives,r.status());
-        m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_derivatives_res(status=%d)\n", r.status());
+        debug("< fmi2_import_get_derivatives_res(mid=%d, status=%d)\n", r.status());
         break;
     }
     case type_fmi2_import_get_nominal_continuous_states_res: {
-        m_logger.log(Logger::LOG_NETWORK,"This command is NOT TESTED\n");
+        debug("This command is NOT TESTED\n");
         fmi2_import_get_nominal_continuous_states_res r; r.ParseFromArray(data, size);
         std::vector<double> x;
         for(int i=0; i<r.nominal_size(); i++)
             x.push_back(r.nominal(i));
         on_fmi2_import_get_nominal_continuous_states_res(x,r.status());
-        m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_nominal_continuous_states_res(states=%d)\n", r.status());
+        debug("< fmi2_import_get_nominal_continuous_states_res(mid=%d, states=%d)\n", r.status());
         break;
     }
       /* Co-simulation */
     case type_fmi2_import_set_real_input_derivatives_res:   NORMAL_CASE(fmi2_import_set_real_input_derivatives); break;
     case type_fmi2_import_get_real_output_derivatives_res: {
         fmi2_import_get_real_output_derivatives_res r; r.ParseFromArray(data, size);
-        m_logger.log(Logger::LOG_NETWORK,"< fmi2_import_get_real_output_derivatives_res(status=%d,values=...)\n",r.status());
+        debug("< fmi2_import_get_real_output_derivatives_res(mid=%d,status=%d,values=...)\n",r.status());
         on_fmi2_import_get_real_output_derivatives_res(r.status(),values_to_vector<double>(r));
         break;
     }
@@ -269,13 +266,13 @@ void Client::clientData(const char* data, long size){
     case type_get_xml_res: {
 
         get_xml_res r; r.ParseFromArray(data, size);
-        m_logger.log(Logger::LOG_NETWORK,"< get_xml_res(mid=%d,xml=...)\n");
+        debug("< get_xml_res(mid=%d,xml=...)\n");
         on_get_xml_res( r.loglevel(), r.xml());
 
         break;
     }
     default:
-        m_logger.log(Logger::LOG_ERROR,"Message type not recognized: %d!\n",type);
+        error("Message type not recognized: %d!\n",type);
         break;
     }
 }
@@ -291,10 +288,6 @@ Client::Client(zmq::context_t &context) : m_socket(context, ZMQ_PAIR) {
 
 Client::~Client(){
     google::protobuf::ShutdownProtobufLibrary();
-}
-
-Logger * Client::getLogger() {
-    return &m_logger;
 }
 
 void Client::sendMessage(std::string s){
@@ -327,8 +320,8 @@ size_t Client::getNumPendingRequests() const {
 
 #ifndef USE_MPI
 void Client::connect(string uri){
-    m_logger.log(fmitcp::Logger::LOG_DEBUG,"connecting to %s\n", uri.c_str());
+    debug("connecting to %s\n", uri.c_str());
     m_socket.connect(uri.c_str());
-    m_logger.log(fmitcp::Logger::LOG_DEBUG,"connected\n");
+    debug("connected\n");
 }
 #endif

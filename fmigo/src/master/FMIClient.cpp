@@ -1,7 +1,6 @@
 #include <fstream>
 #include <sstream>
 #include <fmitcp/Client.h>
-#include <fmitcp/Logger.h>
 #include <fmitcp/serialize.h>
 
 #include "master/BaseMaster.h"
@@ -17,7 +16,7 @@ using namespace common;
  * Callback function for FMILibrary. Logs the FMILibrary operations.
  */
 void jmCallbacksLoggerClient(jm_callbacks* c, jm_string module, jm_log_level_enu_t log_level, jm_string message) {
-  fprintf(stderr, "[module = %s][log level = %s] %s\n", module, jm_log_level_to_string(log_level), message);fflush(NULL);
+    info("[module = %s][log level = %s] %s\n", module, jm_log_level_to_string(log_level), message);fflush(NULL);
 }
 
 #ifdef USE_MPI
@@ -32,7 +31,6 @@ FMIClient::FMIClient(zmq::context_t &context, int id, string uri) : fmitcp::Clie
     m_context = NULL;
     m_fmi2Outputs = NULL;
     m_stateId = 0;
-    m_loglevel = jm_log_level_nothing;
 };
 
 FMIClient::~FMIClient() {
@@ -60,12 +58,12 @@ void FMIClient::onConnect(){
 };
 
 void FMIClient::onDisconnect(){
-    m_logger.log(fmitcp::Logger::LOG_DEBUG,"onDisconnect\n");
+    debug("onDisconnect\n");
     m_master->slaveDisconnected(this);
 };
 
 void FMIClient::onError(string err){
-    m_logger.log(fmitcp::Logger::LOG_DEBUG,"onError\n");
+    debug("onError\n");
     m_master->slaveError(this);
 };
 
@@ -82,7 +80,7 @@ void FMIClient::on_get_xml_res(fmitcp_proto::jm_log_level_enu_t logLevel, string
   m_jmCallbacks.realloc = realloc;
   m_jmCallbacks.free = free;
   m_jmCallbacks.logger = jmCallbacksLoggerClient;
-  m_jmCallbacks.log_level = m_loglevel;
+  m_jmCallbacks.log_level = fmigo_loglevel;
   m_jmCallbacks.context = 0;
   // working directory
   char* dir = fmi_import_mk_temp_dir(&m_jmCallbacks, NULL, "fmitcp_master_");
@@ -101,7 +99,7 @@ void FMIClient::on_get_xml_res(fmitcp_proto::jm_log_level_enu_t logLevel, string
     m_fmi2Outputs = fmi2_import_get_outputs_list(m_fmi2Instance);
     setVariables();
   } else {
-    m_logger.log(fmitcp::Logger::LOG_ERROR, "Error parsing the modelDescription.xml file contained in %s\n", m_workingDir.c_str());
+    error("Error parsing the modelDescription.xml file contained in %s\n", m_workingDir.c_str());
   }
 };
 
@@ -119,8 +117,7 @@ fmi2_fmu_kind_enu_t FMIClient::getFmuKind(){
 
 void FMIClient::setVariables() {
     if (!m_fmi2Instance) {
-        fprintf(stderr, "!m_fmi2Instance in FMIClient::getVariables() - get_xml() failed?\n");
-        exit(1);
+        fatal("!m_fmi2Instance in FMIClient::getVariables() - get_xml() failed?\n");
     }
 
     fmi2_import_variable_list_t *vl = fmi2_import_get_variable_list(m_fmi2Instance, 0);
@@ -134,10 +131,10 @@ void FMIClient::setVariables() {
         var2.type = fmi2_import_get_variable_base_type(var);
         var2.causality = fmi2_import_get_causality(var);
 
-        //fprintf(stderr, "VR %i, type %i, causality %i: %s \"%s\"\n", var2.vr, var2.type, var2.causality, name.c_str(), fmi2_import_get_variable_description(var));
+        //debug("VR %i, type %i, causality %i: %s \"%s\"\n", var2.vr, var2.type, var2.causality, name.c_str(), fmi2_import_get_variable_description(var));
 
         if (m_variables.find(name) != m_variables.end()) {
-            fprintf(stderr, "WARNING: Two or variables named \"%s\"\n", name.c_str());
+            warning("Two or variables named \"%s\"\n", name.c_str());
         }
         m_variables[name] = var2;
     }
@@ -237,9 +234,9 @@ void FMIClient::on_fmi2_import_free_fmu_state_res(fmitcp_proto::fmi2_status_t st
 
 void FMIClient::on_fmi2_import_get_directional_derivative_res(const vector<double>& dz, fmitcp_proto::fmi2_status_t status){
     /*for (size_t x = 0; x < dz.size(); x++) {
-        fprintf(stderr, "%f ", dz[x]);
+         debug("%f ", dz[x]);
     }
-    fprintf(stderr, "\n");*/
+     debug("\n");*/
 
     m_getDirectionalDerivativeValues.push_back(dz);
     m_master->onSlaveDirectionalDerivative(this);
@@ -398,8 +395,7 @@ void FMIClient::sendGetX(const SendGetXType& typeRefs) {
                 sendMessage(fmi2_import_get_string(it->second));
                 break;
             case fmi2_base_type_enum:
-                fprintf(stderr, "fmi2_base_type_enum snuck its way into FMIClient::sendGetX() somehow\n");
-                exit(1);
+                fatal("fmi2_base_type_enum snuck its way into FMIClient::sendGetX() somehow\n");
             }
         }
     }
@@ -417,8 +413,7 @@ template<typename T> vector<T> vectorToBaseType(const vector<MultiValue>& in, T 
 void FMIClient::sendSetX(const SendSetXType& typeRefsValues) {
     for (auto it = typeRefsValues.begin(); it != typeRefsValues.end(); it++) {
         if (it->second.first.size() != it->second.second.size()) {
-            fprintf(stderr, "VR-values count mismatch - something is wrong\n");
-            exit(1);
+            fatal("VR-values count mismatch - something is wrong\n");
         }
 
         if (it->second.first.size() > 0) {
@@ -436,8 +431,7 @@ void FMIClient::sendSetX(const SendSetXType& typeRefsValues) {
                 sendMessage(fmi2_import_set_string (it->second.first, vectorToBaseType(it->second.second, &MultiValue::s)));
                 break;
             case fmi2_base_type_enum:
-                fprintf(stderr, "fmi2_base_type_enum snuck its way into FMIClient::sendSetX() somehow\n");
-                exit(1);
+                fatal("fmi2_base_type_enum snuck its way into FMIClient::sendSetX() somehow\n");
             }
         }
     }

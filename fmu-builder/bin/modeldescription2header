@@ -65,6 +65,7 @@ strs  = {}
 
 for sv in SV:
     name = sv.attrib['name']
+    name = '_'.join(name.split('.'))
     vr = int(sv.attrib['valueReference'])
 
     if name in reals.values() or name in ints.values() or name in bools.values():

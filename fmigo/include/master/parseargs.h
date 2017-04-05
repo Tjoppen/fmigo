@@ -45,7 +45,8 @@ struct param {
 };
 
 enum FILEFORMAT {
-    csv
+    csv,
+    tikz
 };
 
 enum METHOD {
@@ -79,7 +80,7 @@ enum METHOD {
  * @param numStepOrder
  * @return int Returns 0 if the program should proceed, 1 if the program should end.
  */
-int parseArguments( int argc,
+void parseArguments( int argc,
                     char *argv[],
                     std::vector<std::string> *fmuFilePaths,
                     std::vector<connection> *connections,
@@ -104,7 +105,8 @@ int parseArguments( int argc,
                     int *command_port,
                     int *results_port,
                     bool *paused,
-                    bool *solveLoops
+                    bool *solveLoops,
+                    bool *useHeadersInCSV
                     );
 }
 

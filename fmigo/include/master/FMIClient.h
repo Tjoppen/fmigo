@@ -66,8 +66,6 @@ namespace fmitcp_master {
 
         void clearGetValues();
 
-        jm_log_level_enu_t m_loglevel;
-
         std::string getModelName() const;
         variable_map getVariables() const;
         fmi2_fmu_kind_enu_t getFmuKind();

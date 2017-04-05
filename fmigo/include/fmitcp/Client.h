@@ -21,9 +21,6 @@ namespace fmitcp {
 
     protected:
 
-        /// For logging
-        Logger m_logger;
-
     private:
         size_t m_pendingRequests;
 

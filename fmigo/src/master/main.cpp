@@ -773,7 +773,15 @@ int main(int argc, char *argv[] ) {
         columnofs = 0;
 #endif
 
-        sendUserParams(master, clients, csvParam[t]);
+        if (csvParam.size() > 0) {
+            //zero order hold
+            auto it = csvParam.upper_bound(t);
+            if (it != csvParam.begin()) {
+                it--;
+            }
+            sendUserParams(master, clients, *it);
+        }
+
         if (realtimeMode) {
             double t_wall;
 

@@ -22,40 +22,18 @@
 #endif
 
 using namespace fmitcp::serialize;
-using namespace model_exchange;
 
 namespace fmitcp_master {
 
 //aka parallel stepper
-class JacobiMaster : public BaseMaster {
- private:
-    ModelExchangeStepper*       m_modelexchange;
-    std::vector<FMIClient*>     cs_clients;
-    std::vector<FMIClient*>     me_clients;
+class JacobiMaster : public model_exchange::ModelExchangeStepper {
 public:
     JacobiMaster(vector<FMIClient*> clients, vector<WeakConnection> weakConnections) :
-            BaseMaster(clients, weakConnections) {
+            model_exchange::ModelExchangeStepper(clients, weakConnections) {
         fprintf(stderr, "JacobiMaster\n");
     }
 
     void prepare() {
-        std::vector<WeakConnection> me_weakConnections;
-        for(auto client: m_clients)
-            switch (client->getFmuKind()){
-                case fmi2_fmu_kind_cs: cs_clients.push_back(client); break;
-                case fmi2_fmu_kind_me: me_clients.push_back(client); break;
-                default:
-                    fprintf(stderr,"Fatal: fmigo only supports co-simulation and model exchange fmus\n");
-                    exit(1);
-                }
-
-        //TODO make sure that solve loops for model exchange only uses me_weakConnections
-        for(auto wc: m_weakConnections)
-            if(wc.from->getFmuKind() == fmi2_fmu_kind_me &&
-               wc.to->getFmuKind()   == fmi2_fmu_kind_me )
-                me_weakConnections.push_back(wc);
-        if(me_clients.size())
-            m_modelexchange = new ModelExchangeStepper(me_clients,me_weakConnections,this);
     }
 
     void runIteration(double t, double dt) {
@@ -81,37 +59,23 @@ public:
             it->first->sendSetX(it->second);
         }
 
-        if(cs_clients.size())
-            send(cs_clients, fmi2_import_do_step(t, dt, true));
-        if(me_clients.size())
-            m_modelexchange->runIteration(t,dt);
+        send(cs_clients, fmi2_import_do_step(t, dt, true));
+        solveME(t,dt);
         wait();
     }
 };
 
 //aka serial stepper
-class GaussSeidelMaster : public BaseMaster {
+class GaussSeidelMaster : public model_exchange::ModelExchangeStepper {
     map<FMIClient*, OutputRefsType> clientGetXs;  //one OutputRefsType for each client
-    map<FMIClient*,ModelExchangeStepper*> me_map;
     std::vector<int> stepOrder;
 public:
     GaussSeidelMaster(vector<FMIClient*> clients, vector<WeakConnection> weakConnections, std::vector<int> stepOrder) :
-        BaseMaster(clients, weakConnections), stepOrder(stepOrder) {
+        model_exchange::ModelExchangeStepper(clients, weakConnections), stepOrder(stepOrder) {
         fprintf(stderr, "GSMaster\n");
     }
 
     void prepare() {
-        for(auto client: m_clients)
-            switch (client->getFmuKind()){
-            case fmi2_fmu_kind_cs: break;
-            case fmi2_fmu_kind_me:{
-                me_map[client] = new ModelExchangeStepper(client,m_weakConnections,this);
-                break;
-            }default:
-                fprintf(stderr,"Fatal: fmigo only supports co-simulation and model exchange fmus\n");
-                exit(1);
-            }
-
         for (size_t x = 0; x < m_weakConnections.size(); x++) {
             WeakConnection wc = m_weakConnections[x];
             clientGetXs[wc.to][wc.from][wc.conn.fromType].push_back(wc.conn.fromOutputVR);
@@ -128,14 +92,12 @@ public:
             wait();
             const SendSetXType refValues = getInputWeakRefsAndValues(m_weakConnections, client);
             client->sendSetX(refValues);
-            switch (client->getFmuKind()){
-            case fmi2_fmu_kind_cs: sendWait(client, fmi2_import_do_step(t, dt, true)); break;
-            case fmi2_fmu_kind_me: me_map[client]->runIteration(t,dt); break;
-            default:
-                fprintf(stderr,"Fatal: fmigo only supports co-simulation and model exchange fmus\n");
-                exit(1);
-            }
+            if (client->getFmuKind() == fmi2_fmu_kind_cs) {
+                sendWait(client, fmi2_import_do_step(t, dt, true));
+            } //else modelExchange, solve all further down simultaneously
         }
+
+        solveME(t,dt);
     }
 };
 

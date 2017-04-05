@@ -19,13 +19,14 @@ struct Backup
     double *dydt;
     unsigned long failed_steps;
 };
+class ModelExchangeStepper;
 struct fmu_parameters{
 
     double t_ok;
     double t_past;
     int count;                    /* number of function evaluations */
 
-    BaseMaster* baseMaster;       /* BaseMaster object pointer */
+    ModelExchangeStepper* stepper;       /* ModelExchangeStepper object pointer */
     std::vector<FMIClient*> clients;            /* FMIClient vector */
     std::vector<int> intv;            /* FMIClient vector */
     //std::vector<WeakConnection> weakConnections;
@@ -37,25 +38,26 @@ struct fmu_parameters{
 struct fmu_model{
     cgsl_model *model;
 };
-class ModelExchangeStepper {
+class ModelExchangeStepper : public BaseMaster {
 cgsl_simulation m_sim;
 fmu_parameters m_p;
-BaseMaster* m_baseMaster;
 fmu_model m_model;
 TimeLoop timeLoop;
-std::vector<WeakConnection> m_weakConnections;
-std::vector<FMIClient*> m_clients;
+std::vector<WeakConnection> me_weakConnections;
+
+ protected:
+    std::vector<FMIClient*>     cs_clients;
+    std::vector<FMIClient*>     me_clients;
 
  public:
-    ModelExchangeStepper(FMIClient* client, std::vector<WeakConnection> weakConnections, BaseMaster* baseMaster);
-    ModelExchangeStepper(std::vector<FMIClient*> clients, std::vector<WeakConnection> weakConnections,BaseMaster* baseMaster);
-    ModelExchangeStepper(){}
+    explicit ModelExchangeStepper(std::vector<FMIClient*> clients, std::vector<WeakConnection> weakConnections);
     ~ModelExchangeStepper();
 
-    void runIteration(double t, double dt);
+ protected:
+    void solveME(double t, double dt);
 
  private:
-    void prepare();
+    void prepareME();
 
     /** allocate Memory
      *  Allocates memory needed by the fmu_model

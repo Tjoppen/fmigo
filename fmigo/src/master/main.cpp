@@ -43,21 +43,21 @@ std::map<int, const char*> columnnames;
 typedef map<pair<int,fmi2_base_type_enu_t>, vector<param> > parameter_map;
 
 #ifdef USE_MPI
-static vector<FMIClient*> setupClients(int numFMUs) {
+static vector<FMIClient*> setupClients(int numFMUs, BaseMaster *baseMaster) {
     vector<FMIClient*> clients;
     for (int x = 0; x < numFMUs; x++) {
-        FMIClient* client = new FMIClient(x+1 /* world_rank */, x /* clientId */);
+        FMIClient* client = new FMIClient(x+1 /* world_rank */, x /* clientId */, baseMaster);
         clients.push_back(client);
     }
     return clients;
 }
 #else
-static vector<FMIClient*> setupClients(vector<string> fmuURIs, zmq::context_t &context) {
+static vector<FMIClient*> setupClients(vector<string> fmuURIs, zmq::context_t &context, BaseMaster* baseMaster) {
     vector<FMIClient*> clients;
     int clientId = 0;
     for (auto it = fmuURIs.begin(); it != fmuURIs.end(); it++, clientId++) {
         // Assume URI to client
-        FMIClient *client = new FMIClient(context, clientId, *it);
+        FMIClient *client = new FMIClient(context, clientId, *it, baseMaster);
 
         if (!client) {
             fprintf(stderr, "Failed to connect client with URI %s\n", it->c_str());
@@ -577,15 +577,16 @@ int main(int argc, char *argv[] ) {
         return 1;
     }
 
+    BaseMaster *master = NULL;
 #ifdef USE_MPI
-    vector<FMIClient*> clients = setupClients(world_size-1);
+    vector<FMIClient*> clients = setupClients(world_size-1, master);
 #else
     //without this the maximum number of clients tops out at 300 on Linux,
     //around 63 on Windows (according to Web searches)
 #ifdef ZMQ_MAX_SOCKETS
     zmq_ctx_set((void *)context, ZMQ_MAX_SOCKETS, fmuURIs.size() + (zmqControl ? 2 : 0));
 #endif
-    vector<FMIClient*> clients = setupClients(fmuURIs, context);
+    vector<FMIClient*> clients = setupClients(fmuURIs, context, master);
 #endif
 
     //connect, get modelDescription XML (was important for connconf)
@@ -598,7 +599,6 @@ int main(int argc, char *argv[] ) {
     vector<WeakConnection> weakConnections = setupWeakConnections(connections, clients);
     setupConstraintsAndSolver(scs, clients, &solver);
 
-    BaseMaster *master;
     string fieldnames = getFieldnames(clients);
 
     if (scs.size()) {

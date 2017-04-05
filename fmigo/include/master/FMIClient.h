@@ -74,9 +74,9 @@ namespace fmitcp_master {
         std::vector<variable> getOutputs() const;   //outputs in the same order as specified in the modelDescription
 
 #ifdef USE_MPI
-        FMIClient(int world_rank, int id);
+        FMIClient(int world_rank, int id, BaseMaster* master);
 #else
-        FMIClient(zmq::context_t &context, int id, string uri);
+        FMIClient(zmq::context_t &context, int id, string uri, BaseMaster* master);
 #endif
         virtual ~FMIClient();
 

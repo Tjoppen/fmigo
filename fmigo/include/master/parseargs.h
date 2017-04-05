@@ -24,20 +24,22 @@ struct connection {
     int toFMU;                  // FMU index
     int toInputVR;              // Value reference
     double slope, intercept;    // for unit conversion. y = slope*x + intercept
+    std::string fromOutputVRorNAME;           // Value reference
+    std::string toInputVRorNAME;              // Value reference
 };
 
 struct strongconnection {
     std::string type;
     int fromFMU;
     int toFMU;
-    std::vector<int> vrs;
+    std::vector<std::string> vrORname;              // Value reference
 };
 
 struct param {
     int fmuIndex;
-    int valueReference;                 // Value reference to apply to
-    std::string vrORname;               // Value reference or name of the variable
+    std::string vrORname;                 // Parameter value reference OR parameter name
     fmi2_base_type_enu_t type;
+    bool has_type;
     std::string stringValue;            // String version, always set to what the user wrote
     int intValue;                       // Integer
     double realValue;                   // Real
@@ -47,7 +49,8 @@ struct param {
  typedef std::map<std::pair<int,fmi2_base_type_enu_t>, std::vector<param> > param_map;
 
 enum FILEFORMAT {
-    csv
+    csv,
+    tikz
 };
 
 enum METHOD {
@@ -81,11 +84,11 @@ enum METHOD {
  * @param numStepOrder
  * @return int Returns 0 if the program should proceed, 1 if the program should end.
  */
-int parseArguments( int argc,
+void parseArguments( int argc,
                     char *argv[],
                     std::vector<std::string> *fmuFilePaths,
                     std::vector<connection> *connections,
-                    std::map<std::pair<int,fmi2_base_type_enu_t>, std::vector<param> > *params,
+                    std::vector<param> *params,
                     double* tEnd,
                     double* timeStepSize,
                     jm_log_level_enu_t *loglevel,
@@ -107,6 +110,7 @@ int parseArguments( int argc,
                     int *results_port,
                     bool *paused,
                     bool *solveLoops,
+                    bool *useHeadersInCSV,
                     fmigo_csv_fmu *csv_fmu
                     );
 }

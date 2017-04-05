@@ -10,6 +10,7 @@
 #include <fmitcp/serialize.h>
 #include <sstream>
 #include "common/common.h"
+#include "master/globals.h"
 
 using namespace fmitcp_master;
 using namespace fmitcp;
@@ -19,7 +20,7 @@ using namespace sc;
 StrongMaster::StrongMaster(vector<FMIClient*> clients, vector<WeakConnection> weakConnections, Solver strongCouplingSolver, bool holonomic) :
         JacobiMaster(clients, weakConnections),
         m_strongCouplingSolver(strongCouplingSolver), holonomic(holonomic) {
-    fprintf(stderr, "StrongMaster (%s)\n", holonomic ? "holonomic" : "non-holonomic");
+    info("StrongMaster (%s)\n", holonomic ? "holonomic" : "non-holonomic");
 }
 
 void StrongMaster::prepare() {
@@ -67,10 +68,8 @@ void StrongMaster::runIteration(double t, double dt) {
     for(size_t i=0; i<m_clients.size(); i++){
         //check m_getDirectionalDerivativeValues while we're at it
         if (m_clients[i]->m_getDirectionalDerivativeValues.size() > 0) {
-            fprintf(stderr, "WARNING: Client %zu had %zu unprocessed directional derivative results\n", i,
+            fatal("Client %zu had %zu unprocessed directional derivative results\n", i,
                     m_clients[i]->m_getDirectionalDerivativeValues.size());
-            exit(1);
-            m_clients[i]->m_getDirectionalDerivativeValues.clear();
         }
 
         const vector<int> valueRefs = m_clients[i]->getStrongConnectorValueReferences();
@@ -84,9 +83,9 @@ void StrongMaster::runIteration(double t, double dt) {
     for (size_t i=0; i<m_clients.size(); i++){
         FMIClient *client = m_clients[i];
         vector<int> vrs = client->getStrongConnectorValueReferences();
-        /*fprintf(stderr, "m_getRealValues:\n");
+        /*debug("m_getRealValues:\n");
         for (int j = 0; j < client->m_getRealValues.size(); j++) {
-            fprintf(stderr, "VR %i = %f\n", vrs[j], client->m_getRealValues[j]);
+             debug("VR %i = %f\n", vrs[j], client->m_getRealValues[j]);
         }*/
 
         client->setConnectorValues(vrs, vector<double>(client->m_getRealValues.begin(), client->m_getRealValues.end()));
@@ -172,8 +171,7 @@ void StrongMaster::runIteration(double t, double dt) {
                             //the reason this is a problem is because we can't always get the positional mobilities for rotational constraints and vice versa
                             //in theory we can though, by just putting zeroes in the relevant places
                             //it's just very hairy, so i'm not doing it right now
-                            fprintf(stderr, "Can't deal with different types of kinematic connections to the same FMU\n");
-                            exit(1);
+                            fatal("Can't deal with different types of kinematic connections to the same FMU\n");
                         }
 
                         if (step == 0) {
@@ -182,8 +180,7 @@ void StrongMaster::runIteration(double t, double dt) {
                                 if (accelerationConnector->hasAcceleration() && forceConnector->hasForce()) {
                                     getDirectionalDerivative(client, eq->jacobianElementForConnector(forceConnector).getSpatial(), accelerationConnector->getAccelerationValueRefs(), forceConnector->getForceValueRefs());
                                 } else {
-                                    fprintf(stderr, "Strong coupling requires acceleration outputs for now\n");
-                                    exit(1);
+                                    fatal("Strong coupling requires acceleration outputs for now\n");
                                 }
                             }
 
@@ -191,8 +188,7 @@ void StrongMaster::runIteration(double t, double dt) {
                                 if (accelerationConnector->hasAngularAcceleration() && forceConnector->hasTorque()) {
                                     getDirectionalDerivative(client, eq->jacobianElementForConnector(forceConnector).getRotational(), accelerationConnector->getAngularAccelerationValueRefs(), forceConnector->getTorqueValueRefs());
                                 } else {
-                                    fprintf(stderr, "Strong coupling requires angular acceleration outputs for now\n");
-                                    exit(1);
+                                    fatal("Strong coupling requires angular acceleration outputs for now\n");
                                 }
                             }
                         } else {
@@ -217,7 +213,7 @@ void StrongMaster::runIteration(double t, double dt) {
                             if (eq->m_isRotational) {
                                 //1-D?
                                 if (accelerationConnector->getAngularAccelerationValueRefs().size() == 1) {
-                                    //fprintf(stderr, "J(%i,%i) = %f\n", I, J, client->m_getDirectionalDerivativeValues.front()[0]);
+                                    //debug("J(%i,%i) = %f\n", I, J, client->m_getDirectionalDerivativeValues.front()[0]);
                                     el.setRotational( client->m_getDirectionalDerivativeValues.front()[0], 0, 0);
                                 } else {
                                     el.setRotational( client->m_getDirectionalDerivativeValues.front()[0],
@@ -246,6 +242,7 @@ void StrongMaster::runIteration(double t, double dt) {
     PRINT_HDF5_DELTA("run_solver");
 
     //distribute forces
+    char separator = fmigo::globals::getSeparator();
     for (size_t i=0; i<m_clients.size(); i++){
         FMIClient *client = m_clients[i];
         for (int j = 0; j < client->numConnectors(); j++) {
@@ -254,14 +251,14 @@ void StrongMaster::runIteration(double t, double dt) {
 
             //dump force/torque
             if (sc->hasForce()) {
-                printf(",%f,%f,%f", sc->m_force.x(), sc->m_force.y(), sc->m_force.z());
+                printf("%c%f%c%f%c%f", separator, sc->m_force.x(), separator, sc->m_force.y(), separator, sc->m_force.z());
                 vec.push_back(sc->m_force.x());
                 vec.push_back(sc->m_force.y());
                 vec.push_back(sc->m_force.z());
             }
 
             if (sc->hasTorque()) {
-                printf(",%f,%f,%f", sc->m_torque.x(),sc->m_torque.y(),sc->m_torque.z());
+                printf("%c%f%c%f%c%f", separator, sc->m_torque.x(), separator, sc->m_torque.y(), separator, sc->m_torque.z());
                 vec.push_back(sc->m_torque.x());
                 vec.push_back(sc->m_torque.y());
                 vec.push_back(sc->m_torque.z());
@@ -284,6 +281,8 @@ void StrongMaster::runIteration(double t, double dt) {
 }
 
 string StrongMaster::getForceFieldnames() const {
+    char separator = fmigo::globals::getSeparator();
+
     ostringstream oss;
     for (size_t i=0; i<m_clients.size(); i++){
         FMIClient *client = m_clients[i];
@@ -293,15 +292,15 @@ string StrongMaster::getForceFieldnames() const {
             basename << "fmu" << i << "_conn" << j << "_";
 
             if (sc->hasForce()) {
-                oss << " " << basename.str() << "force_x";
-                oss << " " << basename.str() << "force_y";
-                oss << " " << basename.str() << "force_z";
+                oss << separator << basename.str() << "force_x";
+                oss << separator << basename.str() << "force_y";
+                oss << separator << basename.str() << "force_z";
             }
 
             if (sc->hasTorque()) {
-                oss << " " << basename.str() << "torque_x";
-                oss << " " << basename.str() << "torque_y";
-                oss << " " << basename.str() << "torque_z";
+                oss << separator << basename.str() << "torque_x";
+                oss << separator << basename.str() << "torque_y";
+                oss << separator << basename.str() << "torque_z";
             }
         }
     }

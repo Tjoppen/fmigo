@@ -21,18 +21,17 @@ using namespace common;
 using namespace std;
 
 static void printHelp(){
-  fprintf(stderr, "Check manpage for help, \"man fmigo-master\"\n");
+  info("Check manpage for help, \"man fmigo-master\"\n");
 }
 
 static void printInvalidArg(char option){
-  fprintf(stderr, "Invalid argument of -%c\n",option);
+  error("Invalid argument of -%c\n",option);
   printHelp();
 }
 
 static fmi2_base_type_enu_t type_from_char(string type) {
     if (type.size() != 1) {
-        fprintf(stderr, "Bad type: %s\n", type.c_str());
-        exit(1);
+        fatal("Bad type: %s\n", type.c_str());
     }
 
     switch (type[0]) {
@@ -44,17 +43,13 @@ static fmi2_base_type_enu_t type_from_char(string type) {
     }
 }
 
-template<typename T> int checkFMUIndex(T it, int i, size_t numFMUs) {
+template<typename T> void checkFMUIndex(T it, int i, size_t numFMUs) {
     if(it->fromFMU < 0 || (size_t)it->fromFMU >= numFMUs){
-        fprintf(stderr,"Connection %d connects from FMU %d, which does not exist.\n", i, it->fromFMU);
-        return 1;
+        fatal("Connection %d connects from FMU %d, which does not exist.\n", i, it->fromFMU);
     }
     if(it->toFMU < 0 || (size_t)it->toFMU >= numFMUs){
-        fprintf(stderr,"Connection %d connects to FMU %d, which does not exist.\n", i, it->toFMU);
-        return 1;
+        fatal("Connection %d connects to FMU %d, which does not exist.\n", i, it->toFMU);
     }
-
-    return 0;
 }
 
 static vector<char*> make_char_vector(vector<string>& vec) {
@@ -73,8 +68,7 @@ template<typename T> void add_args_internal(T& ifs, vector<string>& argvstore, v
     //read tokens, insert into argvstore/argv2
     while (ifs >> token) {
         if (token == "-a") {
-            fprintf(stderr, "Found -a token in argument file, which might lead to recursive list of arguments. Stopping.\n");
-            exit(1);
+            fatal("Found -a token in argument file, which might lead to recursive list of arguments. Stopping.\n");
         }
 
         argvstore.insert(argvstore.begin() + position, token);
@@ -90,8 +84,7 @@ static void add_args(vector<string>& argvstore, vector<char*>& argv2, string fil
     } else {
         ifstream ifs(filename.c_str());
         if (!ifs) {
-            fprintf(stderr, "Couldn't open %s to parse more arguments!\n", filename.c_str());
-            exit(1);
+            fatal("Couldn't open %s to parse more arguments!\n", filename.c_str());
         }
         add_args_internal(ifs, argvstore, argv2, position);
     }
@@ -108,8 +101,7 @@ static deque<string> escapeSplit(string str, char delim) {
   for (char c : str) {
     if (escaped) {
       if (c != ',' && c != ':' && c != '\\') {
-        fprintf(stderr, "ERROR: Only comma, colon and backslash (\",:\\\") may be escaped in program options (\"%s\")\n", str.c_str());
-        exit(1);
+        fatal("Only comma, colon and backslash (\",:\\\") may be escaped in program options (\"%s\")\n", str.c_str());
       }
       oss << c;
       escaped = false;
@@ -125,8 +117,7 @@ static deque<string> escapeSplit(string str, char delim) {
   }
 
   if (escaped) {
-    fprintf(stderr, "ERROR: Trailing backslash in program option (\"%s\")\n", str.c_str());
-    exit(1);
+    fatal("Trailing backslash in program option (\"%s\")\n", str.c_str());
   }
 
   //push remaining string
@@ -134,21 +125,11 @@ static deque<string> escapeSplit(string str, char delim) {
   return ret;
 }
 
-void setParamValue(param &p, string s){
-                switch (p.type) {
-                case fmi2_base_type_real: p.realValue = atof(s.c_str()); break;
-                case fmi2_base_type_int:  p.intValue = atoi(s.c_str()); break;
-                case fmi2_base_type_bool: p.boolValue = (s == "true"); break;
-                case fmi2_base_type_str:  p.stringValue = s; break;
-                case fmi2_base_type_enum: fprintf(stderr, "An enum snuck its way into -p\n"); exit(1);
-                }
-}
-
-int fmitcp_master::parseArguments( int argc,
+void fmitcp_master::parseArguments( int argc,
                     char *argv[],
                     std::vector<std::string> *fmuFilePaths,
                     std::vector<connection> *connections,
-                    map<pair<int,fmi2_base_type_enu_t>, vector<param> > *params,
+                    std::vector<param> *params,
                     double* tEnd,
                     double* timeStepSize,
                     jm_log_level_enu_t *loglevel,
@@ -169,8 +150,9 @@ int fmitcp_master::parseArguments( int argc,
                     int *command_port,
                     int *results_port,
                     bool *paused,
-                                   bool *solveLoops,
-                                   fmigo_csv_fmu *csv_fmu
+                    bool *solveLoops,
+                    bool *useHeadersInCSV,
+                    fmigo_csv_fmu *csv_fmu
         ) {
     int index, c;
     opterr = 0;
@@ -191,7 +173,7 @@ int fmitcp_master::parseArguments( int argc,
 
     vector<char*> argv2 = make_char_vector(argvstore);
 
-    while ((c = getopt (argv2.size(), argv2.data(), "xrl:vqht:c:d:V:s:o:p:f:m:g:w:C:5:F:NM:a:z:ZL")) != -1){
+    while ((c = getopt (argv2.size(), argv2.data(), "xrl:vqht:c:d:s:o:p:f:m:g:w:C:5:F:NM:a:z:ZLHV:")) != -1){
         int n, skip, l, cont, i, numScanned, stop, vis;
         deque<string> parts;
         if (optarg) parts = escapeSplit(optarg, ':');
@@ -215,25 +197,35 @@ int fmitcp_master::parseArguments( int argc,
                     a = 1; b = 2;  c = 4; d = 5;
                 } else if (values.size() == 6) {
                     //TYPEFROM,FMUFROM,VRFROM,TYPETO,FMUTO,VRTO
-                    conn.fromType = type_from_char(values[0]);
-                    conn.toType   = type_from_char(values[3]);
-                    a = 1; b = 2;  c = 4; d = 5;
+                    //FMUFROM,NAMEFROM,FMUTO,NAMETO,k,m
+                    if (isNumeric(values[1])) {
+                        conn.fromType = type_from_char(values[0]);
+                        conn.toType   = type_from_char(values[3]);
+                        a = 1; b = 2;  c = 4; d = 5;
+                    } else {
+                        conn.slope    = atof(values[4].c_str());
+                        conn.intercept= atof(values[5].c_str());
+                    }
                 } else  if (values.size() == 5) {
                     //TYPE,FMUFROM,VRFROM,FMUTO,VRTO
+                    //TYPE,FMUFROM,NAMEFROM,FMUTO,NAMETO (undocumented, not recommended)
+                    if (!isNumeric(values[1]) || !isNumeric(values[4])) {
+                        warning("TYPE,FMUFROM,NAMEFROM,FMUTO,NAMETO syntax not recommended\n");
+                    }
                     conn.fromType = conn.toType = type_from_char(values[0]);
                     values.pop_front();
                 } else if (values.size() == 4) {
                     //FMUFROM,VRFROM,FMUTO,VRTO
+                    //FMUFROM,NAMEFROM,FMUTO,NAMETO
                     conn.fromType = conn.toType = type_from_char("r");
                 } else {
-                    fprintf(stderr, "Bad param: %s\n", it->c_str());
-                    return 1;
+                    fatal("Bad param: %s\n", it->c_str());
                 }
 
                 conn.fromFMU      = atoi(values[a].c_str());
-                conn.fromOutputVR = atoi(values[b].c_str());
                 conn.toFMU        = atoi(values[c].c_str());
-                conn.toInputVR    = atoi(values[d].c_str());
+                conn.fromOutputVRorNAME = values[b];
+                conn.toInputVRorNAME    = values[d];
 
                 connections->push_back(conn);
             }
@@ -246,8 +238,7 @@ int fmitcp_master::parseArguments( int argc,
                 strongconnection sc;
 
                 if (values.size() < 3) {
-                    fprintf(stderr, "Bad strong connection specification: %s\n", it->c_str());
-                    exit(1);
+                    fatal("Bad strong connection specification: %s\n", it->c_str());
                 }
 
                 sc.type    = values[0];
@@ -255,7 +246,7 @@ int fmitcp_master::parseArguments( int argc,
                 sc.toFMU   = atoi(values[2].c_str());
 
                 for (auto it2 = values.begin() + 3; it2 != values.end(); it2++) {
-                    sc.vrs.push_back(atoi(it2->c_str()));
+                    sc.vrORname.push_back(it2->c_str());
                 }
 
                 strongConnections->push_back(sc);
@@ -266,16 +257,17 @@ int fmitcp_master::parseArguments( int argc,
             numScanned = sscanf(optarg,"%lf", timeStepSize);
             if(numScanned <= 0){
                 printInvalidArg(c);
-                return 1;
+                exit(1);
             }
             break;
 
         case 'f':
             if(strcmp(optarg,"csv") == 0){
                 *fileFormat = csv;
+            } else if( strcmp(optarg,"tikz") == 0){
+                *fileFormat = tikz;
             } else {
-                fprintf(stderr,"File format \"%s\" not recognized.\n",optarg);
-                return 1;
+                fatal("File format \"%s\" not recognized.\n",optarg);
             }
             break;
 
@@ -291,8 +283,7 @@ int fmitcp_master::parseArguments( int argc,
             } else if(strcmp(optarg,"me") == 0){
                 *method = me;
             } else {
-                fprintf(stderr,"Method \"%s\" not recognized. Use \"jacobi\" or \"gs\".\n",optarg);
-                return 1;
+                fatal("Method \"%s\" not recognized. Use \"jacobi\" or \"gs\".\n",optarg);
             }
             break;
 
@@ -300,7 +291,7 @@ int fmitcp_master::parseArguments( int argc,
             numScanned = sscanf(optarg, "%lf", tEnd);
             if(numScanned <= 0){
                 printInvalidArg(c);
-                return 1;
+                exit(1);
             }
             break;
 
@@ -333,7 +324,7 @@ int fmitcp_master::parseArguments( int argc,
 
         case 'h':
             printHelp();
-            return 1;
+            exit(1);
 
         case 'r':
             *realtimeMode = 1;
@@ -344,7 +335,7 @@ int fmitcp_master::parseArguments( int argc,
                 *csv_separator = optarg[0];
             } else {
                 printInvalidArg('s');
-                return 1;
+                exit(1);
             }
             break;
 
@@ -358,31 +349,29 @@ int fmitcp_master::parseArguments( int argc,
 
         case 'v':
             printf("%s\n",FMITCPMASTER_VERSION);
-            return 1;
+            exit(1);
 
         case 'p':
             for (auto it = parts.begin(); it != parts.end(); it++) {
                 param p;
+                p.has_type = false;
                 deque<string> values = escapeSplit(*it, ',');
 
                 //expect [type,]FMU,VR,value
                 if (values.size() == 4) {
                     p.type       = type_from_char(values[0]);
                     values.pop_front();
+                    p.has_type = true;
                 } else if (values.size() == 3) {
                     p.type       = type_from_char("r");
                 } else {
-                    fprintf(stderr, "Bad param: %s\n", it->c_str());
-                    return 1;
+                    fatal("Bad param: %s\n", it->c_str());
                 }
 
                 p.fmuIndex       = atoi(values[0].c_str());
-                p.valueReference = atoi(values[1].c_str());
                 p.vrORname = values[1];
 
-                setParamValue(p,values[2]);
-
-                (*params)[make_pair(p.fmuIndex,p.type)].push_back(p);
+                params->push_back(p);
             }
             break;
 
@@ -401,7 +390,12 @@ int fmitcp_master::parseArguments( int argc,
             *hdf5Filename = optarg;
             break;
 
+        case 'H':
+            *useHeadersInCSV = true;
+            break;
+
         case 'F':
+            warning("-F option is deprecated and will be removed soon\n");
             *fieldnameFilename = optarg;
             break;
 
@@ -426,15 +420,14 @@ int fmitcp_master::parseArguments( int argc,
 
         case 'z':
             if (parts.size() != 2) {
-                fprintf(stderr, "-z must have exactly two parts (got %s which has %li parts)\n", optarg, parts.size());
-                return 1;
+                fatal("-z must have exactly two parts (got %s which has %li parts)\n", optarg, parts.size());
             }
             *command_port = atoi(parts[0].c_str());
             *results_port = atoi(parts[1].c_str());
             break;
 
         case 'Z':
-            fprintf(stderr, "Starting master in paused state\n");
+            info("Starting master in paused state\n");
             *paused = true;
             break;
 
@@ -446,14 +439,13 @@ int fmitcp_master::parseArguments( int argc,
 
             if(isprint(optopt)){
                 if(strchr("cdsopfm", optopt)){
-                    fprintf (stderr, "Option -%c requires an argument.\n", optopt);
+                    fatal("Option -%c requires an argument.\n", optopt);
                 } else {
-                    fprintf (stderr, "Unknown option: -%c\n", optopt);
+                    fatal("Unknown option: -%c\n", optopt);
                 }
             } else {
-                fprintf (stderr, "Unknown option character: \\x%x\n", optopt);
+                fatal("Unknown option character: \\x%x\n", optopt);
             }
-            return 1;
 
         case 'V':{
           //for (auto it = parts.begin(); it != parts.end(); it++)
@@ -475,8 +467,7 @@ int fmitcp_master::parseArguments( int argc,
             break;
         }
         default:
-            printf("abort %c...\n",c);
-            return 1;
+            fatal("abort %c...\n",c);
         }
     }
 
@@ -488,41 +479,38 @@ int fmitcp_master::parseArguments( int argc,
     size_t numFMUs = fmuFilePaths->size();
 
     if (numFMUs == 0){
-        fprintf(stderr, "No FMUs given. Aborting...\n");
+        error("No FMUs given. Aborting...\n");
         printHelp();
-        return 1;
+        exit(1);
     }
 
 #ifdef USE_MPI
     if ((size_t)world_size != numFMUs + 1) {
         //only complain for the first node
         if (world_rank == 0) {
-            fprintf(stderr, "Need exactly n+1 processes, where n is the number of FMUs (%zu)\n", numFMUs);
-            fprintf(stderr, "Try re-running with mpiexec -np %zu fmigo-mpi [rest of command line]\n", numFMUs+1 );
+            error("Need exactly n+1 processes, where n is the number of FMUs (%zu)\n", numFMUs);
+            info("Try re-running with mpiexec -np %zu fmigo-mpi [rest of command line]\n", numFMUs+1 );
         }
-        return 1;
+        exit(1);
     }
 #endif
 
     // Check if connections refer to nonexistant FMU index
     int i = 0;
     for (auto it = connections->begin(); it != connections->end(); it++, i++) {
-        if (checkFMUIndex(it, i, numFMUs))
-            return 1;
+        checkFMUIndex(it, i, numFMUs);
     }
 
     i = 0;
     for (auto it = strongConnections->begin(); it != strongConnections->end(); it++, i++) {
-        if (checkFMUIndex(it, i, numFMUs))
-            return 1;
+        checkFMUIndex(it, i, numFMUs);
     }
 
     // Check if parameters refer to nonexistant FMU index
     i = 0;
     for (auto it = params->begin(); it != params->end(); it++, i++) {
         if(it->first.first < 0 || it->first.first >= (int)numFMUs){
-            fprintf(stderr,"Parameter %d refers to FMU %d, which does not exist.\n", i, it->first.first);
-            return 1;
+            fatal("Parameter %d refers to FMU %d, which does not exist.\n", i, it->first.first);
         }
     }
 
@@ -532,9 +520,8 @@ int fmitcp_master::parseArguments( int argc,
             stepOrder->push_back(c);
         }
     } else if (stepOrder->size() != numFMUs) {
-        fprintf(stderr, "Step order/FMU count mismatch: %zu vs %zu\n", stepOrder->size(), numFMUs);
-        return 1;
+        fatal("Step order/FMU count mismatch: %zu vs %zu\n", stepOrder->size(), numFMUs);
     }
 
-    return 0; // OK
+    return; // OK
 }

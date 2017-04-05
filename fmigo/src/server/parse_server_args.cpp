@@ -2,7 +2,7 @@
 
 static void printHelp(char *program_name, int *port) {
   //port as argument to see if it's non-NULL in parse_server_args()
-  fprintf(stderr, "Usage: %s [OPTIONS] FMUPATH\n\
+  info("Usage: %s [OPTIONS] FMUPATH\n\
 \n\
 OPTIONS\n\
 \n\
@@ -62,10 +62,9 @@ static void parse_server_args(int argc, char **argv, string *fmuPath,
       *fmuPath = argv[j];
     }
   }
-  
+
   if (*fmuPath == "") {
     printHelp(argv[0], port);
     exit(EXIT_FAILURE);
   }
 }
-

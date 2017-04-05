@@ -1,7 +1,7 @@
-/* 
+/*
  * File:   WeakConnection.cpp
  * Author: thardin
- * 
+ *
  * Created on May 24, 2016, 4:04 PM
  */
 
@@ -33,11 +33,9 @@ MultiValue WeakConnection::setFromReal(double in) const {
         break;
     case fmi2_base_type_str:
         //we could support this, but eh..
-        fprintf(stderr, "Converting real -> str not supported\n");
-        exit(1);
+        fatal("Converting real -> str not supported\n");
     case fmi2_base_type_enum:
-        fprintf(stderr, "Converting real -> enum not supported\n");
-        exit(1);
+        fatal("Converting real -> enum not supported\n");
     }
     return ret;
 }
@@ -61,11 +59,9 @@ MultiValue WeakConnection::setFromInteger(int in) const {
         break;
     case fmi2_base_type_str:
         //same here - let's avoid this for now
-        fprintf(stderr, "Converting int -> str not supported\n");
-        exit(1);
+        fatal("Converting int -> str not supported\n");
     case fmi2_base_type_enum:
-        fprintf(stderr, "Converting int -> enum not supported\n");
-        exit(1);
+        fatal("Converting int -> enum not supported\n");
     }
     return ret;
 }
@@ -82,18 +78,15 @@ MultiValue WeakConnection::setFromBoolean(bool in) const {
     case fmi2_base_type_bool:
         //slope/intercept on bool -> bool doesn't really make sense IMO
         if (conn.slope != 1 || conn.intercept != 0) {
-            fprintf(stderr, "slope or intercept specified on bool -> bool connection doesn't make sense - stopping\n");
-            exit(1);
+            fatal("slope or intercept specified on bool -> bool connection doesn't make sense - stopping\n");
         }
         ret.b = in;
         break;
     case fmi2_base_type_str:
         //this one too
-        fprintf(stderr, "Converting bool -> str not supported\n");
-        exit(1);
+        fatal("Converting bool -> str not supported\n");
     case fmi2_base_type_enum:
-        fprintf(stderr, "Converting bool -> enum not supported\n");
-        exit(1);
+        fatal("Converting bool -> enum not supported\n");
     }
     return ret;
 }
@@ -101,8 +94,7 @@ MultiValue WeakConnection::setFromBoolean(bool in) const {
 MultiValue WeakConnection::setFromString(std::string in) const {
     MultiValue ret;
     if (conn.toType != fmi2_base_type_str) {
-        fprintf(stderr, "String outputs may only be connected to string inputs\n");
-        exit(1);
+        fatal("String outputs may only be connected to string inputs\n");
     }
 
     ret.s = in;
@@ -131,8 +123,7 @@ template<typename T> void doit(
 
     if (ofs >= values.size()) {
         //shouldn't happen
-        fprintf(stderr, "Number of setX() doesn't match number of getX() (%zu vs %zu) '%s'\n", ofs, values.size(), typeid(T).name());
-        exit(1);
+        fatal("Number of setX() doesn't match number of getX() (%zu vs %zu) '%s'\n", ofs, values.size(), typeid(T).name());
     }
 
     MultiValue value = (wc.*convert)(values[ofs]);
@@ -174,8 +165,7 @@ static InputRefsValuesType getInputWeakRefsAndValues_internal(vector<WeakConnect
             doit(refValues, wc, stringValueOfs,  wc.from->m_getStringValues,  &WeakConnection::setFromString);
             break;
         case fmi2_base_type_enum:
-            fprintf(stderr, "Tried to connect enum output somewhere. Enums are not yet supported\n");
-            exit(1);
+            fatal("Tried to connect enum output somewhere. Enums are not yet supported\n");
         }
     }
 

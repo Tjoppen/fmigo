@@ -1,9 +1,10 @@
+#include "common/common.h"
 #include <stdio.h>
 #include <sstream>
 #include <stdlib.h>
 #include <string>
 #include <fmitcp/Server.h>
-#include <fmitcp/common.h>
+#include <fmitcp/fmitcp-common.h>
 #include <zmq.hpp>
 #include "server/FMIServer.h"
 #include <thread>
@@ -12,6 +13,8 @@ using namespace std;
 using namespace fmitcp;
 
 #include "parse_server_args.cpp"
+
+jm_log_level_enu_t fmigo_loglevel = jm_log_level_warning;
 
 class mymonitor : public zmq::monitor_t {
 public:
@@ -43,21 +46,19 @@ int main(int argc, char *argv[]) {
 
   int port = 3000;
   bool debugLogging = false;
-  jm_log_level_enu_t log_level = jm_log_level_error;
   string fmuPath = "";
   string hdf5Filename;
 
-  parse_server_args(argc, argv, &fmuPath, &hdf5Filename, &debugLogging, &log_level, &port);
+  parse_server_args(argc, argv, &fmuPath, &hdf5Filename, &debugLogging, &fmigo_loglevel, &port);
 
-  FMIServer server(fmuPath, debugLogging, log_level, hdf5Filename);
+  FMIServer server(fmuPath, hdf5Filename);
   if (!server.isFmuParsed())
     return EXIT_FAILURE;
 
   ostringstream oss;
   oss << "tcp://*:" << port;
 
-  printf("FMI Server %s - %s <-- %s\n",FMITCP_VERSION, oss.str().c_str(), fmuPath.c_str());
-  server.getLogger()->setPrefix("Server: ");
+  info("FMI Server %s - %s <-- %s\n",FMITCP_VERSION, oss.str().c_str(), fmuPath.c_str());
 
   zmq::socket_t socket(context, ZMQ_PAIR);
   socket.bind(oss.str().c_str());
@@ -91,8 +92,7 @@ int main(int argc, char *argv[]) {
     if (items[0].revents & ZMQ_POLLIN) {
       zmq::message_t msg;
       if (!socket.recv(&msg)) {
-          fprintf(stderr, "Port %i: !socket.recv(&msg)\n", port);
-          exit(1);
+          fatal("Port %i: !socket.recv(&msg)\n", port);
       }
       string str = server.clientData(static_cast<char*>(msg.data()), msg.size());
 
@@ -114,7 +114,7 @@ int main(int argc, char *argv[]) {
  } catch (zmq::error_t e) {
       //catch any stray ZMQ exceptions
       //this should prevent "program stopped working" messages on Windows when fmigo-servers are taskkill'd
-      fprintf(stderr, "zmq::error_t: %s\n", e.what());
-      return 1;
+     error("zmq::error_t: %s\n", e.what());
+     return 1;
  }
 }

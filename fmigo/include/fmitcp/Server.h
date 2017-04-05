@@ -4,11 +4,11 @@
 #include <string>
 #define FMILIB_BUILDING_LIBRARY
 #include <fmilib.h>
-#include "Logger.h"
 #include "fmitcp.pb.h"
-#include "common.h"
+#include "fmitcp-common.h"
 #include <map>
 #include <list>
+#include "common/common.h"
 
 using namespace std;
 
@@ -18,7 +18,6 @@ namespace fmitcp {
   class Server {
 
   private:
-    Logger m_logger;
     bool m_sendDummyResponses;
     bool m_fmuParsed;
     ::google::protobuf::int32 nextStateId;
@@ -32,8 +31,6 @@ namespace fmitcp {
     string m_fmuPath;
 
     /// FMU logging level
-    jm_log_level_enu_t m_logLevel;
-    bool m_debugLogging;
     jm_callbacks m_jmCallbacks;
 
     /// Directory for the unpacked FMU
@@ -60,7 +57,7 @@ namespace fmitcp {
 
   public:
 
-    Server(string fmuPath, bool debugLogging, jm_log_level_enu_t logLevel, std::string hdf5Filename = "", const Logger &logger = Logger());
+    Server(string fmuPath, std::string hdf5Filename = "");
     virtual ~Server();
 
     /// To be implemented in subclass
@@ -78,9 +75,6 @@ namespace fmitcp {
 
     /// Set to true to start ignoring the local FMU and just send back dummy responses. Good for debugging the protocol.
     void sendDummyResponses(bool);
-
-    Logger* getLogger() {return &m_logger;}
-    void setLogger(const Logger &logger) {m_logger = logger;}
 
     bool isFmuParsed() {return m_fmuParsed;}
 

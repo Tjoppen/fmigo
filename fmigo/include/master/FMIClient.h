@@ -58,8 +58,6 @@ namespace fmitcp_master {
 
         void clearGetValues();
 
-        jm_log_level_enu_t m_loglevel;
-
         std::string getModelName() const;
         const variable_map& getVariables() const;
         std::vector<variable> getOutputs() const;   //outputs in the same order as specified in the modelDescription

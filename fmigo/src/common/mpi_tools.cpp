@@ -1,5 +1,12 @@
 #include "common/mpi_tools.h"
 
+#if defined(_WIN32)
+#include <malloc.h>
+#define alloca _alloca
+#else
+#include <alloca.h>
+#endif
+
 std::string mpi_recv_string(int world_rank_in, int *world_rank_out, int *tag) {
     MPI_Status status, status2;
     int nbytes;

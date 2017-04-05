@@ -232,13 +232,12 @@ static param_map resolve_string_params(const vector<deque<string> > &params, vec
 
         FMIClient *client = clients[fmuIndex];
         param p;
-        fmi2_base_type_enu_t type;
+        fmi2_base_type_enu_t type = fmi2_base_type_real;
 
         if (parts.size() == 3) {
             //FMU,VR,value  [type=real]
             //FMU,NAME,value
             int vr = vrFromKeyName(client, parts[1]);
-            type = fmi2_base_type_real;
 
             if (!isNumeric(parts[1])) {
                 const variable_map& vars = client->getVariables();

@@ -1,6 +1,6 @@
 //TODO: add some kind of flag that switches this one between a clutch and a gearbox, to reduce the amount of code needed
-//#define SIMULATION_INIT wrapper_init
-#define SIMULATION_WRAPPER wrapper_init
+//#define SIMULATION_INIT wrapper_ntoeu
+#define SIMULATION_WRAPPER wrapper_ntoeu
 #include <unistd.h>
 #include <fmilib.h>
 //#include "modelDescription_me.h"
@@ -15,8 +15,13 @@
 /*     fmi2_import_variable_list_t *m_fmi2Variables, *m_fmi2Outputs; */
 /*     jm_callbacks m_jmCallbacks; */
 /* }Wrapper; */
+fmi2Status getPartial(state_t *s, fmi2ValueReference x, fmi2ValueReference unKnown_ref,fmi2Real *partial){
+    fmi2Status status;
+    return status;
+}
 
-void wrapper_init(state_t *s);
+
+void SIMULATION_WRAPPER(state_t *s);
 #define NEW_DOSTEP //to get noSetFMUStatePriorToCurrentPoint
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
 fprintf(stderr,"do step run iteration\n");
@@ -40,7 +45,7 @@ void jmCallbacksLogger(jm_callbacks* c, jm_string module, jm_log_level_enu_t log
     fprintf(stderr, "[module = %s][log level = %s] %s\n", module, jm_log_level_to_string(log_level), message);fflush(NULL);
 }
 
-void wrapper_init(state_t *s)  {
+void SIMULATION_WRAPPER(state_t *s)  {
     fprintf(stderr,"Init Wrapper\n");
     char *m_fmuLocation;
     char *m_resourcePath;

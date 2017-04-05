@@ -102,15 +102,28 @@ for sv in SV:
         print('''    </ScalarVariable>
 ''')
 vr = 0
-while vr in vrs: vr +=1
+while vr in vrs: vr += 1
+fmudir = 'sources/' + modelName +'.fmu'
 print('''
     <ScalarVariable
         name="fmu"
         valueReference="%d"
-        description=""
+        description="Path to the ME fmu to be wrapped"
         causality="parameter">
-      <String size="56" start="%s"/>
-</ScalarVariable>'''%(vr, 'sources/' + modelName +'.fmu'))
+      <String size="%d" start="%s"/>
+</ScalarVariable>'''%(vr,len(fmudir)+1, fmudir))
+
+vr += 1
+while vr in vrs: vr += 1
+
+print('''
+    <ScalarVariable
+        name="directional"
+        valueReference="%d"
+        description="Expects format vrUnKnown,unKnown,value"
+        causality="parameter">
+      <String size="20" start=""/>
+</ScalarVariable>'''%vr)
 
 outputs = root.find('ModelStructure').find('Outputs')
 print('''

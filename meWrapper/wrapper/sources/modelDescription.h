@@ -6,14 +6,14 @@
 #include "commonWrapper/modelExchange.h"
 
 #define MODEL_IDENTIFIER wrapper_bouncingBall
-#define MODEL_GUID "04893b28-eff3-4f74-beea-028d7fca0606"
+#define MODEL_GUID "86c16f47-0367-4044-87a1-57b22fd284e6"
 #define FMI_COSIMULATION
 #define HAVE_DIRECTIONAL_DERIVATIVE 0
 #define CAN_GET_SET_FMU_STATE 1
 #define NUMBER_OF_REALS 4
 #define NUMBER_OF_INTEGERS 0
 #define NUMBER_OF_BOOLEANS 0
-#define NUMBER_OF_STRINGS 1
+#define NUMBER_OF_STRINGS 2
 #define NUMBER_OF_STATES 0
 #define NUMBER_OF_EVENT_INDICATORS 0
 
@@ -25,6 +25,7 @@ typedef struct {
     fmi2Real g; //VR=4
     fmi2Real e; //VR=5
     fmi2Char    fmu[256]; //VR=0
+    fmi2Char    directional[256]; //VR=1
 
 } modelDescription_t;
 
@@ -36,6 +37,7 @@ static const modelDescription_t defaults = {
     9.81, //g
     0.7, //e
     "sources/bouncingBall.fmu", //fmu
+    "", //directional
 
 };
 
@@ -45,6 +47,7 @@ static const modelDescription_t defaults = {
 #define VR_G 4
 #define VR_E 5
 #define VR_FMU 0
+#define VR_DIRECTIONAL 1
 
 
 //the following getters and setters are static to avoid getting linking errors if this file is included in more than one place

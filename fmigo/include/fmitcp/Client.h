@@ -5,7 +5,6 @@
 #include <zmq.hpp>
 #endif
 #include "fmitcp.pb.h"
-#include "Logger.h"
 #include <string>
 #include <deque>
 
@@ -43,8 +42,6 @@ namespace fmitcp {
         /// Connect the client to a server
         void connect(string uri);
 #endif
-
-        Logger * getLogger();
 
         /// Send a binary message
         void sendMessage(std::string s);

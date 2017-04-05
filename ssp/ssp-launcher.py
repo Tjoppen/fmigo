@@ -904,15 +904,11 @@ if __name__ == '__main__':
         args   = ['mpiexec','-n', '1','fmigo-mpi']
         fmu_paths = [fmu.path for fmu in fmus]
         append = list(fmu_paths)
-        append += [':']
 
         for fmu in fmus:
             fmigo_mpi = get_fmu_server(fmu.path, 'fmigo-mpi')
-            append += ['-n', '1', fmigo_mpi]
+            append += [':','-n', '1', fmigo_mpi]
             append += fmu_paths
-
-            if fmu != fmus[-1]:
-                append += [':']
 
     args += ['-t','9.9','-d','0.1'] + parse.args + ['-a','-']
     args += append

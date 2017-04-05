@@ -29,7 +29,7 @@ static void printInvalidArg(char option){
   printHelp();
 }
 
-static fmi2_base_type_enu_t type_from_char(string type) {
+fmi2_base_type_enu_t fmitcp_master::type_from_char(string type) {
     if (type.size() != 1) {
         fatal("Bad type: %s\n", type.c_str());
     }
@@ -129,7 +129,7 @@ void fmitcp_master::parseArguments( int argc,
                     char *argv[],
                     std::vector<std::string> *fmuFilePaths,
                     std::vector<connection> *connections,
-                    std::vector<param> *params,
+                    std::vector<std::deque<std::string> > *params,
                     double* tEnd,
                     double* timeStepSize,
                     jm_log_level_enu_t *loglevel,
@@ -353,25 +353,14 @@ void fmitcp_master::parseArguments( int argc,
 
         case 'p':
             for (auto it = parts.begin(); it != parts.end(); it++) {
-                param p;
-                p.has_type = false;
                 deque<string> values = escapeSplit(*it, ',');
 
                 //expect [type,]FMU,VR,value
-                if (values.size() == 4) {
-                    p.type       = type_from_char(values[0]);
-                    values.pop_front();
-                    p.has_type = true;
-                } else if (values.size() == 3) {
-                    p.type       = type_from_char("r");
-                } else {
-                    fatal("Bad param: %s\n", it->c_str());
+                if (values.size() < 3 || values.size() > 4) {
+                    fatal("Parameters must have exactly 3 or 4 parts: %s\n", it->c_str());
                 }
 
-                p.fmuIndex       = atoi(values[0].c_str());
-                p.vrORname = values[1];
-
-                params->push_back(p);
+                params->push_back(values);
             }
             break;
 
@@ -455,8 +444,7 @@ void fmitcp_master::parseArguments( int argc,
               // fprintf(stderr," %s\n",parts.at(0).c_str());
              deque<string> values = escapeSplit(optarg, ',');
               if(values.size() != 2){
-                fprintf(stderr,"Error: Option \"-V\" requires two argument: \"-V fmuid,path/to/input.csv\"\n");
-                return(1);
+                fatal("Error: Option \"-V\" requires two argument: \"-V fmuid,path/to/input.csv\"\n");
               }
 
               //fmigo_csv_fmu csv_matrix;
@@ -504,14 +492,6 @@ void fmitcp_master::parseArguments( int argc,
     i = 0;
     for (auto it = strongConnections->begin(); it != strongConnections->end(); it++, i++) {
         checkFMUIndex(it, i, numFMUs);
-    }
-
-    // Check if parameters refer to nonexistant FMU index
-    i = 0;
-    for (auto it = params->begin(); it != params->end(); it++, i++) {
-        if(it->first.first < 0 || it->first.first >= (int)numFMUs){
-            fatal("Parameter %d refers to FMU %d, which does not exist.\n", i, it->first.first);
-        }
     }
 
     // Default step order is all FMUs in their current order

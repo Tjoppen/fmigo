@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string>
 #include <vector>
+#include <deque>
 #include <map>
 #include "common/CSV-parser.h"
 
@@ -36,10 +37,8 @@ struct strongconnection {
 };
 
 struct param {
-    int fmuIndex;
-    std::string vrORname;                 // Parameter value reference OR parameter name
+    int valueReference;
     fmi2_base_type_enu_t type;
-    bool has_type;
     std::string stringValue;            // String version, always set to what the user wrote
     int intValue;                       // Integer
     double realValue;                   // Real
@@ -58,6 +57,8 @@ enum METHOD {
     gs,
     me
 };
+
+fmi2_base_type_enu_t type_from_char(std::string type);
 
 /**
  * @brief Parses the command line arguments and stores in the given variable pointer targets.
@@ -88,7 +89,7 @@ void parseArguments( int argc,
                     char *argv[],
                     std::vector<std::string> *fmuFilePaths,
                     std::vector<connection> *connections,
-                    std::vector<param> *params,
+                    std::vector<std::deque<std::string> > *params,
                     double* tEnd,
                     double* timeStepSize,
                     jm_log_level_enu_t *loglevel,

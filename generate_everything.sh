@@ -110,9 +110,10 @@ done
 for d in $WRAPPERS
 do
     echo "add_subdirectory($d)" >> CMakeLists.txt
+    GSL="-l cgsl,m,fmilib -c"
     pushd $d
         python ${GENERATORXML} sources/modelDescription.xml > modelDescription.xml
         python ${GENERATORWRAPPER} modelDescription.xml > sources/modelDescription.h
-        python ${GENERATOR}
+        python ${GENERATOR} ${GSL}
     popd
 done

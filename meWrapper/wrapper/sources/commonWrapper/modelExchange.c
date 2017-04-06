@@ -28,7 +28,7 @@ void meGetReal(const fmi2_value_reference_t* vr, int nvr,  fmi2_real_t* value){
     fmi2_import_get_real(MEFMU,vr,nvr,value);
 }
 
-inline fmu_parameters* get_p(fmu_model* m){
+ fmu_parameters* get_p(fmu_model* m){
     return (fmu_parameters*)(m->model->parameters);
 }
 

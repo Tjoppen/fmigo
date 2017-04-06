@@ -148,17 +148,6 @@ static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real comm
 #ifdef CONSOLE
 int main(){
 
-  state_t s = {defaults};
-  s.md.jinv = 0.02;
-  s.md.k2 = 0.5;
-
-  engine2_init(&s);
-  s.simulation.file = fopen( "s.m", "w+" );
-  s.simulation.save = 1;
-  s.simulation.print = 1;
-  cgsl_step_to( &s.simulation, 0.0, 2.5 );
-  cgsl_free_simulation(s.simulation);
-
   return 0;
 }
 #else

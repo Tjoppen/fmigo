@@ -68,7 +68,7 @@ int jac_engine2 (double t, const double x[], double *dfdx, double dfdt[], void *
   gsl_matrix_set (J, 1, 0, s->md.integrate_dtheta ? 0.0 : -s->md.k_in );
   gsl_matrix_set (J, 1, 1, s->md.jinv * (s->md.tau_max * (b > 0 && b < 1 ? -s->md.kp : 0)
                                          - s->md.k1
-                                         - 2 * s->md.k2 * floor(fabs(abs(x[ 1 ])))
+                                         - 2 * s->md.k2 * floor(fabs(x[ 1 ]))
                                          - s->md.d_in
                                          ));
   gsl_matrix_set (J, 1, 2, s->md.integrate_dtheta ? -s->md.k_in : 0.0);

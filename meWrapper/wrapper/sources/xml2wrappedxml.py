@@ -54,7 +54,7 @@ print('''<?xml version="1.0" encoding="UTF-8"?>
     modelIdentifier="%s"
     canHandleVariableCommunicationStepSize="true"
     canGetAndSetFMUstate="true"
-    providesDirectionalDerivative="false"/>
+    providesDirectionalDerivative="true"/>
 
   <LogCategories>
     <Category name="logAll"/>

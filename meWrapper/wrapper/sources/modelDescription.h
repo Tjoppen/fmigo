@@ -6,9 +6,9 @@
 #include "commonWrapper/modelExchange.h"
 
 #define MODEL_IDENTIFIER wrapper_bouncingBall
-#define MODEL_GUID "087745dc-0f55-4af8-9800-f8a0e5220077"
+#define MODEL_GUID "2b2042b4-2de2-40f2-8bf1-11ea2063a736"
 #define FMI_COSIMULATION
-#define HAVE_DIRECTIONAL_DERIVATIVE 0
+#define HAVE_DIRECTIONAL_DERIVATIVE 1
 #define CAN_GET_SET_FMU_STATE 1
 #define NUMBER_OF_REALS 4
 #define NUMBER_OF_INTEGERS 0

@@ -33,6 +33,7 @@ typedef struct fmu_model{
 
 void setFMUstate();
 Backup* getBackup();
+Backup* getTempBackup();
 cgsl_simulation* getSim();
 fmi2_import_t** getFMU();
 void restoreStates(cgsl_simulation *sim, Backup *backup);

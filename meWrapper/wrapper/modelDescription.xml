@@ -3,14 +3,14 @@
     fmiVersion="2.0"
     description="None"
     modelName="wrapper_bouncingBall"
-    guid="087745dc-0f55-4af8-9800-f8a0e5220077"
+    guid="2b2042b4-2de2-40f2-8bf1-11ea2063a736"
     numberOfEventIndicators="0">
 
   <CoSimulation
     modelIdentifier="wrapper_bouncingBall"
     canHandleVariableCommunicationStepSize="true"
     canGetAndSetFMUstate="true"
-    providesDirectionalDerivative="false"/>
+    providesDirectionalDerivative="true"/>
 
   <LogCategories>
     <Category name="logAll"/>

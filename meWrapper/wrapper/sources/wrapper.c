@@ -1,6 +1,10 @@
 //TODO: add some kind of flag that switches this one between a clutch and a gearbox, to reduce the amount of code needed
 //#define SIMULATION_INIT wrapper_ntoeu
 #define SIMULATION_WRAPPER wrapper_ntoeu
+#define SIMULATION_SET     wrapper_set
+#define SIMULATION_GET     wrapper_get
+#define SIMULATION_TYPE    cgsl_simulation*
+
 #include <unistd.h>
 #include <fmilib.h>
 //#include "modelDescription_me.h"
@@ -17,17 +21,18 @@
 /* }Wrapper; */
 fmi2Status getPartial(state_t *s, fmi2ValueReference x, fmi2ValueReference unKnown_ref,fmi2Real *partial){
     fmi2Status status;
+    fprintf(stderr,"get_partial\n");
     return status;
 }
 
-fmi2Status fmi2GetFMUstate (fmi2Component c, fmi2FMUstate FMUstate) {
-    fmi2Status status;
-    return status;
+fmi2Status SIMULATION_GET ( SIMULATION_TYPE *sim) {
+    storeStates(*sim, getTempBackup());
+    return fmi2OK;
 }
 
-fmi2Status fmi2SetFMUstate (fmi2Component c, fmi2FMUstate FMUstate) {
-    fmi2Status status;
-    return status;
+fmi2Status SIMULATION_SET ( SIMULATION_TYPE *sim) {
+    restoreStates(*sim, getTempBackup());
+    return fmi2OK;
 }
 
 
@@ -181,6 +186,7 @@ void SIMULATION_WRAPPER(state_t *s)  {
         exit(1);
     }
     prepare();
+    s->simulation = getSim();
     status = fmi2_import_exit_initialization_mode(*FMU);
     if(status == fmi2Error){
         fprintf(stderr,"Wrapper: exit initialization mode faild\n");

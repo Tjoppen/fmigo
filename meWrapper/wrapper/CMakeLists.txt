@@ -38,9 +38,12 @@ INCLUDE_DIRECTORIES(
     ../../../FMILibrary-2.0.1/ThirdParty/FMI/default
     ../../templates/fmi2
 )
+
 SET_TARGET_PROPERTIES(${TARGET} PROPERTIES PREFIX "")
 SET_TARGET_PROPERTIES(${TARGET} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/binaries/${ARCH}")
-SET(LIBS cgsl fmilib)
+
+SET(LIBS cgsl fmilib fmilib_shared)
+
 if (UNIX)
     set(LIBS ${LIBS} m)
 endif ()

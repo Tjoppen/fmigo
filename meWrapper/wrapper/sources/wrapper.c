@@ -10,6 +10,7 @@
 //#include "modelDescription_me.h"
 #include "modelDescription.h"
 #include "fmuTemplate.h"
+#include "hypotmath.h"
 /* typedef struct wrapper{ */
 /*     fmi_import_context_t* m_context; */
 /*     fmi_version_enu_t m_version; */

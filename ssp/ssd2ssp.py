@@ -74,7 +74,7 @@ add_custom_command(TARGET ${TARGET} POST_BUILD
     COMMAND ${COPY_RESOURCES_COMMAND}
     COMMAND ${CMAKE_COMMAND} -E chdir ${ZIPDIR} ${ZIP_COMMAND}
     DEPENDS ${FMUS}
-    COMMAND ${CMAKE_COMMAND} -E remove_directory ${ZIPDIR}
+#    COMMAND ${CMAKE_COMMAND} -E remove_directory ${ZIPDIR}
     )
 '''% (
     sspname.upper(),

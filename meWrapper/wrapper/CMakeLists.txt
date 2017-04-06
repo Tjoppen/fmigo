@@ -17,9 +17,17 @@ SET(SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/wrapper.c
 )
+
+ADD_CUSTOM_COMMAND(
+  OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml
+  COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/sources/xml2wrappedxml.py
+    ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.xml >
+    ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml
+  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.xml )
+    
 ADD_CUSTOM_COMMAND(
   OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
-  COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/../../../fmu-builder/bin/modeldescription2header
+  COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/sources/modeldescription2headerWrapper.py
     ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml >
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml )
@@ -32,9 +40,16 @@ INCLUDE_DIRECTORIES(
 )
 SET_TARGET_PROPERTIES(${TARGET} PROPERTIES PREFIX "")
 SET_TARGET_PROPERTIES(${TARGET} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/binaries/${ARCH}")
-SET(LIBS )
+SET(LIBS cgsl fmilib)
+if (UNIX)
+    set(LIBS ${LIBS} m)
+endif ()
 TARGET_LINK_LIBRARIES( ${TARGET} ${LIBS} )
 
+
+ADD_EXECUTABLE(${TARGET}_c ${SRCS})
+SET_TARGET_PROPERTIES(${TARGET}_c PROPERTIES COMPILE_DEFINITIONS CONSOLE)
+TARGET_LINK_LIBRARIES( ${TARGET}_c ${LIBS} )
 
 
 if (CMAKE_VERSION VERSION_LESS "3.5.0")

@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fmiModelDescription
+    fmiVersion="2.0"
+    description="Two masses with a spring"
+    modelName="springs2"
+    guid="{78a384b7-1718-4f46-a8ee-9536df41db41}"
+    numberOfEventIndicators="0">
+
+  <ModelExchange
+      modelIdentifier="springs2"
+      canHandleVariableCommunicationStepSize="true"
+      canGetAndSetFMUstate="true"
+      providesDirectionalDerivative="false"/>
+
+  <LogCategories>
+    <Category name="logAll"/>
+    <Category name="logError"/>
+    <Category name="logFmiCall"/>
+    <Category name="logEvent"/>
+  </LogCategories>
+
+  <DefaultExperiment startTime="0" stopTime="10" stepSize="0.1"/>
+
+  <ModelVariables>
+       <ScalarVariable
+        name="x1"
+        valueReference="1"
+        description="position left mass"
+        variability="continuous"
+        initial="exact"
+        causality="output">
+      <Real start="0"/>
+    </ScalarVariable>
+    <ScalarVariable
+        name="dx1"
+        valueReference="2"
+        description="change in position left mass"
+        variability="continuous"
+        initial="calculated"
+        causality="local">
+      <Real derivative="1"/>
+    </ScalarVariable>
+    <ScalarVariable
+        name="x2"
+        valueReference="3"
+        description="position right mass"
+        variability="continuous"
+        initial="exact"
+        causality="output">
+      <Real start="0"/>
+    </ScalarVariable>
+    <ScalarVariable
+        name="dx2"
+        valueReference="4"
+        description="change in position right mass"
+        variability="continuous"
+        initial="calculated"
+        causality="local">
+      <Real derivative="3"/>
+    </ScalarVariable>
+    <ScalarVariable
+        name="v1"
+        valueReference="5"
+        description="velocity left mass"
+        variability="continuous"
+        initial="exact"
+        causality="output">
+      <Real start="0"/>
+    </ScalarVariable>
+    <ScalarVariable
+        name="dv1"
+        valueReference="6"
+        description="change in velocity left mass"
+        variability="continuous"
+        initial="calculated"
+        causality="local">
+      <Real derivative="5"/>
+    </ScalarVariable>
+    <ScalarVariable
+        name="a1"
+        valueReference="7"
+        description=" Acceleration left mass"
+        variability="continuous"
+        initial="exact"
+        causality="output">
+      <Real start="0"/>
+    </ScalarVariable>
+    <ScalarVariable
+        name="v2"
+        valueReference="8"
+        description="velocity right mass"
+        variability="continuous"
+        initial="exact"
+        causality="output">
+      <Real start="0"/>
+    </ScalarVariable>
+    <ScalarVariable
+        name="dv2"
+        valueReference="09"
+        description="change in velocity right mass"
+        variability="continuous"
+        initial="calculated"
+        causality="local">
+      <Real derivative="8"/>
+    </ScalarVariable>
+    <ScalarVariable
+        name="a2"
+        valueReference="10"
+        description="Acceleration right mass"
+        variability="continuous"
+        initial="exact"
+        causality="output">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <!-- internal parameter -->
+    <ScalarVariable
+        name="k1"
+        valueReference="11"
+        description="spring constant spring on left mass"
+        causality="parameter"
+        variability="fixed"
+        initial="exact">
+      <Real start="0"/>
+    </ScalarVariable>
+    <ScalarVariable
+        name="gamma1"
+        valueReference="12"
+        description="spring constant spring on left mass"
+        causality="parameter"
+        variability="fixed"
+        initial="exact">
+      <Real start="0"/>
+    </ScalarVariable>
+    <ScalarVariable
+        name="omega1"
+        valueReference="13"
+        description="omega1"
+        causality="parameter"
+        variability="fixed"
+        initial="exact">
+      <Real start="0"/>
+    </ScalarVariable>
+    <ScalarVariable
+        name="phi1"
+        valueReference="14"
+        description="phi"
+        causality="parameter"
+        variability="fixed"
+        initial="exact">
+      <Real start="0"/>
+    </ScalarVariable>
+    <ScalarVariable
+        name="fc1"
+        valueReference="15"
+        description="force"
+        variability="continuous"
+        initial="calculated"
+        causality="output">
+      <Real />
+    </ScalarVariable>
+
+    <ScalarVariable
+        name="k2"
+        valueReference="16"
+        description="spring constant spring on left mass"
+        causality="parameter"
+        variability="fixed"
+        initial="exact">
+      <Real start="0"/>
+    </ScalarVariable>
+    <ScalarVariable
+        name="gamma2"
+        valueReference="17"
+        description="spring constant spring on left mass"
+        causality="parameter"
+        variability="fixed"
+        initial="exact">
+      <Real start="0"/>
+    </ScalarVariable>
+    <ScalarVariable
+        name="omega2"
+        valueReference="18"
+        description="omega1"
+        causality="parameter"
+        variability="fixed"
+        initial="exact">
+      <Real start="0"/>
+    </ScalarVariable>
+    <ScalarVariable
+        name="phi2"
+        valueReference="19"
+        description="phi"
+        causality="parameter"
+        variability="fixed"
+        initial="exact">
+      <Real start="0"/>
+    </ScalarVariable>
+    <ScalarVariable
+        name="fc2"
+        valueReference="20"
+        description="phi"
+        variability="continuous"
+        initial="calculated"
+        causality="output">
+      <Real/>
+    </ScalarVariable>
+
+    <ScalarVariable
+        name="k_internal"
+        valueReference="21"
+        description="spring constant for spring between masses"
+        causality="parameter"
+        variability="fixed"
+        initial="exact">
+      <Real start="0"/>
+    </ScalarVariable>
+    <ScalarVariable
+        name="gamma_internal"
+        valueReference="22"
+        description="spring constant for spring between masses"
+        causality="parameter"
+        variability="fixed"
+        initial="exact">
+      <Real start="0"/>
+    </ScalarVariable>
+    <ScalarVariable
+        name="f1"
+        valueReference="23"
+        description="driving force"
+        variability="continuous"
+        initial="approx"
+        causality="input" >
+      <Real start="0"/>
+    </ScalarVariable>
+    <ScalarVariable
+        name="f2"
+        valueReference="24"
+        description="driving force"
+        variability="continuous"
+        initial="approx"
+        causality="input" >
+      <Real start="0"/>
+    </ScalarVariable>
+    <ScalarVariable
+        name="x1_i"
+        valueReference="25"
+        description="driving position"
+        variability="continuous"
+        initial="approx"
+        causality="input" >
+      <Real start="0"/>
+    </ScalarVariable>
+    <ScalarVariable
+        name="v1_i"
+        valueReference="26"
+        description="driving velocity"
+        variability="continuous"
+        initial="approx"
+        causality="input" >
+      <Real start="0"/>
+    </ScalarVariable>
+    <ScalarVariable
+        name="x2_i"
+        valueReference="27"
+        description="driving position"
+        variability="continuous"
+        initial="approx"
+        causality="input" >
+      <Real start="0"/>
+    </ScalarVariable>
+    <ScalarVariable
+        name="v2_i"
+        valueReference="28"
+        description="driving velocity"
+        variability="continuous"
+        initial="approx"
+        causality="input" >
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <ScalarVariable
+        name="m1"
+        valueReference="29"
+        description="spring constant spring on left mass"
+        causality="parameter"
+        variability="fixed"
+        initial="exact">
+      <Real start="1"/>
+    </ScalarVariable>
+    <ScalarVariable
+        name="m1i_o"
+        valueReference="30"
+        description="output force"
+        causality="output"
+        variability="continuous"
+        initial="calculated">
+      <Real start="0"/>
+    </ScalarVariable>
+    <ScalarVariable
+        name="m2"
+        valueReference="31"
+        description="spring constant spring on left mass"
+        causality="parameter"
+        variability="fixed"
+        initial="exact">
+      <Real start="1"/>
+    </ScalarVariable>
+    <ScalarVariable
+        name="m2i_o"
+        valueReference="32"
+        description="output force"
+        variability="continuous"
+        initial="calculated"
+        causality="output">
+      <Real/>
+    </ScalarVariable>
+
+
+
+  </ModelVariables>
+  <ModelStructure>
+    <Outputs>
+      <Unknown index="1"/>
+      <Unknown index="3"/>
+      <Unknown index="5"/>
+      <Unknown index="7"/>
+      <Unknown index="8"/>
+      <Unknown index="10"/>
+      <Unknown index="12"/>
+      <Unknown index="14"/>
+    </Outputs>
+    <Derivatives>
+      <Unknown index="6"/>
+      <Unknown index="7"/>
+      <Unknown index="8"/>
+      <Unknown index="9"/>
+    </Derivatives>
+    <DiscreteStates/>
+    <InitialUnknowns />
+  </ModelStructure>
+
+</fmiModelDescription>

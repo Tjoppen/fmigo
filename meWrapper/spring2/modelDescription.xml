@@ -1,0 +1,340 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fmiModelDescription
+    fmiVersion="2.0"
+    description="Two masses with a spring"
+    modelName="wrapper_springs2"
+    guid="e4eb705f-0c53-40cf-b34f-8384e523a4c6"
+    numberOfEventIndicators="0">
+
+  <CoSimulation
+    modelIdentifier="wrapper_springs2"
+    canHandleVariableCommunicationStepSize="true"
+    canGetAndSetFMUstate="true"
+    providesDirectionalDerivative="false"/>
+
+  <LogCategories>
+    <Category name="logAll"/>
+    <Category name="logError"/>
+    <Category name="logFmiCall"/>
+    <Category name="logEvent"/>
+  </LogCategories>
+
+  <DefaultExperiment startTime="0" stopTime="10" stepSize="0.1"/>
+
+  <ModelVariables>
+    <ScalarVariable
+       variability="continuous"
+       causality="output"
+       name="x1"
+       valueReference="1"
+       initial="exact"
+       description="position left mass">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <ScalarVariable
+       variability="continuous"
+       causality="output"
+       name="x2"
+       valueReference="3"
+       initial="exact"
+       description="position right mass">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <ScalarVariable
+       variability="continuous"
+       causality="output"
+       name="v1"
+       valueReference="5"
+       initial="exact"
+       description="velocity left mass">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <ScalarVariable
+       variability="continuous"
+       causality="output"
+       name="a1"
+       valueReference="7"
+       initial="exact"
+       description=" Acceleration left mass">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <ScalarVariable
+       variability="continuous"
+       causality="output"
+       name="v2"
+       valueReference="8"
+       initial="exact"
+       description="velocity right mass">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <ScalarVariable
+       variability="continuous"
+       causality="output"
+       name="a2"
+       valueReference="10"
+       initial="exact"
+       description="Acceleration right mass">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <ScalarVariable
+       variability="fixed"
+       causality="parameter"
+       name="k1"
+       valueReference="11"
+       initial="exact"
+       description="spring constant spring on left mass">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <ScalarVariable
+       variability="fixed"
+       causality="parameter"
+       name="gamma1"
+       valueReference="12"
+       initial="exact"
+       description="spring constant spring on left mass">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <ScalarVariable
+       variability="fixed"
+       causality="parameter"
+       name="omega1"
+       valueReference="13"
+       initial="exact"
+       description="omega1">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <ScalarVariable
+       variability="fixed"
+       causality="parameter"
+       name="phi1"
+       valueReference="14"
+       initial="exact"
+       description="phi">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <ScalarVariable
+       variability="continuous"
+       causality="output"
+       name="fc1"
+       valueReference="15"
+       initial="calculated"
+       description="force">
+      <Real />
+    </ScalarVariable>
+
+    <ScalarVariable
+       variability="fixed"
+       causality="parameter"
+       name="k2"
+       valueReference="16"
+       initial="exact"
+       description="spring constant spring on left mass">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <ScalarVariable
+       variability="fixed"
+       causality="parameter"
+       name="gamma2"
+       valueReference="17"
+       initial="exact"
+       description="spring constant spring on left mass">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <ScalarVariable
+       variability="fixed"
+       causality="parameter"
+       name="omega2"
+       valueReference="18"
+       initial="exact"
+       description="omega1">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <ScalarVariable
+       variability="fixed"
+       causality="parameter"
+       name="phi2"
+       valueReference="19"
+       initial="exact"
+       description="phi">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <ScalarVariable
+       variability="continuous"
+       causality="output"
+       name="fc2"
+       valueReference="20"
+       initial="calculated"
+       description="phi">
+      <Real />
+    </ScalarVariable>
+
+    <ScalarVariable
+       variability="fixed"
+       causality="parameter"
+       name="k_internal"
+       valueReference="21"
+       initial="exact"
+       description="spring constant for spring between masses">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <ScalarVariable
+       variability="fixed"
+       causality="parameter"
+       name="gamma_internal"
+       valueReference="22"
+       initial="exact"
+       description="spring constant for spring between masses">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <ScalarVariable
+       variability="continuous"
+       causality="input"
+       name="f1"
+       valueReference="23"
+       initial="approx"
+       description="driving force">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <ScalarVariable
+       variability="continuous"
+       causality="input"
+       name="f2"
+       valueReference="24"
+       initial="approx"
+       description="driving force">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <ScalarVariable
+       variability="continuous"
+       causality="input"
+       name="x1_i"
+       valueReference="25"
+       initial="approx"
+       description="driving position">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <ScalarVariable
+       variability="continuous"
+       causality="input"
+       name="v1_i"
+       valueReference="26"
+       initial="approx"
+       description="driving velocity">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <ScalarVariable
+       variability="continuous"
+       causality="input"
+       name="x2_i"
+       valueReference="27"
+       initial="approx"
+       description="driving position">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <ScalarVariable
+       variability="continuous"
+       causality="input"
+       name="v2_i"
+       valueReference="28"
+       initial="approx"
+       description="driving velocity">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <ScalarVariable
+       variability="fixed"
+       causality="parameter"
+       name="m1"
+       valueReference="29"
+       initial="exact"
+       description="spring constant spring on left mass">
+      <Real start="1"/>
+    </ScalarVariable>
+
+    <ScalarVariable
+       variability="continuous"
+       causality="output"
+       name="m1i_o"
+       valueReference="30"
+       initial="calculated"
+       description="output force">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <ScalarVariable
+       variability="fixed"
+       causality="parameter"
+       name="m2"
+       valueReference="31"
+       initial="exact"
+       description="spring constant spring on left mass">
+      <Real start="1"/>
+    </ScalarVariable>
+
+    <ScalarVariable
+       variability="continuous"
+       causality="output"
+       name="m2i_o"
+       valueReference="32"
+       initial="calculated"
+       description="output force">
+      <Real />
+    </ScalarVariable>
+
+
+    <ScalarVariable
+        name="fmu"
+        valueReference="0"
+        description="Path to the ME fmu to be wrapped"
+        causality="parameter">
+      <String size="21" start="sources/springs2.fmu"/>
+</ScalarVariable>
+
+    <ScalarVariable
+        name="directional"
+        valueReference="1"
+        description="Expects format vrUnKnown,unKnown,value"
+        causality="parameter">
+      <String size="20" start=""/>
+</ScalarVariable>
+
+  </ModelVariables>
+  <ModelStructure>
+    <Outputs>
+      <Unknown index="1"/>
+      <Unknown index="3"/>
+      <Unknown index="5"/>
+      <Unknown index="7"/>
+      <Unknown index="8"/>
+      <Unknown index="10"/>
+      <Unknown index="12"/>
+      <Unknown index="14"/>
+    </Outputs>
+
+    <Derivatives/>
+    <DiscreteStates/>
+    <InitialUnknowns/>
+  </ModelStructure>
+</fmiModelDescription>
+

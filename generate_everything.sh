@@ -46,6 +46,7 @@ CSFMUS="
 WRAPPERS="
     meWrapper/wrapper
     meWrapper/spring
+    meWrapper/spring2
 "
 
 cat <<END>CMakeLists.txt

@@ -15,6 +15,7 @@ SET(SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/tridiag_ldlt.c
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/tridiag_ldlt.h
 )
+
 ADD_CUSTOM_COMMAND(
   OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
   COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/../../fmu-builder/bin/modeldescription2header

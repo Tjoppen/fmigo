@@ -17,9 +17,17 @@ SET(SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/wrapper.c
 )
+
+ADD_CUSTOM_COMMAND(
+  OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml
+  COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/sources/xml2wrappedxml.py
+    ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.xml >
+    ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml
+  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.xml )
+    
 ADD_CUSTOM_COMMAND(
   OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
-  COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/../../../fmu-builder/bin/modeldescription2header
+  COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/sources/modeldescription2headerWrapper.py
     ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml >
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml )

@@ -1,10 +1,11 @@
 set -e
 
 MD2HDR="`pwd`/../fmu-builder/bin/modeldescription2header"
+GENERATORXML="`pwd`/../umit-fmus/meWrapper/wrapper/sources/xml2wrappedxml.py"
+MD2HDRWRAPPER="`pwd`/../umit-fmus/meWrapper/wrapper/sources/modeldescription2headerWrapper.py"
 GENERATOR="`pwd`/../fmu-builder/bin/cmake-generator -t `pwd`/templates/fmi2/ -i `pwd`/../FMILibrary-2.0.1/ThirdParty/FMI/default -m ${MD2HDR}"
 GENERATORME="`pwd`/../fmu-builder/bin/cmake-generator -t `pwd`/templates/fmi2/ -i `pwd`/../FMILibrary-2.0.1/ThirdParty/FMI/default -m ${MD2HDR} -f me"
-GENERATORWRAPPER="`pwd`/../umit-fmus/meWrapper/wrapper/sources/modeldescription2headerWrapper.py"
-GENERATORXML="`pwd`/../umit-fmus/meWrapper/wrapper/sources/xml2wrappedxml.py"
+GENERATORWRAPPER="`pwd`/../fmu-builder/bin/cmake-generator -t `pwd`/templates/fmi2/ -i `pwd`/../FMILibrary-2.0.1/ThirdParty/FMI/default -m ${MD2HDRWRAPPER} -x ${GENERATORXML}"
 
 GSLFMUS="
     gsl2/clutch2
@@ -110,9 +111,10 @@ done
 for d in $WRAPPERS
 do
     echo "add_subdirectory($d)" >> CMakeLists.txt
+    GSL="-l cgsl,m,fmilib -c"
     pushd $d
         python ${GENERATORXML} sources/modelDescription.xml > modelDescription.xml
-        python ${GENERATORWRAPPER} modelDescription.xml > sources/modelDescription.h
-        python ${GENERATOR}
+        python ${MD2HDRWRAPPER} modelDescription.xml > sources/modelDescription.h
+        python ${GENERATORWRAPPER} ${GSL}
     popd
 done

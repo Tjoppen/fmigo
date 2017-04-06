@@ -11,6 +11,7 @@ SET(SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/fmi.c
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
 )
+
 ADD_CUSTOM_COMMAND(
   OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
   COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/../../../fmu-builder/bin/modeldescription2header

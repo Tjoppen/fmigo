@@ -11,6 +11,7 @@ typedef struct Backup
     double h;
     double *dydt;
     fmi2_real_t* ei;
+    fmi2_real_t* ei_b;
     fmi2_real_t* x;
     unsigned long failed_steps;
     fmi2_event_info_t eventInfo;
@@ -31,7 +32,11 @@ typedef struct fmu_model{
 }fmu_model;
 
 void setFMUstate();
+Backup* getBackup();
+cgsl_simulation* getSim();
 fmi2_import_t** getFMU();
-void runIteration(double t, double dt);
+void restoreStates(cgsl_simulation *sim, Backup *backup);
+void storeStates(cgsl_simulation *sim, Backup *backup);
+void runIteration(double t, double dt, Backup *backup);
 void prepare();
 #endif

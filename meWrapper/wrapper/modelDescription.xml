@@ -3,7 +3,7 @@
     fmiVersion="2.0"
     description="None"
     modelName="wrapper_bouncingBall"
-    guid="86c16f47-0367-4044-87a1-57b22fd284e6"
+    guid="6250780a-56f4-4cf2-b66e-fb6f35c0f900"
     numberOfEventIndicators="0">
 
   <CoSimulation

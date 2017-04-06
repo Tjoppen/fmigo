@@ -20,12 +20,22 @@ fmi2Status getPartial(state_t *s, fmi2ValueReference x, fmi2ValueReference unKno
     return status;
 }
 
+fmi2Status fmi2GetFMUstate (fmi2Component c, fmi2FMUstate FMUstate) {
+    fmi2Status status;
+    return status;
+}
+
+fmi2Status fmi2SetFMUstate (fmi2Component c, fmi2FMUstate FMUstate) {
+    fmi2Status status;
+    return status;
+}
+
 
 void SIMULATION_WRAPPER(state_t *s);
 #define NEW_DOSTEP //to get noSetFMUStatePriorToCurrentPoint
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
 fprintf(stderr,"do step run iteration\n");
-runIteration(currentCommunicationPoint,communicationStepSize);
+ runIteration(currentCommunicationPoint,communicationStepSize, getBackup());
 }
 
 

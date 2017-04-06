@@ -2,12 +2,12 @@
 <fmiModelDescription
     fmiVersion="2.0"
     description="Two masses with a spring"
-    modelName="springs"
+    modelName="springs2"
     guid="{78a384b7-1718-4f46-a8ee-9536df41db41}"
     numberOfEventIndicators="0">
 
   <ModelExchange
-      modelIdentifier="springs"
+      modelIdentifier="springs2"
       canHandleVariableCommunicationStepSize="true"
       canGetAndSetFMUstate="true"
       providesDirectionalDerivative="false"/>
@@ -23,7 +23,7 @@
 
   <ModelVariables>
        <ScalarVariable
-        name="x0"
+        name="x1"
         valueReference="1"
         description="position left mass"
         variability="continuous"
@@ -32,7 +32,7 @@
       <Real start="0"/>
     </ScalarVariable>
     <ScalarVariable
-        name="dx0"
+        name="dx1"
         valueReference="2"
         description="change in position left mass"
         variability="continuous"
@@ -41,7 +41,7 @@
       <Real derivative="1"/>
     </ScalarVariable>
     <ScalarVariable
-        name="x1"
+        name="x2"
         valueReference="3"
         description="position right mass"
         variability="continuous"
@@ -50,7 +50,7 @@
       <Real start="0"/>
     </ScalarVariable>
     <ScalarVariable
-        name="dx1"
+        name="dx2"
         valueReference="4"
         description="change in position right mass"
         variability="continuous"
@@ -59,7 +59,7 @@
       <Real derivative="3"/>
     </ScalarVariable>
     <ScalarVariable
-        name="v0"
+        name="v1"
         valueReference="5"
         description="velocity left mass"
         variability="continuous"
@@ -68,7 +68,7 @@
       <Real start="0"/>
     </ScalarVariable>
     <ScalarVariable
-        name="dv0"
+        name="dv1"
         valueReference="6"
         description="change in velocity left mass"
         variability="continuous"
@@ -77,7 +77,7 @@
       <Real derivative="5"/>
     </ScalarVariable>
     <ScalarVariable
-        name="a0"
+        name="a1"
         valueReference="7"
         description=" Acceleration left mass"
         variability="continuous"
@@ -86,7 +86,7 @@
       <Real start="0"/>
     </ScalarVariable>
     <ScalarVariable
-        name="v1"
+        name="v2"
         valueReference="8"
         description="velocity right mass"
         variability="continuous"
@@ -95,7 +95,7 @@
       <Real start="0"/>
     </ScalarVariable>
     <ScalarVariable
-        name="dv1"
+        name="dv2"
         valueReference="09"
         description="change in velocity right mass"
         variability="continuous"
@@ -104,13 +104,13 @@
       <Real derivative="8"/>
     </ScalarVariable>
     <ScalarVariable
-        name="a1"
+        name="a2"
         valueReference="10"
         description="Acceleration right mass"
         variability="continuous"
         initial="exact"
         causality="output">
-      <Real derivative="09"/>
+      <Real start="0"/>
     </ScalarVariable>
 
     <!-- internal parameter -->
@@ -216,16 +216,16 @@
       <Real start="0"/>
     </ScalarVariable>
     <ScalarVariable
-        name="f1"
+        name="gamma_internal"
         valueReference="22"
-        description="driving force"
-        variability="continuous"
-        initial="approx"
-        causality="input" >
+        description="spring constant for spring between masses"
+        causality="parameter"
+        variability="fixed"
+        initial="exact">
       <Real start="0"/>
     </ScalarVariable>
     <ScalarVariable
-        name="f2"
+        name="f1"
         valueReference="23"
         description="driving force"
         variability="continuous"
@@ -234,8 +234,17 @@
       <Real start="0"/>
     </ScalarVariable>
     <ScalarVariable
-        name="x1"
+        name="f2"
         valueReference="24"
+        description="driving force"
+        variability="continuous"
+        initial="approx"
+        causality="input" >
+      <Real start="0"/>
+    </ScalarVariable>
+    <ScalarVariable
+        name="x1_i"
+        valueReference="25"
         description="driving position"
         variability="continuous"
         initial="approx"
@@ -243,8 +252,8 @@
       <Real start="0"/>
     </ScalarVariable>
     <ScalarVariable
-        name="v1"
-        valueReference="25"
+        name="v1_i"
+        valueReference="26"
         description="driving velocity"
         variability="continuous"
         initial="approx"
@@ -252,8 +261,8 @@
       <Real start="0"/>
     </ScalarVariable>
     <ScalarVariable
-        name="x2"
-        valueReference="26"
+        name="x2_i"
+        valueReference="27"
         description="driving position"
         variability="continuous"
         initial="approx"
@@ -261,8 +270,8 @@
       <Real start="0"/>
     </ScalarVariable>
     <ScalarVariable
-        name="v2"
-        valueReference="27"
+        name="v2_i"
+        valueReference="28"
         description="driving velocity"
         variability="continuous"
         initial="approx"
@@ -272,16 +281,16 @@
 
     <ScalarVariable
         name="m1"
-        valueReference="28"
+        valueReference="29"
         description="spring constant spring on left mass"
         causality="parameter"
         variability="fixed"
         initial="exact">
-      <Real start="0"/>
+      <Real start="1"/>
     </ScalarVariable>
     <ScalarVariable
-        name="m1_i"
-        valueReference="29"
+        name="m1i_o"
+        valueReference="30"
         description="output force"
         causality="output"
         variability="continuous"
@@ -290,16 +299,16 @@
     </ScalarVariable>
     <ScalarVariable
         name="m2"
-        valueReference="30"
+        valueReference="31"
         description="spring constant spring on left mass"
         causality="parameter"
         variability="fixed"
         initial="exact">
-      <Real start="0"/>
+      <Real start="1"/>
     </ScalarVariable>
     <ScalarVariable
-        name="m2_i"
-        valueReference="31"
+        name="m2i_o"
+        valueReference="32"
         description="output force"
         variability="continuous"
         initial="calculated"

@@ -6,12 +6,25 @@
 
 static void updateStates(modelDescription_t *md){}
 static void update_all(modelDescription_t *md){
-    //std::cout << "hello " << sdt::endl;
-    md->dx0 = md->v0;
-    md->dv0 = -md->k1 * (md->x0 - md->x1) - md->f_in;
     md->dx1 = md->v1;
-    md->f_out = -md->k2 * (md->x1 - md->x_in);
-    md->dv1 = -md->k1 * (md->x1 - md->x0) -md->k2 * (md->x1 - md->x_in);
+    md->dx2 = md->v2;
+
+    double fi = - md->k_internal * (md->x1 - md->x2) - md->gamma_internal * (md->v1 - md->v2);//out
+    md->fc1 = md->k1 * (md->x1 - md->x1_i) + md->gamma1 * (md->v1 - md->v1_i);//out
+    md->fc2 = md->k2 * (md->x2 - md->x2_i) + md->gamma2 * (md->v2 - md->v2_i);//out
+
+    md->m1i_o = 1/md->m1;
+    md->m2i_o = 2/md->m2;
+
+    md->dv1 = md->m1i_o;
+    md->dv2 = md->m2i_o;
+
+    md->dv1 *= (fi - md->fc1 + md->f1);
+    md->dv2 *= (-fi- md->fc2 + md->f2);
+
+    md->a1 = md->dv1;
+    md->a2 = md->dv2;
+
     //fprintf(stderr,"%f %f %f %f \n",md->dx0,md->dv0,md->dx1,md->dv1);
 }
 

@@ -22,6 +22,7 @@ GSLFMUS="
 "
 MEFMUS="
     me/springs
+    me/springs2
     me/bouncingBall
     me/bouncingBallWithSpring
     me/fixedPoint
@@ -44,6 +45,7 @@ CSFMUS="
 
 WRAPPERS="
     meWrapper/wrapper
+    meWrapper/spring
 "
 
 cat <<END>CMakeLists.txt

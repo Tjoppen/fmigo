@@ -6,7 +6,7 @@
 #include "commonWrapper/modelExchange.h"
 
 #define MODEL_IDENTIFIER wrapper_springs2
-#define MODEL_GUID "e4eb705f-0c53-40cf-b34f-8384e523a4c6"
+#define MODEL_GUID "5f607c97-c8a9-4453-a37c-30a76ed70fbb"
 #define FMI_COSIMULATION
 #define HAVE_DIRECTIONAL_DERIVATIVE 0
 #define CAN_GET_SET_FMU_STATE 1

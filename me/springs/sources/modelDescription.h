@@ -40,13 +40,13 @@ typedef struct {
 static const modelDescription_t defaults = {
     -1.0, //x_in
     -1.0, //x0
-    2.0, //dx0
+    0, //dx0
     1.0, //x1
-    4.0, //dx1
+    0, //dx1
     0.0, //v0
-    6.0, //dv0
+    0, //dv0
     0.0, //v1
-    8.0, //dv1
+    0, //dv1
     1.0, //k1
     0.0, //k2
     0.0, //f_in

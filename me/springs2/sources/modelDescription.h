@@ -4,31 +4,31 @@
 #include "FMI2/fmi2Functions.h" //for fmi2Real etc.
 #include "strlcpy.h" //for strlcpy()
 
-#define MODEL_IDENTIFIER springs
+#define MODEL_IDENTIFIER springs2
 #define MODEL_GUID "{78a384b7-1718-4f46-a8ee-9536df41db41}"
 #define FMI_MODELEXCHANGE
 #define HAVE_DIRECTIONAL_DERIVATIVE 0
 #define CAN_GET_SET_FMU_STATE 1
-#define NUMBER_OF_REALS 31
+#define NUMBER_OF_REALS 32
 #define NUMBER_OF_INTEGERS 0
 #define NUMBER_OF_BOOLEANS 0
 #define NUMBER_OF_STRINGS 0
-#define NUMBER_OF_STATES 5
+#define NUMBER_OF_STATES 4
 #define NUMBER_OF_EVENT_INDICATORS 0
 
 
 #define HAVE_MODELDESCRIPTION_STRUCT
 typedef struct {
-    fmi2Real x0; //VR=1
-    fmi2Real dx0; //VR=2
-    fmi2Real x1; //VR=3
-    fmi2Real dx1; //VR=4
-    fmi2Real v0; //VR=5
-    fmi2Real dv0; //VR=6
-    fmi2Real a0; //VR=7
-    fmi2Real v1; //VR=8
-    fmi2Real dv1; //VR=9
-    fmi2Real a1; //VR=10
+    fmi2Real x1; //VR=1
+    fmi2Real dx1; //VR=2
+    fmi2Real x2; //VR=3
+    fmi2Real dx2; //VR=4
+    fmi2Real v1; //VR=5
+    fmi2Real dv1; //VR=6
+    fmi2Real a1; //VR=7
+    fmi2Real v2; //VR=8
+    fmi2Real dv2; //VR=9
+    fmi2Real a2; //VR=10
     fmi2Real k1; //VR=11
     fmi2Real gamma1; //VR=12
     fmi2Real omega1; //VR=13
@@ -40,32 +40,33 @@ typedef struct {
     fmi2Real phi2; //VR=19
     fmi2Real fc2; //VR=20
     fmi2Real k_internal; //VR=21
-    fmi2Real f1; //VR=22
-    fmi2Real f2; //VR=23
-    fmi2Real x1; //VR=24
-    fmi2Real v1; //VR=25
-    fmi2Real x2; //VR=26
-    fmi2Real v2; //VR=27
-    fmi2Real m1; //VR=28
-    fmi2Real m1_i; //VR=29
-    fmi2Real m2; //VR=30
-    fmi2Real m2_i; //VR=31
+    fmi2Real gamma_internal; //VR=22
+    fmi2Real f1; //VR=23
+    fmi2Real f2; //VR=24
+    fmi2Real x1_i; //VR=25
+    fmi2Real v1_i; //VR=26
+    fmi2Real x2_i; //VR=27
+    fmi2Real v2_i; //VR=28
+    fmi2Real m1; //VR=29
+    fmi2Real m1i_o; //VR=30
+    fmi2Real m2; //VR=31
+    fmi2Real m2i_o; //VR=32
     fmi2Boolean dirty;
 } modelDescription_t;
 
 
 #define HAVE_DEFAULTS
 static const modelDescription_t defaults = {
-    0.0, //x0
-    1.0, //dx0
     0.0, //x1
-    3.0, //dx1
-    0.0, //v0
-    5.0, //dv0
-    0.0, //a0
+    0, //dx1
+    0.0, //x2
+    0, //dx2
     0.0, //v1
-    8.0, //dv1
-    9.0, //a1
+    0, //dv1
+    0.0, //a1
+    0.0, //v2
+    0, //dv2
+    0.0, //a2
     0.0, //k1
     0.0, //gamma1
     0.0, //omega1
@@ -77,30 +78,31 @@ static const modelDescription_t defaults = {
     0.0, //phi2
     0, //fc2
     0.0, //k_internal
+    0.0, //gamma_internal
     0.0, //f1
     0.0, //f2
-    0.0, //x1
-    0.0, //v1
-    0.0, //x2
-    0.0, //v2
-    0.0, //m1
-    0.0, //m1_i
-    0.0, //m2
-    0, //m2_i
+    0.0, //x1_i
+    0.0, //v1_i
+    0.0, //x2_i
+    0.0, //v2_i
+    1.0, //m1
+    0.0, //m1i_o
+    1.0, //m2
+    0, //m2i_o
     1,
 };
 
 
-#define VR_X0 1
-#define VR_DX0 2
-#define VR_X1 3
-#define VR_DX1 4
-#define VR_V0 5
-#define VR_DV0 6
-#define VR_A0 7
-#define VR_V1 8
-#define VR_DV1 9
-#define VR_A1 10
+#define VR_X1 1
+#define VR_DX1 2
+#define VR_X2 3
+#define VR_DX2 4
+#define VR_V1 5
+#define VR_DV1 6
+#define VR_A1 7
+#define VR_V2 8
+#define VR_DV2 9
+#define VR_A2 10
 #define VR_K1 11
 #define VR_GAMMA1 12
 #define VR_OMEGA1 13
@@ -112,16 +114,17 @@ static const modelDescription_t defaults = {
 #define VR_PHI2 19
 #define VR_FC2 20
 #define VR_K_INTERNAL 21
-#define VR_F1 22
-#define VR_F2 23
-#define VR_X1 24
-#define VR_V1 25
-#define VR_X2 26
-#define VR_V2 27
-#define VR_M1 28
-#define VR_M1_I 29
-#define VR_M2 30
-#define VR_M2_I 31
+#define VR_GAMMA_INTERNAL 22
+#define VR_F1 23
+#define VR_F2 24
+#define VR_X1_I 25
+#define VR_V1_I 26
+#define VR_X2_I 27
+#define VR_V2_I 28
+#define VR_M1 29
+#define VR_M1I_O 30
+#define VR_M2 31
+#define VR_M2I_O 32
 
 
 //the following getters and setters are static to avoid getting linking errors if this file is included in more than one place
@@ -129,8 +132,8 @@ static const modelDescription_t defaults = {
 #define HAVE_GENERATED_GETTERS_SETTERS  //for letting the template know that we have our own getters and setters
 
 
-#define STATES { VR_V1, VR_X0, VR_X1, VR_DV1, VR_V0 }
-#define DERIVATIVES { VR_DV1, VR_DX0, VR_DX1, VR_A1, VR_DV0 }
+#define STATES { VR_V2, VR_X1, VR_X2, VR_V1 }
+#define DERIVATIVES { VR_DV2, VR_DX1, VR_DX2, VR_DV1 }
 
 
 static void update_all(modelDescription_t *md);
@@ -143,16 +146,16 @@ static fmi2Status generated_fmi2GetReal(modelDescription_t *md, const fmi2ValueR
 int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case VR_X0: value[i] = md->x0; break;
-        case VR_DX0: value[i] = md->dx0; break;
         case VR_X1: value[i] = md->x1; break;
         case VR_DX1: value[i] = md->dx1; break;
-        case VR_V0: value[i] = md->v0; break;
-        case VR_DV0: value[i] = md->dv0; break;
-        case VR_A0: value[i] = md->a0; break;
+        case VR_X2: value[i] = md->x2; break;
+        case VR_DX2: value[i] = md->dx2; break;
         case VR_V1: value[i] = md->v1; break;
         case VR_DV1: value[i] = md->dv1; break;
         case VR_A1: value[i] = md->a1; break;
+        case VR_V2: value[i] = md->v2; break;
+        case VR_DV2: value[i] = md->dv2; break;
+        case VR_A2: value[i] = md->a2; break;
         case VR_K1: value[i] = md->k1; break;
         case VR_GAMMA1: value[i] = md->gamma1; break;
         case VR_OMEGA1: value[i] = md->omega1; break;
@@ -164,16 +167,17 @@ int i;
         case VR_PHI2: value[i] = md->phi2; break;
         case VR_FC2: value[i] = md->fc2; break;
         case VR_K_INTERNAL: value[i] = md->k_internal; break;
+        case VR_GAMMA_INTERNAL: value[i] = md->gamma_internal; break;
         case VR_F1: value[i] = md->f1; break;
         case VR_F2: value[i] = md->f2; break;
-        case VR_X1: value[i] = md->x1; break;
-        case VR_V1: value[i] = md->v1; break;
-        case VR_X2: value[i] = md->x2; break;
-        case VR_V2: value[i] = md->v2; break;
+        case VR_X1_I: value[i] = md->x1_i; break;
+        case VR_V1_I: value[i] = md->v1_i; break;
+        case VR_X2_I: value[i] = md->x2_i; break;
+        case VR_V2_I: value[i] = md->v2_i; break;
         case VR_M1: value[i] = md->m1; break;
-        case VR_M1_I: value[i] = md->m1_i; break;
+        case VR_M1I_O: value[i] = md->m1i_o; break;
         case VR_M2: value[i] = md->m2; break;
-        case VR_M2_I: value[i] = md->m2_i; break;
+        case VR_M2I_O: value[i] = md->m2i_o; break;
 
         default: return fmi2Error;
         }
@@ -186,16 +190,16 @@ static fmi2Status generated_fmi2SetReal(modelDescription_t *md, const fmi2ValueR
 int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case 1: md->x0 = value[i]; break;
-        case 2: md->dx0 = value[i]; break;
-        case 3: md->x1 = value[i]; break;
-        case 4: md->dx1 = value[i]; break;
-        case 5: md->v0 = value[i]; break;
-        case 6: md->dv0 = value[i]; break;
-        case 7: md->a0 = value[i]; break;
-        case 8: md->v1 = value[i]; break;
-        case 9: md->dv1 = value[i]; break;
-        case 10: md->a1 = value[i]; break;
+        case 1: md->x1 = value[i]; break;
+        case 2: md->dx1 = value[i]; break;
+        case 3: md->x2 = value[i]; break;
+        case 4: md->dx2 = value[i]; break;
+        case 5: md->v1 = value[i]; break;
+        case 6: md->dv1 = value[i]; break;
+        case 7: md->a1 = value[i]; break;
+        case 8: md->v2 = value[i]; break;
+        case 9: md->dv2 = value[i]; break;
+        case 10: md->a2 = value[i]; break;
         case 11: md->k1 = value[i]; break;
         case 12: md->gamma1 = value[i]; break;
         case 13: md->omega1 = value[i]; break;
@@ -207,16 +211,17 @@ int i;
         case 19: md->phi2 = value[i]; break;
         case 20: md->fc2 = value[i]; break;
         case 21: md->k_internal = value[i]; break;
-        case 22: md->f1 = value[i]; break;
-        case 23: md->f2 = value[i]; break;
-        case 24: md->x1 = value[i]; break;
-        case 25: md->v1 = value[i]; break;
-        case 26: md->x2 = value[i]; break;
-        case 27: md->v2 = value[i]; break;
-        case 28: md->m1 = value[i]; break;
-        case 29: md->m1_i = value[i]; break;
-        case 30: md->m2 = value[i]; break;
-        case 31: md->m2_i = value[i]; break;
+        case 22: md->gamma_internal = value[i]; break;
+        case 23: md->f1 = value[i]; break;
+        case 24: md->f2 = value[i]; break;
+        case 25: md->x1_i = value[i]; break;
+        case 26: md->v1_i = value[i]; break;
+        case 27: md->x2_i = value[i]; break;
+        case 28: md->v2_i = value[i]; break;
+        case 29: md->m1 = value[i]; break;
+        case 30: md->m1i_o = value[i]; break;
+        case 31: md->m2 = value[i]; break;
+        case 32: md->m2i_o = value[i]; break;
         default: return fmi2Error;
         }
     }

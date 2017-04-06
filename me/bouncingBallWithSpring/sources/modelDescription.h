@@ -35,9 +35,9 @@ typedef struct {
 #define HAVE_DEFAULTS
 static const modelDescription_t defaults = {
     1.0, //h
-    3.0, //der_h
+    0, //der_h
     0.0, //v
-    5.0, //der_v
+    0, //der_v
     9.81, //g
     0.7, //e
     10.0, //x_in
@@ -63,7 +63,7 @@ static const modelDescription_t defaults = {
 #define HAVE_GENERATED_GETTERS_SETTERS  //for letting the template know that we have our own getters and setters
 
 
-#define STATES { VR_H, VR_V }
+#define STATES { VR_V, VR_G }
 #define DERIVATIVES { VR_DER_H, VR_DER_V }
 
 

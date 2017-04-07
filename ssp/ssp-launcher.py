@@ -311,6 +311,7 @@ class FMU:
 
         self.connectors = {}
         self.physicalconnectors = {}
+        self.csvs = []
 
         connectors = find_elements(comp, 'ssd:Connectors', 'ssd:Connector')
         for conn in connectors[1]:
@@ -351,6 +352,15 @@ class FMU:
 
                     self.physicalconnectors[name] = pcdict
                     remove_if_empty(cannotation[0], pc)
+                remove_if_empty(cannotation, cannotation[0])
+            elif type == 'se.umu.math.umit.fmigo-master.csvinput':
+                if 'FmiGo' in schemas:
+                    schemas['FmiGo'].assertValid(cannotation[0])
+
+                for csv in find_elements(cannotation, 'fmigo:CSVFilenames', 'fmigo:CSVFilename')[1]:
+                    self.csvs.append(csv.text)
+                    csv.text = None
+                    remove_if_empty(cannotation[0], csv)
                 remove_if_empty(cannotation, cannotation[0])
             else:
                 print('WARNING: Found unknown Annotation of type "%s"' % type)
@@ -869,10 +879,15 @@ def parse_ssp(ssp_path, cleanup_zip = True):
 
         kinematicconns.extend(['-C', ','.join(conn)])
 
+    csvs = []
+    for fmu in fmus:
+        for csv in fmu.csvs:
+            csvs.extend(['-V','%i,%s' % (fmu.id, escape(csv))])
+
     if unzipped_ssp and cleanup_zip:
         shutil.rmtree(d)
 
-    return flatconns, flatparams, kinematicconns, unzipped_ssp, d, root_system.structure.timestep, root_system.structure.duration
+    return flatconns, flatparams, kinematicconns, csvs, unzipped_ssp, d, root_system.structure.timestep, root_system.structure.duration
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
@@ -897,7 +912,7 @@ if __name__ == '__main__':
     parse = parser.parse_args()
 
 
-    flatconns, flatparams, kinematicconns, unzipped_ssp, d, timestep, duration = parse_ssp(parse.ssp, False)
+    flatconns, flatparams, kinematicconns, csvs, unzipped_ssp, d, timestep, duration = parse_ssp(parse.ssp, False)
 
     #If we are working with TCP, create tcp://localhost:port for all given local hosts
     if len(parse.ports):
@@ -938,7 +953,7 @@ if __name__ == '__main__':
     args += ['-t',str(duration),'-d',str(timestep)] + parse.args + ['-a','-']
     args += append
 
-    pipeinput = " ".join(flatconns+flatparams+kinematicconns)
+    pipeinput = " ".join(flatconns+flatparams+kinematicconns+csvs)
     print(" ".join(args) + (' <<< "%s"' % pipeinput))
 
     if parse.dry_run:

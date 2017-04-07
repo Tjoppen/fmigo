@@ -46,6 +46,19 @@
     </xs:complexType>
   </xs:element>
 
+  <xs:element name="CSVFilenames">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+        SSD annotation type: se.umu.math.umit.fmigo-master.csvinput
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="CSVFilename" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
   <xs:complexType name="TPhysicalConnector1D">
       <xs:attribute name="name" type="xs:string" use="required"/>
       <!-- At some later time we'll allow not specifying stateVariable 

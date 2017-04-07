@@ -177,7 +177,7 @@ static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real comm
   cgsl_step_to( &s->simulation, currentCommunicationPoint, communicationStepSize );
 }
 
-
+#if 0 
 static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
   if (vr == VR_A_E) {
     if (wrt == VR_FORCE_IN_E || wrt == VR_FORCE_IN_EX) {
@@ -201,6 +201,7 @@ static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReferen
   }
   return fmi2Error;
 }
+#endif
 
 
 #ifdef CONSOLE

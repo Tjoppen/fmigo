@@ -1,16 +1,16 @@
 #!/bin/bash
+set -e
 
+COMPARE=../../compare_csv.py
 WRAPPERCHECK=tests/wrapper.txt
 SPRINGSCHECK=tests/springs.txt
 WRAPPER=wrapper/wrapper_bouncingBall.fmu
+RESULT=/tmp/result.csv
+mpirun -np 2 fmigo-mpi -t 1.5 ${WRAPPER} > ${RESULT} 2>/dev/null
 
-mpirun -np 2 fmigo-mpi -t 1.5 ${WRAPPER} > /tmp/result 2>/dev/null
-#cat /tmp/result > ${WRAPPERCHECK}
-DIFF=$(diff /tmp/result ${WRAPPERCHECK})
-if [ "$DIFF" != "" ]
-then
-    cat /tmp/result
-    exit 1
-fi
+cat  ${RESULT} > ${WRAPPERCHECK}
+python ${COMPARE} ${RESULT} ${WRAPPERCHECK}
 
+
+rm ${RESULT}
 echo Wrapper OK

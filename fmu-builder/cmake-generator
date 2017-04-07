@@ -128,7 +128,7 @@ ADD_CUSTOM_COMMAND(
   COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/%s
     ${CMAKE_CURRENT_SOURCE_DIR}/fmu/modelDescription.xml >
     ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml
-  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.xml )
+  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/fmu/modelDescription.xml )
     """ % srcxml2xml
     else: xml2xml = ""
 
@@ -153,7 +153,7 @@ SET(TARGET %s)
 %s
 ADD_CUSTOM_COMMAND(
   OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
-  COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/%s
+  COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/%s -x
     ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml >
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml )

@@ -126,7 +126,7 @@ with open(path,'w') as f:
 ADD_CUSTOM_COMMAND(
   OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml
   COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/%s
-    ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.xml >
+    ${CMAKE_CURRENT_SOURCE_DIR}/fmu/modelDescription.xml >
     ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.xml )
     """ % srcxml2xml

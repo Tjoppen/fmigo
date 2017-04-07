@@ -118,7 +118,7 @@ do
     echo "add_subdirectory($d)" >> CMakeLists.txt
     GSL="-l cgsl,m,fmilib,fmilib_shared -c"
     pushd $d
-        python ${GENERATORXML} sources/modelDescription.xml > modelDescription.xml
+        python ${GENERATORXML} fmu/modelDescription.xml > modelDescription.xml
         python ${MD2HDRWRAPPER} modelDescription.xml > sources/modelDescription.h
         python ${GENERATORWRAPPER} ${GSL}
     popd

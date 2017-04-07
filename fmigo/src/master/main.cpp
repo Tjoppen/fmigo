@@ -426,13 +426,13 @@ static void printOutputs(double t, BaseMaster *master, vector<FMIClient*>& clien
 
     master->wait();
 
-    printf("%f", t);
+    printf("%+.16le", t);
     for (size_t x = 0; x < clients.size(); x++) {
         FMIClient *client = clients[x];
         for (auto out : clientOutputs[x]) {
             switch (out.type) {
             case fmi2_base_type_real:
-                printf("%c%f", separator, client->m_getRealValues.front());
+                printf("%c%+.16le", separator, client->m_getRealValues.front());
                 client->m_getRealValues.pop_front();
                 break;
             case fmi2_base_type_int:

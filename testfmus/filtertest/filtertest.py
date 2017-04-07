@@ -15,21 +15,23 @@ def fun(t, y, w_in, k1, d1, k2, d2, J1, J2):
     w2,
   ]
 
-w_in = 10.0
+w_in = 1.0
 J = 1.0
-f = 50.0
+f = 500.0
 
 w0 = f*8*atan(1)
 c_internal = w0**2*J/2
 d_internal = 1.4*sqrt(J/2 * c_internal)
 
 # Coupling
-c = 1e5
+c = 1e9
 d = 1.4*sqrt(c)
 
-r = integrate.ode(fun).set_initial_value([0.0]*8, 0).set_f_params(w_in, c, d, c_internal, d_internal, J/2, J/2)
-t1 = 0.1
-dt = 0.03
+r = integrate.ode(fun).set_initial_value([0.0]*8, 0)
+#r.set_integrator('vode', nsteps=1000)
+r.set_f_params(w_in, c, d, c_internal, d_internal, J/2, J/2)
+t1 = 0.003
+dt = 0.00001
 
 ts   = [0]
 ys   = [r.y[0:4]]

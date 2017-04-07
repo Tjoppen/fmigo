@@ -83,7 +83,7 @@
                     causality      = "input"
                     variability    = "discrete"
                     initial        = "approx">
-        <Real start="0" />
+        <Real start="1" />
     </ScalarVariable>  <!--index="9" -->
     <ScalarVariable name           = "tq_clutchMax"
                     valueReference = "8"
@@ -91,7 +91,7 @@
                     causality      = "input"
                     variability    = "discrete"
                     initial        = "approx">
-        <Real start="10" /> <!-- monkey ass value to get something for default experiment -->
+        <Real start="0" /> <!-- monkey ass value to get something for default experiment -->
     </ScalarVariable>  <!--index="10" -->
     <ScalarVariable name           = "tq_losses"
                     valueReference = "9"
@@ -99,7 +99,7 @@
                     causality      = "input"
                     variability    = "discrete"
                     initial        = "approx">
-        <Real start="1" /><!-- monkey ass value to get something for default experiment -->
+        <Real start="0" /><!-- monkey ass value to get something for default experiment -->
     </ScalarVariable>  <!--index="11" -->
     <ScalarVariable name           = "r_tire"
                     valueReference = "10"
@@ -123,7 +123,7 @@
                     causality      = "input"
                     variability    = "discrete"
                     initial        = "approx">
-        <Real start="10" />
+        <Real start="1" />
     </ScalarVariable>  <!--index="14" -->
     <ScalarVariable name           = "w_eng"
                     valueReference = "13"
@@ -131,7 +131,7 @@
                     causality      = "input"
                     variability    = "discrete"
                     initial        = "approx">
-        <Real start="10" />
+        <Real start="0" />
     </ScalarVariable>  <!--index="15" -->
     <ScalarVariable name           = "tq_eng"
                     valueReference = "14"
@@ -139,7 +139,7 @@
                     causality      = "input"
                     variability    = "discrete"
                     initial        = "approx">
-        <Real start="1000" />
+        <Real start="0" />
     </ScalarVariable>  <!--index="16" -->
     <ScalarVariable name           = "J_eng"
                     valueReference = "15"
@@ -147,7 +147,7 @@
                     causality      = "input"
                     variability    = "discrete"
                     initial        = "approx">
-        <Real start="4" />
+        <Real start="1" />
     </ScalarVariable>  <!--index="17" -->
     <ScalarVariable name           = "J_neutral"
                     valueReference = "16"
@@ -155,7 +155,7 @@
                     causality      = "input"
                     variability    = "discrete"
                     initial        = "approx">
-        <Real start="10" />
+        <Real start="1" />
     </ScalarVariable>  <!--index="18" -->
     <ScalarVariable name           = "tq_brake"
                     valueReference = "17"
@@ -171,7 +171,7 @@
                     causality      = "input"
                     variability    = "discrete"
                     initial        = "approx">
-        <Real start="10" />
+        <Real start="1" />
     </ScalarVariable>  <!--index="20" -->
     <ScalarVariable name           = "r_slipFilt"
                     valueReference = "19"
@@ -292,7 +292,7 @@
                     causality      = "parameter"
                     variability    = "fixed"
                     initial        = "exact">
-        <Real start="0"/>
+        <Real start="10"/>
     </ScalarVariable>  <!--index="36" -->
     <ScalarVariable name           = "w_shaft_out"
                     valueReference = "36"
@@ -336,8 +336,7 @@
       <Unknown index= "27"/>
       <Unknown index= "28"/>
       <Unknown index= "29"/>
-      <Unknown index= "30"/>
-
+      
   </Outputs>
   <Derivatives/>
   <InitialUnknowns/>

@@ -163,13 +163,13 @@ static void scania_driveline_init(state_t *s) {
 
   s->simulation = cgsl_init_simulation(
     cgsl_epce_default_model_init(
-      cgsl_model_default_alloc(sizeof(initials)/sizeof(initials[0]), initials, s, fcn, NULL, NULL, NULL, 0),
+      cgsl_model_default_alloc(get_initial_states_size(s), initials, s, fcn, NULL, NULL, NULL, 0),
       0,//s->md.filter_length,
-      NULL,NULL
-      //sync_out,s
+      sync_out,
+      s
     ),
     rkf45, 1e-5, 0, 0, 0, NULL
-    );
+  );
 }
 
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {

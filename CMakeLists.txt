@@ -9,6 +9,11 @@ if (WIN32)
     set(CMAKE_EXE_LINKER_FLAGS "/SAFESEH:NO")
 endif ()
 
+if (UNIX)
+    # Treat warnings as errors, especially implicit-function-declaration
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror")
+endif ()
+
 # Don't add cgsl twice
 if (NOT TARGET cgsl)
     add_subdirectory(templates/cgsl)

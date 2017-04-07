@@ -41,16 +41,17 @@ int  fcn( double t, const double * x, double *dxdt, void * params){
   inputs.w_inShaftNeutral = x[0];
   inputs.w_wheel          = x[1];
 
-  outputs.w_inShaft = inputs.w_inShaftOld;
+  /// unused
+  ///inputs.w_inShaftOld = x[ 0 ];
 
   // coupling torque on shaft from input springs or torque
   outputs.f_shaft_out =    inputs.k2 * (  inputs.w_inShaft - inputs.w_shaft_in  );
   double tq_inputShaft =  -outputs.f_shaft_out + inputs.f_shaft_in;
 
   // coupling force on wheel from input springs or force
-  outputs.f_wheel_out = k1 * ( inputs.w_wheel - inputs.w_wheel_in ); 
+  outputs.f_wheel_out = inputs.k1 * ( inputs.w_wheel - inputs.w_wheel_in );
   double tq_inputWheel = -outputs.f_wheel_out +  inputs.f_wheel_in;
-  
+
 
   double tq_retWheel = inputs.tq_retarder * inputs.final_gear_ratio;
 
@@ -72,14 +73,14 @@ int  fcn( double t, const double * x, double *dxdt, void * params){
 
   if ( inputs.gear_ratio != 0 ){
     tq_loadAtInShaft = tq_loadPropShaft / inputs.gear_ratio;
-
-    J_atInShaft = inputs.m_vehicle * SQ ( ( inputs.r_tire / (inputs.final_gear_ratio*inputs.gear_ratio) ) );
+    J_atInShaft = inputs.m_vehicle * SQ ( ( inputs.r_tire /
+    (inputs.final_gear_ratio*inputs.gear_ratio) ) );
   } else {
     // when in neutral the transmission input shaft is disconnected and the
     // speed is then integrated and the shaft inertia is set to J_neutral
     // w_inShaftNeutral is the integration result during  outside
     outputs.w_inShaft = inputs.w_inShaftNeutral;
-    tq_loadAtInShaft = 0; 
+    tq_loadAtInShaft = 0;
     J_atInShaft = inputs.J_neutral;
   }
   tq_loadAtInShaft += tq_inputShaft;
@@ -139,8 +140,8 @@ int  fcn( double t, const double * x, double *dxdt, void * params){
 
   dxdt[ 0 ]  = outputs.w_inShaftDer;
   dxdt[ 1 ]  = outputs.w_wheelDer;
-  outputs.w_shaft_out = outputs.w_inShaft;
-  outputs.w_wheel_out = outputs.w_out;
+  outputs.w_shaft_out = x[ 0 ];
+  outputs.w_wheel_out = x[ 1 ];
 
   return GSL_SUCCESS;
 }
@@ -163,7 +164,7 @@ static void scania_driveline_init(state_t *s) {
 
   s->simulation = cgsl_init_simulation(
     cgsl_epce_default_model_init(
-      cgsl_model_default_alloc(get_initial_states_size(s), initials, s, fcn, NULL, NULL, NULL, 0),
+                                 cgsl_model_default_alloc(sizeof(initials)/sizeof(initials[0]), initials, s, fcn, NULL, NULL, NULL, 0),
       0,//s->md.filter_length,
       sync_out,
       s
@@ -175,6 +176,32 @@ static void scania_driveline_init(state_t *s) {
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
   cgsl_step_to( &s->simulation, currentCommunicationPoint, communicationStepSize );
 }
+
+
+static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
+  if (vr == VR_A_E) {
+    if (wrt == VR_FORCE_IN_E || wrt == VR_FORCE_IN_EX) {
+        *partial = 1.0/s->md.mass_e;
+        return fmi2OK;
+    }
+    if (wrt == VR_FORCE_IN_S || wrt == VR_FORCE_IN_SX) {
+        *partial = 0;
+        return fmi2OK;
+    }
+  }
+  if (vr == VR_A_S) {
+    if (wrt == VR_FORCE_IN_E || wrt == VR_FORCE_IN_EX) {
+        *partial = 0;
+        return fmi2OK;
+    }
+    if (wrt == VR_FORCE_IN_S || wrt == VR_FORCE_IN_SX) {
+        *partial = 1.0/s->md.mass_s;
+        return fmi2OK;
+    }
+  }
+  return fmi2Error;
+}
+
 
 #ifdef CONSOLE
 int main(){

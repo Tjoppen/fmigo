@@ -166,8 +166,8 @@ static void scania_driveline_init(state_t *s) {
     cgsl_epce_default_model_init(
                                  cgsl_model_default_alloc(sizeof(initials)/sizeof(initials[0]), initials, s, fcn, NULL, NULL, NULL, 0),
       0,//s->md.filter_length,
-      NULL,NULL
-      //sync_out,s
+      sync_out,
+      s
     ),
     rkf45, 1e-5, 0, 0, 0, NULL
   );
@@ -177,7 +177,7 @@ static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real comm
   cgsl_step_to( &s->simulation, currentCommunicationPoint, communicationStepSize );
 }
 
-
+#if 0 
 static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
   if (vr == VR_A_E) {
     if (wrt == VR_FORCE_IN_E || wrt == VR_FORCE_IN_EX) {
@@ -201,6 +201,7 @@ static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReferen
   }
   return fmi2Error;
 }
+#endif
 
 
 #ifdef CONSOLE

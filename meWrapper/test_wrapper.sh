@@ -8,7 +8,7 @@ WRAPPER=$1
 echo $4
 CHECK=$2
 mpirun -np $3 fmigo-mpi $4 ${WRAPPER} > ${RESULT} #2>/dev/null
-cat  ${RESULT} > ${CHECK}
+#cat  ${RESULT} > ${CHECK}
 #cat  ${RESULT}
 python ${COMPARE} ${RESULT} ${CHECK}
 

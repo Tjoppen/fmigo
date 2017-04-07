@@ -47,6 +47,7 @@ WRAPPERS="
     meWrapper/wrapper
     meWrapper/spring
     meWrapper/spring2
+    meWrapper/scania-driveline
 "
 
 cat <<END>CMakeLists.txt

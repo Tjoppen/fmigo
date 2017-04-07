@@ -41,7 +41,8 @@ int  fcn( double t, const double * x, double *dxdt, void * params){
   inputs.w_inShaftNeutral = x[0];
   inputs.w_wheel          = x[1];
 
-  outputs.w_inShaft = inputs.w_inShaftOld;
+  /// unused
+  ///inputs.w_inShaftOld = x[ 0 ];
 
   // coupling torque on shaft from input springs or torque
   outputs.f_shaft_out =    inputs.k2 * (  inputs.w_inShaft - inputs.w_shaft_in  );
@@ -72,8 +73,8 @@ int  fcn( double t, const double * x, double *dxdt, void * params){
 
   if ( inputs.gear_ratio != 0 ){
     tq_loadAtInShaft = tq_loadPropShaft / inputs.gear_ratio;
-
-    J_atInShaft = inputs.m_vehicle * SQ ( ( inputs.r_tire / (inputs.final_gear_ratio*inputs.gear_ratio) ) );
+    J_atInShaft = inputs.m_vehicle * SQ ( ( inputs.r_tire /
+    (inputs.final_gear_ratio*inputs.gear_ratio) ) );
   } else {
     // when in neutral the transmission input shaft is disconnected and the
     // speed is then integrated and the shaft inertia is set to J_neutral
@@ -139,8 +140,8 @@ int  fcn( double t, const double * x, double *dxdt, void * params){
 
   dxdt[ 0 ]  = outputs.w_inShaftDer;
   dxdt[ 1 ]  = outputs.w_wheelDer;
-  outputs.w_shaft_out = outputs.w_inShaft;
-  outputs.w_wheel_out = outputs.w_out;
+  outputs.w_shaft_out = x[ 0 ];
+  outputs.w_wheel_out = x[ 1 ];
 
   return GSL_SUCCESS;
 }
@@ -175,6 +176,32 @@ static void scania_driveline_init(state_t *s) {
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
   cgsl_step_to( &s->simulation, currentCommunicationPoint, communicationStepSize );
 }
+
+
+static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
+  if (vr == VR_A_E) {
+    if (wrt == VR_FORCE_IN_E || wrt == VR_FORCE_IN_EX) {
+        *partial = 1.0/s->md.mass_e;
+        return fmi2OK;
+    }
+    if (wrt == VR_FORCE_IN_S || wrt == VR_FORCE_IN_SX) {
+        *partial = 0;
+        return fmi2OK;
+    }
+  }
+  if (vr == VR_A_S) {
+    if (wrt == VR_FORCE_IN_E || wrt == VR_FORCE_IN_EX) {
+        *partial = 0;
+        return fmi2OK;
+    }
+    if (wrt == VR_FORCE_IN_S || wrt == VR_FORCE_IN_SX) {
+        *partial = 1.0/s->md.mass_s;
+        return fmi2OK;
+    }
+  }
+  return fmi2Error;
+}
+
 
 #ifdef CONSOLE
 int main(){

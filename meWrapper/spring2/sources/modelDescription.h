@@ -6,7 +6,7 @@
 #include "commonWrapper/modelExchange.h"
 
 #define MODEL_IDENTIFIER wrapper_springs2
-#define MODEL_GUID "933de207-f96d-49c3-b6d4-ac03b57f2e6b"
+#define MODEL_GUID "3b838f85-cdff-4ed7-85d0-fd4ebd2f7de1"
 #define FMI_COSIMULATION
 #define HAVE_DIRECTIONAL_DERIVATIVE 1
 #define CAN_GET_SET_FMU_STATE 1
@@ -84,7 +84,7 @@ static const modelDescription_t defaults = {
     0.0, //m1i_o
     1.0, //m2
     0, //m2i_o
-    "sources/springs2.fmu", //fmu
+    "fmu/springs2.fmu", //fmu
     "", //directional
 
 };

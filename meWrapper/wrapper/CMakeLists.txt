@@ -7,7 +7,6 @@ SET(SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/fmi2/fmuTemplate.h
     ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/fmi2/fmuTemplate_impl.h
     ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/fmi2/strlcpy.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/sources/bouncingBall.fmu
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/commonWrapper/gsl-interface.c
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/commonWrapper/gsl-interface.h
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/commonWrapper/modelExchange.c
@@ -21,7 +20,7 @@ SET(SRCS
 ADD_CUSTOM_COMMAND(
   OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml
   COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/../../fmu-builder/xml2wrappedxml.py
-    ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.xml >
+    ${CMAKE_CURRENT_SOURCE_DIR}/fmu/modelDescription.xml >
     ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.xml )
     

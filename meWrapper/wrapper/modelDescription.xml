@@ -3,7 +3,7 @@
     fmiVersion="2.0"
     description="None"
     modelName="wrapper_bouncingBall"
-    guid="f1618cca-2ab5-4205-9dd8-6991cc475611"
+    guid="27a62444-3e7b-4db4-95c2-21d83eaeb6d8"
     numberOfEventIndicators="0">
 
   <CoSimulation
@@ -68,7 +68,7 @@
         valueReference="0"
         description="Path to the ME fmu to be wrapped"
         causality="parameter">
-      <String size="25" start="sources/bouncingBall.fmu"/>
+      <String size="21" start="fmu/bouncingBall.fmu"/>
 </ScalarVariable>
 
     <ScalarVariable

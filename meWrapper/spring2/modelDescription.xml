@@ -3,7 +3,7 @@
     fmiVersion="2.0"
     description="Two masses with a spring"
     modelName="wrapper_springs2"
-    guid="933de207-f96d-49c3-b6d4-ac03b57f2e6b"
+    guid="3b838f85-cdff-4ed7-85d0-fd4ebd2f7de1"
     numberOfEventIndicators="0">
 
   <CoSimulation
@@ -308,7 +308,7 @@
         valueReference="0"
         description="Path to the ME fmu to be wrapped"
         causality="parameter">
-      <String size="21" start="sources/springs2.fmu"/>
+      <String size="17" start="fmu/springs2.fmu"/>
 </ScalarVariable>
 
     <ScalarVariable

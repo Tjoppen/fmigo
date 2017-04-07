@@ -6,7 +6,7 @@
 #include "commonWrapper/modelExchange.h"
 
 #define MODEL_IDENTIFIER wrapper_bouncingBall
-#define MODEL_GUID "f1618cca-2ab5-4205-9dd8-6991cc475611"
+#define MODEL_GUID "27a62444-3e7b-4db4-95c2-21d83eaeb6d8"
 #define FMI_COSIMULATION
 #define HAVE_DIRECTIONAL_DERIVATIVE 1
 #define CAN_GET_SET_FMU_STATE 1
@@ -36,7 +36,7 @@ static const modelDescription_t defaults = {
     0.0, //v
     9.81, //g
     0.7, //e
-    "sources/bouncingBall.fmu", //fmu
+    "fmu/bouncingBall.fmu", //fmu
     "", //directional
 
 };

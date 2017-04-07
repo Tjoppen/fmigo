@@ -14,14 +14,13 @@ SET(SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/commonWrapper/modelExchangeFmiInterface.h
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/fmi2Functions.h
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/sources/springs2.fmu
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/wrapper.c
 )
 
 ADD_CUSTOM_COMMAND(
   OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml
   COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/../../fmu-builder/xml2wrappedxml.py
-    ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.xml >
+    ${CMAKE_CURRENT_SOURCE_DIR}/fmu/modelDescription.xml >
     ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.xml )
     

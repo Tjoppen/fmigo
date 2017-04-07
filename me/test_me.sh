@@ -20,5 +20,4 @@ then
     exit 1
 fi
 rm /tmp/result
-
 echo Bouncing Ball ok

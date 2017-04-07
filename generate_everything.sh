@@ -1,11 +1,12 @@
 set -e
 
-MD2HDR="`pwd`/../fmu-builder/bin/modeldescription2header"
-GENERATORXML="`pwd`/../umit-fmus/meWrapper/wrapper/sources/xml2wrappedxml.py"
-MD2HDRWRAPPER="`pwd`/../umit-fmus/meWrapper/wrapper/sources/modeldescription2headerWrapper.py"
-GENERATOR="`pwd`/../fmu-builder/bin/cmake-generator -t `pwd`/templates/fmi2/ -i `pwd`/../FMILibrary-2.0.1/ThirdParty/FMI/default -m ${MD2HDR}"
-GENERATORME="`pwd`/../fmu-builder/bin/cmake-generator -t `pwd`/templates/fmi2/ -i `pwd`/../FMILibrary-2.0.1/ThirdParty/FMI/default -m ${MD2HDR} -f me"
-GENERATORWRAPPER="`pwd`/../fmu-builder/bin/cmake-generator -t `pwd`/templates/fmi2/ -i `pwd`/../FMILibrary-2.0.1/ThirdParty/FMI/default -m ${MD2HDRWRAPPER} -x ${GENERATORXML}"
+MD2HDR="`pwd`/fmu-builder/modeldescription2header"
+GENERATOR="`pwd`/fmu-builder/cmake-generator -t `pwd`/templates/fmi2/ -i `pwd`/../FMILibrary-2.0.1/ThirdParty/FMI/default -m ${MD2HDR}"
+
+GENERATORXML="`pwd`/fmu-builder/xml2wrappedxml.py"
+MD2HDRWRAPPER="`pwd`/fmu-builder/modeldescription2headerWrapper.py"
+GENERATORME="`pwd`/fmu-builder/cmake-generator -t `pwd`/templates/fmi2/ -i `pwd`/../FMILibrary-2.0.1/ThirdParty/FMI/default -m ${MD2HDR} -f me"
+GENERATORWRAPPER="`pwd`/fmu-builder/cmake-generator -t `pwd`/templates/fmi2/ -i `pwd`/../FMILibrary-2.0.1/ThirdParty/FMI/default -m ${MD2HDRWRAPPER} -x ${GENERATORXML}"
 
 GSLFMUS="
     gsl2/clutch2

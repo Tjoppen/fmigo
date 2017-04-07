@@ -73,18 +73,18 @@ static const modelDescription_t defaults = {
     0.000000, //tq_retarder
     0.000000, //tq_fricLoss
     0.000000, //tq_env
-    0.000000, //gear_ratio
+    1.000000, //gear_ratio
     0.000000, //tq_clutchMax
     0.000000, //tq_losses
-    0.000000, //r_tire
-    0.000000, //m_vehicle
-    0.000000, //final_gear_ratio
+    1.000000, //r_tire
+    100.000000, //m_vehicle
+    1.000000, //final_gear_ratio
     0.000000, //w_eng
     0.000000, //tq_eng
-    0.000000, //J_eng
-    0.000000, //J_neutral
+    1.000000, //J_eng
+    1.000000, //J_neutral
     0.000000, //tq_brake
-    0.000000, //ts
+    1.000000, //ts
     0.000000, //r_slipFilt
     0.000000, //w_inShaftDer
     0.000000, //w_wheelDer
@@ -95,12 +95,12 @@ static const modelDescription_t defaults = {
     0.000000, //tq_outTransmission
     0.000000, //v_driveWheel
     0.000000, //r_slip
-    0.000000, //k1
+    100.000000, //k1
     0.000000, //f_shaft_out
     0.000000, //w_shaft_in
     0.000000, //w_wheel_out
     0.000000, //f_wheel_in
-    0.000000, //k2
+    10.000000, //k2
     0.000000, //w_shaft_out
     0.000000, //f_shaft_in
     0.000000, //f_wheel_out

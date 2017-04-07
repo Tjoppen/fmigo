@@ -23,6 +23,8 @@ for row1 in csv1:
     if len(row1) != len(row2):
         print("%s %s %s" % (sys.argv[0], sys.argv[1], sys.argv[2]))
         print("Line length mismatch on line %i: %i vs %i" % (csv1.line_num, len(row1), len(row2)))
+        print(delim.join(row1))
+        print(delim.join(row2))
         exit(1)
 
     for i in range(len(row1)):
@@ -30,6 +32,6 @@ for row1 in csv1:
         if diff > thresh:
             print("%s %s %s" % (sys.argv[0], sys.argv[1], sys.argv[2]))
             print("Line %i differs too much (diff = %f @ column %i):" % (csv1.line_num, diff, i))
-            print(row1)
-            print(row2)
+            print(delim.join(row1))
+            print(delim.join(row2))
             exit(1)

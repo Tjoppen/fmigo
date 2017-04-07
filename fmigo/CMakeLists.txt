@@ -6,30 +6,25 @@ if (NOT WIN32)
   # cl.exe has a different set of flags
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O3 -Wall -Werror -Wno-unused-variable -Wno-unused-function -Wextra -Wno-unused-parameter")
   FIND_PACKAGE(MPI REQUIRED)
+  FIND_PACKAGE(Protobuf REQUIRED)
   INCLUDE_DIRECTORIES(${MPI_INCLUDE_PATH})
 endif ()
 
 INCLUDE_DIRECTORIES(${FMIL_INCLUDE_DIR} ${STRONG_COUPLING_INCLUDE_DIR} ${FMITCP_INCLUDE_DIR} include include/fmitcp src/fmitcp)
 LINK_DIRECTORIES   (${FMIL_LIBS_DIR}    ${STRONG_COUPLING_LIBS_DIR}    ${FMITCP_LIBS_DIR})
 
-if (WIN32)
-    link_directories($ENV{MSMPI_LIB32})
-endif()
-
 set(FMITCP_SRCS
     src/fmitcp/Client.cpp
-    src/fmitcp/common.cpp
+    src/fmitcp/fmitcp-common.cpp
     src/fmitcp/fmitcp.pb.cc
-    src/fmitcp/Logger.cpp
     src/fmitcp/serialize.cpp
     src/fmitcp/Server.cpp
 )
 
 set(FMITCP_HEADERS
     include/fmitcp/Client.h
-    include/fmitcp/common.h
+    include/fmitcp/fmitcp-common.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.pb.h
-    include/fmitcp/Logger.h
     include/fmitcp/serialize.h
     include/fmitcp/Server.h
 )
@@ -40,11 +35,13 @@ SET(MASTER_SRCS
     src/master/FMIClient.cpp
     src/master/WeakConnection.cpp
     src/common/common.cpp
+    src/common/CSV-parser.cpp
     src/master/BaseMaster.cpp
     src/master/parseargs.cpp
     src/master/StrongMaster.cpp
     ${FMITCP_SRCS}
     src/master/control.pb.cc
+    src/master/globals.cpp
 )
 SET(MASTER_HEADERS
     include/master/FMIClient.h
@@ -52,8 +49,10 @@ SET(MASTER_HEADERS
     include/master/WeakConnection.h
     include/master/WeakMasters.h
     include/common/common.h
+    include/common/CSV-parser.h
     ${FMITCP_HEADERS}
     ${CMAKE_CURRENT_SOURCE_DIR}/src/master/control.pb.h
+    include/master/globals.h
 )
 
 if(WIN32)
@@ -84,6 +83,8 @@ add_executable(${MPI_MASTER_NAME} ${MASTER_HEADERS} ${MASTER_SRCS}              
 set_target_properties(${MPI_MASTER_NAME} PROPERTIES COMPILE_FLAGS -DUSE_MPI)
 
 IF(WIN32)
+    # Multi-threade
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MT")
     SET(WINLIBS
         fmilib
         shlwapi
@@ -97,7 +98,7 @@ IF(WIN32)
         libprotobuf
         libhdf5
         libhdf5_hl
-        libzmq
+        libzmq-v120-mt-4_2_0
         ${CMAKE_THREAD_LIBS_INIT})
     if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
         set(WINLIBS ${WINLIBS} ${EXTRALIBS} sc libumfpackd libamdd libblas libcholmodd libcolamdd libccolamdd libcamdd metisd suitesparseconfigd)
@@ -105,16 +106,24 @@ IF(WIN32)
         set(WINLIBS ${WINLIBS} ${EXTRALIBS} sc libumfpack  libamd  libblas libcholmod  libcolamd  libccolamd  libcamd  metis  suitesparseconfig)
     endif()
     include_directories($ENV{MSMPI_INC} $ENV{MSMPI_INC}x86)
+
+    if (CMAKE_GENERATOR MATCHES "^.*Win64") # Maybe there is a better way to detect 64-bit builds?
+        install(FILES ${SUITESPARSE_LIBDIR}/lapack_blas_windows/libgcc_s_sjlj-1.dll DESTINATION bin)
+    else ()
+        install(FILES ${SUITESPARSE_LIBDIR}/lapack_blas_windows/libgcc_s_dw2-1.dll DESTINATION bin)
+    endif ()
+
     TARGET_LINK_LIBRARIES(${TCP_MASTER_NAME} ${WINLIBS})
     TARGET_LINK_LIBRARIES(${TCP_SERVER_NAME}  ${WINLIBS})
     target_link_libraries(${MPI_MASTER_NAME} ${WINLIBS} msmpi)
+
     INSTALL (FILES
-        ${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib/lapack_blas_windows/libblas.dll
-        ${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib/lapack_blas_windows/libgcc_s_dw2-1.dll
-        ${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib/lapack_blas_windows/libgfortran-3.dll
-        ${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib/lapack_blas_windows/libquadmath-0.dll
+        ${SUITESPARSE_LIBDIR}/lapack_blas_windows/libblas.dll
+        ${SUITESPARSE_LIBDIR}/lapack_blas_windows/libgfortran-3.dll
+        ${SUITESPARSE_LIBDIR}/lapack_blas_windows/libquadmath-0.dll
+        ${PROTOBUF_PREFIX}/src/protobuf-ext-build/${CMAKE_BUILD_TYPE}/libprotobuf.dll
+        ${ZMQ_PREFIX}/src/zmq-ext-build/bin/${CMAKE_BUILD_TYPE}/libzmq-v120-mt-4_2_0.dll
         DESTINATION bin)
-    INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../3dparty/zeromq/4.2.0-master/cl32-11/libzmq.dll DESTINATION bin)
     set(PROTOC ${PROTOBUF_BIN_DIR}/protoc)
 ELSE(WIN32)
     SET(LINUXLIBS
@@ -160,7 +169,7 @@ add_custom_command(OUTPUT ${MASTER_CONTROL_PROTOBUF_TARGETS}
 #same here
 add_custom_target(control_pb DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/master/control.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/src/master/control.pb.cc)
 
-# Install compiled protbuf files 
+# Install compiled protbuf files
 install(FILES ${FMITCP_PROTOBUF_TARGETS} ${MASTER_CONTROL_PROTOBUF_TARGETS} DESTINATION protobuf)
 
 add_dependencies(${TCP_MASTER_NAME} fmitcp_pb control_pb)

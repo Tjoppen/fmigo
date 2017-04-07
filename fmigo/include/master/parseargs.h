@@ -5,7 +5,9 @@
 #include <stdio.h>
 #include <string>
 #include <vector>
+#include <deque>
 #include <map>
+#include "common/CSV-parser.h"
 
 namespace fmitcp_master {
 
@@ -15,7 +17,9 @@ struct connection {
     connection() {
         slope = 1;
         intercept = 0;
+        needs_type = true;
     }
+    bool needs_type;
     fmi2_base_type_enu_t fromType;
     int fromFMU;                // Index of FMU
     int fromOutputVR;           // Value reference
@@ -23,18 +27,19 @@ struct connection {
     int toFMU;                  // FMU index
     int toInputVR;              // Value reference
     double slope, intercept;    // for unit conversion. y = slope*x + intercept
+    std::string fromOutputVRorNAME;           // Value reference
+    std::string toInputVRorNAME;              // Value reference
 };
 
 struct strongconnection {
     std::string type;
     int fromFMU;
     int toFMU;
-    std::vector<int> vrs;
+    std::vector<std::string> vrORname;              // Value reference
 };
 
 struct param {
-    int fmuIndex;
-    int valueReference;                 // Value reference to apply to
+    int valueReference;
     fmi2_base_type_enu_t type;
     std::string stringValue;            // String version, always set to what the user wrote
     int intValue;                       // Integer
@@ -42,8 +47,11 @@ struct param {
     int boolValue;                      // Boolean
 };
 
+ typedef std::map<std::pair<int,fmi2_base_type_enu_t>, std::vector<param> > param_map;
+
 enum FILEFORMAT {
-    csv
+    csv,
+    tikz
 };
 
 enum METHOD {
@@ -51,6 +59,8 @@ enum METHOD {
     gs,
     me
 };
+
+fmi2_base_type_enu_t type_from_char(std::string type);
 
 /**
  * @brief Parses the command line arguments and stores in the given variable pointer targets.
@@ -77,11 +87,11 @@ enum METHOD {
  * @param numStepOrder
  * @return int Returns 0 if the program should proceed, 1 if the program should end.
  */
-int parseArguments( int argc,
+void parseArguments( int argc,
                     char *argv[],
                     std::vector<std::string> *fmuFilePaths,
                     std::vector<connection> *connections,
-                    std::map<std::pair<int,fmi2_base_type_enu_t>, std::vector<param> > *params,
+                    std::vector<std::deque<std::string> > *params,
                     double* tEnd,
                     double* timeStepSize,
                     jm_log_level_enu_t *loglevel,
@@ -102,7 +112,9 @@ int parseArguments( int argc,
                     int *command_port,
                     int *results_port,
                     bool *paused,
-                    bool *solveLoops
+                    bool *solveLoops,
+                    bool *useHeadersInCSV,
+                    fmigo_csv_fmu *csv_fmu
                     );
 }
 

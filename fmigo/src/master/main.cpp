@@ -1,7 +1,6 @@
 #include <string>
 #include <fmitcp/Client.h>
-#include <fmitcp/common.h>
-#include <fmitcp/Logger.h>
+#include <fmitcp/fmitcp-common.h>
 #ifdef USE_MPI
 #include <mpi.h>
 #include "common/mpi_tools.h"
@@ -26,11 +25,13 @@
 #endif
 #include <fstream>
 #include "control.pb.h"
+#include "master/globals.h"
 
 using namespace fmitcp_master;
 using namespace fmitcp;
 using namespace fmitcp::serialize;
 using namespace sc;
+using namespace common;
 
 #ifndef WIN32
 timeval tl1, tl2;
@@ -39,7 +40,7 @@ int columnofs;
 std::map<int, const char*> columnnames;
 #endif
 
-typedef map<pair<int,fmi2_base_type_enu_t>, vector<param> > parameter_map;
+jm_log_level_enu_t fmigo_loglevel = jm_log_level_warning;
 
 #ifdef USE_MPI
 static vector<FMIClient*> setupClients(int numFMUs) {
@@ -59,8 +60,7 @@ static vector<FMIClient*> setupClients(vector<string> fmuURIs, zmq::context_t &c
         FMIClient *client = new FMIClient(context, clientId, *it);
 
         if (!client) {
-            fprintf(stderr, "Failed to connect client with URI %s\n", it->c_str());
-            exit(1);
+            fatal("Failed to connect client with URI %s\n", it->c_str());
         }
 
         clients.push_back(client);
@@ -107,7 +107,7 @@ static StrongConnector* findOrCreateShaftConnector(FMIClient *client,
     for (int x = 0; x < client->numConnectors(); x++) {
         StrongConnector *sc = client->getConnector(x);
         if (sc->matchesShaftConnector(angle, angularVel, angularAcc, torque)) {
-            fprintf(stderr, "Match! id = %i\n", sc->m_index);
+            debug("Match! id = %i\n", sc->m_index);
             return sc;
         }
     }
@@ -119,6 +119,27 @@ static StrongConnector* findOrCreateShaftConnector(FMIClient *client,
     return sc;
 }
 
+static int vrFromKeyName(FMIClient* client, string key){
+
+  if(isNumeric(key))
+    return atoi(key.c_str());
+
+  const variable_map& vars = client->getVariables();
+
+  switch (vars.count(key)){
+  case 0:{
+    fatal("client(%d):%s\n", client->getId(), key.c_str());
+  }
+  case 1:  return vars.find(key)->second.vr;
+  default:{
+    fatal("Not uniq - client(%d):%s\n", client->getId(), key.c_str());
+  }
+  }
+}
+
+#define toVR(type, index)                                   \
+  vrFromKeyName(clients[it->type##FMU],it->vrORname[index])
+
 static void setupConstraintsAndSolver(vector<strongconnection> strongConnections, vector<FMIClient*> clients, Solver *solver) {
     for (auto it = strongConnections.begin(); it != strongConnections.end(); it++) {
         //NOTE: this leaks memory, but I don't really care since it's only setup
@@ -129,27 +150,26 @@ static void setupConstraintsAndSolver(vector<strongconnection> strongConnections
         case 'b':
         case 'l':
         {
-            if (it->vrs.size() != 38) {
-                fprintf(stderr, "Bad %s specification: need 38 VRs ([XYZpos + XYZacc + XYZforce + Quat + XYZrotAcc + XYZtorque] x 2), got %zu\n",
-                        t == 'b' ? "ball joint" : "lock", it->vrs.size());
-                exit(1);
+            if (it->vrORname.size() != 38) {
+                fatal("Bad %s specification: need 38 VRs ([XYZpos + XYZacc + XYZforce + Quat + XYZrotAcc + XYZtorque] x 2), got %zu\n",
+                        t == 'b' ? "ball joint" : "lock", it->vrORname.size());
             }
 
             StrongConnector *scA = findOrCreateBallLockConnector(clients[it->fromFMU],
-                                                 it->vrs[0], it->vrs[1], it->vrs[2],
-                                                 it->vrs[3], it->vrs[4], it->vrs[5],
-                                                 it->vrs[6], it->vrs[7], it->vrs[8],
-                                                 it->vrs[9], it->vrs[10],it->vrs[11],it->vrs[12],
-                                                 it->vrs[13],it->vrs[14],it->vrs[15],
-                                                 it->vrs[16],it->vrs[17],it->vrs[18]);
+                                       toVR(from,0), toVR(from,1), toVR(from,2),
+                                       toVR(from,3), toVR(from,4), toVR(from,5),
+                                       toVR(from,6), toVR(from,7), toVR(from,8),
+                                       toVR(from,9), toVR(from,10), toVR(from,11), toVR(from,12),
+                                       toVR(from,13), toVR(from,14), toVR(from,15),
+                                       toVR(from,16), toVR(from,17), toVR(from,18) );
 
             StrongConnector *scB = findOrCreateBallLockConnector(clients[it->toFMU],
-                                                 it->vrs[19],it->vrs[20],it->vrs[21],
-                                                 it->vrs[22],it->vrs[23],it->vrs[24],
-                                                 it->vrs[25],it->vrs[26],it->vrs[27],
-                                                 it->vrs[28],it->vrs[29],it->vrs[30],it->vrs[31],
-                                                 it->vrs[32],it->vrs[33],it->vrs[34],
-                                                 it->vrs[35],it->vrs[36],it->vrs[37]);
+                                       toVR(to,19), toVR(to,20), toVR(to,21),
+                                       toVR(to,22), toVR(to,23), toVR(to,24),
+                                       toVR(to,25), toVR(to,26), toVR(to,27),
+                                       toVR(to,28), toVR(to,29), toVR(to,30), toVR(to,31),
+                                       toVR(to,32), toVR(to,33), toVR(to,34),
+                                       toVR(to,35), toVR(to,36), toVR(to,37) );
 
             con = t == 'b' ? new BallJointConstraint(scA, scB, Vec3(), Vec3())
                            : new LockConstraint(scA, scB, Vec3(), Vec3(), Quat(), Quat());
@@ -158,28 +178,21 @@ static void setupConstraintsAndSolver(vector<strongconnection> strongConnections
         }
         case 's':
         {
-            int ofs = 0;
-            if (it->vrs.size() != 8) {
-                //maybe it's the old type of specification?
-                ofs = 1;
-                if (it->vrs.size() != 9) {
-                    fprintf(stderr, "Bad shaft specification: need 8 VRs ([shaft angle + angular velocity + angular acceleration + torque] x 2)\n");
-                    exit(1);
-                }
+            if (it->vrORname.size() != 8) {
+                fatal("Bad shaft specification: need 8 VRs ([shaft angle + angular velocity + angular acceleration + torque] x 2)\n");
             }
 
             StrongConnector *scA = findOrCreateShaftConnector(clients[it->fromFMU],
-                    it->vrs[ofs+0], it->vrs[ofs+1], it->vrs[ofs+2], it->vrs[ofs+3]);
+                                       toVR(from,0), toVR(from,1), toVR(from,2), toVR(from,3));
 
             StrongConnector *scB = findOrCreateShaftConnector(clients[it->toFMU],
-                    it->vrs[ofs+4], it->vrs[ofs+5], it->vrs[ofs+6], it->vrs[ofs+7]);
+                                       toVR(to,4), toVR(to,5), toVR(to,6), toVR(to,7));
 
             con = new ShaftConstraint(scA, scB);
             break;
         }
         default:
-            fprintf(stderr, "Unknown strong connector type: %s\n", it->type.c_str());
-            exit(1);
+            fatal("Unknown strong connector type: %s\n", it->type.c_str());
         }
 
         solver->addConstraint(con);
@@ -190,12 +203,101 @@ static void setupConstraintsAndSolver(vector<strongconnection> strongConnections
    }
 }
 
+static param param_from_vr_type_string(int vr, fmi2_base_type_enu_t type, string s) {
+    param p;
+    p.valueReference = vr;
+    p.type = type;
+
+    switch (p.type) {
+    case fmi2_base_type_real: p.realValue = atof(s.c_str()); break;
+    case fmi2_base_type_int:  p.intValue = atoi(s.c_str()); break;
+    case fmi2_base_type_bool: p.boolValue = (s == "true"); break;
+    case fmi2_base_type_str:  p.stringValue = s; break;
+    case fmi2_base_type_enum: fatal("An enum snuck its way into -p\n");
+    }
+
+    return p;
+}
+
+static param_map resolve_string_params(const vector<deque<string> > &params, vector<FMIClient*> clients) {
+    param_map ret;
+
+    int i = 0;
+    for (auto parts : params) {
+        int fmuIndex = atoi(parts[parts.size()-3].c_str());
+
+        if (fmuIndex < 0 || (size_t)fmuIndex >= clients.size()) {
+            fatal("Parameter %d refers to FMU %d, which does not exist.\n", i, fmuIndex);
+        }
+
+        FMIClient *client = clients[fmuIndex];
+        param p;
+        fmi2_base_type_enu_t type = fmi2_base_type_real;
+
+        if (parts.size() == 3) {
+            //FMU,VR,value  [type=real]
+            //FMU,NAME,value
+            int vr = vrFromKeyName(client, parts[1]);
+
+            if (!isNumeric(parts[1])) {
+                const variable_map& vars = client->getVariables();
+                type = vars.find(parts[1])->second.type;
+            }
+
+            p = param_from_vr_type_string(vr, type, parts[2]);
+        } else if (parts.size() == 4) {
+            //type,FMU,VR,value
+            type = type_from_char(parts[0]);
+
+            if (!isNumeric(parts[2])) {
+                fatal("Must use VRs when specifying parameters with explicit types (-p %s,%s,%s,%s)\n",
+                    parts[0].c_str(), parts[1].c_str(), parts[2].c_str(), parts[3].c_str());
+            }
+
+            int vr = atoi(parts[2].c_str());
+            p = param_from_vr_type_string(vr, type, parts[3]);
+        }
+
+        ret[make_pair(fmuIndex,type)].push_back(p);
+        i++;
+    }
+
+    return ret;
+}
+
+map<double, param_map > param_mapFromCSV(fmigo_csv_fmu csvfmus, vector<FMIClient*> clients){
+  map<double, param_map > pairmap;
+    for (auto it = csvfmus.begin(); it != csvfmus.end(); it++) {
+      variable_map vmap = clients[it->first]->getVariables();
+      for (auto time: it->second.time) {
+        for (auto header: it->second.headers) {
+          param p;
+          int fmuIndex = it->first;
+          p.valueReference = vmap[header].vr;
+          p.type = vmap[header].type;
+
+          string s = it->second.matrix[time][header];
+          switch (p.type) {
+          case fmi2_base_type_real: p.realValue = atof(s.c_str()); break;
+          case fmi2_base_type_int:  p.intValue = atoi(s.c_str()); break;
+          case fmi2_base_type_bool: p.boolValue = (s == "true"); break;
+          case fmi2_base_type_str:  p.stringValue = s; break;
+          case fmi2_base_type_enum: fprintf(stderr, "An enum snuck its way into -p\n"); exit(1);
+          }
+          pairmap[atof(time.c_str())][make_pair(fmuIndex,p.type)].push_back(p);
+        }
+      }
+    }
+
+  return pairmap;
+}
+
 static void sendUserParams(BaseMaster *master, vector<FMIClient*> clients, map<pair<int,fmi2_base_type_enu_t>, vector<param> > params) {
     for (auto it = params.begin(); it != params.end(); it++) {
         FMIClient *client = clients[it->first.first];
         vector<int> vrs;
         for (auto it2 = it->second.begin(); it2 != it->second.end(); it2++) {
-            vrs.push_back(it2->valueReference);
+          vrs.push_back(it2->valueReference);
         }
 
         switch (it->first.second) {
@@ -238,10 +340,16 @@ static void sendUserParams(BaseMaster *master, vector<FMIClient*> clients, map<p
 
 static string getFieldnames(vector<FMIClient*> clients) {
     ostringstream oss;
-    oss << "t";
+    char separator = fmigo::globals::getSeparator();
+    switch (fmigo::globals::fileFormat){
+    default:
+    case csv:   oss << "#t"; break;
+    case tikz:  oss << "t";  break;
+    }
+
     for (auto client : clients) {
         ostringstream prefix;
-        prefix << " " << "fmu" << client->getId() << "_";
+        prefix << separator << "fmu" << client->getId() << "_";
         oss << client->getSpaceSeparatedFieldNames(prefix.str());
     }
     return oss.str();
@@ -302,6 +410,7 @@ template<typename RFType, typename From> void addVectorToRepeatedField(RFType* r
 
 static void printOutputs(double t, BaseMaster *master, vector<FMIClient*>& clients) {
     vector<vector<variable> > clientOutputs;
+    char separator = fmigo::globals::getSeparator();
 
     for (auto client : clients) {
         vector<variable> vars = client->getOutputs();
@@ -317,21 +426,21 @@ static void printOutputs(double t, BaseMaster *master, vector<FMIClient*>& clien
 
     master->wait();
 
-    printf("%f", t);
+    printf("%+.16le", t);
     for (size_t x = 0; x < clients.size(); x++) {
         FMIClient *client = clients[x];
         for (auto out : clientOutputs[x]) {
             switch (out.type) {
             case fmi2_base_type_real:
-                printf(",%f", client->m_getRealValues.front());
+                printf("%c%+.16le", separator, client->m_getRealValues.front());
                 client->m_getRealValues.pop_front();
                 break;
             case fmi2_base_type_int:
-                printf(",%i", client->m_getIntegerValues.front());
+                printf("%c%i", separator, client->m_getIntegerValues.front());
                 client->m_getIntegerValues.pop_front();
                 break;
             case fmi2_base_type_bool:
-                printf(",%i", client->m_getBooleanValues.front());
+                printf("%c%i", separator, client->m_getBooleanValues.front());
                 client->m_getBooleanValues.pop_front();
                 break;
             case fmi2_base_type_str: {
@@ -342,13 +451,12 @@ static void printOutputs(double t, BaseMaster *master, vector<FMIClient*>& clien
                     default: oss << c;
                     }
                 }
-                printf(",\"%s\"", oss.str().c_str());
+                printf("%c\"%s\"", separator, oss.str().c_str());
                 client->m_getStringValues.pop_front();
                 break;
             }
             case fmi2_base_type_enum:
-                fprintf(stderr, "Enum outputs not allowed for now\n");
-                exit(1);
+                fatal("Enum outputs not allowed for now\n");
             }
         }
     }
@@ -367,7 +475,7 @@ static void pushResults(int step, double t, double endTime, double timeStep, zmq
     results.set_dt(timeStep);
 
     for (auto client : clients) {
-        variable_map vars = client->getVariables();
+        const variable_map& vars = client->getVariables();
         SendGetXType getVariables;
 
         //figure out what values we need to fetch from the FMU
@@ -407,10 +515,34 @@ static void pushResults(int step, double t, double endTime, double timeStep, zmq
     push_socket.send(rep);
 }
 
+static int connectionNamesToVr(std::vector<connection> &connections,
+                        vector<strongconnection> &strongConnections,
+                        const vector<FMIClient*> clients // could not get this to compile when defined in parseargs
+                        ){
+    for(size_t i = 0; i < connections.size(); i++){
+      connections[i].fromOutputVR = vrFromKeyName(clients[connections[i].fromFMU], connections[i].fromOutputVRorNAME);
+      connections[i].toInputVR = vrFromKeyName(clients[connections[i].toFMU], connections[i].toInputVRorNAME);
+
+      if (connections[i].needs_type) {
+          //resolve types
+          connections[i].fromType = clients[connections[i].fromFMU]->getVariables().find(connections[i].fromOutputVRorNAME)->second.type;
+          connections[i].toType   = clients[connections[i].toFMU  ]->getVariables().find(connections[i].toInputVRorNAME   )->second.type;
+      }
+    }
+
+    for(size_t i = 0; i < strongConnections.size(); i++){
+      size_t j = 0;
+      if(strongConnections[i].vrORname.size()%2 != 0){
+        fatal("strong connection needs even number of connections for fmu0 and fmu1\n");
+      }
+    }
+  return 0;
+}
+
 #ifdef USE_MPI
-void run_server(string fmuPath, jm_log_level_enu_t loglevel) {
+static void run_server(string fmuPath) {
     string hdf5Filename; //TODO?
-    FMIServer server(fmuPath, loglevel >= jm_log_level_debug, loglevel, hdf5Filename);
+    FMIServer server(fmuPath, hdf5Filename);
 
     for (;;) {
         int rank, tag;
@@ -449,12 +581,10 @@ int main(int argc, char *argv[] ) {
            compliance = 0;
     vector<string> fmuURIs;
     vector<connection> connections;
-    parameter_map params;
-    jm_log_level_enu_t loglevel = jm_log_level_nothing;
+    vector<deque<string> > params;
     char csv_separator = ',';
     string outFilePath = DEFAULT_OUTFILE;
     int quietMode = 0;
-    FILEFORMAT fileFormat = csv;
     METHOD method = jacobi;
     int realtimeMode = 0;
     int printXML = 0;
@@ -465,31 +595,31 @@ int main(int argc, char *argv[] ) {
     string hdf5Filename;
     string fieldnameFilename;
     bool holonomic = true;
+    bool useHeadersInCSV = false;
     int command_port = 0, results_port = 0;
     bool paused = false, running = true, solveLoops = false;
+    fmigo_csv_fmu csv_fmu;
 
-    if (parseArguments(
+    parseArguments(
             argc, argv, &fmuURIs, &connections, &params, &endTime, &timeStep,
-            &loglevel, &csv_separator, &outFilePath, &quietMode, &fileFormat,
+            &fmigo_loglevel, &csv_separator, &outFilePath, &quietMode, &fmigo::globals::fileFormat,
             &method, &realtimeMode, &printXML, &stepOrder, &fmuVisibilities,
             &scs, &hdf5Filename, &fieldnameFilename, &holonomic, &compliance,
-            &command_port, &results_port, &paused, &solveLoops)) {
-        return 1;
-    }
+            &command_port, &results_port, &paused, &solveLoops, &useHeadersInCSV, &csv_fmu
+    );
 
     bool zmqControl = command_port > 0 && results_port > 0;
 
     if (printXML) {
-        fprintf(stderr, "XML mode not implemented\n");
-        return 1;
+        fatal("XML mode not implemented\n");
     }
 
     if (quietMode) {
-        fprintf(stderr, "WARNING: -q not implemented\n");
+        warning("-q not implemented\n");
     }
 
     if (outFilePath != DEFAULT_OUTFILE) {
-        fprintf(stderr, "WARNING: -o not implemented (output always goes to stdout)\n");
+        warning("-o not implemented (output always goes to stdout)\n");
     }
 
 #ifdef USE_MPI
@@ -497,7 +627,7 @@ int main(int argc, char *argv[] ) {
         //we're a server
         //in MPI mode, treat fmuURIs as a list of paths
         //for each server node, fmuURIs[world_rank-1] is the corresponding FMU path
-        run_server(fmuURIs[world_rank-1], loglevel);
+        run_server(fmuURIs[world_rank-1]);
         return 0;
     }
     //world_rank == 0 below
@@ -509,15 +639,14 @@ int main(int argc, char *argv[] ) {
     zmq::socket_t push_socket(context, ZMQ_PUSH);
 
     if (zmqControl) {
-        fprintf(stderr, "Init zmq control on ports %i and %i\n", command_port, results_port);
+        info("Init zmq control on ports %i and %i\n", command_port, results_port);
         char addr[128];
         snprintf(addr, sizeof(addr), "tcp://*:%i", command_port);
         rep_socket.bind(addr);
         snprintf(addr, sizeof(addr), "tcp://*:%i", results_port);
         push_socket.bind(addr);
     } else if (paused) {
-        fprintf(stderr, "-Z requires -z\n");
-        return 1;
+        fatal("-Z requires -z\n");
     }
 
 #ifdef USE_MPI
@@ -533,10 +662,10 @@ int main(int argc, char *argv[] ) {
 
     //connect, get modelDescription XML (was important for connconf)
     for (auto it = clients.begin(); it != clients.end(); it++) {
-        (*it)->m_loglevel = loglevel;
         (*it)->connect();
     }
 
+    connectionNamesToVr(connections,scs,clients);
     vector<WeakConnection> weakConnections = setupWeakConnections(connections, clients);
     setupConstraintsAndSolver(scs, clients, &solver);
 
@@ -545,8 +674,7 @@ int main(int argc, char *argv[] ) {
 
     if (scs.size()) {
         if (method != jacobi) {
-            fprintf(stderr, "Can only do Jacobi stepping for weak connections when also doing strong coupling\n");
-            return 1;
+            fatal("Can only do Jacobi stepping for weak connections when also doing strong coupling\n");
         }
 
         solver.setSpookParams(relaxation,compliance,timeStep);
@@ -556,6 +684,10 @@ int main(int argc, char *argv[] ) {
     } else {
         master = (method == gs) ?           (BaseMaster*)new GaussSeidelMaster(clients, weakConnections, stepOrder) :
                                             (BaseMaster*)new JacobiMaster(clients, weakConnections);
+    }
+
+    if (useHeadersInCSV || fmigo::globals::fileFormat == tikz) {
+        printf("%s\n",fieldnames.c_str());
     }
 
     if (fieldnameFilename.length() > 0) {
@@ -579,16 +711,9 @@ int main(int argc, char *argv[] ) {
     master->send(clients, fmi2_import_enter_initialization_mode());
 
     //send user-defined parameters
-    sendUserParams(master, clients, params);
+    sendUserParams(master, clients, resolve_string_params(params, clients));
 
-#ifdef WIN32
-    LARGE_INTEGER freq, t1;
-    QueryPerformanceFrequency(&freq);
-    QueryPerformanceCounter(&t1);
-#else
-    timeval t1;
-    gettimeofday(&t1, NULL);
-#endif
+    map<double, param_map> csvParam = param_mapFromCSV(csv_fmu, clients);
 
     if (solveLoops) {
       //solve initial algebraic loops
@@ -617,6 +742,15 @@ int main(int argc, char *argv[] ) {
         pushResults(step, 0, endTime, timeStep, push_socket, master, clients, true);
     }
 
+    #ifdef WIN32
+        LARGE_INTEGER freq, t1;
+        QueryPerformanceFrequency(&freq);
+        QueryPerformanceCounter(&t1);
+    #else
+        timeval t1;
+        gettimeofday(&t1, NULL);
+    #endif
+
     //run
     while ((endTime < 0 || step < nsteps) && running) {
         double t = step * endTime / nsteps;
@@ -638,6 +772,16 @@ int main(int argc, char *argv[] ) {
         //HDF5
         columnofs = 0;
 #endif
+
+        if (csvParam.size() > 0) {
+            //zero order hold
+            auto it = csvParam.upper_bound(t);
+            if (it != csvParam.begin()) {
+                it--;
+            }
+            sendUserParams(master, clients, it->second);
+        }
+
         if (realtimeMode) {
             double t_wall;
 
@@ -689,11 +833,12 @@ int main(int argc, char *argv[] ) {
 
     if (!zmqControl) {
       printOutputs(endTime, master, clients);
+      char separator = fmigo::globals::getSeparator();
 
       //finish off with zeroes for any extra forces
       int n = master->getNumForceOutputs();
       for (int i = 0; i < n; i++) {
-        printf(",0");
+          printf("%c0", separator);
       }
 
       printf("\n");

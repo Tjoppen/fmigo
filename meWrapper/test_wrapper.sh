@@ -26,6 +26,7 @@ test "${SPRING2} ${SPRING2}"          tests/connectedsprings.csv 3 "${conn}"
 test wrapper/wrapper_bouncingBall.fmu tests/bouncingBall.csv 2 "-t 1.5"
 test spring/wrapper_springs.fmu       tests/springs.csv      2
 test spring2/wrapper_springs2.fmu     tests/springs2.csv     2
+test scania-driveline/wrapper_springs2.fmu     tests/springs2.csv     2
 
 
 echo Wrapper OK

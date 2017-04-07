@@ -1,7 +1,19 @@
 #!/usr/bin/python
 from __future__ import print_function
-import sys
+import sys, argparse, re
 import xml.etree.ElementTree as e
+
+parser = argparse.ArgumentParser(
+    description='transforme modelDescription.xml to sources/modelDescription.h',
+    epilog="""It is assumed that the current directory contains an XML file called "modelDescription.xml" and a directory "sources". """
+    )
+
+parser.add_argument('-x','--xml',
+                    type=str,
+                    help='The XML',
+                    required=True)
+parser.add_argument('-w','--wrapper',type=bool,default=False)
+
 
 def warning(*objs):
     print("WARNING: ", *objs, file=sys.stderr)
@@ -17,7 +29,8 @@ if len(sys.argv) < 2:
 print('''/*This file is genereted by modeldescription2header. DO NOT EDIT! */''')
 
 # Parse xml file
-tree = e.parse(sys.argv[1])
+args = parser.parse_args()
+tree = e.parse(args.xml)
 root = tree.getroot()
 
 # Get FMU version
@@ -54,14 +67,15 @@ reals = {}
 ints  = {}
 bools = {}
 strs  = {}
-
 for sv in root.find('ModelVariables').findall('ScalarVariable'):
     name = sv.attrib['name']
-    name = '_'.join(name.split('.'))
+    name = re.sub('[.\[\(]', '_', name)
+    name = re.sub('[\]\)]', '', name)
+
     vr = int(sv.attrib['valueReference'])
 
     if name in reals.values() or name in ints.values() or name in bools.values():
-        error(sys.argv[1]+' contains multiple variables named "' + name + '"!')
+        error(args.xml +' contains multiple variables named "' + name + '"!')
         exit(1)
 
     R = sv.find('Real')
@@ -72,20 +86,20 @@ for sv in root.find('ModelVariables').findall('ScalarVariable'):
 
     if R != None:
         if vr in reals:
-            error(sys.argv[1]+' contains multiple Reals with VR='+str(vr))
+            error(args.xmlsys.argv[1]+' contains multiple Reals with VR='+str(vr))
             exit(1)
         start = float(R.attrib['start']) if 'start' in R.attrib else 0
         reals[vr] = (name, start)
     elif I != None or E != None:
         if vr in ints:
-            error(sys.argv[1]+' contains multiple Integers/Enums with VR='+str(vr))
+            error(args.xmlsys.argv[1]+' contains multiple Integers/Enums with VR='+str(vr))
             exit(1)
         IE = I if I != None else E
         start = int(IE.attrib['start']) if 'start' in IE.attrib else 0
         ints[vr] = (name, start)
     elif B != None:
         if vr in bools:
-            error(sys.argv[1]+' contains multiple Booleans with VR='+str(vr))
+            error(args.xmlsys.argv[1]+' contains multiple Booleans with VR='+str(vr))
             exit(1)
         start = B.attrib['start'] if 'start' in B.attrib else '0'
         bools[vr] = (name, 1 if start == '1' or start == 'true' else 0)
@@ -209,10 +223,37 @@ static fmi2Status generated_fmi2Set%s(modelDescription_t *md, const fmi2ValueRef
         '\n'.join(['        case %i: md->%s = value[i]; break;' % (key, value[0]) for key,value in d.items()]),
     ))
 
+def gen_getters_setters_wrappers(t, d):
+    print('''
+static fmi2Status generated_fmi2Get%s(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2%s value[]) {
+    fmi2_import_get_%s(*getFMU(),vr,nvr,value);
+    return fmi2OK;
+}
 
-gen_getters_setters('Real',    reals)
-gen_getters_setters('Integer', ints)
-gen_getters_setters('Boolean', bools)
-gen_getters_setters('String',  strs)
+static fmi2Status generated_fmi2Set%s(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2%s value[]) {
+    if( *getFMU() != NULL)
+        fmi2_import_set_%s(*getFMU(),vr,nvr,value);
+    return fmi2OK;
+}''' % (
+        t,t,
+        t.lower(),
+        t,t,
+        t.lower(),
+        # A bit convoluted maybe, but it works.
+        # This makes sure settings strings larger than the FMU can handle results in an error, not a crash
+    ))
+
+
+if not args.wrapper:
+    gen_getters_setters('Real',    reals)
+    gen_getters_setters('Integer', ints)
+    gen_getters_setters('Boolean', bools)
+    gen_getters_setters('String',  strs)
+else:
+    gen_getters_setters_wrappers('Real',    reals)
+    gen_getters_setters_wrappers('Integer', ints)
+    gen_getters_setters_wrappers('Boolean', bools)
+    gen_getters_setters_wrappers('String',  strs)
+
 
 print('#endif //MODELDESCRIPTION_H')

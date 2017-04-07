@@ -22,11 +22,11 @@ ADD_CUSTOM_COMMAND(
   COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/../../fmu-builder/xml2wrappedxml.py
     ${CMAKE_CURRENT_SOURCE_DIR}/fmu/modelDescription.xml >
     ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml
-  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.xml )
+  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/fmu/modelDescription.xml )
     
 ADD_CUSTOM_COMMAND(
   OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
-  COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/../../fmu-builder/modeldescription2headerWrapper.py
+  COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/../../fmu-builder/modeldescription2header -x
     ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml >
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml )

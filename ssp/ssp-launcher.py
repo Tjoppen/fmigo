@@ -12,6 +12,9 @@ import argparse
 import psutil
 
 
+default_timestep = 0.1
+default_duration = 10
+
 RESOURCE_DIR='resources'
 SSD_NAME='SystemStructure.ssd'
 CAUSALITY='causality'
@@ -21,20 +24,22 @@ ns = {
     'ssd': 'http://www.pmsf.net/xsd/SystemStructureDescriptionDraft',
     'ssv': 'http://www.pmsf.net/xsd/SystemStructureParameterValuesDraft',
     'ssm': 'http://www.pmsf.net/xsd/SystemStructureParameterMappingDraft',
-    'umit':'http://umit.math.umu.se/UMITSSD',
+    'fmigo':'http://umit.math.umu.se/FmiGo.xsd',
 }
 d = tempfile.mkdtemp(prefix='ssp')
 print(d)
 
+# FIXME: these should not be global if the intent is to use this file as a module
 fmus = []
 systems = []
 parameters = {}
+shaftconstraints = []
 
 schema_names = {
     'SSD': 'SystemStructureDescription.xsd',
     'SSM': 'SystemStructureParameterMapping.xsd',
     'SSV': 'SystemStructureParameterValues.xsd',
-    'UMIT':'UMITSSD.xsd',
+    'FmiGo':'FmiGo.xsd',
 }
 schemas = {}
 
@@ -145,8 +150,8 @@ def get_attrib(s, name, default=None):
         return default
 
 def remove_if_empty(parent, node):
-    #remove if all attributes and subnodes have been dealt with
-    if node != None and len(node.attrib) == 0 and len(node) == 0:
+    #remove if all attributes, subnodes and text have been dealt with
+    if node != None and len(node.attrib) == 0 and len(node) == 0 and (node.text == None or node.text.strip() == ''):
         parent.remove(node)
 
 def find_elements(s, first, second):
@@ -158,6 +163,10 @@ def check_name(name):
         # We might allow this at some point
         print('ERROR: FMU/System name "%s" contains a dot, which is not allowed' % name)
         exit(1)
+
+# Escapes a variable name or value
+def escape(s):
+    return s.replace('\\','\\\\').replace(':','\\:').replace(',','\\,')
 
 def parse_parameter_bindings(path, baseprefix, parameterbindings):
     for pb in parameterbindings[1]:
@@ -294,12 +303,16 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
         remove_if_empty(parameterbindings[0], pb)
 
 class FMU:
-    def __init__(self, name, path, connectors, system):
+    def __init__(self, name, comp, path, system):
         check_name(name)
         self.name = name
         self.path = path
-        self.connectors = {}
+        self.system = system
 
+        self.connectors = {}
+        self.physicalconnectors = {}
+
+        connectors = find_elements(comp, 'ssd:Connectors', 'ssd:Connector')
         for conn in connectors[1]:
             name = get_attrib(conn, 'name')
             kind = get_attrib(conn, 'kind')
@@ -320,8 +333,29 @@ class FMU:
                 'kind': kind,
                 'unit': unit,
             }
+        remove_if_empty(comp, connectors[0])
 
-        self.system = system
+        cannotations = find_elements(comp, 'ssd:Annotations', 'ssd:Annotation')
+        for cannotation in cannotations[1]:
+            type = get_attrib(cannotation, 'type')
+            if type == 'se.umu.math.umit.ssp.physicalconnectors':
+                if 'FmiGo' in schemas:
+                    schemas['FmiGo'].assertValid(cannotation[0])
+
+                for pc in find_elements(cannotation, 'fmigo:PhysicalConnectors', 'fmigo:PhysicalConnector1D')[1]:
+                    name = get_attrib(pc, 'name')
+                    pcdict = {
+                    'type': '1d',
+                    'vars': [get_attrib(pc, ss) for ss in ['stateVariable', 'flowVariable', 'accelerationVariable', 'effortVariable']]
+                    }
+
+                    self.physicalconnectors[name] = pcdict
+                    remove_if_empty(cannotation[0], pc)
+                remove_if_empty(cannotation, cannotation[0])
+            else:
+                print('WARNING: Found unknown Annotation of type "%s"' % type)
+            remove_if_empty(cannotations[0], cannotation)
+        remove_if_empty(comp, cannotations[0])
 
         global fmus
         self.id = len(fmus)
@@ -350,8 +384,8 @@ class SystemStructure:
         self.name = get_attrib(root, 'name')
         check_name(self.name)
 
-        #not sure what to use schemaLocation for, or if we should even require it
-        # self.schemaLocation = get_attrib(root, '{http://www.w3.org/2001/XMLSchema-instance}schemaLocation')
+        # Get schemaLocation if set. This avoids some residual XML
+        self.schemaLocation = get_attrib(root, '{http://www.w3.org/2001/XMLSchema-instance}schemaLocation', '')
 
         # Units keyed on name. Like {name: {'units': (units,), 'factor': 1, 'offset': 0}}
         self.unitsbyname = {}
@@ -381,6 +415,36 @@ class SystemStructure:
 
         #print('unitsbyname: '+str(self.unitsbyname))
         #print('unitsbyunits: '+str(self.unitsbyunits))
+
+        self.timestep = default_timestep
+        self.duration = default_duration
+
+        annotations = find_elements(root, 'ssd:Annotations', 'ssd:Annotation')
+        for annotation in annotations[1]:
+            type = get_attrib(annotation, 'type')
+            if type == 'se.umu.math.umit.fmigo-master.arguments':
+                if 'FmiGo' in schemas:
+                    schemas['FmiGo'].assertValid(annotation[0])
+
+                timestep = get_attrib(annotation[0], 'timestep', '')
+                if len(timestep) > 0:
+                    self.timestep = float(timestep)
+
+                duration = get_attrib(annotation[0], 'duration', '')
+                if len(duration) > 0:
+                    self.duration = float(duration)
+
+                # We might do this later
+                #for arg in find_elements(annotation, 'fmigo:MasterArguments', 'fmigo:arg')[1]:
+                #    self.arguments.append(arg.text)
+                #    arg.text = None
+                #    remove_if_empty(annotation[0], arg)
+
+                remove_if_empty(annotation, annotation[0])
+            else:
+                print('WARNING: Found unknown Annotation of type "%s"' % type)
+            remove_if_empty(annotations[0], annotation)
+        remove_if_empty(root, annotations[0])
 
 class System:
     '''
@@ -502,14 +566,12 @@ class System:
                 self.subsystems[name] = child
             elif t == 'application/x-fmu-sharedlibrary':
                 source = os.path.join(d, get_attrib(comp, 'source'))
-                connectors = find_elements(comp, 'ssd:Connectors', 'ssd:Connector')
                 self.fmus[name] = FMU(
                     name,
+                    comp,
                     source,
-                    connectors,
                     self,
                 )
-                remove_if_empty(comp, connectors[0])
             else:
                 print('unknown type: ' + t)
                 exit(1)
@@ -553,22 +615,20 @@ class System:
         for annotation in annotations[1]:
             type = get_attrib(annotation, 'type')
             if type == 'se.umu.math.umit.ssp.kinematicconstraints':
-                if 'UMIT' in schemas:
-                    schemas['UMIT'].assertValid(annotation[0])
+                if 'FmiGo' in schemas:
+                    schemas['FmiGo'].assertValid(annotation[0])
 
-                for shaft in find_elements(annotation, 'umit:KinematicConstraints', 'umit:ShaftConstraint')[1]:
-                    get_attrib(shaft, 'element1')
-                    get_attrib(shaft, 'element2')
-                    get_attrib(shaft, 'angle1', '')
-                    get_attrib(shaft, 'angle2', '')
-                    get_attrib(shaft, 'angularVelocity1')
-                    get_attrib(shaft, 'angularVelocity2')
-                    get_attrib(shaft, 'angularAcceleration1')
-                    get_attrib(shaft, 'angularAcceleration2')
-                    get_attrib(shaft, 'torque1')
-                    get_attrib(shaft, 'torque2')
+                for shaft in find_elements(annotation, 'fmigo:KinematicConstraints', 'fmigo:ShaftConstraint')[1]:
+                    shaftconstraint = {
+                    'holonomic': get_attrib(shaft, 'holonomic') == 'true'
+                    }
+
+                    for i in [1,2]:
+                        shaftconstraint['element%i' % i]   = self.get_name() + '.' + get_attrib(shaft, 'element%i' % i)
+                        shaftconstraint['connector%i' % i] = get_attrib(shaft, 'connector%i' % i)
+
+                    shaftconstraints.append(shaftconstraint)
                     remove_if_empty(annotation[0], shaft)
-
                 remove_if_empty(annotation, annotation[0])
             else:
                 print('WARNING: Found unknown Annotation of type "%s"' % type)
@@ -675,9 +735,9 @@ def parse_ssp(ssp_path, cleanup_zip = True):
         unzip_ssp(d, ssp_path)
         unzipped_ssp = True
 
-    root = System.fromfile(d, SSD_NAME)
+    root_system = System.fromfile(d, SSD_NAME)
 
-    root.resolve_dictionary_inputs()
+    root_system.resolve_dictionary_inputs()
 
     # Figure out connections, parse modelDescriptions
     connectionmultimap = {} # Multimap of outputs to inputs
@@ -749,7 +809,7 @@ def parse_ssp(ssp_path, cleanup_zip = True):
                             fmu.id,
                             p['vr'],
                             # Escape backslashes and colons
-                            str(value['value']).replace('\\','\\\\').replace(':','\\:').replace(',','\\,')
+                            escape(str(value['value']))
                         )
                     ])
                 else:
@@ -777,10 +837,42 @@ def parse_ssp(ssp_path, cleanup_zip = True):
             connstr = '%s,%i,%i,%s,%i,%i' % (fv['type'], fr[0], fv['vr'], tv['type'], to[0], tv['vr'])
             flatconns.extend(['-c', connstr])
 
+    kinematicconns = []
+    for shaft in shaftconstraints:
+        ids = [fmumap[shaft['element%i' % i]] for i in [1,2]]
+        conn = ['shaft'] + [str(id) for id in ids]
+
+        for i in [1,2]:
+            fmu     = fmus[ids[i-1]]
+            fmuname = fmu.get_name()
+            pcs     = fmu.physicalconnectors
+            name    = shaft['connector%i' % i]
+
+            if not name in pcs:
+                print('ERROR: Shaft constraint refers to physical connector %s in %s, which does not exist' % (name, fmuname))
+                exit(1)
+
+            pc = pcs[name]
+
+            if pc['type'] != '1d':
+                print('ERROR: Physical connector %s in %s of type %s, not 1d' % (name, fmuname, pc['type']))
+                exit(1)
+
+            # NOTE: We could resolve variables using mds[] here, but fmigo now has
+            # support for looking variables up based on name, so there's no need to
+            # TODO: Non-holonomic shaft constraints
+            if not shaft['holonomic']:
+                print('ERROR: ShaftConstraints must be holonomic for now')
+                exit(1)
+
+            conn += [escape(key) for key in pc['vars']]
+
+        kinematicconns.extend(['-C', ','.join(conn)])
+
     if unzipped_ssp and cleanup_zip:
         shutil.rmtree(d)
 
-    return flatconns, flatparams, unzipped_ssp, d
+    return flatconns, flatparams, kinematicconns, unzipped_ssp, d, root_system.structure.timestep, root_system.structure.duration
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
@@ -805,7 +897,7 @@ if __name__ == '__main__':
     parse = parser.parse_args()
 
 
-    flatconns, flatparams, unzipped_ssp, d = parse_ssp(parse.ssp, False)
+    flatconns, flatparams, kinematicconns, unzipped_ssp, d, timestep, duration = parse_ssp(parse.ssp, False)
 
     #If we are working with TCP, create tcp://localhost:port for all given local hosts
     if len(parse.ports):
@@ -843,10 +935,10 @@ if __name__ == '__main__':
         args   = ['mpiexec','-np',str(len(fmus)+1),'fmigo-mpi']
         append = [fmu.path for fmu in fmus]
 
-    args += ['-t','9.9','-d','0.1'] + parse.args + ['-a','-']
+    args += ['-t',str(duration),'-d',str(timestep)] + parse.args + ['-a','-']
     args += append
 
-    pipeinput = " ".join(flatconns+flatparams)
+    pipeinput = " ".join(flatconns+flatparams+kinematicconns)
     print(" ".join(args) + (' <<< "%s"' % pipeinput))
 
     if parse.dry_run:

@@ -1,7 +1,7 @@
 set -e
 
-MD2HDR="`pwd`/../fmu-builder/bin/modeldescription2header"
-GENERATOR="`pwd`/../fmu-builder/bin/cmake-generator -t `pwd`/templates/fmi2/ -i `pwd`/../FMILibrary-2.0.1/ThirdParty/FMI/default -m ${MD2HDR}"
+MD2HDR="`pwd`/fmu-builder/modeldescription2header"
+GENERATOR="`pwd`/fmu-builder/cmake-generator -t `pwd`/templates/fmi2/ -i `pwd`/../FMILibrary-2.0.1/ThirdParty/FMI/default -m ${MD2HDR}"
 
 GSLFMUS="
     gsl2/clutch2

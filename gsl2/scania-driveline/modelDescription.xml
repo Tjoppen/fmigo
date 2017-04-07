@@ -107,7 +107,7 @@
                     causality      = "input"
                     variability    = "discrete"
                     initial        = "approx">
-        <Real start="0" />
+        <Real start="0.492" />
     </ScalarVariable>  <!--index="12" -->
     <ScalarVariable name           = "m_vehicle"
                     valueReference = "11"
@@ -115,7 +115,7 @@
                     causality      = "input"
                     variability    = "discrete"
                     initial        = "approx">
-        <Real start="0" />
+        <Real start="40000" />
     </ScalarVariable>  <!--index="13" -->
     <ScalarVariable name           = "final_gear_ratio"
                     valueReference = "12"
@@ -123,7 +123,7 @@
                     causality      = "input"
                     variability    = "discrete"
                     initial        = "approx">
-        <Real start="0" />
+        <Real start="2.59" />
     </ScalarVariable>  <!--index="14" -->
     <ScalarVariable name           = "w_eng"
                     valueReference = "13"
@@ -147,7 +147,7 @@
                     causality      = "input"
                     variability    = "discrete"
                     initial        = "approx">
-        <Real start="0" />
+        <Real start="4" />
     </ScalarVariable>  <!--index="17" -->
     <ScalarVariable name           = "J_neutral"
                     valueReference = "16"
@@ -155,7 +155,7 @@
                     causality      = "input"
                     variability    = "discrete"
                     initial        = "approx">
-        <Real start="0" />
+        <Real start="0.45" />
     </ScalarVariable>  <!--index="18" -->
     <ScalarVariable name           = "tq_brake"
                     valueReference = "17"
@@ -171,7 +171,7 @@
                     causality      = "input"
                     variability    = "discrete"
                     initial        = "approx">
-        <Real start="0" />
+        <Real start="0.02" />
     </ScalarVariable>  <!--index="20" -->
     <ScalarVariable name           = "r_slipFilt"
                     valueReference = "19"

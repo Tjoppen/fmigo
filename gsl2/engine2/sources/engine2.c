@@ -43,7 +43,7 @@ int engine2 (double t, const double x[], double dxdt[], void * params) {
                             - tau_coupling
                             );
   dxdt[ 2 ] = s->md.integrate_dtheta ? x[ 1 ] - s->md.omega_in : 0.0;
-  //fprintf(stderr, "forces: %f - %f - %f + %f @ t = %f, x = %f\n", s->md.tau_max * beta(s, x[ 1 ]), s->md.k1 * x[ 1 ], s->md.k2 * x[ 1 ] * abs(x[ 1 ]), s->md.tau_coupling, t, x[0]);
+  //fprintf(stderr, "forces: %f - %f - %f + %f @ t = %f, x = %f\n", s->md.tau_max * beta(s, x[ 1 ]), s->md.k1 * x[ 1 ], s->md.k2 * x[ 1 ] * floor(fabs(x[ 1 ])), s->md.tau_coupling, t, x[0]);
 
   return GSL_SUCCESS;
 

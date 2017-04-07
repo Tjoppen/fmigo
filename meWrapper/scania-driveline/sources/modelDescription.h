@@ -5,7 +5,7 @@
 #include "strlcpy.h" //for strlcpy()
 
 #define MODEL_IDENTIFIER wrapper_drivetrainMFunctionOnly
-#define MODEL_GUID "86883902-8d3d-4a3c-87fe-0f3b711a8616"
+#define MODEL_GUID "44ee33e2-7041-4653-88c2-33985c7e7cd4"
 #define FMI_COSIMULATION
 #define HAVE_DIRECTIONAL_DERIVATIVE 1
 #define CAN_GET_SET_FMU_STATE 1

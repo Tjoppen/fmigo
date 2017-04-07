@@ -1,10 +1,5 @@
 //TODO: add some kind of flag that switches this one between a clutch and a gearbox, to reduce the amount of code needed
 //#define SIMULATION_INIT wrapper_ntoeu
-#define SIMULATION_WRAPPER wrapper_ntoeu
-#define SIMULATION_SET     wrapper_set
-#define SIMULATION_GET     wrapper_get
-#define SIMULATION_TYPE    cgsl_simulation*
-
 #ifndef WIN32
 #include <unistd.h>
 #else
@@ -12,9 +7,17 @@
 #endif
 #include <fmilib.h>
 //#include "modelDescription_me.h"
+#include "commonWrapper/modelExchange.h"
 #include "modelDescription.h"
+#define SIMULATION_TYPE    cgsl_simulation*
 #include "fmuTemplate.h"
 #include "hypotmath.h"
+
+#define SIMULATION_WRAPPER wrapper_ntoeu
+#define SIMULATION_SET     wrapper_set
+#define SIMULATION_GET     wrapper_get
+//#define SIMULATION_TYPE    cgsl_simulation*
+
 /* typedef struct wrapper{ */
 /*     fmi_import_context_t* m_context; */
 /*     fmi_version_enu_t m_version; */

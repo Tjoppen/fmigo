@@ -6,9 +6,9 @@
 #include "commonWrapper/modelExchange.h"
 
 #define MODEL_IDENTIFIER wrapper_springs2
-#define MODEL_GUID "5f607c97-c8a9-4453-a37c-30a76ed70fbb"
+#define MODEL_GUID "933de207-f96d-49c3-b6d4-ac03b57f2e6b"
 #define FMI_COSIMULATION
-#define HAVE_DIRECTIONAL_DERIVATIVE 0
+#define HAVE_DIRECTIONAL_DERIVATIVE 1
 #define CAN_GET_SET_FMU_STATE 1
 #define NUMBER_OF_REALS 28
 #define NUMBER_OF_INTEGERS 0

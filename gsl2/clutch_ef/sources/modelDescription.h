@@ -19,44 +19,46 @@
 
 #define HAVE_MODELDESCRIPTION_STRUCT
 typedef struct {
-    fmi2Real xi0; //VR=0
-    fmi2Real vi0; //VR=1
-    fmi2Real xo0; //VR=2
-    fmi2Real vo0; //VR=3
-    fmi2Real mass1; //VR=4
-    fmi2Real gamma1; //VR=5
-    fmi2Real mass2; //VR=6
-    fmi2Real gamma2; //VR=7
-    fmi2Real clutch_damping; //VR=8
-    fmi2Real force_in1; //VR=9
-    fmi2Real force_in2; //VR=10
-    fmi2Real v1; //VR=11
-    fmi2Real v2; //VR=12
-    fmi2Real on_off; //VR=13
+    fmi2Real    xi0; //VR=0
+    fmi2Real    vi0; //VR=1
+    fmi2Real    xo0; //VR=2
+    fmi2Real    vo0; //VR=3
+    fmi2Real    mass1; //VR=4
+    fmi2Real    gamma1; //VR=5
+    fmi2Real    mass2; //VR=6
+    fmi2Real    gamma2; //VR=7
+    fmi2Real    clutch_damping; //VR=8
+    fmi2Real    force_in1; //VR=9
+    fmi2Real    force_in2; //VR=10
+    fmi2Real    v1; //VR=11
+    fmi2Real    v2; //VR=12
+    fmi2Real    on_off; //VR=13
     fmi2Integer filter_length; //VR=98
     fmi2Integer integrator_type; //VR=99
+
 
 } modelDescription_t;
 
 
 #define HAVE_DEFAULTS
 static const modelDescription_t defaults = {
-    0.0, //xi0
-    0.0, //vi0
-    0.0, //xo0
-    0.0, //vo0
-    1.0, //mass1
-    1.0, //gamma1
-    1.0, //mass2
-    1.0, //gamma2
-    100.0, //clutch_damping
-    0.0, //force_in1
-    0.0, //force_in2
-    0, //v1
-    0, //v2
-    1.0, //on_off
+    0.000000, //xi0
+    0.000000, //vi0
+    0.000000, //xo0
+    0.000000, //vo0
+    1.000000, //mass1
+    1.000000, //gamma1
+    1.000000, //mass2
+    1.000000, //gamma2
+    100.000000, //clutch_damping
+    0.000000, //force_in1
+    0.000000, //force_in2
+    0.000000, //v1
+    0.000000, //v2
+    1.000000, //on_off
     0, //filter_length
     6, //integrator_type
+
 
 };
 
@@ -79,6 +81,7 @@ static const modelDescription_t defaults = {
 #define VR_INTEGRATOR_TYPE 99
 
 
+
 //the following getters and setters are static to avoid getting linking errors if this file is included in more than one place
 
 #define HAVE_GENERATED_GETTERS_SETTERS  //for letting the template know that we have our own getters and setters
@@ -88,21 +91,20 @@ static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case VR_XI0: value[i] = md->xi0; break;
-        case VR_VI0: value[i] = md->vi0; break;
-        case VR_XO0: value[i] = md->xo0; break;
-        case VR_VO0: value[i] = md->vo0; break;
-        case VR_MASS1: value[i] = md->mass1; break;
-        case VR_GAMMA1: value[i] = md->gamma1; break;
-        case VR_MASS2: value[i] = md->mass2; break;
-        case VR_GAMMA2: value[i] = md->gamma2; break;
-        case VR_CLUTCH_DAMPING: value[i] = md->clutch_damping; break;
-        case VR_FORCE_IN1: value[i] = md->force_in1; break;
-        case VR_FORCE_IN2: value[i] = md->force_in2; break;
-        case VR_V1: value[i] = md->v1; break;
-        case VR_V2: value[i] = md->v2; break;
-        case VR_ON_OFF: value[i] = md->on_off; break;
-
+        case 0: value[i] = md->xi0; break;
+        case 1: value[i] = md->vi0; break;
+        case 2: value[i] = md->xo0; break;
+        case 3: value[i] = md->vo0; break;
+        case 4: value[i] = md->mass1; break;
+        case 5: value[i] = md->gamma1; break;
+        case 6: value[i] = md->mass2; break;
+        case 7: value[i] = md->gamma2; break;
+        case 8: value[i] = md->clutch_damping; break;
+        case 9: value[i] = md->force_in1; break;
+        case 10: value[i] = md->force_in2; break;
+        case 11: value[i] = md->v1; break;
+        case 12: value[i] = md->v2; break;
+        case 13: value[i] = md->on_off; break;
         default: return fmi2Error;
         }
     }
@@ -132,13 +134,13 @@ static fmi2Status generated_fmi2SetReal(modelDescription_t *md, const fmi2ValueR
     }
     return fmi2OK;
 }
+
 static fmi2Status generated_fmi2GetInteger(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Integer value[]) {
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case VR_FILTER_LENGTH: value[i] = md->filter_length; break;
-        case VR_INTEGRATOR_TYPE: value[i] = md->integrator_type; break;
-
+        case 98: value[i] = md->filter_length; break;
+        case 99: value[i] = md->integrator_type; break;
         default: return fmi2Error;
         }
     }
@@ -156,6 +158,7 @@ static fmi2Status generated_fmi2SetInteger(modelDescription_t *md, const fmi2Val
     }
     return fmi2OK;
 }
+
 static fmi2Status generated_fmi2GetBoolean(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Boolean value[]) {
     int i;
     for (i = 0; i < nvr; i++) {
@@ -177,6 +180,7 @@ static fmi2Status generated_fmi2SetBoolean(modelDescription_t *md, const fmi2Val
     }
     return fmi2OK;
 }
+
 static fmi2Status generated_fmi2GetString(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2String value[]) {
     int i;
     for (i = 0; i < nvr; i++) {

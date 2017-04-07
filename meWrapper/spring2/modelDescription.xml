@@ -3,14 +3,14 @@
     fmiVersion="2.0"
     description="Two masses with a spring"
     modelName="wrapper_springs2"
-    guid="5f607c97-c8a9-4453-a37c-30a76ed70fbb"
+    guid="933de207-f96d-49c3-b6d4-ac03b57f2e6b"
     numberOfEventIndicators="0">
 
   <CoSimulation
     modelIdentifier="wrapper_springs2"
     canHandleVariableCommunicationStepSize="true"
     canGetAndSetFMUstate="true"
-    providesDirectionalDerivative="false"/>
+    providesDirectionalDerivative="true"/>
 
   <LogCategories>
     <Category name="logAll"/>

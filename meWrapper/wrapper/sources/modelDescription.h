@@ -6,7 +6,7 @@
 #include "commonWrapper/modelExchange.h"
 
 #define MODEL_IDENTIFIER wrapper_bouncingBall
-#define MODEL_GUID "de4ef5e4-bf87-4cee-84cf-e630e28e1aa9"
+#define MODEL_GUID "f1618cca-2ab5-4205-9dd8-6991cc475611"
 #define FMI_COSIMULATION
 #define HAVE_DIRECTIONAL_DERIVATIVE 1
 #define CAN_GET_SET_FMU_STATE 1

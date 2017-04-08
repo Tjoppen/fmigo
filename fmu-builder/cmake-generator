@@ -49,6 +49,8 @@ if len(definitions):
     definitions = "-"+definitions
 include_directories = args.includedir.split(',')
 
+iswrapper = 1 if len(args.srcxml2xml) else 0
+
 # For logging errors and messages
 def log(m):
     print( "%s: %s" % (sys.argv[0],m) )
@@ -82,6 +84,9 @@ with open(path,'w') as f:
     cwd = os.getcwd()
     source_files = []
     dirs = [pjoin(cwd,"sources")]
+    if os.path.exists(pjoin(cwd,"fmu")):
+        dirs += [pjoin(cwd,"fmu")]
+
     dirs.extend([pjoin(cwd,td) for td in args.templatedir])
     for dir in dirs:
         if os.path.isfile(dir):
@@ -120,7 +125,7 @@ with open(path,'w') as f:
     include_directories.sort()
     files = "SET(SRCS\n    " + "\n    ".join(source_files) + "\n)"
     md2hdr = os.path.relpath(args.md2hdr).replace('\\','/')
-    if(len(args.srcxml2xml)):
+    if iswrapper:
         srcxml2xml = os.path.relpath(args.srcxml2xml).replace('\\','/')
         xml2xml = """
 ADD_CUSTOM_COMMAND(
@@ -130,7 +135,8 @@ ADD_CUSTOM_COMMAND(
     ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/fmu/modelDescription.xml )
     """ % srcxml2xml
-    else: xml2xml = ""
+    else:
+        xml2xml = ""
 
     # libm needs special handling since it doesn't exist/isn't needed on Windows
     libmextra = ''

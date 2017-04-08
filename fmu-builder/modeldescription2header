@@ -94,29 +94,27 @@ for sv in root.find('ModelVariables').findall('ScalarVariable'):
 
     if R != None:
         if vr in reals:
-            error(args.xmlsys.argv[1]+' contains multiple Reals with VR='+str(vr))
+            error(args.xml +' contains multiple Reals with VR='+str(vr))
             exit(1)
         start = float(R.attrib['start']) if 'start' in R.attrib else 0
         if meFmuType:
             if 'derivative' in R.attrib:
-                vrstate = int(R.attrib['derivative'])
-
-                for s in SV:
-                    if int(s.attrib['valueReference']) == vrstate:
-                        states[vr] = (s.attrib['name'], 0)
-                start = 0
+                stateIndex = int(R.attrib['derivative']) - 1
+                stateName  = SV[stateIndex].attrib['name']
+                states[vr] = (stateName, 0)
                 derivatives[vr] = (name, 0)
+                start = 0
         reals[vr] = (name, start)
     elif I != None or E != None:
         if vr in ints:
-            error(args.xmlsys.argv[1]+' contains multiple Integers/Enums with VR='+str(vr))
+            error(args.xml + ' contains multiple Integers/Enums with VR='+str(vr))
             exit(1)
         IE = I if I != None else E
         start = int(IE.attrib['start']) if 'start' in IE.attrib else 0
         ints[vr] = (name, start)
     elif B != None:
         if vr in bools:
-            error(args.xmlsys.argv[1]+' contains multiple Booleans with VR='+str(vr))
+            error(args.xml + ' contains multiple Booleans with VR='+str(vr))
             exit(1)
         start = B.attrib['start'] if 'start' in B.attrib else '0'
         bools[vr] = (name, 1 if start == '1' or start == 'true' else 0)

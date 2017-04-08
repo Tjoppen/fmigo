@@ -54,7 +54,7 @@ elif fmiVersion == "2.0":
         providesDirectionalDerivative = cs.get('providesDirectionalDerivative') == "true"
         canGetAndSetFMUstate = cs.get('canGetAndSetFMUstate') == "true"
     elif me != None:
-        fmuType = me
+        fmuType = "me"
         modelIdentifier = me.get('modelIdentifier')
         providesDirectionalDerivative = me.get('providesDirectionalDerivative') == "true"
         canGetAndSetFMUstate = me.get('canGetAndSetFMUstate') == "true"
@@ -134,7 +134,8 @@ print('''#ifndef MODELDESCRIPTION_H
 ''' % (
     modelIdentifier,
     root.get('guid'),
-    '#define FMI_COSIMULATION' if fmuType == 'cs' else '',
+    '#define FMI_COSIMULATION' if fmuType == 'cs' else
+    '#define FMI_MODELEXCHANGE' if fmuType == 'me' else'' ,
     1 if providesDirectionalDerivative else 0,
     1 if canGetAndSetFMUstate else 0,
     len(reals),

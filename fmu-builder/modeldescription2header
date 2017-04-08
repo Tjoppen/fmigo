@@ -35,9 +35,12 @@ root = tree.getroot()
 
 # Get FMU version
 fmiVersion = root.get('fmiVersion')
+ni = root.get('numberOfEventIndicators');
 
 # Get model identifier.
-fmuType = "cs"
+csFmuType = False
+meFmuType = False
+
 modelIdentifier = "modelIdentifier"
 providesDirectionalDerivative = False
 canGetAndSetFMUstate = False
@@ -48,13 +51,14 @@ if fmiVersion == "1.0":
 elif fmiVersion == "2.0":
     me = root.find('ModelExchange')
     cs = root.find('CoSimulation')
+    csFmuType = cs != None
+    meFmuType = me != None
+
     if cs != None:
-        fmuType = "cs"
         modelIdentifier = cs.get('modelIdentifier')
         providesDirectionalDerivative = cs.get('providesDirectionalDerivative') == "true"
         canGetAndSetFMUstate = cs.get('canGetAndSetFMUstate') == "true"
     elif me != None:
-        fmuType = "me"
         modelIdentifier = me.get('modelIdentifier')
         providesDirectionalDerivative = me.get('providesDirectionalDerivative') == "true"
         canGetAndSetFMUstate = me.get('canGetAndSetFMUstate') == "true"
@@ -66,6 +70,10 @@ elif fmiVersion == "2.0":
 reals = {}
 ints  = {}
 bools = {}
+states = {}
+derivatives = {}
+
+SV = root.find('ModelVariables').findall('ScalarVariable')
 strs  = {}
 for sv in root.find('ModelVariables').findall('ScalarVariable'):
     name = sv.attrib['name']
@@ -89,6 +97,15 @@ for sv in root.find('ModelVariables').findall('ScalarVariable'):
             error(args.xmlsys.argv[1]+' contains multiple Reals with VR='+str(vr))
             exit(1)
         start = float(R.attrib['start']) if 'start' in R.attrib else 0
+        if meFmuType:
+            if 'derivative' in R.attrib:
+                vrstate = int(R.attrib['derivative'])
+
+                for s in SV:
+                    if int(s.attrib['valueReference']) == vrstate:
+                        states[vr] = (s.attrib['name'], 0)
+                start = 0
+                derivatives[vr] = (name, 0)
         reals[vr] = (name, start)
     elif I != None or E != None:
         if vr in ints:
@@ -129,61 +146,58 @@ print('''#ifndef MODELDESCRIPTION_H
 #define NUMBER_OF_INTEGERS %i
 #define NUMBER_OF_BOOLEANS %i
 #define NUMBER_OF_STRINGS %i
-#define NUMBER_OF_STATES 0
-#define NUMBER_OF_EVENT_INDICATORS 0
+#define NUMBER_OF_STATES %i
+#define NUMBER_OF_EVENT_INDICATORS %s
 ''' % (
     modelIdentifier,
     root.get('guid'),
-    '#define FMI_COSIMULATION' if fmuType == 'cs' else
-    '#define FMI_MODELEXCHANGE' if fmuType == 'me' else'' ,
+    '#define FMI_COSIMULATION' if csFmuType else
+    '#define FMI_MODELEXCHANGE' if meFmuType else '',
     1 if providesDirectionalDerivative else 0,
     1 if canGetAndSetFMUstate else 0,
     len(reals),
     len(ints),
     len(bools),
     len(strs),
+    len(states),
+    ni,
 ))
 
 print('''
 #define HAVE_MODELDESCRIPTION_STRUCT
 typedef struct {
-%s
-%s
-%s
-%s
+%s%s%s%s%s
 } modelDescription_t;
 ''' % (
-    '\n'.join(['    fmi2Real    %s; //VR=%s' % (value[0], str(key)) for key,value in reals.items()]),
-    '\n'.join(['    fmi2Integer %s; //VR=%s' % (value[0], str(key)) for key,value in ints.items()]),
-    '\n'.join(['    fmi2Boolean %s; //VR=%s' % (value[0], str(key)) for key,value in bools.items()]),
-    '\n'.join(['    fmi2Char    %s[%i]; //VR=%s' % (value[0], value[2], str(key)) for key,value in strs.items()]),
+    ''.join(['    fmi2Real '+value[0]+'; //VR='+str(key)+'\n' for key,value in reals.items()]),
+    ''.join(['    fmi2Integer '+value[0]+'; //VR='+str(key)+'\n' for key,value in ints.items()]),
+    ''.join(['    fmi2Boolean '+value[0]+'; //VR='+str(key)+'\n' for key,value in bools.items()]),
+    ''.join(['    fmi2Char    '+value[0]+'[256]; //VR='+str(key)+'\n' for key,value in strs.items()]),
+    '    fmi2Boolean dirty;' if meFmuType else '',
 ))
 
 print('''
 #define HAVE_DEFAULTS
 static const modelDescription_t defaults = {
-%s
-%s
-%s
-%s
+%s%s%s%s%s
 };
 ''' % (
-    '\n'.join(['    %f, //%s' % (value[1], value[0]) for key,value in reals.items()]),
-    '\n'.join(['    %i, //%s' % (value[1], value[0]) for key,value in ints.items()]),
-    '\n'.join(['    %i, //%s' % (value[1], value[0]) for key,value in bools.items()]),
-    '\n'.join(['    "%s", //%s' % (value[1], value[0]) for key,value in strs.items()]),
+    ''.join(['    '+str(value[1])+', //'+value[0]+'\n' for key,value in reals.items()]),
+    ''.join(['    '+str(value[1])+', //'+value[0]+'\n' for key,value in ints.items()]),
+    ''.join(['    '+str(value[1])+', //'+value[0]+'\n' for key,value in bools.items()]),
+    ''.join(['    "'+value[1]+'", //'+value[0]+'\n' for key,value in strs.items()]),
+    '    1,' if meFmuType else '',
 ))
 
 print('''
-%s
-%s
-%s
-%s''' % (
-    '\n'.join(['#define VR_'+value[0].upper()+' '+str(key) for key,value in reals.items()]),
-    '\n'.join(['#define VR_'+value[0].upper()+' '+str(key) for key,value in ints.items()]),
-    '\n'.join(['#define VR_'+value[0].upper()+' '+str(key) for key,value in bools.items()]),
-    '\n'.join(['#define VR_'+value[0].upper()+' '+str(key) for key,value in strs.items()]),
+%s%s%s%s''' % (
+    ''.join(['#define VR_'+value[0].upper()+' '+str(key)+'\n' for key,value in reals.items()]),
+    ''.join(['#define VR_'+value[0].upper()+' '+str(key)+'\n' for key,value in ints.items()]),
+    ''.join(['#define VR_'+value[0].upper()+' '+str(key)+'\n' for key,value in bools.items()]),
+    ''.join(['#define VR_'+value[0].upper()+' '+str(key)+'\n' for key,value in strs.items()]),
 ))
+
+
 
 print('''
 //the following getters and setters are static to avoid getting linking errors if this file is included in more than one place
@@ -191,10 +205,21 @@ print('''
 #define HAVE_GENERATED_GETTERS_SETTERS  //for letting the template know that we have our own getters and setters
 ''')
 
-def gen_getters_setters(t, d):
+if meFmuType:
     print('''
-static fmi2Status generated_fmi2Get%s(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2%s value[]) {
-    int i;
+#define STATES { %s }
+#define DERIVATIVES { %s }
+''' % (
+    ', '.join(['VR_'+value[0].upper() for key,value in states.items()]),
+    ', '.join(['VR_'+value[0].upper() for key,value in derivatives.items()]),
+    ))
+
+print('''%s'''%(
+    '\nstatic void update_all(modelDescription_t *md);\n' if meFmuType else '',))
+
+def gen_getters_setters(t, d):
+    print('''static fmi2Status generated_fmi2Get%s(%smodelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2%s value[]) {
+    %sint i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
 %s
@@ -205,7 +230,7 @@ static fmi2Status generated_fmi2Get%s(const modelDescription_t *md, const fmi2Va
 }
 
 static fmi2Status generated_fmi2Set%s(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2%s value[]) {
-    int i;
+    %sint i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
 %s
@@ -214,9 +239,13 @@ static fmi2Status generated_fmi2Set%s(modelDescription_t *md, const fmi2ValueRef
     }
     return fmi2OK;
 }''' % (
+        t,
+        'const ' if csFmuType else '' ,
+        t,
+        'if (md->dirty){\n        update_all(md);\n        md->dirty = 0;\n    }\n' if meFmuType else '',
+        ''.join(['        case VR_%s: value[i] = md->%s; break;\n' % (value[0].upper(), value[0]) for key,value in d.items()]),
         t,t,
-        '\n'.join(['        case %i: value[i] = md->%s; break;' % (key, value[0]) for key,value in d.items()]),
-        t,t,
+        'md->dirty = 1;\n' if meFmuType else '',
         # A bit convoluted maybe, but it works.
         # This makes sure settings strings larger than the FMU can handle results in an error, not a crash
         '\n'.join(['        case %i: if (strlcpy(md->%s, value[i], sizeof(md->%s)) >= sizeof(md->%s)) { return fmi2Error; } break;' %

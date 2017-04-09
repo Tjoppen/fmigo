@@ -1,20 +1,30 @@
 #!/bin/bash
 set -e
-
+echo ${FMUS_DIR}
+pushd ../../
+source boilerplate.sh
+popd
 COMPARE=../../compare_csv.py
-SPRINGSCHECK=tests/springs.txt
-BOUNCINGCHECK=tests/bouncingBall.txt
-SPRINGS=springs/springs.fmu
 RESULT=/tmp/result.csv
-mpirun -np 2 fmigo-mpi -t 1.5 bouncingBall/bouncingBall.fmu > ${RESULT} 2>/dev/null
+function test(){
+    WRAPPER=$1
+    CHECK=$2
+    #2>/dev/null
+    mpirun -np $3 fmigo-mpi $4 ${WRAPPER} > ${RESULT}  || (echo "FAILED: " $1 && exit 1)
+    if [ ${REStoCHECK} = "set" ]; then
+        cat  ${RESULT} > ${CHECK}
+    fi
+    cat  ${RESULT}
+    python ${COMPARE} ${RESULT} ${CHECK}
 
-#cat ${RESULT} > ${BOUNCINGCHECK}
-python ${COMPARE} ${RESULT} ${BOUNCINGCHECK}
+    rm ${RESULT}
+}
+REStoCHECK="set"
+REStoCHECK="no"
 
-mpirun -np 3 fmigo-mpi -t 12 -p r,1,11,1 -c 0,x0,1,1 ${SPRINGS} ${SPRINGS} > ${RESULT} 2>/dev/null
-#cat ${RESULT} > ${SPRINGSCHECK}
-python ${COMPARE} ${RESULT}  ${SPRINGSCHECK}
+test ${FMUS_DIR}/me/springs/springs.fmu tests/springs.csv 2
+conn="-p 0,v1,10:0,k_internal,1:0,k1,1"
+test ${FMUS_DIR}/me/springs2/springs2.fmu tests/springs2.csv 2 "${conn}"
+test ${FMUS_DIR}/me/bouncingBall/bouncingBall.fmu tests/bouncingBall.csv 2 "-t 1.5"
 
-
-rm ${RESULT}
-echo ModelExchange
+echo ModelExchange ok

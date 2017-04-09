@@ -5,7 +5,7 @@
 #include "strlcpy.h" //for strlcpy()
 
 #define MODEL_IDENTIFIER wrapper_springs
-#define MODEL_GUID "1c72d46d-0fcc-41b1-b707-5811b4bf9101"
+#define MODEL_GUID "0769c6b4-99a5-49c3-9f01-2090e407f870"
 #define FMI_COSIMULATION
 #define HAVE_DIRECTIONAL_DERIVATIVE 1
 #define CAN_GET_SET_FMU_STATE 1
@@ -19,37 +19,35 @@
 
 #define HAVE_MODELDESCRIPTION_STRUCT
 typedef struct {
-    fmi2Real    x_in; //VR=1
-    fmi2Real    x0; //VR=2
-    fmi2Real    x1; //VR=4
-    fmi2Real    v0; //VR=6
-    fmi2Real    v1; //VR=8
-    fmi2Real    k1; //VR=10
-    fmi2Real    k2; //VR=11
-    fmi2Real    f_in; //VR=12
-    fmi2Real    f_out; //VR=13
+    fmi2Real x_in; //VR=1
+    fmi2Real x0; //VR=2
+    fmi2Real x1; //VR=4
+    fmi2Real v0; //VR=6
+    fmi2Real v1; //VR=8
+    fmi2Real k1; //VR=10
+    fmi2Real k2; //VR=11
+    fmi2Real f_in; //VR=12
+    fmi2Real f_out; //VR=13
+    fmi2Char    fmu[256]; //VR=0
+    fmi2Char    directional[256]; //VR=1
 
-
-    fmi2Char    fmu[16]; //VR=0
-    fmi2Char    directional[20]; //VR=1
 } modelDescription_t;
 
 
 #define HAVE_DEFAULTS
 static const modelDescription_t defaults = {
-    -1.000000, //x_in
-    -1.000000, //x0
-    1.000000, //x1
-    0.000000, //v0
-    0.000000, //v1
-    1.000000, //k1
-    0.000000, //k2
-    0.000000, //f_in
-    0.000000, //f_out
-
-
-    "fmu/springs.fmu", //fmu
+    -1.0, //x_in
+    -1.0, //x0
+    1.0, //x1
+    0.0, //v0
+    0.0, //v1
+    1.0, //k1
+    0.0, //k2
+    0.0, //f_in
+    0.0, //f_out
+    "sources/springs.fmu", //fmu
     "", //directional
+
 };
 
 
@@ -62,14 +60,14 @@ static const modelDescription_t defaults = {
 #define VR_K2 11
 #define VR_F_IN 12
 #define VR_F_OUT 13
-
-
 #define VR_FMU 0
 #define VR_DIRECTIONAL 1
+
 
 //the following getters and setters are static to avoid getting linking errors if this file is included in more than one place
 
 #define HAVE_GENERATED_GETTERS_SETTERS  //for letting the template know that we have our own getters and setters
+
 
 
 static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Real value[]) {

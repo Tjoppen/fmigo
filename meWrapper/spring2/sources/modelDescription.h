@@ -5,7 +5,7 @@
 #include "strlcpy.h" //for strlcpy()
 
 #define MODEL_IDENTIFIER wrapper_springs2
-#define MODEL_GUID "10f53b77-1c5a-4ca9-a7bf-9af818ace9a6"
+#define MODEL_GUID "d078f23d-9f58-42dc-880b-7f736acd79b9"
 #define FMI_COSIMULATION
 #define HAVE_DIRECTIONAL_DERIVATIVE 1
 #define CAN_GET_SET_FMU_STATE 1
@@ -19,75 +19,73 @@
 
 #define HAVE_MODELDESCRIPTION_STRUCT
 typedef struct {
-    fmi2Real    x1; //VR=1
-    fmi2Real    x2; //VR=3
-    fmi2Real    v1; //VR=5
-    fmi2Real    a1; //VR=7
-    fmi2Real    v2; //VR=8
-    fmi2Real    a2; //VR=10
-    fmi2Real    k1; //VR=11
-    fmi2Real    gamma1; //VR=12
-    fmi2Real    omega1; //VR=13
-    fmi2Real    phi1; //VR=14
-    fmi2Real    fc1; //VR=15
-    fmi2Real    k2; //VR=16
-    fmi2Real    gamma2; //VR=17
-    fmi2Real    omega2; //VR=18
-    fmi2Real    phi2; //VR=19
-    fmi2Real    fc2; //VR=20
-    fmi2Real    k_internal; //VR=21
-    fmi2Real    gamma_internal; //VR=22
-    fmi2Real    f1; //VR=23
-    fmi2Real    f2; //VR=24
-    fmi2Real    x1_i; //VR=25
-    fmi2Real    v1_i; //VR=26
-    fmi2Real    x2_i; //VR=27
-    fmi2Real    v2_i; //VR=28
-    fmi2Real    m1; //VR=29
-    fmi2Real    m1i_o; //VR=30
-    fmi2Real    m2; //VR=31
-    fmi2Real    m2i_o; //VR=32
+    fmi2Real x1; //VR=1
+    fmi2Real x2; //VR=3
+    fmi2Real v1; //VR=5
+    fmi2Real a1; //VR=7
+    fmi2Real v2; //VR=8
+    fmi2Real a2; //VR=10
+    fmi2Real k1; //VR=11
+    fmi2Real gamma1; //VR=12
+    fmi2Real omega1; //VR=13
+    fmi2Real phi1; //VR=14
+    fmi2Real fc1; //VR=15
+    fmi2Real k2; //VR=16
+    fmi2Real gamma2; //VR=17
+    fmi2Real omega2; //VR=18
+    fmi2Real phi2; //VR=19
+    fmi2Real fc2; //VR=20
+    fmi2Real k_internal; //VR=21
+    fmi2Real gamma_internal; //VR=22
+    fmi2Real f1; //VR=23
+    fmi2Real f2; //VR=24
+    fmi2Real x1_i; //VR=25
+    fmi2Real v1_i; //VR=26
+    fmi2Real x2_i; //VR=27
+    fmi2Real v2_i; //VR=28
+    fmi2Real m1; //VR=29
+    fmi2Real m1i_o; //VR=30
+    fmi2Real m2; //VR=31
+    fmi2Real m2i_o; //VR=32
+    fmi2Char    fmu[256]; //VR=0
+    fmi2Char    directional[256]; //VR=1
 
-
-    fmi2Char    fmu[17]; //VR=0
-    fmi2Char    directional[20]; //VR=1
 } modelDescription_t;
 
 
 #define HAVE_DEFAULTS
 static const modelDescription_t defaults = {
-    0.000000, //x1
-    0.000000, //x2
-    0.000000, //v1
-    0.000000, //a1
-    0.000000, //v2
-    0.000000, //a2
-    0.000000, //k1
-    0.000000, //gamma1
-    0.000000, //omega1
-    0.000000, //phi1
-    0.000000, //fc1
-    0.000000, //k2
-    0.000000, //gamma2
-    0.000000, //omega2
-    0.000000, //phi2
-    0.000000, //fc2
-    0.000000, //k_internal
-    0.000000, //gamma_internal
-    0.000000, //f1
-    0.000000, //f2
-    0.000000, //x1_i
-    0.000000, //v1_i
-    0.000000, //x2_i
-    0.000000, //v2_i
-    1.000000, //m1
-    0.000000, //m1i_o
-    1.000000, //m2
-    0.000000, //m2i_o
-
-
-    "fmu/springs2.fmu", //fmu
+    0.0, //x1
+    0.0, //x2
+    0.0, //v1
+    0.0, //a1
+    0.0, //v2
+    0.0, //a2
+    0.0, //k1
+    0.0, //gamma1
+    0.0, //omega1
+    0.0, //phi1
+    0, //fc1
+    0.0, //k2
+    0.0, //gamma2
+    0.0, //omega2
+    0.0, //phi2
+    0, //fc2
+    0.0, //k_internal
+    0.0, //gamma_internal
+    0.0, //f1
+    0.0, //f2
+    0.0, //x1_i
+    0.0, //v1_i
+    0.0, //x2_i
+    0.0, //v2_i
+    1.0, //m1
+    0.0, //m1i_o
+    1.0, //m2
+    0, //m2i_o
+    "sources/springs2.fmu", //fmu
     "", //directional
+
 };
 
 
@@ -119,14 +117,14 @@ static const modelDescription_t defaults = {
 #define VR_M1I_O 30
 #define VR_M2 31
 #define VR_M2I_O 32
-
-
 #define VR_FMU 0
 #define VR_DIRECTIONAL 1
+
 
 //the following getters and setters are static to avoid getting linking errors if this file is included in more than one place
 
 #define HAVE_GENERATED_GETTERS_SETTERS  //for letting the template know that we have our own getters and setters
+
 
 
 static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Real value[]) {

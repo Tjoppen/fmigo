@@ -3,7 +3,7 @@
     fmiVersion="2.0"
     description="[]"
     modelName="wrapper_drivetrainMFunctionOnly"
-    guid="44ee33e2-7041-4653-88c2-33985c7e7cd4"
+    guid="d77d4cec-a840-407e-bbeb-6e375ab22398"
     numberOfEventIndicators="0">
 
   <CoSimulation
@@ -293,7 +293,7 @@
         valueReference="0"
         description="Path to the ME fmu to be wrapped"
         causality="parameter">
-      <String size="32" start="fmu/drivetrainMFunctionOnly.fmu"/>
+      <String size="36" start="sources/drivetrainMFunctionOnly.fmu"/>
 </ScalarVariable>
 
     <ScalarVariable

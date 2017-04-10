@@ -4,12 +4,12 @@
 #include "FMI2/fmi2Functions.h" //for fmi2Real etc.
 #include "strlcpy.h" //for strlcpy()
 
-#define MODEL_IDENTIFIER wrapper_springs2
-#define MODEL_GUID "d078f23d-9f58-42dc-880b-7f736acd79b9"
+#define MODEL_IDENTIFIER wrapper_springs
+#define MODEL_GUID "73b02de8-a8aa-4826-ab9a-b66effbc0df3"
 #define FMI_COSIMULATION
 #define HAVE_DIRECTIONAL_DERIVATIVE 1
 #define CAN_GET_SET_FMU_STATE 1
-#define NUMBER_OF_REALS 28
+#define NUMBER_OF_REALS 9
 #define NUMBER_OF_INTEGERS 0
 #define NUMBER_OF_BOOLEANS 0
 #define NUMBER_OF_STRINGS 2
@@ -19,34 +19,15 @@
 
 #define HAVE_MODELDESCRIPTION_STRUCT
 typedef struct {
-    fmi2Real x1; //VR=1
-    fmi2Real x2; //VR=3
-    fmi2Real v1; //VR=5
-    fmi2Real a1; //VR=7
-    fmi2Real v2; //VR=8
-    fmi2Real a2; //VR=10
-    fmi2Real k1; //VR=11
-    fmi2Real gamma1; //VR=12
-    fmi2Real omega1; //VR=13
-    fmi2Real phi1; //VR=14
-    fmi2Real fc1; //VR=15
-    fmi2Real k2; //VR=16
-    fmi2Real gamma2; //VR=17
-    fmi2Real omega2; //VR=18
-    fmi2Real phi2; //VR=19
-    fmi2Real fc2; //VR=20
-    fmi2Real k_internal; //VR=21
-    fmi2Real gamma_internal; //VR=22
-    fmi2Real f1; //VR=23
-    fmi2Real f2; //VR=24
-    fmi2Real x1_i; //VR=25
-    fmi2Real v1_i; //VR=26
-    fmi2Real x2_i; //VR=27
-    fmi2Real v2_i; //VR=28
-    fmi2Real m1; //VR=29
-    fmi2Real m1i_o; //VR=30
-    fmi2Real m2; //VR=31
-    fmi2Real m2i_o; //VR=32
+    fmi2Real x_in; //VR=1
+    fmi2Real x0; //VR=2
+    fmi2Real x1; //VR=4
+    fmi2Real v0; //VR=6
+    fmi2Real v1; //VR=8
+    fmi2Real k1; //VR=10
+    fmi2Real k2; //VR=11
+    fmi2Real f_in; //VR=12
+    fmi2Real f_out; //VR=13
     fmi2Char    fmu[256]; //VR=0
     fmi2Char    directional[256]; //VR=1
 
@@ -55,68 +36,30 @@ typedef struct {
 
 #define HAVE_DEFAULTS
 static const modelDescription_t defaults = {
-    0.0, //x1
-    0.0, //x2
+    -1.0, //x_in
+    -1.0, //x0
+    1.0, //x1
+    0.0, //v0
     0.0, //v1
-    0.0, //a1
-    0.0, //v2
-    0.0, //a2
-    0.0, //k1
-    0.0, //gamma1
-    0.0, //omega1
-    0.0, //phi1
-    0, //fc1
+    1.0, //k1
     0.0, //k2
-    0.0, //gamma2
-    0.0, //omega2
-    0.0, //phi2
-    0, //fc2
-    0.0, //k_internal
-    0.0, //gamma_internal
-    0.0, //f1
-    0.0, //f2
-    0.0, //x1_i
-    0.0, //v1_i
-    0.0, //x2_i
-    0.0, //v2_i
-    1.0, //m1
-    0.0, //m1i_o
-    1.0, //m2
-    0, //m2i_o
-    "sources/springs2.fmu", //fmu
+    0.0, //f_in
+    0.0, //f_out
+    "sources/springs.fmu", //fmu
     "", //directional
 
 };
 
 
-#define VR_X1 1
-#define VR_X2 3
-#define VR_V1 5
-#define VR_A1 7
-#define VR_V2 8
-#define VR_A2 10
-#define VR_K1 11
-#define VR_GAMMA1 12
-#define VR_OMEGA1 13
-#define VR_PHI1 14
-#define VR_FC1 15
-#define VR_K2 16
-#define VR_GAMMA2 17
-#define VR_OMEGA2 18
-#define VR_PHI2 19
-#define VR_FC2 20
-#define VR_K_INTERNAL 21
-#define VR_GAMMA_INTERNAL 22
-#define VR_F1 23
-#define VR_F2 24
-#define VR_X1_I 25
-#define VR_V1_I 26
-#define VR_X2_I 27
-#define VR_V2_I 28
-#define VR_M1 29
-#define VR_M1I_O 30
-#define VR_M2 31
-#define VR_M2I_O 32
+#define VR_X_IN 1
+#define VR_X0 2
+#define VR_X1 4
+#define VR_V0 6
+#define VR_V1 8
+#define VR_K1 10
+#define VR_K2 11
+#define VR_F_IN 12
+#define VR_F_OUT 13
 #define VR_FMU 0
 #define VR_DIRECTIONAL 1
 

@@ -3,21 +3,29 @@
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 SET(ARCH "linux64" CACHE STRING "Architecture: linux64, linux32, win32...")
-SET(TARGET wrapper_springs)
-SET(WRAPPER_SPRINGS_FMU ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}.fmu)
+SET(TARGET wrapper_springs2)
+SET(WRAPPER_SPRINGS2_FMU ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}.fmu CACHE INTERNAL "" FORCE)
+
+if (CMAKE_VERSION VERSION_LESS "3.5.0")
+    set(COPY_FMU_COMMAND ${CMAKE_COMMAND} -E copy ${SPRINGS2_FMU} ${CMAKE_CURRENT_SOURCE_DIR}/fmu/)
+else ()
+    set(COPY_FMU_COMMAND cp ${SPRINGS2_FMU} ${CMAKE_CURRENT_SOURCE_DIR}/fmu/)
+endif ()
 
 ADD_CUSTOM_COMMAND(
   OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml
-  COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/../../fmu-builder/xml2wrappedxml.py
-    ${CMAKE_CURRENT_SOURCE_DIR}/fmu/modelDescription.xml >
+        COMMAND ${CMAKE_COMMAND} -E echo Packing ${SPRINGS2_FMU}
+  COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/../../fmu-builder/xml2wrappedxml.py -f
+       ${SPRINGS2_FMU} >
     ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml
-  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/fmu/modelDescription.xml )
+  COMMAND ${COPY_FMU_COMMAND}
+  DEPENDS ${SPRINGS2_FMU} )
     
 SET(SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/fmi2/fmuTemplate.h
     ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/fmi2/fmuTemplate_impl.h
     ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/fmi2/strlcpy.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/fmu/springs.fmu
+    ${CMAKE_CURRENT_SOURCE_DIR}/fmu/springs2.fmu
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/commonWrapper/gsl-interface.c
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/commonWrapper/gsl-interface.h
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/commonWrapper/modelExchange.c
@@ -29,7 +37,7 @@ SET(SRCS
 )
 ADD_CUSTOM_COMMAND(
   OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
-  COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/../../fmu-builder/modeldescription2header -x
+  COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/../../fmu-builder/modeldescription2header -w 1 -x 
     ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml >
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml )
@@ -54,12 +62,12 @@ TARGET_LINK_LIBRARIES( ${TARGET}_c ${LIBS} )
 
 
 if (CMAKE_VERSION VERSION_LESS "3.5.0")
-    set(ZIP_COMMAND  zip -r ${WRAPPER_SPRINGS_FMU} .)
+    set(ZIP_COMMAND  zip -r ${WRAPPER_SPRINGS2_FMU} .)
     set(COPY_COMMAND cp ${SRCS} ${CMAKE_CURRENT_BINARY_DIR}/fmu/sources)
 else ()
     # Would use "." for path, but that results in paths like ./modelDescription.xml in the .fmu which is probably a bad thing
     # We could maybe work around this by running a subcommand that lists all files in ${CMAKE_CURRENT_BINARY_DIR}/fmu into a variable
-    set(ZIP_COMMAND  ${CMAKE_COMMAND} -E tar cf ${WRAPPER_SPRINGS_FMU} --format=zip modelDescription.xml binaries sources)
+    set(ZIP_COMMAND  ${CMAKE_COMMAND} -E tar cf ${WRAPPER_SPRINGS2_FMU} --format=zip modelDescription.xml binaries sources)
     set(COPY_COMMAND ${CMAKE_COMMAND} -E copy ${SRCS} ${CMAKE_CURRENT_BINARY_DIR}/fmu/sources)
 endif ()
 

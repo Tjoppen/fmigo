@@ -5,7 +5,7 @@
 #include "strlcpy.h" //for strlcpy()
 
 #define MODEL_IDENTIFIER wrapper_bouncingBall
-#define MODEL_GUID "a4940cc1-349c-4bd2-ab04-3929c3c8bc2f"
+#define MODEL_GUID "5f60dc31-c336-4236-a2df-c209ca6ca9b5"
 #define FMI_COSIMULATION
 #define HAVE_DIRECTIONAL_DERIVATIVE 1
 #define CAN_GET_SET_FMU_STATE 1

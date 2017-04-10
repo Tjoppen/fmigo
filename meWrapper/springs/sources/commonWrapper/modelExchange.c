@@ -78,6 +78,17 @@ static int fmu_function(double t, const double x[], double dxdt[], void* params)
     return GSL_SUCCESS;
 }
 
+void allocateBackup(Backup *backup, fmu_parameters *p){
+    backup->ei          = (fmi2_real_t*)calloc(p->ni, sizeof(fmi2_real_t));
+    backup->ei_b        = (fmi2_real_t*)calloc(p->ni, sizeof(fmi2_real_t));
+    backup->x           = (double*)calloc(p->nx, sizeof(double));
+    backup->dydt        = (double*)calloc(p->nx, sizeof(double));
+    if(!backup->ei || !backup->ei_b || !backup->x || !backup->dydt){
+        //freeFMUModel(m);
+        perror("WeakMaster:ModelExchange:allocateBackup ERROR -  could not allocate memory");
+        exit(1);
+    }
+}
 /** allocate Memory
  *  Allocates memory needed by the fmu_model
  *
@@ -88,7 +99,7 @@ void allocateMemory(fmu_model *m){
     //fprintf(stderr,"init_fmu_model %p \n",p->fmi2Instance);
     m->model = (cgsl_model*)calloc(1,sizeof(cgsl_model));
     fmu_parameters* p = (fmu_parameters*)calloc(1,sizeof(fmu_parameters));
-    m->model->parameters = p;
+    m->model->parameters = (void*)p;
     m->model->n_variables = fmi2_import_get_number_of_continuous_states(MEFMU);;
     if(m->model->n_variables == 0){
         fprintf(stderr,"ModelExchangeStepper nothing to integrate\n");
@@ -97,14 +108,12 @@ void allocateMemory(fmu_model *m){
 
     p->nx                = m->model->n_variables;
     p->ni                = fmi2_import_get_number_of_event_indicators(MEFMU);
-    m_backup.ei          = (fmi2_real_t*)calloc(p->ni, sizeof(fmi2_real_t));
-    m_backup.ei_b        = (fmi2_real_t*)calloc(p->ni, sizeof(fmi2_real_t));
     m->model->x          = (double*)calloc(p->nx, sizeof(double));
     m->model->x_backup   = (double*)calloc(p->nx, sizeof(double));
-    m_backup.x           = (double*)calloc(p->nx, sizeof(double));
-    m_backup.dydt        = (double*)calloc(p->nx, sizeof(double));
+    allocateBackup(getBackup(), p);
+    allocateBackup(getTempBackup(),p);
 
-    if(!m->model->x || !m->model->x_backup || !m_backup.dydt || !m_backup.x){
+    if(!m->model->x || !m->model->x_backup){
         //freeFMUModel(m);
         perror("WeakMaster:ModelExchange:allocateMemory ERROR -  could not allocate memory");
         exit(1);

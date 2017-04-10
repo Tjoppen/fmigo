@@ -1,18 +1,33 @@
 import sys
-from scipy import integrate
+from scipy import integrate,interpolate
 from math import atan, sqrt, pi
 from numpy import array
 import csv
 import subprocess
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
+from pylab import *
 
-simulate=True
+def interp2( t, x, t1):
+    nr = np.shape( x )[  0 ]    # number of rows
+    if nr < np.shape( t1 )[0]:
+      return x
+    nc = 1
+    if np.shape( np.shape( x ) )[0] > 1:
+      nc = np.shape( x )[  1 ]
+    if (nc > 1):
+      y = np.zeros( ( np.shape( t1 )[0], nc ) )
+      for i in range(0, nc):
+        y[:, i] = interpolate.interp1d(t, x[:,i])(t1)
+      return  y
+    else:
+      return interpolate.interp1d(t, x)(t1)
 
 #compute coupling force as it applies to coupled module
 def f_coupling(y, w_in, k1, d1):
   dphi1, w1, dphi2, w2 = y[0:4]
   return k1*dphi1 + d1*(w1 - w_in)
 
+simulate = True
 
 # compute derivatives.  The order of the variables is:
 # dphi1
@@ -22,16 +37,21 @@ def f_coupling(y, w_in, k1, d1):
 # z1_dot
 # z2_dot
 def fun(t, y, w_in, k1, d1, k2, d2, J1, J2):
-  dphi1, w1, dphi2, w2 = y[0:4]
+  dphi1, w1, dphi2, w2, phi1, phi2 = y[0:6]
+  dphi = phi1- phi2
   return [
     w1 - w_in,
-    (- k2*dphi2 - d2*(w1 - w2) - f_coupling(y, w_in, k1, d1))/J1,
+    (- k2*dphi - d2*(w1 - w2) - f_coupling(y, w_in, k1, d1))/J1,
     w1 - w2,
-    (  k2*dphi2 + d2*(w1 - w2))/J2,
+    (  k2*dphi + d2*(w1 - w2))/J2,
+    w1,
+    w2,
     dphi1,
     w1,
     dphi2,
     w2,
+    phi1,
+    phi2
   ]
 
 ##
@@ -62,11 +82,16 @@ def run_simulations(total_time, comm_step, filter_length,  frequency=1.0,
                     v_in=1.0,
                     integrate_dx=True):
   nfmus = 1
-  cmdline = ['mpiexec', '-np', str(nfmus+1), 'fmigo-mpi', '-t',
+  #cmdline = ['LD_PRELOAD=/usr/local/lib/valgrind/libmpiwrap-amd64-linux.so', '&&']
+  cmdline = ['mpiexec', '-np', str(nfmus+1),
+             '/usr/local/bin/valgrind',
+             '--tool=callgrind',
+             'fmigo-mpi', '-t',
              str(total_time), '-d', str(comm_step)]
+  cmdline += ['-p', '0,octave_output,false']
   cmdline += ['-p', '0,filter_length,%i' % filter_length ]
-  #cmdline += ['-p', '0,v_in_e,%f' % v_in ]
-  cmdline += ['-p', '0,v0_e,1.0' ]
+  cmdline += ['-p', '0,v_in_e,%f' % v_in ]
+  cmdline += ['-p', '0,v0_e,0.0' ]
   cmdline += ['-p', '0,gamma_e,0.0' ]
   cmdline += ['-p', '0,gamma_s,0.0' ]
   cmdline += ['-p', '0,k_ec,%f' % k_coupling ]
@@ -79,33 +104,44 @@ def run_simulations(total_time, comm_step, filter_length,  frequency=1.0,
   cmdline += ['-p', '0,is_gearbox,true' ]
   cmdline += ['-p', '0,integrate_dx_e,true'  ]
   cmdline += ['-p', '0,integrate_dx_s,true' ]
-  cmdline += ['../../gsl2/clutch2/clutch2.fmu' ]
+  cmdline += ['../../gsl2/clutch3/clutch3.fmu' ]
   
   filename = 'out-%i.csv' % filter_length 
 
   print(' '.join(cmdline) + " > " + filename, file=sys.stderr)
-  return  subprocess.call(cmdline, stdout=open(filename, 'w')), cmdline
-
-
-
+  return  subprocess.call(cmdline,
+                          stdout=open('/dev/null', 'w'),
+                          stderr=open('/dev/null', 'w')), cmdline
 
 # forcing angular velocity
+
 w_in = 1.0
-# Inertia tensor
+
+# Total inertia of the module
+
 J = 1.0
+
 # internal frequency
-f = 1
+
+frequency = 5
+
 # internal coupling spring derived from frequency.  Note that there are two
 # modes of motion for the coupled elements: DC and oscillatory.  Simple
 # calculations show that if we want to keep total J and assign J/2 to each
 # element, the spring and damping constants have to be as below so that the
 # oscillations have the desired frequency.
-c_internal = (2.0*pi*f)**2*J/4
+
+c_internal = (2.0*pi*frequency)**2*J/4
+
 # internal damping constant derived from dimensionless damping
-zeta_internal = 0.7
-d_internal =  zeta_internal * J * pi * f
+
+zeta_internal = 0
+d_internal =  zeta_internal * J * pi * frequency
+
 # Coupling spring
-c_coupling = 1e9
+
+c_coupling = 1e10
+
 # damping: as above.  Note that the mass is explicitly set to one here
 # meaning that the true non dimensional damping will be different
 # The correct mass here should be
@@ -116,53 +152,106 @@ c_coupling = 1e9
 zeta_coupling = 0.7
 d_coupling = 2.0 * zeta_coupling * sqrt(c_coupling)
 
-r = integrate.ode(fun).set_initial_value([0.0]*8, 0)
+# simulation configuration
+
+# number of samples per period, i.e., communication step
+
+samples=10.0                    
+filter_length=2
+
+# communication step
+
+dt = 1/ samples / frequency
+
+# number of slow periods to integrate
+
+NP = 100                          
+
+#Now run the FMIGo! simulation.  
+if simulate:
+  ret, cmd = run_simulations(NP/frequency, 1/samples/frequency,
+                             filter_length, frequency, zeta_internal)
+
+ts = []
+data = []
+couplings = []
+# Data layout
+# phi1 omega1 alpha1 fc1 phi2 omega2 alpha2 fc2
+# 0     1      2      3   4    5      6      7
+# load data from fmigo simulation
+for row in csv.reader(open('out-2.csv')):
+  ts.append(float(row[0]))
+  data.append([
+    float(row[c]) for c in range( 1, len(row) )
+  ])
+  
+
+# full simulation data from the FMU.
+# Data layout:
+# 
+#phi1 omega1 phi1 omega1 (dphi1) (dphi2) zphi1 zomega1 zphi1 zomega1 (zdphi1) (zdphi2)
+#  0     1    2     3      4        5      6      7      8      9       10       11
+
+alldata = []
+tt = []
+for row in csv.reader(open('clutch3.m'), delimiter=' '):  
+  tt.append(float(row[0]))      # time
+  alldata.append([
+    float(row[c]) for c in range( 1, len(row) -1 ) 
+  ])
+
+# convert to array to make sure we have a sliceable object
+
+alldata = array(alldata)
+data    = array(data)
+ts      = array(ts)
+tt      = array(tt)
+
+# variables themselves
+
+x = alldata[:, arange(0,6)]
+
+# filtered values
+
+z       = 0.5 * ( alldata[0:-1, arange(6,12)]  
+                  +alldata[1:, arange(6,12)]  ) / dt
+
+z = vstack(( 0 * z[0,:], z))
+# interpolate to sample points
+
+xinterp = interp2(tt, x,  ts)
+zinterp = interp2(tt, z,  ts)
+
+## now work with standard time integration.
+## start everything at rest
+
+r = integrate.ode(fun).set_initial_value([0.0]*12, 0)
 r.set_f_params(w_in, c_coupling, d_coupling, c_internal, d_internal, J/2, J/2)
 
 # number of samples per *internal* period.  If the filter works, the output
 # should be nice that that time scale, even though there are transients
 # inside.  Normally, we should sample at the highest frequency. 
 
-samples=100.0
-filter_length=2
-
-#Now run the FMIGo! simulation.  Integrate over two full periods of the
-#slow oscillator
-ret, cmd = run_simulations(2/f, 1/samples/f, filter_length, f, 0, 0, 0, 0, False)
-
-ts = []
-data = []
-alldata = []
-
-# load data from fmigo simulation
-for row in csv.reader(open('out-2.csv')):
-  ts.append(float(row[0]))
-  data.append([
-    float(row[c]) for c in [0,2,6,4]
-  ])
-  alldata.append( row[1:-1])
-
-data    = array(data)
-alldata = array(alldata)
-
-ys   = [array(list(r.y[0:4]) + [f_coupling(r.y[0:4], w_in, c_coupling, d_coupling)])]
-zs   = [array(list(r.y[4:8]) + [f_coupling(r.y[4:8], w_in, c_coupling, d_coupling)])]
-zs2  = [zs[0]]
-
+## Now, integrate over comm step at a time
 tprev = 0
 # Use same times as fmigo
+
+ys   = [array(list(r.y[0:6]) + [f_coupling(r.y[0:4], w_in, c_coupling, d_coupling)])]
+zs   = [array(list(r.y[6:12]) + [0*f_coupling(r.y[6:10], w_in, c_coupling, d_coupling)])]
+zs2  = [zs[0]]
+r.set_integrator('lsoda')
 for t in ts[1:]:
-  # Reset z, integrate
-  r.set_initial_value([r.y[0], r.y[1], r.y[2], r.y[3]] + [0.0]*4, tprev)
+  # Reset z, and dphi, integrate
+  r.set_initial_value([0.0*r.y[0], r.y[1], 0.0*r.y[2], r.y[3], r.y[4], r.y[5]] + [0.0]*6, tprev)
   r.integrate(t)
 
-  zz = r.y[4:8]/(t-tprev)
+  zz = r.y[6:12]/(t-tprev)
 
   fy = f_coupling(r.y, w_in, c_coupling, d_coupling)
   fz = f_coupling(zz,  w_in, c_coupling, d_coupling)
 
   # Augment results with coupling force
-  ys.append(array(list(r.y[0:4]) + [fy]))
+  ys.append(array(list(r.y[0:6]) + [fy]))
   zs.append(array(list(zz)       + [fz]))
   zs2.append((zs[-1] + zs[-1 if len(zs) == 1 else -2]) / 2)
   tprev = t
@@ -172,33 +261,11 @@ ys = array(ys)
 zs = array(zs)
 zs2 = array(zs2)
 
-#plot(ts, ys, ts, zs, ts, zs2)
 
-#args = ['mpiexec', 'fmigo-mpi', '-np', '2', 
-#s = subprocess.check_output(args)
-plt.subplot(221)
-plt.title('Velocities')
-plt.plot(ts, data[:,[1,2]])
-#plt.plot(ts, ys[:,[1,3]])
-#plt.plot(ts, zs[:,[1,3]])
-plt.plot(ts, zs2[:,[1,3]])
 
-plt.subplot(222)
-plt.title('Velocity diffs')
-#plt.semilogy(ts, abs(data[:,[1,2]] - ys[:,[1,3]]))
-plt.semilogy(ts, abs(data[:,[1,2]] - zs2[:,[1,3]]))
+figure(1)
+clf()
+title('Velocities')
+plot(ts, data[:,[1,2]], tt, alldata[:, 3], drawstyle='steps')
 
-plt.subplot(223)
-plt.title('Coupling torques')
-plt.plot(ts, data[:,3])
-#plt.plot(ts, ys[:,4])
-plt.plot(ts, zs2[:,4])
-plt.legend(['reference','fmu'])
-
-plt.subplot(224)
-plt.title('Coupling torque diff')
-#plt.semilogy(ts, abs(data[:,3] - ys[:,4]))
-plt.semilogy(ts, abs(data[:,3] - zs2[:,4]))
-
-plt.show()
-
+show()

@@ -28,21 +28,21 @@ static const double clutch_torque[] = { -1000, -30, 0, 50, 3500 };
 static const size_t N_segments      = sizeof( clutch_torque ) / sizeof( clutch_torque[ 0 ] );
 
 static const double gear_ratios[] = {
-   0,
-   13.0,
-   10.0,
-   9.0,
-   7.0,
-   5.0,
-   4.6,
-   3.7,
-   3.0,
-   2.4,
-   1.9,
-   1.5,
-   1.2,
-   1.0,
-   0.8
+  0,
+  13.0,
+  10.0,
+  9.0,
+  7.0,
+  5.0,
+  4.6,
+  3.7,
+  3.0,
+  2.4,
+  1.9,
+  1.5,
+  1.2,
+  1.0,
+  0.8
 };
 
 static double gear2ratio(state_t *s) {
@@ -298,12 +298,14 @@ static void get_initial_states(state_t *s, double *initials) {
   initials[1] = s->md.v0_e;
   initials[2] = s->md.x0_s;
   initials[3] = s->md.v0_s;
+
   if (N >= 5) {
     initials[4] = s->md.integrate_dx_e ? s->md.dx0_e : s->md.dx0_s;
   }
   if (N >= 6) {
     initials[5] = s->md.dx0_s;
   }
+
   //fprintf(stderr, "#Initial states: %f %f %f %f\n", initials[0], initials[1], initials[2], initials[3]);
 }
 
@@ -315,14 +317,28 @@ static int sync_out(int n, const double outputs[], void * params) {
   //compute accelerations. we need them for Server::computeNumericalJacobian()
   clutch(0, outputs, dxdt, params);
 
-  s->md.x_e = outputs[ 0 ];
-  s->md.v_e = outputs[ 1 ];
-  s->md.a_e = dxdt[ 1 ];
-  s->md.x_s = outputs[ 2 ];
-  s->md.v_s = outputs[ 3 ];
-  s->md.a_s = dxdt[ 3 ];
+  if (
+    s->simulation.sim.t == 0.0){
+    fprintf(stderr, "coucou\n");
+    s->md.x_e = 0;
+    s->md.v_e = 0;
+    s->md.a_e = 0;
+    s->md.x_s = 0;
+    s->md.v_s = 0;
+    s->md.a_s = 0;
+    s->md.force_e=0;
+    s->md.force_s=0;
+  } else { 
+    s->md.x_e = outputs[ 0 ];
+    s->md.v_e = outputs[ 1 ];
+    s->md.a_e = dxdt[ 1 ];
+    s->md.x_s = outputs[ 2 ];
+    s->md.v_s = outputs[ 3 ];
+    s->md.a_s = dxdt[ 3 ];
+    compute_forces(s, outputs, &s->md.force_e, &s->md.force_s, NULL);
+  }
 
-  compute_forces(s, outputs, &s->md.force_e, &s->md.force_s, NULL);
+  fprintf(stderr, "Time %g  force %g\n", s->simulation.sim.t, s->md.force_e);
 
   return GSL_SUCCESS;
 }
@@ -340,7 +356,7 @@ static void clutch_init(state_t *s) {
       sync_out,
       s
       ),
-    rkf45, 1e-5, 0, 0, s->md.octave_output, s->md.octave_output ? fopen("clutch2.m", "w") : NULL
+    rkf45, 1e-5, 0, 0, s->md.octave_output, s->md.octave_output ? fopen("clutch3.m", "w") : NULL
     );
 
   s->simulation.last_gear = s->md.gear;
@@ -350,33 +366,51 @@ static void clutch_init(state_t *s) {
 static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
   if (vr == VR_A_E) {
     if (wrt == VR_FORCE_IN_E || wrt == VR_FORCE_IN_EX) {
-        *partial = 1.0/s->md.mass_e;
-        return fmi2OK;
+      *partial = 1.0/s->md.mass_e;
+      return fmi2OK;
     }
     if (wrt == VR_FORCE_IN_S || wrt == VR_FORCE_IN_SX) {
-        *partial = 0;
-        return fmi2OK;
+      *partial = 0;
+      return fmi2OK;
     }
   }
   if (vr == VR_A_S) {
     if (wrt == VR_FORCE_IN_E || wrt == VR_FORCE_IN_EX) {
-        *partial = 0;
-        return fmi2OK;
+      *partial = 0;
+      return fmi2OK;
     }
     if (wrt == VR_FORCE_IN_S || wrt == VR_FORCE_IN_SX) {
-        *partial = 1.0/s->md.mass_s;
-        return fmi2OK;
+      *partial = 1.0/s->md.mass_s;
+      return fmi2OK;
     }
   }
   return fmi2Error;
 }
 
+
+static int pre_step (double t, double dt, const double y[], void * params){
+
+
+}
+
 #define NEW_DOSTEP //to get noSetFMUStatePriorToCurrentPoint
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
+
+  static int pass = 0;
   if (s->md.is_gearbox && s->md.gear != s->simulation.last_gear) {
     /** gear changed - compute impact that keeps things sane */
     double ratio = gear2ratio(s);
     s->simulation.delta_phi = ratio*s->simulation.sim.model->x[ 2 ] - s->simulation.sim.model->x[ 0 ];
+  }
+  /* reset angle differences */
+  /** angle difference */
+  int N = s->simulation.sim.model->n_variables;
+
+  if (N >= 5) {
+    s->simulation.sim.model->x[4] = 0.0;
+  }
+  if (N >= 6) {
+    s->simulation.sim.model->x[5] = 0.0;
   }
 
   //don't dump tentative steps
@@ -404,7 +438,7 @@ int main(){
   s.md.mass_e = 1.0;
   s.md.mass_s = 100.0;
 //  s.md.force_in_e = 20;
- // s.md.force_in_s = -20;
+  // s.md.force_in_s = -20;
 
   clutch_init(&s);
   s.simulation.sim.file = fopen( "s.m", "w+" );

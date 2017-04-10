@@ -9,11 +9,11 @@
                  one is estimated by integrating the velocity difference
                  internally."
     modelName="clutch2"
-    guid="{6985712a-2b8e-4ebb-9b6c-05d89b0ec1c8}"
+    guid="{2e25fc3c-fa3d-4ad0-8d4b-b1895541fc9a}"
     numberOfEventIndicators="0">
 
   <CoSimulation
-      modelIdentifier="clutch2"
+      modelIdentifier="clutch3"
       canHandleVariableCommunicationStepSize="true"
       canGetAndSetFMUstate="true"
       providesDirectionalDerivative="true"/>

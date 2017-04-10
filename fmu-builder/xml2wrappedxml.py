@@ -3,34 +3,51 @@ from __future__ import print_function
 import sys
 import uuid
 import xml.etree.ElementTree as e
-# import os
-# from os import listdir
-# from os.path import isfile, join
-# import zipfile
+import zipfile
+import argparse
 
-# sources= 'sources/'
-# cwd = os.getcwd() + '/' +  sources
-# print('cwd %s'%cwd)
-# onlyfiles = [sources + f for f in listdir(cwd) if isfile(join(cwd, f))]
-
-# for files in onlyfiles:
-#     if '.fmu' in files:
-#         fmufile = files
-# zipfile.namelist(fmuFile)
+# Parse command line arguments
+parser = argparse.ArgumentParser(
+    description='Generate CMakeLists.txt to build an FMU',
+    epilog=""" """
+    )
+parser.add_argument('-f','--fmu',
+                    type=str,
+                    help='Path to FMU',
+                    default='')
+parser.add_argument('-x','--xml',
+                    type=str,
+                    help='Path to xml',
+                    default='')
+args = parser.parse_args()
 
 def warning(*objs):
     print("WARNING: ", *objs, file=sys.stderr)
 
 def error(*objs):
     print("ERROR: ", *objs, file=sys.stderr)
-
-if len(sys.argv) < 2:
-    print('USAGE: '+sys.argv[0] +' fmu/modelDescription-filename > modelDescription-filename', file=sys.stderr)
-    print('Example: '+sys.argv[0]+' fmu/modelDescription.xml > modelDescription.xml', file=sys.stderr)
     exit(1)
 
+if len(args.fmu):
+    fmufile = args.fmu
+    warning(fmufile)
+    zip=zipfile.ZipFile(fmufile)
+    f=zip.open('modelDescription.xml')
+    import tempfile
+    xmlfile = tempfile.NamedTemporaryFile()
+    xmlfile.write(f.read())
+    xmlfile.read()
+    tree = e.parse(xmlfile.name)
+    f.close()
+    xmlfile.close()
+elif len(args.xml):
+    xmlfile = args.xml
+    tree = e.parse(xmlfile)
+else:
+    warning(sys.args)
+    error('%s expect eather: -f myfmu.fmu or -x myxml.xml' %(sys.args[0]))
+
 # Parse xml file
-tree = e.parse(sys.argv[1])
 root = tree.getroot()
 
 # Get FMU version

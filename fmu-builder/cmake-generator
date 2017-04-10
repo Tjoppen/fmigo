@@ -71,6 +71,8 @@ elif fmiVersion == "2.0":
         modelIdentifier = root.find('CoSimulation').get('modelIdentifier')
     elif args.fmuType == "me":
         modelIdentifier = root.find('ModelExchange').get('modelIdentifier')
+print('modelIdentifier')
+print(modelIdentifier)
 
 # Get system info
 system = platform.system()
@@ -126,16 +128,43 @@ with open(path,'w') as f:
     files = "SET(SRCS\n    " + "\n    ".join(source_files) + "\n)"
     md2hdr = os.path.relpath(args.md2hdr).replace('\\','/')
     if iswrapper:
+        md2hdr += " -w 1 -x "
         srcxml2xml = os.path.relpath(args.srcxml2xml).replace('\\','/')
+        print('before pop')
+        dependentFMU = modelIdentifier.split('_')
+        print(dependentFMU)
+        dependentFMU.pop(0)
+        print('after pop')
+        print(dependentFMU)
+        dependentFMU = '_'.join(dependentFMU).upper()
+        print('upper')
+        print(dependentFMU)
+
         xml2xml = """
+if (CMAKE_VERSION VERSION_LESS "3.5.0")
+    set(COPY_FMU_COMMAND ${CMAKE_COMMAND} -E copy ${%s_FMU} ${CMAKE_CURRENT_SOURCE_DIR}/fmu/)
+else ()
+    set(COPY_FMU_COMMAND cp ${%s_FMU} ${CMAKE_CURRENT_SOURCE_DIR}/fmu/)
+endif ()
+
 ADD_CUSTOM_COMMAND(
   OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml
-  COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/%s
-    ${CMAKE_CURRENT_SOURCE_DIR}/fmu/modelDescription.xml >
+        COMMAND ${CMAKE_COMMAND} -E echo Packing ${%s_FMU}
+  COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/%s -f
+       ${%s_FMU} >
     ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml
-  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/fmu/modelDescription.xml )
-    """ % srcxml2xml
+  COMMAND ${COPY_FMU_COMMAND}
+  DEPENDS ${%s_FMU} )
+    """ % (
+            dependentFMU,
+            dependentFMU,
+            dependentFMU,
+            srcxml2xml,
+            dependentFMU,
+            dependentFMU,
+    )
     else:
+        md2hdr += " -x "
         xml2xml = ""
 
     # libm needs special handling since it doesn't exist/isn't needed on Windows
@@ -155,12 +184,12 @@ TARGET_LINK_LIBRARIES( ${TARGET}_c ${LIBS} )
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 SET(ARCH "linux64" CACHE STRING "Architecture: linux64, linux32, win32...")
 SET(TARGET %s)
-SET(%s_FMU ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}.fmu)
+SET(%s_FMU ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}.fmu CACHE INTERNAL "" FORCE)
 %s
 %s
 ADD_CUSTOM_COMMAND(
   OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
-  COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/%s -x
+  COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/%s
     ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml >
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml )

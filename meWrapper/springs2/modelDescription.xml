@@ -3,7 +3,7 @@
     fmiVersion="2.0"
     description="Two masses with a spring"
     modelName="wrapper_springs2"
-    guid="875389c2-97d5-4c80-af19-0502ad4ff001"
+    guid="ff9f0d2d-e0eb-41ab-8ac0-d839172003a7"
     numberOfEventIndicators="0">
 
   <CoSimulation

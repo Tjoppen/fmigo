@@ -5,7 +5,7 @@
 #include "strlcpy.h" //for strlcpy()
 
 #define MODEL_IDENTIFIER wrapper_springs2
-#define MODEL_GUID "875389c2-97d5-4c80-af19-0502ad4ff001"
+#define MODEL_GUID "ff9f0d2d-e0eb-41ab-8ac0-d839172003a7"
 #define FMI_COSIMULATION
 #define HAVE_DIRECTIONAL_DERIVATIVE 1
 #define CAN_GET_SET_FMU_STATE 1

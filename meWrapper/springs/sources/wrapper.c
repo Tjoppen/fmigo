@@ -29,7 +29,7 @@
 /* }Wrapper; */
 fmi2Status getPartial(state_t *s, fmi2ValueReference x, fmi2ValueReference unKnown_ref,fmi2Real *partial){
     fmi2Status status;
-    fprintf(stderr,"get_partial\n");
+    //fprintf(stderr,"get_partial\n");
     return status;
 }
 
@@ -47,7 +47,7 @@ fmi2Status SIMULATION_SET ( SIMULATION_TYPE *sim) {
 void SIMULATION_WRAPPER(state_t *s);
 #define NEW_DOSTEP //to get noSetFMUStatePriorToCurrentPoint
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
-fprintf(stderr,"do step run iteration\n");
+    //fprintf(stderr,"do step run iteration\n");
  runIteration(currentCommunicationPoint,communicationStepSize, getBackup());
 }
 

@@ -204,7 +204,6 @@ void storeStates(cgsl_simulation *sim, Backup *backup){
     fmu_parameters* p = get_p((fmu_model*)&sim->model);
 
     fmi2_import_get_continuous_states(MEFMU,backup->x,p->nx);
-    fprintf(stderr,"store states x %f %f \n",backup->x[0], backup->x[1]);
     fmi2_import_get_event_indicators(MEFMU,backup->ei_b,p->ni);
     memcpy(sim->model->x,backup->x,p->nx * sizeof(backup->x[0]));
 
@@ -413,5 +412,4 @@ void runIteration(double t, double dt, Backup *backup) {
             newDiscreteStates(backup);
         storeStates(&m_sim, backup);
     }
-    fprintf(stderr,"runIteration: time %f\n",m_sim.t);
 }

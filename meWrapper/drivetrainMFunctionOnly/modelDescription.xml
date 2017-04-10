@@ -3,7 +3,7 @@
     fmiVersion="2.0"
     description="[]"
     modelName="wrapper_drivetrainMFunctionOnly"
-    guid="d77d4cec-a840-407e-bbeb-6e375ab22398"
+    guid="5e7484fe-eaab-47c9-b8df-306adefc5ec2"
     numberOfEventIndicators="0">
 
   <CoSimulation

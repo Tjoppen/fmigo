@@ -26,8 +26,6 @@ ns = {
     'ssm': 'http://www.pmsf.net/xsd/SystemStructureParameterMappingDraft',
     'fmigo':'http://umit.math.umu.se/FmiGo.xsd',
 }
-d = tempfile.mkdtemp(prefix='ssp')
-print(d)
 
 # FIXME: these should not be global if the intent is to use this file as a module
 fmus = []
@@ -374,6 +372,10 @@ class FMU:
 
     def get_name(self):
         return self.system.get_name() + '.' + self.name
+
+    # Returns path relative to given path (d)
+    def relpath(self, d):
+        return os.path.relpath(self.path, d)
 
     def connect(self, connectionmultimap):
         '''
@@ -742,6 +744,7 @@ def parse_ssp(ssp_path, cleanup_zip = True):
         d = os.path.dirname(ssp_path)
         unzipped_ssp = False
     else:
+        d = tempfile.mkdtemp(prefix='ssp')
         unzip_ssp(d, ssp_path)
         unzipped_ssp = True
 
@@ -938,7 +941,7 @@ if __name__ == '__main__':
 
         # Everything looks OK; start servers
         for i in range(len(fmus)):
-            subprocess.Popen(['fmigo-server','-p', str(parse.ports[i]), fmus[i].path])
+            subprocess.Popen(['fmigo-server','-p', str(parse.ports[i]), fmus[i].relpath(d)])
 
         #read connections and parameters from stdin, since they can be quite many
         #stdin because we want to avoid leaving useless files on the filesystem
@@ -948,21 +951,26 @@ if __name__ == '__main__':
         #read connections and parameters from stdin, since they can be quite many
         #stdin because we want to avoid leaving useless files on the filesystem
         args   = ['mpiexec','-np',str(len(fmus)+1),'fmigo-mpi']
-        append = [fmu.path for fmu in fmus]
+        append = [fmu.relpath(d) for fmu in fmus]
 
     args += ['-t',str(duration),'-d',str(timestep)] + parse.args + ['-a','-']
     args += append
 
     pipeinput = " ".join(flatconns+flatparams+kinematicconns+csvs)
-    print(" ".join(args) + (' <<< "%s"' % pipeinput))
+    print('(cd %s && %s <<< "%s")' % (d, " ".join(args), pipeinput))
 
     if parse.dry_run:
         ret = 0
     else:
+        cwd = os.getcwd()
+        os.chdir(d)
+
         #pipe arguments to master, leave stdout and stderr alone
         p = subprocess.Popen(args, stdin=subprocess.PIPE)
         p.communicate(input=pipeinput.encode('utf-8'))
         ret = p.returncode  #ret can be None
+
+        os.chdir(cwd)
 
     if ret == 0:
         if unzipped_ssp:

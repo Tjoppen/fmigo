@@ -5,6 +5,7 @@ GENERATOR="`pwd`/fmu-builder/cmake-generator -t `pwd`/templates/fmi2/ -i `pwd`/.
 
 WRAPPERSOURCES="`pwd`/fmu-builder/sources"
 GENERATORXML="`pwd`/fmu-builder/xml2wrappedxml.py"
+GENERATORSMALL="`pwd`/fmu-builder/cmake-generator"
 
 GSLFMUS="
     gsl2/clutch2
@@ -17,7 +18,6 @@ GSLFMUS="
     gsl2/mass_force_fe
     gsl2/trailer
     gsl2/engine2
-    gsl2/scania-driveline
 "
 MEFMUS="
     me/springs
@@ -43,10 +43,10 @@ CSFMUS="
 "
 
 WRAPPERS="
-    meWrapper/bouncingBall
-    meWrapper/spring
-    meWrapper/spring2
-    meWrapper/scania-driveline
+    bouncingBall
+    springs
+    springs2
+    drivetrainMFunctionOnly
 "
 
 cat <<END>CMakeLists.txt
@@ -109,15 +109,20 @@ do
         python ${GENERATOR}
     popd
 done
+echo "add_subdirectory(gsl2/drivetrainMFunctionOnly)" >> CMakeLists.txt
 
 # Wrappers
 for d in $WRAPPERS
 do
-    echo "add_subdirectory($d)" >> CMakeLists.txt
+    echo "add_subdirectory(meWrapper/$d)" >> CMakeLists.txt
     GSL="-l cgsl,m,fmilib,fmilib_shared -c"
-    pushd $d
+    pushd meWrapper/$d
+        rm sources -rf
         cp ${WRAPPERSOURCES} . -r
-        python ${GENERATORXML} fmu/modelDescription.xml > modelDescription.xml
+        #python ${GENERATORXML} -x fmu/modelDescription.xml > modelDescription.xml
+        echo fmu/${d}.fmu
+        python ${GENERATORXML} -f fmu/${d}.fmu > modelDescription.xml
+#        cat modelDescription.xml
         python ${MD2HDR} -x modelDescription.xml -w 1 > sources/modelDescription.h
         python ${GENERATOR} -x ${GENERATORXML} ${GSL}
     popd

@@ -10,8 +10,6 @@ RUN apt-get update
 #                   do this for us yet
 #           psmisc: for killall
 #
-RUN apt-get update
-
 RUN apt-get install --yes \
         build-essential cmake ninja-build git python bc psmisc \
         protobuf-compiler protobuf-c-compiler libprotobuf-dev \

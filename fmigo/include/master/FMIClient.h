@@ -40,6 +40,7 @@ namespace fmitcp_master {
         fmi2_import_t* m_fmi2Instance;
         fmi2_import_variable_list_t* m_fmi2Outputs;
         variable_map m_variables;
+        vector<variable> m_outputs;
         void setVariables();
 
     public:
@@ -60,7 +61,7 @@ namespace fmitcp_master {
 
         std::string getModelName() const;
         const variable_map& getVariables() const;
-        std::vector<variable> getOutputs() const;   //outputs in the same order as specified in the modelDescription
+        const std::vector<variable>& getOutputs() const;   //outputs in the same order as specified in the modelDescription
 
 #ifdef USE_MPI
         FMIClient(int world_rank, int id);

@@ -46,6 +46,9 @@ WRAPPERS="
     bouncingBall
     springs
     springs2
+"
+
+ONLYFMU="
     drivetrainMFunctionOnly
 "
 
@@ -116,10 +119,25 @@ for d in $WRAPPERS
 do
     echo "add_subdirectory(meWrapper/$d)" >> CMakeLists.txt
     GSL="-l cgsl,m,fmilib,fmilib_shared -c"
+    cp me/${d}/modelDescription.xml meWrapper/${d}/fmu/modelDescription.xml
     pushd meWrapper/$d
         rm sources -rf
         cp ${WRAPPERSOURCES} . -r
-        #python ${GENERATORXML} -x fmu/modelDescription.xml > modelDescription.xml
+        echo fmu/${d}.fmu
+        python ${GENERATORXML} -x fmu/modelDescription.xml > modelDescription.xml
+#        cat modelDescription.xml
+        python ${MD2HDR} -x modelDescription.xml -w 1 > sources/modelDescription.h
+        python ${GENERATOR} -x ${GENERATORXML} ${GSL}
+    popd
+done
+
+# Wrappers
+for d in $ONLYFMU
+do
+    echo "add_subdirectory(meWrapper/$d)" >> CMakeLists.txt
+    GSL="-l cgsl,m,fmilib,fmilib_shared -c"
+    cp gsl2/${d}/${d}.fmu meWrapper/${d}/fmu/${d}.fmu
+    pushd meWrapper/$d
         echo fmu/${d}.fmu
         python ${GENERATORXML} -f fmu/${d}.fmu > modelDescription.xml
 #        cat modelDescription.xml

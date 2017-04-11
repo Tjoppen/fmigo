@@ -6,6 +6,12 @@
 #include <direct.h>
 #endif
 #include <fmilib.h>
+
+#include <unistd.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
 //#include "modelDescription_me.h"
 #include "commonWrapper/modelExchange.h"
 #include "modelDescription.h"
@@ -14,22 +20,99 @@
 #include "hypotmath.h"
 
 #define SIMULATION_WRAPPER wrapper_ntoeu
+#define SIMULATION_INIT    wrapper_init
 #define SIMULATION_SET     wrapper_set
 #define SIMULATION_GET     wrapper_get
-//#define SIMULATION_TYPE    cgsl_simulation*
 
-/* typedef struct wrapper{ */
-/*     fmi_import_context_t* m_context; */
-/*     fmi_version_enu_t m_version; */
-/*     fmi2_import_t* FMU; */
-/*     //fmi2_callback_functions_t m_fmi2CallbackFunctions; */
-/*     fmi2CallbackFunctions m_fmi2CallbackFunctions; */
-/*     fmi2_import_variable_list_t *m_fmi2Variables, *m_fmi2Outputs; */
-/*     jm_callbacks m_jmCallbacks; */
-/* }Wrapper; */
+typedef struct vr{
+    int vr1;
+    int vr2;
+    int vr3;
+    int valid;
+}vr;
+vr vrs;
+void setVR(vr* vrs, int i, int value){
+    switch (i){
+    case 0: vrs->vr1 = value; break;
+    case 1: vrs->vr2 = value; break;
+    case 2: vrs->vr3 = value; break;
+    default: {
+        fprintf(stderr,"Wrapper: setVR -- index %i is out of range\n", i);
+        exit(1);
+    }
+    }
+}
+
+vr initVR(){
+    vr vrs = {0,0,0,0};
+    return vrs;
+}
+
+int isValitVR(vr *vrs){
+    return vrs->valid;
+}
+
+vr stringToVr(char *string){
+    vr vrs = initVR();
+    if(strlen(string) == 0 )
+        return vrs;
+
+    char *tmp = string;
+    char* size = string + strlen(string);
+
+    int i = 0;
+    int index = 0;
+    for(;string != size; string++){
+        if(*string != ','){
+            tmp[i++] = *string ;
+        }
+        else{
+            tmp[i] = '\0';
+            i = 0;
+            setVR(&vrs, index++, atoi(tmp));
+            tmp = string;
+        }
+    }
+    //tmp[i] = '\0';
+    setVR(&vrs, index++, atoi(tmp));
+    vrs.valid = 1;
+    return vrs;
+}
+vr extractVR(char *string){
+    int i = 0;
+    char *tmp = string;
+    char* size = string + strlen(string);
+    for(;string != size; string++){
+        if(*string != ':'){
+            tmp[i++] = *string ;
+        }
+        else{
+            tmp[i] = '\0';
+            i = 0;
+            return stringToVr(tmp);
+        }
+    }
+//tmp[i] = '\0';
+    return stringToVr(tmp);
+}
+
+static vr directionalVR1;
+static vr directionalVR2;
+static vr directionalVR3;
+static vr directionalVR4;
+
+
 fmi2Status getPartial(state_t *s, fmi2ValueReference x, fmi2ValueReference unKnown_ref,fmi2Real *partial){
     fmi2Status status;
-    //fprintf(stderr,"get_partial\n");
+    fprintf(stderr,"get_partial\n");
+    fprintf(stderr,"directional %s\n",s->md.directional);
+    *partial = 1;
+    if(!isValitVR(&vrs)){
+        fprintf(stderr,"Wrapper: Request getPartial but parameter directional not set\n");
+        exit(22);
+    }
+
+
     return status;
 }
 
@@ -43,6 +126,15 @@ fmi2Status SIMULATION_SET ( SIMULATION_TYPE *sim) {
     return fmi2OK;
 }
 
+
+
+void SIMULATION_INIT(state_t *s){
+    fprintf(stderr,"INIT: has stnig %s \n", s->md.directional);
+    directionalVR1 = stringToVr(s->md.directional);
+    directionalVR2 = stringToVr(s->md.directional);
+    directionalVR3 = stringToVr(s->md.directional);
+    directionalVR4 = stringToVr(s->md.directional);
+}
 
 void SIMULATION_WRAPPER(state_t *s);
 #define NEW_DOSTEP //to get noSetFMUStatePriorToCurrentPoint

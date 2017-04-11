@@ -130,15 +130,9 @@ with open(path,'w') as f:
     if iswrapper:
         md2hdr += " -w 1 -x "
         srcxml2xml = os.path.relpath(args.srcxml2xml).replace('\\','/')
-        print('before pop')
         dependentFMU = modelIdentifier.split('_')
-        print(dependentFMU)
         dependentFMU.pop(0)
-        print('after pop')
-        print(dependentFMU)
-        dependentFMU = '_'.join(dependentFMU).upper()
-        print('upper')
-        print(dependentFMU)
+        dependentFMU = '_'.join(dependentFMU)
 
         xml2xml = """
 if (CMAKE_VERSION VERSION_LESS "3.5.0")
@@ -147,21 +141,33 @@ else ()
     set(COPY_FMU_COMMAND cp ${%s_FMU} ${CMAKE_CURRENT_SOURCE_DIR}/fmu/)
 endif ()
 
+if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/fmu/%s.fmu)
+  execute_process(COMMAND ${COPY_FMU_COMMAND})
+endif()
+
+ADD_CUSTOM_COMMAND(
+  OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/fmu/%s.fmu
+  COMMAND ${COPY_FMU_COMMAND}
+  DEPENDS ${%s_FMU})
+
+
 ADD_CUSTOM_COMMAND(
   OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml
         COMMAND ${CMAKE_COMMAND} -E echo Packing ${%s_FMU}
   COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/%s -f
        ${%s_FMU} >
     ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml
-  COMMAND ${COPY_FMU_COMMAND}
   DEPENDS ${%s_FMU} )
     """ % (
+            dependentFMU.upper(),
+            dependentFMU.upper(),
             dependentFMU,
             dependentFMU,
-            dependentFMU,
+            dependentFMU.upper(),
+            dependentFMU.upper(),
             srcxml2xml,
-            dependentFMU,
-            dependentFMU,
+            dependentFMU.upper(),
+            dependentFMU.upper(),
     )
     else:
         md2hdr += " -x "

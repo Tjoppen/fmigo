@@ -121,7 +121,6 @@ do
     GSL="-l cgsl,m,fmilib,fmilib_shared -c"
     cp me/${d}/modelDescription.xml meWrapper/${d}/fmu/modelDescription.xml
     pushd meWrapper/$d
-        rm sources -rf
         cp ${WRAPPERSOURCES} . -r
         echo fmu/${d}.fmu
         python ${GENERATORXML} -x fmu/modelDescription.xml > modelDescription.xml

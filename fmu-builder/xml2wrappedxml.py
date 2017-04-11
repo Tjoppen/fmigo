@@ -31,24 +31,19 @@ def error(*objs):
 if len(args.fmu):
     fmufile = args.fmu
     warning(fmufile)
-    zip=zipfile.ZipFile(fmufile)
+    zip=zipfile.ZipFile(fmufile, 'r')
     f=zip.open('modelDescription.xml')
-    import tempfile
-    xmlfile = tempfile.NamedTemporaryFile()
-    xmlfile.write(f.read())
-    xmlfile.read()
-    tree = e.parse(xmlfile.name)
+    root = e.fromstring(f.read())
     f.close()
-    xmlfile.close()
 elif len(args.xml):
     xmlfile = args.xml
+    # Parse xml file
     tree = e.parse(xmlfile)
+    root = tree.getroot()
 else:
     warning(sys.args)
     error('%s expect eather: -f myfmu.fmu or -x myxml.xml' %(sys.args[0]))
 
-# Parse xml file
-root = tree.getroot()
 
 # Get FMU version
 fmiVersion = root.get('fmiVersion')

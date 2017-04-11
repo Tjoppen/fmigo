@@ -138,6 +138,7 @@ do
     cp gsl2/${d}/${d}.fmu meWrapper/${d}/fmu/${d}.fmu
     pushd meWrapper/$d
         echo fmu/${d}.fmu
+        cp ${WRAPPERSOURCES} . -r
         python ${GENERATORXML} -f fmu/${d}.fmu > modelDescription.xml
 #        cat modelDescription.xml
         python ${MD2HDR} -x modelDescription.xml -w 1 > sources/modelDescription.h

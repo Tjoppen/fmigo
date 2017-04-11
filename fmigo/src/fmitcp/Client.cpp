@@ -266,7 +266,10 @@ void Client::clientData(const char* data, long size){
 #ifdef USE_MPI
 Client::Client(int world_rank) : world_rank(world_rank) {
 #else
-Client::Client(zmq::context_t &context) : m_socket(context, ZMQ_PAIR) {
+Client::Client(zmq::context_t &context, string uri) : m_socket(context, ZMQ_PAIR) {
+    debug("connecting to %s\n", uri.c_str());
+    m_socket.connect(uri.c_str());
+    debug("connected\n");
 #endif
     m_pendingRequests = 0;
     GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -304,10 +307,3 @@ size_t Client::getNumPendingRequests() const {
     return m_pendingRequests;
 }
 
-#ifndef USE_MPI
-void Client::connect(string uri){
-    debug("connecting to %s\n", uri.c_str());
-    m_socket.connect(uri.c_str());
-    debug("connected\n");
-}
-#endif

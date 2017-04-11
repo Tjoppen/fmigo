@@ -26,9 +26,6 @@ namespace fmitcp_master {
 
     private:
         int m_id;
-#ifndef USE_MPI
-        string m_uri;
-#endif
         std::string m_xml;
         bool m_initialized;
 
@@ -72,9 +69,6 @@ namespace fmitcp_master {
 
         int getId();
 
-        //connects to remote host and gets modelDescription XML
-        void connect(void);
-
         bool isInitialized();
 
         /// Create a strong coupling connector for this client
@@ -105,15 +99,6 @@ namespace fmitcp_master {
 
         void setConnectorValues          (std::vector<int> valueRefs, std::vector<double> values);
         void setConnectorFutureVelocities(std::vector<int> valueRefs, std::vector<double> values);
-
-        /// Called when the client connects.
-        void onConnect();
-
-        /// Called when the client disconnects.
-        void onDisconnect();
-
-        /// Called if an error occurred.
-        void onError(string err);
 
         bool hasCapability(fmi2_capabilities_enu_t cap) const;
 

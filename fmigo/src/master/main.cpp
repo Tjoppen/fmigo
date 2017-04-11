@@ -658,11 +658,13 @@ int main(int argc, char *argv[] ) {
     zmq_ctx_set((void *)context, ZMQ_MAX_SOCKETS, fmuURIs.size() + (zmqControl ? 2 : 0));
 #endif
     vector<FMIClient*> clients = setupClients(fmuURIs, context);
+    info("Successfully connected to all %zu servers\n", fmuURIs.size());
 #endif
 
-    //connect, get modelDescription XML (was important for connconf)
+    //get modelDescription XML
+    //important to be able to resolve variable names
     for (auto it = clients.begin(); it != clients.end(); it++) {
-        (*it)->connect();
+        (*it)->sendMessageBlocking(get_xml());
     }
 
     connectionNamesToVr(connections,scs,clients);

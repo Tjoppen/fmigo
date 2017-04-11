@@ -21,8 +21,7 @@ void jmCallbacksLoggerClient(jm_callbacks* c, jm_string module, jm_log_level_enu
 #ifdef USE_MPI
 FMIClient::FMIClient(int world_rank, int id) : fmitcp::Client(world_rank), sc::Slave() {
 #else
-FMIClient::FMIClient(zmq::context_t &context, int id, string uri) : fmitcp::Client(context), sc::Slave() {
-    m_uri = uri;
+FMIClient::FMIClient(zmq::context_t &context, int id, string uri) : fmitcp::Client(context, uri), sc::Slave() {
 #endif
     m_id = id;
     m_master = NULL;
@@ -43,28 +42,6 @@ FMIClient::~FMIClient() {
   if(m_context!=NULL)       fmi_import_free_context(m_context);
   fmi_import_rmdir(&m_jmCallbacks, m_workingDir.c_str());
   if(m_fmi2Outputs!=NULL)   fmi2_import_free_variable_list(m_fmi2Outputs);
-};
-
-void FMIClient::connect(void) {
-#ifndef USE_MPI
-    Client::connect(m_uri);
-#endif
-    //request modelDescription XML, don't return until we have it
-    sendMessageBlocking(get_xml());
-}
-
-void FMIClient::onConnect(){
-    m_master->slaveConnected(this);
-};
-
-void FMIClient::onDisconnect(){
-    debug("onDisconnect\n");
-    m_master->slaveDisconnected(this);
-};
-
-void FMIClient::onError(string err){
-    debug("onError\n");
-    m_master->slaveError(this);
 };
 
 int FMIClient::getId(){

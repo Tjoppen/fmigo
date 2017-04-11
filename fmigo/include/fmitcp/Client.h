@@ -34,29 +34,15 @@ namespace fmitcp {
 #ifdef USE_MPI
         Client(int world_rank);
 #else
-        Client(zmq::context_t &context);
+        Client(zmq::context_t &context, std::string uri);
 #endif
         virtual ~Client();
-
-#ifndef USE_MPI
-        /// Connect the client to a server
-        void connect(string uri);
-#endif
 
         /// Send a binary message
         void sendMessage(std::string s);
 
         //like sendMessage() but also receives the result message and calls clientData() on it
         void sendMessageBlocking(std::string s);
-
-        /// To be implemented in subclass
-        virtual void onConnect(){}
-
-        /// To be implemented in subclass
-        virtual void onDisconnect(){}
-
-        /// To be implemented in subclass
-        virtual void onError(string message){}
 
         size_t getNumPendingRequests() const;
 

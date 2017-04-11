@@ -7,7 +7,6 @@
 #endif
 #include <fmilib.h>
 
-#include <unistd.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -117,12 +116,17 @@ fmi2Status getPartial(state_t *s, fmi2ValueReference x, fmi2ValueReference unKno
 }
 
 fmi2Status SIMULATION_GET ( SIMULATION_TYPE *sim) {
+    fprintf(stderr,"GET: %p\n", sim);
     storeStates(*sim, getTempBackup());
+    fprintf(stderr,"GET: %p done \n", sim);
     return fmi2OK;
 }
 
 fmi2Status SIMULATION_SET ( SIMULATION_TYPE *sim) {
+    fprintf(stderr,"SET: %p\n", sim);
     restoreStates(*sim, getTempBackup());
+    storeStates(*sim, getBackup());
+    fprintf(stderr,"SET: %p done\n", sim);
     return fmi2OK;
 }
 
@@ -139,7 +143,7 @@ void SIMULATION_INIT(state_t *s){
 void SIMULATION_WRAPPER(state_t *s);
 #define NEW_DOSTEP //to get noSetFMUStatePriorToCurrentPoint
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
-    //fprintf(stderr,"do step run iteration\n");
+    fprintf(stderr,"do step run iteration\n");
  runIteration(currentCommunicationPoint,communicationStepSize, getBackup());
 }
 

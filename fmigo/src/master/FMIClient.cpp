@@ -350,20 +350,20 @@ string FMIClient::getSpaceSeparatedFieldNames(string prefix) const {
 void FMIClient::sendGetX(const SendGetXType& typeRefs) {
     clearGetValues();
 
-    for (auto it = typeRefs.begin(); it != typeRefs.end(); it++) {
-        if (it->second.size() > 0) {
-            switch (it->first) {
+    for (const auto& it : typeRefs) {
+        if (it.second.size() > 0) {
+            switch (it.first) {
             case fmi2_base_type_real:
-                sendMessage(fmi2_import_get_real(it->second));
+                sendMessage(fmi2_import_get_real(it.second));
                 break;
             case fmi2_base_type_int:
-                sendMessage(fmi2_import_get_integer(it->second));
+                sendMessage(fmi2_import_get_integer(it.second));
                 break;
             case fmi2_base_type_bool:
-                sendMessage(fmi2_import_get_boolean(it->second));
+                sendMessage(fmi2_import_get_boolean(it.second));
                 break;
             case fmi2_base_type_str:
-                sendMessage(fmi2_import_get_string(it->second));
+                sendMessage(fmi2_import_get_string(it.second));
                 break;
             case fmi2_base_type_enum:
                 fatal("fmi2_base_type_enum snuck its way into FMIClient::sendGetX() somehow\n");
@@ -375,8 +375,9 @@ void FMIClient::sendGetX(const SendGetXType& typeRefs) {
 //converts a vector<MultiValue> to vector<T>, with the help of a member pointer of type T
 template<typename T> vector<T> vectorToBaseType(const vector<MultiValue>& in, T MultiValue::*member) {
     vector<T> ret;
-    for (auto it = in.begin(); it != in.end(); it++) {
-        ret.push_back((*it).*member);
+    ret.reserve(in.size());
+    for (const MultiValue& it : in) {
+        ret.push_back(it.*member);
     }
     return ret;
 }

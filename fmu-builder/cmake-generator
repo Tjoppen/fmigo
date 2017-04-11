@@ -136,9 +136,9 @@ with open(path,'w') as f:
 
         xml2xml = """
 if (CMAKE_VERSION VERSION_LESS "3.5.0")
-    set(COPY_FMU_COMMAND ${CMAKE_COMMAND} -E copy ${%s_FMU} ${CMAKE_CURRENT_SOURCE_DIR}/fmu/)
-else ()
     set(COPY_FMU_COMMAND cp ${%s_FMU} ${CMAKE_CURRENT_SOURCE_DIR}/fmu/)
+else ()
+    set(COPY_FMU_COMMAND ${CMAKE_COMMAND} -E copy ${%s_FMU} ${CMAKE_CURRENT_SOURCE_DIR}/fmu/)
 endif ()
 
 if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/fmu/%s.fmu)

@@ -23,6 +23,7 @@ static fmi2Status getEventIndicator(const modelDescription_t *md, size_t ni, fmi
 
 // used to set the next time event, if any.
 static void eventUpdate(ModelInstance *comp, fmi2EventInfo *eventInfo) {
+    fprintf(stderr,"springs event update\n");
     return;
 }
 

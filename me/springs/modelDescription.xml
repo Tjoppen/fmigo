@@ -141,6 +141,24 @@
         initial="exact">
         <Real start="0"/>
     </ScalarVariable>
+    <ScalarVariable
+        name="m"
+        valueReference="14"
+        description="spring constant spring on left mass"
+        causality="parameter"
+        variability="tunable"
+        initial="exact">
+      <Real start="1"/>
+    </ScalarVariable>
+    <ScalarVariable
+        name="gear"
+        valueReference="15"
+        description="spring constant spring on left mass"
+        causality="parameter"
+        variability="tunable"
+        initial="exact">
+      <Real start="1"/>
+    </ScalarVariable>
 
   </ModelVariables>
   <ModelStructure>

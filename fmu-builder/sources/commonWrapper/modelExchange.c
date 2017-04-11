@@ -322,13 +322,13 @@ void newDiscreteStates(Backup *backup){
     eventInfo.terminateSimulation = false;
 
     if(p->ni){
-    while(eventInfo.newDiscreteStatesNeeded){
-        fmi2_import_new_discrete_states(MEFMU,&eventInfo);
-        if(eventInfo.terminateSimulation){
+        while(eventInfo.newDiscreteStatesNeeded){
+            fmi2_import_new_discrete_states(MEFMU,&eventInfo);
+            if(eventInfo.terminateSimulation){
                 fprintf(stderr,"modelExchange.c: terminated simulation\n");
                 exit(1);
+            }
         }
-    }
     }
 
     fmi2_import_enter_continuous_time_mode(MEFMU);

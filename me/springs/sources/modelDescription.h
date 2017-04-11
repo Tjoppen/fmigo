@@ -9,7 +9,7 @@
 #define FMI_MODELEXCHANGE
 #define HAVE_DIRECTIONAL_DERIVATIVE 0
 #define CAN_GET_SET_FMU_STATE 1
-#define NUMBER_OF_REALS 13
+#define NUMBER_OF_REALS 15
 #define NUMBER_OF_INTEGERS 0
 #define NUMBER_OF_BOOLEANS 0
 #define NUMBER_OF_STRINGS 0
@@ -32,6 +32,8 @@ typedef struct {
     fmi2Real k2; //VR=11
     fmi2Real f_in; //VR=12
     fmi2Real f_out; //VR=13
+    fmi2Real m; //VR=14
+    fmi2Real gear; //VR=15
     fmi2Boolean dirty;
 } modelDescription_t;
 
@@ -51,6 +53,8 @@ static const modelDescription_t defaults = {
     0.0, //k2
     0.0, //f_in
     0.0, //f_out
+    1.0, //m
+    1.0, //gear
     1,
 };
 
@@ -68,6 +72,8 @@ static const modelDescription_t defaults = {
 #define VR_K2 11
 #define VR_F_IN 12
 #define VR_F_OUT 13
+#define VR_M 14
+#define VR_GEAR 15
 
 
 //the following getters and setters are static to avoid getting linking errors if this file is included in more than one place
@@ -102,6 +108,8 @@ int i;
         case VR_K2: value[i] = md->k2; break;
         case VR_F_IN: value[i] = md->f_in; break;
         case VR_F_OUT: value[i] = md->f_out; break;
+        case VR_M: value[i] = md->m; break;
+        case VR_GEAR: value[i] = md->gear; break;
 
         default: return fmi2Error;
         }
@@ -127,6 +135,8 @@ int i;
         case 11: md->k2 = value[i]; break;
         case 12: md->f_in = value[i]; break;
         case 13: md->f_out = value[i]; break;
+        case 14: md->m = value[i]; break;
+        case 15: md->gear = value[i]; break;
         default: return fmi2Error;
         }
     }

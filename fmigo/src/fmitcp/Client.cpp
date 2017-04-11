@@ -283,7 +283,7 @@ void Client::sendMessage(std::string s){
 #else
     zmq::message_t msg(s.size());
     memcpy(msg.data(), s.data(), s.size());
-    m_socket.send(msg);
+    m_socket.send(msg, ZMQ_DONTWAIT);
 #endif
 }
 

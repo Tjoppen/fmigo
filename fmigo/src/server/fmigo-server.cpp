@@ -99,7 +99,7 @@ int main(int argc, char *argv[]) {
       if (str.length() > 0) {
         zmq::message_t rep(str.length());
         memcpy(rep.data(), str.data(), str.length());
-        socket.send(rep);
+        socket.send(rep, ZMQ_DONTWAIT);
       }
     }
 

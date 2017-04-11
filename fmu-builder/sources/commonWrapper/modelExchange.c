@@ -7,7 +7,7 @@
 #ifndef min
 #define min(a,b) ((a<b) ? a : b)
 #endif
-fmi2_import_t* FMU;
+static fmi2_import_t* FMU;
 static cgsl_simulation m_sim;
 static TimeLoop timeLoop;
 static fmu_model m_model;
@@ -321,12 +321,14 @@ void newDiscreteStates(Backup *backup){
     eventInfo.newDiscreteStatesNeeded = true;
     eventInfo.terminateSimulation = false;
 
+    if(p->ni){
     while(eventInfo.newDiscreteStatesNeeded){
         fmi2_import_new_discrete_states(MEFMU,&eventInfo);
         if(eventInfo.terminateSimulation){
                 fprintf(stderr,"modelExchange.c: terminated simulation\n");
                 exit(1);
         }
+    }
     }
 
     fmi2_import_enter_continuous_time_mode(MEFMU);

@@ -13,29 +13,31 @@ else ()
     set(COPY_CMAKE_COMMAND ${CMAKE_COMMAND} -E copy)
 endif ()
 
+macro(add_directory_to_scrs distant)
+    file(GLOB_RECURSE DistantFiles
+        RELATIVE ${distant}
+        ${distant}/*)
+    foreach(Filename ${DistantFiles})
+      string(LENGTH ${Filename} stringLen)
+      MATH(EXPR one "${stringLen}-2")
+      MATH(EXPR three "${stringLen}-4")
 
+      string(SUBSTRING ${Filename} ${one} 2 suffix)
+      string(SUBSTRING ${Filename} ${three} 4 suffixthree)
+      if(( ".c"  STREQUAL ${suffix})
+          OR( ".h"   STREQUAL ${suffix})
+          OR( ".cpp" STREQUAL ${suffixthree})
+          OR( ".hpp" STREQUAL ${suffixthree})
+          OR( ".fmu" STREQUAL ${suffixthree})
+          )
+          set(SRCS "${SRCS}${distant}${Filename}")
+      endif()
 
-macro(copy_files COPY_TARGET GLOBPAT DESTINATION)
-  file(GLOB COPY_FILES
-    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-    ${GLOBPAT})
-  add_custom_target(${COPY_TARGET} ALL
-    COMMENT "Copying files: ${GLOBPAT}")
+    endforeach(Filename)
+endmacro()
 
-  foreach(FILENAME ${COPY_FILES})
-    set(SRC "${CMAKE_CURRENT_SOURCE_DIR}/${FILENAME}")
-    set(DST "${DESTINATION}/${FILENAME}")
+add_directory_to_scrs(${CMAKE_CURRENT_SOURCE_DIR}/)
 
-    add_custom_command(
-      TARGET ${COPY_TARGET}
-      COMMAND ${COPY_CMAKE_COMMAND} ${SRC} ${DST}
-      )
-  endforeach(FILENAME)
-endmacro(copy_files)
-
-copy_files(TARGET_SRCS_BOUNCINGBALL ${CMAKE_CURRENT_SOURCE_DIR}/../../fmu-builder/sources ${CMAKE_CURRENT_SOURCE_DIR}/)
-copy_files(TARGET_SRCS_COMMONWRAPPER_BOUNCINGBALL ${CMAKE_CURRENT_SOURCE_DIR}/../../fmu-builder/sources/commonWrapper ${CMAKE_CURRENT_SOURCE_DIR}/)
- 
 
 ADD_CUSTOM_COMMAND(
   OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/fmu/bouncingBall.fmu
@@ -44,6 +46,11 @@ ADD_CUSTOM_COMMAND(
   DEPENDS ${BOUNCINGBALL_FMU})
 
 
+
+add_directory_to_scrs(${CMAKE_CURRENT_SOURCE_DIR}/../../fmu-builder/sources)
+
+ 
+
 ADD_CUSTOM_COMMAND(
   OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml
         COMMAND ${CMAKE_COMMAND} -E echo Packing ${BOUNCINGBALL_FMU}
@@ -51,6 +58,8 @@ ADD_CUSTOM_COMMAND(
        ${BOUNCINGBALL_FMU} >
     ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml
   DEPENDS ${BOUNCINGBALL_FMU} )
+
+add_directory_to_scrs(${CMAKE_CURRENT_SOURCE_DIR}/../../fmu-builder/sources)
     
 SET(SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/fmi2/fmuTemplate.h
@@ -62,7 +71,6 @@ SET(SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/commonWrapper/modelExchange.c
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/commonWrapper/modelExchange.h
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/commonWrapper/modelExchangeFmiInterface.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/sources/fmi2Functions.h
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/wrapper.c
 )
@@ -82,7 +90,7 @@ INCLUDE_DIRECTORIES(
 )
 SET_TARGET_PROPERTIES(${TARGET} PROPERTIES PREFIX "")
 SET_TARGET_PROPERTIES(${TARGET} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/binaries/${ARCH}")
-SET(LIBS cgsl fmilib fmilib_shared)
+SET(LIBS cgsl wrapperlib fmilib fmilib_shared)
 if (UNIX)
     set(LIBS ${LIBS} m)
 endif ()

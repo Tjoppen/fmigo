@@ -13,6 +13,31 @@ else ()
     set(COPY_CMAKE_COMMAND ${CMAKE_COMMAND} -E copy)
 endif ()
 
+macro(add_directory_to_scrs distant)
+    file(GLOB_RECURSE DistantFiles
+        RELATIVE ${distant}
+        ${distant}/*)
+    foreach(Filename ${DistantFiles})
+      string(LENGTH ${Filename} stringLen)
+      MATH(EXPR one "${stringLen}-2")
+      MATH(EXPR three "${stringLen}-4")
+
+      string(SUBSTRING ${Filename} ${one} 2 suffix)
+      string(SUBSTRING ${Filename} ${three} 4 suffixthree)
+      if(( ".c"  STREQUAL ${suffix})
+          OR( ".h"   STREQUAL ${suffix})
+          OR( ".cpp" STREQUAL ${suffixthree})
+          OR( ".hpp" STREQUAL ${suffixthree})
+          OR( ".fmu" STREQUAL ${suffixthree})
+          )
+          set(SRCS "${SRCS}${distant}${Filename}")
+      endif()
+
+    endforeach(Filename)
+endmacro()
+
+add_directory_to_scrs(${CMAKE_CURRENT_SOURCE_DIR}/)
+
 
 SET(SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/../../../templates/fmi2/fmuTemplate.h

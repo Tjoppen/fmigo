@@ -185,5 +185,5 @@ static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real comm
 }
 
 // include code that implements the FMI based on the above definitions
-#include "../../templates/fmi2/fmuTemplate_impl.h"
+#include "fmuTemplate_impl.h"
 

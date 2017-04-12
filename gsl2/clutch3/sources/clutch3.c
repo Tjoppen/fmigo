@@ -390,7 +390,7 @@ static void clutch_init(state_t *s) {
       sync_out,
       s
       ),
-    rk45, 1e-6, 0, 0, s->md.octave_output, s->md.octave_output ? fopen("clutch3.m", "w") : NULL
+    rkf45, 1e-6, 0, 0, s->md.octave_output, s->md.octave_output ? fopen("clutch3.m", "w") : NULL
     );
 
   s->simulation.last_gear = s->md.gear;

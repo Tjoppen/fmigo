@@ -20,10 +20,6 @@ if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/fmu/)
   execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_SOURCE_DIR}/fmu)
 endif()
 
-if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/fmu/bouncingBall.fmu)
-  execute_process(COMMAND ${COPY_FMU_COMMAND})
-endif()
-
 set(COPY_SOURCES_COMMAND ${COPY_CMAKE_COMMAND} ${CMAKE_CURRENT_SOURCE_DIR}/../../fmu-builder/sources ${CMAKE_CURRENT_SOURCE_DIR}/)
 
 if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/sources)

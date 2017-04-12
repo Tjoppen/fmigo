@@ -24,34 +24,40 @@ def interp2( t, x, t1):
 
 #compute coupling force as it applies to coupled module
 def f_coupling(y, w_in, k1, d1):
-  dphi1, w1, dphi2, w2 = y[0:4]
+  phi, w1, dphi1, phi2, w2, dphi2 = y[0:6]
   return k1*dphi1 + d1*(w1 - w_in)
 
 simulate = True
 
 # compute derivatives.  The order of the variables is:
-# dphi1
-# w1_dot
-# dphi2
-# w2_dot
-# z1_dot
-# z2_dot
+# phi1      0
+# w1        1
+# dphi1     2
+# phi2      3
+# w2        4
+# dphi2     5
+# z_phi1    6
+# z_w1      7
+# z_dphi1   8
+# z_phi2    9
+# z_w2     10
+# z_dphi2  11
 def fun(t, y, w_in, k1, d1, k2, d2, J1, J2):
-  dphi1, w1, dphi2, w2, phi1, phi2 = y[0:6]
+  phi1, w1, dphi1, phi2, w2, dphi2, = y[0:6]
   dphi = phi1- phi2
   return [
-    w1 - w_in,
+    w1,
     (- k2*dphi - d2*(w1 - w2) - f_coupling(y, w_in, k1, d1))/J1,
-    w1 - w2,
-    (  k2*dphi + d2*(w1 - w2))/J2,
-    w1,
+    w1 - w_in,
     w2,
-    dphi1,
-    w1,
-    dphi2,
-    w2,
+    ( k2*dphi + d2*(w1 - w2))/J2,
+    0,                          # shaft coupling deactivated
     phi1,
-    phi2
+    w1,
+    dphi1,
+    phi2,
+    w2,
+    dphi2
   ]
 
 ##
@@ -83,11 +89,9 @@ def run_simulations(total_time, comm_step, filter_length,  frequency=1.0,
                     integrate_dx=True):
   nfmus = 1
   #cmdline = ['LD_PRELOAD=/usr/local/lib/valgrind/libmpiwrap-amd64-linux.so', '&&']
-  cmdline = ['mpiexec', '-np', str(nfmus+1),
-             '/usr/local/bin/valgrind',
-             '--tool=callgrind',
-             'fmigo-mpi', '-t',
-             str(total_time), '-d', str(comm_step)]
+  cmdline = ['mpiexec', '-np', str(nfmus+1)]
+#             '/usr/local/bin/valgrind', '--tool=callgrind',
+  cmdline += ['fmigo-mpi', '-t', str(total_time), '-d', str(comm_step)]
   cmdline += ['-p', '0,octave_output,false']
   cmdline += ['-p', '0,filter_length,%i' % filter_length ]
   cmdline += ['-p', '0,v_in_e,%f' % v_in ]
@@ -110,8 +114,7 @@ def run_simulations(total_time, comm_step, filter_length,  frequency=1.0,
 
   print(' '.join(cmdline) + " > " + filename, file=sys.stderr)
   return  subprocess.call(cmdline,
-                          stdout=open('/dev/null', 'w'),
-                          stderr=open('/dev/null', 'w')), cmdline
+                          stdout=open('out-2.csv', 'w')), cmdline
 
 # forcing angular velocity
 
@@ -140,7 +143,7 @@ d_internal =  zeta_internal * J * pi * frequency
 
 # Coupling spring
 
-c_coupling = 1e10
+c_coupling = 1e9
 
 # damping: as above.  Note that the mass is explicitly set to one here
 # meaning that the true non dimensional damping will be different
@@ -165,7 +168,7 @@ dt = 1/ samples / frequency
 
 # number of slow periods to integrate
 
-NP = 100                          
+NP = 4
 
 #Now run the FMIGo! simulation.  
 if simulate:
@@ -211,17 +214,20 @@ tt      = array(tt)
 
 x = alldata[:, arange(0,6)]
 
-# filtered values
+# Averaged filtered values since that's not what is output in octave 
 
-z       = 0.5 * ( alldata[0:-1, arange(6,12)]  
-                  +alldata[1:, arange(6,12)]  ) / dt
+z       = vstack(( 0 * alldata[0,arange(6,12)],
+                   0.5 * ( alldata[0:-1, arange(6,12)]  
+                  +alldata[1:, arange(6,12)]  ) / dt))
+# compute the averaged coupling force
 
-z = vstack(( 0 * z[0,:], z))
+
 # interpolate to sample points
 
 xinterp = interp2(tt, x,  ts)
 zinterp = interp2(tt, z,  ts)
-
+# first we need dphi and this will be
+dphioct = zinterp[:, -5]
 ## now work with standard time integration.
 ## start everything at rest
 
@@ -236,13 +242,13 @@ r.set_f_params(w_in, c_coupling, d_coupling, c_internal, d_internal, J/2, J/2)
 tprev = 0
 # Use same times as fmigo
 
-ys   = [array(list(r.y[0:6]) + [f_coupling(r.y[0:4], w_in, c_coupling, d_coupling)])]
-zs   = [array(list(r.y[6:12]) + [0*f_coupling(r.y[6:10], w_in, c_coupling, d_coupling)])]
+ys   = [array(list(r.y[0:6]) + [f_coupling(r.y[0:6], w_in, c_coupling, d_coupling)])]
+zs   = [array(list(r.y[6:12]) + [0*f_coupling(r.y[6:12], w_in, c_coupling, d_coupling)])]
 zs2  = [zs[0]]
 r.set_integrator('lsoda')
 for t in ts[1:]:
   # Reset z, and dphi, integrate
-  r.set_initial_value([0.0*r.y[0], r.y[1], 0.0*r.y[2], r.y[3], r.y[4], r.y[5]] + [0.0]*6, tprev)
+  r.set_initial_value([r.y[0], r.y[1], 0.0*r.y[2], r.y[3], r.y[4], 0.0*r.y[5]] + [0.0]*6, tprev)
   r.integrate(t)
 
   zz = r.y[6:12]/(t-tprev)
@@ -260,12 +266,15 @@ for t in ts[1:]:
 ys = array(ys)
 zs = array(zs)
 zs2 = array(zs2)
+dphip = zs2[:,-5];
 
 
 
-figure(1)
+#figure(211)
 clf()
 title('Velocities')
-plot(ts, data[:,[1,2]], tt, alldata[:, 3], drawstyle='steps')
+semilogy(ts, abs(data[:,[1,5]]-zs2[:,[1,4]]), drawstyle='steps')
+#legend(['go!', 'ode'])
+legend(['w1', 'w2'] )
 
 show()

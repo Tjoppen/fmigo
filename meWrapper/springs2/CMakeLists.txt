@@ -7,14 +7,24 @@ SET(TARGET wrapper_springs2)
 SET(WRAPPER_SPRINGS2_FMU ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}.fmu CACHE INTERNAL "" FORCE)
 
 if (CMAKE_VERSION VERSION_LESS "3.5.0")
-    set(COPY_FMU_COMMAND cp ${SPRINGS2_FMU} ${CMAKE_CURRENT_SOURCE_DIR}/fmu/)
+    set(COPY_CMAKE_COMMAND cp)
+    set(ZIP_CMAKE_COMMAND  zip -r)
 else ()
-    set(COPY_FMU_COMMAND ${CMAKE_COMMAND} -E copy ${SPRINGS2_FMU} ${CMAKE_CURRENT_SOURCE_DIR}/fmu/)
+    set(ZIP_CMAKE_COMMAND  ${CMAKE_COMMAND} -E tar cf --format=zip)
+    set(COPY_CMAKE_COMMAND ${CMAKE_COMMAND} -E copy)
 endif ()
+
+set(COPY_FMU_COMMAND ${COPY_CMAKE_COMMAND} ${SPRINGS2_FMU} ${CMAKE_CURRENT_SOURCE_DIR}/fmu/)
 
 if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/fmu/springs2.fmu)
   execute_process(COMMAND ${COPY_FMU_COMMAND})
 endif()
+
+set(COPY_SOURCES_COMMAND ${COPY_CMAKE_COMMAND} ${CMAKE_CURRENT_SOURCE_DIR}/../../fmu-builder/sources ${CMAKE_CURRENT_SOURCE_DIR}/)
+
+if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/sources)
+  execute_process(COMMAND ${COPY_SOURCE_COMMAND})
+endif() 
 
 ADD_CUSTOM_COMMAND(
   OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/fmu/springs2.fmu
@@ -44,6 +54,7 @@ SET(SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/wrapper.c
 )
+
 ADD_CUSTOM_COMMAND(
   OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
   COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/../../fmu-builder/modeldescription2header -w 1 -x 
@@ -70,16 +81,10 @@ SET_TARGET_PROPERTIES(${TARGET}_c PROPERTIES COMPILE_DEFINITIONS CONSOLE)
 TARGET_LINK_LIBRARIES( ${TARGET}_c ${LIBS} )
 
 
-if (CMAKE_VERSION VERSION_LESS "3.5.0")
-    set(ZIP_COMMAND  zip -r ${WRAPPER_SPRINGS2_FMU} .)
-    set(COPY_COMMAND cp ${SRCS} ${CMAKE_CURRENT_BINARY_DIR}/fmu/sources)
-else ()
-    # Would use "." for path, but that results in paths like ./modelDescription.xml in the .fmu which is probably a bad thing
-    # We could maybe work around this by running a subcommand that lists all files in ${CMAKE_CURRENT_BINARY_DIR}/fmu into a variable
-    set(ZIP_COMMAND  ${CMAKE_COMMAND} -E tar cf ${WRAPPER_SPRINGS2_FMU} --format=zip modelDescription.xml binaries sources)
-    set(COPY_COMMAND ${CMAKE_COMMAND} -E copy ${SRCS} ${CMAKE_CURRENT_BINARY_DIR}/fmu/sources)
-endif ()
-
+# Would use "." for path, but that results in paths like ./modelDescription.xml in the .fmu which is probably a bad thing
+# We could maybe work around this by running a subcommand that lists all files in ${CMAKE_CURRENT_BINARY_DIR}/fmu into a variable
+set(ZIP_COMMAND  ${ZIP_CMAKE_COMMAND} ${WRAPPER_SPRINGS2_FMU} modelDescription.xml binaries sources)
+set(COPY_COMMAND ${CMAKE_COMMAND} -E copy ${SRCS} ${CMAKE_CURRENT_BINARY_DIR}/fmu/sources)
 
 # There doesn't seem to be a way to repack an FMU in case it is deleted.
 # A post-build command is good enough for now.

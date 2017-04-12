@@ -6,6 +6,15 @@ SET(ARCH "linux64" CACHE STRING "Architecture: linux64, linux32, win32...")
 SET(TARGET mul)
 SET(MUL_FMU ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}.fmu CACHE INTERNAL "" FORCE)
 
+if (CMAKE_VERSION VERSION_LESS "3.5.0")
+    set(COPY_CMAKE_COMMAND cp)
+    set(ZIP_CMAKE_COMMAND  zip -r)
+else ()
+    set(ZIP_CMAKE_COMMAND  ${CMAKE_COMMAND} -E tar cf --format=zip)
+    set(COPY_CMAKE_COMMAND ${CMAKE_COMMAND} -E copy)
+endif ()
+
+
 SET(SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/../../../templates/fmi2/fmuTemplate.h
     ${CMAKE_CURRENT_SOURCE_DIR}/../../../templates/fmi2/fmuTemplate_impl.h
@@ -13,6 +22,7 @@ SET(SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/mul.c
 )
+
 ADD_CUSTOM_COMMAND(
   OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
   COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/../../../fmu-builder/modeldescription2header -x 
@@ -33,16 +43,10 @@ TARGET_LINK_LIBRARIES( ${TARGET} ${LIBS} )
 
 
 
-if (CMAKE_VERSION VERSION_LESS "3.5.0")
-    set(ZIP_COMMAND  zip -r ${MUL_FMU} .)
-    set(COPY_COMMAND cp ${SRCS} ${CMAKE_CURRENT_BINARY_DIR}/fmu/sources)
-else ()
-    # Would use "." for path, but that results in paths like ./modelDescription.xml in the .fmu which is probably a bad thing
-    # We could maybe work around this by running a subcommand that lists all files in ${CMAKE_CURRENT_BINARY_DIR}/fmu into a variable
-    set(ZIP_COMMAND  ${CMAKE_COMMAND} -E tar cf ${MUL_FMU} --format=zip modelDescription.xml binaries sources)
-    set(COPY_COMMAND ${CMAKE_COMMAND} -E copy ${SRCS} ${CMAKE_CURRENT_BINARY_DIR}/fmu/sources)
-endif ()
-
+# Would use "." for path, but that results in paths like ./modelDescription.xml in the .fmu which is probably a bad thing
+# We could maybe work around this by running a subcommand that lists all files in ${CMAKE_CURRENT_BINARY_DIR}/fmu into a variable
+set(ZIP_COMMAND  ${ZIP_CMAKE_COMMAND} ${MUL_FMU} modelDescription.xml binaries sources)
+set(COPY_COMMAND ${CMAKE_COMMAND} -E copy ${SRCS} ${CMAKE_CURRENT_BINARY_DIR}/fmu/sources)
 
 # There doesn't seem to be a way to repack an FMU in case it is deleted.
 # A post-build command is good enough for now.

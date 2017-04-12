@@ -181,6 +181,8 @@ int jac_clutch (double t, const double x[], double *dfdx, double dfdt[], void *p
   int i, j;
   double dphid = fclutch_dphi_derivative( x[0]-x[2] ) ;
   double tmp;
+  double mu_e = 1.0 / s->md.mass_e;
+  double mu_s = 1.0 / s->md.mass_s;
 
   gsl_matrix_view dfdx_mat = gsl_matrix_view_array (dfdx, N, N);
   gsl_matrix * J = &dfdx_mat.matrix; 
@@ -197,12 +199,12 @@ int jac_clutch (double t, const double x[], double *dfdx, double dfdt[], void *p
   if ( s->md.integrate_dx_e ){
     /* in this case, there's a force -s->md.k_ec * dphi */
     gsl_matrix_set(J, i, 1, 1.0);
-    gsl_matrix_set(J, 1, i, -s->md.k_ec);
+    gsl_matrix_set(J, 1, i, -s->md.k_ec * mu_e);
     ++i;
   }
   if ( s->md.integrate_dx_s ){
     gsl_matrix_set(J, i, 3, 1.0);
-    gsl_matrix_set(J, 3, i, -s->md.k_sc);
+    gsl_matrix_set(J, 3, i, -s->md.k_sc * mu_s);
     ++i;
   }
 
@@ -213,35 +215,36 @@ int jac_clutch (double t, const double x[], double *dfdx, double dfdt[], void *p
     if ( ! s->md.integrate_dx_e )
       tmp -= s->md.k_ec;
 
-    gsl_matrix_set (J, 1, 0, tmp  ); 
+    gsl_matrix_set (J, 1, 0, tmp  * mu_e ); 
     
-    gsl_matrix_set (J, 1, 1,-s->md.gear_d - s->md.gamma_ec - s->md.gamma_e );
-    gsl_matrix_set (J, 1, 2, s->md.gear_k); /* spring to phi2 */
-    gsl_matrix_set (J, 1, 3, s->md.gear_d); /* damping with w2 */
-    
-    gsl_matrix_set (J, 3, 3,-s->md.gear_d - s->md.gamma_ec - s->md.gamma_e );
-    gsl_matrix_set (J, 3, 0, r * s->md.gear_k); /* spring to phi1 */
-    gsl_matrix_set (J, 3, 2, r * s->md.gear_d); /* damping with w1 */
-    
-    /* coupling to phi2 */
+    gsl_matrix_set (J, 1, 1, ( -s->md.gear_d - s->md.gamma_ec - s->md.gamma_e ) * mu_e);
+    gsl_matrix_set (J, 1, 2, s->md.gear_k * mu_e); /* spring to phi2 */
+    gsl_matrix_set (J, 1, 3, s->md.gear_d * mu_e); /* damping with w2 */
+
     tmp = - r * s->md.gear_k;
-    if ( ! s->md.integrate_dx_e )
+    if ( ! s->md.integrate_dx_s )
       tmp -= s->md.k_sc;
-    gsl_matrix_set (J, 3, 2, tmp); 
+    gsl_matrix_set (J, 3, 2, tmp * mu_s); 
+    
+    
+    gsl_matrix_set (J, 3, 3, ( -r * s->md.gear_d - s->md.gamma_sc - s->md.gamma_s ) * mu_s);
+    gsl_matrix_set (J, 3, 0, r * s->md.gear_k * mu_s); /* spring to phi1 */
+    gsl_matrix_set (J, 3, 1, r * s->md.gear_d * mu_s); /* damping with w1 */
+   
     
   } else{
     tmp = -dphid;
     if ( ! s->md.integrate_dx_e )
       tmp -= s->md.k_ec;
-    gsl_matrix_set (J, 1, 0, tmp  ); 
+    gsl_matrix_set (J, 1, 0, tmp * mu_e  ); 
 
-    gsl_matrix_set (J, 1, 1,-s->md.clutch_damping - s->md.gamma_ec - s->md.gamma_e );
+    gsl_matrix_set (J, 1, 1, ( -s->md.clutch_damping - s->md.gamma_ec - s->md.gamma_e ) *mu_e );
     gsl_matrix_set (J, 1, 2, dphid); /* spring to phi2 */
-    gsl_matrix_set (J, 1, 3, s->md.clutch_damping ); /* damping with w2 */
+    gsl_matrix_set (J, 1, 3, s->md.clutch_damping * mu_e ); /* damping with w2 */
 
-    gsl_matrix_set (J, 3, 3,-s->md.clutch_damping - s->md.gamma_ec - s->md.gamma_e );
-    gsl_matrix_set (J, 3, 0, dphid); /* spring to phi1 */
-    gsl_matrix_set (J, 3, 3, s->md.clutch_damping ); /* damping with w2 */
+    gsl_matrix_set (J, 3, 3,(-s->md.clutch_damping - s->md.gamma_sc - s->md.gamma_s ) * mu_s);
+    gsl_matrix_set (J, 3, 0, dphid * mu_s); /* spring to phi1 */
+    gsl_matrix_set (J, 3, 1, s->md.clutch_damping *mu_s); /* damping with w1 */
 
     tmp =  -dphid;
     if ( ! s->md.integrate_dx_s )
@@ -390,7 +393,7 @@ static void clutch_init(state_t *s) {
       sync_out,
       s
       ),
-    rk45, 1e-6, 0, 0, s->md.octave_output, s->md.octave_output ? fopen("clutch3.m", "w") : NULL
+    msbdf, 1e-6, 0, 0, s->md.octave_output, s->md.octave_output ? fopen("clutch3.m", "w") : NULL
     );
 
   s->simulation.last_gear = s->md.gear;

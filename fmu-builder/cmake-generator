@@ -151,7 +151,7 @@ endif() """%(wrappersrcs)
         xml2xml = """set(COPY_FMU_COMMAND ${COPY_CMAKE_COMMAND} ${%s_FMU} ${CMAKE_CURRENT_SOURCE_DIR}/fmu/)
 
 if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/fmu/)
-  execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_SOURCE_DIR}/fmu/
+  execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_SOURCE_DIR}/fmu)
 endif()
 
 if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/fmu/%s.fmu)

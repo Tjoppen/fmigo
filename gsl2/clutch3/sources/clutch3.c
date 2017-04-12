@@ -177,41 +177,77 @@ int jac_clutch (double t, const double x[], double *dfdx, double dfdt[], void *p
   
   state_t *s = (state_t*)params;
   int N = 4 + s->md.integrate_dx_e + s->md.integrate_dx_s;
+  double r = gear2ratio(s);
   int i, j;
+  double dphid = fclutch_dphi_derivative( x[0]-x[2] ) ;
+  double tmp;
 
   gsl_matrix_view dfdx_mat = gsl_matrix_view_array (dfdx, N, N);
   gsl_matrix * J = &dfdx_mat.matrix; 
     
-  /* second order dynamics  on first variable */
   for ( i=0; i < N; ++i  )
     for( j = 0; j < N; ++j )
       gsl_matrix_set (J, i, j, 0.0);
 
+  /* second order dynamics on the angles */
   gsl_matrix_set (J, 0, 1, 1.0);
+  gsl_matrix_set (J, 2, 3, 1.0);
+  /* dphi integration */
+  i = 4;
+  if ( s->md.integrate_dx_e ){
+    /* in this case, there's a force -s->md.k_ec * dphi */
+    gsl_matrix_set(J, i, 1, 1.0);
+    gsl_matrix_set(J, 1, i, -s->md.k_ec);
+    ++i;
+  }
+  if ( s->md.integrate_dx_s ){
+    gsl_matrix_set(J, i, 3, 1.0);
+    gsl_matrix_set(J, 3, i, -s->md.k_sc);
+    ++i;
+  }
+
 
   /* dynamics of the first plate */
-  gsl_matrix_set (J, 1, 0, 0.0);
-  gsl_matrix_set (J, 1, 1, 0.0);
-  gsl_matrix_set (J, 1, 2, 0.0);
-  gsl_matrix_set (J, 1, 3, 0.0);
-  
-   
-  /* second order dynamics on second plate*/
-  gsl_matrix_set (J, 2, 3, 1.0);  
+  if (! s->md.is_gearbox) {
+    tmp = - s->md.gear_k;
+    if ( ! s->md.integrate_dx_e )
+      tmp -= s->md.k_ec;
 
-  /*  dynamics of second plate */
-  gsl_matrix_set (J, 3, 0, 0.0);
-  gsl_matrix_set (J, 3, 1, 0.0);
-  gsl_matrix_set (J, 3, 2, 0.0);
-  gsl_matrix_set (J, 3, 3, 0.0); 
+    gsl_matrix_set (J, 1, 0, tmp  ); 
+    
+    gsl_matrix_set (J, 1, 1,-s->md.gear_d - s->md.gamma_ec - s->md.gamma_e );
+    gsl_matrix_set (J, 1, 2, s->md.gear_k); /* spring to phi2 */
+    gsl_matrix_set (J, 1, 3, s->md.gear_d); /* damping with w2 */
+    
+    gsl_matrix_set (J, 3, 3,-s->md.gear_d - s->md.gamma_ec - s->md.gamma_e );
+    gsl_matrix_set (J, 3, 0, r * s->md.gear_k); /* spring to phi1 */
+    gsl_matrix_set (J, 3, 2, r * s->md.gear_d); /* damping with w1 */
+    
+    /* coupling to phi2 */
+    tmp = - r * s->md.gear_k;
+    if ( ! s->md.integrate_dx_e )
+      tmp -= s->md.k_sc;
+    gsl_matrix_set (J, 3, 2, tmp); 
+    
+  } else{
+    tmp = -dphid;
+    if ( ! s->md.integrate_dx_e )
+      tmp -= s->md.k_ec;
+    gsl_matrix_set (J, 1, 0, tmp  ); 
 
-  
-  i = 4;
-  if ( s->md.integrate_dx_e )
-    gsl_matrix_set(J, i++, 1, 1.0);
-  if ( s->md.integrate_dx_s )
-    gsl_matrix_set(J, i++, 3, 1.0);
+    gsl_matrix_set (J, 1, 1,-s->md.clutch_damping - s->md.gamma_ec - s->md.gamma_e );
+    gsl_matrix_set (J, 1, 2, dphid); /* spring to phi2 */
+    gsl_matrix_set (J, 1, 3, s->md.clutch_damping ); /* damping with w2 */
 
+    gsl_matrix_set (J, 3, 3,-s->md.clutch_damping - s->md.gamma_ec - s->md.gamma_e );
+    gsl_matrix_set (J, 3, 0, dphid); /* spring to phi1 */
+    gsl_matrix_set (J, 3, 3, s->md.clutch_damping ); /* damping with w2 */
+
+    tmp =  -dphid;
+    if ( ! s->md.integrate_dx_s )
+      tmp -= s->md.k_sc;
+    gsl_matrix_set (J, 3, 2, tmp  ); 
+  }
 
   return GSL_SUCCESS;
 }
@@ -319,7 +355,6 @@ static int sync_out(int n, const double outputs[], void * params) {
 
   if (
     s->simulation.sim.t == 0.0){
-    fprintf(stderr, "coucou\n");
     s->md.x_e = 0;
     s->md.v_e = 0;
     s->md.a_e = 0;
@@ -338,7 +373,6 @@ static int sync_out(int n, const double outputs[], void * params) {
     compute_forces(s, outputs, &s->md.force_e, &s->md.force_s, NULL);
   }
 
-  fprintf(stderr, "Time %g  force %g\n", s->simulation.sim.t, s->md.force_e);
 
   return GSL_SUCCESS;
 }
@@ -356,7 +390,7 @@ static void clutch_init(state_t *s) {
       sync_out,
       s
       ),
-    rkf45, 1e-5, 0, 0, s->md.octave_output, s->md.octave_output ? fopen("clutch3.m", "w") : NULL
+    rk45, 1e-6, 0, 0, s->md.octave_output, s->md.octave_output ? fopen("clutch3.m", "w") : NULL
     );
 
   s->simulation.last_gear = s->md.gear;

@@ -266,7 +266,7 @@ void Client::clientData(const char* data, long size){
 #ifdef USE_MPI
 Client::Client(int world_rank) : world_rank(world_rank) {
 #else
-Client::Client(zmq::context_t &context, string uri) : m_socket(context, ZMQ_PAIR) {
+Client::Client(zmq::context_t &context, string uri) : m_socket(context, ZMQ_DEALER) {
     debug("connecting to %s\n", uri.c_str());
     m_socket.connect(uri.c_str());
     debug("connected\n");
@@ -284,19 +284,34 @@ void Client::sendMessage(std::string s){
 #ifdef USE_MPI
     MPI_Send((void*)s.c_str(), s.length(), MPI_CHAR, world_rank, 0, MPI_COMM_WORLD);
 #else
+    //ZMQ_DEALERs must send two-part messages with the first part being zero-length
+    zmq::message_t zero(0);
+    m_socket.send(zero, ZMQ_SNDMORE);
+
     zmq::message_t msg(s.size());
     memcpy(msg.data(), s.data(), s.size());
-    m_socket.send(msg, ZMQ_DONTWAIT);
+    m_socket.send(msg);
 #endif
 }
 
 void Client::sendMessageBlocking(std::string s) {
     sendMessage(s);
+    receiveAndHandleMessage();
+}
 
+void Client::receiveAndHandleMessage() {
 #ifdef USE_MPI
     std::string str = mpi_recv_string(world_rank, NULL, NULL);
     clientData(str.c_str(), str.length());
 #else
+    //expect to recv a delimiter
+    zmq::message_t delim;
+    m_socket.recv(&delim);
+
+    if (delim.size() != 0) {
+        fatal("Expected to recv zero-length delimiter, got %zu B instead\n", delim.size());
+    }
+
     zmq::message_t msg;
     m_socket.recv(&msg);
     clientData(static_cast<char*>(msg.data()), msg.size());

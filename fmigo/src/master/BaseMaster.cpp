@@ -201,10 +201,7 @@ void BaseMaster::wait() {
     }
     for (size_t x = 0; x < m_clients.size(); x++) {
         if (items[x].revents & ZMQ_POLLIN) {
-            zmq::message_t msg;
-            m_clients[x]->m_socket.recv(&msg);
-            //debug("Got message of size %li\n", msg.size());
-            m_clients[x]->Client::clientData(static_cast<char*>(msg.data()), msg.size());
+            m_clients[x]->receiveAndHandleMessage();
         }
     }
     if (getNumPendingRequests() > 0) {

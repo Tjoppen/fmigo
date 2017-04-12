@@ -664,6 +664,8 @@ int main(int argc, char *argv[] ) {
     info("Successfully connected to all %zu servers\n", fmuURIs.size());
 #endif
 
+    //catch any ZMQ exceptions
+    try {
     //get modelDescription XML
     //important to be able to resolve variable names
     for (auto it = clients.begin(); it != clients.end(); it++) {
@@ -879,6 +881,9 @@ int main(int argc, char *argv[] ) {
     }
     MPI_Finalize();
 #endif
+    } catch (zmq::error_t e) {
+      fatal("zmq::error_t in %s: %s\n", argv[0], e.what());
+    }
 
     return 0;
 }

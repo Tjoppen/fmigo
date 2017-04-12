@@ -60,7 +60,7 @@ int main(int argc, char *argv[]) {
 
   info("FMI Server %s - %s <-- %s\n",FMITCP_VERSION, oss.str().c_str(), fmuPath.c_str());
 
-  zmq::socket_t socket(context, ZMQ_PAIR);
+  zmq::socket_t socket(context, ZMQ_REP);
   socket.bind(oss.str().c_str());
 
   //use monitor + inproc PAIR to stop when the client disconnects
@@ -114,7 +114,7 @@ int main(int argc, char *argv[]) {
  } catch (zmq::error_t e) {
       //catch any stray ZMQ exceptions
       //this should prevent "program stopped working" messages on Windows when fmigo-servers are taskkill'd
-     error("zmq::error_t: %s\n", e.what());
+     error("zmq::error_t in %s: %s\n", argv[0], e.what());
      return 1;
  }
 }

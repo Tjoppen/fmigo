@@ -20,14 +20,14 @@
 #define HAVE_MODELDESCRIPTION_STRUCT
 typedef struct {
     fmi2Real    r_out; //VR=0
-    fmi2Real    r0; //VR=8
     fmi2Real    r_in; //VR=4
+    fmi2Real    r0; //VR=8
     fmi2Integer i_out; //VR=1
     fmi2Integer i_in; //VR=5
     fmi2Integer i0; //VR=9
     fmi2Boolean b_out; //VR=2
-    fmi2Boolean b0; //VR=10
     fmi2Boolean b_in; //VR=6
+    fmi2Boolean b0; //VR=10
 
 } modelDescription_t;
 
@@ -35,27 +35,27 @@ typedef struct {
 #define HAVE_DEFAULTS
 static const modelDescription_t defaults = {
     0.000000, //r_out
-    0.000000, //r0
     0.000000, //r_in
+    0.000000, //r0
     0, //i_out
     0, //i_in
     0, //i0
     0, //b_out
-    0, //b0
     0, //b_in
+    0, //b0
 
 };
 
 
 #define VR_R_OUT 0
-#define VR_R0 8
 #define VR_R_IN 4
+#define VR_R0 8
 #define VR_I_OUT 1
 #define VR_I_IN 5
 #define VR_I0 9
 #define VR_B_OUT 2
-#define VR_B0 10
 #define VR_B_IN 6
+#define VR_B0 10
 
 
 //the following getters and setters are static to avoid getting linking errors if this file is included in more than one place
@@ -68,8 +68,8 @@ static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
         case 0: value[i] = md->r_out; break;
-        case 8: value[i] = md->r0; break;
         case 4: value[i] = md->r_in; break;
+        case 8: value[i] = md->r0; break;
         default: return fmi2Error;
         }
     }
@@ -81,8 +81,8 @@ static fmi2Status generated_fmi2SetReal(modelDescription_t *md, const fmi2ValueR
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
         case 0: md->r_out = value[i]; break;
-        case 8: md->r0 = value[i]; break;
         case 4: md->r_in = value[i]; break;
+        case 8: md->r0 = value[i]; break;
         default: return fmi2Error;
         }
     }
@@ -120,8 +120,8 @@ static fmi2Status generated_fmi2GetBoolean(const modelDescription_t *md, const f
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
         case 2: value[i] = md->b_out; break;
-        case 10: value[i] = md->b0; break;
         case 6: value[i] = md->b_in; break;
+        case 10: value[i] = md->b0; break;
         default: return fmi2Error;
         }
     }
@@ -133,8 +133,8 @@ static fmi2Status generated_fmi2SetBoolean(modelDescription_t *md, const fmi2Val
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
         case 2: md->b_out = value[i]; break;
-        case 10: md->b0 = value[i]; break;
         case 6: md->b_in = value[i]; break;
+        case 10: md->b0 = value[i]; break;
         default: return fmi2Error;
         }
     }

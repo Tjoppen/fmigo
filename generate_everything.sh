@@ -5,6 +5,7 @@ GENERATOR="`pwd`/fmu-builder/cmake-generator -t `pwd`/templates/fmi2/ -i `pwd`/.
 
 GSLFMUS="
     gsl2/clutch2
+    gsl2/clutch3
     gsl2/chained_sho
     gsl2/exp
     gsl2/clutch_ef

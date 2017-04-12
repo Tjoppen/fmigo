@@ -45,7 +45,7 @@ int trailer (double t, const double x[], double dxdt[], void * params){
   state_t *s = (state_t*)params;
 
   /* internal triangular road model, added on top of s->md.angle */
-  double triangle = 0;
+  double triangle = 1;
 
   if (s->md.triangle_amplitude > 0 && s->md.triangle_wavelength > 0) {
     double a = s->md.triangle_amplitude;
@@ -75,8 +75,7 @@ int trailer (double t, const double x[], double dxdt[], void * params){
     - sgnv * s->md.brake * s->md.mu * s->md.g * cos( s->md.angle + triangle );
 
   /* rolling resistance */
-  force +=
-    - sgnv * ( s->md.c_r_2 * fabs( x[ 1 ] ) + s->md.c_r_1 ) * s->md.mass * s->md.g * cos( s->md.angle + triangle );
+  force += - sgnv * ( s->md.c_r_2 * fabs( x[ 1 ] ) + s->md.c_r_1 ) * s->md.mass * s->md.g * cos( s->md.angle + triangle );
 
   /* any additional force */
   force += s->md.tau_d / s->md.r_w;

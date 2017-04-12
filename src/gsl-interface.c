@@ -42,6 +42,17 @@ static int cgsl_step ( void * _s  ) {
 
 }
 
+static void cgsl_print_data( cgsl_simulation * s ){
+  if ( s->print  && s->file ) {
+    int i;
+    fprintf (s->file, "%.5e ", s->t );
+    for ( i = 0; i < s->i.system.dimension; ++i ){
+      fprintf (s->file, "%.5e ", s->model->x[ i ]);
+    }
+    fprintf (s->file, "\n");
+  }
+}
+
 /**
  * Integrate the equations up to a given end point.
  */
@@ -76,11 +87,7 @@ int cgsl_step_to(void * _s,  double comm_point, double comm_step ) {
       exit(-1);
     }
     if ( s->print  && s->file ) {
-      fprintf (s->file, "%.5e ", s->t );
-      for ( i = 0; i < s->i.system.dimension; ++i ){
-	fprintf (s->file, "%.5e ", s->model->x[ i ]);
-      }
-      fprintf (s->file, "\n");
+      cgsl_print_data( s );
     }
 
     if ( s->save ) {
@@ -144,11 +151,16 @@ cgsl_simulation cgsl_init_simulation(
   sim.save                   = save;
   sim.print                  = print;
 
+#if 0 
+  ///CL: this should be part of the FMU logic.  Using a POST callback
+  //before anything happens is silly.
   //call post_step() so the initial values get synced outside the FMU
   if (sim.model->post_step) {
       sim.model->post_step(sim.t, sim.h, sim.model->x, sim.model->parameters);
   }
-
+#endif
+  /// this will print initial conditions
+  cgsl_print_data(&sim);
   return sim;
 
 }
@@ -316,15 +328,12 @@ static int cgsl_epce_model_eval (double t, const double y[], double dydt[], void
   int status =  GSL_SUCCESS;
   cgsl_epce_model * p = (cgsl_epce_model *) params;
 
-  p->model->function (t, y, dydt,                         p->model->parameters);
+  p->model->function (t, y, dydt, p->model->parameters);
   //the semantics of filters is that they have read-only access to the model's
   //variables, from which it computes its derivatives
   p->filter->function(t, y, dydt + p->model->n_variables, p->filter->parameters);
 
-  for (x = 0; x < p->filter->n_variables; x++) {
-      //TODO: look at resetting z. should reduce error accumulation
-      dydt[x + p->model->n_variables] = (dydt[x + p->model->n_variables] - p->z_prev[x]) / p->dt;
-  }
+
 
   return status;
 }
@@ -375,10 +384,15 @@ static int cgsl_epce_model_pre_step  (double t, double dt, const double y[], voi
 
   cgsl_epce_model  * p = (cgsl_epce_model *)params;
 
+  int x; 
   //memorize timestep and z values
   //TODO: circular buffer
   p->dt = dt;
   memcpy( p->z_prev, p->e_model.x + p->model->n_variables, p->filter->n_variables * sizeof(p->z_prev[0]));
+  double * z = p->e_model.x + p->model->n_variables;
+  for ( x = 0; x < p->filter->n_variables ; ++x ){
+    z[x] = 0.0;
+  }
 
   if (p->model->pre_step) {
     p->model->pre_step(t, dt, y, p->model->parameters);
@@ -409,16 +423,19 @@ static int cgsl_epce_model_post_step (double t, double dt, const double y[], voi
 
     p->filter->function(t, y, p->outputs, p->filter->parameters);
 
-    //TODO: circular buffer
-    for (x = 0; x < p->filter->n_variables; x++) {
-        p->filtered_outputs[x] = 0.5*(p->z_prev[x] + y[p->model->n_variables + x]);
-    }
 
     if (p->filter_length == 2) {
         //y = (z + z_prev) / 2)
-        p->epce_post_step(p->filter->n_variables, p->filtered_outputs,       p->epce_post_step_params);
+
+      //TODO: circular buffer
+      for (x = 0; x < p->filter->n_variables; x++) {
+        p->filtered_outputs[x] = 0.5*(p->z_prev[x] + y[p->model->n_variables + x] ) / dt;
+      }
+      
+      p->epce_post_step(p->filter->n_variables, p->filtered_outputs,       p->epce_post_step_params);
     } else if (p->filter_length == 1) {
         //y = z
+      
         p->epce_post_step(p->filter->n_variables, &y[p->model->n_variables], p->epce_post_step_params);
     } else {
         //y = g(x)

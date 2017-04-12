@@ -1,141 +1,39 @@
 Things to do:
 
--- clean fmu templates:
-         -- with events
-         -- without events
+-- Merge, rename to FMIGo, cleanup, code review (Tomas, Jonas, Claude)
 
-    Must have ability to undo step, stubs for directional derivatives, data
-    hiding (nothing in headers), minimal generic logging ability
+-- FMU cosim wrapper for FMU model exchange, including directional
+            derivatives (Jonas + Claude)
 
--- timing infrastructure
-
--- hdf5 ability  
-     -- timing data
-        --> done 
-     -- output dynamic data from FMU with HDF5 hierarchy mirroring
-        ModelDescription file
-                         --> problem: thread safety for ioh5
-     -- merging files from the different FMUs                    
-
--- Sensible measures of errors and differences
-        -- phase shift
-        -- order of method (errors as function of step size)
-        -- power spectrum (displacement of frequency)
-        -- ???
--- Stability analysis
-        -- ???
-
-
-
--- timing
-                -- done
-
--- FMUs needed
-   Stage 1: 
-   a) mass + spring subject to force inputs, returns position + velocity
-             --> done
-   b) mass + spring subject to a second coupling spring force depending on local x,v
-   + x,v received from another FMU, and which returns the force of the
-   coupling spring
-            --> done with SHO in each FMU
-
-   d) systems with loops
-   e) feed through
-   c) 2D rod to make chains
-   d) nonlinear oscillators
-   Stage 2:
-       -- each FMU with own integrator
-
--- FMU cleanup:  revise examples from  QTronic
-
--- Future:  FMU cosim wrapper for FMU model exchange, including directional
-            derivatives 
-
-
-==========  Runtime support =====
-
-In no particular order, some items might be deleted
-
--- SPP integration
-
--- FMI/X:
-   -- support for
-                  -- shared memory
-                  -- MPI
-                  -- TCP/IP
-                  -- UDP
-    -- check performance on high performance switches, clusters, etc.
-    -- Abisko for TCP/IP and MPI
-
-    -- graph designs for performance
+-- check performance on high performance switches, clusters, etc.
+    Abisko for TCP/IP and MPI  (Tomas, when there's free time)
 
 -- Servers for FMI/X
-           -- logging (there's an FMI standard coming, some issues exist)
-           -- HDF5 support with buffering and async
-           -- Model exchange support: server does integration
-           -- GSL or own integrators
-           -- support for directional derivatives and numerical Jacobians
-              for Model Exchange support
-
--- Model exchange support: needed in servers and global stepper
-                  -- can do leap-frog if we have derivative info in
-                     modelDescription.xml
-
--- Support for FMU testing from Modelon
-
--- Error analysis framework
-         -- estimate error as function of time-step
-                     -- Richardson extrapolation?
-                     -- correlation?
-                     -- FFT and power spectrum?
-                     -- ???
-                     -- Plot designs + automation
-                     -- Power graphs
-
--- Stability analysis framework
-             -- Lanczos or Arnoldi method to compute eigenvalues at a
-                particular configuration? (needs lots thinking)
-             -- eigenvalues of explicit stepping operators built from
-                theory (lots of work)
+            -- support for directional derivatives and numerical Jacobians for Model Exchange support
 
 -- Master stepper
-          -- force / displacement
-          -- force / velocity
-          -- displacement / displacement
-          -- kinematic ( can we do force velocity here? ) 
-          -- Edo's technique
-          -- support for NEPCE from Benedikt (Nearly Energy Perserving
-             Coupling Elements)
+         
+          -- support for NEPCE from Benedikt 
           -- Support for TLM
           -- extrapolation + interpolation
           -- iterative methods
-          -- event handling?
-          -- multirate?
-          -- filtering for f/d f/v and d/d couplings
-          -- Full support for Edo's filterning
-          -- model based extrapolation???  model reduction and integration
-             inside of simuling (etc.) and additional
-          -- Grandiose mix of model exchange and co-sim: master stepper
+          -- event handling
+          -- multirate
+          -- model based extrapolation model reduction and identification (Benedikt) 
+          inside FMU ModelExchange wrapper 
+          -- Grand mix of model exchange and co-sim: master stepper
              takes change of several ME FMUs as well as cosim ones, and
              time-integrates the ME FMUs together with a sensible
-             integrator. 
-                         -- puts constraints on SPP
+             integrator.  (See Ziegler and Vangheluwe for theory)
+          -- define kinematic couplings in SSP
 
 -- Simulation master
               -- weather report
-              -- global time
-              -- events
               -- database to store and communicate data
-              -- monitors: ill-defined interface
-              -- 
+              
              
-
-
 -- publication plan
                -- Edo's filter
                -- large comparisons of different weak masters
                -- kinematic coupling
-               -- FMI/TCP with distribution, servers that bridge for
-                  FMI/model exchange to FMI/co-sim, and numerical
-                  directional derivatives + Jacobians
                -- theory of linear stability

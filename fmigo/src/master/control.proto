@@ -1,0 +1,66 @@
+package control_proto;
+option optimize_for = LITE_RUNTIME;
+
+//control/state is communicated over a REQ/REP socket
+message control_message {
+    required int32          version =   1; //protocol version (1 for now)
+
+    enum Command {
+        command_pause   =   1;  //pause simulation
+        command_unpause =   2;  //unpause/start simulation
+        command_stop    =   3;  //terminate simulation prematurely
+        command_state   =   4;  //poll current state
+    }
+
+    optional Command        command =   2;
+}
+
+message state_message {
+    required int32          version =   1; //protocol version (1 for now)
+
+    enum State {
+        state_paused    =   1;
+        state_running   =   2;
+        state_exiting   =   3;
+    }
+
+    optional State          state   =   2;
+}
+
+//results are communicated over a PUSH/PULL socket
+message results_message {
+    required int32          version =   1; //protocol version (1 for now)
+    optional int32          step    =   2; //index of current communication point (zero based)
+    optional double         t       =   3; //time of current communication point
+    optional double         t_end   =   4; //final communication point, if set
+    optional double         dt      =   5; //current communication time step
+    repeated fmu_results    results =   6; //inputs/outputs from each FMU
+}
+
+message fmu_results {
+    optional int32          fmu_id  =   1;
+    optional values_real    reals   =   2;
+    optional values_int     ints    =   3;
+    optional values_bool    bools   =   4;
+    optional values_string  strings =   5;
+}
+
+message values_real {
+    repeated int32  vrs    = 1 [packed=true];
+    repeated double values = 2 [packed=true];
+}
+
+message values_int {
+    repeated int32  vrs    = 1 [packed=true];
+    repeated int32  values = 2 [packed=true];
+}
+
+message values_bool {
+    repeated int32  vrs    = 1 [packed=true];
+    repeated bool   values = 2 [packed=true];
+}
+
+message values_string {
+    repeated int32  vrs    = 1 [packed=true];
+    repeated string values = 2;
+}

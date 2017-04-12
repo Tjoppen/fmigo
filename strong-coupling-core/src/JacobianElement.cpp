@@ -38,5 +38,5 @@ Vec3 JacobianElement::getRotational() const {
 }
 
 void JacobianElement::print(){
-    printf("%g %g %g %g %g %g\n",m_spatial.x(),m_spatial.y(),m_spatial.z(),m_rotational.x(),m_rotational.y(),m_rotational.z());
+    fprintf(stderr, "%g %g %g %g %g %g\n",m_spatial.x(),m_spatial.y(),m_spatial.z(),m_rotational.x(),m_rotational.y(),m_rotational.z());
 }

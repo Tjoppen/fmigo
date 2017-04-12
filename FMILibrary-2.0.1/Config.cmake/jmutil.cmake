@@ -60,7 +60,11 @@ if(CYGWIN)
 message("not tested")
 endif(CYGWIN)
 
-target_link_libraries(jmutils c99snprintf)
+include(CheckSymbolExists)
+CHECK_SYMBOL_EXISTS(vsnprintf stdio.h HAVE_VSNPRINTF)
+if(NOT ${HAVE_VSNPRINTF})
+    target_link_libraries(jmutils c99snprintf)
+endif(NOT ${HAVE_VSNPRINTF})
 
 if(UNIX) 
 	target_link_libraries(jmutils dl)

@@ -32,6 +32,10 @@ parser.add_argument('-x','--srcxml2xml',
                     type=str,
                     help='Location of xml2wrappedxml.py',
                     default='')
+parser.add_argument('-s','--wrappersrc',
+                    type=str,
+                    help='Location of wrapper sources',
+                    default='')
 parser.add_argument('-c','--console',
                     action='store_true',
                     default=False,
@@ -133,17 +137,23 @@ with open(path,'w') as f:
         dependentFMU = modelIdentifier.split('_')
         dependentFMU.pop(0)
         dependentFMU = '_'.join(dependentFMU)
+        if len(args.wrappersrc):
+            wrappersrcs = os.path.relpath(args.wrappersrc).replace('\\','/')
+            wrappersrc = """
+set(COPY_SOURCES_COMMAND ${COPY_CMAKE_COMMAND} ${CMAKE_CURRENT_SOURCE_DIR}/%s ${CMAKE_CURRENT_SOURCE_DIR}/)
 
-        xml2xml = """
-if (CMAKE_VERSION VERSION_LESS "3.5.0")
-    set(COPY_FMU_COMMAND cp ${%s_FMU} ${CMAKE_CURRENT_SOURCE_DIR}/fmu/)
-else ()
-    set(COPY_FMU_COMMAND ${CMAKE_COMMAND} -E copy ${%s_FMU} ${CMAKE_CURRENT_SOURCE_DIR}/fmu/)
-endif ()
+if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/sources)
+  execute_process(COMMAND ${COPY_SOURCE_COMMAND})
+endif() """%(wrappersrcs)
+        else :
+            wrappersrc = ""
+
+        xml2xml = """set(COPY_FMU_COMMAND ${COPY_CMAKE_COMMAND} ${%s_FMU} ${CMAKE_CURRENT_SOURCE_DIR}/fmu/)
 
 if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/fmu/%s.fmu)
   execute_process(COMMAND ${COPY_FMU_COMMAND})
 endif()
+%s
 
 ADD_CUSTOM_COMMAND(
   OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/fmu/%s.fmu
@@ -160,8 +170,8 @@ ADD_CUSTOM_COMMAND(
   DEPENDS ${%s_FMU} )
     """ % (
             dependentFMU.upper(),
-            dependentFMU.upper(),
             dependentFMU,
+            wrappersrc,
             dependentFMU,
             dependentFMU.upper(),
             dependentFMU.upper(),
@@ -191,8 +201,18 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 SET(ARCH "linux64" CACHE STRING "Architecture: linux64, linux32, win32...")
 SET(TARGET %s)
 SET(%s_FMU ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}.fmu CACHE INTERNAL "" FORCE)
+
+if (CMAKE_VERSION VERSION_LESS "3.5.0")
+    set(COPY_CMAKE_COMMAND cp)
+    set(ZIP_CMAKE_COMMAND  zip -r)
+else ()
+    set(ZIP_CMAKE_COMMAND  ${CMAKE_COMMAND} -E tar cf --format=zip)
+    set(COPY_CMAKE_COMMAND ${CMAKE_COMMAND} -E copy)
+endif ()
+
 %s
 %s
+
 ADD_CUSTOM_COMMAND(
   OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
   COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/%s
@@ -212,16 +232,10 @@ TARGET_LINK_LIBRARIES( ${TARGET} ${LIBS} )
 
 %s
 
-if (CMAKE_VERSION VERSION_LESS "3.5.0")
-    set(ZIP_COMMAND  zip -r ${%s_FMU} .)
-    set(COPY_COMMAND cp ${SRCS} ${CMAKE_CURRENT_BINARY_DIR}/fmu/sources)
-else ()
-    # Would use "." for path, but that results in paths like ./modelDescription.xml in the .fmu which is probably a bad thing
-    # We could maybe work around this by running a subcommand that lists all files in ${CMAKE_CURRENT_BINARY_DIR}/fmu into a variable
-    set(ZIP_COMMAND  ${CMAKE_COMMAND} -E tar cf ${%s_FMU} --format=zip modelDescription.xml binaries sources)
-    set(COPY_COMMAND ${CMAKE_COMMAND} -E copy ${SRCS} ${CMAKE_CURRENT_BINARY_DIR}/fmu/sources)
-endif ()
-
+# Would use "." for path, but that results in paths like ./modelDescription.xml in the .fmu which is probably a bad thing
+# We could maybe work around this by running a subcommand that lists all files in ${CMAKE_CURRENT_BINARY_DIR}/fmu into a variable
+set(ZIP_COMMAND  ${ZIP_CMAKE_COMMAND} ${%s_FMU} modelDescription.xml binaries sources)
+set(COPY_COMMAND ${CMAKE_COMMAND} -E copy ${SRCS} ${CMAKE_CURRENT_BINARY_DIR}/fmu/sources)
 
 # There doesn't seem to be a way to repack an FMU in case it is deleted.
 # A post-build command is good enough for now.
@@ -250,7 +264,18 @@ else ()
         MAIN_DEPENDENCY ${TARGET}
     )
 endif ()
-""" % (modelIdentifier,modelIdentifier.upper(), xml2xml, files, md2hdr, definitions, "\n    ".join(include_directories), " ".join(link_libraries), libmextra, console if args.console else "",modelIdentifier.upper(),modelIdentifier.upper())
+""" % (modelIdentifier,
+       modelIdentifier.upper(),
+       xml2xml,
+       files,
+       md2hdr,
+       definitions,
+       "\n    ".join(include_directories),
+       " ".join(link_libraries),
+       libmextra,
+       console if args.console else "",
+       modelIdentifier.upper()
+)
 
     f.write( cmakestuff )
     f.close()

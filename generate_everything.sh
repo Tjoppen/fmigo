@@ -126,7 +126,7 @@ do
         python ${GENERATORXML} -x fmu/modelDescription.xml > modelDescription.xml
 #        cat modelDescription.xml
         python ${MD2HDR} -x modelDescription.xml -w 1 > sources/modelDescription.h
-        python ${GENERATOR} -x ${GENERATORXML} ${GSL}
+        python ${GENERATOR} -x ${GENERATORXML} ${GSL} -s ${WRAPPERSOURCES}
     popd
 done
 
@@ -142,6 +142,6 @@ do
         python ${GENERATORXML} -f fmu/${d}.fmu > modelDescription.xml
 #        cat modelDescription.xml
         python ${MD2HDR} -x modelDescription.xml -w 1 > sources/modelDescription.h
-        python ${GENERATOR} -x ${GENERATORXML} ${GSL}
+        python ${GENERATOR} -x ${GENERATORXML} ${GSL} -s ${WRAPPERSOURCES}
     popd
 done

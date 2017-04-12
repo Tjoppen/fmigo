@@ -16,6 +16,10 @@ endif ()
 
 set(COPY_FMU_COMMAND ${COPY_CMAKE_COMMAND} ${DRIVETRAINMFUNCTIONONLY_FMU} ${CMAKE_CURRENT_SOURCE_DIR}/fmu/)
 
+if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/fmu/)
+  execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_SOURCE_DIR}/fmu)
+endif()
+
 if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/fmu/drivetrainMFunctionOnly.fmu)
   execute_process(COMMAND ${COPY_FMU_COMMAND})
 endif()
@@ -81,10 +85,16 @@ SET_TARGET_PROPERTIES(${TARGET}_c PROPERTIES COMPILE_DEFINITIONS CONSOLE)
 TARGET_LINK_LIBRARIES( ${TARGET}_c ${LIBS} )
 
 
-# Would use "." for path, but that results in paths like ./modelDescription.xml in the .fmu which is probably a bad thing
-# We could maybe work around this by running a subcommand that lists all files in ${CMAKE_CURRENT_BINARY_DIR}/fmu into a variable
-set(ZIP_COMMAND  ${ZIP_CMAKE_COMMAND} ${WRAPPER_DRIVETRAINMFUNCTIONONLY_FMU} modelDescription.xml binaries sources)
-set(COPY_COMMAND ${CMAKE_COMMAND} -E copy ${SRCS} ${CMAKE_CURRENT_BINARY_DIR}/fmu/sources)
+if (CMAKE_VERSION VERSION_LESS "3.5.0")
+    set(ZIP_COMMAND  zip -r ${WRAPPER_DRIVETRAINMFUNCTIONONLY_FMU} .)
+    set(COPY_COMMAND cp ${SRCS} ${CMAKE_CURRENT_BINARY_DIR}/fmu/sources)
+else ()
+    # Would use "." for path, but that results in paths like ./modelDescription.xml in the .fmu which is probably a bad thing
+    # We could maybe work around this by running a subcommand that lists all files in ${CMAKE_CURRENT_BINARY_DIR}/fmu into a variable
+    set(ZIP_COMMAND  ${CMAKE_COMMAND} -E tar cf ${WRAPPER_DRIVETRAINMFUNCTIONONLY_FMU} --format=zip modelDescription.xml binaries sources)
+    set(COPY_COMMAND ${CMAKE_COMMAND} -E copy ${SRCS} ${CMAKE_CURRENT_BINARY_DIR}/fmu/sources)
+endif ()
+
 
 # There doesn't seem to be a way to repack an FMU in case it is deleted.
 # A post-build command is good enough for now.

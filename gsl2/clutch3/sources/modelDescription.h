@@ -4,13 +4,13 @@
 #include "FMI2/fmi2Functions.h" //for fmi2Real etc.
 #include "strlcpy.h" //for strlcpy()
 
-#define MODEL_IDENTIFIER clutch2
-#define MODEL_GUID "{6985712a-2b8e-4ebb-9b6c-05d89b0ec1c8}"
+#define MODEL_IDENTIFIER clutch3
+#define MODEL_GUID "{2e25fc3c-fa3d-4ad0-8d4b-b1895541fc9a}"
 #define FMI_COSIMULATION
 #define HAVE_DIRECTIONAL_DERIVATIVE 1
 #define CAN_GET_SET_FMU_STATE 1
 #define NUMBER_OF_REALS 34
-#define NUMBER_OF_INTEGERS 2
+#define NUMBER_OF_INTEGERS 3
 #define NUMBER_OF_BOOLEANS 4
 #define NUMBER_OF_STRINGS 0
 #define NUMBER_OF_STATES 0
@@ -54,6 +54,7 @@ typedef struct {
     fmi2Real    a_s; //VR=36
     fmi2Real    force_s; //VR=37
     fmi2Integer filter_length; //VR=98
+    fmi2Integer n_steps; //VR=100
     fmi2Integer gear; //VR=29
     fmi2Boolean integrate_dx_e; //VR=8
     fmi2Boolean is_gearbox; //VR=17
@@ -100,6 +101,7 @@ static const modelDescription_t defaults = {
     0.000000, //a_s
     0.000000, //force_s
     0, //filter_length
+    0, //n_steps
     1, //gear
     0, //integrate_dx_e
     0, //is_gearbox
@@ -144,6 +146,7 @@ static const modelDescription_t defaults = {
 #define VR_A_S 36
 #define VR_FORCE_S 37
 #define VR_FILTER_LENGTH 98
+#define VR_N_STEPS 100
 #define VR_GEAR 29
 #define VR_INTEGRATE_DX_E 8
 #define VR_IS_GEARBOX 17
@@ -249,6 +252,7 @@ static fmi2Status generated_fmi2GetInteger(const modelDescription_t *md, const f
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
         case 98: value[i] = md->filter_length; break;
+        case 100: value[i] = md->n_steps; break;
         case 29: value[i] = md->gear; break;
         default: return fmi2Error;
         }
@@ -261,6 +265,7 @@ static fmi2Status generated_fmi2SetInteger(modelDescription_t *md, const fmi2Val
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
         case 98: md->filter_length = value[i]; break;
+        case 100: md->n_steps = value[i]; break;
         case 29: md->gear = value[i]; break;
         default: return fmi2Error;
         }

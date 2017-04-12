@@ -5,7 +5,6 @@ SET(SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/../templates/fmi2/fmuTemplate.h
     ${CMAKE_CURRENT_SOURCE_DIR}/../templates/fmi2/fmuTemplate_impl.h
     ${CMAKE_CURRENT_SOURCE_DIR}/../templates/fmi2/strlcpy.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/sources/fmuTemplate_impl.h
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/lumped_rod.c
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/lumped_rod.h
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/lumped_rod_fmi.c

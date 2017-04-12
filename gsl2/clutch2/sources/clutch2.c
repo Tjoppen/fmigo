@@ -129,10 +129,8 @@ int clutch (double t, const double x[], double dxdt[], void * params){
   /** Second order dynamics */
   dxdt[ 0 ]  = x[ 1 ];
 
-  double damping_e = -s->md.gamma_e * x[ 1 ];		
-  double damping_s = -s->md.gamma_s * x[ 3 ];		
   /** internal dynamics */ 
-  dxdt[ 1 ]  = damping_e;
+  dxdt[ 1 ]  = -s->md.gamma_e * x[ 1 ];		
   /** coupling */ 
   dxdt[ 1 ] += -force_clutch;
   /** counter torque from next module */ 
@@ -147,7 +145,7 @@ int clutch (double t, const double x[], double dxdt[], void * params){
   dxdt[ 2 ]  = x[ 3 ];
   
   /** internal dynamics */ 
-  dxdt[ 3 ]  = damping_s;
+  dxdt[ 3 ]  = -s->md.gamma_s * x[ 3 ];
   /** coupling */ 
   dxdt[ 3 ] +=  force_clutch;
   /** counter torque from next module */ 
@@ -291,7 +289,6 @@ static int get_initial_states_size(state_t *s) {
   return 4 + s->md.integrate_dx_e + s->md.integrate_dx_s;
 }
 
-/// WTF?  This is called 25 times during initialization!
 static void get_initial_states(state_t *s, double *initials) {
   int N = get_initial_states_size(s);
   initials[0] = s->md.x0_e;
@@ -304,7 +301,6 @@ static void get_initial_states(state_t *s, double *initials) {
   if (N >= 6) {
     initials[5] = s->md.dx0_s;
   }
-  //fprintf(stderr, "#Initial states: %f %f %f %f\n", initials[0], initials[1], initials[2], initials[3]);
 }
 
 static int sync_out(int n, const double outputs[], void * params) {
@@ -342,7 +338,6 @@ static void clutch_init(state_t *s) {
       ),
     rkf45, 1e-5, 0, 0, s->md.octave_output, s->md.octave_output ? fopen("clutch2.m", "w") : NULL
     );
-
   s->simulation.last_gear = s->md.gear;
   s->simulation.delta_phi = 0;
 }
@@ -383,7 +378,6 @@ static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real comm
   s->simulation.sim.print = noSetFMUStatePriorToCurrentPoint;
   cgsl_step_to( &s->simulation, currentCommunicationPoint, communicationStepSize );
 
-  s->md.n_steps = s->simulation.sim.iterations;
   s->simulation.last_gear = s->md.gear;
 }
 

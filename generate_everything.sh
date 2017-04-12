@@ -119,6 +119,7 @@ for d in $WRAPPERS
 do
     echo "add_subdirectory(meWrapper/$d)" >> CMakeLists.txt
     GSL="-l cgsl,m,fmilib,fmilib_shared -c"
+    mkdir meWrapper/${d}/fmu || echo ''
     cp me/${d}/modelDescription.xml meWrapper/${d}/fmu/modelDescription.xml
     pushd meWrapper/$d
         cp ${WRAPPERSOURCES} . -r
@@ -135,6 +136,7 @@ for d in $ONLYFMU
 do
     echo "add_subdirectory(meWrapper/$d)" >> CMakeLists.txt
     GSL="-l cgsl,m,fmilib,fmilib_shared -c"
+    mkdir meWrapper/${d}/fmu || echo ""
     cp gsl2/${d}/${d}.fmu meWrapper/${d}/fmu/${d}.fmu
     pushd meWrapper/$d
         echo fmu/${d}.fmu

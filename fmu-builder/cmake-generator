@@ -142,7 +142,7 @@ with open(path,'w') as f:
             wrappersrc = """
 
 if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/sources)
-  execute_process(COMMAND ${COPY_CMAKE_COMMAND} ${CMAKE_CURRENT_SOURCE_DIR}/%s ${CMAKE_CURRENT_SOURCE_DIR}/)
+  execute_process(COMMAND ${COPY_CMAKE_COMMAND} -r ${CMAKE_CURRENT_SOURCE_DIR}/%s ${CMAKE_CURRENT_SOURCE_DIR}/)
 endif() """%(wrappersrcs)
         else :
             wrappersrc = ""

@@ -18,7 +18,7 @@ endif ()
 
 
 if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/sources)
-  execute_process(COMMAND ${COPY_CMAKE_COMMAND} ${CMAKE_CURRENT_SOURCE_DIR}/../../fmu-builder/sources ${CMAKE_CURRENT_SOURCE_DIR}/)
+  execute_process(COMMAND ${COPY_CMAKE_COMMAND} -r ${CMAKE_CURRENT_SOURCE_DIR}/../../fmu-builder/sources ${CMAKE_CURRENT_SOURCE_DIR}/)
 endif() 
 
 ADD_CUSTOM_COMMAND(

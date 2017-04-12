@@ -159,7 +159,10 @@ macro(copy_files COPY_TARGET GLOBPAT DESTINATION)
 endmacro(copy_files)
 
 copy_files(TARGET_SRCS_%s ${CMAKE_CURRENT_SOURCE_DIR}/%s ${CMAKE_CURRENT_SOURCE_DIR}/)
+copy_files(TARGET_SRCS_COMMONWRAPPER_%s ${CMAKE_CURRENT_SOURCE_DIR}/%s/commonWrapper ${CMAKE_CURRENT_SOURCE_DIR}/)
  """%(dependentFMU.upper(),
+      wrappersrcs,
+      dependentFMU.upper(),
       wrappersrcs)
         else :
             wrappersrc = ""

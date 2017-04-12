@@ -34,6 +34,7 @@ macro(copy_files COPY_TARGET GLOBPAT DESTINATION)
 endmacro(copy_files)
 
 copy_files(TARGET_SRCS_SPRINGS2 ${CMAKE_CURRENT_SOURCE_DIR}/../../fmu-builder/sources ${CMAKE_CURRENT_SOURCE_DIR}/)
+copy_files(TARGET_SRCS_COMMONWRAPPER_SPRINGS2 ${CMAKE_CURRENT_SOURCE_DIR}/../../fmu-builder/sources/commonWrapper ${CMAKE_CURRENT_SOURCE_DIR}/)
  
 
 ADD_CUSTOM_COMMAND(

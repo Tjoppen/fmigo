@@ -140,24 +140,20 @@ with open(path,'w') as f:
         if len(args.wrappersrc):
             wrappersrcs = os.path.relpath(args.wrappersrc).replace('\\','/')
             wrappersrc = """
-set(COPY_SOURCES_COMMAND ${COPY_CMAKE_COMMAND} ${CMAKE_CURRENT_SOURCE_DIR}/%s ${CMAKE_CURRENT_SOURCE_DIR}/)
 
 if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/sources)
-  execute_process(COMMAND ${COPY_SOURCE_COMMAND})
+  execute_process(COMMAND ${COPY_CMAKE_COMMAND} ${CMAKE_CURRENT_SOURCE_DIR}/%s ${CMAKE_CURRENT_SOURCE_DIR}/)
 endif() """%(wrappersrcs)
         else :
             wrappersrc = ""
 
-        xml2xml = """set(COPY_FMU_COMMAND ${COPY_CMAKE_COMMAND} ${%s_FMU} ${CMAKE_CURRENT_SOURCE_DIR}/fmu/)
-
-if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/fmu/)
-  execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_SOURCE_DIR}/fmu)
-endif()
+        xml2xml = """
 %s
 
 ADD_CUSTOM_COMMAND(
   OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/fmu/%s.fmu
-  COMMAND ${COPY_FMU_COMMAND}
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_SOURCE_DIR}/fmu
+  COMMAND ${COPY_CMAKE_COMMAND} ${%s_FMU} ${CMAKE_CURRENT_SOURCE_DIR}/fmu/)
   DEPENDS ${%s_FMU})
 
 
@@ -169,9 +165,9 @@ ADD_CUSTOM_COMMAND(
     ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml
   DEPENDS ${%s_FMU} )
     """ % (
-            dependentFMU.upper(),
             wrappersrc,
             dependentFMU,
+            dependentFMU.upper(),
             dependentFMU.upper(),
             dependentFMU.upper(),
             srcxml2xml,

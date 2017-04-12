@@ -130,6 +130,7 @@ with open(path,'w') as f:
     include_directories = [os.path.relpath(i).replace('\\','/') for i in include_directories]
     include_directories.sort()
     files = "SET(SRCS\n    " + "\n    ".join(source_files) + "\n)"
+
     md2hdr = os.path.relpath(args.md2hdr).replace('\\','/')
     if iswrapper:
         md2hdr += " -w 1 -x "
@@ -140,42 +141,22 @@ with open(path,'w') as f:
         if len(args.wrappersrc):
             wrappersrcs = os.path.relpath(args.wrappersrc).replace('\\','/')
             wrappersrc = """
-macro(copy_files COPY_TARGET GLOBPAT DESTINATION)
-  file(GLOB COPY_FILES
-    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-    ${GLOBPAT})
-  add_custom_target(${COPY_TARGET} ALL
-    COMMENT "Copying files: ${GLOBPAT}")
 
-  foreach(FILENAME ${COPY_FILES})
-    set(SRC "${CMAKE_CURRENT_SOURCE_DIR}/${FILENAME}")
-    set(DST "${DESTINATION}/${FILENAME}")
+add_directory_to_scrs(${CMAKE_CURRENT_SOURCE_DIR}/%s)
 
-    add_custom_command(
-      TARGET ${COPY_TARGET}
-      COMMAND ${COPY_CMAKE_COMMAND} ${SRC} ${DST}
+ """%(wrappersrcs,
       )
-  endforeach(FILENAME)
-endmacro(copy_files)
-
-copy_files(TARGET_SRCS_%s ${CMAKE_CURRENT_SOURCE_DIR}/%s ${CMAKE_CURRENT_SOURCE_DIR}/)
-copy_files(TARGET_SRCS_COMMONWRAPPER_%s ${CMAKE_CURRENT_SOURCE_DIR}/%s/commonWrapper ${CMAKE_CURRENT_SOURCE_DIR}/)
- """%(dependentFMU.upper(),
-      wrappersrcs,
-      dependentFMU.upper(),
-      wrappersrcs)
         else :
             wrappersrc = ""
 
         xml2xml = """
-%s
-
 ADD_CUSTOM_COMMAND(
   OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/fmu/%s.fmu
   COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_SOURCE_DIR}/fmu
   COMMAND ${COPY_CMAKE_COMMAND} ${%s_FMU} ${CMAKE_CURRENT_SOURCE_DIR}/fmu/
   DEPENDS ${%s_FMU})
 
+%s
 
 ADD_CUSTOM_COMMAND(
   OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml
@@ -184,15 +165,18 @@ ADD_CUSTOM_COMMAND(
        ${%s_FMU} >
     ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml
   DEPENDS ${%s_FMU} )
+
+add_directory_to_scrs(${CMAKE_CURRENT_SOURCE_DIR}/%s)
     """ % (
-            wrappersrc,
             dependentFMU,
             dependentFMU.upper(),
             dependentFMU.upper(),
+            wrappersrc,
             dependentFMU.upper(),
             srcxml2xml,
             dependentFMU.upper(),
             dependentFMU.upper(),
+            wrappersrcs,
     )
     else:
         md2hdr += " -x "
@@ -223,6 +207,31 @@ else ()
     set(ZIP_CMAKE_COMMAND  ${CMAKE_COMMAND} -E tar cf --format=zip)
     set(COPY_CMAKE_COMMAND ${CMAKE_COMMAND} -E copy)
 endif ()
+
+macro(add_directory_to_scrs distant)
+    file(GLOB_RECURSE DistantFiles
+        RELATIVE ${distant}
+        ${distant}/*)
+    foreach(Filename ${DistantFiles})
+      string(LENGTH ${Filename} stringLen)
+      MATH(EXPR one "${stringLen}-2")
+      MATH(EXPR three "${stringLen}-4")
+
+      string(SUBSTRING ${Filename} ${one} 2 suffix)
+      string(SUBSTRING ${Filename} ${three} 4 suffixthree)
+      if(( ".c"  STREQUAL ${suffix})
+          OR( ".h"   STREQUAL ${suffix})
+          OR( ".cpp" STREQUAL ${suffixthree})
+          OR( ".hpp" STREQUAL ${suffixthree})
+          OR( ".fmu" STREQUAL ${suffixthree})
+          )
+          set(SRCS "${SRCS}${distant}${Filename}")
+      endif()
+
+    endforeach(Filename)
+endmacro()
+
+add_directory_to_scrs(${CMAKE_CURRENT_SOURCE_DIR}/)
 
 %s
 %s

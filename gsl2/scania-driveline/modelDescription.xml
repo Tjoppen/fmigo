@@ -37,6 +37,7 @@
                     initial        = "approx">
         <Real start="0" />
     </ScalarVariable>  <!--index="3" -->
+
     <ScalarVariable name           = "w_wheel"
                     valueReference = "2"
                     description    = "w_wheel"
@@ -45,6 +46,7 @@
                     initial        = "approx">
         <Real start="0" />
     </ScalarVariable>  <!--index="4" -->
+
     <ScalarVariable name           = "w_inShaftOld"
                     valueReference = "3"
                     description    = "w_inShaftOld"
@@ -294,6 +296,7 @@
                     initial        = "exact">
         <Real start="10"/>
     </ScalarVariable>  <!--index="36" -->
+
     <ScalarVariable name           = "w_shaft_out"
                     valueReference = "36"
                     description    = "output shaft angular velocity"
@@ -301,6 +304,7 @@
                     variability    = "discrete">
           <Real />
     </ScalarVariable>  <!--index="37" -->
+
     <ScalarVariable name           = "f_shaft_in"
                     valueReference = "37"
                     description    = "coupling input force"
@@ -325,6 +329,23 @@
           <Real start="0" />
     </ScalarVariable>  <!--index="40" -->
 
+    <ScalarVariable name           = "a_wheel"
+                    valueReference = "40"
+                    description    = "acceleration of wheel"
+                    causality      = "input"
+                    variability    = "discrete"
+                    initial        = "approx">
+        <Real start="0" />
+    </ScalarVariable>  <!--index="41" -->
+
+    <ScalarVariable name           = "a_shaft_out"
+                    valueReference = "41"
+                    description    = "output shaft angular acceleration"
+                    causality      = "output"
+                    variability    = "discrete">
+          <Real />
+    </ScalarVariable> <!--index="42" -->
+
 </ModelVariables>
 <ModelStructure>
   <Outputs>
@@ -336,7 +357,9 @@
       <Unknown index= "27"/>
       <Unknown index= "28"/>
       <Unknown index= "29"/>
-      
+      <Unknown index= "41"/>
+      <Unknown index= "42"/>
+
   </Outputs>
   <Derivatives/>
   <InitialUnknowns/>

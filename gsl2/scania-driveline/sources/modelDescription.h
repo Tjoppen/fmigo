@@ -9,7 +9,7 @@
 #define FMI_COSIMULATION
 #define HAVE_DIRECTIONAL_DERIVATIVE 0
 #define CAN_GET_SET_FMU_STATE 0
-#define NUMBER_OF_REALS 39
+#define NUMBER_OF_REALS 41
 #define NUMBER_OF_INTEGERS 1
 #define NUMBER_OF_BOOLEANS 0
 #define NUMBER_OF_STRINGS 0
@@ -58,6 +58,8 @@ typedef struct {
     fmi2Real    f_shaft_in; //VR=37
     fmi2Real    f_wheel_out; //VR=38
     fmi2Real    w_wheel_in; //VR=39
+    fmi2Real    a_wheel; //VR=40
+    fmi2Real    a_shaft_out; //VR=41
     fmi2Integer simulation_ticks; //VR=0
 
 
@@ -105,6 +107,8 @@ static const modelDescription_t defaults = {
     0.000000, //f_shaft_in
     0.000000, //f_wheel_out
     0.000000, //w_wheel_in
+    0.000000, //a_wheel
+    0.000000, //a_shaft_out
     0, //simulation_ticks
 
 
@@ -150,6 +154,8 @@ static const modelDescription_t defaults = {
 #define VR_F_SHAFT_IN 37
 #define VR_F_WHEEL_OUT 38
 #define VR_W_WHEEL_IN 39
+#define VR_A_WHEEL 40
+#define VR_A_SHAFT_OUT 41
 #define VR_SIMULATION_TICKS 0
 
 
@@ -202,6 +208,8 @@ static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2
         case 37: value[i] = md->f_shaft_in; break;
         case 38: value[i] = md->f_wheel_out; break;
         case 39: value[i] = md->w_wheel_in; break;
+        case 40: value[i] = md->a_wheel; break;
+        case 41: value[i] = md->a_shaft_out; break;
         default: return fmi2Error;
         }
     }
@@ -251,6 +259,8 @@ static fmi2Status generated_fmi2SetReal(modelDescription_t *md, const fmi2ValueR
         case 37: md->f_shaft_in = value[i]; break;
         case 38: md->f_wheel_out = value[i]; break;
         case 39: md->w_wheel_in = value[i]; break;
+        case 40: md->a_wheel = value[i]; break;
+        case 41: md->a_shaft_out = value[i]; break;
         default: return fmi2Error;
         }
     }

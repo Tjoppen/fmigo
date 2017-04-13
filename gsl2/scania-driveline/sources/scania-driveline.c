@@ -74,7 +74,7 @@ int  fcn( double t, const double * x, double *dxdt, void * params){
   if ( inputs.gear_ratio != 0 ){
     tq_loadAtInShaft = tq_loadPropShaft / inputs.gear_ratio;
     J_atInShaft = inputs.m_vehicle * SQ ( ( inputs.r_tire /
-    (inputs.final_gear_ratio*inputs.gear_ratio) ) );
+					    (inputs.final_gear_ratio*inputs.gear_ratio) ) );
   } else {
     // when in neutral the transmission input shaft is disconnected and the
     // speed is then integrated and the shaft inertia is set to J_neutral
@@ -108,7 +108,7 @@ int  fcn( double t, const double * x, double *dxdt, void * params){
   outputs.tq_outTransmission = tq_inTransmission * inputs.gear_ratio;
 
   double tq_sumWheel = outputs.tq_outTransmission * inputs.final_gear_ratio
-  - tq_loadWheelShaft;
+    - tq_loadWheelShaft;
 
   // w_wheel is integrate outside
   outputs.w_wheelDer = tq_sumWheel / ( inputs.m_vehicle * SQ( inputs.r_tire ) );
@@ -157,67 +157,85 @@ static int sync_out(int n, const double out[], void * params) {
 
 
 static void scania_driveline_init(state_t *s) {
-    double initials[] = {
-      s->md.w_inShaftNeutral,
-      s->md.w_wheel
-    };
+  double initials[] = {
+    s->md.w_inShaftNeutral,
+    s->md.w_wheel
+  };
 
   s->simulation = cgsl_init_simulation(
     cgsl_epce_default_model_init(
-                                 cgsl_model_default_alloc(sizeof(initials)/sizeof(initials[0]), initials, s, fcn, NULL, NULL, NULL, 0),
+      cgsl_model_default_alloc(sizeof(initials)/sizeof(initials[0]), initials, s, fcn, NULL, NULL, NULL, 0),
       0,//s->md.filter_length,
       sync_out,
       s
-    ),
+      ),
     rkf45, 1e-5, 0, 0, 0, NULL
-  );
+    );
 }
 
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
   cgsl_step_to( &s->simulation, currentCommunicationPoint, communicationStepSize );
 }
 
-#if 0 
+/**
+ *   The mobility matrix looks like 
+[ J 0 ]
+[ 0 m ] 
+if the clutch is disconnected. 
+
+When the clutch is connected and the gear ratio is g (including units), 
+first have "total mass" 
+
+M = J + g^2 * m
+
+mu = inv(M)
+
+and
+
+     [ g^2  g ]
+mu * [ g    1 ]
+
+
+
+ */
 static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
-  if (vr == VR_A_E) {
-    if (wrt == VR_FORCE_IN_E || wrt == VR_FORCE_IN_EX) {
-        *partial = 1.0/s->md.mass_e;
-        return fmi2OK;
-    }
-    if (wrt == VR_FORCE_IN_S || wrt == VR_FORCE_IN_SX) {
-        *partial = 0;
-        return fmi2OK;
+  if (vr == VR_A_SHAFT_OUT ) {
+    if (wrt == VR_F_SHAFT_IN ){
+      *partial = 0 ; //XXX;
+      return fmi2OK;
+      }
+    if (wrt == VR_F_WHEEL_IN ){
+      *partial = 0; // XXX;
+      return fmi2OK;
     }
   }
-  if (vr == VR_A_S) {
-    if (wrt == VR_FORCE_IN_E || wrt == VR_FORCE_IN_EX) {
-        *partial = 0;
-        return fmi2OK;
+  if (vr == VR_A_WHEEL ) {
+    if (wrt == VR_F_SHAFT_IN ){
+      *partial = 0;//XXX;
+      return fmi2OK;
     }
-    if (wrt == VR_FORCE_IN_S || wrt == VR_FORCE_IN_SX) {
-        *partial = 1.0/s->md.mass_s;
-        return fmi2OK;
+    if (wrt == VR_F_WHEEL_IN ){
+      *partial = 0;//XXX;
+      return fmi2OK;
     }
   }
   return fmi2Error;
 }
-#endif
-
 
 #ifdef CONSOLE
-int main(){
+  int main(){
 
-  state_t s;
-  s.md = defaults;
-  scania_driveline_init(&s);
-  s.simulation.file = fopen( "s.m", "w+" );
-  s.simulation.save = 1;
-  s.simulation.print = 1;
-  cgsl_step_to( &s.simulation, 0.0, 40 );
-  cgsl_free_simulation(s.simulation);
+    state_t s;
+    s.md = defaults;
+    scania_driveline_init(&s);
+    s.simulation.file = fopen( "s.m", "w+" );
+    s.simulation.save = 1;
+    s.simulation.print = 1;
+    cgsl_step_to( &s.simulation, 0.0, 40 );
+    cgsl_free_simulation(s.simulation);
 
-  return 0;
-}
+    return 0;
+  }
 #else
 
 // include code that implements the FMI based on the above definitions

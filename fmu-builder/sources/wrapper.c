@@ -11,7 +11,7 @@
 #include <stdlib.h>
 
 //#include "modelDescription_me.h"
-#include "commonWrapper/modelExchange.h"
+#include "modelExchange.h"
 #include "modelDescription.h"
 #define SIMULATION_TYPE    cgsl_simulation*
 #include "fmuTemplate.h"

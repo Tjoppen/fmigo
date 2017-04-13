@@ -43,14 +43,6 @@ public:
         }
         wait();
 
-        //print values
-        /*for (auto it = clientWeakRefs.begin(); it != clientWeakRefs.end(); it++) {
-            int i = 0;
-            for (auto it2 = it->first->m_getRealValues.begin(); it2 != it->first->m_getRealValues.end(); it2++, i++) {
-                debug("%i real VR %i = %f\n", it->first->getId(), it->second[i], *it2);
-            }
-        }*/
-
         //set connection inputs, pipeline with do_step()
         const InputRefsValuesType refValues = getInputWeakRefsAndValues(m_weakConnections);
 
@@ -59,9 +51,9 @@ public:
             it->first->sendSetX(it->second);
         }
 
-        send(cs_clients, fmi2_import_do_step(t, dt, true));
+        //this pipelines with the sendGetX() + wait() in printOutputs() in main.cpp
+        send(m_clients, fmi2_import_do_step(t, dt, true));
         solveME(t,dt);
-        wait();
     }
 };
 

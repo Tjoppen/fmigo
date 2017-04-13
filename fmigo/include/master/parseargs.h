@@ -5,7 +5,9 @@
 #include <stdio.h>
 #include <string>
 #include <vector>
+#include <deque>
 #include <map>
+#include "common/CSV-parser.h"
 
 namespace fmitcp_master {
 
@@ -15,7 +17,9 @@ struct connection {
     connection() {
         slope = 1;
         intercept = 0;
+        needs_type = true;
     }
+    bool needs_type;
     fmi2_base_type_enu_t fromType;
     int fromFMU;                // Index of FMU
     int fromOutputVR;           // Value reference
@@ -35,14 +39,15 @@ struct strongconnection {
 };
 
 struct param {
-    int fmuIndex;
-    std::string vrORname;                 // Parameter value reference OR parameter name
+    int valueReference;
     fmi2_base_type_enu_t type;
     std::string stringValue;            // String version, always set to what the user wrote
     int intValue;                       // Integer
     double realValue;                   // Real
     int boolValue;                      // Boolean
 };
+
+ typedef std::map<std::pair<int,fmi2_base_type_enu_t>, std::vector<param> > param_map;
 
 enum FILEFORMAT {
     csv,
@@ -54,6 +59,8 @@ enum METHOD {
     gs,
     me
 };
+
+fmi2_base_type_enu_t type_from_char(std::string type);
 
 /**
  * @brief Parses the command line arguments and stores in the given variable pointer targets.
@@ -84,7 +91,7 @@ void parseArguments( int argc,
                     char *argv[],
                     std::vector<std::string> *fmuFilePaths,
                     std::vector<connection> *connections,
-                    std::map<std::pair<int,fmi2_base_type_enu_t>, std::vector<param> > *params,
+                    std::vector<std::deque<std::string> > *params,
                     double* tEnd,
                     double* timeStepSize,
                     jm_log_level_enu_t *loglevel,
@@ -106,7 +113,8 @@ void parseArguments( int argc,
                     int *results_port,
                     bool *paused,
                     bool *solveLoops,
-                    bool *useHeadersInCSV
+                    bool *useHeadersInCSV,
+                    fmigo_csv_fmu *csv_fmu
                     );
 }
 

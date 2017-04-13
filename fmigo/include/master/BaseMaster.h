@@ -38,11 +38,6 @@ namespace fmitcp_master {
         virtual void prepare() {};
         virtual void runIteration(double t, double dt) = 0;
 
-        // These are callbacks that fire when a slave did something:
-        void slaveConnected                 (FMIClient* slave){info("Client %i connected\n", slave->getId());}
-        void slaveDisconnected              (FMIClient* slave){}
-        void slaveError                     (FMIClient* slave){exit(1);}
-
         inline FmigoStorage & get_storage(){return m_fmigoStorage;}
         void storage_alloc(const std::vector<FMIClient*> &clients){
             vector<size_t> states({});
@@ -54,7 +49,6 @@ namespace fmitcp_master {
             get_storage().allocate_storage(states,indicators);
         }
 
-        //void freeSim(){};
 #define on(name) void name(FMIClient* slave) {}
         on(onSlaveInstantiated)
         on(onSlaveInitialized)

@@ -1,4 +1,5 @@
 #include "master/globals.h"
+#include <stdlib.h>
 
 using namespace fmitcp_master;
 

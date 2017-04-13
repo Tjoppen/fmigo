@@ -34,12 +34,8 @@ namespace fmitcp_master {
 
     private:
         int m_id;
-#ifndef USE_MPI
-        string m_uri;
-#endif
         std::string m_xml;
         bool m_initialized;
-        variable_map m_variables;
 
         // variables for modelDescription.xml
         jm_callbacks m_jmCallbacks;
@@ -48,6 +44,9 @@ namespace fmitcp_master {
         // FMI 2.0
         fmi2_import_t* m_fmi2Instance;
         fmi2_import_variable_list_t* m_fmi2Outputs;
+        variable_map m_variables;
+        vector<variable> m_outputs;
+        void setVariables();
 
     public:
         int m_stateId;
@@ -67,9 +66,9 @@ namespace fmitcp_master {
         void clearGetValues();
 
         std::string getModelName() const;
-        variable_map getVariables() const;
         fmi2_fmu_kind_enu_t getFmuKind();
-        std::vector<variable> getOutputs() const;   //outputs in the same order as specified in the modelDescription
+        const variable_map& getVariables() const;
+        const std::vector<variable>& getOutputs() const;   //outputs in the same order as specified in the modelDescription
 
 #ifdef USE_MPI
         FMIClient(int world_rank, int id);
@@ -79,9 +78,6 @@ namespace fmitcp_master {
         virtual ~FMIClient();
 
         int getId();
-
-        //connects to remote host and gets modelDescription XML
-        void connect(void);
 
         bool isInitialized();
 
@@ -113,17 +109,6 @@ namespace fmitcp_master {
 
         void setConnectorValues          (std::vector<int> valueRefs, std::vector<double> values);
         void setConnectorFutureVelocities(std::vector<int> valueRefs, std::vector<double> values);
-
-        const variable_map& getVariables();
-        void setVariables();
-        /// Called when the client connects.
-        void onConnect();
-
-        /// Called when the client disconnects.
-        void onDisconnect();
-
-        /// Called if an error occurred.
-        void onError(string err);
 
         bool hasCapability(fmi2_capabilities_enu_t cap) const;
 

@@ -12,14 +12,13 @@ RUN apt-get update
 #  mpi-default-bin: for mpiexec
 #        coreutils: for sha1sum
 #
-RUN apt-get update
-
 RUN apt-get install --yes \
         build-essential ninja-build git python bc psmisc \
         protobuf-compiler protobuf-c-compiler libprotobuf-dev \
         libsuitesparse-dev libzmqpp-dev libhdf5-dev \
         libopenmpi-dev libgsl0-dev mpi-default-bin \
-        wget coreutils clang valgrind
+        wget coreutils clang valgrind \
+        python-lxml python-psutil
 
 WORKDIR /root
 

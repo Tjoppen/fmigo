@@ -12,6 +12,7 @@
 #include <mpi.h>
 #endif
 #include <sstream>
+#include "common/CSV-parser.h"
 
 #include "master/parseargs.h"
 
@@ -28,7 +29,7 @@ static void printInvalidArg(char option){
   printHelp();
 }
 
-static fmi2_base_type_enu_t type_from_char(string type) {
+fmi2_base_type_enu_t fmitcp_master::type_from_char(string type) {
     if (type.size() != 1) {
         fatal("Bad type: %s\n", type.c_str());
     }
@@ -128,7 +129,7 @@ void fmitcp_master::parseArguments( int argc,
                     char *argv[],
                     std::vector<std::string> *fmuFilePaths,
                     std::vector<connection> *connections,
-                    map<pair<int,fmi2_base_type_enu_t>, vector<param> > *params,
+                    std::vector<std::deque<std::string> > *params,
                     double* tEnd,
                     double* timeStepSize,
                     jm_log_level_enu_t *loglevel,
@@ -150,7 +151,8 @@ void fmitcp_master::parseArguments( int argc,
                     int *results_port,
                     bool *paused,
                     bool *solveLoops,
-                    bool *useHeadersInCSV
+                    bool *useHeadersInCSV,
+                    fmigo_csv_fmu *csv_fmu
         ) {
     int index, c;
     opterr = 0;
@@ -171,7 +173,7 @@ void fmitcp_master::parseArguments( int argc,
 
     vector<char*> argv2 = make_char_vector(argvstore);
 
-    while ((c = getopt (argv2.size(), argv2.data(), "xrl:vqht:c:d:s:o:p:f:m:g:w:C:5:F:NM:a:z:ZLH")) != -1){
+    while ((c = getopt (argv2.size(), argv2.data(), "xrl:vqht:c:d:s:o:p:f:m:g:w:C:5:F:NM:a:z:ZLHV:")) != -1){
         int n, skip, l, cont, i, numScanned, stop, vis;
         deque<string> parts;
         if (optarg) parts = escapeSplit(optarg, ':');
@@ -184,10 +186,15 @@ void fmitcp_master::parseArguments( int argc,
                 deque<string> values = escapeSplit(*it, ',');
                 conn.slope = 1;
                 conn.intercept = 0;
+                conn.needs_type = true;
                 int a = 0, b = 1, c = 2, d = 3; //positions of FMUFROM,VRFROM,FMUTO,VRTO in values
 
                 if (values.size() == 8) {
                     //TYPEFROM,FMUFROM,VRFROM,TYPETO,FMUTO,VRTO,k,m
+                    if (!isNumeric(values[2]) || !isNumeric(values[5])) {
+                        fatal("TYPEFROM,FMUFROM,NAMEFROM,TYPETO,FMUTO,NAMETO,k,m syntax not allowed\n");
+                    }
+                    conn.needs_type = false;
                     conn.fromType = type_from_char(values[0]);
                     conn.toType   = type_from_char(values[3]);
                     conn.slope    = atof(values[6].c_str());
@@ -197,6 +204,7 @@ void fmitcp_master::parseArguments( int argc,
                     //TYPEFROM,FMUFROM,VRFROM,TYPETO,FMUTO,VRTO
                     //FMUFROM,NAMEFROM,FMUTO,NAMETO,k,m
                     if (isNumeric(values[1])) {
+                        conn.needs_type = false;
                         conn.fromType = type_from_char(values[0]);
                         conn.toType   = type_from_char(values[3]);
                         a = 1; b = 2;  c = 4; d = 5;
@@ -210,12 +218,21 @@ void fmitcp_master::parseArguments( int argc,
                     if (!isNumeric(values[1]) || !isNumeric(values[4])) {
                         warning("TYPE,FMUFROM,NAMEFROM,FMUTO,NAMETO syntax not recommended\n");
                     }
+                    conn.needs_type = false;
                     conn.fromType = conn.toType = type_from_char(values[0]);
                     values.pop_front();
                 } else if (values.size() == 4) {
                     //FMUFROM,VRFROM,FMUTO,VRTO
                     //FMUFROM,NAMEFROM,FMUTO,NAMETO
+                    if (isNumeric(values[1]) != isNumeric(values[3])) {
+                        fatal("Must specify VRs or names, not both (-c %s,%s,%s,%s)\n",
+                            values[0].c_str(), values[1].c_str(), values[2].c_str(), values[3].c_str()
+                        );
+                    }
+
+                    //assume real if VRs, request type if names
                     conn.fromType = conn.toType = type_from_char("r");
+                    conn.needs_type = !isNumeric(values[1]);
                 } else {
                     fatal("Bad param: %s\n", it->c_str());
                 }
@@ -351,31 +368,14 @@ void fmitcp_master::parseArguments( int argc,
 
         case 'p':
             for (auto it = parts.begin(); it != parts.end(); it++) {
-                param p;
                 deque<string> values = escapeSplit(*it, ',');
 
                 //expect [type,]FMU,VR,value
-                if (values.size() == 4) {
-                    p.type       = type_from_char(values[0]);
-                    values.pop_front();
-                } else if (values.size() == 3) {
-                    p.type       = type_from_char("r");
-                } else {
-                    fatal("Bad param: %s\n", it->c_str());
+                if (values.size() < 3 || values.size() > 4) {
+                    fatal("Parameters must have exactly 3 or 4 parts: %s\n", it->c_str());
                 }
 
-                p.fmuIndex       = atoi(values[0].c_str());
-                p.vrORname = values[1];
-
-                switch (p.type) {
-                case fmi2_base_type_real: p.realValue = atof(values[2].c_str()); break;
-                case fmi2_base_type_int:  p.intValue = atoi(values[2].c_str()); break;
-                case fmi2_base_type_bool: p.boolValue = (values[2] == "true"); break;
-                case fmi2_base_type_str:  p.stringValue = values[2]; break;
-                case fmi2_base_type_enum: fatal("An enum snuck its way into -p\n");
-                }
-
-                (*params)[make_pair(p.fmuIndex,p.type)].push_back(p);
+                params->push_back(values);
             }
             break;
 
@@ -449,6 +449,24 @@ void fmitcp_master::parseArguments( int argc,
                 fatal("Unknown option character: \\x%x\n", optopt);
             }
 
+        case 'V':{
+          //for (auto it = parts.begin(); it != parts.end(); it++)
+        fprintf(stderr,"string %s",optarg);
+            {
+              fprintf(stderr," have CSV \n");
+              // fprintf(stderr," %s\n",parts.at(0).c_str());
+             deque<string> values = escapeSplit(optarg, ',');
+              if(values.size() != 2){
+                fatal("Error: Option \"-V\" requires two argument: \"-V fmuid,path/to/input.csv\"\n");
+              }
+
+              //fmigo_csv_fmu csv_matrix;
+
+              (*csv_fmu)[atoi(values.at(0).c_str())] = fmigo_CSV_matrix(values.at(1),',');
+              //printCSVmatrix(csv_matrix[values.at(0)]);
+            }
+            break;
+        }
         default:
             fatal("abort %c...\n",c);
         }
@@ -487,14 +505,6 @@ void fmitcp_master::parseArguments( int argc,
     i = 0;
     for (auto it = strongConnections->begin(); it != strongConnections->end(); it++, i++) {
         checkFMUIndex(it, i, numFMUs);
-    }
-
-    // Check if parameters refer to nonexistant FMU index
-    i = 0;
-    for (auto it = params->begin(); it != params->end(); it++, i++) {
-        if(it->first.first < 0 || it->first.first >= (int)numFMUs){
-            fatal("Parameter %d refers to FMU %d, which does not exist.\n", i, it->first.first);
-        }
     }
 
     // Default step order is all FMUs in their current order

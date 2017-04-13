@@ -36,6 +36,7 @@ SET(MASTER_SRCS
     src/master/WeakConnection.cpp
     src/common/common.cpp
     src/common/fmigo_storage.cpp
+    src/common/CSV-parser.cpp
     src/master/BaseMaster.cpp
     src/master/parseargs.cpp
     src/master/StrongMaster.cpp
@@ -52,6 +53,7 @@ SET(MASTER_HEADERS
     include/master/modelExchange.h
     include/common/common.h
     include/common/fmigo_storage.h
+    include/common/CSV-parser.h
     ${FMITCP_HEADERS}
     ${CMAKE_CURRENT_SOURCE_DIR}/src/master/control.pb.h
     include/master/globals.h

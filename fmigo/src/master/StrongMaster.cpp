@@ -251,14 +251,14 @@ void StrongMaster::runIteration(double t, double dt) {
 
             //dump force/torque
             if (sc->hasForce()) {
-                printf("%c%f%c%f%c%f", separator, sc->m_force.x(), separator, sc->m_force.y(), separator, sc->m_force.z());
+                printf("%c%+.16le%c%+.16le%c%+.16le", separator, sc->m_force.x(), separator, sc->m_force.y(), separator, sc->m_force.z());
                 vec.push_back(sc->m_force.x());
                 vec.push_back(sc->m_force.y());
                 vec.push_back(sc->m_force.z());
             }
 
             if (sc->hasTorque()) {
-                printf("%c%f%c%f%c%f", separator, sc->m_torque.x(), separator, sc->m_torque.y(), separator, sc->m_torque.z());
+                printf("%c%+.16le%c%+.16le%c%+.16le", separator, sc->m_torque.x(), separator, sc->m_torque.y(), separator, sc->m_torque.z());
                 vec.push_back(sc->m_torque.x());
                 vec.push_back(sc->m_torque.y());
                 vec.push_back(sc->m_torque.z());

@@ -10,13 +10,12 @@ RUN apt-get update
 #                   do this for us yet
 #           psmisc: for killall
 #
-RUN apt-get update
-
 RUN apt-get install --yes \
         build-essential cmake ninja-build git python bc psmisc \
         protobuf-compiler protobuf-c-compiler libprotobuf-dev \
         libsuitesparse-dev libzmqpp-dev libhdf5-dev \
-        libopenmpi-dev libgsl-dev clang valgrind
+        libopenmpi-dev libgsl-dev clang valgrind \
+        python-lxml python-psutil
 
 #
 # Create user, since mpiexec doesn't like to run as root

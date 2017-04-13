@@ -426,8 +426,7 @@ static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReferen
 
 
 static int pre_step (double t, double dt, const double y[], void * params){
-
-
+    return 0;
 }
 
 #define NEW_DOSTEP //to get noSetFMUStatePriorToCurrentPoint

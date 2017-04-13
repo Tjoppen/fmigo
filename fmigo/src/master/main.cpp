@@ -818,7 +818,7 @@ int main(int argc, char *argv[] ) {
             }
         }
 
-        if (!zmqControl) {
+        if (fmigo::globals::fileFormat != none) {
             printOutputs(t, master, clients);
         }
 
@@ -828,7 +828,9 @@ int main(int argc, char *argv[] ) {
 
         if (zmqControl) {
             pushResults(step, t+timeStep, endTime, timeStep, push_socket, master, clients, false);
-        } else {
+        }
+
+        if (fmigo::globals::fileFormat != none) {
             printf("\n");
         }
 
@@ -838,7 +840,7 @@ int main(int argc, char *argv[] ) {
 #endif
     }
 
-    if (!zmqControl) {
+    if (fmigo::globals::fileFormat != none) {
       printOutputs(endTime, master, clients);
       char separator = fmigo::globals::getSeparator();
 

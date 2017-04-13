@@ -51,7 +51,8 @@ struct param {
 
 enum FILEFORMAT {
     csv,
-    tikz
+    tikz,
+    none,   // special output format meaning "don't printf() anything"
 };
 
 enum METHOD {

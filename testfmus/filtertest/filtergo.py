@@ -106,8 +106,8 @@ def run_simulations(total_time, comm_step, filter_length,  frequency=1.0,
   cmdline += ['-p', '0,mass_s,0.5' ]
   cmdline += ['-p', '0,gear,13' ]
   cmdline += ['-p', '0,is_gearbox,true' ]
-  cmdline += ['-p', '0,integrate_dx_e,true'  ]
-  cmdline += ['-p', '0,integrate_dx_s,true' ]
+  cmdline += ['-p', '0,integrate_dx_e,false'  ]
+  cmdline += ['-p', '0,integrate_dx_s,false' ]
   cmdline += ['../../gsl2/clutch3/clutch3.fmu' ]
   
   filename = 'out-%i.csv' % filter_length 

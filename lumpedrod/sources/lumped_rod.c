@@ -263,8 +263,36 @@ static void build_rod_rhs( lumped_rod_sim * sim ){
     - sim->step * sim->coupling_parameters.coupling_stiffnessN
     * ( tmp - sim->step * ( sim->rod.state.v[ sim->rod.n - 1 ] - sim->coupling_states.coupling_vN ) / 4.0 )
     );
-  
 }
+
+
+#if 0 
+/** 
+ *  Impact stage
+ * 
+ *
+ */
+static void build_rod_mpact_rhs( lumped_rod_sim * sim ){
+
+  int i;
+  double tmp;
+  for ( i = 0; i < sim->rod.n - 1 ; ++i ) {
+    sim->z[ 2 * i ] = 0;
+    sim->z[ 2 * i  + 1 ] =0;
+  }
+  sim->z[ sim->matrix.n  - 1 ] =0;
+
+  /* impact on first and last input velocity */
+  if ( sim->coupling_parameters.coupling_stiffness1 != 0 )
+    sim->z[ 1 ]  = sim->coupling_states.coupling_v1; 
+  if ( sim->coupling_parameters.coupling_stiffnessN != 0 )
+    sim->z[ sim->matrix.n -2 ] = sim->coupling_states.coupling_vN;
+}
+
+#endif
+
+
+
 
 /**
  *   Step forward in time.  
@@ -273,6 +301,9 @@ void rod_sim_do_step( lumped_rod_sim * sim, int n ){
 
   assert( sim );
   
+  /* impact the thing if needed */
+  //build_rod_mpact_rhs( sim );
+  tri_solve( &sim->matrix, sim->z );
   
   double h_inv = 1.0  / sim->step;
   int i, j ; 
@@ -433,16 +464,16 @@ int main(){
   lumped_rod_sim sim = {
     1.0 / 10.0, 		/* step */
     {				/* rod */
-      25, 			/* num elements */
+      15, 			/* num elements */
       5, 			/* mass */
       1e-3,			/* global compliance */
       0				/* relaxation */
     }, 
     {				/* coupling parameters */
-      0,			/* stiffness */
-      0,			/* damping */
-      0,			/* stiffness */
-      0,			/* damping */
+      1E+6,			/* stiffness */
+      1e4,			/* damping */
+      1e6,			/* stiffness */
+      1e4,			/* damping */
       1,			/* coupling sign */
       1,			/* coupling sign */
       0,			/* integrate dx */
@@ -473,23 +504,31 @@ int main(){
   };
 
   lumped_rod_init_conditions init = {
-    -1.0,
+    -0.0,
     0.000,
-    1.000,
+    0.000,
     0.0
   };
 
   int print = 1;
-  int N = 2000;
+  int N = 10;
   
   sim = lumped_rod_sim_initialize(sim, init );
   
   for ( int j = 0; j < N; ++j ){
+    if ( j == 5 ){
+      sim.coupling_states.v1 = 20; 
+      sim.coupling_states.vN = -20; 
+    }
     rod_sim_do_step( &sim, 1);
     if ( print ){
       for ( int i = 0; i < sim.rod.n; ++i ) {
 	fprintf( stderr, "%6.4f " , i, sim.rod.state.x[ i ] );
       }
+      for ( int i = 0; i < sim.rod.n; ++i ) {
+	fprintf( stderr, "%6.4f " , i, sim.rod.state.v[ i ] );
+      }
+
       fprintf(stderr, "\n");
     }
   }

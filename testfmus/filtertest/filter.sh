@@ -1,6 +1,15 @@
 #!/bin/sh
 set -e
 
+zeta=0.7
+
+kc=1E9
+dc=`echo "2*$zeta*sqrt($kc) | bc -l `
+J=1
+J1=`echo "$J / 2" | bc -l`
+freq="1/2/pi"
+k=`echo "(2 * pi * freq)^2 * J" | bc -l`
+
 for filter_length in 0 1 2
 do
   mpirun \
@@ -10,9 +19,9 @@ do
     -p 0,k_ec,1000000000.0 \
     -p 0,gamma_ec,44271.887242357305 \
     -p 0,is_gearbox,true \
-    -p 0,gear_k,4934802.200544679 \
-    -p 0,gear_d,2199.114857512855 \
-    -p 0,gear,13 \
+    -p 0,gear_k,1 \
+    -p 0,gear_d,0.7 \
+    -p 0,gear,1 \
     -p 0,mass_e,0.5 \
     -p 0,mass_s,0.5 \
     -p 0,integrate_dx_e,true \

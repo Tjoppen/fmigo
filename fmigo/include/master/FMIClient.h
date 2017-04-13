@@ -26,9 +26,6 @@ namespace fmitcp_master {
 
     private:
         int m_id;
-#ifndef USE_MPI
-        string m_uri;
-#endif
         std::string m_xml;
         bool m_initialized;
 
@@ -40,6 +37,7 @@ namespace fmitcp_master {
         fmi2_import_t* m_fmi2Instance;
         fmi2_import_variable_list_t* m_fmi2Outputs;
         variable_map m_variables;
+        vector<variable> m_outputs;
         void setVariables();
 
     public:
@@ -60,7 +58,7 @@ namespace fmitcp_master {
 
         std::string getModelName() const;
         const variable_map& getVariables() const;
-        std::vector<variable> getOutputs() const;   //outputs in the same order as specified in the modelDescription
+        const std::vector<variable>& getOutputs() const;   //outputs in the same order as specified in the modelDescription
 
 #ifdef USE_MPI
         FMIClient(int world_rank, int id);
@@ -70,9 +68,6 @@ namespace fmitcp_master {
         virtual ~FMIClient();
 
         int getId();
-
-        //connects to remote host and gets modelDescription XML
-        void connect(void);
 
         bool isInitialized();
 
@@ -104,15 +99,6 @@ namespace fmitcp_master {
 
         void setConnectorValues          (std::vector<int> valueRefs, std::vector<double> values);
         void setConnectorFutureVelocities(std::vector<int> valueRefs, std::vector<double> values);
-
-        /// Called when the client connects.
-        void onConnect();
-
-        /// Called when the client disconnects.
-        void onDisconnect();
-
-        /// Called if an error occurred.
-        void onError(string err);
 
         bool hasCapability(fmi2_capabilities_enu_t cap) const;
 

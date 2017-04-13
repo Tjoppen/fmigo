@@ -1,26 +1,33 @@
-To set up this project with GitLab CI, docker is needed. Getting the required
-docker image to build automagically is too much hassle for now, so it needs to
-be built manually on each runner. Run
+To set up this project with GitLab CI, docker and gitlab-runner is needed.
+In general, follow the instructions in GitLab for help with how to add a new
+runner. Perhaps the simplest way is to issue the command
 
- docker build -t umit/ubuntu:1 .
+    gitlab-runner register
 
-in this directory and register the runner after that as you normally would with
-GitLab CI. The image build process will also output the image's public RSA key,
-which should be copy-pasted to a Gitlab user with guest (read-only) access to
-the repo. Look for output that looks like this:
+then follow the instruction given on screen.
 
-  Step 8 : RUN cat ~/.ssh/id_rsa.pub
-   ---> Running in c1f0906ead98
-  ssh-rsa AAAAB3Nza[..snip..]4fhL8f gitlab-ci@87503d09d967
-   ---> 417a6b5a4793
-  Removing intermediate container c1f0906ead98
-  Successfully built 417a6b5a4793
+Each build will create three images which will use about 1 GiB of disk space
+each. Since they can be recreated from .gitlab-ci.yml and the Dockerfiles it
+is recommended to purge these build images from docker periodically to save
+disk space. This can be done with a cron job that runs once per week or once
+per month.
 
-and copy the entire ssh-rsa line into Gitlab. This is needed since Gitlab CI
-doesn't copy submodules into the build, meaning they have to be fetched from
-inside the docker container. This may change in the future.
+On a suitably permissioned user create a script docker-cleanup.sh in ~/:
 
-In the future we might use something like dind (docker-in-docker) or
-docker sockets to have a separate "makeimage" build step that builds the images
-as needed (since docker caches images).
+    docker ps --filter "status=exited" --no-trunc -aq       | \
+        xargs --no-run-if-empty docker rm
+    docker images --no-trunc | grep umit | awk '{print $3}' | \
+        xargs --no-run-if-empty docker rmi -f
 
+Then use crontab -e to add a crontab entry for that user:
+
+    # Cĺean docker images on Sunday nights
+    0   0  *   *   0     /home/<username>/docker-cleanup.sh
+
+The downside to this is that the first GitLab CI run on the following week will
+take a couple of minutes longer than usual, due to the need to re-do apt-get
+updates and installs. If this is too often then scheduling once per month may
+be nicer:
+
+    # Cĺean docker images at midnight on the first day of every month
+    0   0  1   *   *     /home/<username>/docker-cleanup.sh

@@ -37,11 +37,6 @@ namespace fmitcp_master {
         virtual void prepare() {};
         virtual void runIteration(double t, double dt) = 0;
 
-        // These are callbacks that fire when a slave did something:
-        void slaveConnected                 (FMIClient* slave){info("Client %i connected\n", slave->getId());}
-        void slaveDisconnected              (FMIClient* slave){}
-        void slaveError                     (FMIClient* slave){exit(1);}
-
 #define on(name) void name(FMIClient* slave) {}
         on(onSlaveInstantiated)
         on(onSlaveInitialized)

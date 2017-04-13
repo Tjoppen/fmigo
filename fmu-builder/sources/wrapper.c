@@ -23,13 +23,13 @@
 #define SIMULATION_GET     wrapper_get
 
 typedef struct vr{
-    int ws;
-    int ww;
-    int ts;
-    int tw;
-    int a11;
-    int a12;
-    int a22;
+    fmi2ValueReference ws;
+    fmi2ValueReference ww;
+    fmi2ValueReference ts;
+    fmi2ValueReference tw;
+    fmi2ValueReference a11;
+    fmi2ValueReference a12;
+    fmi2ValueReference a22;
 }vr;
 static vr vrs;
 
@@ -42,7 +42,7 @@ void readDirectional()
         return;
     }
     int r;
-    if ((r = fscanf(fp, "%d %d %d %d %d %d %d", &vrs.ws,&vrs.ww,&vrs.ts,&vrs.tw,&vrs.a11,&vrs.a12,&vrs.a22)) != 7){
+    if ((r = fscanf(fp, "%u %u %u %u %u %u %u", &vrs.ws,&vrs.ww,&vrs.ts,&vrs.tw,&vrs.a11,&vrs.a12,&vrs.a22)) != 7){
         fprintf(stderr,"have read %d valuereferences, expect 7\n",r);
         exit(1);
     }

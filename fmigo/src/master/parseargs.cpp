@@ -281,6 +281,8 @@ void fmitcp_master::parseArguments( int argc,
                 *fileFormat = csv;
             } else if( strcmp(optarg,"tikz") == 0){
                 *fileFormat = tikz;
+            } else if (!strcmp(optarg, "none")) {
+                *fileFormat = none;
             } else {
                 fatal("File format \"%s\" not recognized.\n",optarg);
             }
@@ -426,6 +428,8 @@ void fmitcp_master::parseArguments( int argc,
             if (parts.size() != 2) {
                 fatal("-z must have exactly two parts (got %s which has %li parts)\n", optarg, parts.size());
             }
+            //using ZMQ output disabling printing by default, unless the user follows -z with -f csv or -f tikz
+            *fileFormat = none;
             *command_port = atoi(parts[0].c_str());
             *results_port = atoi(parts[1].c_str());
             break;

@@ -11,4 +11,10 @@ source boilerplate.sh
 (cd ${FMUS_DIR}/testfmus/stringtest      && ( ./test_strings.sh ||  ( echo "failed stringtest" && exit 1 ) ) )
 (cd build                       && ( ctest || ( echo "ctest failed" && exit 1 ) ) )
 
+# Check -f none
+touch empty_file
+mpiexec -np 2 fmigo-mpi -f none ${FMUS_DIR}/gsl2/clutch2/clutch2.fmu | diff empty_file -
+rm empty_file
+echo Option \"-f none\" works correctly
+
 echo All tests OK

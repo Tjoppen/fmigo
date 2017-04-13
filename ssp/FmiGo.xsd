@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Annotations for SystemStructureDescription files -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
+    xmlns:fmigo="http://umit.math.umu.se/FmiGo.xsd"
+    targetNamespace="http://umit.math.umu.se/FmiGo.xsd">
+
+  <xs:element name="PhysicalConnectors">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+        SSD annotation type: se.umu.math.umit.ssp.physicalconnectors
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="PhysicalConnector1D" type="fmigo:TPhysicalConnector1D" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="KinematicConstraints">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+        SSD annotation type: se.umu.math.umit.ssp.kinematicconstraints
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="ShaftConstraint" type="fmigo:TShaftConstraint" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="MasterArguments">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+        SSD annotation type: se.umu.math.umit.fmigo-master.arguments
+        <!-- Putting this under umit.fmigo-master instead of umit.ssp since the arguments are necessarily fmigo-master/fmigo-mpi specific -->
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <!--xs:sequence>
+        <xs:element name="arg" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence-->
+      <xs:attribute name="timestep" type="xs:double" use="optional"/>
+      <xs:attribute name="duration" type="xs:double" use="optional"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="CSVFilenames">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+        SSD annotation type: se.umu.math.umit.fmigo-master.csvinput
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="CSVFilename" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:complexType name="TPhysicalConnector1D">
+      <xs:attribute name="name" type="xs:string" use="required"/>
+      <!-- At some later time we'll allow not specifying stateVariable 
+           It requires some changes in the master though, so it must be specified for now
+      -->
+      <xs:attribute name="stateVariable" type="xs:string" use="required"/>
+      <!--xs:attribute name="stateVariable" type="xs:string" use="optional">
+        <xs:annotation>
+          <xs:documentation xml:lang="en">
+            stateVariable may be omitted if a connector is only used in non-holonomic constraints.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:attribute-->
+      <xs:attribute name="flowVariable" type="xs:string" use="required"/>
+      <xs:attribute name="accelerationVariable" type="xs:string" use="required"/>
+      <xs:attribute name="effortVariable" type="xs:string" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="TShaftConstraint">
+    <xs:attribute name="element1" type="xs:string" use="required"/>
+    <xs:attribute name="element2" type="xs:string" use="required"/>
+    <xs:attribute name="connector1" type="xs:string" use="required"/>
+    <xs:attribute name="connector2" type="xs:string" use="required"/>
+    <xs:attribute name="holonomic" type="xs:boolean" use="required"/>
+  </xs:complexType>
+
+</xs:schema>

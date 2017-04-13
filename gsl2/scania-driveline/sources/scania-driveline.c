@@ -219,6 +219,7 @@ static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReferen
       return fmi2OK;
     }
   }
+  return fmi2Error;
 }
 
 #ifdef CONSOLE

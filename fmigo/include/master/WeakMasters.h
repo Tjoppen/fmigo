@@ -74,7 +74,6 @@ public:
             wait();
             const SendSetXType refValues = getInputWeakRefsAndValues(m_weakConnections, client);
             client->sendSetX(refValues);
-
             sendWait(client, fmi2_import_do_step(t, dt, true));
         }
     }

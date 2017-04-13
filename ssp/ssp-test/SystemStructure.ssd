@@ -13,44 +13,30 @@
         <ssd:Elements>
             <ssd:Component name="FMU0" source="resources/clutch2.fmu" type="application/x-fmu-sharedlibrary">
                 <ssd:Connectors>
-                    <!--ssd:Connector name="xinl"    kind="input"/>
-                    <ssd:Connector name="xdotinl" kind="input"/-->
-                    <ssd:Connector name="xinr"    kind="input"/>
-                    <ssd:Connector name="xdotinr" kind="input"/>
-                    <ssd:Connector name="x"       kind="output"/>
-                    <ssd:Connector name="xdot"    kind="output"/>
+                    <ssd:Connector name="x_e"     kind="output"/>
+                    <ssd:Connector name="v_e"     kind="output"/>
                 </ssd:Connectors>
             </ssd:Component>
-            <ssd:Component name="FMU1" source="resources/mass_force.fmu" type="application/x-fmu-sharedlibrary">
+            <ssd:Component name="FMU1" source="resources/clutch2.fmu" type="application/x-fmu-sharedlibrary">
                 <ssd:Connectors>
-                    <ssd:Connector name="xinl"    kind="input"/>
-                    <ssd:Connector name="xdotinl" kind="input"/>
-                    <ssd:Connector name="xinr"    kind="input"/>
-                    <ssd:Connector name="xdotinr" kind="input"/>
-                    <ssd:Connector name="x"       kind="output"/>
-                    <ssd:Connector name="xdot"    kind="output"/>
+                    <ssd:Connector name="x_in_s"  kind="input"/>
+                    <ssd:Connector name="v_in_s"  kind="input"/>
+                    <ssd:Connector name="x_e"     kind="output"/>
+                    <ssd:Connector name="v_e"     kind="output"/>
                 </ssd:Connectors>
             </ssd:Component>
-            <ssd:Component name="FMU2" source="resources/mass_force_fe.fmu" type="application/x-fmu-sharedlibrary">
+            <ssd:Component name="FMU2" source="resources/clutch2.fmu" type="application/x-fmu-sharedlibrary">
                 <ssd:Connectors>
-                    <ssd:Connector name="xinl"    kind="input"/>
-                    <ssd:Connector name="xdotinl" kind="input"/>
-                    <!--ssd:Connector name="xinr"    kind="input"/>
-                    <ssd:Connector name="xdotinr" kind="input"/-->
-                    <ssd:Connector name="x"       kind="output"/>
-                    <ssd:Connector name="xdot"    kind="output"/>
+                    <ssd:Connector name="x_in_s"  kind="input"/>
+                    <ssd:Connector name="v_in_s"  kind="input"/>
                 </ssd:Connectors>
             </ssd:Component>
         </ssd:Elements>
         <ssd:Connections>
-            <ssd:Connection startElement="FMU0" startConnector="x"    endElement="FMU1" endConnector="xinl"/>
-            <ssd:Connection startElement="FMU0" startConnector="xdot" endElement="FMU1" endConnector="xdotinl"/>
-            <ssd:Connection startElement="FMU1" startConnector="x"    endElement="FMU0" endConnector="xinr"/>
-            <ssd:Connection startElement="FMU1" startConnector="xdot" endElement="FMU0" endConnector="xdotinr"/>
-            <ssd:Connection startElement="FMU1" startConnector="x"    endElement="FMU2" endConnector="xinl"/>
-            <ssd:Connection startElement="FMU1" startConnector="xdot" endElement="FMU2" endConnector="xdotinl"/>
-            <ssd:Connection startElement="FMU2" startConnector="x"    endElement="FMU1" endConnector="xinr"/>
-            <ssd:Connection startElement="FMU2" startConnector="xdot" endElement="FMU1" endConnector="xdotinr"/>
+            <ssd:Connection startElement="FMU0" startConnector="x_e"  endElement="FMU1" endConnector="x_in_s"/>
+            <ssd:Connection startElement="FMU0" startConnector="v_e"  endElement="FMU1" endConnector="v_in_s"/>
+            <ssd:Connection startElement="FMU1" startConnector="x_e"  endElement="FMU2" endConnector="x_in_s"/>
+            <ssd:Connection startElement="FMU1" startConnector="v_e"  endElement="FMU2" endConnector="v_in_s"/>
         </ssd:Connections>
     </ssd:System>
 </ssd:SystemStructureDescription>

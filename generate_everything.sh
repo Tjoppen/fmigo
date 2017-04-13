@@ -122,12 +122,12 @@ do
     mkdir meWrapper/${d}/fmu || echo ''
     cp me/${d}/modelDescription.xml meWrapper/${d}/fmu/modelDescription.xml
     pushd meWrapper/$d
-        cp ${WRAPPERSOURCES} . -r
+        #cp ${WRAPPERSOURCES} . -r
         echo fmu/${d}.fmu
         python ${GENERATORXML} -x fmu/modelDescription.xml > modelDescription.xml
 #        cat modelDescription.xml
         python ${MD2HDR} -x modelDescription.xml -w 1 > sources/modelDescription.h
-        python ${GENERATOR} -x ${GENERATORXML} ${GSL} -s ${WRAPPERSOURCES}
+        python ${GENERATOR} -x ${GENERATORXML} ${GSL} -t ${WRAPPERSOURCES}
     popd
 done
 
@@ -141,10 +141,10 @@ do
     cp gsl2/${d}/${d}.fmu meWrapper/${d}/fmu/${d}.fmu
     pushd meWrapper/$d
         echo fmu/${d}.fmu
-        cp ${WRAPPERSOURCES} . -r
+        #cp ${WRAPPERSOURCES} . -r
         python ${GENERATORXML} -f fmu/${d}.fmu > modelDescription.xml
 #        cat modelDescription.xml
         python ${MD2HDR} -x modelDescription.xml -w 1 > sources/modelDescription.h
-        python ${GENERATOR} -x ${GENERATORXML} ${GSL} -s ${WRAPPERSOURCES}
+        python ${GENERATOR} -x ${GENERATORXML} ${GSL} -t ${WRAPPERSOURCES}
     popd
 done

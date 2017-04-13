@@ -56,30 +56,6 @@ macro(copy_directory_to_scrs distant dst)
 
     endforeach(Filename)
 endmacro()
-macro(add_directory_to_scrs distant)
-    file(GLOB_RECURSE DistantFiles
-        RELATIVE ${distant}
-        ${distant}/*)
-    foreach(Filename ${DistantFiles})
-      string(LENGTH ${Filename} stringLen)
-      MATH(EXPR one "${stringLen}-2")
-      MATH(EXPR three "${stringLen}-4")
-
-      string(SUBSTRING ${Filename} ${one} 2 suffix)
-      string(SUBSTRING ${Filename} ${three} 4 suffixthree)
-      if(( ".c"  STREQUAL ${suffix})
-          OR( ".h"   STREQUAL ${suffix})
-          OR( ".cpp" STREQUAL ${suffixthree})
-          OR( ".hpp" STREQUAL ${suffixthree})
-          OR( ".fmu" STREQUAL ${suffixthree})
-          )
-          set(SRCS "${SRCS}${distant}${Filename}")
-      endif()
-
-    endforeach(Filename)
-endmacro()
-
-add_directory_to_scrs(${CMAKE_CURRENT_SOURCE_DIR}/)
 
 
 SET(SRCS
@@ -112,6 +88,8 @@ endif ()
 TARGET_LINK_LIBRARIES( ${TARGET} ${LIBS} )
 
 ADD_EXECUTABLE(${TARGET}_c ${SRCS})
+target_include_directories(${TARGET} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/sources/)
+target_include_directories(${TARGET}_c PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/sources/)
 ADD_DEPENDENCIES(${TARGET}_c ${COPY_TARGET})
 SET_TARGET_PROPERTIES(${TARGET}_c PROPERTIES COMPILE_DEFINITIONS CONSOLE)
 TARGET_LINK_LIBRARIES( ${TARGET}_c ${LIBS} )

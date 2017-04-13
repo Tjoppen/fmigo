@@ -122,7 +122,7 @@ do
     mkdir meWrapper/${d}/fmu || echo ''
     cp me/${d}/modelDescription.xml meWrapper/${d}/fmu/modelDescription.xml
     pushd meWrapper/$d
-        #cp ${WRAPPERSOURCES} . -r
+        cp ${WRAPPERSOURCES} . -r
         echo fmu/${d}.fmu
         python ${GENERATORXML} -x fmu/modelDescription.xml > modelDescription.xml
 #        cat modelDescription.xml

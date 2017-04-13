@@ -84,7 +84,6 @@ fmi2Status SIMULATION_SET ( SIMULATION_TYPE *sim) {
 
 
 void SIMULATION_INIT(state_t *s){
-    fprintf(stderr,"INIT: has stnig %s \n", s->md.directional);
 #if HAVE_DIRECTIONAL_DERIVATIVE
     readDirectional();
 #endif

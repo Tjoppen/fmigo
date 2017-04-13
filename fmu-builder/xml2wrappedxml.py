@@ -123,19 +123,7 @@ print('''
         description="Path to the ME fmu to be wrapped"
         causality="parameter">
       <String size="%d" start="%s"/>
-</ScalarVariable>'''%(vr,len(fmudir)+1, fmudir))
-
-vr += 1
-while vr in vrs: vr += 1
-
-print('''
-    <ScalarVariable
-        name="directional"
-        valueReference="%d"
-        description="Expects format vrUnKnown,unKnown,value"
-        causality="parameter">
-      <String size="20" start=""/>
-</ScalarVariable>'''%vr)
+    </ScalarVariable>'''%(vr,len(fmudir)+1, fmudir))
 
 outputs = root.find('ModelStructure').find('Outputs')
 print('''

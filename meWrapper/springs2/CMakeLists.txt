@@ -109,7 +109,6 @@ SET(SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/fmi2/strlcpy.h
     ${CMAKE_CURRENT_SOURCE_DIR}/fmu/springs2.fmu
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/sources/tmp/temp.c
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/wrapper.c
 )
 

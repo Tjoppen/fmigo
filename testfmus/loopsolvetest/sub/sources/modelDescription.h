@@ -19,18 +19,22 @@
 
 #define HAVE_MODELDESCRIPTION_STRUCT
 typedef struct {
-    fmi2Real in1; //VR=1
-    fmi2Real in2; //VR=2
-    fmi2Real out; //VR=3
+    fmi2Real    in1; //VR=1
+    fmi2Real    in2; //VR=2
+    fmi2Real    out; //VR=3
+
+
 
 } modelDescription_t;
 
 
 #define HAVE_DEFAULTS
 static const modelDescription_t defaults = {
-    0.0, //in1
-    0.0, //in2
-    0, //out
+    0.000000, //in1
+    0.000000, //in2
+    0.000000, //out
+
+
 
 };
 
@@ -38,6 +42,8 @@ static const modelDescription_t defaults = {
 #define VR_IN1 1
 #define VR_IN2 2
 #define VR_OUT 3
+
+
 
 
 //the following getters and setters are static to avoid getting linking errors if this file is included in more than one place
@@ -49,10 +55,9 @@ static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case VR_IN1: value[i] = md->in1; break;
-        case VR_IN2: value[i] = md->in2; break;
-        case VR_OUT: value[i] = md->out; break;
-
+        case 1: value[i] = md->in1; break;
+        case 2: value[i] = md->in2; break;
+        case 3: value[i] = md->out; break;
         default: return fmi2Error;
         }
     }
@@ -71,6 +76,7 @@ static fmi2Status generated_fmi2SetReal(modelDescription_t *md, const fmi2ValueR
     }
     return fmi2OK;
 }
+
 static fmi2Status generated_fmi2GetInteger(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Integer value[]) {
     int i;
     for (i = 0; i < nvr; i++) {
@@ -92,6 +98,7 @@ static fmi2Status generated_fmi2SetInteger(modelDescription_t *md, const fmi2Val
     }
     return fmi2OK;
 }
+
 static fmi2Status generated_fmi2GetBoolean(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Boolean value[]) {
     int i;
     for (i = 0; i < nvr; i++) {
@@ -113,6 +120,7 @@ static fmi2Status generated_fmi2SetBoolean(modelDescription_t *md, const fmi2Val
     }
     return fmi2OK;
 }
+
 static fmi2Status generated_fmi2GetString(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2String value[]) {
     int i;
     for (i = 0; i < nvr; i++) {

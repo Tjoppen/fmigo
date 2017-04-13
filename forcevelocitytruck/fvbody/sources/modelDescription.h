@@ -19,26 +19,30 @@
 
 #define HAVE_MODELDESCRIPTION_STRUCT
 typedef struct {
-    fmi2Real theta; //VR=0
-    fmi2Real omega; //VR=1
-    fmi2Real tau; //VR=2
-    fmi2Real jinv; //VR=3
-    fmi2Real kc; //VR=4
-    fmi2Real dc; //VR=5
-    fmi2Real d; //VR=6
+    fmi2Real    theta; //VR=0
+    fmi2Real    omega; //VR=1
+    fmi2Real    tau; //VR=2
+    fmi2Real    jinv; //VR=3
+    fmi2Real    kc; //VR=4
+    fmi2Real    dc; //VR=5
+    fmi2Real    d; //VR=6
+
+
 
 } modelDescription_t;
 
 
 #define HAVE_DEFAULTS
 static const modelDescription_t defaults = {
-    0.0, //theta
-    0.0, //omega
-    0, //tau
-    0.0001, //jinv
-    5000.0, //kc
-    250.0, //dc
-    10.0, //d
+    0.000000, //theta
+    0.000000, //omega
+    0.000000, //tau
+    0.000100, //jinv
+    5000.000000, //kc
+    250.000000, //dc
+    10.000000, //d
+
+
 
 };
 
@@ -52,6 +56,8 @@ static const modelDescription_t defaults = {
 #define VR_D 6
 
 
+
+
 //the following getters and setters are static to avoid getting linking errors if this file is included in more than one place
 
 #define HAVE_GENERATED_GETTERS_SETTERS  //for letting the template know that we have our own getters and setters
@@ -61,14 +67,13 @@ static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case VR_THETA: value[i] = md->theta; break;
-        case VR_OMEGA: value[i] = md->omega; break;
-        case VR_TAU: value[i] = md->tau; break;
-        case VR_JINV: value[i] = md->jinv; break;
-        case VR_KC: value[i] = md->kc; break;
-        case VR_DC: value[i] = md->dc; break;
-        case VR_D: value[i] = md->d; break;
-
+        case 0: value[i] = md->theta; break;
+        case 1: value[i] = md->omega; break;
+        case 2: value[i] = md->tau; break;
+        case 3: value[i] = md->jinv; break;
+        case 4: value[i] = md->kc; break;
+        case 5: value[i] = md->dc; break;
+        case 6: value[i] = md->d; break;
         default: return fmi2Error;
         }
     }
@@ -91,6 +96,7 @@ static fmi2Status generated_fmi2SetReal(modelDescription_t *md, const fmi2ValueR
     }
     return fmi2OK;
 }
+
 static fmi2Status generated_fmi2GetInteger(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Integer value[]) {
     int i;
     for (i = 0; i < nvr; i++) {
@@ -112,6 +118,7 @@ static fmi2Status generated_fmi2SetInteger(modelDescription_t *md, const fmi2Val
     }
     return fmi2OK;
 }
+
 static fmi2Status generated_fmi2GetBoolean(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Boolean value[]) {
     int i;
     for (i = 0; i < nvr; i++) {
@@ -133,6 +140,7 @@ static fmi2Status generated_fmi2SetBoolean(modelDescription_t *md, const fmi2Val
     }
     return fmi2OK;
 }
+
 static fmi2Status generated_fmi2GetString(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2String value[]) {
     int i;
     for (i = 0; i < nvr; i++) {

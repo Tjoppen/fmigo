@@ -1,11 +1,11 @@
 set -e
 
-MD2HDR="`pwd`/../fmu-builder/bin/modeldescription2header"
-GENERATOR="`pwd`/../fmu-builder/bin/cmake-generator -t `pwd`/templates/fmi2/ -i `pwd`/../FMILibrary-2.0.1/ThirdParty/FMI/default -m ${MD2HDR}"
-GENERATORME="`pwd`/../fmu-builder/bin/cmake-generator -t `pwd`/templates/fmi2/ -i `pwd`/../FMILibrary-2.0.1/ThirdParty/FMI/default -m ${MD2HDR} -f me"
+MD2HDR="`pwd`/fmu-builder/modeldescription2header"
+GENERATOR="`pwd`/fmu-builder/cmake-generator -t `pwd`/templates/fmi2/ -i `pwd`/../FMILibrary-2.0.1/ThirdParty/FMI/default -m ${MD2HDR}"
 
 GSLFMUS="
     gsl2/clutch2
+    gsl2/clutch3
     gsl2/chained_sho
     gsl2/exp
     gsl2/clutch_ef
@@ -17,13 +17,8 @@ GSLFMUS="
     gsl2/engine2
     gsl2/scania-driveline
 "
-MEFMUS="
-    me/springs
-    me/bouncingBall
-    me/bouncingBallWithSpring
-    me/fixedPoint
-"
-CSFMUS="
+
+FMUS="
     impulse
     lumpedrod
     kinematictruck/body
@@ -37,6 +32,10 @@ CSFMUS="
     testfmus/loopsolvetest/sub
     testfmus/loopsolvetest/mul
     testfmus/stringtest
+    me/springs
+    me/bouncingBall
+    me/bouncingBallWithSpring
+    me/fixedPoint
 "
 
 cat <<END>CMakeLists.txt
@@ -80,18 +79,8 @@ do
     popd
 done
 
-# Mode Exchange FMUs
-for d in $MEFMUS
-do
-    echo "add_subdirectory($d)" >> CMakeLists.txt
-    pushd $d
-        python ${MD2HDR} modelDescription.xml > sources/modelDescription.h
-        python ${GENERATORME}
-    popd
-done
-
-# Co-Simulation FMUs
-for d in $CSFMUS
+# Co-Simulation and Mode Exchange FMUs
+for d in $FMUS
 do
     echo "add_subdirectory($d)" >> CMakeLists.txt
     pushd $d
@@ -99,3 +88,4 @@ do
         python ${GENERATOR}
     popd
 done
+

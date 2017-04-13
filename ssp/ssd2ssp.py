@@ -49,36 +49,39 @@ with open(path,'w') as f:
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
-set(TARGET %s)
 set(SSPNAME %s)
-set(ZIPDIR /tmp/${SSPNAME})
+set(ZIPDIR ${CMAKE_CURRENT_BINARY_DIR}/${SSPNAME})
+set(ZIPNAME ${ZIPDIR}.ssp)
+set(%s_DIR ${ZIPDIR}  CACHE INTERNAL "" FORCE)
+set(%s_SSP ${ZIPNAME} CACHE INTERNAL "" FORCE)
 set(FMUS
     %s)
 
 if (CMAKE_VERSION VERSION_LESS "3.5.0")
-    set(ZIP_COMMAND  zip -r ${CMAKE_CURRENT_BINARY_DIR}/${SSPNAME}.ssp .)
-    set(COPY_SSD_COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/SystemStructure.ssd ${ZIPDIR})
+    set(ZIP_COMMAND            zip -r ${ZIPNAME} .)
+    set(COPY_SSD_COMMAND       cp ${CMAKE_CURRENT_SOURCE_DIR}/SystemStructure.ssd ${ZIPDIR})
     set(COPY_RESOURCES_COMMAND cp ${FMUS} ${ZIPDIR}/resources)
 else ()
-    set(COPY_SSD_COMMAND  ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/SystemStructure.ssd ${ZIPDIR})
+    set(COPY_SSD_COMMAND       ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/SystemStructure.ssd ${ZIPDIR})
     set(COPY_RESOURCES_COMMAND ${CMAKE_COMMAND} -E copy ${FMUS} ${ZIPDIR}/resources)
-    set(ZIP_COMMAND  ${CMAKE_COMMAND} -E tar cf ${CMAKE_CURRENT_BINARY_DIR}/${SSPNAME}.ssp --format=zip .)
+    set(ZIP_COMMAND            ${CMAKE_COMMAND} -E tar cf ${ZIPNAME} --format=zip .)
 endif ()
 
-add_custom_target(${TARGET} ALL)
-add_custom_command(TARGET ${TARGET} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E echo Packing ${TARGET}.ssp
+add_custom_target(${SSPNAME} ALL)
+add_custom_command(TARGET ${SSPNAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E echo Packing ${SSPNAME}.ssp
     COMMAND ${CMAKE_COMMAND} -E make_directory ${ZIPDIR}
     COMMAND ${CMAKE_COMMAND} -E make_directory ${ZIPDIR}/resources
-    COMMAND COMMAND ${COPY_SSD_COMMAND}
+    COMMAND ${COPY_SSD_COMMAND}
     COMMAND ${COPY_RESOURCES_COMMAND}
     COMMAND ${CMAKE_COMMAND} -E chdir ${ZIPDIR} ${ZIP_COMMAND}
     DEPENDS ${FMUS}
 #    COMMAND ${CMAKE_COMMAND} -E remove_directory ${ZIPDIR}
     )
 '''% (
+    sspname,
     sspname.upper(),
-    sspname.lower(),
+    sspname.upper(),
        '\n    '.join('${'+str(r).upper()+'_FMU}' for r in resources),
 ))
     f.write( cmakestuff )

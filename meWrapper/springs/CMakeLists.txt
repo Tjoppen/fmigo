@@ -13,6 +13,49 @@ else ()
     set(COPY_CMAKE_COMMAND ${CMAKE_COMMAND} -E copy)
 endif ()
 
+set(COPY_TARGET COPY_WRAPPER_SPRINGS)
+add_custom_target(${COPY_TARGET} ALL COMMENT "Copying resources…")
+macro(copy_directory_to_scrs distant dst)
+    file(GLOB_RECURSE DistantFiles
+        RELATIVE ${distant}
+        ${distant}/*)
+
+    add_custom_command(TARGET ${COPY_TARGET} PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${dst}
+        )
+
+    foreach(Filename ${DistantFiles})
+      string(LENGTH ${Filename} stringLen)
+      MATH(EXPR one "${stringLen}-2")
+      MATH(EXPR three "${stringLen}-4")
+
+      string(SUBSTRING ${Filename} ${one} 2 suffix)
+      string(SUBSTRING ${Filename} ${three} 4 suffixthree)
+      if(( ".c"  STREQUAL ${suffix})
+          OR( ".h"   STREQUAL ${suffix})
+          OR( ".cpp" STREQUAL ${suffixthree})
+          OR( ".hpp" STREQUAL ${suffixthree})
+          OR( ".fmu" STREQUAL ${suffixthree})
+          )
+          string(FIND ${Filename} / slash REVERSE)
+          set(interdir)
+          if( ${slash} GREATER -1)
+              MATH(EXPR slash "${slash}+1")
+              string(SUBSTRING ${Filename} 0 ${slash} interdir)
+              string(SUBSTRING ${Filename} ${slash} ${stringLen} Filename)
+              if( ${interdir} STRGREATER "")
+                  add_custom_command(TARGET ${COPY_TARGET} PRE_BUILD
+                      COMMAND ${CMAKE_COMMAND} -E make_directory ${dst}${interdir}
+                      )
+              endif()
+          endif()
+          add_custom_command(TARGET ${COPY_TARGET} PRE_BUILD
+              COMMAND ${COPY_CMAKE_COMMAND} "${distant}/${Filename}" ${dst}
+              )
+      endif()
+
+    endforeach(Filename)
+endmacro()
 macro(add_directory_to_scrs distant)
     file(GLOB_RECURSE DistantFiles
         RELATIVE ${distant}
@@ -45,12 +88,6 @@ ADD_CUSTOM_COMMAND(
   COMMAND ${COPY_CMAKE_COMMAND} ${SPRINGS_FMU} ${CMAKE_CURRENT_SOURCE_DIR}/fmu/
   DEPENDS ${SPRINGS_FMU})
 
-
-
-add_directory_to_scrs(${CMAKE_CURRENT_SOURCE_DIR}/../../fmu-builder/sources)
-
- 
-
 ADD_CUSTOM_COMMAND(
   OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml
         COMMAND ${CMAKE_COMMAND} -E echo Packing ${SPRINGS_FMU}
@@ -59,7 +96,12 @@ ADD_CUSTOM_COMMAND(
     ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml
   DEPENDS ${SPRINGS_FMU} )
 
+
+
 add_directory_to_scrs(${CMAKE_CURRENT_SOURCE_DIR}/../../fmu-builder/sources)
+copy_directory_to_scrs(${CMAKE_CURRENT_SOURCE_DIR}/../../fmu-builder/sources ${CMAKE_CURRENT_SOURCE_DIR}/sources/)
+
+ 
     
 SET(SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/fmi2/fmuTemplate.h

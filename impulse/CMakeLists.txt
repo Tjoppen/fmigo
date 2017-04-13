@@ -13,6 +13,49 @@ else ()
     set(COPY_CMAKE_COMMAND ${CMAKE_COMMAND} -E copy)
 endif ()
 
+set(COPY_TARGET COPY_IMPULSE)
+add_custom_target(${COPY_TARGET} ALL COMMENT "Copying resources…")
+macro(copy_directory_to_scrs distant dst)
+    file(GLOB_RECURSE DistantFiles
+        RELATIVE ${distant}
+        ${distant}/*)
+
+    add_custom_command(TARGET ${COPY_TARGET} PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${dst}
+        )
+
+    foreach(Filename ${DistantFiles})
+      string(LENGTH ${Filename} stringLen)
+      MATH(EXPR one "${stringLen}-2")
+      MATH(EXPR three "${stringLen}-4")
+
+      string(SUBSTRING ${Filename} ${one} 2 suffix)
+      string(SUBSTRING ${Filename} ${three} 4 suffixthree)
+      if(( ".c"  STREQUAL ${suffix})
+          OR( ".h"   STREQUAL ${suffix})
+          OR( ".cpp" STREQUAL ${suffixthree})
+          OR( ".hpp" STREQUAL ${suffixthree})
+          OR( ".fmu" STREQUAL ${suffixthree})
+          )
+          string(FIND ${Filename} / slash REVERSE)
+          set(interdir)
+          if( ${slash} GREATER -1)
+              MATH(EXPR slash "${slash}+1")
+              string(SUBSTRING ${Filename} 0 ${slash} interdir)
+              string(SUBSTRING ${Filename} ${slash} ${stringLen} Filename)
+              if( ${interdir} STRGREATER "")
+                  add_custom_command(TARGET ${COPY_TARGET} PRE_BUILD
+                      COMMAND ${CMAKE_COMMAND} -E make_directory ${dst}${interdir}
+                      )
+              endif()
+          endif()
+          add_custom_command(TARGET ${COPY_TARGET} PRE_BUILD
+              COMMAND ${COPY_CMAKE_COMMAND} "${distant}/${Filename}" ${dst}
+              )
+      endif()
+
+    endforeach(Filename)
+endmacro()
 macro(add_directory_to_scrs distant)
     file(GLOB_RECURSE DistantFiles
         RELATIVE ${distant}

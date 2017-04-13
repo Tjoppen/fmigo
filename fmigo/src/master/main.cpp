@@ -409,19 +409,22 @@ template<typename RFType, typename From> void addVectorToRepeatedField(RFType* r
 }
 
 static void printOutputs(double t, BaseMaster *master, vector<FMIClient*>& clients) {
-    vector<vector<variable> > clientOutputs;
     char separator = fmigo::globals::getSeparator();
 
     for (auto client : clients) {
-        vector<variable> vars = client->getOutputs();
+        size_t nvars = client->getOutputs().size();
         SendGetXType getX;
 
-        for (auto var : vars) {
+        getX[fmi2_base_type_real].reserve(nvars);
+        getX[fmi2_base_type_int ].reserve(nvars);
+        getX[fmi2_base_type_bool].reserve(nvars);
+        getX[fmi2_base_type_str ].reserve(nvars);
+
+        for (const variable& var : client->getOutputs()) {
             getX[var.type].push_back(var.vr);
         }
 
         client->sendGetX(getX);
-        clientOutputs.push_back(vars);
     }
 
     master->wait();
@@ -429,7 +432,7 @@ static void printOutputs(double t, BaseMaster *master, vector<FMIClient*>& clien
     printf("%+.16le", t);
     for (size_t x = 0; x < clients.size(); x++) {
         FMIClient *client = clients[x];
-        for (auto out : clientOutputs[x]) {
+        for (const variable& out : client->getOutputs()) {
             switch (out.type) {
             case fmi2_base_type_real:
                 printf("%c%+.16le", separator, client->m_getRealValues.front());
@@ -661,6 +664,8 @@ int main(int argc, char *argv[] ) {
     info("Successfully connected to all %zu servers\n", fmuURIs.size());
 #endif
 
+    //catch any ZMQ exceptions
+    try {
     //get modelDescription XML
     //important to be able to resolve variable names
     for (auto it = clients.begin(); it != clients.end(); it++) {
@@ -876,6 +881,9 @@ int main(int argc, char *argv[] ) {
     }
     MPI_Finalize();
 #endif
+    } catch (zmq::error_t e) {
+      fatal("zmq::error_t in %s: %s\n", argv[0], e.what());
+    }
 
     return 0;
 }

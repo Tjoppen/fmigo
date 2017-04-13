@@ -77,7 +77,6 @@ void FMIClient::on_get_xml_res(fmitcp_proto::jm_log_level_enu_t logLevel, string
   m_fmi2Instance = fmi2_import_parse_xml(m_context, dir, 0);
   free(dir);
   if (m_fmi2Instance) {
-    m_fmi2Outputs = fmi2_import_get_outputs_list(m_fmi2Instance);
     setVariables();
   } else {
     error("Error parsing the modelDescription.xml file contained in %s\n", m_workingDir.c_str());
@@ -116,25 +115,24 @@ void FMIClient::setVariables() {
         m_variables[name] = var2;
     }
     fmi2_import_free_variable_list(vl);
-}
 
-vector<variable> FMIClient::getOutputs() const {
-    vector<variable> ret;
+    m_fmi2Outputs = fmi2_import_get_outputs_list(m_fmi2Instance);
 
-    size_t sz = fmi2_import_get_variable_list_size(m_fmi2Outputs);
+    sz = fmi2_import_get_variable_list_size(m_fmi2Outputs);
     for (size_t x = 0; x < sz; x++) {
         fmi2_import_variable_t *var = fmi2_import_get_variable(m_fmi2Outputs, x);
-        string name = fmi2_import_get_variable_name(var);
 
         variable var2;
         var2.vr = fmi2_import_get_variable_vr(var);
         var2.type = fmi2_import_get_variable_base_type(var);
         var2.causality = fmi2_import_get_causality(var);
 
-        ret.push_back(var2);
+        m_outputs.push_back(var2);
     }
+}
 
-    return ret;
+const vector<variable>& FMIClient::getOutputs() const {
+    return m_outputs;
 }
 
 bool FMIClient::hasCapability(fmi2_capabilities_enu_t cap) const {
@@ -329,20 +327,20 @@ string FMIClient::getSpaceSeparatedFieldNames(string prefix) const {
 void FMIClient::sendGetX(const SendGetXType& typeRefs) {
     clearGetValues();
 
-    for (auto it = typeRefs.begin(); it != typeRefs.end(); it++) {
-        if (it->second.size() > 0) {
-            switch (it->first) {
+    for (const auto& it : typeRefs) {
+        if (it.second.size() > 0) {
+            switch (it.first) {
             case fmi2_base_type_real:
-                sendMessage(fmi2_import_get_real(it->second));
+                sendMessage(fmi2_import_get_real(it.second));
                 break;
             case fmi2_base_type_int:
-                sendMessage(fmi2_import_get_integer(it->second));
+                sendMessage(fmi2_import_get_integer(it.second));
                 break;
             case fmi2_base_type_bool:
-                sendMessage(fmi2_import_get_boolean(it->second));
+                sendMessage(fmi2_import_get_boolean(it.second));
                 break;
             case fmi2_base_type_str:
-                sendMessage(fmi2_import_get_string(it->second));
+                sendMessage(fmi2_import_get_string(it.second));
                 break;
             case fmi2_base_type_enum:
                 fatal("fmi2_base_type_enum snuck its way into FMIClient::sendGetX() somehow\n");
@@ -354,8 +352,9 @@ void FMIClient::sendGetX(const SendGetXType& typeRefs) {
 //converts a vector<MultiValue> to vector<T>, with the help of a member pointer of type T
 template<typename T> vector<T> vectorToBaseType(const vector<MultiValue>& in, T MultiValue::*member) {
     vector<T> ret;
-    for (auto it = in.begin(); it != in.end(); it++) {
-        ret.push_back((*it).*member);
+    ret.reserve(in.size());
+    for (const MultiValue& it : in) {
+        ret.push_back(it.*member);
     }
     return ret;
 }

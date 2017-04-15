@@ -22,7 +22,6 @@ typedef struct {
 
 #include "fmuTemplate.h"
 
-
 static const double clutch_dphi  [] = { -0.087266462599716474, -0.052359877559829883, 0.0, 0.09599310885968812, 0.17453292519943295 };
 static const double clutch_torque[] = { -1000, -30, 0, 50, 3500 };
 static const size_t N_segments      = sizeof( clutch_torque ) / sizeof( clutch_torque[ 0 ] );
@@ -88,7 +87,10 @@ static void compute_forces(state_t *s, const double x[], double *force_e, double
   /** compute the coupling force: NOTE THE SIGN!
    *  This is the force *applied* to the coupled system
    */
+  
   *force_e =   s->md.gamma_ec * ( x[ 1 ] - s->md.v_in_e );
+
+  
   if ( s->md.integrate_dx_e )
     *force_e +=  s->md.k_ec *  x[ 4 ];
   else
@@ -122,6 +124,7 @@ int clutch (double t, const double x[], double dxdt[], void * params){
   
   /** the index of dx_s depends on whether we're integrating dx_e or not */
   int dx_s_idx = s->md.integrate_dx_e ? 5 : 4;
+  int N = 4 + s->md.integrate_dx_e + s->md.integrate_dx_s;
 
   double force_e, force_s, force_clutch;
   compute_forces(s, x, &force_e, &force_s, &force_clutch);
@@ -164,7 +167,6 @@ int clutch (double t, const double x[], double dxdt[], void * params){
   if ( s->md.integrate_dx_s )
     dxdt[ dx_s_idx ] = x[ 3 ] - s->md.v_in_s;
 
-
   return GSL_SUCCESS;
 
 }
@@ -194,6 +196,7 @@ int jac_clutch (double t, const double x[], double *dfdx, double dfdt[], void *p
   /* second order dynamics on the angles */
   gsl_matrix_set (J, 0, 1, 1.0);
   gsl_matrix_set (J, 2, 3, 1.0);
+
   /* dphi integration */
   i = 4;
   if ( s->md.integrate_dx_e ){
@@ -201,35 +204,28 @@ int jac_clutch (double t, const double x[], double *dfdx, double dfdt[], void *p
     gsl_matrix_set(J, i, 1, 1.0);
     gsl_matrix_set(J, 1, i, -s->md.k_ec * mu_e);
     ++i;
+  } else{			/* we are using phi1 directly */
+    gsl_matrix_set(J, 1, 0, -s->md.k_ec * mu_e);
   }
+
   if ( s->md.integrate_dx_s ){
     gsl_matrix_set(J, i, 3, 1.0);
     gsl_matrix_set(J, 3, i, -s->md.k_sc * mu_s);
     ++i;
+  } else{			/* using phi2  directly */
+    gsl_matrix_set(J, 3, 2, -s->md.k_sc * mu_s);
   }
-
-
+  
   /* dynamics of the first plate */
-  if (! s->md.is_gearbox) {
-    tmp = - s->md.gear_k;
-    if ( ! s->md.integrate_dx_e )
-      tmp -= s->md.k_ec;
+  if ( s->md.is_gearbox) {
+    
+    gsl_matrix_set (J, 1, 1, -( s->md.gear_d + s->md.gamma_ec + s->md.gamma_e ) * mu_e);
+//    gsl_matrix_set (J, 1, 2, s->md.gear_k * mu_e); /* spring to phi2 */
+    //   gsl_matrix_set (J, 1, 3, s->md.gear_d * mu_e); /* damping with w2 */
 
-    gsl_matrix_set (J, 1, 0, tmp  * mu_e ); 
-    
-    gsl_matrix_set (J, 1, 1, ( -s->md.gear_d - s->md.gamma_ec - s->md.gamma_e ) * mu_e);
-    gsl_matrix_set (J, 1, 2, s->md.gear_k * mu_e); /* spring to phi2 */
-    gsl_matrix_set (J, 1, 3, s->md.gear_d * mu_e); /* damping with w2 */
-
-    tmp = - r * s->md.gear_k;
-    if ( ! s->md.integrate_dx_s )
-      tmp -= s->md.k_sc;
-    gsl_matrix_set (J, 3, 2, tmp * mu_s); 
-    
-    
-    gsl_matrix_set (J, 3, 3, ( -r * s->md.gear_d - s->md.gamma_sc - s->md.gamma_s ) * mu_s);
-    gsl_matrix_set (J, 3, 0, r * s->md.gear_k * mu_s); /* spring to phi1 */
-    gsl_matrix_set (J, 3, 1, r * s->md.gear_d * mu_s); /* damping with w1 */
+    gsl_matrix_set (J, 3, 3, -( r * s->md.gear_d + s->md.gamma_sc + s->md.gamma_s ) * mu_s);
+    //   gsl_matrix_set (J, 3, 0, r * s->md.gear_k * mu_s); /* spring to phi1 */
+    //gsl_matrix_set (J, 3, 1, r * s->md.gear_d * mu_s); /* damping with w1 */
    
     
   } else{
@@ -356,25 +352,13 @@ static int sync_out(int n, const double outputs[], void * params) {
   //compute accelerations. we need them for Server::computeNumericalJacobian()
   clutch(0, outputs, dxdt, params);
 
-  if (
-    s->simulation.sim.t == 0.0){
-    s->md.x_e = 0;
-    s->md.v_e = 0;
-    s->md.a_e = 0;
-    s->md.x_s = 0;
-    s->md.v_s = 0;
-    s->md.a_s = 0;
-    s->md.force_e=0;
-    s->md.force_s=0;
-  } else { 
-    s->md.x_e = outputs[ 0 ];
-    s->md.v_e = outputs[ 1 ];
-    s->md.a_e = dxdt[ 1 ];
-    s->md.x_s = outputs[ 2 ];
-    s->md.v_s = outputs[ 3 ];
-    s->md.a_s = dxdt[ 3 ];
-    compute_forces(s, outputs, &s->md.force_e, &s->md.force_s, NULL);
-  }
+  s->md.x_e = outputs[ 0 ];
+  s->md.v_e = outputs[ 1 ];
+  s->md.a_e = dxdt[ 1 ];
+  s->md.x_s = outputs[ 2 ];
+  s->md.v_s = outputs[ 3 ];
+  s->md.a_s = dxdt[ 3 ];
+  compute_forces(s, outputs, &s->md.force_e, &s->md.force_s, NULL);
 
 
   return GSL_SUCCESS;
@@ -385,6 +369,11 @@ static void clutch_init(state_t *s) {
   /** system size and layout depends on which dx's are integrated */
   double initials[6];
   get_initial_states(s, initials);
+  if ( s->md.integrator < rk2 || s->md.integrator > msbdf ) {
+    fprintf(stderr, "Invalid choice of integrator : %d.  Defaulting to rkf45. \n", s->md.integrator); 
+    s->md.integrator = rkf45;
+  }
+  //else { fprintf(stderr, "Invalid choice of integrator : %d.  Defaulting to rkf45. \n", s->md.integrator); }
 
   s->simulation.sim = cgsl_init_simulation(
     cgsl_epce_default_model_init(
@@ -393,7 +382,7 @@ static void clutch_init(state_t *s) {
       sync_out,
       s
       ),
-    rkf45, 1e-6, 0, 0, s->md.octave_output, s->md.octave_output ? fopen("clutch3.m", "w") : NULL
+    s->md.integrator, 1e-6, 0, 0, s->md.octave_output, s->md.octave_output ? fopen("clutch3.m", "w") : NULL
     );
 
   s->simulation.last_gear = s->md.gear;
@@ -426,7 +415,8 @@ static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReferen
 
 
 static int pre_step (double t, double dt, const double y[], void * params){
-    return 0;
+
+
 }
 
 #define NEW_DOSTEP //to get noSetFMUStatePriorToCurrentPoint
@@ -441,14 +431,12 @@ static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real comm
   /* reset angle differences */
   /** angle difference */
   int N = s->simulation.sim.model->n_variables;
-
   if (N >= 5) {
     s->simulation.sim.model->x[4] = 0.0;
   }
   if (N >= 6) {
     s->simulation.sim.model->x[5] = 0.0;
   }
-
   //don't dump tentative steps
   s->simulation.sim.print = noSetFMUStatePriorToCurrentPoint;
   cgsl_step_to( &s->simulation, currentCommunicationPoint, communicationStepSize );

@@ -106,7 +106,7 @@
       <Real start="0"/>
     </ScalarVariable>
     <!-- index="8"-->
-     <ScalarVariable 
+    <ScalarVariable 
         name="integrate_dx_e"            
         valueReference="8"  
         description="whether or not engine-side coupling angle difference is integrated"         
@@ -270,7 +270,7 @@
       <Real start="0"/>
     </ScalarVariable>
     <!-- index="25"-->
- <ScalarVariable 
+    <ScalarVariable 
         name="v_in_s"
         valueReference="25"
         description="external driving velocity shaft-side"             
@@ -413,6 +413,29 @@
       <Integer />
     </ScalarVariable>
 
+    <!-- index="41"-->
+    <ScalarVariable 
+        name="integrator"
+        valueReference="201"
+        description="Choose integrator:
+                     {
+                     rk2,	/* 0 */
+                     rk4,	/* 1 */
+                     rkf45,	/* 2 */
+                     rkck,	/* 3 */
+                     rk8pd,	/* 4 */
+                     rk1imp,	/* 5 */
+                     rk2imp,	/* 6 */
+                     rk4imp,	/* 7 */
+                     bsimp,	/* 8 */
+                     msadams,	/* 9 */
+                     msbdf	/*10 */
+                     };
+                     "
+        causality="parameter"
+        variability="fixed">
+      <Integer start="2"/>
+    </ScalarVariable>
   </ModelVariables>
 
 

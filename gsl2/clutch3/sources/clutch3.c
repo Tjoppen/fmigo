@@ -104,7 +104,7 @@ static void compute_forces(state_t *s, const double x[], double *force_e, double
 
   if (force_clutch) {
     if (s->md.is_gearbox) {
-      if (s->md.gear == 0) {
+    if (s->md.gear == 0) {
         // neutral
         *force_clutch = 0;
       } else {
@@ -341,7 +341,6 @@ static void get_initial_states(state_t *s, double *initials) {
     initials[5] = s->md.dx0_s;
   }
 
-  //fprintf(stderr, "#Initial states: %f %f %f %f\n", initials[0], initials[1], initials[2], initials[3]);
 }
 
 static int sync_out(int n, const double outputs[], void * params) {
@@ -373,7 +372,6 @@ static void clutch_init(state_t *s) {
     fprintf(stderr, "Invalid choice of integrator : %d.  Defaulting to rkf45. \n", s->md.integrator); 
     s->md.integrator = rkf45;
   }
-  //else { fprintf(stderr, "Invalid choice of integrator : %d.  Defaulting to rkf45. \n", s->md.integrator); }
 
   s->simulation.sim = cgsl_init_simulation(
     cgsl_epce_default_model_init(
@@ -382,7 +380,7 @@ static void clutch_init(state_t *s) {
       sync_out,
       s
       ),
-    s->md.integrator, 1e-6, 0, 0, s->md.octave_output, s->md.octave_output ? fopen("clutch3.m", "w") : NULL
+    s->md.integrator, 1e-6, 0, 0, s->md.octave_output, s->md.octave_output ? fopen(s->md.octave_output_file, "w") : NULL
     );
 
   s->simulation.last_gear = s->md.gear;
@@ -416,26 +414,28 @@ static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReferen
 
 static int pre_step (double t, double dt, const double y[], void * params){
 
-
+  return 0;
 }
 
 #define NEW_DOSTEP //to get noSetFMUStatePriorToCurrentPoint
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
 
-  static int pass = 0;
   if (s->md.is_gearbox && s->md.gear != s->simulation.last_gear) {
     /** gear changed - compute impact that keeps things sane */
     double ratio = gear2ratio(s);
     s->simulation.delta_phi = ratio*s->simulation.sim.model->x[ 2 ] - s->simulation.sim.model->x[ 0 ];
   }
   /* reset angle differences */
-  /** angle difference */
   int N = s->simulation.sim.model->n_variables;
-  if (N >= 5) {
-    s->simulation.sim.model->x[4] = 0.0;
+  if ( s->md.reset_dx_e ){ 
+    if (N >= 5) {
+      s->simulation.sim.model->x[4] = 0.0;
+    }
   }
-  if (N >= 6) {
-    s->simulation.sim.model->x[5] = 0.0;
+  if ( s->md.reset_dx_s ){
+    if (N >= 6) {
+      s->simulation.sim.model->x[5] = 0.0;
+    }
   }
   //don't dump tentative steps
   s->simulation.sim.print = noSetFMUStatePriorToCurrentPoint;

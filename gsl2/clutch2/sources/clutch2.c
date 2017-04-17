@@ -329,6 +329,10 @@ static void clutch_init(state_t *s) {
   double initials[6];
   get_initial_states(s, initials);
 
+  if ( s->md.integrator < rk2 || s->md.integrator > msbdf ) {
+    fprintf(stderr, "Invalid choice of integrator : %d.  Defaulting to rkf45. \n", s->md.integrator); 
+    s->md.integrator = rkf45;
+  }
   s->simulation.sim = cgsl_init_simulation(
     cgsl_epce_default_model_init(
       cgsl_model_default_alloc(get_initial_states_size(s), initials, s, clutch, jac_clutch, NULL, NULL, 0),
@@ -336,7 +340,8 @@ static void clutch_init(state_t *s) {
       sync_out,
       s
       ),
-    rkf45, 1e-5, 0, 0, s->md.octave_output, s->md.octave_output ? fopen("clutch2.m", "w") : NULL
+    //rkf45, 1e-5, 0, 0, s->md.octave_output, s->md.octave_output ? fopen("clutch2.m", "w") : NULL
+    s->md.integrator, 1e-6, 0, 0, s->md.octave_output, s->md.octave_output ? fopen(s->md.octave_output_file, "w") : NULL
     );
   s->simulation.last_gear = s->md.gear;
   s->simulation.delta_phi = 0;

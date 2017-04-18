@@ -13,3 +13,19 @@ static size_t strlcpy(char *dst, const char *src, size_t size) {
     return ret;
 }
 #endif
+
+#ifndef HAVE_STRLCAT
+#define HAVE_STRLCAT
+#include <string.h>
+
+static size_t strlcat(char *dst, const char *src, size_t size) {
+    size_t a = strlen(dst);
+    size_t b = strlen(src);
+    size_t ret = a + b;
+    size_t maxbytes = size-1 - a;
+    size_t bytes = b > maxbytes ? maxbytes : b;
+    memcpy(dst + a, src, bytes);
+    dst[size-1] = 0;
+    return ret;
+}
+#endif

@@ -10,7 +10,7 @@ function test(){
     WRAPPER=$1
     CHECK=$2
     #2>/dev/null
-    mpirun -np $3 fmigo-mpi $4 ${WRAPPER} > ${RESULT}  || (echo "FAILED: " $1 && exit 1)
+    mpiexec -np $3 fmigo-mpi $4 ${WRAPPER} > ${RESULT}  || (echo "FAILED: " $1 && exit 1)
     if [ ${REStoCHECK} = "set" ]; then
         cat  ${RESULT}
         cat  ${RESULT} > ${CHECK}

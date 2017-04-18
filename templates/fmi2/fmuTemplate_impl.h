@@ -256,7 +256,7 @@ fmi2Status fmi2EnterInitializationMode(fmi2Component c) {
     FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2EnterInitializationMode")
 
 #ifdef SIMULATION_WRAPPER
-        SIMULATION_WRAPPER(&comp->s);
+    SIMULATION_WRAPPER(comp);
 #endif
     comp->s.state = modelInitializationMode;
     return fmi2OK;

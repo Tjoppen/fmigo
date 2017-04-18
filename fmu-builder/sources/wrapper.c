@@ -1,5 +1,3 @@
-//TODO: add some kind of flag that switches this one between a clutch and a gearbox, to reduce the amount of code needed
-//#define SIMULATION_INIT wrapper_ntoeu
 #ifndef WIN32
 #include <unistd.h>
 #else
@@ -18,9 +16,9 @@
 #include "hypotmath.h"
 
 #define SIMULATION_WRAPPER wrapper_ntoeu
-#define SIMULATION_INIT    wrapper_init
 #define SIMULATION_SET     wrapper_set
 #define SIMULATION_GET     wrapper_get
+#define MODEL_INIT         model_init   //like SIMULATION_INIT but get a ModelInstance* instead of state_t*
 
 typedef struct vr{
     fmi2ValueReference ws;
@@ -33,12 +31,21 @@ typedef struct vr{
 }vr;
 static vr vrs;
 
-void readDirectional()
-{
+#include "strlcpy.h"
+
+void model_init(ModelInstance *comp) {
     FILE *fp;
-    fp = fopen("resources/directional.txt", "r");
+
+    //PATH_MAX is usually 512 or so, this should be enough
+    char path[1024];
+
+    strlcpy(path, comp->fmuResourceLocation, sizeof(path));
+    strlcat(path, "/directional.txt",        sizeof(path));
+
+    fp = fopen(path, "r");
+
     if(!fp){
-        fprintf(stderr,"Wrapper: no such file or directory -- resources/directional\n");
+        fprintf(stderr,"Wrapper: no such file or directory -- %s\n", path);
         return;
     }
     int r;
@@ -81,15 +88,7 @@ fmi2Status SIMULATION_SET ( SIMULATION_TYPE *sim) {
     return fmi2OK;
 }
 
-
-
-void SIMULATION_INIT(state_t *s){
-#if HAVE_DIRECTIONAL_DERIVATIVE
-    readDirectional();
-#endif
-}
-
-void SIMULATION_WRAPPER(state_t *s);
+void SIMULATION_WRAPPER(ModelInstance *comp);
 #define NEW_DOSTEP //to get noSetFMUStatePriorToCurrentPoint
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
     fprintf(stderr,"do step run iteration\n");
@@ -113,11 +112,12 @@ void jmCallbacksLogger(jm_callbacks* c, jm_string module, jm_log_level_enu_t log
     fprintf(stderr, "[module = %s][log level = %s] %s\n", module, jm_log_level_to_string(log_level), message);fflush(NULL);
 }
 
-void SIMULATION_WRAPPER(state_t *s)  {
+void SIMULATION_WRAPPER(ModelInstance *comp)  {
     fprintf(stderr,"Init Wrapper\n");
-    char *m_fmuLocation;
-    char *m_resourcePath;
-    char* m_fmuPath;
+    state_t *s = &comp->s;
+    //char *m_fmuLocation;
+    char m_resourcePath[1024];
+    char m_fmuPath[1024];
     char* dir;
     const char* m_instanceName;
     fmi2_import_t** FMU = getFMU();
@@ -132,16 +132,12 @@ void SIMULATION_WRAPPER(state_t *s)  {
     m_jmCallbacks.logger = jmCallbacksLogger;
     m_jmCallbacks.log_level = 0;
     m_jmCallbacks.context = 0;
-    m_fmuPath = (char*)calloc(1024,sizeof(char));
 
     m_jmCallbacks.logger(NULL,"modulename",0,"jm_string");
-    char cwd[1024];
-    if (getcwd(cwd, sizeof(cwd)) == NULL)
-        exit(1);
 
-    strcpy(m_fmuPath,cwd);
-    strcat(m_fmuPath, "/");
-    strcat(m_fmuPath, s->md.fmu);
+    strlcpy(m_fmuPath, comp->fmuResourceLocation, sizeof(m_fmuPath));
+    strlcat(m_fmuPath, "/", sizeof(m_fmuPath));
+    strlcat(m_fmuPath, s->md.fmu, sizeof(m_fmuPath));
 
     if (!(dir = fmi_import_mk_temp_dir(&m_jmCallbacks, NULL, "wrapper_"))) {
         fprintf(stderr, "fmi_import_mk_temp_dir() failed\n");
@@ -201,9 +197,8 @@ void SIMULATION_WRAPPER(state_t *s)  {
 
         {
             char *temp = fmi_import_create_URL_from_abs_path(&m_jmCallbacks, dir);
-            m_resourcePath = (char*)calloc(strlen(temp)+11,sizeof(char));
-            strcpy(m_resourcePath,temp);
-            strcat(m_resourcePath,"/resources");
+            strlcpy(m_resourcePath, temp, sizeof(m_resourcePath));
+            strlcat(m_resourcePath, "/resources", sizeof(m_resourcePath));
             m_jmCallbacks.free(temp);
         }
 #ifndef WIN32
@@ -217,8 +212,6 @@ void SIMULATION_WRAPPER(state_t *s)  {
         return;
     }
     free(dir);
-    free(m_resourcePath);
-    free(m_fmuPath);
 
     fmi2_status_t status = fmi2_import_instantiate(*FMU , m_instanceName, fmi2_model_exchange, m_resourcePath, 0);
     if(status == fmi2Error){

@@ -466,11 +466,11 @@ int main(){
     {				/* rod */
       15, 			/* num elements */
       5, 			/* mass */
-      1e-3,			/* global compliance */
+      1e-2,			/* global compliance */
       0				/* relaxation */
     }, 
     {				/* coupling parameters */
-      1E+6,			/* stiffness */
+      1E6,			/* stiffness */
       1e4,			/* damping */
       1e6,			/* stiffness */
       1e4,			/* damping */
@@ -504,10 +504,10 @@ int main(){
   };
 
   lumped_rod_init_conditions init = {
-    -0.0,
-    0.000,
-    0.000,
-    0.0
+    -1.0,
+    -1.000,
+    1.000,
+    1.0
   };
 
   int print = 1;

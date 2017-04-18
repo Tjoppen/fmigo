@@ -10,9 +10,9 @@
 #define HAVE_DIRECTIONAL_DERIVATIVE 0
 #define CAN_GET_SET_FMU_STATE 1
 #define NUMBER_OF_REALS 36
-#define NUMBER_OF_INTEGERS 1
-#define NUMBER_OF_BOOLEANS 2
-#define NUMBER_OF_STRINGS 0
+#define NUMBER_OF_INTEGERS 2
+#define NUMBER_OF_BOOLEANS 3
+#define NUMBER_OF_STRINGS 1
 #define NUMBER_OF_STATES 0
 #define NUMBER_OF_EVENT_INDICATORS 0
 
@@ -35,7 +35,7 @@ typedef struct {
     fmi2Real gamma_d; //VR=14
     fmi2Real k_t; //VR=15
     fmi2Real gamma_t; //VR=16
-    fmi2Real integrator; //VR=19
+    fmi2Real dummy; //VR=19
     fmi2Real phi_i; //VR=20
     fmi2Real omega_i; //VR=21
     fmi2Real tau_d; //VR=22
@@ -56,8 +56,11 @@ typedef struct {
     fmi2Real triangle_amplitude; //VR=37
     fmi2Real triangle_wavelength; //VR=38
     fmi2Integer filter_length; //VR=98
+    fmi2Integer integrator; //VR=1002
     fmi2Boolean integrate_dw; //VR=17
     fmi2Boolean integrate_dx; //VR=18
+    fmi2Boolean octave_output; //VR=1001
+    fmi2Char    octave_output_file[256]; //VR=1003
 
 } modelDescription_t;
 
@@ -80,7 +83,7 @@ static const modelDescription_t defaults = {
     0.0, //gamma_d
     0.0, //k_t
     0.0, //gamma_t
-    0.0, //integrator
+    0.0, //dummy
     0.0, //phi_i
     0.0, //omega_i
     0.0, //tau_d
@@ -101,8 +104,11 @@ static const modelDescription_t defaults = {
     0.0, //triangle_amplitude
     5.0, //triangle_wavelength
     0, //filter_length
+    2, //integrator
     0, //integrate_dw
     0, //integrate_dx
+    0, //octave_output
+    "trailer.m", //octave_output_file
 
 };
 
@@ -123,7 +129,7 @@ static const modelDescription_t defaults = {
 #define VR_GAMMA_D 14
 #define VR_K_T 15
 #define VR_GAMMA_T 16
-#define VR_INTEGRATOR 19
+#define VR_DUMMY 19
 #define VR_PHI_I 20
 #define VR_OMEGA_I 21
 #define VR_TAU_D 22
@@ -144,8 +150,11 @@ static const modelDescription_t defaults = {
 #define VR_TRIANGLE_AMPLITUDE 37
 #define VR_TRIANGLE_WAVELENGTH 38
 #define VR_FILTER_LENGTH 98
+#define VR_INTEGRATOR 1002
 #define VR_INTEGRATE_DW 17
 #define VR_INTEGRATE_DX 18
+#define VR_OCTAVE_OUTPUT 1001
+#define VR_OCTAVE_OUTPUT_FILE 1003
 
 
 //the following getters and setters are static to avoid getting linking errors if this file is included in more than one place
@@ -173,7 +182,7 @@ static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2
         case VR_GAMMA_D: value[i] = md->gamma_d; break;
         case VR_K_T: value[i] = md->k_t; break;
         case VR_GAMMA_T: value[i] = md->gamma_t; break;
-        case VR_INTEGRATOR: value[i] = md->integrator; break;
+        case VR_DUMMY: value[i] = md->dummy; break;
         case VR_PHI_I: value[i] = md->phi_i; break;
         case VR_OMEGA_I: value[i] = md->omega_i; break;
         case VR_TAU_D: value[i] = md->tau_d; break;
@@ -220,7 +229,7 @@ static fmi2Status generated_fmi2SetReal(modelDescription_t *md, const fmi2ValueR
         case 14: md->gamma_d = value[i]; break;
         case 15: md->k_t = value[i]; break;
         case 16: md->gamma_t = value[i]; break;
-        case 19: md->integrator = value[i]; break;
+        case 19: md->dummy = value[i]; break;
         case 20: md->phi_i = value[i]; break;
         case 21: md->omega_i = value[i]; break;
         case 22: md->tau_d = value[i]; break;
@@ -250,6 +259,7 @@ static fmi2Status generated_fmi2GetInteger(const modelDescription_t *md, const f
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
         case VR_FILTER_LENGTH: value[i] = md->filter_length; break;
+        case VR_INTEGRATOR: value[i] = md->integrator; break;
 
         default: return fmi2Error;
         }
@@ -262,6 +272,7 @@ static fmi2Status generated_fmi2SetInteger(modelDescription_t *md, const fmi2Val
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
         case 98: md->filter_length = value[i]; break;
+        case 1002: md->integrator = value[i]; break;
         default: return fmi2Error;
         }
     }
@@ -273,6 +284,7 @@ static fmi2Status generated_fmi2GetBoolean(const modelDescription_t *md, const f
         switch (vr[i]) {
         case VR_INTEGRATE_DW: value[i] = md->integrate_dw; break;
         case VR_INTEGRATE_DX: value[i] = md->integrate_dx; break;
+        case VR_OCTAVE_OUTPUT: value[i] = md->octave_output; break;
 
         default: return fmi2Error;
         }
@@ -286,6 +298,7 @@ static fmi2Status generated_fmi2SetBoolean(modelDescription_t *md, const fmi2Val
         switch (vr[i]) {
         case 17: md->integrate_dw = value[i]; break;
         case 18: md->integrate_dx = value[i]; break;
+        case 1001: md->octave_output = value[i]; break;
         default: return fmi2Error;
         }
     }
@@ -295,6 +308,7 @@ static fmi2Status generated_fmi2GetString(const modelDescription_t *md, const fm
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
+        case VR_OCTAVE_OUTPUT_FILE: value[i] = md->octave_output_file; break;
 
         default: return fmi2Error;
         }
@@ -306,7 +320,7 @@ static fmi2Status generated_fmi2SetString(modelDescription_t *md, const fmi2Valu
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-
+        case 1003: if (strlcpy(md->octave_output_file, value[i], sizeof(md->octave_output_file)) >= sizeof(md->octave_output_file)) { return fmi2Error; } break;
         default: return fmi2Error;
         }
     }

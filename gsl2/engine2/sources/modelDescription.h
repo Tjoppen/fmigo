@@ -10,9 +10,9 @@
 #define HAVE_DIRECTIONAL_DERIVATIVE 1
 #define CAN_GET_SET_FMU_STATE 1
 #define NUMBER_OF_REALS 17
-#define NUMBER_OF_INTEGERS 1
-#define NUMBER_OF_BOOLEANS 1
-#define NUMBER_OF_STRINGS 0
+#define NUMBER_OF_INTEGERS 2
+#define NUMBER_OF_BOOLEANS 2
+#define NUMBER_OF_STRINGS 1
 #define NUMBER_OF_STATES 0
 #define NUMBER_OF_EVENT_INDICATORS 0
 
@@ -37,7 +37,10 @@ typedef struct {
     fmi2Real k_in; //VR=16
     fmi2Real d_in; //VR=17
     fmi2Integer filter_length; //VR=98
+    fmi2Integer integrator; //VR=1002
+    fmi2Boolean octave_output; //VR=1001
     fmi2Boolean integrate_dtheta; //VR=18
+    fmi2Char    octave_output_file[256]; //VR=1003
 
 } modelDescription_t;
 
@@ -62,7 +65,10 @@ static const modelDescription_t defaults = {
     0.0, //k_in
     0.0, //d_in
     0, //filter_length
+    2, //integrator
+    0, //octave_output
     0, //integrate_dtheta
+    "engine2.m", //octave_output_file
 
 };
 
@@ -85,7 +91,10 @@ static const modelDescription_t defaults = {
 #define VR_K_IN 16
 #define VR_D_IN 17
 #define VR_FILTER_LENGTH 98
+#define VR_INTEGRATOR 1002
+#define VR_OCTAVE_OUTPUT 1001
 #define VR_INTEGRATE_DTHETA 18
+#define VR_OCTAVE_OUTPUT_FILE 1003
 
 
 //the following getters and setters are static to avoid getting linking errors if this file is included in more than one place
@@ -152,6 +161,7 @@ static fmi2Status generated_fmi2GetInteger(const modelDescription_t *md, const f
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
         case VR_FILTER_LENGTH: value[i] = md->filter_length; break;
+        case VR_INTEGRATOR: value[i] = md->integrator; break;
 
         default: return fmi2Error;
         }
@@ -164,6 +174,7 @@ static fmi2Status generated_fmi2SetInteger(modelDescription_t *md, const fmi2Val
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
         case 98: md->filter_length = value[i]; break;
+        case 1002: md->integrator = value[i]; break;
         default: return fmi2Error;
         }
     }
@@ -173,6 +184,7 @@ static fmi2Status generated_fmi2GetBoolean(const modelDescription_t *md, const f
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
+        case VR_OCTAVE_OUTPUT: value[i] = md->octave_output; break;
         case VR_INTEGRATE_DTHETA: value[i] = md->integrate_dtheta; break;
 
         default: return fmi2Error;
@@ -185,6 +197,7 @@ static fmi2Status generated_fmi2SetBoolean(modelDescription_t *md, const fmi2Val
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
+        case 1001: md->octave_output = value[i]; break;
         case 18: md->integrate_dtheta = value[i]; break;
         default: return fmi2Error;
         }
@@ -195,6 +208,7 @@ static fmi2Status generated_fmi2GetString(const modelDescription_t *md, const fm
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
+        case VR_OCTAVE_OUTPUT_FILE: value[i] = md->octave_output_file; break;
 
         default: return fmi2Error;
         }
@@ -206,7 +220,7 @@ static fmi2Status generated_fmi2SetString(modelDescription_t *md, const fmi2Valu
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-
+        case 1003: if (strlcpy(md->octave_output_file, value[i], sizeof(md->octave_output_file)) >= sizeof(md->octave_output_file)) { return fmi2Error; } break;
         default: return fmi2Error;
         }
     }

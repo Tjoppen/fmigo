@@ -174,7 +174,7 @@ void Client::clientData(const char* data, long size){
         break;
 
       /* Model exchange */
-    }case type_fmi2_import_enter_event_mode_res:            NORMAL_CASE(fmi2_import_enter_event_mode);
+    }case type_fmi2_import_enter_event_mode_res:            NORMAL_CASE(fmi2_import_enter_event_mode); break;
     case type_fmi2_import_new_discrete_states_res:{
 
         fmi2_import_new_discrete_states_res r; r.ParseFromArray(data, size);

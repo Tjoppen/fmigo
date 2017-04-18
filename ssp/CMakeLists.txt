@@ -11,4 +11,6 @@ add_subdirectory(ssp-work-reports)
 
 add_test(ssp-test         python ${CMAKE_CURRENT_SOURCE_DIR}/ssp-launcher.py ${SPRINGCHAINSYSTEM_SSP})
 add_test(ssp-work-reports python ${CMAKE_CURRENT_SOURCE_DIR}/ssp-launcher.py ${WORKREPORTHOLONOMIC_SSP})
+add_test(ssp-test-unzipped         python ${CMAKE_CURRENT_SOURCE_DIR}/ssp-launcher.py ${SPRINGCHAINSYSTEM_DIR}/SystemStructure.ssd)
+add_test(ssp-work-reports-unzipped python ${CMAKE_CURRENT_SOURCE_DIR}/ssp-launcher.py ${WORKREPORTHOLONOMIC_DIR}/SystemStructure.ssd)
 

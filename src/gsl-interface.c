@@ -17,7 +17,11 @@ const gsl_odeiv2_step_type * cgsl_get_integrator( int  i ) {
       gsl_odeiv2_step_msadams,	/* 9 */
       gsl_odeiv2_step_msbdf	/*10 */
     };
-
+  
+  if ( i < 0 || i  > sizeof( integrators ) / sizeof( integrators[ 0 ] ) ){
+    fprintf(stderr, "Invalid integrator choice : %i.  Defaulting to RKF45.\n", i);
+    i = 2;
+  }
   return integrators [ i ];
 
 }
@@ -53,14 +57,6 @@ static void cgsl_print_data( cgsl_simulation * s ){
   }
 }
 
-static void printy(double *y, int n){
-  int i;
-  fprintf(stderr, "+++++\n");
-  
-  for ( i  = 0 ; i < n ; ++i )
-    fprintf(stderr, "%f ", y[i]);
-  fprintf(stderr, "\n+++++\n");
-}
 /**
  * Integrate the equations up to a given end point.
  */
@@ -73,8 +69,7 @@ int cgsl_step_to(void * _s,  double comm_point, double comm_step ) {
   s->t1 = comm_point + comm_step; /* end point */
   s->iterations = 0;
 
-  if (0 && s->model->pre_step) {
-
+  if (s->model->pre_step) {
     if( s->model->pre_step(comm_point, comm_step, s->model->x, s->model->parameters) == CGSL_RESTART ){
       gsl_odeiv2_evolve_reset( s->i.evolution);
       gsl_odeiv2_step_reset( s->i.step);
@@ -339,9 +334,10 @@ static int cgsl_epce_model_eval (double t, const double y[], double dydt[], void
   int status =  GSL_SUCCESS;
   cgsl_epce_model * p = (cgsl_epce_model *) params;
 
-  p->model->function (t, y, dydt, p->model->parameters);
-  //the semantics of filters is that they have read-only access to the model's
-  //variables, from which it computes its derivatives
+    p->model->function (t, y, dydt, p->model->parameters);
+    //the semantics of filters is that they have read-only access to the model's
+    //variables, from which it computes its derivatives
+
   p->filter->function(t, y, dydt + p->model->n_variables, p->filter->parameters);
 
   return status;
@@ -396,10 +392,11 @@ static int cgsl_epce_model_pre_step  (double t, double dt, const double y[], voi
   int x; 
   //memorize timestep and z values
   //TODO: circular buffer
-  p->dt = dt;
   memcpy( p->z_prev, p->e_model.x + p->model->n_variables, p->filter->n_variables * sizeof(p->z_prev[0]));
-  double * z = p->e_model.x + p->model->n_variables;
-  memset(z, 0, p->filter->n_variables * sizeof( y[0] ) );
+  if ( p->filter_length != 0 ){ 
+    double * z = p->e_model.x + p->model->n_variables;
+    memset(z, 0, p->filter->n_variables * sizeof( y[0] ) );
+  }
 
   if (p->model->pre_step) {
     p->model->pre_step(t, dt, y, p->model->parameters);
@@ -439,7 +436,6 @@ static int cgsl_epce_model_post_step (double t, double dt, const double y[], voi
         p->filtered_outputs[x] = ( p->z_prev[x] + y[p->model->n_variables + x] ) / 2.0 / dt;
       }
       
-
       p->epce_post_step(p->filter->n_variables, p->filtered_outputs,       p->epce_post_step_params);
     } else if (p->filter_length == 1) {
         //y = z
@@ -447,7 +443,7 @@ static int cgsl_epce_model_post_step (double t, double dt, const double y[], voi
         p->epce_post_step(p->filter->n_variables, &y[p->model->n_variables], p->epce_post_step_params);
     } else {
         //y = g(x)
-        p->epce_post_step(p->filter->n_variables, p->outputs,                p->epce_post_step_params);
+      p->epce_post_step(t, y, p->epce_post_step_params);
     }
   }
 

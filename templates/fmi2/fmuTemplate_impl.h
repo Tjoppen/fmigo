@@ -158,7 +158,7 @@ fmi2Status fmi2SetDebugLogging(fmi2Component c, fmi2Boolean loggingOn, size_t nC
 fmi2Component fmi2Instantiate(fmi2String instanceName, fmi2Type fmuType, fmi2String fmuGUID,
                             fmi2String fmuResourceLocation, const fmi2CallbackFunctions *functions,
                             fmi2Boolean visible, fmi2Boolean loggingOn) {
-    // ignoring arguments: fmuResourceLocation, visible
+    // ignoring arguments: visible
     ModelInstance *comp;
     if (!functions->logger) {
         return NULL;
@@ -174,6 +174,11 @@ fmi2Component fmi2Instantiate(fmi2String instanceName, fmi2Type fmuType, fmi2Str
                 "fmi2Instantiate: Missing instance name.");
         return NULL;
     }
+    if (!fmuResourceLocation || strlen(fmuResourceLocation) == 0) {
+        functions->logger(functions->componentEnvironment, fmuResourceLocation, fmi2Error, "error",
+                "fmi2Instantiate: Missing resource location.");
+        return NULL;
+    }
     if (strcmp(fmuGUID, MODEL_GUID)) {
         functions->logger(functions->componentEnvironment, instanceName, fmi2Error, "error",
                 "fmi2Instantiate: Wrong GUID %s. Expected %s.", fmuGUID, MODEL_GUID);
@@ -183,6 +188,7 @@ fmi2Component fmi2Instantiate(fmi2String instanceName, fmi2Type fmuType, fmi2Str
     if (comp) {
         int i;
         comp->instanceName = functions->allocateMemory(1 + strlen(instanceName), sizeof(char));
+        comp->fmuResourceLocation = functions->allocateMemory(1 + strlen(fmuResourceLocation), sizeof(char));
 
         // UMIT: log errors only, if logging is on. We don't have to enable all of them,
         // to quote the spec: "Which LogCategories the FMU sets is unspecified."
@@ -192,13 +198,14 @@ fmi2Component fmi2Instantiate(fmi2String instanceName, fmi2Type fmuType, fmi2Str
         }
         comp->logCategories[LOG_ERROR] = loggingOn;
     }
-    if (!comp || !comp->instanceName) {
+    if (!comp || !comp->instanceName || !comp->fmuResourceLocation) {
 
         functions->logger(functions->componentEnvironment, instanceName, fmi2Error, "error",
             "fmi2Instantiate: Out of memory.");
         return NULL;
     }
     strcpy(comp->instanceName, instanceName);
+    strcpy(comp->fmuResourceLocation, fmuResourceLocation);
     comp->type = fmuType;
     comp->functions = functions;
     comp->componentEnvironment = functions->componentEnvironment;
@@ -221,6 +228,7 @@ void fmi2FreeInstance(fmi2Component c) {
         return;
     FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2FreeInstance")
     if (comp->instanceName) comp->functions->freeMemory(comp->instanceName);
+    if (comp->fmuResourceLocation) comp->functions->freeMemory(comp->fmuResourceLocation);
 #ifdef SIMULATION_FREE
     SIMULATION_FREE(comp->s.simulation);
 #endif
@@ -260,6 +268,10 @@ fmi2Status fmi2ExitInitializationMode(fmi2Component c) {
         return fmi2Error;
     FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2ExitInitializationMode")
 
+#ifdef MODEL_INIT
+    //meWrapper needs ModelInstance*
+    MODEL_INIT(comp);
+#endif
 #ifdef SIMULATION_INIT
     SIMULATION_INIT(&comp->s);
 #endif

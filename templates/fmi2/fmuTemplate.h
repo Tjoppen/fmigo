@@ -60,6 +60,7 @@ static inline int max(int a, int b) {
 
 typedef struct {
     char* instanceName;
+    char* fmuResourceLocation;
     const fmi2CallbackFunctions *functions;
     fmi2ComponentEnvironment componentEnvironment;
     fmi2Type type;

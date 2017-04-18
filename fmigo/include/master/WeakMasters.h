@@ -52,7 +52,7 @@ public:
         }
 
         //this pipelines with the sendGetX() + wait() in printOutputs() in main.cpp
-        send(m_clients, fmi2_import_do_step(t, dt, true));
+        send(cs_clients, fmi2_import_do_step(t, dt, true));
         solveME(t,dt);
     }
 };

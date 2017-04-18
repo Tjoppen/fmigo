@@ -5,7 +5,7 @@ pushd ../../
 source boilerplate.sh
 popd
 COMPARE=../../compare_csv.py
-RESULT=/tmp/result.csv
+RESULT=result.csv
 function test(){
     WRAPPER=$1
     CHECK=$2

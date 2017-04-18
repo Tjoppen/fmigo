@@ -33,17 +33,19 @@ int engine2 (double t, const double x[], double dxdt[], void * params) {
   state_t *s = (state_t*)params;
   
   double tau_coupling;
+  double tau_total;
   compute_forces(s, x, &tau_coupling);
-
+  tau_total = (s->md.tau_max * beta(s, x[ 1 ])
+	       - s->md.k1 * x[ 1 ]
+	       - s->md.k2 * x[ 1 ] * floor(fabs(x[ 1 ]))
+	       + s->md.tau_in
+	       - tau_coupling
+    );
   dxdt[ 0 ] = x[ 1 ];
-  dxdt[ 1 ] = s->md.jinv * (s->md.tau_max * beta(s, x[ 1 ])
-                            - s->md.k1 * x[ 1 ]
-                            - s->md.k2 * x[ 1 ] * floor(fabs(x[ 1 ]))
-                            + s->md.tau_in
-                            - tau_coupling
-                            );
+  dxdt[ 1 ] = s->md.jinv * tau_total;
+
   dxdt[ 2 ] = s->md.integrate_dtheta ? x[ 1 ] - s->md.omega_in : 0.0;
-  //fprintf(stderr, "forces: %f - %f - %f + %f @ t = %f, x = %f\n", s->md.tau_max * beta(s, x[ 1 ]), s->md.k1 * x[ 1 ], s->md.k2 * x[ 1 ] * floor(fabs(x[ 1 ])), s->md.tau_coupling, t, x[0]);
+
 
   return GSL_SUCCESS;
 
@@ -122,10 +124,10 @@ static void engine2_init(state_t *s) {
       sync_out,
       s
     ),
-    rkf45, 1e-5, 0, 0, 0, NULL
+    s->md.integrator, 1e-6, 0, 0, s->md.octave_output, s->md.octave_output ? fopen(s->md.octave_output_file, "w") : NULL
   );
-  s->simulation.file = fopen( "engine2.m", "w+" );
-  s->simulation.print = 1;
+  //s->simulation.file = fopen( "engine2.m", "w+" );
+  //s->simulation.print = 1;
 
 }
 

@@ -84,9 +84,9 @@ static double fclutch_dphi_derivative( double dphi );
 static void compute_forces(state_t *s, const double x[], double *force_e, double *force_s, double *force_clutch) {
   int dx_s_idx = s->md.integrate_dx_e ? 5 : 4;
 
-  /** compute the coupling force: NOTE THE SIGN!
-   *  This is the force *applied* to the coupled system
-   */
+/** compute the coupling force: NOTE THE SIGN!
+ *  This is the force *applied* to the coupled system
+ */
   
   *force_e =   s->md.gamma_ec * ( x[ 1 ] - s->md.v_in_e );
 
@@ -104,12 +104,12 @@ static void compute_forces(state_t *s, const double x[], double *force_e, double
 
   if (force_clutch) {
     if (s->md.is_gearbox) {
-    if (s->md.gear == 0) {
-        // neutral
-        *force_clutch = 0;
+      if (s->md.gear == 0) {
+// neutral
+	*force_clutch = 0;
       } else {
-        double ratio = gear2ratio(s);
-        *force_clutch = s->md.gear_k * (x[ 0 ] - ratio*x[ 2 ] + s->simulation.delta_phi) + s->md.gear_d * (x[ 1 ] - ratio*x[ 3 ]);
+	double ratio = gear2ratio(s);
+	*force_clutch = s->md.gear_k * (x[ 0 ] - ratio*x[ 2 ] + s->simulation.delta_phi) + s->md.gear_d * (x[ 1 ] - ratio*x[ 3 ]);
       }
     } else {
       *force_clutch =  s->md.clutch_position * fclutch( x[ 0 ] - x[ 2 ], x[ 1 ] - x[ 3 ], s->md.clutch_damping );
@@ -122,46 +122,46 @@ int clutch (double t, const double x[], double dxdt[], void * params){
 
   state_t *s = (state_t*)params;
   
-  /** the index of dx_s depends on whether we're integrating dx_e or not */
+/** the index of dx_s depends on whether we're integrating dx_e or not */
   int dx_s_idx = s->md.integrate_dx_e ? 5 : 4;
   int N = 4 + s->md.integrate_dx_e + s->md.integrate_dx_s;
 
   double force_e, force_s, force_clutch;
   compute_forces(s, x, &force_e, &force_s, &force_clutch);
 
-  /** Second order dynamics */
+/** Second order dynamics */
   dxdt[ 0 ]  = x[ 1 ];
 
   double damping_e = -s->md.gamma_e * x[ 1 ];		
   double damping_s = -s->md.gamma_s * x[ 3 ];		
-  /** internal dynamics */ 
+/** internal dynamics */ 
   dxdt[ 1 ]  = damping_e;
-  /** coupling */ 
+/** coupling */ 
   dxdt[ 1 ] += -force_clutch;
-  /** counter torque from next module */ 
+/** counter torque from next module */ 
   dxdt[ 1 ] += s->md.force_in_e;
-  /** additional driver */ 
+/** additional driver */ 
   dxdt[ 1 ] += s->md.force_in_ex;
   dxdt[ 1 ] -= force_e;
   dxdt[ 1 ] /= s->md.mass_e;
  
-  /** shaft-side plate */
+/** shaft-side plate */
 
   dxdt[ 2 ]  = x[ 3 ];
   
-  /** internal dynamics */ 
+/** internal dynamics */ 
   dxdt[ 3 ]  = damping_s;
-  /** coupling */ 
+/** coupling */ 
   dxdt[ 3 ] +=  force_clutch;
-  /** counter torque from next module */ 
+/** counter torque from next module */ 
   dxdt[ 3 ] += s->md.force_in_s;
-  /** additional driver */ 
+/** additional driver */ 
   dxdt[ 3 ] += s->md.force_in_sx;
   dxdt[ 3 ] -= force_s;
   dxdt[ 3 ] /= s->md.mass_s;
  
  
-  /** angle difference */
+/** angle difference */
   if ( s->md.integrate_dx_e )
     dxdt[ 4 ]        = x[ 1 ] - s->md.v_in_e;
   if ( s->md.integrate_dx_s )
@@ -348,7 +348,7 @@ static int sync_out(int n, const double outputs[], void * params) {
   state_t *s = params;
   double dxdt[6];
 
-  //compute accelerations. we need them for Server::computeNumericalJacobian()
+//compute accelerations. we need them for Server::computeNumericalJacobian()
   clutch(0, outputs, dxdt, params);
 
   s->md.x_e = outputs[ 0 ];
@@ -356,7 +356,8 @@ static int sync_out(int n, const double outputs[], void * params) {
   s->md.a_e = dxdt[ 1 ];
   s->md.x_s = outputs[ 2 ];
   s->md.v_s = outputs[ 3 ];
-  s->md.a_s = dxdt[ 3 ];
+  s->md.a_s = dxdt[ 2 ];
+  s->md.n_steps = s->simulation.sim.iterations;
   compute_forces(s, outputs, &s->md.force_e, &s->md.force_s, NULL);
 
 
@@ -441,7 +442,7 @@ static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real comm
   s->simulation.sim.print = noSetFMUStatePriorToCurrentPoint;
   cgsl_step_to( &s->simulation, currentCommunicationPoint, communicationStepSize );
 
-  s->md.n_steps = s->simulation.sim.iterations;
+  //fprintf(stderr, "Iterations = %d\n", s->md.n_steps);
   s->simulation.last_gear = s->md.gear;
 }
 

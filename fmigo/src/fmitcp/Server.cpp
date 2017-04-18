@@ -738,16 +738,13 @@ string Server::clientData(const char *data, size_t size) {
     fmitcp_proto::fmi2_import_new_discrete_states_res response;
     fmitcp_proto::fmi2_event_info_t* eventin = fmi2EventInfoToProtoEventInfo(eventInfo);
     response.set_allocated_eventinfo(eventin);
-    fprintf(stderr,"Server.cpp: %d %d %d %d %d %f \n",
+    debug("Server.cpp: %d %d %d %d %d %f \n",
             response.eventinfo().newdiscretestatesneeded(),
             response.eventinfo().terminatesimulation(),
             response.eventinfo().nominalsofcontinuousstateschanged(),
             response.eventinfo().valuesofcontinuousstateschanged(),
             response.eventinfo().nexteventtimedefined(),
             response.eventinfo().nexteventtime());
-    //response.set_allocated_eventinfo(fmi2EventInfoToProtoEventInfo(eventInfo));
-    //fmitcp_proto::fmi2_event_info_t * ei = response.mutable_eventinfo();
-    //response.mutable_eventinfo(eventInfo);
 
     ret.first = fmitcp_proto::type_fmi2_import_new_discrete_states_res;
     ret.second = response.SerializeAsString();

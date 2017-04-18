@@ -9,6 +9,7 @@
 #else
 #include "common/fmigo_storage.h"
 #endif
+#include "common/common.h"
 using namespace std;
 /// Global data for FMUs as well as maps to fetch and read from the FMI/X
 /// support.
@@ -63,21 +64,21 @@ void FmigoStorage::allocate_storage(const vector<size_t> &number_of_states,const
 void FmigoStorage::print(enum STORAGE type){ char str[1]=""; FmigoStorage::print(type,str);}
 void FmigoStorage::print(enum STORAGE type,char *str)
     {
-        fputs(str,stderr);
+        debug("%s",str);
         Data& current = get_current(type);
         Data& backup = get_backup(type);
-        fprintf(stderr,"current \n");
+        debug("current \n");
         for(auto x: get_bounds(type)) {
                 for(size_t i = x.first; i != x.second; ++i)
-                    fprintf(stderr,"%f ",current.at(i));
+                    debug("%f ",current.at(i));
             }
-        fprintf(stderr,"\n");
-        fprintf(stderr,"backup \n");
+        debug("\n");
+        debug("backup \n");
         for(auto x: get_bounds(type)) {
                 for(size_t i = x.first; i != x.second; ++i)
-                    fprintf(stderr,"%f ",backup.at(i));
+                    debug("%f ",backup.at(i));
             }
-        fprintf(stderr,"\n");
+        debug("\n");
     }
 
 double FmigoStorage::absmin(enum STORAGE type){
@@ -117,7 +118,7 @@ void FmigoStorage::push_to(size_t client_id, enum STORAGE type, const Data &vec)
         size_t s = get_size(client_id, type);
 
         if( s != vec.size()){
-            fprintf(stderr,"error:FmuData-push_to(): client_id != vector.size!!\n");
+            debug("error:FmuData-push_to(): client_id != vector.size!!\n");
             exit(1);
         }
         copy(vec.begin(),
@@ -174,7 +175,7 @@ bool FmigoStorage::past_event(size_t id){
 }
 #define FMIGO_FAILED_TEST(print)                \
     {                                           \
-        fprintf(stderr,print);                  \
+        debug(print);                  \
         exit(1);                                \
     }
     /** test_function():
@@ -183,7 +184,7 @@ bool FmigoStorage::past_event(size_t id){
 void FmigoStorage::test_functions(void)
     {
 
-        fprintf(stderr,"Test of fmi_on_storage start\n");
+        debug("Test of fmi_on_storage start\n");
 #define minVal 0.1
 #define minValn -1
 #define first_size_storage_cpp 1
@@ -204,7 +205,7 @@ void FmigoStorage::test_functions(void)
         bool fail = false;
 
 #define test_size_storage_cpp(name)                                     \
-        fprintf(stderr,"Testing size() -- "#name"     -  ");            \
+        debug("Testing size() -- "#name"     -  ");            \
         for(size_t i = 0 ; i < n_##name.size(); ++i) {                  \
             if( n_##name.at(i) != testFmigoStorage.get_size(i , STORAGE::name)) \
                 fail = true;                                            \
@@ -212,7 +213,7 @@ void FmigoStorage::test_functions(void)
         if(fail){                                                       \
             FMIGO_FAILED_TEST("Faild!\n");                              \
         }                                                               \
-        else fprintf(stderr,"OK!\n");
+        else debug("OK!\n");
 
         test_size_storage_cpp(states);
         test_size_storage_cpp(derivatives);
@@ -220,7 +221,7 @@ void FmigoStorage::test_functions(void)
         test_size_storage_cpp(nominals);
 
 #define test_push_to_storage_cpp(name)\
-        fprintf(stderr,"Testing push_to()  -  ");\
+        debug("Testing push_to()  -  ");\
         testFmigoStorage.push_to(0,STORAGE::name,Data first_vec_storage_cpp ); \
         testFmigoStorage.push_to(2,STORAGE::name,Data third_vec_storage_cpp ); \
         a = testFmigoStorage.get_current_##name();\
@@ -229,7 +230,7 @@ void FmigoStorage::test_functions(void)
         if(fail){                                                      \
             FMIGO_FAILED_TEST("FAILD push to -- "#name"!\n");          \
         }                                                              \
-        else fprintf(stderr,"OK!\n");
+        else debug("OK!\n");
 
         test_push_to_storage_cpp(states);
         test_push_to_storage_cpp(derivatives);
@@ -240,11 +241,11 @@ void FmigoStorage::test_functions(void)
         Data & name##_a = testFmigoStorage.get_backup_##name();
 #define test_cycle_storage_cpp_b(name)\
         Data & name##_b = testFmigoStorage.get_backup_##name();\
-        fprintf(stderr,"Testing cycle() -- "#name" -  ");\
+        debug("Testing cycle() -- "#name" -  ");\
         if(name##_a != name##_b){\
             FMIGO_FAILED_TEST("Faild!\n");\
         }\
-        else fprintf(stderr,"OK!\n");
+        else debug("OK!\n");
 
         test_cycle_storage_cpp_a(states);
         test_cycle_storage_cpp_a(derivatives);
@@ -259,14 +260,14 @@ void FmigoStorage::test_functions(void)
         testFmigoStorage.cycle();
 
 #define test_sync_storage_cpp(name)\
-        fprintf(stderr,"Testing sync() -- "#name"  -  ");\
+        debug("Testing sync() -- "#name"  -  ");\
         a = testFmigoStorage.get_current_##name();\
 \
         b = testFmigoStorage.get_backup_##name();\
         if(a != b){\
             FMIGO_FAILED_TEST("Faild!\n");\
         }\
-        else fprintf(stderr,"OK!\n");
+        else debug("OK!\n");
 
         testFmigoStorage.sync();
         test_sync_storage_cpp(states);
@@ -279,7 +280,7 @@ void FmigoStorage::test_functions(void)
         double z[third_size_storage_cpp] = third_vec_storage_cpp;
 
 #define test_push_to_p_storage_cpp(name)                                \
-        fprintf(stderr,"Testing push_to_p() -- "#name"  -  ");          \
+        debug("Testing push_to_p() -- "#name"  -  ");          \
         testFmigoStorage.push_to(0,STORAGE::name,Data first_vec_storage_cpp ); \
         testFmigoStorage.push_to(1,STORAGE::name,Data second_vec_storage_cpp ); \
         testFmigoStorage.push_to(2,STORAGE::name,Data third_vec_storage_cpp ); \
@@ -294,7 +295,7 @@ void FmigoStorage::test_functions(void)
             print(STORAGE::name);                                       \
             FMIGO_FAILED_TEST("Faild!\n");                              \
         }\
-        else fprintf(stderr,"OK!\n");
+        else debug("OK!\n");
 
         test_push_to_p_storage_cpp(states);
         test_push_to_p_storage_cpp(nominals);
@@ -321,13 +322,13 @@ void FmigoStorage::test_functions(void)
             cout <<  endl;                                      \
             for(int i = s1; i < s2 ; j++,i++)                   \
                 cout << name[j] << " --- " << ret[i] << endl;  \
-            fprintf(stderr,"FAILD!\n");                                 \
+            debug("FAILD!\n");                                 \
         }
 
 
         int k;
 #define test_get_p_storage_cpp(type,name)                               \
-        fprintf(stderr,"Testing get_"#type"_"#name"_p()     -  ");              \
+        debug("Testing get_"#type"_"#name"_p()     -  ");              \
         testFmigoStorage.get_##type##_##name(ret.data(),2);                            \
         fail = false;                                                   \
         test_get_p_fail(z,                                              \
@@ -350,12 +351,12 @@ void FmigoStorage::test_functions(void)
         \
         if(fail) {                                                      \
             for(int i = 0; i < third_size_storage_cpp; i++)             \
-                fprintf(stderr, "%f  ---  %f\n",z[i],ret[i]);           \
-            fprintf(stderr,"print \n");                                 \
+                debug( "%f  ---  %f\n",z[i],ret[i]);           \
+            debug("print \n");                                 \
             testFmigoStorage.print(STORAGE::name);                      \
             fail = true;                                                \
-            fprintf(stderr,"FAILD! "#name"\n");                 \
-        } else fprintf(stderr,"OK!\n");
+            debug("FAILD! "#name"\n");                 \
+        } else debug("OK!\n");
 
         test_get_p_storage_cpp(current,states);
         test_get_p_storage_cpp(current,derivatives);
@@ -366,12 +367,12 @@ void FmigoStorage::test_functions(void)
         // test_get_p_storage_cpp(backup,nominals);
         // test_get_p_storage_cpp(backup,indicators);
 
-        fprintf(stderr,"Testing absmin()     -  ");
+        debug("Testing absmin()     -  ");
         if ( minVal  != testFmigoStorage.absmin(STORAGE::indicators,2) ||
              abs(minValn) != testFmigoStorage.absmin(STORAGE::indicators,1) ||
              abs(minValn) < minVal? abs(minValn):minVal != testFmigoStorage.absmin(STORAGE::indicators) )
-            fprintf(stderr,"FAILD!\n");
+            debug("FAILD!\n");
         else
-            fprintf(stderr," OK!\n");
+            debug(" OK!\n");
 
     }

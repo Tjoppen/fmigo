@@ -36,7 +36,7 @@ ModelExchangeStepper::ModelExchangeStepper(std::vector<FMIClient*> clients, std:
         case fmi2_fmu_kind_cs: cs_clients.push_back(client); break;
         case fmi2_fmu_kind_me: me_clients.push_back(client); break;
         default:
-            fprintf(stderr,"Fatal: fmigo only supports co-simulation and model exchange fmus\n");
+            debug("Fatal: fmigo only supports co-simulation and model exchange fmus\n");
             exit(1);
         }
     }
@@ -103,7 +103,7 @@ static int fmu_function(double t, const double x[], double dxdt[], void* params)
     p->FMIGO_ME_WAIT();
 
     //p->stepper->get_storage().print(states);
-    //fprintf(stderr,"x[0] %f x[1] %f\n",x[0],x[1]);
+    //debug("x[0] %f x[1] %f\n",x[0],x[1]);
     for(auto client: p->clients){
         if(client->getNumEventIndicators()){
             if(p->stepper->get_storage().past_event(client->getId())){
@@ -196,7 +196,7 @@ static int epce_post_step(int n, const double outputs[], void * params) {
         ++p->count; /* count function evaluations */
         Data& states = p->stepper->get_storage().get_current_states();
 
-        fprintf(stderr,"\nepce_post_step %f %f \n",outputs[0],outputs[1]);
+        debug("\nepce_post_step %f %f \n",outputs[0],outputs[1]);
         // extract current states to restore after outputs are changed
         for(auto client: p->clients)
             p->FMIGO_ME_GET_CONTINUOUS_STATES(client);
@@ -364,7 +364,7 @@ void ModelExchangeStepper::stepToEvent(cgsl_simulation &sim){
         getGoldenNewTime(sim);
         step(sim);
         if(timeLoop.dt_new == 0){
-            fprintf(stderr,"stepToEvent: dt == 0, abort\n");
+            debug("stepToEvent: dt == 0, abort\n");
             exit(1);
         }
         if(hasStateEvent(sim)){
@@ -375,7 +375,7 @@ void ModelExchangeStepper::stepToEvent(cgsl_simulation &sim){
             step(sim);
             if(!hasStateEvent(sim)) storeStates(sim);
             else{
-                fprintf(stderr,"stepToEvent: failed at stepping to safe time, aborting\n");
+                debug("stepToEvent: failed at stepping to safe time, aborting\n");
                 exit(1);
             }
             timeLoop.dt_new = timeLoop.t_crossed - sim.t;
@@ -407,7 +407,7 @@ void ModelExchangeStepper::newDiscreteStates(){
                 newDiscreteStatesNeeded = true;
             }
             if(client->m_event_info.terminateSimulation){
-                fprintf(stderr,"modelExchange.cpp: client %d terminated simulation\n",client->getId());
+                debug("modelExchange.cpp: client %d terminated simulation\n",client->getId());
                 exit(1);
             }
         }
@@ -491,9 +491,9 @@ void ModelExchangeStepper::solveME(double t, double dt) {
             // step closer to the event location
             if(hasStateEvent(m_sim))
                 {
-                    fprintf(stderr,"stepToEvent\n");
+                    debug("stepToEvent\n");
                 stepToEvent(m_sim);
-                    fprintf(stderr,"stepToEvent done\n");
+                    debug("stepToEvent done\n");
                 }
 
         }

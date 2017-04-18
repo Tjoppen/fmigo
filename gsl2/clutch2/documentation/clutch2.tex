@@ -240,6 +240,9 @@ The expression in Eqn.~\eqref{eq:8} is to be understood column-wise so that
   \end{split}
 \end{equation}
 
+Because there is only force coupling between the elements, the mobility
+matrix is diagonal and the values reported are just
+$1/\idx{\mathcal{J}}{1}$ and $\idx{\mathcal{J}}{2}$.
 
 \begin{anfxnote}{data!}
   Should have data here which shows how the mobility values differ when
@@ -276,12 +279,35 @@ order to keep the angle difference within reasonable bounds so this is best
 integrated using an implicit integrator which requires a Jacobian matrix. 
 
 
-\begin{equation}
-  \label{eq:11}
-  e^{{i\pi}} + 1 = 0
-\end{equation}
-See Eqn.~\eqref{eq:11}
- 
+\section{Inputs and outputs}
+\label{sec:inputs-outputs}
+
+The list of parameters is as follows.
+\begin{tabularx}{1.0\linewidth}[H]{ ||X|c|c|c|c|c|| }
+  \hhline{|======|}
+  Name & Symbol & Variable & Value ref. & Range & Default \\
+  \hhline{|======|}
+  Initial angle & $\idx{\phi}{1}(0)$ & \texttt{\footnotesize{x0\_e}}&  0 & & \\ \hline
+  Initial velocity & $\idx{\omega}{1}(0)$ & \texttt{\footnotesize{v0\_e}}& 1 & & \\ \hline
+  Initial angle diff& $\idx{\delta\idx{\phi}{1}}(0)$ & \texttt{\footnotesize{dx0\_e}}& 1 & & \\ \hline
+  Initial angle & $\idx{\phi}{2}(0)$ & \texttt{\footnotesize{x0\_s}}&  0 & & \\ \hline
+  Initial velocity & $\idx{\omega}{2}(0)$ & \texttt{\footnotesize{v0\_s}}& 1 & & \\ \hline
+  Initial angle diff& $\idx{\delta\idx{\phi}{2}}(0)$ & \texttt{\footnotesize{dx0\_s}}& 1 & & \\ \hline
+  Coupling spring & $K_{p_{1}}$ & \texttt{\footnotesize{k\_ec}}& 1 & & \\ \hline
+  Coupling spring & $D_{c_{1}}$ & \texttt{\footnotesize{gamma\_ec}}& 1 & & \\ \hline
+  Integration & $\int\dd\delta\idx{\dot{\phi}}{1}$ & \texttt{\footnotesize{integrate_dx_e}}& 1 & & \\ \hline
+  Coupling spring & $K_{p_{2}}$ & \texttt{\footnotesize{k\_sc}}& 1 & & \\ \hline
+  Coupling spring & $D_{p_{2}}$ & \texttt{\footnotesize{gamma\_sc}}& 1 & & \\ \hline
+  Integration & $\int\dd\delta\idx{\dot{\phi}}{2}$ & \texttt{\footnotesize{integrate_dx_s}}& 1 & & \\ \hline
+  Mass in shaft& $\idx{\mathcal{J}}{1}$ & \texttt{\footnotesize{mass\_e}}& 1 & & \\ \hline
+  In shaft damping & $D_{1}$ & \texttt{\footnotesize{gamma\_e}}& 1 & & \\ \hline
+  Mass out shaft& $\idx{\mathcal{J}}{2}$ & \texttt{\footnotesize{mass_s}}& 1 & & \\ \hline
+  Out shaft damping & $D_{2}$ & \texttt{\footnotesize{gamma\_s}}& 1 & & \\ \hline
+  Clutch damping& $D_{c}$ & \texttt{\footnotesize{gamma\_s}}& 1 & & \\ \hline
+  
+  EPCE filter &  & \texttt{\footnotesize{filter\_length}} & 98 &
+  \hhline{|======|}
+\end{tabularx}
 
 
 \bibliographystyle{plainnat}  

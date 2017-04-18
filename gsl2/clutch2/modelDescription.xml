@@ -395,6 +395,39 @@
       <Boolean start="false"/>
     </ScalarVariable>
 
+
+    <!-- index="41"-->
+    <ScalarVariable 
+        name="integrator"
+        valueReference="201"
+        description="Choose integrator:
+                     {
+                     rk2,	/* 0 */
+                     rk4,	/* 1 */
+                     rkf45,	/* 2 */
+                     rkck,	/* 3 */
+                     rk8pd,	/* 4 */
+                     rk1imp,	/* 5 */
+                     rk2imp,	/* 6 */
+                     rk4imp,	/* 7 */
+                     bsimp,	/* 8 */
+                     msadams,	/* 9 */
+                     msbdf	/*10 */
+                     };
+                     "
+        causality="parameter"
+        variability="fixed">
+      <Integer start="2"/>
+    </ScalarVariable>
+    <!-- index="39"-->
+    <ScalarVariable 
+        name="octave_output_file"
+        valueReference="202"
+        description="file for internal dump?"
+        causality="parameter"
+        variability="fixed">
+      <String start="clutch3.m" size="500"/>
+    </ScalarVariable>
   </ModelVariables>
 
 

@@ -28,7 +28,7 @@
   <DefaultExperiment startTime="0" stopTime="10" stepSize="0.1"/>
 
   <ModelVariables>
-    <!-- index="0"-->
+    <!-- index="1"-->
     <ScalarVariable
         name="x0_e"               
         valueReference="0"  
@@ -37,7 +37,7 @@
         variability="fixed">
       <Real start="0"/>
     </ScalarVariable>
-    <!-- index="1"-->
+    <!-- index="2"-->
     <ScalarVariable 
         name="v0_e"
         valueReference="1"  
@@ -46,7 +46,7 @@
         variability="fixed">
       <Real start="0"/>
     </ScalarVariable>
-    <!-- index="2"-->
+    <!-- index="3"-->
     <ScalarVariable 
         name="dx0_e"
         valueReference="2"
@@ -56,7 +56,7 @@
       <Real start="0"/>
     </ScalarVariable>
 
-    <!-- index="3"-->
+    <!-- index="4"-->
     <ScalarVariable
         name="x0_s"               
         valueReference="3"  
@@ -65,7 +65,7 @@
         variability="fixed">
       <Real start="0"/>
     </ScalarVariable>
-    <!-- index="4"-->
+    <!-- index="5"-->
     <ScalarVariable 
         name="v0_s"
         valueReference="4"  
@@ -74,7 +74,7 @@
         variability="fixed">
       <Real start="0"/>
     </ScalarVariable>
-    <!-- index="5"-->
+    <!-- index="6"-->
     <ScalarVariable 
         name="dx0_s"
         valueReference="5"
@@ -87,7 +87,7 @@
     
     <!-- coupling parameters -->
 
-    <!-- index="6"-->
+    <!-- index="7"-->
     <ScalarVariable 
         name="k_ec"             
         valueReference="6"  
@@ -106,7 +106,7 @@
       <Real start="0"/>
     </ScalarVariable>
     <!-- index="8"-->
-     <ScalarVariable 
+    <ScalarVariable 
         name="integrate_dx_e"            
         valueReference="8"  
         description="whether or not engine-side coupling angle difference is integrated"         
@@ -115,7 +115,7 @@
       <Boolean start="false"/>
     </ScalarVariable>
 
-    <!-- index="9"-->
+    <!-- index="10"-->
     <ScalarVariable 
         name="k_sc"             
         valueReference="9"  
@@ -124,7 +124,7 @@
         variability="fixed">
       <Real start="0"/>
     </ScalarVariable>
-    <!-- index="10"-->
+    <!-- index="11"-->
     <ScalarVariable 
         name="gamma_sc"            
         valueReference="10"  
@@ -133,7 +133,7 @@
         variability="fixed">
       <Real start="0"/>
     </ScalarVariable>   
-    <!-- index="11"-->
+    <!-- index="12"-->
     <ScalarVariable 
         name="integrate_dx_s"            
         valueReference="11"  
@@ -144,7 +144,7 @@
     </ScalarVariable>
     <!-- internal parameters -->
 
-    <!-- index="12"-->
+    <!-- index="13"-->
     <ScalarVariable 
         name="mass_e"             
         valueReference="12"  
@@ -153,7 +153,7 @@
         variability="fixed">
       <Real start="1"/>
     </ScalarVariable>
-    <!-- index="13"-->
+    <!-- index="14"-->
     <ScalarVariable 
         name="gamma_e"            
         valueReference="13"  
@@ -163,7 +163,7 @@
       <Real start="1"/>
     </ScalarVariable>
 
-    <!-- index="14"-->
+    <!-- index="15"-->
     <ScalarVariable 
         name="mass_s"             
         valueReference="14"  
@@ -172,7 +172,7 @@
         variability="fixed">
       <Real start="1"/>
     </ScalarVariable>
-    <!-- index="15"-->
+    <!-- index="16"-->
     <ScalarVariable 
         name="gamma_s"            
         valueReference="15"  
@@ -182,7 +182,7 @@
       <Real start="1"/>
     </ScalarVariable>
 
-    <!-- index="16"-->
+    <!-- index="17"-->
     <ScalarVariable 
         name="clutch_damping"   
         valueReference="16"  
@@ -192,7 +192,7 @@
       <Real start="1"/>
     </ScalarVariable>
 
-    <!-- index="17"-->
+    <!-- index="18"-->
     <ScalarVariable 
         name="is_gearbox"
         valueReference="17"
@@ -202,7 +202,7 @@
       <Boolean start="false"/>
     </ScalarVariable>
 
-    <!-- index="18"-->
+    <!-- index="19"-->
     <ScalarVariable 
         name="gear_k"
         valueReference="18"
@@ -212,7 +212,7 @@
       <Real start="10000"/>
     </ScalarVariable>
 
-    <!-- index="19"-->
+    <!-- index="20"-->
     <ScalarVariable 
         name="gear_d"
         valueReference="19"
@@ -224,7 +224,7 @@
 
     <!-- inputs -->
     <!-- engine side inputs-->
-    <!-- index="20"-->
+    <!-- index="21"-->
     <ScalarVariable 
         name="x_in_e"
         valueReference="20"
@@ -233,7 +233,7 @@
       <Real start="0"/>
     </ScalarVariable>
 
-    <!-- index="21"-->
+    <!-- index="22"-->
     <ScalarVariable 
         name="v_in_e"
         valueReference="21"
@@ -242,7 +242,7 @@
       <Real start="0"/>
     </ScalarVariable>
 
-    <!-- index="22"-->
+    <!-- index="23"-->
     <ScalarVariable 
         name="force_in_e"         
         valueReference="22"
@@ -251,7 +251,7 @@
       <Real start="0"/>
     </ScalarVariable>
 
-    <!-- index="23"-->
+    <!-- index="24"-->
     <ScalarVariable 
         name="force_in_ex"         
         valueReference="23"
@@ -261,7 +261,7 @@
     </ScalarVariable>
 
     <!-- shaft side inputs-->
-    <!-- index="24"-->
+    <!-- index="25"-->
     <ScalarVariable 
         name="x_in_s"
         valueReference="24"
@@ -269,15 +269,15 @@
         causality="input">
       <Real start="0"/>
     </ScalarVariable>
-    <!-- index="25"-->
- <ScalarVariable 
+    <!-- index="26"-->
+    <ScalarVariable 
         name="v_in_s"
         valueReference="25"
         description="external driving velocity shaft-side"             
         causality="input">
       <Real start="0"/>
     </ScalarVariable>
-    <!-- index="26"-->
+    <!-- index="27"-->
     <ScalarVariable 
         name="force_in_s"         
         valueReference="26"
@@ -286,7 +286,7 @@
       <Real start="0"/>
     </ScalarVariable>
 
-    <!-- index="27"-->
+    <!-- index="28"-->
     <ScalarVariable 
         name="force_in_sx"         
         valueReference="27"
@@ -295,7 +295,7 @@
       <Real start="0"/>
     </ScalarVariable>
 
-    <!-- index="28"-->
+    <!-- index="29"-->
     <ScalarVariable 
         name="clutch_position"         
         valueReference="28"  
@@ -304,7 +304,7 @@
       <Real start="0"/>
     </ScalarVariable>
 
-    <!-- index="29"-->
+    <!-- index="30"-->
     <ScalarVariable 
         name="gear"
         valueReference="29"  
@@ -316,7 +316,7 @@
     <!-- outputs -->
 
     <!-- engine side outputs -->
-    <!-- index="30"-->
+    <!-- index="31"-->
     <ScalarVariable 
         name="x_e"                
         valueReference="30"
@@ -324,7 +324,7 @@
         causality="output">
       <Real />
     </ScalarVariable>
-    <!-- index="31"-->
+    <!-- index="32"-->
     <ScalarVariable 
         name="v_e"                
         valueReference="31"
@@ -332,7 +332,7 @@
         causality="output">
       <Real />
     </ScalarVariable>
-    <!-- index="32"-->
+    <!-- index="33"-->
     <ScalarVariable 
         name="a_e"                
         valueReference="32"
@@ -340,7 +340,7 @@
         causality="output">
       <Real />
     </ScalarVariable>
-    <!-- index="33"-->
+    <!-- index="34"-->
     <ScalarVariable 
         name="force_e"
         valueReference="33"
@@ -349,7 +349,7 @@
       <Real />
     </ScalarVariable>
     <!-- shaft side outputs -->
-    <!-- index="34"-->
+    <!-- index="35"-->
     <ScalarVariable 
         name="x_s"                
         valueReference="34"
@@ -357,7 +357,7 @@
         causality="output">
       <Real />
     </ScalarVariable>
-    <!-- index="35"-->
+    <!-- index="36"-->
     <ScalarVariable 
         name="v_s"
         valueReference="35"
@@ -366,7 +366,7 @@
       <Real />
     </ScalarVariable>
 
-    <!-- index="36"-->
+    <!-- index="37"-->
     <ScalarVariable 
         name="a_s"                
         valueReference="36"
@@ -375,7 +375,7 @@
       <Real />
     </ScalarVariable>
 
-    <!-- index="37"-->
+    <!-- index="38"-->
     <ScalarVariable 
         name="force_s"
         valueReference="37"
@@ -384,7 +384,7 @@
       <Real />
     </ScalarVariable>
 
-    <!-- index="38"-->
+    <!-- index="39"-->
     <ScalarVariable 
         name="filter_length"
         valueReference="98"
@@ -394,17 +394,17 @@
       <Integer start="0"/>
     </ScalarVariable>
 
-    <!-- index="39"-->
+    <!-- index="40"-->
     <ScalarVariable 
         name="octave_output"
         valueReference="97"
-        description="Dump Octave data to clutch2.m?"
+        description="Dump integration data to a space separated value file?"
         causality="parameter"
         variability="fixed">
       <Boolean start="false"/>
     </ScalarVariable>
 
-    <!-- index="40"-->
+    <!-- index="41"-->
     <ScalarVariable 
         name="n_steps"
         valueReference="100"
@@ -413,6 +413,56 @@
       <Integer />
     </ScalarVariable>
 
+    <!-- index="42"-->
+    <ScalarVariable 
+        name="integrator"
+        valueReference="201"
+        description="Choose integrator:
+                     {
+                     rk2,	/* 0 */
+                     rk4,	/* 1 */
+                     rkf45,	/* 2 */
+                     rkck,	/* 3 */
+                     rk8pd,	/* 4 */
+                     rk1imp,	/* 5 */
+                     rk2imp,	/* 6 */
+                     rk4imp,	/* 7 */
+                     bsimp,	/* 8 */
+                     msadams,	/* 9 */
+                     msbdf	/*10 */
+                     };
+                     "
+        causality="parameter"
+        variability="fixed">
+      <Integer start="2"/>
+    </ScalarVariable>
+
+    <!-- index="40"-->
+    <ScalarVariable 
+        name="octave_output_file"
+        valueReference="202"
+        description="file for internal dump?"
+        causality="parameter"
+        variability="fixed">
+      <String start="clutch3.m" size="500"/>
+    </ScalarVariable>
+
+    <ScalarVariable 
+        name="reset_dx_e"
+        valueReference="202"
+        description="Whether or not angle differences are reset at each step"
+        causality="parameter"
+        variability="fixed">
+      <Boolean start="false"/>
+    </ScalarVariable>
+     <ScalarVariable 
+        name="reset_dx_s"
+        valueReference="203"
+        description="Whether or not angle differences are reset at each step"
+        causality="parameter"
+        variability="fixed">
+      <Boolean start="false"/>
+    </ScalarVariable>   
   </ModelVariables>
 
 
@@ -420,14 +470,14 @@
   
   <ModelStructure>
     <Outputs>
-      <Unknown index="31"/>
-      <Unknown index="32"/>
-      <Unknown index="33"/>
-      <Unknown index="34"/>
-      <Unknown index="35"/>
-      <Unknown index="36"/>
-      <Unknown index="41"/>  <!-- number of steps -->
-      <Unknown index="38"/>
+      <Unknown index="31"/>     <!--angle: 0-->
+      <Unknown index="32"/>     <!--velocity: 1-->
+      <Unknown index="33"/>     <!--acceleration: 2-->
+      <Unknown index="34"/>     <!--coupling force: 3-->
+      <Unknown index="35"/>     <!--angle s: 4-->
+      <Unknown index="36"/>     <!--velocity s: 5-->
+      <Unknown index="41"/>  <!-- number of steps: 6 -->
+      <Unknown index="38"/>  <!--coupling force s: 7-->
     </Outputs>
     <Derivatives/>
     <DiscreteStates/>

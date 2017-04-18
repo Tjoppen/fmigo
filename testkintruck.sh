@@ -12,3 +12,8 @@ mpiexec -np 5 fmigo-mpi -t 100 -d 0.1 \
         ${FMUS_DIR}/gsl2/trailer/trailer.fmu  > out.csv
 
 
+# half of constraint from engine to clutch:
+engine=0			# FMU id
+clutch=0			# FMU id
+-C shaft,$engine,$clutch,phi_engine,w_engine,a_flywheel,tau_c
+

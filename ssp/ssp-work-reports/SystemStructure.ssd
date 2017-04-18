@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ssd:SystemStructureDescription version="Draft20160502"
+    xmlns:ssd="http://www.pmsf.net/xsd/SystemStructureDescriptionDraft"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.pmsf.net/xsd/SystemStructureDescriptionDraft http://www.pmsf.net/xsd/SystemStructureDescriptionDraft/Draft20150721/SystemStructureDescription.xsd"
+    name="SpringChainSystem">
+    <ssd:System name="WorkReportHolonomic" description="Umit driveline">
+        <!--ssd:Connectors>
+            <ssd:Connector name="In1" kind="input"/>
+            <ssd:Connector name="Out1" kind="output"/>
+            <ssd:Connector name="Out2" kind="output"/>
+        </ssd:Connectors-->
+        <ssd:Elements>
+            <ssd:Component name="FMU0" source="resources/engine.fmu" type="application/x-fmu-sharedlibrary">
+                <ssd:Connectors>
+                    <!--ssd:Connector name="xinl"    kind="input"/>
+                    <ssd:Connector name="xdotinl" kind="input"/-->
+                    <ssd:Connector name="tau"     kind="input"/>
+                    <ssd:Connector name="omega_l" kind="input"/>
+                    <ssd:Connector name="theta"   kind="output"/>
+                    <ssd:Connector name="omega"   kind="output"/>
+                    <ssd:Connector name="alpha"   kind="output"/>
+                    <ssd:Connector name="beta"   kind="output"/>
+                </ssd:Connectors>
+            </ssd:Component>
+            <ssd:Component name="FMU1" source="resources/gearbox2.fmu" type="application/x-fmu-sharedlibrary">
+                <ssd:Connectors>
+                    <ssd:Connector name="tau_e"      kind="input"/>
+                    <ssd:Connector name="tau_l"      kind="input"/>
+                    <ssd:Connector name="theta_e"    kind="output"/>
+                    <ssd:Connector name="theta_l"    kind="output"/>
+                    <ssd:Connector name="omega_e"    kind="output"/>
+                    <ssd:Connector name="omega_l"    kind="output"/>
+                    <ssd:Connector name="omegadot_e" kind="output"/>
+                    <ssd:Connector name="omegadot_l" kind="output"/>
+                </ssd:Connectors>
+            </ssd:Component>
+            <ssd:Component name="FMU2" source="resources/body.fmu" type="application/x-fmu-sharedlibrary">
+                <ssd:Connectors>
+                    <ssd:Connector name="tau"    kind="input"/>
+                    <ssd:Connector name="theta"  kind="output"/>
+                    <ssd:Connector name="omega"  kind="output"/>
+                    <ssd:Connector name="alpha"  kind="output"/>
+                </ssd:Connectors>
+            </ssd:Component>
+        </ssd:Elements>
+        <ssd:Connections>
+            <ssd:Connection startElement="FMU0" startConnector="theta"    endElement="FMU1" endConnector="theta_e"/>
+            <ssd:Connection startElement="FMU0" startConnector="omega"    endElement="FMU1" endConnector="omega_e"/>
+            <ssd:Connection startElement="FMU0" startConnector="alpha"    endElement="FMU1" endConnector="alpha_e"/>
+            <ssd:Connection startElement="FMU0" startConnector="tau"      endElement="FMU1" endConnector="tau_e"/>
+            <ssd:Connection startElement="FMU1" startConnector="theta_l"  endElement="FMU2" endConnector="theta"/>
+            <ssd:Connection startElement="FMU1" startConnector="omega_l"  endElement="FMU2" endConnector="omega"/>
+            <ssd:Connection startElement="FMU1" startConnector="alpha_l"  endElement="FMU2" endConnector="alpha"/>
+            <ssd:Connection startElement="FMU1" startConnector="tau_l"    endElement="FMU2" endConnector="tau"/>
+            <ssd:Connection startElement="FMU2" startConnector="theta"    endElement="FMU1" endConnector="omega_l"/>
+        </ssd:Connections>
+    </ssd:System>
+</ssd:SystemStructureDescription>

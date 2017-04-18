@@ -1,18 +1,24 @@
 #!/usr/bin/python
+from __future__ import print_function
 import tempfile
 import zipfile
 import sys
 import os
 import os.path
 import glob
-import xml.etree.ElementTree as ET
+from lxml import etree
 import subprocess
 import shutil
+import argparse
+import psutil
+import platform
+from zipfile import ZipFile
 
-if len(sys.argv) < 2:
-    #TODO: we probably want to know which of TCP and MPI is wanted
-    print('USAGE: %s ssp-file' % sys.argv[0])
-    exit(1)
+def eprint(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs)
+
+default_timestep = 0.1
+default_duration = 10
 
 RESOURCE_DIR='resources'
 SSD_NAME='SystemStructure.ssd'
@@ -23,20 +29,46 @@ ns = {
     'ssd': 'http://www.pmsf.net/xsd/SystemStructureDescriptionDraft',
     'ssv': 'http://www.pmsf.net/xsd/SystemStructureParameterValuesDraft',
     'ssm': 'http://www.pmsf.net/xsd/SystemStructureParameterMappingDraft',
+    'fmigo':'http://umit.math.umu.se/FmiGo.xsd',
 }
-d = tempfile.mkdtemp(prefix='ssp')
-print(d)
 
+# FIXME: these should not be global if the intent is to use this file as a module
 fmus = []
 systems = []
 parameters = {}
+shaftconstraints = []
+
+schema_names = {
+    'SSD': 'SystemStructureDescription.xsd',
+    'SSM': 'SystemStructureParameterMapping.xsd',
+    'SSV': 'SystemStructureParameterValues.xsd',
+    'FmiGo':'FmiGo.xsd',
+}
+schemas = {}
+
+for type in schema_names:
+    # Expect schema to be located next to this script
+    try:
+        schema_path = os.path.join(os.path.dirname(__file__), schema_names[type])
+        schemas[type] = etree.XMLSchema(etree.parse(schema_path))
+    except Exception as e:
+        eprint(e)
+        eprint('Cannot open/parse %s - no %s validation performed' % (schema_path, type))
+
+def parse_and_validate(type, path):
+    if type in schemas:
+        parser = etree.XMLParser(schema=schemas[type])
+    else:
+        parser = etree.XMLParser()
+
+    return etree.parse(path, parser)
 
 # Adds (key,value) to given multimap.
 # Each (key,value) may appear only once.
 def add_multimap_value(multimap, key, value):
     if key in multimap:
         if value in multimap[key]:
-            print( str((key,value)) + ' already exists in ' + str(multimap))
+            eprint( str((key,value)) + ' already exists in ' + str(multimap))
             exit(1)
         multimap[key].add(value)
     else:
@@ -51,26 +83,26 @@ def traverse(startsystem, startkey, target_kind, use_sigdictrefs):
     #TODO: deal with unit conversion
     factor = 1
     offset = 0
-    #print('%s.%s (unit=%s)' % (self.get_name(), conn.attrib['name'], str(unit)))
+    #eprint('%s.%s (unit=%s)' % (self.get_name(), conn.attrib['name'], str(unit)))
 
     while True:
-        #print 'key = ' + str(key) + ', sys = ' + sys.name
+        #eprint('key = ' + str(key) + ', sys = ' + sys.name)
         if not key in sys.connections:
-            print( 'No connection %s in system %s' % (str(key), sys.name))
+            eprint( 'No connection %s in system %s' % (str(key), sys.name))
             return None, None
             # exit(1)
 
-        #print('sys.sigdictrefs: ' + str(sys.sigdictrefs))
+        #eprint('sys.sigdictrefs: ' + str(sys.sigdictrefs))
         key = sys.connections[key]
         if key[0] == '':
             # Connection leads to parent node
             if sys.parent == None:
                 # Can't go any further - issue a warning and move on
-                print ('WARNING: ' + str(startkey) + ' takes data from ' +
+                eprint ('WARNING: ' + str(startkey) + ' takes data from ' +
                        key[1] + ' of root system, which no output connects to - skipping')
                 return None, None
 
-            #print 'up'
+            #eprint('up')
             key = (sys.name, key[1])
             sys = sys.parent
         elif key[0] in sys.fmus:
@@ -82,7 +114,7 @@ def traverse(startsystem, startkey, target_kind, use_sigdictrefs):
             else:
                 return None, None
         elif key[0] in sys.subsystems:
-            #print 'down'
+            #eprint('down')
             sys = sys.subsystems[key[0]]
             key = ('', key[1])
         elif use_sigdictrefs and key[0] in sys.sigdictrefs and key[1] in sys.sigdictrefs[key[0]][1]:
@@ -94,19 +126,19 @@ def traverse(startsystem, startkey, target_kind, use_sigdictrefs):
             de = signaldict[key[1]]
 
             if de[1] == None:
-                print('SignalDictionary "%s" has no output signal connected to it' % dictionary_name)
+                eprint('SignalDictionary "%s" has no output signal connected to it' % dictionary_name)
                 exit(1)
 
             return de[1], de[2]
         else:
-            print('Key %s of kind %s not found in system %s' % (str(key), target_kind, sys.name))
-            print (sys.fmus)
-            print (sys.subsystems)
+            eprint('Key %s of kind %s not found in system %s' % (str(key), target_kind, sys.name))
+            eprint (sys.fmus)
+            eprint (sys.subsystems)
             exit(1)
 
         ttl -= 1
         if ttl <= 0:
-            print ('SSP contains a loop!')
+            eprint ('SSP contains a loop!')
             exit(1)
 
 def get_attrib(s, name, default=None):
@@ -116,50 +148,69 @@ def get_attrib(s, name, default=None):
         return ret
     else:
         if default == None:
-            print('get_attrib(): missing required attribute ' + name)
+            eprint('get_attrib(): missing required attribute ' + name)
             exit(1)
         return default
 
 def remove_if_empty(parent, node):
-    #remove if all attributes and subnodes have been dealt with
-    if node != None and len(node.attrib) == 0 and len(node) == 0:
+    #remove if all attributes, subnodes and text have been dealt with
+    if node != None and len(node.attrib) == 0 and len(node) == 0 and (node.text == None or node.text.strip() == ''):
         parent.remove(node)
 
 def find_elements(s, first, second):
     a = s.find(first,  ns)
     return a, a.findall(second,  ns) if a != None else []
 
+def check_name(name):
+    if '.' in name:
+        # We might allow this at some point
+        eprint('ERROR: FMU/System name "%s" contains a dot, which is not allowed' % name)
+        exit(1)
+
+# Escapes a variable name or value
+def escape(s):
+    return s.replace('\\','\\\\').replace(':','\\:').replace(',','\\,')
+
 def parse_parameter_bindings(path, baseprefix, parameterbindings):
     for pb in parameterbindings[1]:
-        prefix = baseprefix + get_attrib(pb, 'prefix', '')
+        pb_prefix = get_attrib(pb, 'prefix', '')
+        prefix = baseprefix
 
-        #print('prefix: '+prefix)
+        # Spec says to use prefix="Foo." to address parameters in subsystems
+        # We've split FMU names from variable names, so the case where a prefix would not have a trailing dot is nonsensical
+        if len(pb_prefix) > 0:
+            # Expect a trailing dot and strip it
+            if pb_prefix[-1] != '.':
+                eprint('ERROR: ParameterBinding prefix must end in dot (%s -> "%s")' % (baseprefix, pb_prefix) )
+                exit(1)
+            prefix = baseprefix + '.' + pb_prefix[0:-1]
+
         pvs = (pb, pb.findall('ssd:ParameterValues', ns))
 
         x_ssp_parameter_set = 'application/x-ssp-parameter-set'
         t = get_attrib(pb, 'type', x_ssp_parameter_set)
         if t != x_ssp_parameter_set:
-            print('Expected ' + x_ssp_parameter_set + ', got ' + t)
+            eprint('Expected ' + x_ssp_parameter_set + ', got ' + t)
             exit(1)
 
         if 'source' in pb.attrib:
             if len(pvs[1]) != 0:
-                print('ParameterBindings must have source or ParameterValues, not both')
+                eprint('ParameterBindings must have source or ParameterValues, not both')
                 exit(1)
 
             #read from file
             #TODO: print unhandled XML in ParameterSet
-            tree = ET.parse(os.path.join(path, get_attrib(pb, 'source')))
+            tree = parse_and_validate('SSV', os.path.join(path, get_attrib(pb, 'source')))
             pvs = find_elements(tree.getroot(), 'ssv:Parameters', 'ssv:Parameter')
-            #print('Parsed %i params' % len(pvs))
+            #eprint('Parsed %i params' % len(pvs))
         else:
             if len(pvs[1]) == 0:
-                print('ParameterBindings missing both source and ParameterValues')
+                eprint('ParameterBindings missing both source and ParameterValues')
                 exit(1)
 
             #don't know whether it's ParameterValues -> Parameters -> Parameter or just ParameterValues -> Parameter
             #the spec doesn't help
-            print('Parsing ParameterValues is TODO, for lack of examples or complete schema as of 2016-11-11')
+            eprint('Parsing ParameterValues is TODO, for lack of examples or complete schema as of 2016-11-11')
             exit(1)
 
         for pv in pvs[1]:
@@ -168,64 +219,71 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
             b = pv.find('ssv:Boolean', ns)
             s = pv.find('ssv:String', ns)
             e = pv.find('ssv:Enumeration', ns)
-            name = prefix+pv.attrib['name']
+            key = str([prefix,pv.attrib['name']])
+            param = {
+            'paramname': pv.attrib['name'],
+            'fmuname':   prefix,
+            }
 
             if r != None:
                 if 'unit' in r.attrib:
-                    print('Not dealing with parameters with units yet')
+                    eprint('Not dealing with parameters with units yet')
                     exit(1)
 
-                parameters[name] = {
+                param.update({
                     'type': 'r',
                     'value': float(r.attrib['value']),
-                }
+                })
             elif i != None:
-                parameters[name] = {
+                param.update({
                     'type': 'i',
                     'value': int(i.attrib['value']),
-                }
+                })
             elif b != None:
-                parameters[name] = {
+                param.update({
                     'type': 'b',
                     'value': b.attrib['value'], #keep booleans as-is
-                }
+                })
             elif s != None:
-                parameters[name] = {
+                param.update({
                     'type': 's',
                     'value': s.attrib['value'],
-                }
+                })
             elif e != None:
-                print('Enumerations not supported')
+                eprint('Enumerations not supported')
                 exit(1)
             else:
-                print('Unsupported parameter type: ' + str(pv[0].tag))
+                eprint('Unsupported parameter type: ' + str(pv[0].tag))
                 exit(1)
 
+            parameters[key] = param
             remove_if_empty(pvs[0], pv)
 
         #deal with any ssm
         pm = pb.find('ssd:ParameterMapping', ns)
         if pm != None:
             if not 'source' in pm.attrib:
-                print('"source" not set in ParameterMapping. In-line PMs not supported yet')
+                eprint('"source" not set in ParameterMapping. In-line PMs not supported yet')
                 exit(1)
 
             x_ssp_parameter_mapping = 'application/x-ssp-parameter-mapping'
             t = get_attrib(pm, 'type', x_ssp_parameter_mapping)
             if t != x_ssp_parameter_mapping:
-                print('Expected ' + x_ssp_parameter_mapping + ', got ' + t)
+                eprint('Expected ' + x_ssp_parameter_mapping + ', got ' + t)
                 exit(1)
 
             #TODO: print unhandled XML in ParameterMapping too
-            tree = ET.parse(os.path.join(path, get_attrib(pm, 'source')))
+            tree = parse_and_validate('SSM', os.path.join(path, get_attrib(pm, 'source')))
             mes = tree.getroot().findall('ssm:MappingEntry', ns)
 
+            #eprint('mes: ' +mes)
             for me in mes:
-                source = prefix+me.attrib['source']
-                target = prefix+me.attrib['target']
+                sourcekey = str([prefix, me.attrib['source']])
+                targetkey = str([prefix, me.attrib['target']])
+                #eprint('target: ' +target)
 
-                p = parameters[source]
-                del parameters[source]
+                p = parameters[sourcekey]
+                del parameters[sourcekey]
 
                 lt = me.find('ssm:LinearTransformation', ns)
                 if lt != None:
@@ -233,26 +291,32 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
                     offset = float(lt.attrib['offset'])
 
                     if p['type'] != 'r':
-                        print('LinearTransformation only supported in Real')
+                        eprint('LinearTransformation only supported in Real')
                         exit(1)
 
                     p['value'] = p['value'] * factor + offset
                 elif len(me) > 0:
-                    print("Found MappingEntry with sub-element which isn't LinearTransformation, which is not yet supported")
+                    eprint("Found MappingEntry with sub-element which isn't LinearTransformation, which is not yet supported")
                     exit(1)
 
-                parameters[target] = p
+                parameters[targetkey] = p
 
             remove_if_empty(pb, pm)
 
         remove_if_empty(parameterbindings[0], pb)
 
 class FMU:
-    def __init__(self, name, path, connectors, system):
+    def __init__(self, name, comp, path, system):
+        check_name(name)
         self.name = name
         self.path = path
-        self.connectors = {}
+        self.system = system
 
+        self.connectors = {}
+        self.physicalconnectors = {}
+        self.csvs = []
+
+        connectors = find_elements(comp, 'ssd:Connectors', 'ssd:Connector')
         for conn in connectors[1]:
             name = get_attrib(conn, 'name')
             kind = get_attrib(conn, 'kind')
@@ -260,9 +324,11 @@ class FMU:
 
             if len(conn) > 0:
                 if len(conn) > 1:
-                    print('More then one sub-element of Connector - bailing out')
+                    eprint('More then one sub-element of Connector - bailing out')
                     exit(1)
-                unit = get_attrib(conn[0], 'unit')
+                unit = get_attrib(conn[0], 'unit', False)
+                if unit == False:
+                    unit = None
                 remove_if_empty(conn, conn[0])
 
             remove_if_empty(connectors[0], conn)
@@ -271,16 +337,50 @@ class FMU:
                 'kind': kind,
                 'unit': unit,
             }
+        remove_if_empty(comp, connectors[0])
 
-        self.system = system
+        cannotations = find_elements(comp, 'ssd:Annotations', 'ssd:Annotation')
+        for cannotation in cannotations[1]:
+            type = get_attrib(cannotation, 'type')
+            if type == 'se.umu.math.umit.ssp.physicalconnectors':
+                if 'FmiGo' in schemas:
+                    schemas['FmiGo'].assertValid(cannotation[0])
+
+                for pc in find_elements(cannotation, 'fmigo:PhysicalConnectors', 'fmigo:PhysicalConnector1D')[1]:
+                    name = get_attrib(pc, 'name')
+                    pcdict = {
+                    'type': '1d',
+                    'vars': [get_attrib(pc, ss) for ss in ['stateVariable', 'flowVariable', 'accelerationVariable', 'effortVariable']]
+                    }
+
+                    self.physicalconnectors[name] = pcdict
+                    remove_if_empty(cannotation[0], pc)
+                remove_if_empty(cannotation, cannotation[0])
+            elif type == 'se.umu.math.umit.fmigo-master.csvinput':
+                if 'FmiGo' in schemas:
+                    schemas['FmiGo'].assertValid(cannotation[0])
+
+                for csv in find_elements(cannotation, 'fmigo:CSVFilenames', 'fmigo:CSVFilename')[1]:
+                    self.csvs.append(csv.text)
+                    csv.text = None
+                    remove_if_empty(cannotation[0], csv)
+                remove_if_empty(cannotation, cannotation[0])
+            else:
+                eprint('WARNING: Found unknown Annotation of type "%s"' % type)
+            remove_if_empty(cannotations[0], cannotation)
+        remove_if_empty(comp, cannotations[0])
 
         global fmus
         self.id = len(fmus)
         fmus.append(self)
-        #print '%i: %s %s, %i connectors' % (self.id, self.name, self.path, len(connectors))
+        #eprint('%i: %s %s, %i connectors' % (self.id, self.name, self.path, len(connectors)))
 
     def get_name(self):
         return self.system.get_name() + '.' + self.name
+
+    # Returns path relative to given path (d)
+    def relpath(self, d):
+        return os.path.relpath(self.path, d)
 
     def connect(self, connectionmultimap):
         '''
@@ -299,9 +399,10 @@ class SystemStructure:
     def __init__(self, root):
         units = find_elements(root, 'ssd:Units', 'ssd:Unit')
         self.name = get_attrib(root, 'name')
+        check_name(self.name)
 
-        #not sure what to use schemaLocation for, or if we should even require it
-        self.schemaLocation = get_attrib(root, '{http://www.w3.org/2001/XMLSchema-instance}schemaLocation')
+        # Get schemaLocation if set. This avoids some residual XML
+        self.schemaLocation = get_attrib(root, '{http://www.w3.org/2001/XMLSchema-instance}schemaLocation', '')
 
         # Units keyed on name. Like {name: {'units': (units,), 'factor': 1, 'offset': 0}}
         self.unitsbyname = {}
@@ -329,13 +430,43 @@ class SystemStructure:
             remove_if_empty(units[0], u)
         remove_if_empty(root, units[0])
 
-        #print('unitsbyname: '+str(self.unitsbyname))
-        #print('unitsbyunits: '+str(self.unitsbyunits))
+        #eprint('unitsbyname: '+str(self.unitsbyname))
+        #eprint('unitsbyunits: '+str(self.unitsbyunits))
+
+        self.timestep = default_timestep
+        self.duration = default_duration
+
+        annotations = find_elements(root, 'ssd:Annotations', 'ssd:Annotation')
+        for annotation in annotations[1]:
+            type = get_attrib(annotation, 'type')
+            if type == 'se.umu.math.umit.fmigo-master.arguments':
+                if 'FmiGo' in schemas:
+                    schemas['FmiGo'].assertValid(annotation[0])
+
+                timestep = get_attrib(annotation[0], 'timestep', '')
+                if len(timestep) > 0:
+                    self.timestep = float(timestep)
+
+                duration = get_attrib(annotation[0], 'duration', '')
+                if len(duration) > 0:
+                    self.duration = float(duration)
+
+                # We might do this later
+                #for arg in find_elements(annotation, 'fmigo:MasterArguments', 'fmigo:arg')[1]:
+                #    self.arguments.append(arg.text)
+                #    arg.text = None
+                #    remove_if_empty(annotation[0], arg)
+
+                remove_if_empty(annotation, annotation[0])
+            else:
+                eprint('WARNING: Found unknown Annotation of type "%s"' % type)
+            remove_if_empty(annotations[0], annotation)
+        remove_if_empty(root, annotations[0])
 
 class System:
     '''
     A System is a tree of Systems and FMUs
-    In each System there are Connections between 
+    In each System there are Connections between
     '''
 
     @classmethod
@@ -344,26 +475,30 @@ class System:
 
         #parse XML, delete all attribs and element we know how to deal with
         #print residual, indicating things we don't yet support
-        tree = ET.parse(path)
+        tree = parse_and_validate('SSD', path)
+
+        # Remove comments, which would otherwise result in residual XML
+        for c in tree.xpath('//comment()'):
+            c.getparent().remove(c)
 
         if 'version' in tree.getroot().attrib:
             version = get_attrib(tree.getroot(), 'version')
         else:
             version = 'Draft20150721'
-            printf('WARNING: version not set in root, assuming ' + self.version)
+            eprint('WARNING: version not set in root, assuming ' + self.version)
 
         structure = SystemStructure(tree.getroot())
 
         sys = tree.getroot().findall('ssd:System', ns)
         if len(sys) != 1:
-            print( 'Must have exactly one System')
+            eprint( 'Must have exactly one System')
             exit(1)
         s = sys[0]
         ret = cls(d, s, version, parent, structure)
         remove_if_empty(tree.getroot(), s)
 
         if len(tree.getroot()) > 0 or len(tree.getroot().attrib) > 0:
-            print('WARNING: Residual XML: '+ET.tostring(tree.getroot()))
+            eprint('WARNING: Residual XML: '+etree.tostring(tree.getroot()))
 
         return ret
 
@@ -378,6 +513,7 @@ class System:
         self.d = d
         self.version = version
         self.name = get_attrib(s, 'name')
+        check_name(self.name)
         self.description = get_attrib(s, 'description', '')
         self.parent = parent
         self.structure = structure
@@ -395,6 +531,7 @@ class System:
         signaldicts = find_elements(s, 'ssd:SignalDictionaries',    'ssd:SignalDictionary')
         sigdictrefs = find_elements(s, 'ssd:Elements',              'ssd:SignalDictionaryReference')
         params      = find_elements(s, 'ssd:ParameterBindings',     'ssd:ParameterBinding')
+        annotations = find_elements(s, 'ssd:Annotations',           'ssd:Annotation')
         elements    = s.find('ssd:Elements', ns)
 
         for conn in connectors[1]:
@@ -407,13 +544,13 @@ class System:
             elif kind == 'output':
                 self.outputs[name] = conn
             elif kind in ['parameter', 'calculatedParameter', 'inout']:
-                print('WARNING: Unimplemented connector kind: ' + kind)
+                eprint('WARNING: Unimplemented connector kind: ' + kind)
             else:
-                print('Unknown connector kind: ' + kind)
+                eprint('Unknown connector kind: ' + kind)
                 exit(1)
 
             if len(conn) > 0:
-                print("WARNING: Connection %s in system %s has type information, which isn't handled yet" % (name, self.name))
+                eprint("WARNING: Connection %s in system %s has type information, which isn't handled yet" % (name, self.name))
                 #remove_if_empty(conn, conn[0])
             remove_if_empty(connectors[0], conn)
         remove_if_empty(s, connectors[0])
@@ -428,38 +565,37 @@ class System:
             remove_if_empty(connections[0], conn)
         remove_if_empty(s, connections[0])
 
-        #print self.connections
+        #eprint(self.connections)
 
         self.subsystems = {}
         self.fmus     = {}
         for comp in components[1]:
-            #print comp
+            #eprint(comp)
             t    = get_attrib(comp, 'type')
             name = get_attrib(comp, 'name')
-            #print t
+            check_name(name)
+            #eprint(t)
 
             if t == 'application/x-ssp-package':
                 d2 = os.path.join(d, os.path.splitext(get_attrib(comp, 'source'))[0])
                 child = System.fromfile(d2, SSD_NAME, self)
-                #print 'Added subsystem ' + child.name
+                #eprint('Added subsystem ' + child.name)
                 self.subsystems[name] = child
             elif t == 'application/x-fmu-sharedlibrary':
                 source = os.path.join(d, get_attrib(comp, 'source'))
-                connectors = find_elements(comp, 'ssd:Connectors', 'ssd:Connector')
                 self.fmus[name] = FMU(
                     name,
+                    comp,
                     source,
-                    connectors,
                     self,
                 )
-                remove_if_empty(comp, connectors[0])
             else:
-                print('unknown type: ' + t)
+                eprint('unknown type: ' + t)
                 exit(1)
 
             #parse parameters after subsystems so their values get overriden properly
             cparams = find_elements(comp, 'ssd:ParameterBindings', 'ssd:ParameterBinding')
-            parse_parameter_bindings(self.d, self.get_name() + '.' + name + '.', cparams)
+            parse_parameter_bindings(self.d, self.get_name() + '.' + name , cparams)
             remove_if_empty(comp, cparams[0])
             remove_if_empty(components[0], comp)
 
@@ -475,7 +611,7 @@ class System:
             self.signaldicts[get_attrib(sigdict, 'name')] = des
             remove_if_empty(signaldicts[0], sigdict)
         remove_if_empty(s, signaldicts[0])
-        #print('SignalDictionaries: ' + str(self.signaldicts))
+        #eprint('SignalDictionaries: ' + str(self.signaldicts))
 
         self.sigdictrefs = {}
         for sdr in sigdictrefs[1]:
@@ -483,7 +619,7 @@ class System:
             conns = find_elements(sdr, 'ssd:Connectors', 'ssd:Connector')
             for conn in conns[1]:
                 if get_attrib(conn, 'kind') != 'inout':
-                    print('Only inout connectors supports in SignalDictionaryReferences for now')
+                    eprint('Only inout connectors supports in SignalDictionaryReferences for now')
                     exit(1)
                 drs[get_attrib(conn, 'name')] = get_attrib(conn[0], 'unit')
                 remove_if_empty(conn, conn[0])
@@ -491,7 +627,30 @@ class System:
             self.sigdictrefs[get_attrib(sdr, 'name')] = (get_attrib(sdr, 'dictionary'), drs)
             remove_if_empty(sdr, conns[0])
             remove_if_empty(sigdictrefs[0], sdr)
-        #print('SignalDictionaryReference: ' + str(self.sigdictrefs))
+        #eprint('SignalDictionaryReference: ' + str(self.sigdictrefs))
+
+        for annotation in annotations[1]:
+            type = get_attrib(annotation, 'type')
+            if type == 'se.umu.math.umit.ssp.kinematicconstraints':
+                if 'FmiGo' in schemas:
+                    schemas['FmiGo'].assertValid(annotation[0])
+
+                for shaft in find_elements(annotation, 'fmigo:KinematicConstraints', 'fmigo:ShaftConstraint')[1]:
+                    shaftconstraint = {
+                    'holonomic': get_attrib(shaft, 'holonomic') == 'true'
+                    }
+
+                    for i in [1,2]:
+                        shaftconstraint['element%i' % i]   = self.get_name() + '.' + get_attrib(shaft, 'element%i' % i)
+                        shaftconstraint['connector%i' % i] = get_attrib(shaft, 'connector%i' % i)
+
+                    shaftconstraints.append(shaftconstraint)
+                    remove_if_empty(annotation[0], shaft)
+                remove_if_empty(annotation, annotation[0])
+            else:
+                eprint('WARNING: Found unknown Annotation of type "%s"' % type)
+            remove_if_empty(annotations[0], annotation)
+        remove_if_empty(s, annotations[0])
 
         for subsystem in subsystems[1]:
             ss = System.fromxml(d, subsystem, self.version, self)
@@ -503,14 +662,14 @@ class System:
         remove_if_empty(s, elements)
 
         #parse parameters after subsystems so their values get overriden properly
-        parse_parameter_bindings(self.d, self.get_name() + '.', params)
+        parse_parameter_bindings(self.d, self.get_name() , params)
         remove_if_empty(s, params[0])
 
     def find_signal_dictionary(self, dictionary_name):
         sys = self
         while True:
             if dictionary_name in sys.signaldicts:
-                #print('found the actual dict in system ' + sys.name)
+                #eprint('found the actual dict in system ' + sys.name)
                 return sys.signaldicts[dictionary_name]
 
             sys = sys.parent
@@ -518,31 +677,31 @@ class System:
             if sys == None:
                 #we're assuming that dictionaries exist somewhere straight up in the hierarchy, never in a sibling/child system
                 #this may change if we find a counterexample in the wild
-                print('Failed to find SignalDictionary "%s" starting at System "%s"' % (dictionary_name, self.name))
+                eprint('Failed to find SignalDictionary "%s" starting at System "%s"' % (dictionary_name, self.name))
                 exit(1)
 
     def resolve_dictionary_inputs(self):
         #for each signal dictionary, find where it is referenced and if that reference is connected to by an output
         #this because multiple inputs can connect to a dictionary, but only one output can be connected
         for name,(dictionary_name,drs) in self.sigdictrefs.iteritems():
-            #print('name: ' + name)
-            #print('dict: ' + dictionary)
-            #print('drs: ' + str(drs))
+            #eprint('name: ' + name)
+            #eprint('dict: ' + dictionary)
+            #eprint('drs: ' + str(drs))
 
             for key,unit in drs.iteritems():
-                #print('traversing from ' + str((name, key)))
+                #eprint('traversing from ' + str((name, key)))
                 fmu, fmu_variable = traverse(self, (name, key), 'output', False)
 
                 if fmu != None:
                     #found it!
                     #now find the actual signal dictionary so everyone can find the output
-                    #print(str((dictionary_name, key)) + ' <-- ' + str((fmu.id,fmu_variable)))
+                    #eprint(str((dictionary_name, key)) + ' <-- ' + str((fmu.id,fmu_variable)))
 
                     signaldict = self.find_signal_dictionary(dictionary_name)
                     de = signaldict[key]
 
                     if de[1] != None:
-                        print('Dictionary %s has more than one output connected to %s' % (dictionary_name, key))
+                        eprint('Dictionary %s has more than one output connected to %s' % (dictionary_name, key))
                         exit(1)
 
                     #put the FMU and variable name in the dict
@@ -555,7 +714,7 @@ class System:
         return self.parent.get_name() + '.' + self.name if self.parent != None else self.name
 
 def unzip_ssp(dest_dir, ssp_filename):
-    #print 'unzip_ssp: ' + dest_dir + ' ' + ssp_filename
+    #eprint('unzip_ssp: ' + dest_dir + ' ' + ssp_filename)
     with zipfile.ZipFile(ssp_filename) as z:
         z.extractall(dest_dir)
         # Extract sub-SSPs
@@ -571,113 +730,325 @@ def unzip_ssp(dest_dir, ssp_filename):
             with zipfile.ZipFile(f) as z:
                 z.extract(MODELDESCRIPTION, d)
 
-unzip_ssp(d, sys.argv[1])
-root = System.fromfile(d, SSD_NAME)
 
-root.resolve_dictionary_inputs()
+def parse_ssp(ssp_path, cleanup_zip = True):
 
-# Figure out connections, parse modelDescriptions
-connectionmultimap = {} # Multimap of outputs to inputs
-mds = []
-fmumap = {}  #maps fmu names to IDs
-for fmu in fmus:
-    fmumap[fmu.get_name()] = fmu.id
-    fmu.connect(connectionmultimap)
+    global fmus, system, parameters, SSD_NAME, d
+    fmus = []
+    systems = []
+    parameters = {}
 
-    # Parse modelDescription, turn variable list into map
-    tree = ET.parse(os.path.join(os.path.splitext(fmu.path)[0], MODELDESCRIPTION))
+    file_ext = os.path.splitext(ssp_path)[1].lower()
 
-    svs = {}
-    for sv in tree.getroot().find('ModelVariables').findall('ScalarVariable'):
-        name = sv.attrib['name']
-        if name in svs:
-            print(fmu.path + ' contains multiple variables named "' + name + '"!')
-            exit(1)
+    # Allow custom named ssd files
+    if file_ext == '.ssd':
+       SSD_NAME = os.path.basename(ssp_path)
 
-        causality = ''
-
-        if not CAUSALITY in sv.attrib:
-            if 'variability' in sv.attrib and sv.attrib['variability'] == 'parameter':
-                #this happens with SampleSystemSubSystemDictionary.ssp
-                print(('WARNING: Found variable %s without causality and variability="parameter". ' % name)+
-                      'This violates the spec. Treating as a parameter')
-                causality = 'parameter'
-            else:
-                print('WARNING: FMU %s has variable %s without causality - ignoring' % (fmu.get_name(), name))
-                continue
-        else:
-            causality = sv.attrib[CAUSALITY]
-
-        t = ''
-        if sv.find('Real')      != None: t = 'r'
-        elif sv.find('Integer') != None: t = 'i'
-        elif sv.find('Boolean') != None: t = 'b'
-        elif sv.find('Enum')    != None: t = 'e'
-        elif sv.find('String')  != None: t = 's'
-        else:
-            print(fmu.path + ' variable "' + name + '" has unknown type')
-            exit(1)
-
-        svs[name] = {
-            'vr': int(sv.attrib['valueReference']),
-            CAUSALITY: causality,
-            'type': t,
-        }
-    mds.append(svs)
-
-flatparams = []
-for key,value in parameters.iteritems():
-    parts = key.split('.')
-    fmuname = '.'.join(parts[0:-1])
-    paramname = parts[-1]
-    if fmuname in fmumap:
-        fmu = fmus[fmumap[fmuname]]
-        if paramname in mds[fmu.id]:
-            p = mds[fmu.id][paramname]
-            if p[CAUSALITY] == 'input' or p[CAUSALITY] == 'parameter':
-                flatparams.extend(['-p','%s,%i,%i,%s' % (value['type'], fmu.id, p['vr'], value['value'])])
-            else:
-                print('WARNING: FMU %s, tried to set variable %s which is neither an input nor a parameter' % (fmuname, paramname))
-        else:
-            print('WARNING: FMU %s has no variable called %s' % (fmuname, paramname))
+    # Check if we run master directly from an SSD XML file instead of an SSP zip archive
+    if os.path.basename(ssp_path) == SSD_NAME:
+        d = os.path.dirname(ssp_path)
+        unzipped_ssp = False
     else:
-        print('WARNING: No FMU called %s for parameter %s' % (fmuname, paramname))
+        d = tempfile.mkdtemp(prefix='ssp')
+        unzip_ssp(d, ssp_path)
+        unzipped_ssp = True
 
-#print connections
-#print mds
+    root_system = System.fromfile(d, SSD_NAME)
 
-# Build command line
-flatconns = []
-for key in connectionmultimap.keys():
-    fr = key
-    to1 = connectionmultimap[key]  
-    for to in to1:
-        #print str((fr,to)) + ' vs ' + str(mds[fr[0]])
-        f = mds[fr[0]]
-        fv = f[fr[1]]
-        t = mds[to[0]]
-        tv = t[to[1]]
+    root_system.resolve_dictionary_inputs()
 
-        connstr = '%s,%i,%i,%s,%i,%i' % (fv['type'], fr[0], fv['vr'], tv['type'], to[0], tv['vr'])
-        flatconns.extend(['-c', connstr])
+    # Figure out connections, parse modelDescriptions
+    connectionmultimap = {} # Multimap of outputs to inputs
+    mds = []
+    fmumap = {}  #maps fmu names to IDs
+    for fmu in fmus:
+        fmumap[fmu.get_name()] = fmu.id
+        fmu.connect(connectionmultimap)
 
-servers = []
-for fmu in fmus:
-    servers.extend([':','-np','1','fmi-mpi-server',fmu.path])
+        with zipfile.ZipFile(fmu.path) as z:
+            md_data = z.read('modelDescription.xml')
 
-#read connections and parameters from stdin, since they can be quite many
-#stdin because we want to avoid leaving useless files on the filesystem
-args = ['mpiexec','-np','1','fmi-mpi-master','-t','9.9','-d','0.1','-a','-'] + servers
-print(" ".join(args) + " <<< " + '"' + " ".join(flatconns+flatparams) + '"')
+        # Parse modelDescription, turn variable list into map
+        # tree = etree.parse(os.path.join(os.path.splitext(fmu.path)[0], MODELDESCRIPTION))
+        # root = tree.getroot()
+        # eprint(md_data)
+        root = etree.XML(md_data)
 
-#pipe arguments to master, leave stdout and stderr alone
-p = subprocess.Popen(args, stdin=subprocess.PIPE)
-p.communicate(input=" ".join(flatconns).encode('utf-8'))
-ret = p.returncode  #ret can be None
+        svs = {}
+        for sv in root.find('ModelVariables').findall('ScalarVariable'):
+            name = sv.attrib['name']
+            if name in svs:
+                eprint(fmu.path + ' contains multiple variables named "' + name + '"!')
+                exit(1)
 
-if ret == 0:
-    shutil.rmtree(d)
-else:
-    print('An error occured (returncode = ' + str(ret) + '). Check ' + d)
+            causality = ''
 
-exit(ret)
+            if not CAUSALITY in sv.attrib:
+                if 'variability' in sv.attrib and sv.attrib['variability'] == 'parameter':
+                    #this happens with SampleSystemSubSystemDictionary.ssp
+                    eprint(('WARNING: Found variable %s without causality and variability="parameter". ' % name)+
+                          'This violates the spec. Treating as a parameter')
+                    causality = 'parameter'
+                else:
+                    eprint('WARNING: FMU %s has variable %s without causality - ignoring' % (fmu.get_name(), name))
+                    continue
+            else:
+                causality = sv.attrib[CAUSALITY]
+
+            t = ''
+            if sv.find('Real')      != None: t = 'r'
+            elif sv.find('Integer') != None: t = 'i'
+            elif sv.find('Boolean') != None: t = 'b'
+            elif sv.find('Enum')    != None: t = 'e'
+            elif sv.find('String')  != None: t = 's'
+            else:
+                eprint(fmu.path + ' variable "' + name + '" has unknown type')
+                exit(1)
+
+            svs[name] = {
+                'vr': int(sv.attrib['valueReference']),
+                CAUSALITY: causality,
+                'type': t,
+            }
+        mds.append(svs)
+
+    flatparams = []
+    for value in parameters.values():
+        fmuname   = value['fmuname']
+        paramname = value['paramname']
+        if fmuname in fmumap:
+            fmu = fmus[fmumap[fmuname]]
+            if paramname in mds[fmu.id]:
+                p = mds[fmu.id][paramname]
+                if p[CAUSALITY] == 'input' or p[CAUSALITY] == 'parameter':
+                    flatparams.extend([
+                        '-p','%s,%i,%i,%s' % (
+                            value['type'],
+                            fmu.id,
+                            p['vr'],
+                            # Escape backslashes and colons
+                            escape(str(value['value']))
+                        )
+                    ])
+                else:
+                    eprint('WARNING: FMU %s, tried to set variable %s which is neither an input nor a parameter' % (fmuname, paramname))
+            else:
+                eprint('WARNING: FMU %s has no variable called %s' % (fmuname, paramname))
+        else:
+            eprint('WARNING: No FMU called %s for parameter %s' % (fmuname, paramname))
+
+    #eprint(connections)
+    #eprint(mds)
+
+    # Build command line
+    flatconns = []
+    for key in connectionmultimap.keys():
+        fr = key
+        to1 = connectionmultimap[key]
+        for to in to1:
+            #eprint(str((fr,to)) + ' vs ' + str(mds[fr[0]]))
+            f = mds[fr[0]]
+            fv = f[fr[1]]
+            t = mds[to[0]]
+            tv = t[to[1]]
+
+            connstr = '%s,%i,%i,%s,%i,%i' % (fv['type'], fr[0], fv['vr'], tv['type'], to[0], tv['vr'])
+            flatconns.extend(['-c', connstr])
+
+    kinematicconns = []
+    for shaft in shaftconstraints:
+        ids = [fmumap[shaft['element%i' % i]] for i in [1,2]]
+        conn = ['shaft'] + [str(id) for id in ids]
+
+        for i in [1,2]:
+            fmu     = fmus[ids[i-1]]
+            fmuname = fmu.get_name()
+            pcs     = fmu.physicalconnectors
+            name    = shaft['connector%i' % i]
+
+            if not name in pcs:
+                eprint('ERROR: Shaft constraint refers to physical connector %s in %s, which does not exist' % (name, fmuname))
+                exit(1)
+
+            pc = pcs[name]
+
+            if pc['type'] != '1d':
+                eprint('ERROR: Physical connector %s in %s of type %s, not 1d' % (name, fmuname, pc['type']))
+                exit(1)
+
+            # NOTE: We could resolve variables using mds[] here, but fmigo now has
+            # support for looking variables up based on name, so there's no need to
+            # TODO: Non-holonomic shaft constraints
+            if not shaft['holonomic']:
+                eprint('ERROR: ShaftConstraints must be holonomic for now')
+                exit(1)
+
+            conn += [escape(key) for key in pc['vars']]
+
+        kinematicconns.extend(['-C', ','.join(conn)])
+
+    csvs = []
+    for fmu in fmus:
+        for csv in fmu.csvs:
+            csvs.extend(['-V','%i,%s' % (fmu.id, escape(csv))])
+
+    if unzipped_ssp and cleanup_zip:
+        shutil.rmtree(d)
+
+    return flatconns, flatparams, kinematicconns, csvs, unzipped_ssp, d, root_system.structure.timestep, root_system.structure.duration
+
+def get_fmu_platforms(fmu_path):
+    zip = ZipFile(fmu_path)
+    platforms = []
+    for fileName in zip.namelist():
+        if fileName.startswith('binaries/'):
+            platforms.append(fileName.split('/')[1])
+        elif fileName.startswith('binaries\\'):
+            platforms.append(fileName.split('\\')[1])
+    return platforms
+
+def get_fmigo_binary(executable, install_env_name):
+    fmigo_install_dir = os.environ.get(install_env_name)
+
+    if sys.platform == "win32":
+        executable += '.exe'
+
+    if fmigo_install_dir is None:
+        raise Exception("FmiGo master environment variable {} not specified!".format(install_env_name))
+
+    if not os.path.exists(fmigo_install_dir):
+        raise Exception("{}: {} does not exist".format(install_env_name, str(umit_install_dir)))
+
+    binary_full_path = os.path.join(fmigo_install_dir, 'bin', executable)
+
+    if not os.path.exists(binary_full_path):
+        raise Exception("Unable to locate FmiGo binary {}".format(str(binary_full_path)))
+
+    return binary_full_path
+
+def get_fmu_server(fmu_path, executable):
+
+    platforms = get_fmu_platforms(fmu_path)
+
+    plaform_prefix_table = {
+        'win32': 'win',
+        'darwin': 'darwin',
+        'linux2': 'linux'
+    }
+
+    plaform_prefix = plaform_prefix_table[sys.platform]
+
+    if not ('FMIGO_64_INSTALL_DIR' in os.environ and 'FMIGO_32_INSTALL_DIR' in os.environ):
+        # Make sure FMU has same architecture as fmigo-server
+        bits, linkage = platform.architecture(executable)
+        if (plaform_prefix + '64') in platforms and bits != '64bit':
+            raise Exception('Trying to start 64bit FMU using 32bit FmiGo. Please specify FMIGO_64_INSTALL_DIR and FMIGO_32_INSTALL_DIR environment variables')
+        elif (plaform_prefix + '32') in platforms and bits != '32bit':
+            raise Exception('Trying to start 32bit FMU using 64bit FmiGo. Please specify FMIGO_64_INSTALL_DIR and FMIGO_32_INSTALL_DIR environment variables')
+        return executable
+
+
+    if (plaform_prefix + '64') in platforms:
+        fmigo_server = get_fmigo_binary(executable, 'FMIGO_64_INSTALL_DIR')
+    else:
+        fmigo_server = get_fmigo_binary(executable, 'FMIGO_32_INSTALL_DIR')
+
+    return fmigo_server
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(
+        description='%s: Launch an SSP with either MPI or TCP' %sys.argv[0],
+        )
+    parser.add_argument('-d','--dry-run',
+                        help='Run without starting the simulation',
+                        action='store_true')
+    parser.add_argument('-p','--ports', metavar="PORT",
+                        help='If set, run over TCP with the specified ports. If not set, use MPI (default). Use another argument or -- to separate from SSP name',
+                        default=[],
+                        nargs='+',
+                        type=int)
+    parser.add_argument('ssp', metavar='ssp-filename',
+                        help='SSP file to be launched')
+
+    parser.add_argument('args',
+                        metavar='...',
+                        help='Remaining positional arguments, passed to fmigo-master',
+                        nargs=argparse.REMAINDER)
+
+    parse = parser.parse_args()
+
+
+    flatconns, flatparams, kinematicconns, csvs, unzipped_ssp, d, timestep, duration = parse_ssp(parse.ssp, False)
+
+    #If we are working with TCP, create tcp://localhost:port for all given local hosts
+    if len(parse.ports):
+
+        if len(fmus) > len(parse.ports):
+            eprint('Error: Not given one port for each FMU, expected %d' %len(fmus))
+            exit(1)
+        elif len(fmus) < len(parse.ports):
+            eprint('Error: Given too many ports, expected %d' %len(fmus))
+            exit(1)
+
+        #list all tcp ports that are not available
+        tcpportsinuse = []
+        for con in psutil.net_connections():
+            tcpportsinuse.append(con.laddr[1])
+
+        tcpIPport = []
+        for i in range(len(fmus)):
+            if parse.ports[i] in tcpportsinuse:
+                eprint('%s: port %d already in use' %(sys.argv[0], parse.ports[i]))
+                exit(1)
+            tcpIPport.append("tcp://localhost:" + str(parse.ports[i]))
+
+        # Everything looks OK; start servers
+        for i in range(len(fmus)):
+            fmigo_server = get_fmu_server(fmus[i].relpath(d), 'fmigo-server')
+            subprocess.Popen([fmigo_server,'-p', str(parse.ports[i]), fmus[i].relpath(d)])
+
+        #read connections and parameters from stdin, since they can be quite many
+        #stdin because we want to avoid leaving useless files on the filesystem
+        args   = ['fmigo-master']
+        append = tcpIPport
+    else:
+        #read connections and parameters from stdin, since they can be quite many
+        #stdin because we want to avoid leaving useless files on the filesystem
+        args   = ['mpiexec','-n', '1','fmigo-mpi']
+        fmu_paths = [fmu.relpath(d) for fmu in fmus]
+        #make a copy of the list
+        append = list(fmu_paths)
+
+        for fmu in fmus:
+            fmigo_mpi = get_fmu_server(fmu.path, 'fmigo-mpi')
+            append += [':','-n', '1', fmigo_mpi]
+            append += fmu_paths
+
+    args += ['-t',str(duration),'-d',str(timestep)] + parse.args + ['-a','-']
+    args += append
+
+
+    pipeinput = " ".join(flatconns+flatparams+kinematicconns+csvs)
+    eprint('(cd %s && %s <<< "%s")' % (d, " ".join(args), pipeinput))
+
+    if parse.dry_run:
+        ret = 0
+    else:
+        cwd = os.getcwd()
+        os.chdir(d)
+
+        #pipe arguments to master, leave stdout and stderr alone
+        p = subprocess.Popen(args, stdin=subprocess.PIPE)
+        p.communicate(input=pipeinput.encode('utf-8'))
+        ret = p.returncode  #ret can be None
+
+        os.chdir(cwd)
+
+    if ret == 0:
+        if unzipped_ssp:
+            shutil.rmtree(d)
+    else:
+        eprint('An error occured (returncode = ' + str(ret) + '). Check ' + d)
+
+    exit(ret)

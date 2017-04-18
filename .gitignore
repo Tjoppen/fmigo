@@ -1,9 +1,8 @@
 build
-bin
-lib
 testout
 *.pb.cc
 *.pb.h
+*_pb2.py
 *.o
 *.oct
 *-
@@ -18,4 +17,3 @@ tmp
 *.snm
 codelite
 *.fmu
-

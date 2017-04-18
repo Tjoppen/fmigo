@@ -1,1 +1,1 @@
-cmake protobuf-compiler protobuf-c-compiler libprotobuf-dev libsuitesparse-dev libzmqpp-dev libhdf5-dev libjsoncpp-dev libopenmpi-dev libgsl-dev
+cmake protobuf-compiler protobuf-c-compiler libprotobuf-dev libsuitesparse-dev libzmqpp-dev libhdf5-dev libopenmpi-dev libgsl-dev

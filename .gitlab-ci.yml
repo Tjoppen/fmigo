@@ -1,42 +1,59 @@
 ---
-image: umit/ubuntu:1
 stages:
   - build
   - test
 
-before_script:
-  # Accept mimmi's public key, download required submodules.
-  # We need to do this because Gitlab CI doesn't yet copy the submodules
-  # into the build for us.
-  - echo "mimmi.math.umu.se ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCwPGabkLBOnkVMnGDezLttyBnKf3t5nTRdoimQhNdVC+jbiqzue/+9cnHmFMrZcdf8qGfOlH5MzqFrWh0Es3yHSyIxDRhdKNB1UblkG+VafAi94uOeH+ho6bb/QNAKAKrEtMbHgAHLsVufVlSPpYY2GvKw8yQ53K3qviZrCLmd4GSxsV3elu3EPspyJ4KDU9ZJDAdkfP9iY7LlbAj/EGKYzG0uX7rmuC7EULVSEzvbFoHxSwDkrDuSiwicaZoBvqkEfyYvyvZqa2OU813RSFh5DjHXPkh+oKBG/Yn79b951AKuLCRSBhYmtbY42wVduPoQfEHE+prfwBE6Lv69ZhiN" >> ~/.ssh/known_hosts
-  - git submodule init
-  - git submodule update --recursive
+variables:
+  GIT_SUBMODULE_STRATEGY: "recursive"
 
-umit:
+build:trusty:
   stage: build
   script:
-    - mkdir -p build
-    - cd build
-    - cmake .. -G Ninja
-    - ninja install
-  artifacts:
-    paths:
-      - build/install/bin/*
-      #- umit-fmus/*/*.fmu
+    - docker build -t umit/trusty:$(git rev-parse HEAD)            -f Dockerfile.trusty            .
   tags:
-    - linux
-    - docker
+    - shell
 
-test:
+build:trusty-cmake3.5.0:
+  stage: build
+  script:
+    - docker build -t umit/trusty-cmake3.5.0:$(git rev-parse HEAD) -f Dockerfile.trusty-cmake3.5.0 .
+  tags:
+    - shell
+
+build:xenial:
+  stage: build
+  script:
+    - docker build -t umit/xenial:$(git rev-parse HEAD)            -f Dockerfile.xenial            .
+  tags:
+    - shell
+
+test:trusty:
   stage: test
   script:
-    # Re-build FMUs
-    # This wouldn't be needed if we could mark all .fmu files as artifacts
-    - mkdir -p umit-fmus/build
-    - cd umit-fmus/build
-    - cmake .. -G Ninja
-    - ninja
-    - cd ../..
-    - bash run_tests.sh
+    - docker run --workdir /home/gitlab-ci/umit umit/trusty:$(git rev-parse HEAD)            bash run_tests.sh
   dependencies:
-    - umit
+    - build:trusty
+  tags:
+    - shell
+
+test:trusty-cmake3.5.0:
+  stage: test
+  script:
+    - docker run --workdir /home/gitlab-ci/umit umit/trusty-cmake3.5.0:$(git rev-parse HEAD) bash run_tests.sh
+  dependencies:
+    - build:trusty-cmake3.5.0
+  tags:
+    - shell
+
+test:xenial:
+  stage: test
+  script:
+    - docker run --workdir /home/gitlab-ci/umit umit/xenial:$(git rev-parse HEAD)            bash run_tests.sh
+    - docker run --workdir /home/gitlab-ci/umit/build/install umit/xenial:$(git rev-parse HEAD) tar cz . > umit-$(git rev-parse HEAD).tar.gz
+  dependencies:
+    - build:xenial
+  artifacts:
+    paths:
+      - umit-*.tar.gz
+  tags:
+    - shell

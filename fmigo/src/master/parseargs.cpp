@@ -438,9 +438,11 @@ void fmitcp_master::parseArguments( int argc,
             info("Starting master in paused state\n");
             *paused = true;
             break;
+
         case 'L':
             *solveLoops = true;
             break;
+
         case '?':
 
             if(isprint(optopt)){

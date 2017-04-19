@@ -10,7 +10,8 @@ if (NOT WIN32)
   INCLUDE_DIRECTORIES(${MPI_INCLUDE_PATH})
 endif ()
 
-INCLUDE_DIRECTORIES(${FMIL_INCLUDE_DIR} ${STRONG_COUPLING_INCLUDE_DIR} ${FMITCP_INCLUDE_DIR} include include/fmitcp src/fmitcp)
+include_directories(${FMIL_INCLUDE_DIR} ${STRONG_COUPLING_INCLUDE_DIR} ${FMITCP_INCLUDE_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/include/fmitcp ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp)
 LINK_DIRECTORIES   (${FMIL_LIBS_DIR}    ${STRONG_COUPLING_LIBS_DIR}    ${FMITCP_LIBS_DIR})
 
 set(FMITCP_SRCS
@@ -172,10 +173,8 @@ add_custom_target(control_pb DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/master/cont
 install(FILES ${FMITCP_PROTOBUF_TARGETS} ${MASTER_CONTROL_PROTOBUF_TARGETS} DESTINATION protobuf)
 
 add_dependencies(${TCP_MASTER_NAME} fmitcp_pb control_pb)
-add_dependencies(${TCP_SERVER_NAME} fmitcp_pb)
-if(NOT WIN32)
-    add_dependencies(${MPI_MASTER_NAME} fmitcp_pb control_pb)
-endif()
+add_dependencies(${TCP_SERVER_NAME} fmitcp_pb control_pb)
+add_dependencies(${MPI_MASTER_NAME} fmitcp_pb control_pb)
 
 # TODO: Server manpage?
 if(NOT WIN32)

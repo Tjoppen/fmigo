@@ -3,7 +3,7 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 SET(ARCH "linux64" CACHE STRING "Architecture: linux64, linux32, win32...")
 SET(TARGET trailer)
-SET(TRAILER_FMU ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}.fmu CACHE INTERNAL "" FORCE)
+SET(TRAILER_FMU ${CMAKE_CURRENT_SOURCE_DIR}/${TARGET}.fmu CACHE INTERNAL "" FORCE)
 
 if (CMAKE_VERSION VERSION_LESS "3.5.0")
     set(COPY_CMAKE_COMMAND cp)
@@ -68,7 +68,7 @@ SET(SRCS
 
 ADD_CUSTOM_COMMAND(
   OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
-  COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/../../fmu-builder/modeldescription2header -x 
+  COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/../../fmu-builder/modeldescription2header
     ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml >
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml )

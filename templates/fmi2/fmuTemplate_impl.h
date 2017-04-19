@@ -126,6 +126,8 @@ const char* fmi2GetVersion() {
     return fmi2Version;
 }
 
+#include "strlcpy.h"
+
 fmi2Status fmi2SetDebugLogging(fmi2Component c, fmi2Boolean loggingOn, size_t nCategories, const fmi2String categories[]) {
     // ignore arguments: nCategories, categories
     int i, j;
@@ -187,9 +189,6 @@ fmi2Component fmi2Instantiate(fmi2String instanceName, fmi2Type fmuType, fmi2Str
     comp = (ModelInstance *)functions->allocateMemory(1, sizeof(ModelInstance));
     if (comp) {
         int i;
-        comp->instanceName = functions->allocateMemory(1 + strlen(instanceName), sizeof(char));
-        comp->fmuResourceLocation = functions->allocateMemory(1 + strlen(fmuResourceLocation), sizeof(char));
-
         // UMIT: log errors only, if logging is on. We don't have to enable all of them,
         // to quote the spec: "Which LogCategories the FMU sets is unspecified."
         // fmi2SetDebugLogging should be called to choose specific categories.
@@ -198,14 +197,14 @@ fmi2Component fmi2Instantiate(fmi2String instanceName, fmi2Type fmuType, fmi2Str
         }
         comp->logCategories[LOG_ERROR] = loggingOn;
     }
-    if (!comp || !comp->instanceName || !comp->fmuResourceLocation) {
+    if (!comp) {
 
         functions->logger(functions->componentEnvironment, instanceName, fmi2Error, "error",
             "fmi2Instantiate: Out of memory.");
         return NULL;
     }
-    strcpy(comp->instanceName, instanceName);
-    strcpy(comp->fmuResourceLocation, fmuResourceLocation);
+    strlcpy(comp->instanceName,        instanceName,        sizeof(comp->instanceName));
+    strlcpy(comp->fmuResourceLocation, fmuResourceLocation, sizeof(comp->fmuResourceLocation));
     comp->type = fmuType;
     comp->functions = functions;
     comp->componentEnvironment = functions->componentEnvironment;
@@ -227,8 +226,6 @@ void fmi2FreeInstance(fmi2Component c) {
     if (invalidState(comp, "fmi2FreeInstance", modelTerminated))
         return;
     FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2FreeInstance")
-    if (comp->instanceName) comp->functions->freeMemory(comp->instanceName);
-    if (comp->fmuResourceLocation) comp->functions->freeMemory(comp->fmuResourceLocation);
 #ifdef SIMULATION_FREE
     SIMULATION_FREE(comp->s.simulation);
 #endif

@@ -3,6 +3,9 @@
 #else
 #include <direct.h>
 #endif
+
+//link fmilib statically
+#define FMILIB_BUILDING_LIBRARY
 #include <fmilib.h>
 
 #include <stdio.h>

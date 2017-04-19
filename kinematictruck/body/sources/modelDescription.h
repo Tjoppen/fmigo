@@ -19,24 +19,28 @@
 
 #define HAVE_MODELDESCRIPTION_STRUCT
 typedef struct {
-    fmi2Real theta; //VR=0
-    fmi2Real omega; //VR=1
-    fmi2Real alpha; //VR=2
-    fmi2Real tau; //VR=3
-    fmi2Real jinv; //VR=4
-    fmi2Real d; //VR=5
+    fmi2Real    theta; //VR=0
+    fmi2Real    omega; //VR=1
+    fmi2Real    alpha; //VR=2
+    fmi2Real    tau; //VR=3
+    fmi2Real    jinv; //VR=4
+    fmi2Real    d; //VR=5
+
+
 
 } modelDescription_t;
 
 
 #define HAVE_DEFAULTS
 static const modelDescription_t defaults = {
-    0.0, //theta
-    0.0, //omega
-    0.0, //alpha
-    0.0, //tau
-    0.0001, //jinv
-    10.0, //d
+    0.000000, //theta
+    0.000000, //omega
+    0.000000, //alpha
+    0.000000, //tau
+    0.000100, //jinv
+    10.000000, //d
+
+
 
 };
 
@@ -55,16 +59,16 @@ static const modelDescription_t defaults = {
 
 
 static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Real value[]) {
-    int i;
+    size_t i;
+
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case VR_THETA: value[i] = md->theta; break;
-        case VR_OMEGA: value[i] = md->omega; break;
-        case VR_ALPHA: value[i] = md->alpha; break;
-        case VR_TAU: value[i] = md->tau; break;
-        case VR_JINV: value[i] = md->jinv; break;
-        case VR_D: value[i] = md->d; break;
-
+        case 0: value[i] = md->theta; break;
+        case 1: value[i] = md->omega; break;
+        case 2: value[i] = md->alpha; break;
+        case 3: value[i] = md->tau; break;
+        case 4: value[i] = md->jinv; break;
+        case 5: value[i] = md->d; break;
         default: return fmi2Error;
         }
     }
@@ -72,7 +76,8 @@ static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2
 }
 
 static fmi2Status generated_fmi2SetReal(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Real value[]) {
-    int i;
+    size_t i;
+
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
         case 0: md->theta = value[i]; break;
@@ -86,8 +91,10 @@ static fmi2Status generated_fmi2SetReal(modelDescription_t *md, const fmi2ValueR
     }
     return fmi2OK;
 }
+
 static fmi2Status generated_fmi2GetInteger(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Integer value[]) {
-    int i;
+    size_t i;
+
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
 
@@ -98,7 +105,8 @@ static fmi2Status generated_fmi2GetInteger(const modelDescription_t *md, const f
 }
 
 static fmi2Status generated_fmi2SetInteger(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Integer value[]) {
-    int i;
+    size_t i;
+
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
 
@@ -107,8 +115,10 @@ static fmi2Status generated_fmi2SetInteger(modelDescription_t *md, const fmi2Val
     }
     return fmi2OK;
 }
+
 static fmi2Status generated_fmi2GetBoolean(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Boolean value[]) {
-    int i;
+    size_t i;
+
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
 
@@ -119,7 +129,8 @@ static fmi2Status generated_fmi2GetBoolean(const modelDescription_t *md, const f
 }
 
 static fmi2Status generated_fmi2SetBoolean(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Boolean value[]) {
-    int i;
+    size_t i;
+
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
 
@@ -128,8 +139,10 @@ static fmi2Status generated_fmi2SetBoolean(modelDescription_t *md, const fmi2Val
     }
     return fmi2OK;
 }
+
 static fmi2Status generated_fmi2GetString(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2String value[]) {
-    int i;
+    size_t i;
+
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
 
@@ -140,7 +153,8 @@ static fmi2Status generated_fmi2GetString(const modelDescription_t *md, const fm
 }
 
 static fmi2Status generated_fmi2SetString(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2String value[]) {
-    int i;
+    size_t i;
+
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
 

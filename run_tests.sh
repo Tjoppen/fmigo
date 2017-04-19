@@ -10,6 +10,7 @@ source boilerplate.sh
 (cd ${FMUS_DIR}/testfmus/loopsolvetest   && ( ./test_loops.sh ||  ( echo "failed loopsolvetest" && exit 1 ) ) )
 (cd ${FMUS_DIR}/testfmus/stringtest      && ( ./test_strings.sh ||  ( echo "failed stringtest" && exit 1 ) ) )
 (cd build                       && ( ctest || ( echo "ctest failed" && exit 1 ) ) )
+(cd ${FMUS_DIR}/meWrapper && pwd &&( ./test_wrapper.sh ||  ( echo "failed wrapper" && exit 1 ) ) )
 
 # Check -f none
 touch empty_file

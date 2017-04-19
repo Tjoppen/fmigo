@@ -84,6 +84,7 @@ namespace common {
     std::deque<std::string> split(const std::string &s, char delim);
     int string_to_int(const std::string& s);
     std::string int_to_string(int i);
+
     jm_log_level_enu_t protoJMLogLevelToFmiJMLogLevel(fmitcp_proto::jm_log_level_enu_t logLevel);
 
     //converts -l option to JM compaible log level

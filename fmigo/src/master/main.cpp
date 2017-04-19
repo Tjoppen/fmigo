@@ -77,24 +77,6 @@ static vector<WeakConnection> setupWeakConnections(vector<connection> connection
     return weakConnections;
 }
 
-static vector<WeakConnection> setupMEWeakConnections(vector<connection> connections, vector<FMIClient*> clients) {
-    vector<WeakConnection> weakConnections;
-    for(auto conn: connections){
-        if(clients[conn.fromFMU]->getFmuKind() == fmi2_fmu_kind_me &&
-           clients[conn.toFMU]->getFmuKind()   == fmi2_fmu_kind_me)
-        weakConnections.push_back(WeakConnection(conn, clients[conn.fromFMU], clients[conn.toFMU]));
-    }
-    return weakConnections;
-}
-
-static vector<FMIClient*> meClients(vector<FMIClient*> clients){
-    vector<FMIClient*> meclients;
-    for(auto client: clients)
-        if(client->getFmuKind() == fmi2_fmu_kind_me)
-            meclients.push_back(client);
-    return meclients;
-}
-
 static StrongConnector* findOrCreateBallLockConnector(FMIClient *client,
         int posX, int posY, int posZ,
         int accX, int accY, int accZ,
@@ -598,7 +580,6 @@ int main(int argc, char *argv[] ) {
     double timeStep = 0.1;
     double endTime = 10;
     double relativeTolerance = 0.0001;
-    double tolerance = 0.0001;
     double relaxation = 4,
            compliance = 0;
     vector<string> fmuURIs;
@@ -671,7 +652,6 @@ int main(int argc, char *argv[] ) {
         fatal("-Z requires -z\n");
     }
 
-    BaseMaster *master = NULL;
 #ifdef USE_MPI
     vector<FMIClient*> clients = setupClients(world_size-1);
 #else
@@ -696,6 +676,7 @@ int main(int argc, char *argv[] ) {
     vector<WeakConnection> weakConnections = setupWeakConnections(connections, clients);
     setupConstraintsAndSolver(scs, clients, &solver);
 
+    BaseMaster *master = NULL;
     string fieldnames = getFieldnames(clients);
 
     if (scs.size()) {
@@ -853,6 +834,7 @@ int main(int argc, char *argv[] ) {
         nrecords++;
 #endif
     }
+
     if (fmigo::globals::fileFormat != none) {
       printOutputs(endTime, master, clients);
       char separator = fmigo::globals::getSeparator();

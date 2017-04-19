@@ -4,10 +4,15 @@
 #include "master/WeakConnection.h"
 #include "common/common.h"
 #include <fmitcp/serialize.h>
+
+#ifdef USE_GPL
 #include "gsl-interface.h"
+#endif
+
 using namespace fmitcp_master;
 using namespace fmitcp;
 namespace model_exchange{
+#ifdef USE_GPL
 typedef struct TimeLoop
 {
     fmi2_real_t t_safe, dt_new, t_crossed, t_end;
@@ -38,11 +43,16 @@ struct fmu_parameters{
 struct fmu_model{
     cgsl_model *model;
 };
+#endif
+
 class ModelExchangeStepper : public BaseMaster {
+#ifdef USE_GPL
 cgsl_simulation m_sim;
 fmu_parameters m_p;
 fmu_model m_model;
 TimeLoop timeLoop;
+#endif
+
 std::vector<WeakConnection> me_weakConnections;
 
  protected:
@@ -53,6 +63,7 @@ std::vector<WeakConnection> me_weakConnections;
     explicit ModelExchangeStepper(std::vector<FMIClient*> clients, std::vector<WeakConnection> weakConnections);
     ~ModelExchangeStepper();
 
+#ifdef USE_GPL
  protected:
     void solveME(double t, double dt);
 
@@ -150,6 +161,7 @@ std::vector<WeakConnection> me_weakConnections;
     void safeTimeStep(cgsl_simulation &sim);
 
     void getSafeTime(const std::vector<FMIClient*> clients, double t, double &dt);
+#endif
 };
 }
 #endif

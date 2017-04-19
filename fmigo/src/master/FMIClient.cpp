@@ -5,8 +5,11 @@
 
 #include "master/BaseMaster.h"
 #include "common/common.h"
-#include "common/fmigo_storage.h"
 #include "master/FMIClient.h"
+
+#ifdef USE_GPL
+#include "common/fmigo_storage.h"
+#endif
 
 using namespace fmitcp_master;
 using namespace fmitcp::serialize;
@@ -247,18 +250,26 @@ void FMIClient::on_fmi2_import_new_discrete_states_res             (fmitcp_proto
     fprintf(stderr, " \n");
 
 void FMIClient::on_fmi2_import_get_derivatives_res                 (const vector<double>& derivatives, fmitcp_proto::fmi2_status_t status){
+#ifdef USE_GPL
     m_master->get_storage().push_to(getId(),STORAGE::derivatives, derivatives);
+#endif
 }
 void FMIClient::on_fmi2_import_get_event_indicators_res            (const vector<double>& eventIndicators, fmitcp_proto::fmi2_status_t status){
+#ifdef USE_GPL
     m_master->get_storage().push_to(getId(),STORAGE::indicators,eventIndicators);
+#endif
 }
 //void on_fmi2_import_eventUpdate_res                     (int mid, bool iterationConverged, bool stateValueReferencesChanged, bool stateValuesChanged, bool terminateSimulation, bool upcomingTimeEvent, double nextEventTime, fmitcp_proto::fmi2_status_t status);
 //void on_fmi2_import_completed_event_iteration_res       (int mid, fmitcp_proto::fmi2_status_t status);
 void FMIClient::on_fmi2_import_get_continuous_states_res           (const vector<double>& states, fmitcp_proto::fmi2_status_t status){
+#ifdef USE_GPL
     m_master->get_storage().push_to(getId(),STORAGE::states,states);
+#endif
 }
 void FMIClient::on_fmi2_import_get_nominal_continuous_states_res   (const vector<double>& nominals, fmitcp_proto::fmi2_status_t status){
+#ifdef USE_GPL
     m_master->get_storage().push_to(getId(),STORAGE::nominals,nominals);
+#endif
 }
 //void on_fmi2_import_terminate_res                       (int mid, fmitcp_proto::fmi2_status_t status);
 //void on_fmi2_import_set_debug_logging_res               (int mid, fmitcp_proto::fmi2_status_t status);

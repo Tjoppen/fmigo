@@ -12,18 +12,21 @@
 #ifdef USE_GPL
 #include <gsl/gsl_multiroots.h>
 #include "common/fmigo_storage.h"
+using namespace fmigo_storage;
 #endif
 
-using namespace fmigo_storage;
 namespace fmitcp_master {
     class BaseMaster {
     protected:
         std::vector<FMIClient*> m_clients;
         std::vector<WeakConnection> m_weakConnections;
-        class FmigoStorage m_fmigoStorage;//(std::vector<size_t>(0));
         OutputRefsType clientWeakRefs;
 
         InputRefsValuesType initialNonReals;  //for loop solver
+
+#ifdef USE_GPL
+        class FmigoStorage m_fmigoStorage;//(std::vector<size_t>(0));
+#endif
 
     public:
         //number of pending requests sent to clients
@@ -31,12 +34,9 @@ namespace fmitcp_master {
 
         explicit BaseMaster(std::vector<FMIClient*> clients, std::vector<WeakConnection> weakConnections);
         virtual ~BaseMaster();
+
 #ifdef USE_GPL
         static int loop_residual_f(const gsl_vector *x, void *params, gsl_vector *f);
-#endif
-        void solveLoops();
-        virtual void prepare() {};
-        virtual void runIteration(double t, double dt) = 0;
 
         inline FmigoStorage & get_storage(){return m_fmigoStorage;}
         void storage_alloc(const std::vector<FMIClient*> &clients){
@@ -48,6 +48,11 @@ namespace fmitcp_master {
             }
             get_storage().allocate_storage(states,indicators);
         }
+#endif
+
+        void solveLoops();
+        virtual void prepare() {};
+        virtual void runIteration(double t, double dt) = 0;
 
 #define on(name) void name(FMIClient* slave) {}
         on(onSlaveInstantiated)

@@ -5,6 +5,7 @@
 using namespace fmitcp::serialize;
 using namespace model_exchange;
 
+#ifdef USE_GPL
 /** get_p
  *  Extracts the parameters from the model
  *
@@ -22,6 +23,7 @@ inline fmu_parameters* get_p(fmu_model* m){
 inline fmu_parameters* get_p(cgsl_simulation s){
     return get_p(s.model);
 }
+#endif
 
 /** ModelExchangeStepper()
  *  Class initializer
@@ -49,7 +51,11 @@ ModelExchangeStepper::ModelExchangeStepper(std::vector<FMIClient*> clients, std:
     }
 
     if (me_clients.size() > 0) {
+#ifdef USE_GPL
         prepareME();
+#else
+        fatal("Running ModelExchange FMUs requires libgsl, which requires enabling GPL\n");
+#endif
     }
 }
 
@@ -57,12 +63,15 @@ ModelExchangeStepper::ModelExchangeStepper(std::vector<FMIClient*> clients, std:
  *  Class destructor
  */
 ModelExchangeStepper::~ModelExchangeStepper(){
+#ifdef USE_GPL
     if (me_clients.size() > 0) {
         cgsl_free_simulation(m_sim);
         free(m_p.backup.dydt);
     }
+#endif
 }
 
+#ifdef USE_GPL
 /** fmu_function
  *  function needed by cgsl_simulation to get and set the current
  *  states and derivatives
@@ -508,3 +517,4 @@ void ModelExchangeStepper::solveME(double t, double dt) {
         storeStates(m_sim);
     }
 }
+#endif

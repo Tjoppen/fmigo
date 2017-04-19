@@ -36,7 +36,6 @@ SET(MASTER_SRCS
     src/master/FMIClient.cpp
     src/master/WeakConnection.cpp
     src/common/common.cpp
-    src/common/fmigo_storage.cpp
     src/common/CSV-parser.cpp
     src/master/BaseMaster.cpp
     src/master/parseargs.cpp
@@ -53,7 +52,6 @@ SET(MASTER_HEADERS
     include/master/WeakMasters.h
     include/master/modelExchange.h
     include/common/common.h
-    include/common/fmigo_storage.h
     include/common/CSV-parser.h
     ${FMITCP_HEADERS}
     ${CMAKE_CURRENT_SOURCE_DIR}/src/master/control.pb.h
@@ -72,6 +70,14 @@ set(TCP_SERVER_NAME fmigo-server)
 if (USE_GPL)
   set(EXTRALIBS cgsl )
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_GPL")
+
+  set(MASTER_SRCS ${MASTER_SRCS}
+    src/common/fmigo_storage.cpp
+  )
+
+  set(MASTER_HEADERS ${MASTER_HEADERS}
+    include/common/fmigo_storage.h
+  )
 
   include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../umit-fmus/templates/cgsl/include)
 endif ()

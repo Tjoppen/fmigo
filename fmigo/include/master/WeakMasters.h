@@ -30,7 +30,7 @@ class JacobiMaster : public model_exchange::ModelExchangeStepper {
 public:
     JacobiMaster(vector<FMIClient*> clients, vector<WeakConnection> weakConnections) :
             model_exchange::ModelExchangeStepper(clients, weakConnections) {
-        fprintf(stderr, "JacobiMaster\n");
+        info("JacobiMaster\n");
     }
 
     void prepare() {
@@ -53,7 +53,9 @@ public:
 
         //this pipelines with the sendGetX() + wait() in printOutputs() in main.cpp
         send(cs_clients, fmi2_import_do_step(t, dt, true));
+#ifdef USE_GPL
         solveME(t,dt);
+#endif
     }
 };
 
@@ -63,8 +65,8 @@ class GaussSeidelMaster : public model_exchange::ModelExchangeStepper {
     std::vector<int> stepOrder;
 public:
     GaussSeidelMaster(vector<FMIClient*> clients, vector<WeakConnection> weakConnections, std::vector<int> stepOrder) :
-        model_exchange::ModelExchangeStepper(clients, weakConnections), stepOrder(stepOrder) {
-        fprintf(stderr, "GSMaster\n");
+            model_exchange::ModelExchangeStepper(clients, weakConnections), stepOrder(stepOrder) {
+        info("GSMaster\n");
     }
 
     void prepare() {
@@ -88,7 +90,9 @@ public:
                 sendWait(client, fmi2_import_do_step(t, dt, true));
             } //else modelExchange, solve all further down simultaneously
         }
+#ifdef USE_GPL
         solveME(t,dt);
+#endif
     }
 };
 

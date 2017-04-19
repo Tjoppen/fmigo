@@ -31,7 +31,7 @@ static void compute_forces(state_t *s, const double x[], double *tau_coupling) {
 int engine2 (double t, const double x[], double dxdt[], void * params) {
 
   state_t *s = (state_t*)params;
-  
+
   double tau_coupling;
   double tau_total;
   compute_forces(s, x, &tau_coupling);
@@ -70,7 +70,7 @@ int jac_engine2 (double t, const double x[], double *dfdx, double dfdt[], void *
   gsl_matrix_set (J, 1, 0, s->md.integrate_dtheta ? 0.0 : -s->md.k_in );
   gsl_matrix_set (J, 1, 1, s->md.jinv * (s->md.tau_max * (b > 0 && b < 1 ? -s->md.kp : 0)
                                          - s->md.k1
-                                         - 2 * s->md.k2 * floor(fabs(x[ 1 ]))
+                                         - 2 * s->md.k2 * floor(fabs(x[ 1 ])) // was abs before, floor to maintain same behavior, create an impulse
                                          - s->md.d_in
                                          ));
   gsl_matrix_set (J, 1, 2, s->md.integrate_dtheta ? -s->md.k_in : 0.0);
@@ -166,4 +166,3 @@ int main(){
 #else
 #include "fmuTemplate_impl.h"
 #endif
-

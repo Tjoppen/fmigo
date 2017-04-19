@@ -24,7 +24,6 @@ typedef struct {
     fmi2Real    damping_c; //VR=2
     fmi2Real    x0; //VR=3
     fmi2Real    damping_i; //VR=4
-    fmi2Real    k_i; //VR=95
     fmi2Real    v_c; //VR=5
     fmi2Real    force; //VR=6
     fmi2Real    xstart; //VR=7
@@ -35,6 +34,7 @@ typedef struct {
     fmi2Real    v; //VR=12
     fmi2Real    steps; //VR=96
     fmi2Real    e_force; //VR=196
+    fmi2Real    k_i; //VR=95
     fmi2Integer filter_length; //VR=98
     fmi2Boolean dump_data; //VR=97
 
@@ -48,7 +48,6 @@ static const modelDescription_t defaults = {
     1.000000, //damping_c
     0.000000, //x0
     1.000000, //damping_i
-    1.000000, //k_i
     0.000000, //v_c
     0.000000, //force
     0.000000, //xstart
@@ -59,6 +58,7 @@ static const modelDescription_t defaults = {
     0.000000, //v
     0.000000, //steps
     0.000000, //e_force
+    1.000000, //k_i
     0, //filter_length
     0, //dump_data
 
@@ -70,7 +70,6 @@ static const modelDescription_t defaults = {
 #define VR_DAMPING_C 2
 #define VR_X0 3
 #define VR_DAMPING_I 4
-#define VR_K_I 95
 #define VR_V_C 5
 #define VR_FORCE 6
 #define VR_XSTART 7
@@ -81,6 +80,7 @@ static const modelDescription_t defaults = {
 #define VR_V 12
 #define VR_STEPS 96
 #define VR_E_FORCE 196
+#define VR_K_I 95
 #define VR_FILTER_LENGTH 98
 #define VR_DUMP_DATA 97
 
@@ -99,7 +99,6 @@ static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2
         case 2: value[i] = md->damping_c; break;
         case 3: value[i] = md->x0; break;
         case 4: value[i] = md->damping_i; break;
-        case 95: value[i] = md->k_i; break;
         case 5: value[i] = md->v_c; break;
         case 6: value[i] = md->force; break;
         case 7: value[i] = md->xstart; break;
@@ -110,6 +109,7 @@ static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2
         case 12: value[i] = md->v; break;
         case 96: value[i] = md->steps; break;
         case 196: value[i] = md->e_force; break;
+        case 95: value[i] = md->k_i; break;
         default: return fmi2Error;
         }
     }
@@ -125,7 +125,6 @@ static fmi2Status generated_fmi2SetReal(modelDescription_t *md, const fmi2ValueR
         case 2: md->damping_c = value[i]; break;
         case 3: md->x0 = value[i]; break;
         case 4: md->damping_i = value[i]; break;
-        case 95: md->k_i = value[i]; break;
         case 5: md->v_c = value[i]; break;
         case 6: md->force = value[i]; break;
         case 7: md->xstart = value[i]; break;
@@ -136,6 +135,7 @@ static fmi2Status generated_fmi2SetReal(modelDescription_t *md, const fmi2ValueR
         case 12: md->v = value[i]; break;
         case 96: md->steps = value[i]; break;
         case 196: md->e_force = value[i]; break;
+        case 95: md->k_i = value[i]; break;
         default: return fmi2Error;
         }
     }

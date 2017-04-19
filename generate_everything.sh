@@ -32,6 +32,10 @@ FMUS="
     testfmus/loopsolvetest/sub
     testfmus/loopsolvetest/mul
     testfmus/stringtest
+    me/springs
+    me/bouncingBall
+    me/bouncingBallWithSpring
+    me/fixedPoint
 "
 
 cat <<END>CMakeLists.txt
@@ -75,6 +79,7 @@ do
     popd
 done
 
+# Co-Simulation and Mode Exchange FMUs
 for d in $FMUS
 do
     echo "add_subdirectory($d)" >> CMakeLists.txt
@@ -83,3 +88,4 @@ do
         python ${GENERATOR}
     popd
 done
+

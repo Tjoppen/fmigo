@@ -58,10 +58,15 @@ modelIdentifier = "modelIdentifier"
 if fmiVersion == "1.0":
     modelIdentifier = root.get('modelIdentifier')
 elif fmiVersion == "2.0":
-    if fmuType == "cs":
-        modelIdentifier = root.find('CoSimulation').get('modelIdentifier')
-    elif fmuType == "me":
-        modelIdentifier = root.find('ModelExchange').get('modelIdentifier')
+    me = root.find('ModelExchange')
+    cs = root.find('CoSimulation')
+    if cs != None:
+        modelIdentifier = cs.get('modelIdentifier')
+    elif me != None:
+        modelIdentifier = me.get('modelIdentifier')
+    else:
+        log('FMU is neither ModelExchange or CoSimulation')
+        exit(1)
 
 # Get system info
 system = platform.system()

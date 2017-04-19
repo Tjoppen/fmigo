@@ -33,8 +33,8 @@ typedef struct {
     fmi2Real    v1; //VR=11
     fmi2Real    v2; //VR=12
     fmi2Real    on_off; //VR=13
-    fmi2Integer integrator_type; //VR=99
     fmi2Integer filter_length; //VR=98
+    fmi2Integer integrator_type; //VR=99
 
 
 } modelDescription_t;
@@ -56,8 +56,8 @@ static const modelDescription_t defaults = {
     0.000000, //v1
     0.000000, //v2
     1.000000, //on_off
-    6, //integrator_type
     0, //filter_length
+    6, //integrator_type
 
 
 };
@@ -77,8 +77,8 @@ static const modelDescription_t defaults = {
 #define VR_V1 11
 #define VR_V2 12
 #define VR_ON_OFF 13
-#define VR_INTEGRATOR_TYPE 99
 #define VR_FILTER_LENGTH 98
+#define VR_INTEGRATOR_TYPE 99
 
 
 
@@ -139,8 +139,8 @@ static fmi2Status generated_fmi2GetInteger(const modelDescription_t *md, const f
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case 99: value[i] = md->integrator_type; break;
         case 98: value[i] = md->filter_length; break;
+        case 99: value[i] = md->integrator_type; break;
         default: return fmi2Error;
         }
     }
@@ -151,8 +151,8 @@ static fmi2Status generated_fmi2SetInteger(modelDescription_t *md, const fmi2Val
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case 99: md->integrator_type = value[i]; break;
         case 98: md->filter_length = value[i]; break;
+        case 99: md->integrator_type = value[i]; break;
         default: return fmi2Error;
         }
     }

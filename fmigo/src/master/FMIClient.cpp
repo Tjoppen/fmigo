@@ -7,6 +7,10 @@
 #include "common/common.h"
 #include "master/FMIClient.h"
 
+#ifdef USE_GPL
+#include "common/fmigo_storage.h"
+#endif
+
 using namespace fmitcp_master;
 using namespace fmitcp::serialize;
 using namespace common;
@@ -25,7 +29,6 @@ FMIClient::FMIClient(zmq::context_t &context, int id, string uri) : fmitcp::Clie
 #endif
     m_id = id;
     m_master = NULL;
-    m_initialized = false;
     m_fmi2Instance = NULL;
     m_context = NULL;
     m_fmi2Outputs = NULL;
@@ -46,10 +49,6 @@ FMIClient::~FMIClient() {
 
 int FMIClient::getId(){
     return m_id;
-};
-
-bool FMIClient::isInitialized(){
-    return m_initialized;
 };
 
 void FMIClient::on_get_xml_res(fmitcp_proto::jm_log_level_enu_t logLevel, string xml) {
@@ -89,6 +88,10 @@ std::string FMIClient::getModelName() const {
 
 const variable_map& FMIClient::getVariables() const {
   return m_variables;
+}
+
+fmi2_fmu_kind_enu_t FMIClient::getFmuKind(){
+  return fmi2_import_get_fmu_kind(m_fmi2Instance);
 }
 
 void FMIClient::setVariables() {
@@ -139,12 +142,19 @@ bool FMIClient::hasCapability(fmi2_capabilities_enu_t cap) const {
     return fmi2_import_get_capability(m_fmi2Instance, cap) != 0;
 }
 
+size_t FMIClient::getNumEventIndicators(void){
+    return fmi2_import_get_number_of_event_indicators(m_fmi2Instance);
+}
+
+size_t FMIClient::getNumContinuousStates(void){
+    return fmi2_import_get_number_of_continuous_states(m_fmi2Instance);
+}
+
 void FMIClient::on_fmi2_import_instantiate_res(fmitcp_proto::jm_status_enu_t status){
     m_master->onSlaveInstantiated(this);
 };
 
 void FMIClient::on_fmi2_import_exit_initialization_mode_res(fmitcp_proto::fmi2_status_t status){
-    m_initialized = true; // Todo check the status
     m_master->onSlaveInitialized(this);
 };
 
@@ -209,35 +219,63 @@ void FMIClient::on_fmi2_import_get_directional_derivative_res(const vector<doubl
     m_getDirectionalDerivativeValues.push_back(dz);
     m_master->onSlaveDirectionalDerivative(this);
 }
+void FMIClient::on_fmi2_import_new_discrete_states_res             (fmitcp_proto::fmi2_event_info_t event_info){
+    m_event_info.newDiscreteStatesNeeded           = event_info.newdiscretestatesneeded();
+    m_event_info.terminateSimulation               = event_info.terminatesimulation();
+    m_event_info.nominalsOfContinuousStatesChanged = event_info.nominalsofcontinuousstateschanged();
+    m_event_info.valuesOfContinuousStatesChanged   = event_info.valuesofcontinuousstateschanged();
+    m_event_info.nextEventTimeDefined              = event_info.nexteventtimedefined();
+    m_event_info.nextEventTime                     = event_info.nexteventtime();
+}
 
 // TODO:
 
-/*
-//void on_fmi2_import_reset_slave_res                     (fmitcp_proto::fmi2_status_t status);
-//void on_fmi2_import_set_real_input_derivatives_res      (fmitcp_proto::fmi2_status_t status);
-//void on_fmi2_import_get_real_output_derivatives_res     (fmitcp_proto::fmi2_status_t status, const vector<double>& values);
-//void on_fmi2_import_cancel_step_res                     (fmitcp_proto::fmi2_status_t status);
-//void on_fmi2_import_get_status_res                      (fmitcp_proto::fmi2_status_t status);
-//void on_fmi2_import_get_real_status_res                 (double value);
-//void on_fmi2_import_get_integer_status_res              (int value);
-//void on_fmi2_import_get_boolean_status_res              (bool value);
-//void on_fmi2_import_get_string_status_res               (string value);
-//void on_fmi2_import_set_time_res                        (fmitcp_proto::fmi2_status_t status);
-//void on_fmi2_import_set_continuous_states_res           (fmitcp_proto::fmi2_status_t status);
-//void on_fmi2_import_completed_integrator_step_res       (bool callEventUpdate, fmitcp_proto::fmi2_status_t status);
-//void on_fmi2_import_initialize_model_res                (bool iterationConverged, bool stateValueReferencesChanged, bool stateValuesChanged, bool terminateSimulation, bool upcomingTimeEvent, double nextEventTime, fmitcp_proto::fmi2_status_t status);
-//void on_fmi2_import_get_derivatives_res                 (const vector<double>& derivatives, fmitcp_proto::fmi2_status_t status);
-//void on_fmi2_import_get_event_indicators_res            (const vector<double>& eventIndicators, fmitcp_proto::fmi2_status_t status);
-//void on_fmi2_import_eventUpdate_res                     (bool iterationConverged, bool stateValueReferencesChanged, bool stateValuesChanged, bool terminateSimulation, bool upcomingTimeEvent, double nextEventTime, fmitcp_proto::fmi2_status_t status);
-//void on_fmi2_import_completed_event_iteration_res       (fmitcp_proto::fmi2_status_t status);
-//void on_fmi2_import_get_continuous_states_res           (const vector<double>& states, fmitcp_proto::fmi2_status_t status);
-//void on_fmi2_import_get_nominal_continuous_states_res   (const vector<double>& nominal, fmitcp_proto::fmi2_status_t status);
-//void on_fmi2_import_terminate_res                       (fmitcp_proto::fmi2_status_t status);
-//void on_fmi2_import_set_debug_logging_res               (fmitcp_proto::fmi2_status_t status);
-//void on_fmi2_import_set_integer_res                     (fmitcp_proto::fmi2_status_t status);
-//void on_fmi2_import_set_boolean_res                     (fmitcp_proto::fmi2_status_t status);
-//void on_fmi2_import_set_string_res                      (fmitcp_proto::fmi2_status_t status);
-*/
+//void on_fmi2_import_reset_slave_res                     (int mid, fmitcp_proto::fmi2_status_t status);
+//void on_fmi2_import_set_real_input_derivatives_res      (int mid, fmitcp_proto::fmi2_status_t status);
+//void on_fmi2_import_get_real_output_derivatives_res     (int mid, fmitcp_proto::fmi2_status_t status, const vector<double>& values);
+//void on_fmi2_import_cancel_step_res                     (int mid, fmitcp_proto::fmi2_status_t status);
+//void on_fmi2_import_get_status_res                      (int mid, fmitcp_proto::fmi2_status_t status);
+//void on_fmi2_import_get_real_status_res                 (int mid, double value);
+//void on_fmi2_import_get_integer_status_res              (int mid, int value);
+//void on_fmi2_import_get_boolean_status_res              (int mid, bool value);
+//void on_fmi2_import_get_string_status_res               (int mid, string value);
+//void on_fmi2_import_set_time_res                        (int mid, fmitcp_proto::fmi2_status_t status);
+//void on_fmi2_import_set_continuous_states_res           (int mid, fmitcp_proto::fmi2_status_t status);
+//void on_fmi2_import_completed_integrator_step_res       (int mid, bool callEventUpdate, fmitcp_proto::fmi2_status_t status);
+//void on_fmi2_import_initialize_model_res                (int mid, bool iterationConverged, bool stateValueReferencesChanged, bool stateValuesChanged, bool terminateSimulation, bool upcomingTimeEvent, double nextEventTime, fmitcp_proto::fmi2_status_t status);
+#define debugprint(name)\
+    fprintf(stderr, " FMIClient "#name"");\
+    for(auto x : name)\
+        fprintf(stderr, " %f ",x);\
+    fprintf(stderr, " \n");
+
+void FMIClient::on_fmi2_import_get_derivatives_res                 (const vector<double>& derivatives, fmitcp_proto::fmi2_status_t status){
+#ifdef USE_GPL
+    m_master->get_storage().push_to(getId(),STORAGE::derivatives, derivatives);
+#endif
+}
+void FMIClient::on_fmi2_import_get_event_indicators_res            (const vector<double>& eventIndicators, fmitcp_proto::fmi2_status_t status){
+#ifdef USE_GPL
+    m_master->get_storage().push_to(getId(),STORAGE::indicators,eventIndicators);
+#endif
+}
+//void on_fmi2_import_eventUpdate_res                     (int mid, bool iterationConverged, bool stateValueReferencesChanged, bool stateValuesChanged, bool terminateSimulation, bool upcomingTimeEvent, double nextEventTime, fmitcp_proto::fmi2_status_t status);
+//void on_fmi2_import_completed_event_iteration_res       (int mid, fmitcp_proto::fmi2_status_t status);
+void FMIClient::on_fmi2_import_get_continuous_states_res           (const vector<double>& states, fmitcp_proto::fmi2_status_t status){
+#ifdef USE_GPL
+    m_master->get_storage().push_to(getId(),STORAGE::states,states);
+#endif
+}
+void FMIClient::on_fmi2_import_get_nominal_continuous_states_res   (const vector<double>& nominals, fmitcp_proto::fmi2_status_t status){
+#ifdef USE_GPL
+    m_master->get_storage().push_to(getId(),STORAGE::nominals,nominals);
+#endif
+}
+//void on_fmi2_import_terminate_res                       (int mid, fmitcp_proto::fmi2_status_t status);
+//void on_fmi2_import_set_debug_logging_res               (int mid, fmitcp_proto::fmi2_status_t status);
+//void on_fmi2_import_set_integer_res                     (int mid, fmitcp_proto::fmi2_status_t status);
+//void on_fmi2_import_set_boolean_res                     (int mid, fmitcp_proto::fmi2_status_t status);
+//void on_fmi2_import_set_string_res                      (int mid, fmitcp_proto::fmi2_status_t status);
 
 StrongConnector * FMIClient::createConnector(){
     StrongConnector * conn = new StrongConnector(this);

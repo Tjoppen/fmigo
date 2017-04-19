@@ -20,6 +20,8 @@ BaseMaster::BaseMaster(vector<FMIClient*> clients, vector<WeakConnection> weakCo
         m_clients(clients),
         m_weakConnections(weakConnections),
         clientWeakRefs(getOutputWeakRefs(m_weakConnections)) {
+    for(auto client: m_clients)
+        client->m_master = this;
 }
 
 BaseMaster::~BaseMaster() {
@@ -129,6 +131,12 @@ void BaseMaster::solveLoops() {
 
   gsl_multiroot_function f = {loop_residual_f, n, this};
   gsl_multiroot_fsolver *s = gsl_multiroot_fsolver_alloc(gsl_multiroot_fsolver_hybrids, n);
+
+  if (s == NULL) {
+    fprintf(stderr, "Failed to allocate multiroot fsolver\n");
+    exit(1);
+  }
+
   gsl_multiroot_fsolver_set(s, &f, x0);
 
   int i = 0, imax = 100, status;

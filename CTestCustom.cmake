@@ -23,4 +23,5 @@ set(CTEST_CUSTOM_TESTS_IGNORE
   ctest_fmi_import_test_cs_1
   ctest_fmi_import_test_me_2
   ctest_fmi_import_test_cs_2
+  ctest_me_springs
 )

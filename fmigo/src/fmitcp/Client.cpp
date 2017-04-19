@@ -174,7 +174,7 @@ void Client::clientData(const char* data, long size){
         break;
 
       /* Model exchange */
-    }case type_fmi2_import_enter_event_mode_res:            NORMAL_CASE(fmi2_import_enter_event_mode);
+    }case type_fmi2_import_enter_event_mode_res:            NORMAL_CASE(fmi2_import_enter_event_mode); break;
     case type_fmi2_import_new_discrete_states_res:{
 
         fmi2_import_new_discrete_states_res r; r.ParseFromArray(data, size);
@@ -209,6 +209,11 @@ void Client::clientData(const char* data, long size){
     case type_fmi2_import_get_event_indicators_res: {
         debug("This command is NOT TESTED\n");
         fmi2_import_get_event_indicators_res r; r.ParseFromArray(data, size);
+        std::vector<double> z;
+        for(int i=0; i<r.z_size(); i++)
+            z.push_back(r.z(i));
+
+        on_fmi2_import_get_event_indicators_res(z,r.status());
         debug("< fmi2_import_get_event_indicators_res(mid=%d, status=%d)\n", r.status());
 
         break;
@@ -216,20 +221,30 @@ void Client::clientData(const char* data, long size){
     case type_fmi2_import_get_continuous_states_res: {
         debug("This command is NOT TESTED\n");
         fmi2_import_get_continuous_states_res r; r.ParseFromArray(data, size);
+        std::vector<double> x;
+        for(int i=0; i<r.x_size(); i++)
+            x.push_back(r.x(i));
+        on_fmi2_import_get_continuous_states_res(x,r.status());
         debug("< fmi2_import_get_continuous_states_res(mid=%d, states=%d)\n", r.status());
         break;
     }
     case type_fmi2_import_get_derivatives_res: {
         debug("This command is NOT TESTED\n");
         fmi2_import_get_derivatives_res r; r.ParseFromArray(data, size);
+        std::vector<double> derivatives;
+        for(int i=0; i<r.derivatives_size(); i++)
+            derivatives.push_back(r.derivatives(i));
+        on_fmi2_import_get_derivatives_res(derivatives,r.status());
         debug("< fmi2_import_get_derivatives_res(mid=%d, status=%d)\n", r.status());
-        //        on_fmi2_import_get_derivatives_res(repeated_to_vector<double>(r.derivatives()),r.status());
-
         break;
     }
     case type_fmi2_import_get_nominal_continuous_states_res: {
         debug("This command is NOT TESTED\n");
         fmi2_import_get_nominal_continuous_states_res r; r.ParseFromArray(data, size);
+        std::vector<double> x;
+        for(int i=0; i<r.nominal_size(); i++)
+            x.push_back(r.nominal(i));
+        on_fmi2_import_get_nominal_continuous_states_res(x,r.status());
         debug("< fmi2_import_get_nominal_continuous_states_res(mid=%d, states=%d)\n", r.status());
         break;
     }
@@ -239,7 +254,6 @@ void Client::clientData(const char* data, long size){
         fmi2_import_get_real_output_derivatives_res r; r.ParseFromArray(data, size);
         debug("< fmi2_import_get_real_output_derivatives_res(mid=%d,status=%d,values=...)\n",r.status());
         on_fmi2_import_get_real_output_derivatives_res(r.status(),values_to_vector<double>(r));
-
         break;
     }
     case type_fmi2_import_do_step_res:                      NORMAL_CASE(fmi2_import_do_step); break;

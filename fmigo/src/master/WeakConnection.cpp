@@ -104,8 +104,7 @@ MultiValue WeakConnection::setFromString(std::string in) const {
 OutputRefsType getOutputWeakRefs(vector<WeakConnection> weakConnections) {
     OutputRefsType weakRefs;
 
-    for (size_t x = 0; x < weakConnections.size(); x++) {
-        WeakConnection wc = weakConnections[x];
+    for( auto wc: weakConnections){
         weakRefs[wc.from][wc.conn.fromType].push_back(wc.conn.fromOutputVR);
     }
 

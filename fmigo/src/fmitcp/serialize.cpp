@@ -1,7 +1,6 @@
 #include "fmitcp.pb.h"
 #include "serialize.h"
 #include <stdint.h>
-
 using namespace fmitcp_proto;
 using namespace std;
 
@@ -11,9 +10,16 @@ template<typename T> std::string pack(fmitcp_message_Type type, T &req) {
   return string(reinterpret_cast<char*>(bytes), 2) + req.SerializeAsString();
 }
 
-std::string fmitcp::serialize::fmi2_import_instantiate() {
-    return fmi2_import_instantiate2(false);
-}
+#define SERIALIZE_NORMAL_MESSAGE_(type, extra)                          \
+    /* Contruct message */                                              \
+    type##_req req;                                                     \
+    req.set_##extra(extra);                                             \
+    return pack(type_##type##_req, req);
+
+#define SERIALIZE_NORMAL_MESSAGE(type)                                  \
+    /* Contruct message */                                              \
+    type##_req req;                                                     \
+    return pack(type_##type##_req, req);
 
 std::string fmitcp::serialize::fmi2_import_instantiate2(bool visible) {
   fmi2_import_instantiate_req req;
@@ -114,14 +120,55 @@ std::string fmitcp::serialize::fmi2_import_get_string_status(fmitcp_proto::fmi2_
     return pack(type_fmi2_import_get_string_status_req, req);
 }
 
-std::string fmitcp::serialize::fmi2_import_set_time(double time){
-    fmi2_import_set_time_req req;
-    req.set_time(time);
+        // =========== FMI 2.0 (ME) Model Exchange functions ===========
 
-    return pack(type_fmi2_import_set_time_req, req);
+std::string fmitcp::serialize::fmi2_import_enter_event_mode(){
+    SERIALIZE_NORMAL_MESSAGE(fmi2_import_enter_event_mode);
 }
-FMU_VOID_REQ_IMPL(fmi2_import_get_version)
 
+std::string fmitcp::serialize::fmi2_import_new_discrete_states(){
+    SERIALIZE_NORMAL_MESSAGE(fmi2_import_new_discrete_states);
+}
+
+std::string fmitcp::serialize::fmi2_import_enter_continuous_time_mode(){
+    SERIALIZE_NORMAL_MESSAGE(fmi2_import_enter_continuous_time_mode);
+}
+
+std::string fmitcp::serialize::fmi2_import_completed_integrator_step(){
+    SERIALIZE_NORMAL_MESSAGE(fmi2_import_completed_integrator_step);
+}
+
+std::string fmitcp::serialize::fmi2_import_set_time(double time){
+    SERIALIZE_NORMAL_MESSAGE_(fmi2_import_set_time, time);
+}
+
+std::string fmitcp::serialize::fmi2_import_set_continuous_states(const double* x, int nx){
+    fmi2_import_set_continuous_states_req req;
+    req.set_nx(nx);
+
+    for(int i = 0; i < nx; i++)
+        req.add_x(x[i]);
+
+    return pack(type_fmi2_import_set_continuous_states_req, req);
+}
+
+std::string fmitcp::serialize::fmi2_import_get_event_indicators(int nz){
+    SERIALIZE_NORMAL_MESSAGE_(fmi2_import_get_event_indicators,nz);
+}
+
+std::string fmitcp::serialize::fmi2_import_get_continuous_states(int nx){
+    SERIALIZE_NORMAL_MESSAGE_(fmi2_import_get_continuous_states,nx);
+}
+
+std::string fmitcp::serialize::fmi2_import_get_derivatives(int nderivatives){
+    SERIALIZE_NORMAL_MESSAGE_(fmi2_import_get_derivatives,nderivatives);
+}
+
+std::string fmitcp::serialize::fmi2_import_get_nominal_continuous_states(int nx){
+    SERIALIZE_NORMAL_MESSAGE_(fmi2_import_get_nominal_continuous_states,nx);
+}
+
+FMU_VOID_REQ_IMPL(fmi2_import_get_version)
 
 std::string fmitcp::serialize::fmi2_import_set_debug_logging(bool loggingOn, const std::vector<string> categories){
     fmi2_import_set_debug_logging_req req;

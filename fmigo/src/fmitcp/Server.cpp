@@ -80,7 +80,7 @@ Server::Server(string fmuPath, std::string hdf5Filename) {
     }
     // check FMU kind
     fmi2_fmu_kind_enu_t fmuType = fmi2_import_get_fmu_kind(m_fmi2Instance);
-    if(fmuType != fmi2_fmu_kind_cs && fmuType != fmi2_fmu_kind_me_and_cs) {
+    if(fmuType != fmi2_fmu_kind_cs && fmuType != fmi2_fmu_kind_me_and_cs && fmuType != fmi2_fmu_kind_me) {
       fmi2_import_free(m_fmi2Instance);
       fmi_import_free_context(m_context);
       fmi_import_rmdir(&m_jmCallbacks, m_workingDir.c_str());
@@ -277,12 +277,16 @@ string Server::clientData(const char *data, size_t size) {
     fmitcp_proto::fmi2_import_instantiate_req r; r.ParseFromArray(data, size);
     fmi2_boolean_t visible = r.visible();
 
+    fmi2_type_t simType;
+    simType = fmi2_cosimulation;
+    if (r.has_fmutype() && r.fmutype() == 2)
+      simType = fmi2_model_exchange;
     debug("fmi2_import_instantiate_req(visible=%d)\n", visible);
 
     jm_status_enu_t status = jm_status_success;
     if (!m_sendDummyResponses) {
       // instantiate FMU
-      status = fmi2_import_instantiate(m_fmi2Instance, m_instanceName, fmi2_cosimulation, m_resourcePath.c_str(), visible);
+      status = fmi2_import_instantiate(m_fmi2Instance, m_instanceName, simType, m_resourcePath.c_str(), visible);
     }
 
     // Create response message
@@ -732,11 +736,19 @@ string Server::clientData(const char *data, size_t size) {
 
     //Create response
     fmitcp_proto::fmi2_import_new_discrete_states_res response;
-    response.set_allocated_eventinfo(fmi2EventInfoToProtoEventInfo(eventInfo));
+    fmitcp_proto::fmi2_event_info_t* eventin = fmi2EventInfoToProtoEventInfo(eventInfo);
+    response.set_allocated_eventinfo(eventin);
+    debug("Server.cpp: %d %d %d %d %d %f \n",
+            response.eventinfo().newdiscretestatesneeded(),
+            response.eventinfo().terminatesimulation(),
+            response.eventinfo().nominalsofcontinuousstateschanged(),
+            response.eventinfo().valuesofcontinuousstateschanged(),
+            response.eventinfo().nexteventtimedefined(),
+            response.eventinfo().nexteventtime());
+
     ret.first = fmitcp_proto::type_fmi2_import_new_discrete_states_res;
     ret.second = response.SerializeAsString();
     debug("fmi2_import_new_discrete_states_res()\n");
-    sendResponse = false;
   break; } case fmitcp_proto::type_fmi2_import_enter_continuous_time_mode_req: {
     // TODO
     SERVER_NORMAL_MESSAGE(enter_continuous_time_mode);
@@ -777,7 +789,6 @@ string Server::clientData(const char *data, size_t size) {
     // Create response
     SERVER_NORMAL_RESPONSE(set_continuous_states);
 
-    sendResponse = false;
   break; } case fmitcp_proto::type_fmi2_import_get_event_indicators_req: {
     // TODO
     // Unpack message
@@ -801,8 +812,6 @@ string Server::clientData(const char *data, size_t size) {
 
     ret.second = response.SerializeAsString();
     debug("fmi2_import_get_event_indicators_res()\n");
-
-    sendResponse = false;
   break; } case fmitcp_proto::type_fmi2_import_get_continuous_states_req: {
     // TODO
     // Unpack message
@@ -810,8 +819,7 @@ string Server::clientData(const char *data, size_t size) {
     debug("fmi2_import_get_continuous_states_req(nx=%d)\n", r.nx());
 
     fmi2_status_t status = fmi2_status_ok;
-    std::vector<fmi2_real_t> x;
-    x.reserve(r.nx()*sizeof(fmi2_real_t));
+    std::vector<fmi2_real_t> x(r.nx());
 
     if (!m_sendDummyResponses) {
       status = fmi2_import_get_continuous_states(m_fmi2Instance, x.data(), r.nx());
@@ -826,7 +834,6 @@ string Server::clientData(const char *data, size_t size) {
 
     ret.second = response.SerializeAsString();
     debug("fmi2_import_get_continuous_states_res()\n");
-    sendResponse = false;
   break; } case fmitcp_proto::type_fmi2_import_get_derivatives_req: {
     // TODO
     // Unpack message
@@ -834,8 +841,7 @@ string Server::clientData(const char *data, size_t size) {
     debug("fmi2_import_get_derivatives_req(nderivatives=%d)\n", r.nderivatives());
 
     fmi2_status_t status = fmi2_status_ok;
-    std::vector<fmi2_real_t> derivatives;
-    derivatives.reserve(r.nderivatives()*sizeof(fmi2_real_t));
+    std::vector<fmi2_real_t> derivatives(r.nderivatives());
 
     if (!m_sendDummyResponses) {
       status = fmi2_import_get_derivatives(m_fmi2Instance, derivatives.data(), r.nderivatives());
@@ -850,8 +856,6 @@ string Server::clientData(const char *data, size_t size) {
 
     ret.second = response.SerializeAsString();
     debug("fmi2_import_get_derivatives_res()\n");
-
-     sendResponse = false;
   break; } case fmitcp_proto::type_fmi2_import_get_nominal_continuous_states_req: {
     // TODO
     // Unpack message
@@ -875,7 +879,6 @@ string Server::clientData(const char *data, size_t size) {
 
     ret.second = response.SerializeAsString();
     debug("fmi2_import_get_nominal_continuous_states_res()\n");
-    sendResponse = false;
   break; } case fmitcp_proto::type_fmi2_import_set_real_input_derivatives_req: {
 
     // Unpack message

@@ -11,6 +11,8 @@
 #include "FMIClient.h"
 #ifdef USE_GPL
 #include <gsl/gsl_multiroots.h>
+#include "common/fmigo_storage.h"
+using namespace fmigo_storage;
 #endif
 
 namespace fmitcp_master {
@@ -22,15 +24,32 @@ namespace fmitcp_master {
 
         InputRefsValuesType initialNonReals;  //for loop solver
 
+#ifdef USE_GPL
+        class FmigoStorage m_fmigoStorage;//(std::vector<size_t>(0));
+#endif
+
     public:
         //number of pending requests sent to clients
         size_t getNumPendingRequests() const;
 
         explicit BaseMaster(std::vector<FMIClient*> clients, std::vector<WeakConnection> weakConnections);
         virtual ~BaseMaster();
+
 #ifdef USE_GPL
         static int loop_residual_f(const gsl_vector *x, void *params, gsl_vector *f);
+
+        inline FmigoStorage & get_storage(){return m_fmigoStorage;}
+        void storage_alloc(const std::vector<FMIClient*> &clients){
+            vector<size_t> states({});
+            vector<size_t> indicators({});
+            for(auto client: clients) {
+                states.push_back(client->getNumContinuousStates());
+                indicators.push_back(client->getNumEventIndicators());
+            }
+            get_storage().allocate_storage(states,indicators);
+        }
 #endif
+
         void solveLoops();
         virtual void prepare() {};
         virtual void runIteration(double t, double dt) = 0;

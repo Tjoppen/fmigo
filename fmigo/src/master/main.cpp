@@ -71,8 +71,8 @@ static vector<FMIClient*> setupClients(vector<string> fmuURIs, zmq::context_t &c
 
 static vector<WeakConnection> setupWeakConnections(vector<connection> connections, vector<FMIClient*> clients) {
     vector<WeakConnection> weakConnections;
-    for (auto it = connections.begin(); it != connections.end(); it++) {
-        weakConnections.push_back(WeakConnection(*it, clients[it->fromFMU], clients[it->toFMU]));
+    for(auto conn: connections){
+        weakConnections.push_back(WeakConnection(conn, clients[conn.fromFMU], clients[conn.toFMU]));
     }
     return weakConnections;
 }
@@ -676,7 +676,7 @@ int main(int argc, char *argv[] ) {
     vector<WeakConnection> weakConnections = setupWeakConnections(connections, clients);
     setupConstraintsAndSolver(scs, clients, &solver);
 
-    BaseMaster *master;
+    BaseMaster *master = NULL;
     string fieldnames = getFieldnames(clients);
 
     if (scs.size()) {
@@ -701,11 +701,6 @@ int main(int argc, char *argv[] ) {
         ofstream ofs(fieldnameFilename.c_str());
         ofs << fieldnames;
         ofs << endl;
-    }
-
-    //hook clients to master
-    for (auto it = clients.begin(); it != clients.end(); it++) {
-        (*it)->m_master = master;
     }
 
     //init

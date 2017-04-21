@@ -35,6 +35,15 @@ typedef struct vr{
 static vr vrs;
 
 #include "strlcpy.h"
+fmi2Real getChange(state_t *s, fmi2ValueReference vr, fmi2Real communicationStepSize){
+    fmi2Real a0,a1;
+    generated_fmi2GetReal(&s->md, &vr, 1, &a0);
+    doStep(s,s->simulation->t, communicationStepSize);
+    generated_fmi2GetReal(&s->md, &vr, 1, &a1);
+    SIMULATION_SET(s->simulation);
+    return a1 - a0;
+}
+static fmi2Real cmstpsz;
 
 void model_init(ModelInstance *comp) {
     FILE *fp;
@@ -73,7 +82,10 @@ fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReference wrt,
         if (wrt == vrs.tw)
             return generated_fmi2GetReal(&s->md,&vrs.a22,1,partial);
     }
-    return fmi2Error;
+    double dt = 1e-3 * cmstpsz;
+    SIMULATION_GET(s->simulation);
+    *partial = getChange(s, wrt, dt) - getChange(s, vr, dt);
+    return fmi2OK;
 }
 
 fmi2Status SIMULATION_GET ( SIMULATION_TYPE *sim) {

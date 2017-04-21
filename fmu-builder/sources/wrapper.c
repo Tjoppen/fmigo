@@ -224,7 +224,7 @@ void SIMULATION_WRAPPER(ModelInstance *comp)  {
         fprintf(stderr,"Wrapper: enter initialization mode faild\n");
         exit(1);
     }
-    prepare();
+    prepare(s->md.integrator);
     s->simulation = getSim();
     status = fmi2_import_exit_initialization_mode(*FMU);
     if(status == fmi2Error){

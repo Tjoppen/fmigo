@@ -43,5 +43,5 @@ fmi2_import_t** getFMU();
 void restoreStates(cgsl_simulation *sim, Backup *backup);
 void storeStates(cgsl_simulation *sim, Backup *backup);
 void runIteration(double t, double dt, Backup *backup);
-void prepare();
+void prepare(enum cgsl_integrator_ids integrator);
 #endif

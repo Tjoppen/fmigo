@@ -115,7 +115,8 @@ for sv in SV:
 ''')
 vr = 0
 while vr in vrs: vr += 1
-fmudir = 'sources/' + modelName +'.fmu'
+# located under resources/
+fmudir = modelName +'.fmu'
 print('''
     <ScalarVariable
         name="fmu"

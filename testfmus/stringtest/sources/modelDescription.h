@@ -45,13 +45,15 @@ static const modelDescription_t defaults = {
 };
 
 
+
+
+
 #define VR_S_OUT 1
 #define VR_S_OUT2 2
 #define VR_S_IN 3
 #define VR_S_IN2 4
 #define VR_S0 5
 #define VR_S02 6
-
 
 //the following getters and setters are static to avoid getting linking errors if this file is included in more than one place
 

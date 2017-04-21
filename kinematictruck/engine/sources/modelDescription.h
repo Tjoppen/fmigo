@@ -66,6 +66,7 @@ static const modelDescription_t defaults = {
 #define VR_KP 8
 #define VR_TAU_MAX 9
 #define VR_BETA 10
+
 #define VR_CLAMP_BETA 0
 
 

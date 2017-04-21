@@ -4,60 +4,6 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 SET(ARCH "linux64" CACHE STRING "Architecture: linux64, linux32, win32...")
 SET(TARGET mul)
 SET(MUL_FMU ${CMAKE_CURRENT_SOURCE_DIR}/${TARGET}.fmu CACHE INTERNAL "" FORCE)
-
-if (CMAKE_VERSION VERSION_LESS "3.5.0")
-    set(COPY_CMAKE_COMMAND cp)
-    set(ZIP_CMAKE_COMMAND  zip -r)
-else ()
-    set(ZIP_CMAKE_COMMAND  ${CMAKE_COMMAND} -E tar cf --format=zip)
-    set(COPY_CMAKE_COMMAND ${CMAKE_COMMAND} -E copy)
-endif ()
-
-set(COPY_TARGET COPY_MUL)
-add_custom_target(${COPY_TARGET} ALL COMMENT "Copying resources…")
-macro(copy_directory_to_scrs distant dst)
-    file(GLOB_RECURSE DistantFiles
-        RELATIVE ${distant}
-        ${distant}/*)
-
-    add_custom_command(TARGET ${COPY_TARGET} PRE_BUILD
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${dst}
-        )
-
-    foreach(Filename ${DistantFiles})
-      string(LENGTH ${Filename} stringLen)
-      MATH(EXPR one "${stringLen}-2")
-      MATH(EXPR three "${stringLen}-4")
-
-      string(SUBSTRING ${Filename} ${one} 2 suffix)
-      string(SUBSTRING ${Filename} ${three} 4 suffixthree)
-      if(( ".c"  STREQUAL ${suffix})
-          OR( ".h"   STREQUAL ${suffix})
-          OR( ".cpp" STREQUAL ${suffixthree})
-          OR( ".hpp" STREQUAL ${suffixthree})
-          OR( ".fmu" STREQUAL ${suffixthree})
-          )
-          string(FIND ${Filename} / slash REVERSE)
-          set(interdir)
-          if( ${slash} GREATER -1)
-              MATH(EXPR slash "${slash}+1")
-              string(SUBSTRING ${Filename} 0 ${slash} interdir)
-              string(SUBSTRING ${Filename} ${slash} ${stringLen} Filename)
-              if( ${interdir} STRGREATER "")
-                  add_custom_command(TARGET ${COPY_TARGET} PRE_BUILD
-                      COMMAND ${CMAKE_COMMAND} -E make_directory ${dst}${interdir}
-                      )
-              endif()
-          endif()
-          add_custom_command(TARGET ${COPY_TARGET} PRE_BUILD
-              COMMAND ${COPY_CMAKE_COMMAND} "${distant}/${Filename}" ${dst}
-              )
-      endif()
-
-    endforeach(Filename)
-endmacro()
-
-
 SET(SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/../../../templates/fmi2/fmuTemplate.h
     ${CMAKE_CURRENT_SOURCE_DIR}/../../../templates/fmi2/fmuTemplate_impl.h
@@ -65,19 +11,12 @@ SET(SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/mul.c
 )
-
-ADD_CUSTOM_COMMAND(
-  OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
-  COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/../../../fmu-builder/modeldescription2header
-    ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml >
-    ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
-  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml )
-
 ADD_DEFINITIONS(  )
 ADD_LIBRARY(${TARGET} SHARED ${SRCS})
 INCLUDE_DIRECTORIES(
     ../../../../FMILibrary-2.0.1/ThirdParty/FMI/default
     ../../../templates/fmi2
+    sources
 )
 SET_TARGET_PROPERTIES(${TARGET} PROPERTIES PREFIX "")
 SET_TARGET_PROPERTIES(${TARGET} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/binaries/${ARCH}")
@@ -86,41 +25,10 @@ TARGET_LINK_LIBRARIES( ${TARGET} ${LIBS} )
 
 
 
-if (CMAKE_VERSION VERSION_LESS "3.5.0")
-    set(ZIP_COMMAND  zip -r ${MUL_FMU} .)
-    set(COPY_COMMAND cp ${SRCS} ${CMAKE_CURRENT_BINARY_DIR}/fmu/sources)
-else ()
-    # Would use "." for path, but that results in paths like ./modelDescription.xml in the .fmu which is probably a bad thing
-    # We could maybe work around this by running a subcommand that lists all files in ${CMAKE_CURRENT_BINARY_DIR}/fmu into a variable
-    set(ZIP_COMMAND  ${CMAKE_COMMAND} -E tar cf ${MUL_FMU} --format=zip modelDescription.xml binaries sources)
-    set(COPY_COMMAND ${CMAKE_COMMAND} -E copy ${SRCS} ${CMAKE_CURRENT_BINARY_DIR}/fmu/sources)
-endif ()
+# See umit-fmus/FmuBase.CMake for what these macros actually do
+make_md2hdr_command(../../../fmu-builder/modeldescription2header.py)
 
 
-# There doesn't seem to be a way to repack an FMU in case it is deleted.
-# A post-build command is good enough for now.
-# Having to have a separate series of commands for Windows is also not optimal
-if (WIN32)
-    add_custom_command(TARGET ${TARGET} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E echo Packing ${TARGET}.fmu
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/fmu/sources
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/fmu/binaries/win32
-        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/${TARGET}.dll ${CMAKE_CURRENT_BINARY_DIR}/fmu/binaries/win32/
-        COMMAND COMMAND ${COPY_COMMAND}
-        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml ${CMAKE_CURRENT_BINARY_DIR}/fmu
-        # Later: COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt ${CMAKE_CURRENT_BINARY_DIR}/fmu
-        COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR}/fmu ${ZIP_COMMAND}
-        MAIN_DEPENDENCY ${TARGET}
-    )
-else ()
-    add_custom_command(TARGET ${TARGET} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E echo Packing ${TARGET}.fmu
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/fmu/sources
-        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_BINARY_DIR}/binaries ${CMAKE_CURRENT_BINARY_DIR}/fmu/binaries
-        COMMAND COMMAND ${COPY_COMMAND}
-        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml ${CMAKE_CURRENT_BINARY_DIR}/fmu
-        # Later: COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt ${CMAKE_CURRENT_BINARY_DIR}/fmu
-        COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_BINARY_DIR}/fmu ${ZIP_COMMAND}
-        MAIN_DEPENDENCY ${TARGET}
-    )
-endif ()
+make_zip_command (ZIP_COMMAND  ${MUL_FMU} modelDescription.xml binaries sources resources)
+make_copy_command(COPY_COMMAND ${CMAKE_CURRENT_BINARY_DIR}/fmu/sources ${SRCS})
+make_fmu_pack_command()

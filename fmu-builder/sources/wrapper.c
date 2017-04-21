@@ -94,21 +94,11 @@ fmi2Status SIMULATION_SET ( SIMULATION_TYPE *sim) {
 void SIMULATION_WRAPPER(ModelInstance *comp);
 #define NEW_DOSTEP //to get noSetFMUStatePriorToCurrentPoint
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
-    fprintf(stderr,"do step run iteration\n");
- runIteration(currentCommunicationPoint,communicationStepSize, getBackup());
+    //fprintf(stderr,"do step run iteration\n");
+    runIteration(currentCommunicationPoint,communicationStepSize, getBackup());
 }
-
-
-//gcc -g clutch.c ../../../templates/gsl2/gsl-interface.c -DCONSOLE -I../../../templates/gsl2 -I../../../templates/fmi2 -lgsl -lgslcblas -lm -Wall
-#ifdef CONSOLE
-int main(){
-    return 0;
-}
-#else
 
 #include "fmuTemplate_impl.h"
-
-#endif
 
 //extern "C"{
 void jmCallbacksLogger(jm_callbacks* c, jm_string module, jm_log_level_enu_t log_level, jm_string message) {

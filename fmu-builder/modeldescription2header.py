@@ -4,9 +4,8 @@ import sys, argparse, re
 import xml.etree.ElementTree as e
 
 parser = argparse.ArgumentParser(
-    description='transforme modelDescription.xml to sources/modelDescription.h',
-    epilog="""It is assumed that the current directory contains an XML file called "modelDescription.xml" and a directory "sources". """
-    )
+    description='Transforms modelDescription.xml to stdout (pipe to sources/modelDescription.h)',
+)
 
 parser.add_argument('xml',
                     type=str,
@@ -15,7 +14,7 @@ parser.add_argument('xml',
 parser.add_argument('-w','--wrapper',
                     dest='wrapper',
                     action='store_true',
-                    help='Enable generating of ME wrapper stuff',
+                    help='Generate wrapping fmi2SetX/fmi2GetX',
                     )
 parser.set_defaults(wrapper=False)
 
@@ -199,14 +198,15 @@ static const modelDescription_t defaults = {
 ))
 
 print('''
-%s%s%s%s''' % (
-    ''.join(['#define VR_'+value[0].upper()+' '+str(key)+'\n' for key,value in reals.items()]),
-    ''.join(['#define VR_'+value[0].upper()+' '+str(key)+'\n' for key,value in ints.items()]),
-    ''.join(['#define VR_'+value[0].upper()+' '+str(key)+'\n' for key,value in bools.items()]),
-    ''.join(['#define VR_'+value[0].upper()+' '+str(key)+'\n' for key,value in strs.items()]),
+%s
+%s
+%s
+%s''' % (
+    '\n'.join(['#define VR_'+value[0].upper()+' '+str(key) for key,value in reals.items()]),
+    '\n'.join(['#define VR_'+value[0].upper()+' '+str(key) for key,value in ints.items()]),
+    '\n'.join(['#define VR_'+value[0].upper()+' '+str(key) for key,value in bools.items()]),
+    '\n'.join(['#define VR_'+value[0].upper()+' '+str(key) for key,value in strs.items()]),
 ))
-
-
 
 print('''
 //the following getters and setters are static to avoid getting linking errors if this file is included in more than one place
@@ -265,24 +265,19 @@ static fmi2Status generated_fmi2Set%s(modelDescription_t *md, const fmi2ValueRef
 
 def gen_getters_setters_wrappers(t, d):
     print('''
-static fmi2Status generated_fmi2Get%s(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2%s value[]) {
-    fmi2_import_get_%s(*getFMU(),vr,nvr,value);
+static fmi2Status generated_fmi2Get{type}(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2{type} value[]) {{
+    fmi2_import_get_{ltype}(*getFMU(),vr,nvr,value);
     return fmi2OK;
-}
+}}
 
-static fmi2Status generated_fmi2Set%s(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2%s value[]) {
+static fmi2Status generated_fmi2Set{type}(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2{type} value[]) {{
     if( *getFMU() != NULL)
-        fmi2_import_set_%s(*getFMU(),vr,nvr,value);
+        fmi2_import_set_{ltype}(*getFMU(),vr,nvr,value);
     return fmi2OK;
-}''' % (
-        t,t,
-        t.lower(),
-        t,t,
-        t.lower(),
-        # A bit convoluted maybe, but it works.
-        # This makes sure settings strings larger than the FMU can handle results in an error, not a crash
+}}'''.format(
+        type=t,
+        ltype=t.lower()
     ))
-
 
 if not args.wrapper:
     gen_getters_setters('Real',    reals)

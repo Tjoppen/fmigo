@@ -94,7 +94,6 @@ static const modelDescription_t defaults = {
 #define VR_INTEGRATE_DTHETA 18
 #define VR_OCTAVE_OUTPUT_FILE 1003
 
-
 //the following getters and setters are static to avoid getting linking errors if this file is included in more than one place
 
 #define HAVE_GENERATED_GETTERS_SETTERS  //for letting the template know that we have our own getters and setters

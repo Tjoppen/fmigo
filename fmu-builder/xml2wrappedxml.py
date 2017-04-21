@@ -115,8 +115,7 @@ for sv in SV:
                            ' '.join([s + '="' + start.attrib[s]+'"' for s in start.attrib])
         ))
 
-        print('''    </ScalarVariable>
-''')
+        print('''    </ScalarVariable>''')
 vr = 0
 while vr in vrs: vr += 1
 fmudir = 'sources/' + modelName +'.fmu'

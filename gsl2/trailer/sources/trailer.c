@@ -45,7 +45,7 @@ int trailer (double t, const double x[], double dxdt[], void * params){
   state_t *s = (state_t*)params;
 
   /* internal triangular road model, added on top of s->md.angle */
-  double triangle = 1;
+  double triangle = 0;
 
   if (s->md.triangle_amplitude > 0 && s->md.triangle_wavelength > 0) {
     double a = s->md.triangle_amplitude;
@@ -67,12 +67,10 @@ int trailer (double t, const double x[], double dxdt[], void * params){
 
   double sgnv = SIGNUM( x[ 1 ] );
   /* drag */
-  force +=
-    -  sgnv *   0.5 * s->md.rho  * s->md.area * s->md.c_d * x[ 1 ] * x[ 1 ];
+  force += -  sgnv *   0.5 * s->md.rho  * s->md.area * s->md.c_d * x[ 1 ] * x[ 1 ];
 
   /* brake */
-  force +=
-    - sgnv * s->md.brake * s->md.mu * s->md.g * cos( s->md.angle + triangle );
+  force += - sgnv * s->md.brake * s->md.mu * s->md.g * cos( s->md.angle + triangle );
 
   /* rolling resistance */
   force += - sgnv * ( s->md.c_r_2 * fabs( x[ 1 ] ) + s->md.c_r_1 ) * s->md.mass * s->md.g * cos( s->md.angle + triangle );
@@ -108,7 +106,8 @@ int trailer (double t, const double x[], double dxdt[], void * params){
   }
 
   /* total acceleration */
-  dxdt[ 1 ]  = ( 1.0 / s->md.mass ) * ( force - s->md.f_c - s->md.tau_c / s->md.r_w );
+  dxdt[ 1 ]  =  ( 1.0 / s->md.mass ) *
+    ( force - s->md.f_c - s->md.tau_c / s->md.r_w );
   dxdt[ 0 ]  = x[ 1 ];
 
   return GSL_SUCCESS;
@@ -117,16 +116,19 @@ int trailer (double t, const double x[], double dxdt[], void * params){
 
 
 
-/** TODO */
+/** 
+ * TODO: note that this is full of nonsmooth terms and so should proceed
+ * with care, and only if needed.
+ */
 int jac_trailer (double t, const double x[], double *dfdx, double dfdt[], void *params)
 {
 
   state_t *s = (state_t*)params;
   gsl_matrix_view dfdx_mat = gsl_matrix_view_array (dfdx, 4, 4);
   gsl_matrix * J = &dfdx_mat.matrix;
+  fprintf(stderr, "Jacobian not implemented for trailer.c\n");
 
-
-  return GSL_SUCCESS;
+  return -1;
 }
 
 
@@ -169,12 +171,12 @@ static void trailer_init(state_t *s) {
 
   s->simulation = cgsl_init_simulation(
     cgsl_epce_default_model_init(
-      cgsl_model_default_alloc(get_initial_states_size(s), initials, s, trailer, jac_trailer, NULL, NULL, 0),
+      cgsl_model_default_alloc(get_initial_states_size(s), initials, s, trailer, NULL, NULL, NULL, 0),
       s->md.filter_length,
       sync_out,
       s
       ),
-    rkf45, 1e-5, 0, 0, 0, NULL
+    s->md.integrator, 1e-6, 0, 0, s->md.octave_output, s->md.octave_output ? fopen(s->md.octave_output_file, "w") : NULL
     );
 }
 

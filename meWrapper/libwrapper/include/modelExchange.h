@@ -1,5 +1,7 @@
 #ifndef MODELEXCHANGE_H
 #define MODELEXCHANGE_H
+
+#define FMILIB_BUILDING_LIBRARY
 #include <fmilib.h>
 #include <stdbool.h>
 #include "gsl-interface.h"

@@ -59,7 +59,8 @@ static inline int max(int a, int b) {
 #define atleast1(a) ((a) < 1 ? 1 : (a))
 
 typedef struct {
-    char* instanceName;
+    char instanceName[1024];
+    char fmuResourceLocation[1024];
     const fmi2CallbackFunctions *functions;
     fmi2ComponentEnvironment componentEnvironment;
     fmi2Type type;

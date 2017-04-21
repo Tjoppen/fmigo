@@ -8,11 +8,16 @@ parser = argparse.ArgumentParser(
     epilog="""It is assumed that the current directory contains an XML file called "modelDescription.xml" and a directory "sources". """
     )
 
-parser.add_argument('-x','--xml',
+parser.add_argument('xml',
                     type=str,
-                    help='The XML',
-                    required=True)
-parser.add_argument('-w','--wrapper',type=bool,default=False)
+                    help='Path to modelDescription.xml',
+                    )
+parser.add_argument('-w','--wrapper',
+                    dest='wrapper',
+                    action='store_true',
+                    help='Enable generating of ME wrapper stuff',
+                    )
+parser.set_defaults(wrapper=False)
 
 
 def warning(*objs):
@@ -75,7 +80,8 @@ derivatives = {}
 
 SV = root.find('ModelVariables').findall('ScalarVariable')
 strs  = {}
-for sv in root.find('ModelVariables').findall('ScalarVariable'):
+
+for sv in SV:
     name = sv.attrib['name']
     name = re.sub('[.\[\(]', '_', name)
     name = re.sub('[\]\)]', '', name)
@@ -99,12 +105,11 @@ for sv in root.find('ModelVariables').findall('ScalarVariable'):
         start = float(R.attrib['start']) if 'start' in R.attrib else 0
         if meFmuType:
             if 'derivative' in R.attrib:
-                stateIndex = int(R.attrib['derivative']) - 1
-                stateName  = SV[stateIndex].attrib['name']
-                states[vr] = (stateName, 0)
-                derivatives[vr] = (name, 0)
-                start = 0
+                states[vr] = (SV[int(R.attrib['derivative']) - 1].attrib['name'], start)
+                start = float(R.attrib['derivative']) if 'derivative' in R.attrib else 0
+                derivatives[vr] = (name, start)
         reals[vr] = (name, start)
+
     elif I != None or E != None:
         if vr in ints:
             error(args.xml + ' contains multiple Integers/Enums with VR='+str(vr))
@@ -164,27 +169,33 @@ print('''#ifndef MODELDESCRIPTION_H
 print('''
 #define HAVE_MODELDESCRIPTION_STRUCT
 typedef struct {
-%s%s%s%s%s
+%s
+%s
+%s
+%s%s
 } modelDescription_t;
 ''' % (
-    ''.join(['    fmi2Real '+value[0]+'; //VR='+str(key)+'\n' for key,value in reals.items()]),
-    ''.join(['    fmi2Integer '+value[0]+'; //VR='+str(key)+'\n' for key,value in ints.items()]),
-    ''.join(['    fmi2Boolean '+value[0]+'; //VR='+str(key)+'\n' for key,value in bools.items()]),
-    ''.join(['    fmi2Char    '+value[0]+'[256]; //VR='+str(key)+'\n' for key,value in strs.items()]),
-    '    fmi2Boolean dirty;' if meFmuType else '',
+    '\n'.join(['    fmi2Real    %s; //VR=%s' % (value[0], str(key)) for key,value in reals.items()]),
+    '\n'.join(['    fmi2Integer %s; //VR=%s' % (value[0], str(key)) for key,value in ints.items()]),
+    '\n'.join(['    fmi2Boolean %s; //VR=%s' % (value[0], str(key)) for key,value in bools.items()]),
+    '\n'.join(['    fmi2Char    %s[%i]; //VR=%s' % (value[0], value[2], str(key)) for key,value in strs.items()]),
+    '\n    fmi2Boolean dirty;' if meFmuType else '',
 ))
 
 print('''
 #define HAVE_DEFAULTS
 static const modelDescription_t defaults = {
-%s%s%s%s%s
+%s
+%s
+%s
+%s%s
 };
 ''' % (
-    ''.join(['    '+str(value[1])+', //'+value[0]+'\n' for key,value in reals.items()]),
-    ''.join(['    '+str(value[1])+', //'+value[0]+'\n' for key,value in ints.items()]),
-    ''.join(['    '+str(value[1])+', //'+value[0]+'\n' for key,value in bools.items()]),
-    ''.join(['    "'+value[1]+'", //'+value[0]+'\n' for key,value in strs.items()]),
-    '    1,' if meFmuType else '',
+    '\n'.join(['    %f, //%s' % (value[1], value[0]) for key,value in reals.items()]),
+    '\n'.join(['    %i, //%s' % (value[1], value[0]) for key,value in ints.items()]),
+    '\n'.join(['    %i, //%s' % (value[1], value[0]) for key,value in bools.items()]),
+    '\n'.join(['    "%s", //%s' % (value[1], value[0]) for key,value in strs.items()]),
+    '\n    1,' if meFmuType else '',
 ))
 
 print('''
@@ -211,13 +222,13 @@ if meFmuType:
     ', '.join(['VR_'+value[0].upper() for key,value in states.items()]),
     ', '.join(['VR_'+value[0].upper() for key,value in derivatives.items()]),
     ))
-
-print('''%s'''%(
-    '\nstatic void update_all(modelDescription_t *md);\n' if meFmuType else '',))
+    print('static void update_all(modelDescription_t *md);')
 
 def gen_getters_setters(t, d):
-    print('''static fmi2Status generated_fmi2Get%s(%smodelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2%s value[]) {
-    %sint i;
+    print('''
+static fmi2Status generated_fmi2Get%s(%smodelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2%s value[]) {
+    size_t i;%s
+
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
 %s
@@ -228,7 +239,8 @@ def gen_getters_setters(t, d):
 }
 
 static fmi2Status generated_fmi2Set%s(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2%s value[]) {
-    %sint i;
+    size_t i;%s
+
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
 %s
@@ -240,10 +252,10 @@ static fmi2Status generated_fmi2Set%s(modelDescription_t *md, const fmi2ValueRef
         t,
         'const ' if csFmuType else '' ,
         t,
-        'if (md->dirty){\n        update_all(md);\n        md->dirty = 0;\n    }\n' if meFmuType else '',
-        ''.join(['        case VR_%s: value[i] = md->%s; break;\n' % (value[0].upper(), value[0]) for key,value in d.items()]),
+        '\n    if (md->dirty){\n        update_all(md);\n        md->dirty = 0;\n    }' if meFmuType else '',
+        '\n'.join(['        case %i: value[i] = md->%s; break;' % (key, value[0]) for key,value in d.items()]),
         t,t,
-        'md->dirty = 1;\n' if meFmuType else '',
+        '\n    md->dirty = 1;\n' if meFmuType else '',
         # A bit convoluted maybe, but it works.
         # This makes sure settings strings larger than the FMU can handle results in an error, not a crash
         '\n'.join(['        case %i: if (strlcpy(md->%s, value[i], sizeof(md->%s)) >= sizeof(md->%s)) { return fmi2Error; } break;' %

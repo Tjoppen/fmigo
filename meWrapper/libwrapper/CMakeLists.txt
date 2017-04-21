@@ -9,4 +9,4 @@ add_library(wrapperlib
 set_property(TARGET wrapperlib PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 target_include_directories (wrapperlib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_link_libraries (wrapperlib LINK_PUBLIC cgsl fmilib fmilib_shared)
+target_link_libraries (wrapperlib LINK_PUBLIC cgsl fmilib)

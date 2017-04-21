@@ -40,11 +40,6 @@ parser.add_argument('-c','--console',
                     action='store_true',
                     default=False,
                     help='Generate CONSOLE target')
-# Get FMU type (co-simulation or model exchange)
-parser.add_argument('-f','--fmuType',
-                    type=str,
-                    help='Fmu type',
-                    default="cs")
 
 args = parser.parse_args()
 link_libraries = args.link.split(",")
@@ -71,12 +66,15 @@ modelIdentifier = "modelIdentifier"
 if fmiVersion == "1.0":
     modelIdentifier = root.get('modelIdentifier')
 elif fmiVersion == "2.0":
-    if args.fmuType == "cs":
-        modelIdentifier = root.find('CoSimulation').get('modelIdentifier')
-    elif args.fmuType == "me":
-        modelIdentifier = root.find('ModelExchange').get('modelIdentifier')
-print('modelIdentifier')
-print(modelIdentifier)
+    me = root.find('ModelExchange')
+    cs = root.find('CoSimulation')
+    if cs != None:
+        modelIdentifier = cs.get('modelIdentifier')
+    elif me != None:
+        modelIdentifier = me.get('modelIdentifier')
+    else:
+        log('FMU is neither ModelExchange or CoSimulation')
+        exit(1)
 
 # Get system info
 system = platform.system()
@@ -133,7 +131,7 @@ with open(path,'w') as f:
 
     md2hdr = os.path.relpath(args.md2hdr).replace('\\','/')
     if iswrapper:
-        md2hdr += " -w 1 -x "
+        md2hdr += " -w "
         srcxml2xml = os.path.relpath(args.srcxml2xml).replace('\\','/')
         dependentFMU = modelIdentifier.split('_')
         dependentFMU.pop(0)
@@ -154,7 +152,7 @@ ADD_CUSTOM_COMMAND(
 
 ADD_CUSTOM_COMMAND(
   OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml
-        COMMAND ${CMAKE_COMMAND} -E echo Packing ${%s_FMU}
+        COMMAND ${CMAKE_COMMAND} -E echo Generating ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml
   COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/%s -f
        ${%s_FMU} >
     ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml
@@ -165,14 +163,12 @@ ADD_CUSTOM_COMMAND(
             dependentFMU,
             dependentFMU.upper(),
             dependentFMU.upper(),
-            dependentFMU.upper(),
             srcxml2xml,
             dependentFMU.upper(),
             dependentFMU.upper(),
             wrappersrc,
     )
     else:
-        md2hdr += " -x "
         xml2xml = ""
 
     # libm needs special handling since it doesn't exist/isn't needed on Windows
@@ -193,7 +189,7 @@ TARGET_LINK_LIBRARIES( ${TARGET}_c ${LIBS} )
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 SET(ARCH "linux64" CACHE STRING "Architecture: linux64, linux32, win32...")
 SET(TARGET %s)
-SET(%s_FMU ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}.fmu CACHE INTERNAL "" FORCE)
+SET(%s_FMU ${CMAKE_CURRENT_SOURCE_DIR}/${TARGET}.fmu CACHE INTERNAL "" FORCE)
 
 if (CMAKE_VERSION VERSION_LESS "3.5.0")
     set(COPY_CMAKE_COMMAND cp)

@@ -173,6 +173,47 @@
         variability="fixed">
       <Integer start="0"/>
     </ScalarVariable>
+
+    <ScalarVariable 
+        name="octave_output"
+        valueReference="1001"
+        description="Dump integration data to a space separated value file?"
+        causality="parameter"
+        variability="fixed">
+      <Boolean start="false"/>
+    </ScalarVariable>
+
+    <ScalarVariable 
+        name="integrator"
+        valueReference="1002"
+        description="Choose integrator:
+                     {
+                     rk2,	/* 0 */
+                     rk4,	/* 1 */
+                     rkf45,	/* 2 */
+                     rkck,	/* 3 */
+                     rk8pd,	/* 4 */
+                     rk1imp,	/* 5 */
+                     rk2imp,	/* 6 */
+                     rk4imp,	/* 7 */
+                     bsimp,	/* 8 */
+                     msadams,	/* 9 */
+                     msbdf	/*10 */
+                     };
+                     "
+        causality="parameter"
+        variability="fixed">
+      <Integer start="2"/>
+    </ScalarVariable>
+    <ScalarVariable 
+        name="octave_output_file"
+        valueReference="1003"
+        description="file for internal dump?"
+        causality="parameter"
+        variability="fixed">
+      <String start="engine2.m" size="500"/>
+    </ScalarVariable>
+    
   </ModelVariables>
 
   <ModelStructure>

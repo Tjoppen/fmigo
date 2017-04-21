@@ -20,6 +20,7 @@
 #define HAVE_MODELDESCRIPTION_STRUCT
 typedef struct {
 <<<<<<< HEAD
+<<<<<<< HEAD
     fmi2Real current_time; //VR=0
     fmi2Real w_inShaftNeutral; //VR=1
     fmi2Real w_wheel; //VR=2
@@ -60,6 +61,8 @@ typedef struct {
     fmi2Real f_wheel_out; //VR=38
     fmi2Real w_wheel_in; //VR=39
 =======
+=======
+>>>>>>> origin/master
     fmi2Real    current_time; //VR=0
     fmi2Real    w_inShaftNeutral; //VR=1
     fmi2Real    w_wheel; //VR=2
@@ -101,14 +104,19 @@ typedef struct {
     fmi2Real    w_wheel_in; //VR=39
     fmi2Real    a_wheel; //VR=40
     fmi2Real    a_shaft_out; //VR=41
+<<<<<<< HEAD
+>>>>>>> origin/master
+=======
 >>>>>>> origin/master
     fmi2Integer simulation_ticks; //VR=0
+
 
 } modelDescription_t;
 
 
 #define HAVE_DEFAULTS
 static const modelDescription_t defaults = {
+<<<<<<< HEAD
 <<<<<<< HEAD
     0, //current_time
     0.0, //w_inShaftNeutral
@@ -150,6 +158,8 @@ static const modelDescription_t defaults = {
     0, //f_wheel_out
     0.0, //w_wheel_in
 =======
+=======
+>>>>>>> origin/master
     0.000000, //current_time
     0.000000, //w_inShaftNeutral
     0.000000, //w_wheel
@@ -191,8 +201,12 @@ static const modelDescription_t defaults = {
     0.000000, //w_wheel_in
     0.000000, //a_wheel
     0.000000, //a_shaft_out
+<<<<<<< HEAD
+>>>>>>> origin/master
+=======
 >>>>>>> origin/master
     0, //simulation_ticks
+
 
 };
 
@@ -241,6 +255,7 @@ static const modelDescription_t defaults = {
 #define VR_SIMULATION_TICKS 0
 
 
+
 //the following getters and setters are static to avoid getting linking errors if this file is included in more than one place
 
 #define HAVE_GENERATED_GETTERS_SETTERS  //for letting the template know that we have our own getters and setters
@@ -250,6 +265,7 @@ static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
+<<<<<<< HEAD
 <<<<<<< HEAD
         case VR_CURRENT_TIME: value[i] = md->current_time; break;
         case VR_W_INSHAFTNEUTRAL: value[i] = md->w_inShaftNeutral; break;
@@ -292,6 +308,8 @@ static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2
         case VR_W_WHEEL_IN: value[i] = md->w_wheel_in; break;
 
 =======
+=======
+>>>>>>> origin/master
         case 0: value[i] = md->current_time; break;
         case 1: value[i] = md->w_inShaftNeutral; break;
         case 2: value[i] = md->w_wheel; break;
@@ -333,6 +351,9 @@ static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2
         case 39: value[i] = md->w_wheel_in; break;
         case 40: value[i] = md->a_wheel; break;
         case 41: value[i] = md->a_shaft_out; break;
+<<<<<<< HEAD
+>>>>>>> origin/master
+=======
 >>>>>>> origin/master
         default: return fmi2Error;
         }
@@ -390,12 +411,12 @@ static fmi2Status generated_fmi2SetReal(modelDescription_t *md, const fmi2ValueR
     }
     return fmi2OK;
 }
+
 static fmi2Status generated_fmi2GetInteger(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Integer value[]) {
     int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case VR_SIMULATION_TICKS: value[i] = md->simulation_ticks; break;
-
+        case 0: value[i] = md->simulation_ticks; break;
         default: return fmi2Error;
         }
     }
@@ -412,6 +433,7 @@ static fmi2Status generated_fmi2SetInteger(modelDescription_t *md, const fmi2Val
     }
     return fmi2OK;
 }
+
 static fmi2Status generated_fmi2GetBoolean(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Boolean value[]) {
     int i;
     for (i = 0; i < nvr; i++) {
@@ -433,6 +455,7 @@ static fmi2Status generated_fmi2SetBoolean(modelDescription_t *md, const fmi2Val
     }
     return fmi2OK;
 }
+
 static fmi2Status generated_fmi2GetString(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2String value[]) {
     int i;
     for (i = 0; i < nvr; i++) {

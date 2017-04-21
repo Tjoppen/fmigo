@@ -3,7 +3,7 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 SET(ARCH "linux64" CACHE STRING "Architecture: linux64, linux32, win32...")
 SET(TARGET wrapper_springs2)
-SET(WRAPPER_SPRINGS2_FMU ${CMAKE_CURRENT_BINARY_DIR}/${TARGET}.fmu CACHE INTERNAL "" FORCE)
+SET(WRAPPER_SPRINGS2_FMU ${CMAKE_CURRENT_SOURCE_DIR}/${TARGET}.fmu CACHE INTERNAL "" FORCE)
 
 if (CMAKE_VERSION VERSION_LESS "3.5.0")
     set(COPY_CMAKE_COMMAND cp)
@@ -66,7 +66,7 @@ ADD_CUSTOM_COMMAND(
 
 ADD_CUSTOM_COMMAND(
   OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml
-        COMMAND ${CMAKE_COMMAND} -E echo Packing ${SPRINGS2_FMU}
+        COMMAND ${CMAKE_COMMAND} -E echo Generating ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml
   COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/../../fmu-builder/xml2wrappedxml.py -f
        ${SPRINGS2_FMU} >
     ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml
@@ -79,13 +79,12 @@ SET(SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/fmi2/fmuTemplate.h
     ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/fmi2/fmuTemplate_impl.h
     ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/fmi2/strlcpy.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/fmu/springs2.fmu
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
 )
 
 ADD_CUSTOM_COMMAND(
   OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
-  COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/../../fmu-builder/modeldescription2header -w 1 -x 
+  COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/../../fmu-builder/modeldescription2header -w 
     ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml >
     ${CMAKE_CURRENT_SOURCE_DIR}/sources/modelDescription.h
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml )
@@ -99,7 +98,7 @@ INCLUDE_DIRECTORIES(
 )
 SET_TARGET_PROPERTIES(${TARGET} PROPERTIES PREFIX "")
 SET_TARGET_PROPERTIES(${TARGET} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/binaries/${ARCH}")
-SET(LIBS cgsl wrapperlib fmilib fmilib_shared)
+SET(LIBS cgsl wrapperlib fmilib)
 if (UNIX)
     set(LIBS ${LIBS} m)
 endif ()

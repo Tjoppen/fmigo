@@ -83,38 +83,64 @@ def fun(t, y, w_in, k1, d1, k2, d2, J1, J2):
 ## or not we can do this because of the filter dynamics
 ##
 ##
+
+## return a command line with the parameters of one of the gearboxes
+def parameters(fmu_id, k_coupling, zeta_coupling, frequency, zeta,  v_in=0, filter_length=2, integrator=2, octave='false'):
+  
+  cmdline  = ['-p', '%i,octave_output,%s' % (fmu_id, octave)]
+  cmdline += ['-p', '%i,integrator,%i' % (fmu_id, integrator) ]
+  cmdline += ['-p', '%i,filter_length,%i' % (fmu_id, filter_length) ]
+  cmdline += ['-p', '%i,v_in_e,%f' % (fmu_id, v_in) ]
+  cmdline += ['-p', '%i,v0_e,0.0' % fmu_id ]
+  cmdline += ['-p', '%i,gamma_e,0.0' % fmu_id]
+  cmdline += ['-p', '%i,gamma_s,0.0' % fmu_id ]
+  cmdline += ['-p', '%i,k_ec,%f' % (fmu_id, k_coupling) ]
+  cmdline += ['-p', '%i,gamma_ec,%f' % (fmu_id, ( 2.0 * zeta_coupling  * sqrt( k_coupling )))  ]
+  cmdline += ['-p', '%i,gear_k,%f' % (fmu_id, ( ( 2.0 * pi * frequency )**2 / 4.0  )) ]
+  cmdline += ['-p', '%i,gear_d,%f' % (fmu_id, (zeta * pi * frequency)) ]
+  cmdline += ['-p', '%i,mass_e,0.5' % fmu_id]
+  cmdline += ['-p', '%i,mass_s,0.5' % fmu_id]
+  cmdline += ['-p', '%i,gear,13' % fmu_id]
+  cmdline += ['-p', '%i,is_gearbox,true' % fmu_id]
+  cmdline += ['-p', '%i,integrate_dx_e,true'  % fmu_id]
+  cmdline += ['-p', '%i,integrate_dx_s,true' % fmu_id]
+  return cmdline
+
+def connect(fmu1, fmu2):
+  cmdline  = ['-c', '%i,x_s,%i,x_in_e' % (fmu1, fmu2)]
+  cmdline += ['-c', '%i,v_s,%i,v_in_e' % (fmu1, fmu2)]
+  cmdline += ['-c', '%i,force_e,%i,force_in_e' % (fmu2, fmu1)]
+  return cmdline
+  
+fmus = ['../../impulse/impulse.fmu', '../../gsl2/clutch2/clutch2.fmu' ]
+
 def run_simulations(total_time, comm_step, filter_length,  frequency=1.0,
                     zeta=0.0, k_coupling=1e9, zeta_coupling=0.7,
                     v_in=1.0,
                     integrate_dx=True):
-  nfmus = 1
+  nfmus = len(fmus)
+  octave='true'
+  integrator=2
   #cmdline = ['LD_PRELOAD=/usr/local/lib/valgrind/libmpiwrap-amd64-linux.so', '&&']
   cmdline = ['mpiexec', '-np', str(nfmus+1)]
-#             '/usr/local/bin/valgrind', '--tool=callgrind',
   cmdline += ['fmigo-mpi', '-t', str(total_time), '-d', str(comm_step)]
-  cmdline += ['-p', '0,octave_output,false']
-  cmdline += ['-p', '0,filter_length,%i' % filter_length ]
-  cmdline += ['-p', '0,v_in_e,%f' % v_in ]
-  cmdline += ['-p', '0,v0_e,0.0' ]
-  cmdline += ['-p', '0,gamma_e,0.0' ]
-  cmdline += ['-p', '0,gamma_s,0.0' ]
-  cmdline += ['-p', '0,k_ec,%f' % k_coupling ]
-  cmdline += ['-p', '0,gamma_ec,%f' % ( 2.0 * zeta_coupling  * sqrt( k_coupling ))  ]
-  cmdline += ['-p', '0,gear_k,%f' % ( ( 2.0 * pi * frequency )**2 / 4.0  ) ]
-  cmdline += ['-p', '0,gear_d,%f' % (zeta * pi * frequency) ]
-  cmdline += ['-p', '0,mass_e,0.5' ]
-  cmdline += ['-p', '0,mass_s,0.5' ]
-  cmdline += ['-p', '0,gear,13' ]
-  cmdline += ['-p', '0,is_gearbox,true' ]
-  cmdline += ['-p', '0,integrate_dx_e,false'  ]
-  cmdline += ['-p', '0,integrate_dx_s,false' ]
-  cmdline += ['../../gsl2/clutch3/clutch3.fmu' ]
+  #             '/usr/local/bin/valgrind', '--tool=callgrind',
   
+  #parameters for the impulse
+  cmdline += ['-p', '0,pulse_type,4:0,pulse_start,1:0,pulse_length,5:0,pulse_amplitude,1']
+  cmdline += parameters(1, k_coupling, zeta_coupling, frequency, zeta,
+                        v_in=v_in, filter_length=filter_length, integrator=integrator, octave=octave)
+
+
+  cmdline += ['-c', '0,omega,1,v_in_e' ] 
+
+  cmdline += fmus
+
   filename = 'out-%i.csv' % filter_length 
 
   print(' '.join(cmdline) + " > " + filename, file=sys.stderr)
   return  subprocess.call(cmdline,
-                          stdout=open('out-2.csv', 'w')), cmdline
+                          stdout=open('out-%i.csv' % filter_length, 'w')), cmdline
 
 # forcing angular velocity
 
@@ -160,7 +186,7 @@ d_coupling = 2.0 * zeta_coupling * sqrt(c_coupling)
 # number of samples per period, i.e., communication step
 
 samples=10.0                    
-filter_length=2
+filter_length=0
 
 # communication step
 
@@ -173,27 +199,34 @@ NP = 4
 #Now run the FMIGo! simulation.  
 if simulate:
   ret, cmd = run_simulations(NP/frequency, 1/samples/frequency,
-                             filter_length, frequency, zeta_internal)
+                             filter_length, frequency, zeta_internal,c_coupling, zeta_coupling)
 
 ts = []
 data = []
 couplings = []
-# Data layout
-# phi1 omega1 alpha1 fc1 phi2 omega2 alpha2 fc2
-# 0     1      2      3   4    5      6      7
+# Data layout: (for clutch 2, alpha2 is number of steps between comm steps)
+# phi  omega  alpha  phi1 omega1  alpha1 fc1    phi2 omega2 alpha2 fc2
+# 0     1      2      3    4       5      6      7    8      9      10
 # load data from fmigo simulation
-for row in csv.reader(open('out-2.csv')):
+for row in csv.reader(open('out-%i.csv' % filter_length)):
   ts.append(float(row[0]))
   data.append([
     float(row[c]) for c in range( 1, len(row) )
   ])
   
+data =  array(data)
+data = data[:, 3:]              # discard pulse data
+ts   =  array(ts)
+xsim  = data[:,[0,4]]
+vsim  = data[:,[1,5]]
+fcsim = data[:,[3,7]]
 
-# full simulation data from the FMU.
+# full simulation data from the FMU written by cgsl
 # Data layout:
 # 
 #phi1 omega1 phi1 omega1 (dphi1) (dphi2) zphi1 zomega1 zphi1 zomega1 (zdphi1) (zdphi2)
-#  0     1    2     3      4        5      6      7      8      9       10       11
+#  0     1    2     3      4        5      6      7      8      9       10
+# 11
 
 alldata = []
 tt = []
@@ -264,17 +297,20 @@ for t in ts[1:]:
 
 # lists if ndarrays aren't sliceable, so convert to array
 ys = array(ys)
-zs = array(zs)
-zs2 = array(zs2)
-dphip = zs2[:,-5];
+zs = array(zs2)
+dphip = zs[:,-5];
 
 
 
-#figure(211)
+figure(1)
 clf()
-title('Velocities')
-semilogy(ts, abs(data[:,[1,5]]-zs2[:,[1,4]]), drawstyle='steps')
-#legend(['go!', 'ode'])
-legend(['w1', 'w2'] )
-
+subplot(311)
+plot(ts, xsim)
+legend(['te', 'ts'])
+subplot(312)
+plot(ts, vsim)
+legend(['ve', 'vs'])
+subplot(313)
+plot(ts, fcsim)
+legend(['fe', 'fs'])
 show()

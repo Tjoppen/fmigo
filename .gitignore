@@ -1,5 +1,6 @@
 .DS_Store
 *.asv
+*.csv
 *.m~
 *.mex*
 slprj/

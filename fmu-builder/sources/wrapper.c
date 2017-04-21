@@ -35,14 +35,9 @@ typedef struct vr{
 static vr vrs;
 
 #include "strlcpy.h"
-fmi2Real getChange(state_t *s, fmi2ValueReference vr, fmi2Real communicationStepSize){
-    fmi2Real a0,a1;
-    generated_fmi2GetReal(&s->md, &vr, 1, &a0);
-    doStep(s,s->simulation->t, communicationStepSize);
-    generated_fmi2GetReal(&s->md, &vr, 1, &a1);
-    SIMULATION_SET(s->simulation);
-    return a1 - a0;
-}
+fmi2Real getChange(state_t *s, fmi2ValueReference vr, fmi2Real communicationStepSize);
+fmi2Status SIMULATION_GET ( SIMULATION_TYPE *sim);
+fmi2Status SIMULATION_SET ( SIMULATION_TYPE *sim);
 static fmi2Real cmstpsz;
 
 void model_init(ModelInstance *comp) {
@@ -83,7 +78,7 @@ fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReference wrt,
             return generated_fmi2GetReal(&s->md,&vrs.a22,1,partial);
     }
     double dt = 1e-3 * cmstpsz;
-    SIMULATION_GET(s->simulation);
+    SIMULATION_GET(&s->simulation);
     *partial = getChange(s, wrt, dt) - getChange(s, vr, dt);
     return fmi2OK;
 }
@@ -243,4 +238,13 @@ void SIMULATION_WRAPPER(ModelInstance *comp)  {
         fprintf(stderr,"Wrapper: exit initialization mode faild\n");
         exit(1);
     }
+}
+
+fmi2Real getChange(state_t *s, fmi2ValueReference vr, fmi2Real communicationStepSize){
+    fmi2Real a0,a1;
+    generated_fmi2GetReal(&s->md, &vr, 1, &a0);
+    doStep(s, s->simulation->t, communicationStepSize, false);
+    generated_fmi2GetReal(&s->md, &vr, 1, &a1);
+    SIMULATION_SET(&s->simulation);
+    return a1 - a0;
 }

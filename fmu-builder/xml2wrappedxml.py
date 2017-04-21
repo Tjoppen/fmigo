@@ -22,7 +22,7 @@ parser.add_argument('-x','--xml',
 parser.add_argument('-i','--integrator',
                     type=int,
                     help='gsl integrator',
-                    default='2')
+                    default='4')
 args = parser.parse_args()
 
 def warning(*objs):

@@ -19,6 +19,10 @@ parser.add_argument('-x','--xml',
                     type=str,
                     help='Path to xml',
                     default='')
+parser.add_argument('-i','--integrator',
+                    type=int,
+                    help='gsl integrator',
+                    default='2')
 args = parser.parse_args()
 
 def warning(*objs):
@@ -124,6 +128,17 @@ print('''
         causality="parameter">
       <String size="%d" start="%s"/>
     </ScalarVariable>'''%(vr,len(fmudir)+1, fmudir))
+
+vr += 1
+while vr in vrs: vr += 1
+print('''
+    <ScalarVariable
+        name="integrator"
+        valueReference="%d"
+        description="gsl intergator"
+        causality="parameter">
+      <Integer start="%s"/>
+    </ScalarVariable>'''%(vr, args.integrator))
 
 outputs = root.find('ModelStructure').find('Outputs')
 print('''

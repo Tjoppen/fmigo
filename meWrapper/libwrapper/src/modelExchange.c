@@ -156,14 +156,14 @@ void init_fmu_model(fmu_model *m){
 /** prepare()
  *  Setup everything
  */
-void prepare() {
+void prepare(enum cgsl_integrator_ids integrator) {
     init_fmu_model(&m_model);
     // set up a gsl_simulation for each client
     fmu_parameters* p = get_p(&m_model);
 
     //m_sim = (cgsl_simulation *)malloc(sizeof(cgsl_simulation));
     m_sim = cgsl_init_simulation(m_model.model,
-                                 rk8pd, /* integrator: Runge-Kutta Prince Dormand pair order 7-8 */
+                                 integrator, /* integrator: Runge-Kutta Prince Dormand pair order 7-8 */
                                  1e-10,
                                  0,
                                  0,

@@ -35,10 +35,8 @@ typedef struct vr{
 static vr vrs;
 
 #include "strlcpy.h"
-fmi2Real getChange(state_t *s, fmi2ValueReference vr, fmi2Real communicationStepSize);
 fmi2Status SIMULATION_GET ( SIMULATION_TYPE *sim);
 fmi2Status SIMULATION_SET ( SIMULATION_TYPE *sim);
-static fmi2Real cmstpsz;
 
 void model_init(ModelInstance *comp) {
     FILE *fp;
@@ -77,9 +75,37 @@ fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReference wrt,
         if (wrt == vrs.tw)
             return generated_fmi2GetReal(&s->md,&vrs.a22,1,partial);
     }
-    double dt = 1e-3 * cmstpsz;
+
+    //compute d(vr)/d(wrt) = (vr1 - vr0) / (wrt1 - wrt0)
+    //since the FMU is ME we don't need to doStep() for the values of vr to update when changing wrt
+    fmi2Real dwrt, wrt0, wrt1, vr0, vr1;
+
+    //save state
     SIMULATION_GET(&s->simulation);
-    *partial = getChange(s, wrt, dt) - getChange(s, vr, dt);
+
+    generated_fmi2GetReal(&s->md, &wrt, 1, &wrt0);
+    generated_fmi2GetReal(&s->md, &vr,  1, &vr0);
+
+    //take a small step, deal with subnormals
+    //2.0^(-1022) = 2.2251e-308
+    //if we step by 1 ppm we should get around 10 decimals of precision (doubles are 16 decimals, 16-6 = 10)
+    //start kicking in a bit before the subnormal range
+    if (fabs(wrt) < 1.0e-307) {
+        //at least 1 ppm of number, or more
+        dwrt = wrt < 0 ? -1.0e-313 : 1.0e-313; //-307 - 6 = -313
+    } else {
+        dwrt = 1e-6 * wrt0;
+    }
+
+    wrt1 = wrt0 + dwrt;
+
+    generated_fmi2SetReal(&s->md, &wrt, 1, &wrt1);
+    generated_fmi2GetReal(&s->md, &vr,  1, &vr1);
+
+    //restore state
+    SIMULATION_SET(&s->simulation);
+
+    *partial = (vr1 - vr0) / dwrt;
     return fmi2OK;
 }
 
@@ -240,11 +266,3 @@ void SIMULATION_WRAPPER(ModelInstance *comp)  {
     }
 }
 
-fmi2Real getChange(state_t *s, fmi2ValueReference vr, fmi2Real communicationStepSize){
-    fmi2Real a0,a1;
-    generated_fmi2GetReal(&s->md, &vr, 1, &a0);
-    doStep(s, s->simulation->t, communicationStepSize, false);
-    generated_fmi2GetReal(&s->md, &vr, 1, &a1);
-    SIMULATION_SET(&s->simulation);
-    return a1 - a0;
-}

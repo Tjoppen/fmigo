@@ -112,8 +112,10 @@ Server::Server(string fmuPath, std::string hdf5Filename) {
     m_instanceName = fmi2_import_get_model_name(m_fmi2Instance);
 
     {
-        m_resourcePath = m_workingDir;
+        char *temp = fmi_import_create_URL_from_abs_path(&m_jmCallbacks, m_workingDir.c_str());
+        m_resourcePath = temp;
         m_resourcePath = m_resourcePath + "/resources";
+        m_jmCallbacks.free(temp);
     }
 
     /* 0 - original order as found in the XML file;

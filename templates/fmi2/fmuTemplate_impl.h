@@ -264,10 +264,6 @@ fmi2Component fmi2Instantiate(fmi2String instanceName, fmi2Type fmuType, fmi2Str
         return NULL;
     }
     strlcpy(comp->instanceName,        instanceName,        sizeof(comp->instanceName));
-    if (unescapeFileURI(comp, fmuResourceLocation, comp->fmuResourceLocation, sizeof(comp->fmuResourceLocation)) != fmi2OK) {
-        return NULL;
-    }
-    //fprintf(stderr, "unescaped %s -> %s\n", fmuResourceLocation, comp->fmuResourceLocation);
     comp->type = fmuType;
     comp->functions = functions;
     comp->componentEnvironment = functions->componentEnvironment;
@@ -277,6 +273,10 @@ fmi2Component fmi2Instantiate(fmi2String instanceName, fmi2Type fmuType, fmi2Str
 #ifdef HAVE_DEFAULTS
     comp->s.md = defaults;
 #endif
+
+    if (unescapeFileURI(comp, fmuResourceLocation, comp->fmuResourceLocation, sizeof(comp->fmuResourceLocation)) != fmi2OK) {
+        return NULL;
+    }
 
     FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2Instantiate: GUID=%s", fmuGUID)
 

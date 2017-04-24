@@ -16,8 +16,22 @@ using namespace fmitcp;
  * Callback function for FMILibrary. Logs the FMILibrary operations.
  */
 void jmCallbacksLogger(jm_callbacks* c, jm_string module, jm_log_level_enu_t log_level, jm_string message) {
-  debug("[module = %s][log level = %s] %s\n", module, jm_log_level_to_string(log_level), message);
-  fflush(NULL);
+  //no need to print loglevel twice. but keep this string around commented out in case we ever need to distinguish between verbose and info for instance
+  //const char *fmt = "[module = %s][log level = %s] %s\n";
+  //const char *log_level_str = jm_log_level_to_string(log_level);
+  const char *fmt = "[module = %s] %s\n";
+
+  switch (log_level) {
+  default:
+  case jm_log_level_all:      //all and nothing are kind of bogus loglevels
+  case jm_log_level_nothing:  break;
+  case jm_log_level_fatal:    fatal(fmt, module, message); break;
+  case jm_log_level_error:    error(fmt, module, message); break;
+  case jm_log_level_warning:  warning(fmt, module, message); break;
+  case jm_log_level_info:     //treat info and verbose the same
+  case jm_log_level_verbose:  info(fmt, module, message); break;
+  case jm_log_level_debug:    debug(fmt, module, message); break;
+  }
 }
 
 Server::Server(string fmuPath, std::string hdf5Filename) {

@@ -90,9 +90,9 @@ fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReference wrt,
     //2.0^(-1022) = 2.2251e-308
     //if we step by 1 ppm we should get around 10 decimals of precision (doubles are 16 decimals, 16-6 = 10)
     //start kicking in a bit before the subnormal range
-    if (fabs(wrt) < 1.0e-307) {
+    if (fabs(wrt0) < 1.0e-307) {
         //at least 1 ppm of number, or more
-        dwrt = wrt < 0 ? -1.0e-313 : 1.0e-313; //-307 - 6 = -313
+        dwrt = wrt0 < 0 ? -1.0e-313 : 1.0e-313; //-307 - 6 = -313
     } else {
         dwrt = 1e-6 * wrt0;
     }

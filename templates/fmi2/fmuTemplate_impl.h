@@ -157,6 +157,66 @@ fmi2Status fmi2SetDebugLogging(fmi2Component c, fmi2Boolean loggingOn, size_t nC
     return fmi2OK;
 }
 
+static int isHex(char c) {
+    return (c >= '0' && c <= '9') ||
+           (c >= 'a' && c <= 'f') ||
+           (c >= 'A' && c <= 'F');
+}
+
+static int hex2Int(char c) {
+    if (c >= '0' && c <= '9') {
+        return c - '0';
+    } else if (c >= 'a' && c <= 'f') {
+        return 10 + c - 'a';
+    } else {
+        return 10 + c - 'A';
+    }
+}
+
+static fmi2Status unescapeFileURI(ModelInstance *comp, const char *uri, char *dest, size_t n) {
+    const char *uriIn = uri;
+#ifdef WIN32
+    if (!strncmp(uri, "file:///", 8)) { // file:///C:/foo/bar -> C:/foo/bar
+        uri += 8;
+#else
+    if (!strncmp(uri, "file://",  7)) { //leave leading slash intact, so file:///foo/bar -> /foo/bar
+        uri += 7;
+#endif
+    } else {
+        FILTERED_LOG(comp, fmi2Error, LOG_ERROR, "Cannot unescape file URI %s", uri);
+        return fmi2Error;
+    }
+
+    size_t i = 0;
+    for (; i < n; i++) {
+        char c = *uri;
+        if (c == 0) {
+            break;
+        } else if (c == '%') {
+            //expect two hex characters
+            if (isHex(uri[1]) && isHex(uri[2])) {
+                char c2 = 16*hex2Int(uri[1]) + hex2Int(uri[2]);
+                dest[i] = c2;
+                uri += 3;
+            } else {
+                FILTERED_LOG(comp, fmi2Error, LOG_ERROR, "File URI contains illegal percent escape %3s (%s)", uri, uriIn);
+                return fmi2Error;
+            }
+        } else {
+            dest[i] = c;
+            uri++;
+        }
+    }
+    dest[i < n ? i : n-1] = 0;
+
+    if (i >= n) {
+        FILTERED_LOG(comp, fmi2Error, LOG_ERROR, "Not enough space to unescape file URI %s -> %s", uriIn, dest);
+        return fmi2Error;
+    }
+
+    return fmi2OK;
+}
+
 fmi2Component fmi2Instantiate(fmi2String instanceName, fmi2Type fmuType, fmi2String fmuGUID,
                             fmi2String fmuResourceLocation, const fmi2CallbackFunctions *functions,
                             fmi2Boolean visible, fmi2Boolean loggingOn) {
@@ -204,7 +264,10 @@ fmi2Component fmi2Instantiate(fmi2String instanceName, fmi2Type fmuType, fmi2Str
         return NULL;
     }
     strlcpy(comp->instanceName,        instanceName,        sizeof(comp->instanceName));
-    strlcpy(comp->fmuResourceLocation, fmuResourceLocation, sizeof(comp->fmuResourceLocation));
+    if (unescapeFileURI(comp, fmuResourceLocation, comp->fmuResourceLocation, sizeof(comp->fmuResourceLocation)) != fmi2OK) {
+        return NULL;
+    }
+    //fprintf(stderr, "unescaped %s -> %s\n", fmuResourceLocation, comp->fmuResourceLocation);
     comp->type = fmuType;
     comp->functions = functions;
     comp->componentEnvironment = functions->componentEnvironment;

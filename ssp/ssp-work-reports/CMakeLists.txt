@@ -29,8 +29,7 @@ add_custom_command(TARGET ${SSPNAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory ${ZIPDIR}/resources
     COMMAND ${COPY_SSD_COMMAND}
     COMMAND ${COPY_RESOURCES_COMMAND}
-    COMMAND ${CMAKE_COMMAND} -E chdir ${ZIPDIR}
-    COMMAND ${ZIP_COMMAND}
+    COMMAND ${CMAKE_COMMAND} -E chdir ${ZIPDIR} ${ZIP_COMMAND}
     DEPENDS ${FMUS}
 #    COMMAND ${CMAKE_COMMAND} -E remove_directory ${ZIPDIR}
     )

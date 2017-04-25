@@ -42,6 +42,10 @@ parser.add_argument('-X','--xml2wrappedxml',
                     type=str,
                     help='Location of xml2wrappedxml.py. Requires -f or -x',
                     default='')
+parser.add_argument('-p','--prefix',
+                    type=str,
+                    help='Wrapped FMU modelIdentifier prefix. -p option to xml2wrappedxml',
+                    default='wrapper_')
 
 args = parser.parse_args()
 link_libraries = args.link.split(",")
@@ -147,13 +151,14 @@ with open(path,'w') as f:
             exit(1)
 
         wrappedstuff = """
-make_xml2wrappedxml_command(%(xml2wrappedxml)s %(x_or_f)s %(srcxmlorfmu)s)
+make_xml2wrappedxml_command(%(xml2wrappedxml)s %(x_or_f)s %(srcxmlorfmu)s %(prefix)s)
 make_copy_command(COPY_FMU_COMMAND ${CMAKE_CURRENT_BINARY_DIR}/fmu/resources ${%(modelIdentifierUpper)s_FMU})
 """ % {
         'xml2wrappedxml':       dopath(args.xml2wrappedxml),
         'x_or_f':               x_or_f,
         'srcxmlorfmu':          srcxmlorfmu,
         'modelIdentifierUpper': dependentFMU.upper(),
+        'prefix':               args.prefix,
         }
     else:
         wrappedstuff = ''

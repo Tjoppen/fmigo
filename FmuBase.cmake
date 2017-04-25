@@ -38,12 +38,14 @@ macro (make_zip_command var zipfile)
   endif ()
 endmacro ()
 
-function (make_xml2wrappedxml_command xml2wrappedxml x_or_f filename)
+function (make_xml2wrappedxml_command xml2wrappedxml x_or_f filename prefix)
   add_custom_command(
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml
     COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/${xml2wrappedxml}
-         ${x_or_f} ${CMAKE_CURRENT_SOURCE_DIR}/${filename} > ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${source_xml} )
+         ${x_or_f} ${CMAKE_CURRENT_SOURCE_DIR}/${filename} -p ${prefix} > ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${filename} )
+  add_custom_target(${TARGET}_xml DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/modelDescription.xml)
+  add_dependencies(${TARGET} ${TARGET}_xml)
 endfunction ()
 
 # Make modeldescription2header call, with optional arguments (such as -w)

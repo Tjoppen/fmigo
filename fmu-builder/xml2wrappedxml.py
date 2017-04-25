@@ -23,6 +23,10 @@ parser.add_argument('-i','--integrator',
                     type=int,
                     help='gsl integrator',
                     default='4')
+parser.add_argument('-p','--prefix',
+                    type=str,
+                    help='Wrapped FMU modelIdentifier prefix',
+                    default='wrapper_')
 args = parser.parse_args()
 
 def warning(*objs):
@@ -82,9 +86,9 @@ print('''<?xml version="1.0" encoding="UTF-8"?>
   <DefaultExperiment startTime="0" stopTime="10" stepSize="0.1"/>
 '''%(root.get('fmiVersion'),
      root.get('description'),
-     "wrapper_" + modelName,
+     args.prefix + modelName,
      uuid.uuid4(),
-     "wrapper_"+ modelName,
+     args.prefix + modelName,
 
 ))
 SV = root.find('ModelVariables').findall('ScalarVariable')

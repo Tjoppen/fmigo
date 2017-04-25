@@ -32,7 +32,7 @@ TARGET_LINK_LIBRARIES( ${TARGET} ${LIBS} )
 # See umit-fmus/FmuBase.CMake for what these macros actually do
 make_md2hdr_command(../../fmu-builder/modeldescription2header.py -w )
 
-make_xml2wrappedxml_command(../../fmu-builder/xml2wrappedxml.py ../../me/springs/modelDescription.xml)
+make_xml2wrappedxml_command(../../fmu-builder/xml2wrappedxml.py -x ../../me/springs/modelDescription.xml)
 make_copy_command(COPY_FMU_COMMAND ${CMAKE_CURRENT_BINARY_DIR}/fmu/resources ${SPRINGS_FMU})
 
 

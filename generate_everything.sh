@@ -94,6 +94,6 @@ do
         mkdir -p sources
         python ${XML2WRAPPEDXML} -x ${SRCXML} > ${DSTXML}
         python ${MD2HDR} -w ${DSTXML} > sources/modelDescription.h
-        python ${CMAKE_GENERATOR} ${GSL} -t ${WRAPPERSOURCES} -s ${SRCXML} -x ${XML2WRAPPEDXML}
+        python ${CMAKE_GENERATOR} ${GSL} -t ${WRAPPERSOURCES} -x ${SRCXML} -X ${XML2WRAPPEDXML}
     popd
 done

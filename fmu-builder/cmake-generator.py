@@ -32,12 +32,15 @@ parser.add_argument('-c','--console',
                     action='store_true',
                     default=False,
                     help='Generate CONSOLE target')
-parser.add_argument('-s','--srcxml',
+parser.add_argument('-x','--srcxml',
                     default='',
-                    help='Source XML for this FMUs modelDescription.xml, for wrapping')
-parser.add_argument('-x','--xml2wrappedxml',
+                    help='Source XML for this FMUs modelDescription.xml, for wrapping. Mutually exclusive with -f')
+parser.add_argument('-f','--srcfmu',
+                    default='',
+                    help='Source FMU for this FMUs modelDescription.xml, for wrapping. Mutually exclusive with -x')
+parser.add_argument('-X','--xml2wrappedxml',
                     type=str,
-                    help='Location of xml2wrappedxml.py',
+                    help='Location of xml2wrappedxml.py. Requires -f or -x',
                     default='')
 
 args = parser.parse_args()
@@ -50,6 +53,10 @@ include_directories = args.includedir.split(',')
 # For logging errors and messages
 def log(m):
     print( "%s: %s" % (sys.argv[0],m) )
+
+if len(args.srcfmu) > 0 and len(arg.srcxml) > 0:
+    log('Must specify -x or -f, not both')
+    exit(1)
 
 # Parse xml file
 tree = e.parse('modelDescription.xml')
@@ -128,12 +135,24 @@ with open(path,'w') as f:
         dependentFMU = modelIdentifier.split('_')
         dependentFMU.pop(0)
         dependentFMU = '_'.join(dependentFMU)
+
+        if len(args.srcfmu) > 0:
+            x_or_f = '-f'
+            srcxmlorfmu = dopath(args.srcfmu)
+        elif len(args.srcxml) > 0:
+            x_or_f = '-x'
+            srcxmlorfmu = dopath(args.srcxml)
+        else:
+            log('-X requires -f or -x')
+            exit(1)
+
         wrappedstuff = """
-make_xml2wrappedxml_command(%(xml2wrappedxml)s %(srcxml)s)
+make_xml2wrappedxml_command(%(xml2wrappedxml)s %(x_or_f)s %(srcxmlorfmu)s)
 make_copy_command(COPY_FMU_COMMAND ${CMAKE_CURRENT_BINARY_DIR}/fmu/resources ${%(modelIdentifierUpper)s_FMU})
 """ % {
         'xml2wrappedxml':       dopath(args.xml2wrappedxml),
-        'srcxml':               dopath(args.srcxml),
+        'x_or_f':               x_or_f,
+        'srcxmlorfmu':          srcxmlorfmu,
         'modelIdentifierUpper': dependentFMU.upper(),
         }
     else:

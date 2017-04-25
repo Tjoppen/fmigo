@@ -54,7 +54,7 @@ include_directories = args.includedir.split(',')
 def log(m):
     print( "%s: %s" % (sys.argv[0],m) )
 
-if len(args.srcfmu) > 0 and len(arg.srcxml) > 0:
+if len(args.srcfmu) > 0 and len(args.srcxml) > 0:
     log('Must specify -x or -f, not both')
     exit(1)
 

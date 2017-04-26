@@ -123,6 +123,149 @@ function(copy_recursive TARGET BUILD_STEP distant dst)
     endforeach(Filename)
 endfunction()
 
+
+function (add_fmu_internal dir target extra_srcs defs libs extra_includes console md2hdr_option xmldeps extra_resources)
+  set(${target}_fmu     ${CMAKE_CURRENT_SOURCE_DIR}/${dir}/${target}.fmu CACHE INTERNAL "" FORCE)
+  set(${target}_dir     ${CMAKE_CURRENT_SOURCE_DIR}/${dir}               CACHE INTERNAL "" FORCE)
+  set(${target}_packdir ${CMAKE_CURRENT_BINARY_DIR}/${target}/fmu        CACHE INTERNAL "" FORCE)
+
+  file(GLOB fmu_sources ${${target}_dir}/sources/*)
+  set(binaries_dir ${CMAKE_CURRENT_BINARY_DIR}/${target}/binaries)
+
+  set(srcs
+    templates/fmi2/fmuTemplate.h
+    templates/fmi2/fmuTemplate_impl.h
+    templates/fmi2/strlcpy.h
+    ${fmu_sources}
+    ${extra_srcs}
+  )
+
+  set(includes
+    templates/fmi2
+    ${${target}_dir}/sources
+    ${extra_includes}
+  )
+
+  add_definitions(${defs})
+  add_library(${target} SHARED
+    ${srcs}
+  )
+  set_source_files_properties(${${target}_dir}/sources/modelDescription.h PROPERTIES GENERATED TRUE) # see further down
+  target_include_directories(${target} PUBLIC ${includes})
+  set_target_properties(${target} PROPERTIES PREFIX "")
+  set_target_properties(${target} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${binaries_dir}/linux64")
+  target_link_libraries(${target} ${libs})
+  if (UNIX)
+    target_link_libraries(${target} m)
+  endif ()
+
+  if (${console})
+    add_executable(${target}_c ${srcs})
+    target_include_directories(${target}_c PUBLIC ${includes})
+    set_target_properties(${target}_c PROPERTIES COMPILE_DEFINITIONS CONSOLE)
+    target_link_libraries( ${target}_c ${libs} )
+    if (UNIX)
+      target_link_libraries(${target}_c m)
+    endif ()
+  endif ()
+
+  add_custom_command(
+    OUTPUT ${${target}_dir}/sources/modelDescription.h
+    COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/fmu-builder/modeldescription2header.py ${md2hdr_option}
+      ${${target}_dir}/modelDescription.xml >
+      ${${target}_dir}/sources/modelDescription.h
+    DEPENDS ${${target}_dir}/modelDescription.xml ${xmldeps})
+  add_custom_target(${target}_md DEPENDS ${${target}_dir}/sources/modelDescription.h)
+  add_dependencies(${target} ${target}_md)
+
+  set(ZIP_ARGS modelDescription.xml binaries sources resources)
+  if (CMAKE_VERSION VERSION_LESS "3.5.0")
+    set(ZIP_COMMAND zip -r ${${target}_fmu} ${ZIP_ARGS})
+  else ()
+    set(ZIP_COMMAND ${CMAKE_COMMAND} -E tar cf ${${target}_fmu} --format=zip ${ZIP_ARGS})
+  endif ()
+
+  add_custom_command(TARGET ${target} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${${target}_packdir}/sources
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${${target}_packdir}/resources
+    )
+
+  if (WIN32)
+    add_custom_command(TARGET ${target} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${${target}_packdir}/binaries/win32
+        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/${target}.dll ${${target}_packdir}/binaries/win32/
+    )
+  else ()
+    add_custom_command(TARGET ${target} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${binaries_dir} ${${target}_packdir}/binaries
+    )
+  endif ()
+
+  if (IS_DIRECTORY ${${target}_dir}/resources)
+    copy_recursive(${target} POST_BUILD ${${target}_dir}/resources ${${target}_packdir}/resources/)
+  endif ()
+
+  if (NOT "${extra_resources}" STREQUAL "")
+    add_custom_command(TARGET ${target} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy ${extra_resources} ${${target}_packdir}/resources
+    )
+  endif ()
+
+  add_custom_command(TARGET ${target} POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy ${${target}_dir}/modelDescription.xml ${${target}_packdir}
+  )
+
+  add_custom_command(OUTPUT ${${target}_fmu}
+      COMMAND ${CMAKE_COMMAND} -E echo Packing ${target}.fmu
+      COMMAND ${CMAKE_COMMAND} -E remove -f ${${target}_fmu}
+      COMMAND ${CMAKE_COMMAND} -E chdir ${${target}_packdir} ${ZIP_COMMAND}
+      DEPENDS ${target}
+  )
+  add_custom_target(${target}_fmu_target ALL DEPENDS ${${target}_fmu})
+endfunction ()
+
+
+function (add_fmu dir target extra_srcs defs libs console)
+  add_fmu_internal("${dir}" "${target}" "${extra_srcs}" "${defs}" "${libs}" "" "${console}" "" "" "")
+endfunction ()
+
+
+function (add_wrapped dir sourcetarget)
+  set(prefix wrapper_)
+  set(target ${prefix}${sourcetarget})
+
+  set(srcxml ${${sourcetarget}_dir}/modelDescription.xml)
+  set(dstxml ${CMAKE_CURRENT_SOURCE_DIR}/${dir}/modelDescription.xml)
+
+  add_custom_command(
+    OUTPUT ${dstxml}
+    COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/fmu-builder/xml2wrappedxml.py
+         -x ${srcxml} -p ${prefix} > ${dstxml}
+    DEPENDS ${srcxml})
+  add_custom_target(${target}_xml DEPENDS ${dstxml})
+
+  add_fmu_internal("${dir}" "${target}" "fmu-builder/sources/wrapper.c" "" "cgsl;wrapperlib;fmilib" "fmu-builder/sources" FALSE "-w" "${target}_xml" "${${sourcetarget}_fmu}")
+endfunction ()
+
+
+function (add_wrapped_fmu dir sourcetarget sourcefmu)
+  set(prefix wrapperfmu_)
+  set(target ${prefix}${sourcetarget})
+
+  set(dstxml ${CMAKE_CURRENT_SOURCE_DIR}/${dir}/modelDescription.xml)
+
+  add_custom_command(
+    OUTPUT ${dstxml}
+    COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/fmu-builder/xml2wrappedxml.py
+         -f ${sourcefmu} -p ${prefix} > ${dstxml}
+    DEPENDS ${sourcefmu} ${sourcetarget}_fmu_target)
+  add_custom_target(${target}_xml DEPENDS ${dstxml})
+
+  add_fmu_internal("${dir}" "${target}" "fmu-builder/sources/wrapper.c" "" "cgsl;wrapperlib;fmilib" "fmu-builder/sources" FALSE "-w" "${target}_xml" "${${sourcetarget}_fmu}")
+endfunction ()
+
+
+
 if (WIN32)
     link_directories(${CMAKE_CURRENT_SOURCE_DIR}/wingsl/lib)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/wingsl/include)

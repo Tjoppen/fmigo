@@ -2,36 +2,54 @@
 cmake_minimum_required(VERSION 2.8)
 include(FmuBase.cmake)
 
-add_subdirectory(gsl2/clutch2)
-add_subdirectory(gsl2/clutch3)
-add_subdirectory(gsl2/chained_sho)
-add_subdirectory(gsl2/exp)
-add_subdirectory(gsl2/clutch_ef)
-add_subdirectory(gsl2/clutch)
-add_subdirectory(gsl2/coupled_sho)
-add_subdirectory(gsl2/mass_force)
-add_subdirectory(gsl2/mass_force_fe)
-add_subdirectory(gsl2/trailer)
-add_subdirectory(gsl2/engine2)
-add_subdirectory(impulse)
-add_subdirectory(lumpedrod)
-add_subdirectory(kinematictruck/body)
-add_subdirectory(kinematictruck/engine)
-add_subdirectory(kinematictruck/gearbox2)
-add_subdirectory(kinematictruck/kinclutch)
-add_subdirectory(forcevelocitytruck/fvbody)
-add_subdirectory(forcevelocitytruck/gearbox)
-add_subdirectory(testfmus/typeconvtest)
-add_subdirectory(testfmus/loopsolvetest/add)
-add_subdirectory(testfmus/loopsolvetest/sub)
-add_subdirectory(testfmus/loopsolvetest/mul)
-add_subdirectory(testfmus/stringtest)
-add_subdirectory(me/springs)
-add_subdirectory(me/springs2)
-add_subdirectory(me/bouncingBall)
-add_subdirectory(me/bouncingBallWithSpring)
-add_subdirectory(me/fixedPoint)
-add_subdirectory(meWrapper/bouncingBall)
-add_subdirectory(meWrapper/springs)
-add_subdirectory(meWrapper/springs2)
-add_subdirectory(meWrapperFmu/bouncingBall)
+# GSL Co-Simulation FMUs
+add_fmu(gsl2/clutch2                    clutch2                         "" "" "cgsl" TRUE)
+add_fmu(gsl2/clutch3                    clutch3                         "" "" "cgsl" TRUE)
+add_fmu(gsl2/chained_sho                chained_sho                     "" "" "cgsl" TRUE)
+add_fmu(gsl2/exp                        exp                             "" "" "cgsl" TRUE)
+add_fmu(gsl2/clutch_ef                  clutch_ef                       "" "" "cgsl" TRUE)
+add_fmu(gsl2/clutch                     clutch                          "" "" "cgsl" TRUE)
+add_fmu(gsl2/coupled_sho                coupled_sho                     "" "" "cgsl" TRUE)
+add_fmu(gsl2/mass_force                 mass_force                      "" "" "cgsl" TRUE)
+add_fmu(gsl2/mass_force_fe              mass_force_fe                   "" "" "cgsl" TRUE)
+add_fmu(gsl2/trailer                    trailer                         "" "" "cgsl" TRUE)
+add_fmu(gsl2/engine2                    engine2                         "" "" "cgsl" TRUE)
+
+# Non-GSL Co-Simulation FMUs (internal verlet integrator typically)
+add_fmu(impulse                         impulse                         "" "" "" FALSE)
+add_fmu(lumpedrod                       lumpedrod                       "" "" "" FALSE)
+add_fmu(kinematictruck/body             body                            "" "" "" FALSE)
+add_fmu(kinematictruck/engine           engine                          "" "" "" FALSE)
+add_fmu(kinematictruck/gearbox2         gearbox2                        "" "" "" FALSE)
+add_fmu(kinematictruck/kinclutch        kinclutch                       "" "" "" FALSE)
+add_fmu(forcevelocitytruck/fvbody       fvbody                          "" "" "" FALSE)
+add_fmu(forcevelocitytruck/gearbox      gearbox                         "" "" "" FALSE)
+add_fmu(testfmus/typeconvtest           typeconvtest                    "" "" "" FALSE)
+add_fmu(testfmus/loopsolvetest/add      add                             "" "" "" FALSE)
+add_fmu(testfmus/loopsolvetest/sub      sub                             "" "" "" FALSE)
+add_fmu(testfmus/loopsolvetest/mul      mul                             "" "" "" FALSE)
+add_fmu(testfmus/stringtest             stringtest                      "" "" "" FALSE)
+
+# Model-Exchange FMUs
+add_fmu(me/springs                      springs                         "" "" "" FALSE)
+add_fmu(me/springs2                     springs2                        "" "" "" FALSE)
+add_fmu(me/bouncingBall                 bouncingBall                    "" "" "" FALSE)
+add_fmu(me/bouncingBallWithSpring       bouncingBallWithSprings         "" "" "" FALSE)
+add_fmu(me/fixedPoint                   fixedPoint                      "" "" "" FALSE)
+
+# Wrap Model-Exchange FMUs into Co-Simulation FMUs using GSL for integrating
+# The ME FMUs are taken as-is and put into resources/ in the outer FMU
+# The modelDescription file is found in one of two ways:
+#
+# - on disc, uncompressed (plain XML file)
+# - from inside the source FMU
+
+# These generate the modelDescription from XML
+add_wrapped(meWrapper/bouncingBall              bouncingBall)
+add_wrapped(meWrapper/springs                   springs)
+add_wrapped(meWrapper/springs2                  springs2)
+
+# These generate the modelDescription from the source FMU
+add_wrapped_fmu(meWrapperFmu/bouncingBall       bouncingBall    ${bouncingBall_fmu})
+add_wrapped_fmu(meWrapperFmu/springs2           springs2        ${springs2_fmu})
+

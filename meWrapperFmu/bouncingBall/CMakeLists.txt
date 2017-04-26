@@ -2,8 +2,8 @@
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 SET(ARCH "linux64" CACHE STRING "Architecture: linux64, linux32, win32...")
-SET(TARGET wrapper_springs)
-SET(WRAPPER_SPRINGS_FMU ${CMAKE_CURRENT_SOURCE_DIR}/${TARGET}.fmu CACHE INTERNAL "" FORCE)
+SET(TARGET wrappedfmu_bouncingBall)
+SET(WRAPPEDFMU_BOUNCINGBALL_FMU ${CMAKE_CURRENT_SOURCE_DIR}/${TARGET}.fmu CACHE INTERNAL "" FORCE)
 SET(SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/../../fmu-builder/sources/wrapper.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../../templates/fmi2/fmuTemplate.h
@@ -32,10 +32,10 @@ TARGET_LINK_LIBRARIES( ${TARGET} ${LIBS} )
 # See umit-fmus/FmuBase.CMake for what these macros actually do
 make_md2hdr_command(../../fmu-builder/modeldescription2header.py -w )
 
-make_xml2wrappedxml_command(../../fmu-builder/xml2wrappedxml.py -x ../../me/springs/modelDescription.xml wrapper_)
-make_copy_command(COPY_FMU_COMMAND ${CMAKE_CURRENT_BINARY_DIR}/fmu/resources ${SPRINGS_FMU})
+make_xml2wrappedxml_command(../../fmu-builder/xml2wrappedxml.py -f ../../me/bouncingBall/bouncingBall.fmu wrappedfmu_)
+make_copy_command(COPY_FMU_COMMAND ${CMAKE_CURRENT_BINARY_DIR}/fmu/resources ${BOUNCINGBALL_FMU})
 
 
-make_zip_command (ZIP_COMMAND  ${WRAPPER_SPRINGS_FMU} modelDescription.xml binaries sources resources)
+make_zip_command (ZIP_COMMAND  ${WRAPPEDFMU_BOUNCINGBALL_FMU} modelDescription.xml binaries sources resources)
 make_copy_command(COPY_COMMAND ${CMAKE_CURRENT_BINARY_DIR}/fmu/sources ${SRCS})
 make_fmu_pack_command()

@@ -162,10 +162,12 @@ int clutch (double t, const double x[], double dxdt[], void * params){
  
  
 /** angle difference */
-  if ( s->md.integrate_dx_e )
+  if ( s->md.integrate_dx_e ) { 
     dxdt[ 4 ]        = x[ 1 ] - s->md.v_in_e;
-  if ( s->md.integrate_dx_s )
+  }
+  if ( s->md.integrate_dx_s ){ 
     dxdt[ dx_s_idx ] = x[ 3 ] - s->md.v_in_s;
+  }
 
   return GSL_SUCCESS;
 
@@ -340,13 +342,13 @@ static void get_initial_states(state_t *s, double *initials) {
   if (N >= 6) {
     initials[5] = s->md.dx0_s;
   }
-
 }
 
 static int sync_out(int n, const double outputs[], void * params) {
 
   state_t *s = params;
   double dxdt[6];
+  int x;
 
 //compute accelerations. we need them for Server::computeNumericalJacobian()
   clutch(0, outputs, dxdt, params);
@@ -359,7 +361,6 @@ static int sync_out(int n, const double outputs[], void * params) {
   s->md.a_s = dxdt[ 2 ];
   s->md.n_steps = s->simulation.sim.iterations;
   compute_forces(s, outputs, &s->md.force_e, &s->md.force_s, NULL);
-
 
   return GSL_SUCCESS;
 }
@@ -421,6 +422,32 @@ static int pre_step (double t, double dt, const double y[], void * params){
 #define NEW_DOSTEP //to get noSetFMUStatePriorToCurrentPoint
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
 
+#if 0 
+  /*
+    HACKHACK: there's no real support for get/state state in the fmi
+    interface at this time so this is a simple one. 
+
+    We save the current state if we are told that we might come back. 
+
+    Or we restore if the current time is ahead of that in the simulation. 
+
+  */
+  if (  ! noSetFMUStatePriorToCurrentPoint ){
+    
+    /* don't replace the saved state with a state that's ahead of global
+     * time.  
+     */
+    if ( s->simulation.sim.t <= currentCommunicationPoint ){ 
+      if ( s->simulation.sim.model->get_state) 
+	s->simulation.sim.model->get_state( s->simulation.sim.model );
+    }
+  }
+  if ( noSetFMUStatePriorToCurrentPoint && s->simulation.sim.t > currentCommunicationPoint ){
+    if ( s->simulation.sim.model->set_state) {
+      s->simulation.sim.model->set_state( s->simulation.sim.model );
+    }
+  }
+#endif
   if (s->md.is_gearbox && s->md.gear != s->simulation.last_gear) {
     /** gear changed - compute impact that keeps things sane */
     double ratio = gear2ratio(s);
@@ -442,7 +469,6 @@ static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real comm
   s->simulation.sim.print = noSetFMUStatePriorToCurrentPoint;
   cgsl_step_to( &s->simulation, currentCommunicationPoint, communicationStepSize );
 
-  //fprintf(stderr, "Iterations = %d\n", s->md.n_steps);
   s->simulation.last_gear = s->md.gear;
 }
 

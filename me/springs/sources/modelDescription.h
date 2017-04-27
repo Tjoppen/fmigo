@@ -83,8 +83,8 @@ static const modelDescription_t defaults = {
 #define HAVE_GENERATED_GETTERS_SETTERS  //for letting the template know that we have our own getters and setters
 
 
-#define STATES { VR_V1, VR_X0, VR_X1, VR_V0 }
-#define DERIVATIVES { VR_DV1, VR_DX0, VR_DX1, VR_DV0 }
+#define STATES { VR_X0, VR_X1, VR_V0, VR_V1 }
+#define DERIVATIVES { VR_DX0, VR_DX1, VR_DV0, VR_DV1 }
 
 static void update_all(modelDescription_t *md);
 

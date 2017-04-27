@@ -958,15 +958,22 @@ def get_fmu_server(fmu_path, executable):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-        description='%s: Launch an SSP with either MPI or TCP' %sys.argv[0],
+        description='%s: Launch an SSP with either MPI (default) or TCP (see -p)' %sys.argv[0],
         )
     parser.add_argument('-d','--dry-run',
                         help='Run without starting the simulation',
                         action='store_true')
     parser.add_argument('-p','--ports', metavar="PORT",
-                        help='If set, run over TCP with the specified ports. If not set, use MPI (default). Use another argument or -- to separate from SSP name',
-                        default=[],
-                        nargs='+',
+                        help='''
+                        If set, run over TCP.
+                        If zero PORTs are given (ssp-launcher.py -p -- example.ssp) then the program will try to automatically look for available TCP ports to use.
+                        If specifc ports are required then the program should be given as many PORTs are there are FMUs (ssp-launcher.py -p 1024 1024 -- twofmus.ssp).
+                        Giving any other number of ports is considered an error.
+                        If not set, use MPI (default).
+                        Use another argument or -- to separate from SSP name
+                        ''',
+                        default=None,
+                        nargs='*',
                         type=int)
     parser.add_argument('ssp', metavar='ssp-filename',
                         help='SSP file to be launched')
@@ -978,35 +985,53 @@ if __name__ == '__main__':
 
     parse = parser.parse_args()
 
-
     flatconns, flatparams, kinematicconns, csvs, unzipped_ssp, d, timestep, duration = parse_ssp(parse.ssp, False)
 
-    #If we are working with TCP, create tcp://localhost:port for all given local hosts
-    if len(parse.ports):
-
-        if len(fmus) > len(parse.ports):
-            eprint('Error: Not given one port for each FMU, expected %d' %len(fmus))
-            exit(1)
-        elif len(fmus) < len(parse.ports):
-            eprint('Error: Given too many ports, expected %d' %len(fmus))
-            exit(1)
+    # If we are working with TCP, create tcp://localhost:port for all given local hosts
+    # If no ports are given then try to find some free TCP ports
+    if parse.ports != None:
+        ports = []
+        tcpIPport = []
 
         #list all tcp ports that are not available
         tcpportsinuse = []
         for con in psutil.net_connections():
             tcpportsinuse.append(con.laddr[1])
 
-        tcpIPport = []
-        for i in range(len(fmus)):
-            if parse.ports[i] in tcpportsinuse:
-                eprint('%s: port %d already in use' %(sys.argv[0], parse.ports[i]))
+        if len(parse.ports) == 0:
+            # Start at 1024
+            port = 1024
+            while port < 65536 and len(ports) < len(fmus):
+                if not port in tcpportsinuse:
+                    ports.append(port)
+                port += 1
+
+            eprint('Automatically picked TCP ports ' + ', '.join([str(port) for port in ports]))
+
+            if port >= 65536:
+                eprint('Not enough available TCP ports!')
                 exit(1)
-            tcpIPport.append("tcp://localhost:" + str(parse.ports[i]))
+        else:
+            if len(fmus) > len(parse.ports):
+                eprint('Error: Not given one port for each FMU, expected %d' %len(fmus))
+                exit(1)
+            elif len(fmus) < len(parse.ports):
+                eprint('Error: Given too many ports, expected %d' %len(fmus))
+                exit(1)
+
+            ports = parse.ports
+            for i in range(len(fmus)):
+                if parse.ports[i] in tcpportsinuse:
+                    eprint('%s: port %d already in use' %(sys.argv[0], parse.ports[i]))
+                    exit(1)
+
+        for port in ports:
+            tcpIPport.append("tcp://localhost:" + str(port))
 
         # Everything looks OK; start servers
         for i in range(len(fmus)):
             fmigo_server = get_fmu_server(fmus[i].relpath(d), 'fmigo-server')
-            subprocess.Popen([fmigo_server,'-p', str(parse.ports[i]), fmus[i].relpath(d)])
+            subprocess.Popen([fmigo_server,'-p', str(ports[i]), fmus[i].relpath(d)])
 
         #read connections and parameters from stdin, since they can be quite many
         #stdin because we want to avoid leaving useless files on the filesystem

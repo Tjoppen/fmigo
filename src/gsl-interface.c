@@ -184,7 +184,6 @@ void cgsl_model_default_free(cgsl_model *model) {
 }
 
 static void cgsl_model_default_get_state(cgsl_model *model) {
-  fprintf(stderr, "Getting states\n");
   memcpy(model->x_backup, model->x, model->n_variables * sizeof(model->x[0]));
 }
 

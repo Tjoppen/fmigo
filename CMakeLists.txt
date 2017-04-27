@@ -10,7 +10,7 @@ add_library(cgsl
 set_property(TARGET cgsl PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 target_include_directories (cgsl PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_link_libraries (cgsl LINK_PUBLIC gsl gslcblas )
+target_link_libraries (cgsl LINK_PUBLIC gsl gslcblas m)
 
 add_subdirectory(demo)
 

@@ -11,6 +11,7 @@ install(FILES
 if (USE_GPL AND BUILD_FMUS)
   add_subdirectory(ssp-test)
   add_subdirectory(ssp-work-reports)
+  add_subdirectory(ssp-kinematic-example)
 
   # Run each test over both MPI and TCP
   foreach (p FALSE TRUE)
@@ -24,7 +25,9 @@ if (USE_GPL AND BUILD_FMUS)
 
     add_test(ssp-test${suffix}                  python ${CMAKE_CURRENT_SOURCE_DIR}/ssp-launcher.py ${option} -- ${SPRINGCHAINSYSTEM_SSP})
     add_test(ssp-work-reports${suffix}          python ${CMAKE_CURRENT_SOURCE_DIR}/ssp-launcher.py ${option} -- ${WORKREPORTHOLONOMIC_SSP})
+    add_test(ssp-kinematic-example${suffix}     python ${CMAKE_CURRENT_SOURCE_DIR}/ssp-launcher.py ${option} -- ${KINEMATICEXAMPLE_SSP})
     add_test(ssp-test-unzipped${suffix}         python ${CMAKE_CURRENT_SOURCE_DIR}/ssp-launcher.py ${option} -- ${SPRINGCHAINSYSTEM_DIR}/SystemStructure.ssd)
     add_test(ssp-work-reports-unzipped${suffix} python ${CMAKE_CURRENT_SOURCE_DIR}/ssp-launcher.py ${option} -- ${WORKREPORTHOLONOMIC_DIR}/SystemStructure.ssd)
+    add_test(ssp-kinematic-example${suffix}     python ${CMAKE_CURRENT_SOURCE_DIR}/ssp-launcher.py ${option} -- ${KINEMATICEXAMPLE_DIR}/SystemStructure.ssd)
   endforeach ()
 endif ()

@@ -26,9 +26,11 @@ FmigoStorage::~FmigoStorage()
 
 FmigoStorage::FmigoStorage()
 {
+	vector<size_t> v1;
+	vector<size_t> v2;
     //allocate_storage(vector<size_t>({}),get_current_states());
     //allocate_storage_states(vector<size_t>({}),get_current_states());
-    allocate_storage(vector<size_t>({}),vector<size_t>({}));
+    allocate_storage(v1,v2);
 }
 FmigoStorage::FmigoStorage(const vector<size_t> &number_of_states,const vector<size_t> &number_of_indicators)
 {

@@ -8,7 +8,7 @@ install(FILES
 
 # I'm not sure why these don't build with GPL disabled, but this
 # seems to be the case with 64-bit builds on MSVC12 at least
-if (USE_GPL)
+if (USE_GPL AND BUILD_FMUS)
   add_subdirectory(ssp-test)
   add_subdirectory(ssp-work-reports)
 

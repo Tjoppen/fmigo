@@ -175,6 +175,35 @@ function (add_wrapped_fmu dir sourcetarget sourcefmu)
   add_fmu_internal("${dir}" "${target}" "fmu-builder/sources/wrapper.c" "" "cgsl;wrapperlib;fmilib" "fmu-builder/sources" FALSE "-w" "${target}_xml" "${${sourcetarget}_fmu}")
 endfunction ()
 
+# wrap_existing_fmu
+# Wraps an existing FMU that does not have a target that generates it. Arguments:
+#
+# modelIdentifier: modelIdentifier of the wrapped FMU. Becomes the base name of outer FMU, its modelIdentifier = wrapperfmu_${modelIdentifier}
+#       sourcefmu: Full input FMU filename, for instance "${CMAKE_CURRENT_SOURCE_DIR}/me/foo/foo.fmu"
+#             dir: Output directory. Currently inside ${CMAKE_CURRENT_SOURCE_DIR}.
+#                  Currently required, will be removed in the future, placing all FMUs in ${CMAKE_CURRENT_BINARY_DIR}
+#
+# Example usage:
+#
+#  wrap_existing_fmu(springs    ${CMAKE_CURRENT_SOURCE_DIR}/me/springs/springs.fmu  meWrapperFmu/springs)
+#
+function (wrap_existing_fmu modelIdentifier sourcefmu dir)
+  set(prefix wrapperfmu_)
+  set(target ${prefix}${modelIdentifier})
+
+  set(dstxml ${CMAKE_CURRENT_SOURCE_DIR}/${dir}/modelDescription.xml)
+
+  add_custom_command(
+    OUTPUT ${dstxml}
+    COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/fmu-builder/xml2wrappedxml.py
+         -f ${sourcefmu} -p ${prefix} > ${dstxml}
+    DEPENDS ${sourcefmu})
+  add_custom_target(${target}_xml DEPENDS ${dstxml})
+
+  #function (add_fmu_internal dir target extra_srcs defs libs extra_includes console md2hdr_option xmldeps extra_resources)
+  add_fmu_internal("${dir}" "${target}" "fmu-builder/sources/wrapper.c" "" "cgsl;wrapperlib;fmilib" "fmu-builder/sources" FALSE "-w" "${target}_xml" "${sourcefmu}")
+endfunction ()
+
 
 
 if (WIN32)

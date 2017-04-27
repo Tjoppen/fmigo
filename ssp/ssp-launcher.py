@@ -987,6 +987,9 @@ if __name__ == '__main__':
 
     flatconns, flatparams, kinematicconns, csvs, unzipped_ssp, d, timestep, duration = parse_ssp(parse.ssp, False)
 
+    cwd = os.getcwd()
+    os.chdir(d)
+
     # If we are working with TCP, create tcp://localhost:port for all given local hosts
     # If no ports are given then try to find some free TCP ports
     if parse.ports != None:
@@ -1030,7 +1033,7 @@ if __name__ == '__main__':
 
         # Everything looks OK; start servers
         for i in range(len(fmus)):
-            fmigo_server = get_fmu_server(fmus[i].relpath(d), 'fmigo-server')
+            fmigo_server = get_fmu_server(fmus[i].path, 'fmigo-server')
             subprocess.Popen([fmigo_server,'-p', str(ports[i]), fmus[i].relpath(d)])
 
         #read connections and parameters from stdin, since they can be quite many
@@ -1060,15 +1063,12 @@ if __name__ == '__main__':
     if parse.dry_run:
         ret = 0
     else:
-        cwd = os.getcwd()
-        os.chdir(d)
-
         #pipe arguments to master, leave stdout and stderr alone
         p = subprocess.Popen(args, stdin=subprocess.PIPE)
         p.communicate(input=pipeinput.encode('utf-8'))
         ret = p.returncode  #ret can be None
 
-        os.chdir(cwd)
+    os.chdir(cwd)
 
     if ret == 0:
         if unzipped_ssp:

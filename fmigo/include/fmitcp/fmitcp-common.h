@@ -14,30 +14,19 @@
 
 using namespace std;
 namespace fmitcp {
-
-  /*!
-   * Converts the type e.g int, double etc. to string.
-   */
-  template <typename T>
-  string typeToString(T type) {
-    ostringstream ss;
-    ss << type;
-    return ss.str();
-  }
-
   /*!
    * Makes a comma separated string of an array. The array could be if type int, double etc.
    */
   template <typename TArray>
-  string arrayToString(std::vector<TArray> arr, int size) {
-    string res;
-    res.append("{");
-    for (int i = 0 ; i < size ; i++) {
-      if (i != 0) res.append(",");
-      res.append(typeToString(arr[i]));
+  string arrayToString(std::vector<TArray>& arr) {
+    ostringstream res;
+    res << "{";
+    for (size_t i = 0 ; i < arr.size() ; i++) {
+      if (i != 0) res << ",";
+      res << arr[i];
     }
-    res.append("}");
-    return res;
+    res << "}";
+    return res.str();
   }
 
   fmitcp_proto::jm_status_enu_t fmiJMStatusToProtoJMStatus(jm_status_enu_t status);

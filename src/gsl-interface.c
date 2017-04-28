@@ -439,9 +439,11 @@ static int cgsl_epce_model_post_step (double t, double dt, const double y[], voi
     if (p->filter_length == 2) {
       //y = (z + z_prev) / 2.0 / dt )   : time step accounted for already
       //TODO: circular buffer
+      double * z =  y + p->model->n_variables;
+      for (x=0; x < p->filter->n_variables; ++ x ){
+	p->filtered_outputs[ x ] = 0.5 * ( p->z_prev[ x ] + z[ x ] );
+      }
       // this will use the filtered variables to generate the ouputs. 
-      //p->epce_post_step(t, y, p->epce_post_step_params);
-      
       p->epce_post_step(p->filter->n_variables, p->filtered_outputs,       p->epce_post_step_params);
 
     } else if (p->filter_length == 1) {

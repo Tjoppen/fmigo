@@ -12,6 +12,10 @@ typedef struct {
   int last_gear;      /** for detecting when the gear changes */
   double delta_phi;   /** angle difference at gear change, for preventing
                        *  "springing" when changing gears */
+/* this is to help with computation of dphi */
+  double communication_time;
+  double xe;			
+  double xs;			
 } clutchgear_simulation;
 
 #define SIMULATION_TYPE clutchgear_simulation
@@ -21,6 +25,11 @@ typedef struct {
 #define SIMULATION_SET(s)  cgsl_simulation_set(&(s)->sim);
 
 #include "fmuTemplate.h"
+
+#if 0 
+// desperate debugging
+static FILE * outfile = (FILE * ) NULL;
+#endif
 
 static const double clutch_dphi  [] = { -0.087266462599716474, -0.052359877559829883, 0.0, 0.09599310885968812, 0.17453292519943295 };
 static const double clutch_torque[] = { -1000, -30, 0, 50, 3500 };
@@ -143,6 +152,7 @@ int clutch (double t, const double x[], double dxdt[], void * params){
 /** additional driver */ 
   dxdt[ 1 ] += s->md.force_in_ex;
   dxdt[ 1 ] -= force_e;
+
   dxdt[ 1 ] /= s->md.mass_e;
  
 /** shaft-side plate */
@@ -362,6 +372,7 @@ static int sync_out(int n, const double outputs[], void * params) {
   s->md.n_steps = s->simulation.sim.iterations;
   compute_forces(s, outputs, &s->md.force_e, &s->md.force_s, NULL);
 
+
   return GSL_SUCCESS;
 }
 
@@ -369,6 +380,12 @@ static int sync_out(int n, const double outputs[], void * params) {
 static void clutch_init(state_t *s) {
   /** system size and layout depends on which dx's are integrated */
   double initials[6];
+#if 0 
+  // desperate debugging
+  if ( outfile == (FILE * ) NULL ) {
+    outfile = fopen("cripes.m", "w");
+  }
+#endif
   get_initial_states(s, initials);
   if ( s->md.integrator < rk2 || s->md.integrator > msbdf ) {
     fprintf(stderr, "Invalid choice of integrator : %d.  Defaulting to rkf45. \n", s->md.integrator); 
@@ -469,7 +486,20 @@ static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real comm
   s->simulation.sim.print = noSetFMUStatePriorToCurrentPoint;
   cgsl_step_to( &s->simulation, currentCommunicationPoint, communicationStepSize );
 
+#if 0 
+  // desperate debugging
+  fprintf(outfile, "%f, %f, %f, %f, %f, %f, %f, %f, %f\n",
+    currentCommunicationPoint + communicationStepSize, 
+    s->md.x_e, 
+    s->md.v_e, 
+    s->md.a_e, 
+    s->md.force_e, 
+    s->md.x_s, 
+    s->md.v_s, 
+    s->md.a_s, 
+    s->md.force_s);
   s->simulation.last_gear = s->md.gear;
+#endif
 }
 
 

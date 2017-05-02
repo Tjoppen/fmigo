@@ -14,6 +14,75 @@
 //#include "modelDescription_me.h"
 #include "modelExchange.h"
 #include "modelDescription.h"
+
+//having hand-written getters and setters
+#define HAVE_GENERATED_GETTERS_SETTERS  //for letting the template know that we have our own getters and setters
+
+static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Real value[]) {
+    return fmi2_import_get_real(*getFMU(),vr,nvr,value);
+}
+
+static fmi2Status generated_fmi2SetReal(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Real value[]) {
+    if( *getFMU() != NULL)
+        return fmi2_import_set_real(*getFMU(),vr,nvr,value);
+    return fmi2Error;
+}
+
+//fmi2GetInteger and fmi2SetInteger become special because we've introduced integrator
+static fmi2Status generated_fmi2GetInteger(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Integer value[]) {
+    size_t x = 0;
+
+    for (x = 0; x < nvr; x++) {
+        if (vr[x] == VR_INTEGRATOR) {
+            value[x] = md->integrator;
+        } else if (fmi2_import_get_integer(*getFMU(), &vr[x], 1, &value[x]) != fmi2OK) {
+            return fmi2Error;
+        }
+    }
+
+    return fmi2OK;
+}
+
+static fmi2Status generated_fmi2SetInteger(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Integer value[]) {
+    if( *getFMU() != NULL) {
+        size_t x;
+
+        //only call fmi2SetInteger() on the FMU if it's an integer it expects
+        //this fixes FMUs created by FMI Toolbox crashing
+        for (x = 0; x < nvr; x++) {
+            if (vr[x] == VR_INTEGRATOR) {
+                md->integrator = value[x];
+            } else if (fmi2_import_set_integer(*getFMU(),&vr[x],1,&value[x]) != fmi2OK) {
+                return fmi2Error;
+            }
+        }
+
+        return fmi2OK;
+    }
+    return fmi2Error;
+}
+
+static fmi2Status generated_fmi2GetBoolean(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Boolean value[]) {
+    return fmi2_import_get_boolean(*getFMU(),vr,nvr,value);
+}
+
+static fmi2Status generated_fmi2SetBoolean(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Boolean value[]) {
+    if( *getFMU() != NULL)
+        return fmi2_import_set_boolean(*getFMU(),vr,nvr,value);
+    return fmi2Error;
+}
+
+static fmi2Status generated_fmi2GetString(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2String value[]) {
+    return fmi2_import_get_string(*getFMU(),vr,nvr,value);
+}
+
+static fmi2Status generated_fmi2SetString(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2String value[]) {
+    if( *getFMU() != NULL)
+        return fmi2_import_set_string(*getFMU(),vr,nvr,value);
+    return fmi2Error;
+}
+
+
 #define SIMULATION_TYPE    cgsl_simulation*
 #include "fmuTemplate.h"
 #include "hypotmath.h"

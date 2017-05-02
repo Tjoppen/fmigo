@@ -208,7 +208,8 @@ print('''
     '\n'.join(['#define VR_'+value[0].upper()+' '+str(key) for key,value in strs.items()]),
 ))
 
-print('''
+if not args.wrapper:
+    print('''
 //the following getters and setters are static to avoid getting linking errors if this file is included in more than one place
 
 #define HAVE_GENERATED_GETTERS_SETTERS  //for letting the template know that we have our own getters and setters
@@ -263,32 +264,10 @@ static fmi2Status generated_fmi2Set%s(modelDescription_t *md, const fmi2ValueRef
         '\n'.join(['        case %i: md->%s = value[i]; break;' % (key, value[0]) for key,value in d.items()]),
     ))
 
-def gen_getters_setters_wrappers(t, d):
-    print('''
-static fmi2Status generated_fmi2Get{type}(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2{type} value[]) {{
-    fmi2_import_get_{ltype}(*getFMU(),vr,nvr,value);
-    return fmi2OK;
-}}
-
-static fmi2Status generated_fmi2Set{type}(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2{type} value[]) {{
-    if( *getFMU() != NULL)
-        fmi2_import_set_{ltype}(*getFMU(),vr,nvr,value);
-    return fmi2OK;
-}}'''.format(
-        type=t,
-        ltype=t.lower()
-    ))
-
 if not args.wrapper:
     gen_getters_setters('Real',    reals)
     gen_getters_setters('Integer', ints)
     gen_getters_setters('Boolean', bools)
     gen_getters_setters('String',  strs)
-else:
-    gen_getters_setters_wrappers('Real',    reals)
-    gen_getters_setters_wrappers('Integer', ints)
-    gen_getters_setters_wrappers('Boolean', bools)
-    gen_getters_setters_wrappers('String',  strs)
-
 
 print('#endif //MODELDESCRIPTION_H')

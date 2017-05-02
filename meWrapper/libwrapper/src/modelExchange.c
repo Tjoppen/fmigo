@@ -7,7 +7,7 @@
 #ifndef min
 #define min(a,b) ((a<b) ? a : b)
 #endif
-static fmi2_import_t* FMU;
+static fmi2_import_t* FMU = NULL;
 static cgsl_simulation m_sim;
 static TimeLoop timeLoop;
 static fmu_model m_model;

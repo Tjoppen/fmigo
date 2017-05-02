@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 from __future__ import print_function
 import sys
-import uuid
 import xml.etree.ElementTree as e
 import zipfile
 import argparse
@@ -57,6 +56,15 @@ else:
 fmiVersion = root.get('fmiVersion')
 fmiDescription = root.get('description')
 me = root.find('ModelExchange')
+guid = root.attrib['guid']
+
+# Make predictable derived guid by flipping the lowest bit
+# Deal with both {guid} and bare guid
+pos = -2 if guid[-1] == '}' else -1
+guid2 = list(guid)
+guid2[pos] = '%1x' % (int(guid[pos], 16) ^ 1)
+guid2 = "".join(guid2)
+
 if me == None:
     error('wrapper only supports model exchange')
     exit(1)
@@ -87,7 +95,7 @@ print('''<?xml version="1.0" encoding="UTF-8"?>
 '''%(root.get('fmiVersion'),
      root.get('description'),
      args.prefix + modelName,
-     uuid.uuid4(),
+     guid2,
      args.prefix + modelName,
 
 ))

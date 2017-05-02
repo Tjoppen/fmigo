@@ -87,7 +87,7 @@ function (add_fmu_internal dir target extra_srcs defs libs extra_includes consol
     COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/fmu-builder/modeldescription2header.py ${md2hdr_option}
       ${${target}_dir}/modelDescription.xml >
       ${${target}_dir}/sources/modelDescription.h
-    DEPENDS ${${target}_dir}/modelDescription.xml ${xmldeps})
+    DEPENDS ${${target}_dir}/modelDescription.xml ${xmldeps} ${CMAKE_CURRENT_SOURCE_DIR}/fmu-builder/modeldescription2header.py)
   add_custom_target(${target}_md DEPENDS ${${target}_dir}/sources/modelDescription.h)
   add_dependencies(${target} ${target}_md)
 
@@ -152,7 +152,7 @@ function (add_wrapped dir sourcetarget)
     OUTPUT ${dstxml}
     COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/fmu-builder/xml2wrappedxml.py
          -x ${srcxml} -p ${prefix} > ${dstxml}
-    DEPENDS ${srcxml})
+    DEPENDS ${srcxml} ${CMAKE_CURRENT_SOURCE_DIR}/fmu-builder/xml2wrappedxml.py)
   add_custom_target(${target}_xml DEPENDS ${dstxml})
 
   add_fmu_internal("${dir}" "${target}" "fmu-builder/sources/wrapper.c" "" "cgsl;wrapperlib;fmilib" "fmu-builder/sources" FALSE "-w" "${target}_xml" "${${sourcetarget}_fmu}")
@@ -169,7 +169,7 @@ function (add_wrapped_fmu dir sourcetarget sourcefmu)
     OUTPUT ${dstxml}
     COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/fmu-builder/xml2wrappedxml.py
          -f ${sourcefmu} -p ${prefix} > ${dstxml}
-    DEPENDS ${sourcefmu} ${sourcetarget}_fmu_target)
+    DEPENDS ${sourcefmu} ${sourcetarget}_fmu_target ${CMAKE_CURRENT_SOURCE_DIR}/fmu-builder/xml2wrappedxml.py)
   add_custom_target(${target}_xml DEPENDS ${dstxml})
 
   add_fmu_internal("${dir}" "${target}" "fmu-builder/sources/wrapper.c" "" "cgsl;wrapperlib;fmilib" "fmu-builder/sources" FALSE "-w" "${target}_xml" "${${sourcetarget}_fmu}")
@@ -197,7 +197,7 @@ function (wrap_existing_fmu modelIdentifier sourcefmu dir)
     OUTPUT ${dstxml}
     COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/fmu-builder/xml2wrappedxml.py
          -f ${sourcefmu} -p ${prefix} > ${dstxml}
-    DEPENDS ${sourcefmu})
+    DEPENDS ${sourcefmu} ${CMAKE_CURRENT_SOURCE_DIR}/fmu-builder/xml2wrappedxml.py)
   add_custom_target(${target}_xml DEPENDS ${dstxml})
 
   #function (add_fmu_internal dir target extra_srcs defs libs extra_includes console md2hdr_option xmldeps extra_resources)

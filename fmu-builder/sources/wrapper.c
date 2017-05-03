@@ -37,6 +37,8 @@ typedef struct {
     //doing it this way avoids a bunch of allocations
     partial_t partials[NUMBER_OF_REALS*NUMBER_OF_REALS];
     size_t npartials;
+
+    fmi2_import_t *FMU;
 } me_simulation;
 
 #define SIMULATION_TYPE    me_simulation
@@ -51,12 +53,12 @@ typedef struct {
 #include "strlcpy.h"
 
 static fmi2Status generated_fmi2GetReal(ModelInstance *comp, const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Real value[]) {
-    return fmi2_import_get_real(*getFMU(),vr,nvr,value);
+    return fmi2_import_get_real(comp->s.simulation.FMU,vr,nvr,value);
 }
 
 static fmi2Status generated_fmi2SetReal(ModelInstance *comp, modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Real value[]) {
-    if( *getFMU() != NULL)
-        return fmi2_import_set_real(*getFMU(),vr,nvr,value);
+    if( comp->s.simulation.FMU != NULL)
+        return fmi2_import_set_real(comp->s.simulation.FMU,vr,nvr,value);
     return fmi2Error;
 }
 
@@ -67,7 +69,7 @@ static fmi2Status generated_fmi2GetInteger(ModelInstance *comp, const modelDescr
     for (x = 0; x < nvr; x++) {
         if (vr[x] == VR_INTEGRATOR) {
             value[x] = md->integrator;
-        } else if (fmi2_import_get_integer(*getFMU(), &vr[x], 1, &value[x]) != fmi2OK) {
+        } else if (fmi2_import_get_integer(comp->s.simulation.FMU, &vr[x], 1, &value[x]) != fmi2OK) {
             return fmi2Error;
         }
     }
@@ -76,7 +78,7 @@ static fmi2Status generated_fmi2GetInteger(ModelInstance *comp, const modelDescr
 }
 
 static fmi2Status generated_fmi2SetInteger(ModelInstance *comp, modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Integer value[]) {
-    if( *getFMU() != NULL) {
+    if( comp->s.simulation.FMU != NULL) {
         size_t x;
 
         //only call fmi2SetInteger() on the FMU if it's an integer it expects
@@ -84,7 +86,7 @@ static fmi2Status generated_fmi2SetInteger(ModelInstance *comp, modelDescription
         for (x = 0; x < nvr; x++) {
             if (vr[x] == VR_INTEGRATOR) {
                 md->integrator = value[x];
-            } else if (fmi2_import_set_integer(*getFMU(),&vr[x],1,&value[x]) != fmi2OK) {
+            } else if (fmi2_import_set_integer(comp->s.simulation.FMU,&vr[x],1,&value[x]) != fmi2OK) {
                 return fmi2Error;
             }
         }
@@ -95,22 +97,22 @@ static fmi2Status generated_fmi2SetInteger(ModelInstance *comp, modelDescription
 }
 
 static fmi2Status generated_fmi2GetBoolean(ModelInstance *comp, const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Boolean value[]) {
-    return fmi2_import_get_boolean(*getFMU(),vr,nvr,value);
+    return fmi2_import_get_boolean(comp->s.simulation.FMU,vr,nvr,value);
 }
 
 static fmi2Status generated_fmi2SetBoolean(ModelInstance *comp, modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Boolean value[]) {
-    if( *getFMU() != NULL)
-        return fmi2_import_set_boolean(*getFMU(),vr,nvr,value);
+    if( comp->s.simulation.FMU != NULL)
+        return fmi2_import_set_boolean(comp->s.simulation.FMU,vr,nvr,value);
     return fmi2Error;
 }
 
 static fmi2Status generated_fmi2GetString(ModelInstance *comp, const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2String value[]) {
-    return fmi2_import_get_string(*getFMU(),vr,nvr,value);
+    return fmi2_import_get_string(comp->s.simulation.FMU,vr,nvr,value);
 }
 
 static fmi2Status generated_fmi2SetString(ModelInstance *comp, modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2String value[]) {
-    if( *getFMU() != NULL)
-        return fmi2_import_set_string(*getFMU(),vr,nvr,value);
+    if( comp->s.simulation.FMU != NULL)
+        return fmi2_import_set_string(comp->s.simulation.FMU,vr,nvr,value);
     return fmi2Error;
 }
 
@@ -222,7 +224,6 @@ void wrapper_ntoeu(ModelInstance *comp)  {
     char m_fmuPath[1024];
     char* dir;
     const char* m_instanceName;
-    fmi2_import_t** FMU = getFMU();
     jm_callbacks m_jmCallbacks;
     fmi_version_enu_t m_version;
     fmi_import_context_t* m_context;
@@ -262,9 +263,9 @@ void wrapper_ntoeu(ModelInstance *comp)  {
     if (m_version == fmi_version_2_0_enu) { // FMI 2.0
         // parse the xml file
         /* fprintf(stderr,"dir: %s\n",dir); */
-        *FMU = fmi2_import_parse_xml(m_context, dir, 0);
+        comp->s.simulation.FMU = fmi2_import_parse_xml(m_context, dir, 0);
         fprintf(stderr,"dir: %s\n",dir);
-        if(!*FMU) {
+        if(!comp->s.simulation.FMU) {
         fprintf(stderr,"dir: %s\n",dir);
             fmi_import_free_context(m_context);
             fmi_import_rmdir(&m_jmCallbacks, dir);
@@ -272,10 +273,10 @@ void wrapper_ntoeu(ModelInstance *comp)  {
         }
 
         // check FMU kind
-        fmi2_fmu_kind_enu_t fmuType = fmi2_import_get_fmu_kind(*FMU);
+        fmi2_fmu_kind_enu_t fmuType = fmi2_import_get_fmu_kind(comp->s.simulation.FMU);
         if(fmuType != fmi2_fmu_kind_me) {
             fprintf(stderr,"Wrapper only supports model exchange\n");
-            fmi2_import_free(*FMU);
+            fmi2_import_free(comp->s.simulation.FMU);
             fmi_import_free_context(m_context);
             fmi_import_rmdir(&m_jmCallbacks, dir);
             return;
@@ -284,14 +285,14 @@ void wrapper_ntoeu(ModelInstance *comp)  {
         const fmi2_callback_functions_t m_fmi2CallbackFunctions = {fmi2_log_forwarding, calloc, free, 0, 0};
 
         // Load the binary (dll/so)
-        jm_status_enu_t status = fmi2_import_create_dllfmu(*FMU, fmuType, &m_fmi2CallbackFunctions);
+        jm_status_enu_t status = fmi2_import_create_dllfmu(comp->s.simulation.FMU, fmuType, &m_fmi2CallbackFunctions);
         if (status == jm_status_error) {
-            fmi2_import_free(*FMU);
+            fmi2_import_free(comp->s.simulation.FMU);
             fmi_import_free_context(m_context);
             fmi_import_rmdir(&m_jmCallbacks, dir);
             return;
         }
-        m_instanceName = fmi2_import_get_model_name(*FMU);
+        m_instanceName = fmi2_import_get_model_name(comp->s.simulation.FMU);
         {
             //m_fmuLocation = fmi_import_create_URL_from_abs_path(&m_jmCallbacks, m_fmuPath);
         }
@@ -311,26 +312,26 @@ void wrapper_ntoeu(ModelInstance *comp)  {
     }
     free(dir);
 
-    fmi2_status_t status = fmi2_import_instantiate(*FMU , m_instanceName, fmi2_model_exchange, m_resourcePath, 0);
+    fmi2_status_t status = fmi2_import_instantiate(comp->s.simulation.FMU , m_instanceName, fmi2_model_exchange, m_resourcePath, 0);
     if(status == fmi2Error){
         fprintf(stderr,"Wrapper: instatiate faild\n");
         exit(1);
     }
 
     //setup_experiment
-    status = fmi2_import_setup_experiment(*FMU, true, 1e-6, 0, false, 0) ;
+    status = fmi2_import_setup_experiment(comp->s.simulation.FMU, true, 1e-6, 0, false, 0) ;
     if(status == fmi2Error){
         fprintf(stderr,"Wrapper: setup Experiment faild\n");
         exit(1);
     }
 
-    status = fmi2_import_enter_initialization_mode(*FMU) ;
+    status = fmi2_import_enter_initialization_mode(comp->s.simulation.FMU) ;
     if(status == fmi2Error){
         fprintf(stderr,"Wrapper: enter initialization mode faild\n");
         exit(1);
     }
-    prepare(&s->simulation.sim, s->md.integrator);
-    status = fmi2_import_exit_initialization_mode(*FMU);
+    prepare(&s->simulation.sim, comp->s.simulation.FMU, s->md.integrator);
+    status = fmi2_import_exit_initialization_mode(comp->s.simulation.FMU);
     if(status == fmi2Error){
         fprintf(stderr,"Wrapper: exit initialization mode faild\n");
         exit(1);

@@ -7,11 +7,24 @@
 #ifndef min
 #define min(a,b) ((a<b) ? a : b)
 #endif
-static fmi2_import_t* FMU = NULL;
+
+typedef struct fmu_parameters {
+    int nx;
+    int ni;
+
+    double t_ok;
+    double t_past;
+    int count;                    /* number of function evaluations */
+
+    bool stateEvent;
+
+    fmi2_import_t *FMU;
+} fmu_parameters;
+
 static TimeLoop timeLoop;
 static Backup m_backup;
 static Backup m_backup2;
-#define MEFMU *getFMU()
+
 //#define signbits(a,b) ((a > 0)? ( (b > 0) ? 1 : 0) : (b<=0)? 1: 0)
 /** get_p
  *  Extracts the parameters from the model
@@ -21,9 +34,7 @@ static Backup m_backup2;
 Backup* getBackup(){return &m_backup;}
 Backup* getTempBackup(){return &m_backup2;}
 
-fmi2_import_t** getFMU(){return &FMU;}
-
- fmu_parameters* get_p(cgsl_model* m){
+fmu_parameters* get_p(cgsl_model* m){
     return (fmu_parameters*)(m->parameters);
 }
 
@@ -55,13 +66,13 @@ static int fmu_function(double t, const double x[], double dxdt[], void* params)
     ++p->count; /* count function evaluations */
     if(p->stateEvent)return GSL_SUCCESS;
 
-    fmi2_import_set_time(MEFMU,t);
-    fmi2_import_set_continuous_states(MEFMU,x,p->nx);
+    fmi2_import_set_time(p->FMU, t);
+    fmi2_import_set_continuous_states(p->FMU, x, p->nx);
 
-    fmi2_import_get_derivatives(MEFMU,dxdt,p->nx);
+    fmi2_import_get_derivatives(p->FMU, dxdt, p->nx);
 
     if(p->ni){
-        fmi2_import_get_event_indicators(MEFMU,getBackup()->ei,p->ni);
+        fmi2_import_get_event_indicators(p->FMU, getBackup()->ei, p->ni);
         if(past_event(getBackup()->ei_b, getBackup()->ei, p->ni)){
             p->stateEvent = true;
             p->t_past = t;
@@ -94,11 +105,12 @@ void allocateBackup(Backup *backup, fmu_parameters *p){
  *  @param client A vector with clients
  */
 
-void init_fmu_model(cgsl_model **m){
+void init_fmu_model(cgsl_model **m, fmi2_import_t *FMU){
     fmu_parameters* p = (fmu_parameters*)calloc(1,sizeof(fmu_parameters));
 
-    p->nx         = fmi2_import_get_number_of_continuous_states(MEFMU);
-    p->ni         = fmi2_import_get_number_of_event_indicators(MEFMU);
+    p->FMU        = FMU;
+    p->nx         = fmi2_import_get_number_of_continuous_states(p->FMU);
+    p->ni         = fmi2_import_get_number_of_event_indicators(p->FMU);
     p->t_ok       = 0;
     p->t_past     = 0;
     p->stateEvent = false;
@@ -112,17 +124,17 @@ void init_fmu_model(cgsl_model **m){
     m_backup.t = 0;
     m_backup.h = 0;
 
-    fmi2_status_t status = fmi2_import_get_continuous_states(MEFMU, (*m)->x, p->nx);
-
-    status = fmi2_import_get_event_indicators(MEFMU,m_backup.ei_b,p->ni);
-    memcpy((*m)->x_backup, (*m)->x, (*m)->n_variables);
+    fmi2_status_t status;
+    status = fmi2_import_get_continuous_states(p->FMU, (*m)->x,        p->nx);
+    status = fmi2_import_get_continuous_states(p->FMU, (*m)->x_backup, p->nx);
+    status = fmi2_import_get_event_indicators (p->FMU, m_backup.ei_b,  p->ni);
 }
 
 /** prepare()
  *  Setup everything
  */
-void prepare(cgsl_simulation *sim, enum cgsl_integrator_ids integrator) {
-    init_fmu_model(&sim->model);
+void prepare(cgsl_simulation *sim, fmi2_import_t *FMU, enum cgsl_integrator_ids integrator) {
+    init_fmu_model(&sim->model, FMU);
     // set up a gsl_simulation for each client
     fmu_parameters* p = get_p(sim->model);
 
@@ -165,8 +177,8 @@ void restoreStates(cgsl_simulation *sim, Backup *backup){
 void storeStates(cgsl_simulation *sim, Backup *backup){
     fmu_parameters* p = get_p(sim->model);
 
-    fmi2_import_get_continuous_states(MEFMU,backup->x,p->nx);
-    fmi2_import_get_event_indicators(MEFMU,backup->ei_b,p->ni);
+    fmi2_import_get_continuous_states(p->FMU, backup->x,    p->nx);
+    fmi2_import_get_event_indicators (p->FMU, backup->ei_b, p->ni);
     memcpy(sim->model->x,backup->x,p->nx * sizeof(backup->x[0]));
 
     backup->failed_steps = sim->i.evolution->failed_steps;
@@ -274,7 +286,7 @@ void stepToEvent(cgsl_simulation *sim, Backup *backup){
 void newDiscreteStates(cgsl_simulation *sim, Backup *backup){
     fmu_parameters* p = get_p(sim->model);
     // start at a new state
-    fmi2_import_enter_event_mode(MEFMU);
+    fmi2_import_enter_event_mode(p->FMU);
 
     // todo loop until newDiscreteStatesNeeded == false
 
@@ -284,7 +296,7 @@ void newDiscreteStates(cgsl_simulation *sim, Backup *backup){
 
     if(p->ni){
         while(eventInfo.newDiscreteStatesNeeded){
-            fmi2_import_new_discrete_states(MEFMU,&eventInfo);
+            fmi2_import_new_discrete_states(p->FMU, &eventInfo);
             if(eventInfo.terminateSimulation){
                 fprintf(stderr,"modelExchange.c: terminated simulation\n");
                 exit(1);
@@ -292,7 +304,7 @@ void newDiscreteStates(cgsl_simulation *sim, Backup *backup){
         }
     }
 
-    fmi2_import_enter_continuous_time_mode(MEFMU);
+    fmi2_import_enter_continuous_time_mode(p->FMU);
 
     // store the current state of all running FMUs
     storeStates(sim, backup);

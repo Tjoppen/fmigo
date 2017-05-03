@@ -83,7 +83,7 @@ static fmi2Status generated_fmi2SetString(modelDescription_t *md, const fmi2Valu
 }
 
 
-#define SIMULATION_TYPE    cgsl_simulation*
+#define SIMULATION_TYPE    cgsl_simulation
 #include "fmuTemplate.h"
 #include "hypotmath.h"
 
@@ -104,8 +104,8 @@ typedef struct vr{
 static vr vrs;
 
 #include "strlcpy.h"
-fmi2Status SIMULATION_GET ( SIMULATION_TYPE *sim);
-fmi2Status SIMULATION_SET ( SIMULATION_TYPE *sim);
+fmi2Status wrapper_get ( cgsl_simulation *sim);
+fmi2Status wrapper_set ( cgsl_simulation *sim);
 
 void model_init(ModelInstance *comp) {
     FILE *fp;
@@ -150,7 +150,7 @@ fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReference wrt,
     fmi2Real dwrt, wrt0, wrt1, vr0, vr1;
 
     //save state
-    SIMULATION_GET(&s->simulation);
+    wrapper_get(&s->simulation);
 
     generated_fmi2GetReal(&s->md, &wrt, 1, &wrt0);
     generated_fmi2GetReal(&s->md, &vr,  1, &vr0);
@@ -172,42 +172,39 @@ fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReference wrt,
     generated_fmi2GetReal(&s->md, &vr,  1, &vr1);
 
     //restore state
-    SIMULATION_SET(&s->simulation);
+    wrapper_set(&s->simulation);
 
     *partial = (vr1 - vr0) / dwrt;
     return fmi2OK;
 }
 
-fmi2Status SIMULATION_GET ( SIMULATION_TYPE *sim) {
+fmi2Status wrapper_get ( cgsl_simulation *sim) {
     fprintf(stderr,"GET: %p\n", sim);
-    storeStates(*sim, getTempBackup());
+    storeStates(sim, getTempBackup());
     fprintf(stderr,"GET: %p done \n", sim);
     return fmi2OK;
 }
 
-fmi2Status SIMULATION_SET ( SIMULATION_TYPE *sim) {
+fmi2Status wrapper_set ( cgsl_simulation *sim) {
     fprintf(stderr,"SET: %p\n", sim);
-    restoreStates(*sim, getTempBackup());
-    storeStates(*sim, getBackup());
+    restoreStates(sim, getTempBackup());
+    storeStates(sim, getBackup());
     fprintf(stderr,"SET: %p done\n", sim);
     return fmi2OK;
 }
 
-void SIMULATION_WRAPPER(ModelInstance *comp);
 #define NEW_DOSTEP //to get noSetFMUStatePriorToCurrentPoint
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
     //fprintf(stderr,"do step run iteration\n");
-    runIteration(currentCommunicationPoint,communicationStepSize, getBackup());
+    runIteration(&s->simulation, currentCommunicationPoint,communicationStepSize, getBackup());
 }
-
-#include "fmuTemplate_impl.h"
 
 //extern "C"{
 void jmCallbacksLogger(jm_callbacks* c, jm_string module, jm_log_level_enu_t log_level, jm_string message) {
     fprintf(stderr, "[module = %s][log level = %s] %s\n", module, jm_log_level_to_string(log_level), message);fflush(NULL);
 }
 
-void SIMULATION_WRAPPER(ModelInstance *comp)  {
+void wrapper_ntoeu(ModelInstance *comp)  {
     fprintf(stderr,"Init Wrapper\n");
     state_t *s = &comp->s;
     //char *m_fmuLocation;
@@ -326,8 +323,7 @@ void SIMULATION_WRAPPER(ModelInstance *comp)  {
         fprintf(stderr,"Wrapper: enter initialization mode faild\n");
         exit(1);
     }
-    prepare(s->md.integrator);
-    s->simulation = getSim();
+    prepare(&s->simulation, s->md.integrator);
     status = fmi2_import_exit_initialization_mode(*FMU);
     if(status == fmi2Error){
         fprintf(stderr,"Wrapper: exit initialization mode faild\n");
@@ -335,3 +331,4 @@ void SIMULATION_WRAPPER(ModelInstance *comp)  {
     }
 }
 
+#include "fmuTemplate_impl.h"

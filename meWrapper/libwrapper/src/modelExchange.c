@@ -8,9 +8,7 @@
 #define min(a,b) ((a<b) ? a : b)
 #endif
 static fmi2_import_t* FMU = NULL;
-static cgsl_simulation m_sim;
 static TimeLoop timeLoop;
-static fmu_model m_model;
 static Backup m_backup;
 static Backup m_backup2;
 #define MEFMU *getFMU()
@@ -20,17 +18,16 @@ static Backup m_backup2;
  *
  *  @param m Model
  */
-cgsl_simulation* getSim(){return &m_sim;}
 Backup* getBackup(){return &m_backup;}
 Backup* getTempBackup(){return &m_backup2;}
 
 fmi2_import_t** getFMU(){return &FMU;}
 
- fmu_parameters* get_p(fmu_model* m){
-    return (fmu_parameters*)(m->model->parameters);
+ fmu_parameters* get_p(cgsl_model* m){
+    return (fmu_parameters*)(m->parameters);
 }
 
-void getSafeAndCrossed();
+void getSafeAndCrossed(cgsl_simulation *sim);
 bool past_event(fmi2_real_t* a, fmi2_real_t* b, int i){
 
     i--;
@@ -89,36 +86,6 @@ void allocateBackup(Backup *backup, fmu_parameters *p){
         exit(1);
     }
 }
-/** allocate Memory
- *  Allocates memory needed by the fmu_model
- *
- *  @param m The fmu_model
- *  @param clients Vector with clients
- */
-void allocateMemory(fmu_model *m){
-    //fprintf(stderr,"init_fmu_model %p \n",p->fmi2Instance);
-    m->model = (cgsl_model*)calloc(1,sizeof(cgsl_model));
-    fmu_parameters* p = (fmu_parameters*)calloc(1,sizeof(fmu_parameters));
-    m->model->parameters = (void*)p;
-    m->model->n_variables = fmi2_import_get_number_of_continuous_states(MEFMU);;
-    if(m->model->n_variables == 0){
-        fprintf(stderr,"ModelExchangeStepper nothing to integrate\n");
-        exit(0);
-    }
-
-    p->nx                = m->model->n_variables;
-    p->ni                = fmi2_import_get_number_of_event_indicators(MEFMU);
-    m->model->x          = (double*)calloc(p->nx, sizeof(double));
-    m->model->x_backup   = (double*)calloc(p->nx, sizeof(double));
-    allocateBackup(getBackup(), p);
-    allocateBackup(getTempBackup(),p);
-
-    if(!m->model->x || !m->model->x_backup){
-        //freeFMUModel(m);
-        perror("WeakMaster:ModelExchange:allocateMemory ERROR -  could not allocate memory");
-        exit(1);
-    }
-}
 
 /** init_fmu_model
  *  Setup all parameters and function pointers needed by fmu_model
@@ -127,50 +94,45 @@ void allocateMemory(fmu_model *m){
  *  @param client A vector with clients
  */
 
-void init_fmu_model(fmu_model *m){
-    //(p->fmi2Instance) = MEFMU;
-    allocateMemory(m);
-    fmu_parameters* p = get_p(m);
-    //m->model->get_model_parameters = get_model_parameters;
+void init_fmu_model(cgsl_model **m){
+    fmu_parameters* p = (fmu_parameters*)calloc(1,sizeof(fmu_parameters));
 
-    p->t_ok = 0;
-    p->t_past = 0;
+    p->nx         = fmi2_import_get_number_of_continuous_states(MEFMU);
+    p->ni         = fmi2_import_get_number_of_event_indicators(MEFMU);
+    p->t_ok       = 0;
+    p->t_past     = 0;
     p->stateEvent = false;
-    p->count = 0;
+    p->count      = 0;
+
+    allocateBackup(getBackup(), p);
+    allocateBackup(getTempBackup(),p);
+
+    *m = cgsl_model_default_alloc(p->nx, NULL, p, fmu_function, NULL, NULL, NULL, 0);
 
     m_backup.t = 0;
     m_backup.h = 0;
 
-    m->model->function = fmu_function;
-    m->model->jacobian = NULL;
-    m->model->post_step = NULL;
-    m->model->pre_step = NULL;
-    m->model->free = cgsl_model_default_free;//freeFMUModel;
-
-    fmi2_status_t status = fmi2_import_get_continuous_states(MEFMU, m->model->x, p->nx);
+    fmi2_status_t status = fmi2_import_get_continuous_states(MEFMU, (*m)->x, p->nx);
 
     status = fmi2_import_get_event_indicators(MEFMU,m_backup.ei_b,p->ni);
-    memcpy(m->model->x_backup,m->model->x,m->model->n_variables);
+    memcpy((*m)->x_backup, (*m)->x, (*m)->n_variables);
 }
 
 /** prepare()
  *  Setup everything
  */
-void prepare(enum cgsl_integrator_ids integrator) {
-    init_fmu_model(&m_model);
+void prepare(cgsl_simulation *sim, enum cgsl_integrator_ids integrator) {
+    init_fmu_model(&sim->model);
     // set up a gsl_simulation for each client
-    fmu_parameters* p = get_p(&m_model);
+    fmu_parameters* p = get_p(sim->model);
 
-    //m_sim = (cgsl_simulation *)malloc(sizeof(cgsl_simulation));
-    m_sim = cgsl_init_simulation(m_model.model,
+    *sim = cgsl_init_simulation(sim->model,
                                  integrator, /* integrator: Runge-Kutta Prince Dormand pair order 7-8 */
                                  1e-10,
                                  0,
                                  0,
                                  0, NULL
                                  );
-#ifdef USE_GPL
-#endif
 }
 
 /** restoreStates()
@@ -180,7 +142,7 @@ void prepare(enum cgsl_integrator_ids integrator) {
  *  @param sim The simulation
  */
 void restoreStates(cgsl_simulation *sim, Backup *backup){
-    fmu_parameters* p = get_p((fmu_model*)&sim->model);
+    fmu_parameters* p = get_p(sim->model);
     //restore previous states
 
 
@@ -201,7 +163,7 @@ void restoreStates(cgsl_simulation *sim, Backup *backup){
  *  @param sim The simulation
  */
 void storeStates(cgsl_simulation *sim, Backup *backup){
-    fmu_parameters* p = get_p((fmu_model*)&sim->model);
+    fmu_parameters* p = get_p(sim->model);
 
     fmi2_import_get_continuous_states(MEFMU,backup->x,p->nx);
     fmi2_import_get_event_indicators(MEFMU,backup->ei_b,p->ni);
@@ -222,7 +184,7 @@ void storeStates(cgsl_simulation *sim, Backup *backup){
  *  @param sim The simulation
  */
 bool hasStateEvent(cgsl_simulation *sim){
-    return get_p((fmu_model*)&sim->model)->stateEvent;
+    return get_p(sim->model)->stateEvent;
 }
 
 /** getGoldenNewTime()
@@ -237,7 +199,7 @@ void getGoldenNewTime(cgsl_simulation *sim, Backup* backup){
     double phi = (1 + sqrt(5)) / 2;
     /* passed solution, need to reduce tEnd */
     if(hasStateEvent(sim)){
-        getSafeAndCrossed();
+        getSafeAndCrossed(sim);
         restoreStates(sim, backup);
         timeLoop.dt_new = (timeLoop.t_crossed - sim->t) / phi;
     } else { // havent passed solution, increase step
@@ -253,8 +215,7 @@ void getGoldenNewTime(cgsl_simulation *sim, Backup* backup){
  *  @param sim The simulation
  */
 void me_step(cgsl_simulation *sim){
-    fmu_parameters *p;
-    p = get_p((fmu_model*)(&sim->model));
+    fmu_parameters *p = get_p(sim->model);
     p->stateEvent = false;
     p->t_past = max(p->t_past, sim->t + timeLoop.dt_new);
     p->t_ok = sim->t;
@@ -277,7 +238,7 @@ fmi2_real_t absmin(fmi2_real_t* v, size_t n){
  */
 void stepToEvent(cgsl_simulation *sim, Backup *backup){
     double tol = 1e-9;
-    fmu_parameters* p = get_p((fmu_model*)&sim->model);
+    fmu_parameters* p = get_p(sim->model);
     while(!hasStateEvent(sim) && !(absmin(backup->ei,p->ni) < tol || timeLoop.dt_new < tol)){
         getGoldenNewTime(sim, backup);
         me_step(sim);
@@ -288,7 +249,7 @@ void stepToEvent(cgsl_simulation *sim, Backup *backup){
         if(hasStateEvent(sim)){
             // step back to where event occured
             restoreStates(sim, backup);
-            getSafeAndCrossed();
+            getSafeAndCrossed(sim);
             timeLoop.dt_new = timeLoop.t_safe - sim->t;
             me_step(sim);
             if(!hasStateEvent(sim)) storeStates(sim, backup);
@@ -310,8 +271,8 @@ void stepToEvent(cgsl_simulation *sim, Backup *backup){
  *  Should be used where a new discrete state ends and another begins.
  *  Store the current state of the simulation
  */
-void newDiscreteStates(Backup *backup){
-    fmu_parameters* p = get_p((fmu_model*)&m_sim.model);
+void newDiscreteStates(cgsl_simulation *sim, Backup *backup){
+    fmu_parameters* p = get_p(sim->model);
     // start at a new state
     fmi2_import_enter_event_mode(MEFMU);
 
@@ -334,14 +295,14 @@ void newDiscreteStates(Backup *backup){
     fmi2_import_enter_continuous_time_mode(MEFMU);
 
     // store the current state of all running FMUs
-    storeStates(&m_sim, backup);
+    storeStates(sim, backup);
 }
 
 /** getSafeAndCrossed()
  *  Extracts safe and crossed time found by fmu_function
  */
-void getSafeAndCrossed(){
-    fmu_parameters *p = get_p((fmu_model*)&m_sim.model);
+void getSafeAndCrossed(cgsl_simulation *sim){
+    fmu_parameters *p = get_p(sim->model);
     timeLoop.t_safe    = p->t_ok;//max( timeLoop.t_safe,    t_ok);
     timeLoop.t_crossed = p->t_past;//min( timeLoop.t_crossed, t_past);
 }
@@ -365,8 +326,8 @@ void safeTimeStep(cgsl_simulation *sim){
  *  @param t The current time
  *  @param dt Timestep, input and output
  */
-void getSafeTime(double t, double *dt, Backup *backup){
-    fmu_parameters* p = get_p((fmu_model*)&m_sim.model);
+void getSafeTime(cgsl_simulation *sim, double t, double *dt, Backup *backup){
+    fmu_parameters* p = get_p(sim->model);
     if(backup->eventInfo.nextEventTimeDefined)
         *dt = min(*dt, t - backup->eventInfo.nextEventTime);
 }
@@ -375,43 +336,43 @@ void getSafeTime(double t, double *dt, Backup *backup){
  *  @param t The current time
  *  @param dt The timestep to be taken
  */
-void runIteration(double t, double dt, Backup *backup) {
+void runIteration(cgsl_simulation *sim, double t, double dt, Backup *backup) {
     timeLoop.t_safe = t;
     timeLoop.t_end = t + dt;
     timeLoop.dt_new = dt;
-    getSafeTime(t, &timeLoop.dt_new, backup);
-    newDiscreteStates(backup);
+    getSafeTime(sim, t, &timeLoop.dt_new, backup);
+    newDiscreteStates(sim, backup);
     int iter = 2;
     while( timeLoop.t_safe < timeLoop.t_end ){
-        me_step(&m_sim);
+        me_step(sim);
 
-        if (hasStateEvent(&m_sim)){
+        if (hasStateEvent(sim)){
 
-            getSafeAndCrossed();
+            getSafeAndCrossed(sim);
 
             // restore and step to before the event
-            restoreStates(&m_sim, backup);
-            timeLoop.dt_new = timeLoop.t_safe - m_sim.t;
-            me_step(&m_sim);
+            restoreStates(sim, backup);
+            timeLoop.dt_new = timeLoop.t_safe - sim->t;
+            me_step(sim);
 
             // store and step to the event
-            if(!hasStateEvent(&m_sim)) storeStates(&m_sim, backup);
-            timeLoop.dt_new = timeLoop.t_crossed - m_sim.t;
-            me_step(&m_sim);
+            if(!hasStateEvent(sim)) storeStates(sim, backup);
+            timeLoop.dt_new = timeLoop.t_crossed - sim->t;
+            me_step(sim);
 
             // step closer to the event location
-            if(hasStateEvent(&m_sim))
-                stepToEvent(&m_sim, backup);
+            if(hasStateEvent(sim))
+                stepToEvent(sim, backup);
 
         }
         else {
-            timeLoop.t_safe = m_sim.t;
+            timeLoop.t_safe = sim->t;
             timeLoop.t_crossed = timeLoop.t_end;
         }
 
-        safeTimeStep(&m_sim);
-        if(hasStateEvent(&m_sim))
-            newDiscreteStates(backup);
-        storeStates(&m_sim, backup);
+        safeTimeStep(sim);
+        if(hasStateEvent(sim))
+            newDiscreteStates(sim, backup);
+        storeStates(sim, backup);
     }
 }

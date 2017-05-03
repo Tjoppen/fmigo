@@ -24,24 +24,19 @@ typedef struct fmu_parameters{
     int nx;
     int ni;
 
-    fmi2_import_t* fmi2Instance;
     double t_ok;
     double t_past;
     int count;                    /* number of function evaluations */
 
     bool stateEvent;
 }fmu_parameters;
-typedef struct fmu_model{
-    cgsl_model *model;
-}fmu_model;
 
 void setFMUstate();
 Backup* getBackup();
 Backup* getTempBackup();
-cgsl_simulation* getSim();
 fmi2_import_t** getFMU();
 void restoreStates(cgsl_simulation *sim, Backup *backup);
 void storeStates(cgsl_simulation *sim, Backup *backup);
-void runIteration(double t, double dt, Backup *backup);
-void prepare(enum cgsl_integrator_ids integrator);
+void runIteration(cgsl_simulation *sim, double t, double dt, Backup *backup);
+void prepare(cgsl_simulation *sim, enum cgsl_integrator_ids integrator);
 #endif

@@ -82,8 +82,28 @@ static fmi2Status generated_fmi2SetString(modelDescription_t *md, const fmi2Valu
     return fmi2Error;
 }
 
+// This check serves two purposes:
+// - protect against senseless zero-real FMUs
+// - avoid compilation problems on Windows (me_simulation::partials becoming [0])
+#if NUMBER_OF_REALS == 0
+#error NUMBER_OF_REALS == 0 does not make sense for ModelExchange
+#endif
 
-#define SIMULATION_TYPE    cgsl_simulation
+typedef struct {
+    fmi2ValueReference unknown, known, vr;
+} partial_t;
+
+typedef struct {
+    cgsl_simulation sim;
+
+    //we're guaranteed never to need more than (number of reals)^2 partials
+    //this could be optimized slightly, using number of real inputs * number of real outputs
+    //doing it this way avoids a bunch of allocations
+    partial_t partials[NUMBER_OF_REALS*NUMBER_OF_REALS];
+    size_t npartials;
+} me_simulation;
+
+#define SIMULATION_TYPE    me_simulation
 #include "fmuTemplate.h"
 #include "hypotmath.h"
 
@@ -92,20 +112,18 @@ static fmi2Status generated_fmi2SetString(modelDescription_t *md, const fmi2Valu
 #define SIMULATION_GET     wrapper_get
 #define MODEL_INIT         model_init   //like SIMULATION_INIT but get a ModelInstance* instead of state_t*
 
-typedef struct vr{
-    fmi2ValueReference ws;
-    fmi2ValueReference ww;
-    fmi2ValueReference ts;
-    fmi2ValueReference tw;
-    fmi2ValueReference a11;
-    fmi2ValueReference a12;
-    fmi2ValueReference a22;
-}vr;
-static vr vrs;
-
 #include "strlcpy.h"
-fmi2Status wrapper_get ( cgsl_simulation *sim);
-fmi2Status wrapper_set ( cgsl_simulation *sim);
+
+fmi2Status wrapper_get ( me_simulation *sim) {
+    storeStates(&sim->sim, getTempBackup());
+    return fmi2OK;
+}
+
+fmi2Status wrapper_set ( me_simulation *sim) {
+    restoreStates(&sim->sim, getTempBackup());
+    storeStates(&sim->sim, getBackup());
+    return fmi2OK;
+}
 
 void model_init(ModelInstance *comp) {
     FILE *fp;
@@ -118,31 +136,37 @@ void model_init(ModelInstance *comp) {
 
     fp = fopen(path, "r");
 
-    if(!fp){
-        fprintf(stderr,"Wrapper: no such file or directory -- %s\n", path);
-        return;
+    if (fp) {
+        //read partials from directional.txt
+        me_simulation *me = &comp->s.simulation;
+
+        for (;;) {
+            partial_t *p = &me->partials[me->npartials];
+            int n = fscanf(fp, "%u %u %u", &p->unknown, &p->known, &p->vr);
+
+            if (n < 3) {
+                break;
+            }
+
+            if (++me->npartials >= sizeof(me->partials)/sizeof(me->partials[0])) {
+                break;
+            }
+        }
+
+        fclose(fp);
     }
-    int r;
-    if ((r = fscanf(fp, "%u %u %u %u %u %u %u", &vrs.ws,&vrs.ww,&vrs.ts,&vrs.tw,&vrs.a11,&vrs.a12,&vrs.a22)) != 7){
-        fprintf(stderr,"have read %d valuereferences, expect 7\n",r);
-        exit(1);
-    }
-    fclose(fp);
 }
 
 
 fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReference wrt,fmi2Real *partial){
-    if (vr == vrs.ws) {
-        if (wrt == vrs.ts)
-            return generated_fmi2GetReal(&s->md,&vrs.a11,1,partial);
-        if (wrt == vrs.tw)
-            return generated_fmi2GetReal(&s->md,&vrs.a12,1,partial);
-    }
-    if (vr == vrs.ww) {
-        if (wrt == vrs.ts)
-            return generated_fmi2GetReal(&s->md,&vrs.a12,1,partial);
-        if (wrt == vrs.tw)
-            return generated_fmi2GetReal(&s->md,&vrs.a22,1,partial);
+    size_t x;
+
+    //could speed this up with binary search or some kind of simple hash map
+    for (x = 0; x < s->simulation.npartials; x++) {
+        if (vr  == s->simulation.partials[x].unknown &&
+            wrt == s->simulation.partials[x].known) {
+            return generated_fmi2GetReal(&s->md, &s->simulation.partials[x].vr, 1, partial);
+        }
     }
 
     //compute d(vr)/d(wrt) = (vr1 - vr0) / (wrt1 - wrt0)
@@ -178,25 +202,10 @@ fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReference wrt,
     return fmi2OK;
 }
 
-fmi2Status wrapper_get ( cgsl_simulation *sim) {
-    fprintf(stderr,"GET: %p\n", sim);
-    storeStates(sim, getTempBackup());
-    fprintf(stderr,"GET: %p done \n", sim);
-    return fmi2OK;
-}
-
-fmi2Status wrapper_set ( cgsl_simulation *sim) {
-    fprintf(stderr,"SET: %p\n", sim);
-    restoreStates(sim, getTempBackup());
-    storeStates(sim, getBackup());
-    fprintf(stderr,"SET: %p done\n", sim);
-    return fmi2OK;
-}
-
 #define NEW_DOSTEP //to get noSetFMUStatePriorToCurrentPoint
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
     //fprintf(stderr,"do step run iteration\n");
-    runIteration(&s->simulation, currentCommunicationPoint,communicationStepSize, getBackup());
+    runIteration(&s->simulation.sim, currentCommunicationPoint,communicationStepSize, getBackup());
 }
 
 //extern "C"{
@@ -293,10 +302,6 @@ void wrapper_ntoeu(ModelInstance *comp)  {
             strlcat(m_resourcePath, "/resources", sizeof(m_resourcePath));
             m_jmCallbacks.free(temp);
         }
-#ifndef WIN32
-        //prepare HDF5
-        //getHDF5Info();
-#endif
     } else {
         // todo add FMI 1.0 later on.
         fmi_import_free_context(m_context);
@@ -323,7 +328,7 @@ void wrapper_ntoeu(ModelInstance *comp)  {
         fprintf(stderr,"Wrapper: enter initialization mode faild\n");
         exit(1);
     }
-    prepare(&s->simulation, s->md.integrator);
+    prepare(&s->simulation.sim, s->md.integrator);
     status = fmi2_import_exit_initialization_mode(*FMU);
     if(status == fmi2Error){
         fprintf(stderr,"Wrapper: exit initialization mode faild\n");

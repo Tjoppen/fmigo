@@ -370,7 +370,7 @@ fmi2Status fmi2GetReal (fmi2Component c, const fmi2ValueReference vr[], size_t n
     if (nvr > 0 && nullPointer(comp, "fmi2GetReal", "value[]", value))
         return fmi2Error;
 #ifdef HAVE_GENERATED_GETTERS_SETTERS
-    return generated_fmi2GetReal(&comp->s.md, vr, nvr, value);
+    return generated_fmi2GetReal(comp, &comp->s.md, vr, nvr, value);
 #else
     size_t i;
     for (i = 0; i < nvr; i++) {
@@ -392,7 +392,7 @@ fmi2Status fmi2GetInteger(fmi2Component c, const fmi2ValueReference vr[], size_t
     if (nvr > 0 && nullPointer(comp, "fmi2GetInteger", "value[]", value))
             return fmi2Error;
 #ifdef HAVE_GENERATED_GETTERS_SETTERS
-    return generated_fmi2GetInteger(&comp->s.md, vr, nvr, value);
+    return generated_fmi2GetInteger(comp, &comp->s.md, vr, nvr, value);
 #else
     size_t i;
     for (i = 0; i < nvr; i++) {
@@ -414,7 +414,7 @@ fmi2Status fmi2GetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t
     if (nvr > 0 && nullPointer(comp, "fmi2GetBoolean", "value[]", value))
             return fmi2Error;
 #ifdef HAVE_GENERATED_GETTERS_SETTERS
-    return generated_fmi2GetBoolean(&comp->s.md, vr, nvr, value);
+    return generated_fmi2GetBoolean(comp, &comp->s.md, vr, nvr, value);
 #else
     size_t i;
     for (i = 0; i < nvr; i++) {
@@ -439,7 +439,7 @@ fmi2Status fmi2GetString (fmi2Component c, const fmi2ValueReference vr[], size_t
             return fmi2Error;
     if (nvr > 0 && nullPointer(comp, "fmi2GetString", "value[]", value))
             return fmi2Error;
-    return generated_fmi2GetString(&comp->s.md, vr, nvr, value);
+    return generated_fmi2GetString(comp, &comp->s.md, vr, nvr, value);
 #endif
 
 }
@@ -455,7 +455,7 @@ fmi2Status fmi2SetReal (fmi2Component c, const fmi2ValueReference vr[], size_t n
         return fmi2Error;
     FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2SetReal: nvr = %d", nvr)
 #ifdef HAVE_GENERATED_GETTERS_SETTERS
-    ret = generated_fmi2SetReal(&comp->s.md, vr, nvr, value);
+    ret = generated_fmi2SetReal(comp, &comp->s.md, vr, nvr, value);
 #else
     size_t i;
     for (i = 0; i < nvr; i++) {
@@ -490,7 +490,7 @@ fmi2Status fmi2SetInteger(fmi2Component c, const fmi2ValueReference vr[], size_t
         return fmi2Error;
     FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2SetInteger: nvr = %d", nvr)
 #ifdef HAVE_GENERATED_GETTERS_SETTERS
-    return generated_fmi2SetInteger(&comp->s.md, vr, nvr, value);
+    return generated_fmi2SetInteger(comp, &comp->s.md, vr, nvr, value);
 #else
     size_t i;
     for (i = 0; i < nvr; i++) {
@@ -513,7 +513,7 @@ fmi2Status fmi2SetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t
         return fmi2Error;
     FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2SetBoolean: nvr = %d", nvr)
 #ifdef HAVE_GENERATED_GETTERS_SETTERS
-    return generated_fmi2SetBoolean(&comp->s.md, vr, nvr, value);
+    return generated_fmi2SetBoolean(comp, &comp->s.md, vr, nvr, value);
 #else
     size_t i;
     for (i = 0; i < nvr; i++) {
@@ -540,7 +540,7 @@ fmi2Status fmi2SetString (fmi2Component c, const fmi2ValueReference vr[], size_t
     if (nvr>0 && nullPointer(comp, "fmi2SetString", "value[]", value))
         return fmi2Error;
     FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2SetString: nvr = %d", nvr)
-    return generated_fmi2SetString(&comp->s.md, vr, nvr, value);
+    return generated_fmi2SetString(comp, &comp->s.md, vr, nvr, value);
 #endif
 }
 
@@ -624,7 +624,7 @@ fmi2Status fmi2GetDirectionalDerivative(fmi2Component c, const fmi2ValueReferenc
 
         for (y = 0; y < nKnown; y++) {
             fmi2Real partial;
-            fmi2Status status = getPartial(&comp->s, vUnknown_ref[x], vKnown_ref[y], &partial);
+            fmi2Status status = getPartial(comp, vUnknown_ref[x], vKnown_ref[y], &partial);
 
             if (status != fmi2OK) {
                 fprintf(stderr, "Tried to get partial derivative of VR %i w.r.t VR %i, which doesn't exist or isn't defined\n", vUnknown_ref[x], vKnown_ref[y]);
@@ -863,7 +863,7 @@ fmi2Status fmi2SetContinuousStates(fmi2Component c, const fmi2Real x[], size_t n
     if (nullPointer(comp, "fmi2SetContinuousStates", "x[]", x))
         return fmi2Error;
 #ifdef HAVE_MODELDESCRIPTION_STRUCT
-    return generated_fmi2SetReal(&comp->s.md, vrStates, nx, x);
+    return generated_fmi2SetReal(comp, &comp->s.md, vrStates, nx, x);
 #else
     size_t i;
     for (i = 0; i < nx; i++) {
@@ -890,7 +890,7 @@ fmi2Status fmi2GetDerivatives(fmi2Component c, fmi2Real derivatives[], size_t nx
     if (nullPointer(comp, "fmi2GetDerivatives", "derivatives[]", derivatives))
         return fmi2Error;
 #ifdef HAVE_MODELDESCRIPTION_STRUCT
-    return generated_fmi2GetReal(&comp->s.md, vrDerivatives, nx, derivatives);
+    return generated_fmi2GetReal(comp, &comp->s.md, vrDerivatives, nx, derivatives);
 #else
     size_t i;
     for (i = 0; i < nx; i++) {
@@ -940,7 +940,7 @@ fmi2Status fmi2GetContinuousStates(fmi2Component c, fmi2Real states[], size_t nx
     if (nullPointer(comp, "fmi2GetContinuousStates", "states[]", states))
         return fmi2Error;
 #ifdef HAVE_MODELDESCRIPTION_STRUCT
-    return generated_fmi2GetReal(&comp->s.md, vrStates, nx, states);
+    return generated_fmi2GetReal(comp, &comp->s.md, vrStates, nx, states);
 #else
     size_t i;
     for (i = 0; i < nx; i++) {

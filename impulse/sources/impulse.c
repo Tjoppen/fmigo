@@ -66,7 +66,7 @@ static void impulse_init(state_t *s) {
 }
 
 //returns partial derivative of vr with respect to wrt
-static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
+static fmi2Status getPartial(ModelInstance *comp, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
     if (vr == VR_ALPHA && wrt == VR_TAU) {
         *partial = 0;
         return fmi2OK;

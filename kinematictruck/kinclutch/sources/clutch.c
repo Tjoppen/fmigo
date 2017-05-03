@@ -2,9 +2,9 @@
 #include "fmuTemplate.h"
 
 //returns partial derivative of vr with respect to wrt
-static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
+static fmi2Status getPartial(ModelInstance *comp, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
     if (vr == VR_ALPHA_E && wrt == VR_TAU_E) {
-        *partial = 1/s->md.j_e;
+        *partial = 1/comp->s.md.j_e;
         return fmi2OK;
     }
     if ((vr == VR_ALPHA_L && wrt == VR_TAU_E) || (vr == VR_ALPHA_E && wrt == VR_TAU_L)) {
@@ -12,7 +12,7 @@ static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReferen
         return fmi2OK;
     }
     if (vr == VR_ALPHA_L && wrt == VR_TAU_L) {
-        *partial =  1/s->md.j_l;
+        *partial =  1/comp->s.md.j_l;
         return fmi2OK;
     }
 

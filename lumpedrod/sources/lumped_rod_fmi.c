@@ -139,24 +139,24 @@ static void setStartValues(state_t *s) {
 /** Returns partial derivative of vr with respect to wrt  
  *  We could define a smart convention here.  
  */ 
-static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
+static fmi2Status getPartial(ModelInstance *comp, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
   if (vr == VR_ALPHA1 && wrt == VR_TAU1 ) {
-    *partial = s->simulation.rod.mobility[ 0 ];
+    *partial = comp->s.simulation.rod.mobility[ 0 ];
     return fmi2OK;
   }
 
   if (vr == VR_ALPHA1 && wrt == VR_TAU2 ) {
-    *partial = s->simulation.rod.mobility[ 1 ];
+    *partial = comp->s.simulation.rod.mobility[ 1 ];
     return fmi2OK;
   }
 
   if (vr == VR_ALPHA2 && wrt == VR_TAU1 ) {
-    *partial = s->simulation.rod.mobility[ 2 ];
+    *partial = comp->s.simulation.rod.mobility[ 2 ];
     return fmi2OK;
   }
     
   if (vr == VR_ALPHA2 && wrt == VR_TAU2 ) {
-    *partial = s->simulation.rod.mobility[ 3 ];
+    *partial = comp->s.simulation.rod.mobility[ 3 ];
     return fmi2OK;
   }
 

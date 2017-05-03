@@ -18,70 +18,6 @@
 //having hand-written getters and setters
 #define HAVE_GENERATED_GETTERS_SETTERS  //for letting the template know that we have our own getters and setters
 
-static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Real value[]) {
-    return fmi2_import_get_real(*getFMU(),vr,nvr,value);
-}
-
-static fmi2Status generated_fmi2SetReal(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Real value[]) {
-    if( *getFMU() != NULL)
-        return fmi2_import_set_real(*getFMU(),vr,nvr,value);
-    return fmi2Error;
-}
-
-//fmi2GetInteger and fmi2SetInteger become special because we've introduced integrator
-static fmi2Status generated_fmi2GetInteger(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Integer value[]) {
-    size_t x = 0;
-
-    for (x = 0; x < nvr; x++) {
-        if (vr[x] == VR_INTEGRATOR) {
-            value[x] = md->integrator;
-        } else if (fmi2_import_get_integer(*getFMU(), &vr[x], 1, &value[x]) != fmi2OK) {
-            return fmi2Error;
-        }
-    }
-
-    return fmi2OK;
-}
-
-static fmi2Status generated_fmi2SetInteger(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Integer value[]) {
-    if( *getFMU() != NULL) {
-        size_t x;
-
-        //only call fmi2SetInteger() on the FMU if it's an integer it expects
-        //this fixes FMUs created by FMI Toolbox crashing
-        for (x = 0; x < nvr; x++) {
-            if (vr[x] == VR_INTEGRATOR) {
-                md->integrator = value[x];
-            } else if (fmi2_import_set_integer(*getFMU(),&vr[x],1,&value[x]) != fmi2OK) {
-                return fmi2Error;
-            }
-        }
-
-        return fmi2OK;
-    }
-    return fmi2Error;
-}
-
-static fmi2Status generated_fmi2GetBoolean(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Boolean value[]) {
-    return fmi2_import_get_boolean(*getFMU(),vr,nvr,value);
-}
-
-static fmi2Status generated_fmi2SetBoolean(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Boolean value[]) {
-    if( *getFMU() != NULL)
-        return fmi2_import_set_boolean(*getFMU(),vr,nvr,value);
-    return fmi2Error;
-}
-
-static fmi2Status generated_fmi2GetString(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2String value[]) {
-    return fmi2_import_get_string(*getFMU(),vr,nvr,value);
-}
-
-static fmi2Status generated_fmi2SetString(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2String value[]) {
-    if( *getFMU() != NULL)
-        return fmi2_import_set_string(*getFMU(),vr,nvr,value);
-    return fmi2Error;
-}
-
 // This check serves two purposes:
 // - protect against senseless zero-real FMUs
 // - avoid compilation problems on Windows (me_simulation::partials becoming [0])
@@ -113,6 +49,70 @@ typedef struct {
 #define MODEL_INIT         model_init   //like SIMULATION_INIT but get a ModelInstance* instead of state_t*
 
 #include "strlcpy.h"
+
+static fmi2Status generated_fmi2GetReal(ModelInstance *comp, const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Real value[]) {
+    return fmi2_import_get_real(*getFMU(),vr,nvr,value);
+}
+
+static fmi2Status generated_fmi2SetReal(ModelInstance *comp, modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Real value[]) {
+    if( *getFMU() != NULL)
+        return fmi2_import_set_real(*getFMU(),vr,nvr,value);
+    return fmi2Error;
+}
+
+//fmi2GetInteger and fmi2SetInteger become special because we've introduced integrator
+static fmi2Status generated_fmi2GetInteger(ModelInstance *comp, const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Integer value[]) {
+    size_t x = 0;
+
+    for (x = 0; x < nvr; x++) {
+        if (vr[x] == VR_INTEGRATOR) {
+            value[x] = md->integrator;
+        } else if (fmi2_import_get_integer(*getFMU(), &vr[x], 1, &value[x]) != fmi2OK) {
+            return fmi2Error;
+        }
+    }
+
+    return fmi2OK;
+}
+
+static fmi2Status generated_fmi2SetInteger(ModelInstance *comp, modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Integer value[]) {
+    if( *getFMU() != NULL) {
+        size_t x;
+
+        //only call fmi2SetInteger() on the FMU if it's an integer it expects
+        //this fixes FMUs created by FMI Toolbox crashing
+        for (x = 0; x < nvr; x++) {
+            if (vr[x] == VR_INTEGRATOR) {
+                md->integrator = value[x];
+            } else if (fmi2_import_set_integer(*getFMU(),&vr[x],1,&value[x]) != fmi2OK) {
+                return fmi2Error;
+            }
+        }
+
+        return fmi2OK;
+    }
+    return fmi2Error;
+}
+
+static fmi2Status generated_fmi2GetBoolean(ModelInstance *comp, const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Boolean value[]) {
+    return fmi2_import_get_boolean(*getFMU(),vr,nvr,value);
+}
+
+static fmi2Status generated_fmi2SetBoolean(ModelInstance *comp, modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Boolean value[]) {
+    if( *getFMU() != NULL)
+        return fmi2_import_set_boolean(*getFMU(),vr,nvr,value);
+    return fmi2Error;
+}
+
+static fmi2Status generated_fmi2GetString(ModelInstance *comp, const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2String value[]) {
+    return fmi2_import_get_string(*getFMU(),vr,nvr,value);
+}
+
+static fmi2Status generated_fmi2SetString(ModelInstance *comp, modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2String value[]) {
+    if( *getFMU() != NULL)
+        return fmi2_import_set_string(*getFMU(),vr,nvr,value);
+    return fmi2Error;
+}
 
 fmi2Status wrapper_get ( me_simulation *sim) {
     storeStates(&sim->sim, getTempBackup());
@@ -158,14 +158,15 @@ void model_init(ModelInstance *comp) {
 }
 
 
-fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReference wrt,fmi2Real *partial){
+static fmi2Status getPartial(ModelInstance *comp, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial){
     size_t x;
+    state_t *s = &comp->s;
 
     //could speed this up with binary search or some kind of simple hash map
     for (x = 0; x < s->simulation.npartials; x++) {
         if (vr  == s->simulation.partials[x].unknown &&
             wrt == s->simulation.partials[x].known) {
-            return generated_fmi2GetReal(&s->md, &s->simulation.partials[x].vr, 1, partial);
+            return generated_fmi2GetReal(comp, &s->md, &s->simulation.partials[x].vr, 1, partial);
         }
     }
 
@@ -176,8 +177,8 @@ fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReference wrt,
     //save state
     wrapper_get(&s->simulation);
 
-    generated_fmi2GetReal(&s->md, &wrt, 1, &wrt0);
-    generated_fmi2GetReal(&s->md, &vr,  1, &vr0);
+    generated_fmi2GetReal(comp, &s->md, &wrt, 1, &wrt0);
+    generated_fmi2GetReal(comp, &s->md, &vr,  1, &vr0);
 
     //take a small step, deal with subnormals
     //2.0^(-1022) = 2.2251e-308
@@ -192,8 +193,8 @@ fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReference wrt,
 
     wrt1 = wrt0 + dwrt;
 
-    generated_fmi2SetReal(&s->md, &wrt, 1, &wrt1);
-    generated_fmi2GetReal(&s->md, &vr,  1, &vr1);
+    generated_fmi2SetReal(comp, &s->md, &wrt, 1, &wrt1);
+    generated_fmi2GetReal(comp, &s->md, &vr,  1, &vr1);
 
     //restore state
     wrapper_set(&s->simulation);

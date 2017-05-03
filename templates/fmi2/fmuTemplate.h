@@ -58,7 +58,7 @@ static inline int max(int a, int b) {
 //needed because cl.exe doesn't accept zero-length arrays
 #define atleast1(a) ((a) < 1 ? 1 : (a))
 
-typedef struct {
+typedef struct ModelInstance {
     char instanceName[1024];
     char fmuResourceLocation[1024];
     const fmi2CallbackFunctions *functions;

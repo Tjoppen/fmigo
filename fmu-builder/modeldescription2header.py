@@ -150,6 +150,10 @@ print('''#ifndef MODELDESCRIPTION_H
 #define NUMBER_OF_STRINGS %i
 #define NUMBER_OF_STATES %i
 #define NUMBER_OF_EVENT_INDICATORS %s
+
+//will be defined in fmuTemplate.h
+//needed in generated_fmi2GetX/fmi2SetX for wrapper.c
+struct ModelInstance;
 ''' % (
     modelIdentifier,
     root.get('guid'),
@@ -227,7 +231,7 @@ if meFmuType:
 
 def gen_getters_setters(t, d):
     print('''
-static fmi2Status generated_fmi2Get%s(%smodelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2%s value[]) {
+static fmi2Status generated_fmi2Get%s(struct ModelInstance *comp, %smodelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2%s value[]) {
     size_t i;%s
 
     for (i = 0; i < nvr; i++) {
@@ -239,7 +243,7 @@ static fmi2Status generated_fmi2Get%s(%smodelDescription_t *md, const fmi2ValueR
     return fmi2OK;
 }
 
-static fmi2Status generated_fmi2Set%s(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2%s value[]) {
+static fmi2Status generated_fmi2Set%s(struct ModelInstance *comp, modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2%s value[]) {
     size_t i;%s
 
     for (i = 0; i < nvr; i++) {

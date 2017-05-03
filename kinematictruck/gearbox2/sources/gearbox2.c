@@ -2,19 +2,19 @@
 #include "fmuTemplate.h"
 
 //returns partial derivative of vr with respect to wrt
-static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
-    fmi2Real a2 = s->md.alpha*s->md.alpha;
+static fmi2Status getPartial(ModelInstance *comp, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
+    fmi2Real a2 = comp->s.md.alpha*comp->s.md.alpha;
 
     if (vr == VR_OMEGADOT_E && wrt == VR_TAU_E) {
-        *partial = a2/(s->md.j2 + a2*s->md.j1);
+        *partial = a2/(comp->s.md.j2 + a2*comp->s.md.j1);
         return fmi2OK;
     }
     if ((vr == VR_OMEGADOT_L && wrt == VR_TAU_E) || (vr == VR_OMEGADOT_E && wrt == VR_TAU_L)) {
-        *partial = s->md.alpha/(s->md.j2 + a2*s->md.j1);
+        *partial = comp->s.md.alpha/(comp->s.md.j2 + a2*comp->s.md.j1);
         return fmi2OK;
     }
     if (vr == VR_OMEGADOT_L && wrt == VR_TAU_L) {
-        *partial =  1/(s->md.j2 + a2*s->md.j1);   //load side sees a higher moment of inertia (lower inverse)
+        *partial =  1/(comp->s.md.j2 + a2*comp->s.md.j1);   //load side sees a higher moment of inertia (lower inverse)
         return fmi2OK;
     }
 

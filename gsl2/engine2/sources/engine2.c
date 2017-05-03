@@ -131,9 +131,9 @@ static void engine2_init(state_t *s) {
 
 }
 
-static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
+static fmi2Status getPartial(ModelInstance *comp, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
   if (vr == VR_ALPHA_OUT && wrt == VR_TAU_IN) {
-    *partial = s->md.jinv;
+    *partial = comp->s.md.jinv;
     return fmi2OK;
   }
   return fmi2Error;

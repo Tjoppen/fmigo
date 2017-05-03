@@ -198,7 +198,7 @@ mu * [ g    1 ]
 
 
  */
-static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
+static fmi2Status getPartial(ModelInstance *comp, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
   if (vr == VR_A_SHAFT_OUT ) {
     if (wrt == VR_F_SHAFT_IN ){
       *partial = 0 ; //XXX;

@@ -388,10 +388,10 @@ static void clutch_init(state_t *s) {
   s->simulation.delta_phi = 0;
 }
 
-static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
+static fmi2Status getPartial(ModelInstance *comp, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
   if (vr == VR_A_E) {
     if (wrt == VR_FORCE_IN_E || wrt == VR_FORCE_IN_EX) {
-      *partial = 1.0/s->md.mass_e;
+      *partial = 1.0/comp->s.md.mass_e;
       return fmi2OK;
     }
     if (wrt == VR_FORCE_IN_S || wrt == VR_FORCE_IN_SX) {
@@ -405,7 +405,7 @@ static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReferen
       return fmi2OK;
     }
     if (wrt == VR_FORCE_IN_S || wrt == VR_FORCE_IN_SX) {
-      *partial = 1.0/s->md.mass_s;
+      *partial = 1.0/comp->s.md.mass_s;
       return fmi2OK;
     }
   }

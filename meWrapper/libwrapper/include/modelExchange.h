@@ -18,7 +18,6 @@ typedef struct Backup
     fmi2_event_info_t eventInfo;
 }Backup;
 
-void setFMUstate();
 Backup* getBackup();
 Backup* getTempBackup();
 void restoreStates(cgsl_simulation *sim, Backup *backup);

@@ -148,8 +148,6 @@ void init_fmu_model(cgsl_model **m, fmi2_import_t *FMU){
 void prepare(cgsl_simulation *sim, fmi2_import_t *FMU, enum cgsl_integrator_ids integrator) {
     init_fmu_model(&sim->model, FMU);
     // set up a gsl_simulation for each client
-    fmu_parameters* p = get_p(sim->model);
-
     *sim = cgsl_init_simulation(sim->model,
                                  integrator, /* integrator: Runge-Kutta Prince Dormand pair order 7-8 */
                                  1e-10,
@@ -170,7 +168,7 @@ void restoreStates(cgsl_simulation *sim, Backup *backup){
     //restore previous states
 
 
-    memcpy(sim->model->x,backup->x,p->nx);
+    memcpy(sim->model->x,backup->x,p->nx * sizeof(sim->model->x[0]));
 
     memcpy(sim->i.evolution->dydt_out, backup->dydt,
            sim->model->n_variables * sizeof(backup->dydt[0]));
@@ -342,7 +340,6 @@ void safeTimeStep(cgsl_simulation *sim, TimeLoop *timeLoop){
  *  @param dt Timestep, input and output
  */
 void getSafeTime(cgsl_simulation *sim, double t, double *dt, Backup *backup){
-    fmu_parameters* p = get_p(sim->model);
     if(backup->eventInfo.nextEventTimeDefined)
         *dt = min(*dt, t - backup->eventInfo.nextEventTime);
 }
@@ -361,7 +358,7 @@ void runIteration(cgsl_simulation *sim, double t, double dt, Backup *backup) {
 
     getSafeTime(sim, t, &timeLoop.dt_new, backup);
     newDiscreteStates(sim, backup);
-    int iter = 2;
+
     while( timeLoop.t_safe < timeLoop.t_end ){
         me_step(sim, &timeLoop);
 

@@ -5,10 +5,7 @@
 #include <fmilib.h>
 #include <stdbool.h>
 #include "gsl-interface.h"
-typedef struct TimeLoop
-{
-    fmi2_real_t t_safe, dt_new, t_crossed, t_end;
-} TimeLoop;
+
 typedef struct Backup
 {
     double t;

@@ -8,6 +8,11 @@
 #define min(a,b) ((a<b) ? a : b)
 #endif
 
+typedef struct TimeLoop
+{
+    fmi2_real_t t_safe, dt_new, t_crossed, t_end;
+} TimeLoop;
+
 typedef struct fmu_parameters {
     int nx;
     int ni;
@@ -21,7 +26,6 @@ typedef struct fmu_parameters {
     fmi2_import_t *FMU;
 } fmu_parameters;
 
-static TimeLoop timeLoop;
 static Backup m_backup;
 static Backup m_backup2;
 
@@ -38,7 +42,15 @@ fmu_parameters* get_p(cgsl_model* m){
     return (fmu_parameters*)(m->parameters);
 }
 
-void getSafeAndCrossed(cgsl_simulation *sim);
+/** getSafeAndCrossed()
+ *  Extracts safe and crossed time found by fmu_function
+ */
+void getSafeAndCrossed(cgsl_simulation *sim, TimeLoop *timeLoop){
+    fmu_parameters *p = get_p(sim->model);
+    timeLoop->t_safe    = p->t_ok;//max( timeLoop->t_safe,    t_ok);
+    timeLoop->t_crossed = p->t_past;//min( timeLoop->t_crossed, t_past);
+}
+
 bool past_event(fmi2_real_t* a, fmi2_real_t* b, int i){
 
     i--;
@@ -206,18 +218,18 @@ bool hasStateEvent(cgsl_simulation *sim){
  *
  *  @param sim The simulation
  */
-void getGoldenNewTime(cgsl_simulation *sim, Backup* backup){
+void getGoldenNewTime(cgsl_simulation *sim, Backup* backup, TimeLoop *timeLoop){
     // golden ratio
     double phi = (1 + sqrt(5)) / 2;
     /* passed solution, need to reduce tEnd */
     if(hasStateEvent(sim)){
-        getSafeAndCrossed(sim);
+        getSafeAndCrossed(sim, timeLoop);
         restoreStates(sim, backup);
-        timeLoop.dt_new = (timeLoop.t_crossed - sim->t) / phi;
+        timeLoop->dt_new = (timeLoop->t_crossed - sim->t) / phi;
     } else { // havent passed solution, increase step
         storeStates(sim, backup);
-        timeLoop.t_safe = max(timeLoop.t_safe, sim->t);
-        timeLoop.dt_new = timeLoop.t_crossed - sim->t - (timeLoop.t_crossed - timeLoop.t_safe) / phi;
+        timeLoop->t_safe = max(timeLoop->t_safe, sim->t);
+        timeLoop->dt_new = timeLoop->t_crossed - sim->t - (timeLoop->t_crossed - timeLoop->t_safe) / phi;
     }
 }
 
@@ -226,13 +238,13 @@ void getGoldenNewTime(cgsl_simulation *sim, Backup* backup){
  *
  *  @param sim The simulation
  */
-void me_step(cgsl_simulation *sim){
+void me_step(cgsl_simulation *sim, TimeLoop *timeLoop){
     fmu_parameters *p = get_p(sim->model);
     p->stateEvent = false;
-    p->t_past = max(p->t_past, sim->t + timeLoop.dt_new);
+    p->t_past = max(p->t_past, sim->t + timeLoop->dt_new);
     p->t_ok = sim->t;
 
-    cgsl_step_to(sim, sim->t, timeLoop.dt_new);
+    cgsl_step_to(sim, sim->t, timeLoop->dt_new);
 }
 
 fmi2_real_t absmin(fmi2_real_t* v, size_t n){
@@ -248,29 +260,29 @@ fmi2_real_t absmin(fmi2_real_t* v, size_t n){
  *
  *  @param sim The simulation
  */
-void stepToEvent(cgsl_simulation *sim, Backup *backup){
+void stepToEvent(cgsl_simulation *sim, Backup *backup, TimeLoop *timeLoop){
     double tol = 1e-9;
     fmu_parameters* p = get_p(sim->model);
-    while(!hasStateEvent(sim) && !(absmin(backup->ei,p->ni) < tol || timeLoop.dt_new < tol)){
-        getGoldenNewTime(sim, backup);
-        me_step(sim);
-        if(timeLoop.dt_new == 0){
+    while(!hasStateEvent(sim) && !(absmin(backup->ei,p->ni) < tol || timeLoop->dt_new < tol)){
+        getGoldenNewTime(sim, backup, timeLoop);
+        me_step(sim, timeLoop);
+        if(timeLoop->dt_new == 0){
             fprintf(stderr,"stepToEvent: dt == 0, abort\n");
             exit(1);
         }
         if(hasStateEvent(sim)){
             // step back to where event occured
             restoreStates(sim, backup);
-            getSafeAndCrossed(sim);
-            timeLoop.dt_new = timeLoop.t_safe - sim->t;
-            me_step(sim);
+            getSafeAndCrossed(sim, timeLoop);
+            timeLoop->dt_new = timeLoop->t_safe - sim->t;
+            me_step(sim, timeLoop);
             if(!hasStateEvent(sim)) storeStates(sim, backup);
             else{
                 fprintf(stderr,"stepToEvent: failed at stepping to safe time, aborting\n");
                 exit(1);
             }
-            timeLoop.dt_new = timeLoop.t_crossed - sim->t;
-            me_step(sim);
+            timeLoop->dt_new = timeLoop->t_crossed - sim->t;
+            me_step(sim, timeLoop);
             if(!hasStateEvent(sim)){
                 fprintf(stderr,"stepToEvent: failed at stepping to event \n");
                 exit(1);
@@ -310,26 +322,17 @@ void newDiscreteStates(cgsl_simulation *sim, Backup *backup){
     storeStates(sim, backup);
 }
 
-/** getSafeAndCrossed()
- *  Extracts safe and crossed time found by fmu_function
- */
-void getSafeAndCrossed(cgsl_simulation *sim){
-    fmu_parameters *p = get_p(sim->model);
-    timeLoop.t_safe    = p->t_ok;//max( timeLoop.t_safe,    t_ok);
-    timeLoop.t_crossed = p->t_past;//min( timeLoop.t_crossed, t_past);
-}
-
 /** safeTimeStep()
  *  Make sure we take small first step when we're at on event
  *  @param sim The simulation
  */
-void safeTimeStep(cgsl_simulation *sim){
+void safeTimeStep(cgsl_simulation *sim, TimeLoop *timeLoop){
     // if sims has a state event do not step to far
     if(hasStateEvent(sim)){
         double absmin = 0;//m_baseMaster->get_storage().absmin(STORAGE::indicators);
-        timeLoop.dt_new = sim->h * (absmin > 0 ? absmin:0.00001);
+        timeLoop->dt_new = sim->h * (absmin > 0 ? absmin:0.00001);
     }else
-        timeLoop.dt_new = timeLoop.t_end - sim->t;
+        timeLoop->dt_new = timeLoop->t_end - sim->t;
 }
 
 /** getSafeTime()
@@ -349,32 +352,36 @@ void getSafeTime(cgsl_simulation *sim, double t, double *dt, Backup *backup){
  *  @param dt The timestep to be taken
  */
 void runIteration(cgsl_simulation *sim, double t, double dt, Backup *backup) {
+    TimeLoop timeLoop;
+
     timeLoop.t_safe = t;
+    timeLoop.t_crossed = t; //not used before getSafeAndCrossed() I think, but best to be safe
     timeLoop.t_end = t + dt;
     timeLoop.dt_new = dt;
+
     getSafeTime(sim, t, &timeLoop.dt_new, backup);
     newDiscreteStates(sim, backup);
     int iter = 2;
     while( timeLoop.t_safe < timeLoop.t_end ){
-        me_step(sim);
+        me_step(sim, &timeLoop);
 
         if (hasStateEvent(sim)){
 
-            getSafeAndCrossed(sim);
+            getSafeAndCrossed(sim, &timeLoop);
 
             // restore and step to before the event
             restoreStates(sim, backup);
             timeLoop.dt_new = timeLoop.t_safe - sim->t;
-            me_step(sim);
+            me_step(sim, &timeLoop);
 
             // store and step to the event
             if(!hasStateEvent(sim)) storeStates(sim, backup);
             timeLoop.dt_new = timeLoop.t_crossed - sim->t;
-            me_step(sim);
+            me_step(sim, &timeLoop);
 
             // step closer to the event location
             if(hasStateEvent(sim))
-                stepToEvent(sim, backup);
+                stepToEvent(sim, backup, &timeLoop);
 
         }
         else {
@@ -382,7 +389,7 @@ void runIteration(cgsl_simulation *sim, double t, double dt, Backup *backup) {
             timeLoop.t_crossed = timeLoop.t_end;
         }
 
-        safeTimeStep(sim);
+        safeTimeStep(sim, &timeLoop);
         if(hasStateEvent(sim))
             newDiscreteStates(sim, backup);
         storeStates(sim, backup);

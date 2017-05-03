@@ -9,9 +9,9 @@
 #define FMI_COSIMULATION
 #define HAVE_DIRECTIONAL_DERIVATIVE 1
 #define CAN_GET_SET_FMU_STATE 1
-#define NUMBER_OF_REALS 32
+#define NUMBER_OF_REALS 30
 #define NUMBER_OF_INTEGERS 1
-#define NUMBER_OF_BOOLEANS 0
+#define NUMBER_OF_BOOLEANS 2
 #define NUMBER_OF_STRINGS 0
 #define NUMBER_OF_STATES 0
 #define NUMBER_OF_EVENT_INDICATORS 0
@@ -44,15 +44,14 @@ typedef struct {
     fmi2Real    D_drive2; //VR=22
     fmi2Real    driver_sign1; //VR=23
     fmi2Real    driver_sign2; //VR=24
-    fmi2Real    integrate_dt1; //VR=25
-    fmi2Real    integrate_dt2; //VR=26
     fmi2Real    step; //VR=27
     fmi2Real    theta01; //VR=29
     fmi2Real    theta02; //VR=30
     fmi2Real    omega01; //VR=31
     fmi2Real    omega02; //VR=32
     fmi2Integer n_elements; //VR=28
-
+    fmi2Boolean integrate_dt1; //VR=25
+    fmi2Boolean integrate_dt2; //VR=26
 
 } modelDescription_t;
 
@@ -84,15 +83,14 @@ static const modelDescription_t defaults = {
     0.000000, //D_drive2
     1.000000, //driver_sign1
     1.000000, //driver_sign2
-    1.000000, //integrate_dt1
-    1.000000, //integrate_dt2
     0.100000, //step
     0.000000, //theta01
     0.000000, //theta02
     0.000000, //omega01
     0.000000, //omega02
     10, //n_elements
-
+    1, //integrate_dt1
+    1, //integrate_dt2
 
 };
 
@@ -122,15 +120,14 @@ static const modelDescription_t defaults = {
 #define VR_D_DRIVE2 22
 #define VR_DRIVER_SIGN1 23
 #define VR_DRIVER_SIGN2 24
-#define VR_INTEGRATE_DT1 25
-#define VR_INTEGRATE_DT2 26
 #define VR_STEP 27
 #define VR_THETA01 29
 #define VR_THETA02 30
 #define VR_OMEGA01 31
 #define VR_OMEGA02 32
 #define VR_N_ELEMENTS 28
-
+#define VR_INTEGRATE_DT1 25
+#define VR_INTEGRATE_DT2 26
 
 
 //the following getters and setters are static to avoid getting linking errors if this file is included in more than one place
@@ -168,8 +165,6 @@ static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2
         case 22: value[i] = md->D_drive2; break;
         case 23: value[i] = md->driver_sign1; break;
         case 24: value[i] = md->driver_sign2; break;
-        case 25: value[i] = md->integrate_dt1; break;
-        case 26: value[i] = md->integrate_dt2; break;
         case 27: value[i] = md->step; break;
         case 29: value[i] = md->theta01; break;
         case 30: value[i] = md->theta02; break;
@@ -211,8 +206,6 @@ static fmi2Status generated_fmi2SetReal(modelDescription_t *md, const fmi2ValueR
         case 22: md->D_drive2 = value[i]; break;
         case 23: md->driver_sign1 = value[i]; break;
         case 24: md->driver_sign2 = value[i]; break;
-        case 25: md->integrate_dt1 = value[i]; break;
-        case 26: md->integrate_dt2 = value[i]; break;
         case 27: md->step = value[i]; break;
         case 29: md->theta01 = value[i]; break;
         case 30: md->theta02 = value[i]; break;
@@ -253,7 +246,8 @@ static fmi2Status generated_fmi2GetBoolean(const modelDescription_t *md, const f
 
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-
+        case 25: value[i] = md->integrate_dt1; break;
+        case 26: value[i] = md->integrate_dt2; break;
         default: return fmi2Error;
         }
     }
@@ -265,7 +259,8 @@ static fmi2Status generated_fmi2SetBoolean(modelDescription_t *md, const fmi2Val
 
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-
+        case 25: md->integrate_dt1 = value[i]; break;
+        case 26: md->integrate_dt2 = value[i]; break;
         default: return fmi2Error;
         }
     }

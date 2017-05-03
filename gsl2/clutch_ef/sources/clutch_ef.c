@@ -111,7 +111,7 @@ static double fclutch( double dphi, double domega, double clutch_damping ) {
   } else if ( dphi >= b[ END ] ) {
     tc = ( dphi - b[ END ] ) / 0.078539816339744828 * 3450.0 + c[ END ];
   } else {
-    int i;
+    size_t i;
     for (i = 0; i < END; ++i) {
       if (dphi >= b[ i ] && dphi <= b[ i+1 ]) {
 	double k = (dphi - b[ i ]) / (b[ i+1 ] - b[ i ]);
@@ -153,7 +153,7 @@ static double fclutch_dphi_derivative( double dphi ) {
   } else if ( dphi >= b[ END ] ) {
     df =  1.0 / 0.078539816339744828 * 3450.0 ;
   } else {
-    int i;
+    size_t i;
     for (i = 0; i < END; ++i) {
       if (dphi >= b[ i ] && dphi <= b[ i+1 ]) {
 	double k =  1.0  / (b[ i+1 ] - b[ i ]);

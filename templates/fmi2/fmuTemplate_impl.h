@@ -80,7 +80,7 @@ static fmi2Boolean nullPointer(ModelInstance* comp, const char *f, const char *a
 }
 
 #ifndef HAVE_GENERATED_GETTERS_SETTERS
-static fmi2Boolean vrOutOfRange(ModelInstance *comp, const char *f, fmi2ValueReference vr, int end) {
+static fmi2Boolean vrOutOfRange(ModelInstance *comp, const char *f, fmi2ValueReference vr, fmi2ValueReference end) {
     if (vr >= end) {
         FILTERED_LOG(comp, fmi2Error, LOG_ERROR, "%s: Illegal value reference %u.", f, vr)
         comp->s.state = modelError;
@@ -130,7 +130,8 @@ const char* fmi2GetVersion() {
 
 fmi2Status fmi2SetDebugLogging(fmi2Component c, fmi2Boolean loggingOn, size_t nCategories, const fmi2String categories[]) {
     // ignore arguments: nCategories, categories
-    int i, j;
+    size_t i;
+    int j;
     ModelInstance *comp = (ModelInstance *)c;
     comp->loggingOn = loggingOn;
 
@@ -248,7 +249,7 @@ fmi2Component fmi2Instantiate(fmi2String instanceName, fmi2Type fmuType, fmi2Str
     }
     comp = (ModelInstance *)functions->allocateMemory(1, sizeof(ModelInstance));
     if (comp) {
-        int i;
+        size_t i;
         // UMIT: log errors only, if logging is on. We don't have to enable all of them,
         // to quote the spec: "Which LogCategories the FMU sets is unspecified."
         // fmi2SetDebugLogging should be called to choose specific categories.
@@ -371,7 +372,7 @@ fmi2Status fmi2GetReal (fmi2Component c, const fmi2ValueReference vr[], size_t n
 #ifdef HAVE_GENERATED_GETTERS_SETTERS
     return generated_fmi2GetReal(&comp->s.md, vr, nvr, value);
 #else
-    int i;
+    size_t i;
     for (i = 0; i < nvr; i++) {
         if (vrOutOfRange(comp, "fmi2GetReal", vr[i], NUMBER_OF_REALS))
             return fmi2Error;
@@ -393,7 +394,7 @@ fmi2Status fmi2GetInteger(fmi2Component c, const fmi2ValueReference vr[], size_t
 #ifdef HAVE_GENERATED_GETTERS_SETTERS
     return generated_fmi2GetInteger(&comp->s.md, vr, nvr, value);
 #else
-    int i;
+    size_t i;
     for (i = 0; i < nvr; i++) {
         if (vrOutOfRange(comp, "fmi2GetInteger", vr[i], NUMBER_OF_INTEGERS))
             return fmi2Error;
@@ -415,7 +416,7 @@ fmi2Status fmi2GetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t
 #ifdef HAVE_GENERATED_GETTERS_SETTERS
     return generated_fmi2GetBoolean(&comp->s.md, vr, nvr, value);
 #else
-    int i;
+    size_t i;
     for (i = 0; i < nvr; i++) {
         if (vrOutOfRange(comp, "fmi2GetBoolean", vr[i], NUMBER_OF_BOOLEANS))
             return fmi2Error;
@@ -456,7 +457,7 @@ fmi2Status fmi2SetReal (fmi2Component c, const fmi2ValueReference vr[], size_t n
 #ifdef HAVE_GENERATED_GETTERS_SETTERS
     ret = generated_fmi2SetReal(&comp->s.md, vr, nvr, value);
 #else
-    int i;
+    size_t i;
     for (i = 0; i < nvr; i++) {
         if (vrOutOfRange(comp, "fmi2SetReal", vr[i], NUMBER_OF_REALS))
             return fmi2Error;
@@ -491,7 +492,7 @@ fmi2Status fmi2SetInteger(fmi2Component c, const fmi2ValueReference vr[], size_t
 #ifdef HAVE_GENERATED_GETTERS_SETTERS
     return generated_fmi2SetInteger(&comp->s.md, vr, nvr, value);
 #else
-    int i;
+    size_t i;
     for (i = 0; i < nvr; i++) {
         if (vrOutOfRange(comp, "fmi2SetInteger", vr[i], NUMBER_OF_INTEGERS))
             return fmi2Error;
@@ -514,7 +515,7 @@ fmi2Status fmi2SetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t
 #ifdef HAVE_GENERATED_GETTERS_SETTERS
     return generated_fmi2SetBoolean(&comp->s.md, vr, nvr, value);
 #else
-    int i;
+    size_t i;
     for (i = 0; i < nvr; i++) {
         if (vrOutOfRange(comp, "fmi2SetBoolean", vr[i], NUMBER_OF_BOOLEANS))
             return fmi2Error;
@@ -660,7 +661,7 @@ fmi2Status fmi2SetRealInputDerivatives(fmi2Component c, const fmi2ValueReference
 
 fmi2Status fmi2GetRealOutputDerivatives(fmi2Component c, const fmi2ValueReference vr[], size_t nvr,
                                       const fmi2Integer order[], fmi2Real value[]) {
-    int i;
+    size_t i;
     ModelInstance *comp = (ModelInstance *)c;
     if (invalidState(comp, "fmi2GetRealOutputDerivatives", modelInitialized|modelStepping|modelError))
         return fmi2Error;
@@ -864,7 +865,7 @@ fmi2Status fmi2SetContinuousStates(fmi2Component c, const fmi2Real x[], size_t n
 #ifdef HAVE_MODELDESCRIPTION_STRUCT
     return generated_fmi2SetReal(&comp->s.md, vrStates, nx, x);
 #else
-    int i;
+    size_t i;
     for (i = 0; i < nx; i++) {
         fmi2ValueReference vr = vrStates[i];
         FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2SetContinuousStates: #r%d#=%.16g", vr, x[i])
@@ -891,7 +892,7 @@ fmi2Status fmi2GetDerivatives(fmi2Component c, fmi2Real derivatives[], size_t nx
 #ifdef HAVE_MODELDESCRIPTION_STRUCT
     return generated_fmi2GetReal(&comp->s.md, vrDerivatives, nx, derivatives);
 #else
-    int i;
+    size_t i;
     for (i = 0; i < nx; i++) {
         fmi2ValueReference vr = vrStates[i] + 1;
         derivatives[i] = getReal(comp, vr); // to be implemented by the includer of this file
@@ -916,7 +917,7 @@ fmi2Status fmi2GetEventIndicators(fmi2Component c, fmi2Real eventIndicators[], s
 #ifdef HAVE_MODELDESCRIPTION_STRUCT
     return getEventIndicator(&comp->s.md, eventIndicators);
 #else
-    int i;
+    size_t i;
     for (i = 0; i < ni; i++) {
         eventIndicators[i] = getEventIndicator(comp, i); // to be implemented by the includer of this file
         FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2GetEventIndicators: z%d = %.16g", i, eventIndicators[i])
@@ -941,7 +942,7 @@ fmi2Status fmi2GetContinuousStates(fmi2Component c, fmi2Real states[], size_t nx
 #ifdef HAVE_MODELDESCRIPTION_STRUCT
     return generated_fmi2GetReal(&comp->s.md, vrStates, nx, states);
 #else
-    int i;
+    size_t i;
     for (i = 0; i < nx; i++) {
         fmi2ValueReference vr = vrStates[i];
         states[i] = getReal(comp, vr); // to be implemented by the includer of this file
@@ -964,7 +965,7 @@ fmi2Status fmi2GetNominalsOfContinuousStates(fmi2Component c, fmi2Real x_nominal
     if (nullPointer(comp, "fmi2GetNominalContinuousStates", "x_nominal[]", x_nominal))
         return fmi2Error;
     FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2GetNominalContinuousStates: x_nominal[0..%d] = 1.0", nx-1)
-    int i;
+    size_t i;
     for (i = 0; i < nx; i++)
         x_nominal[i] = 1;
     return fmi2OK;

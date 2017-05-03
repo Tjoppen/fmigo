@@ -273,7 +273,7 @@ static double fclutch( double dphi, double domega, double clutch_damping ) {
   } else if ( dphi >= clutch_dphi[ END ] ) {
     tc = ( clutch_torque[ END ] - clutch_torque[ END - 1 ] ) * ( dphi - clutch_dphi[ END ] ) / ( clutch_dphi[ END ] - clutch_dphi[ END - 1 ] ) + clutch_torque[ END ];
   } else {
-    int i;
+    size_t i;
     for (i = 0; i < END; ++i) {
       if (dphi >= clutch_dphi[ i ] && dphi <= clutch_dphi[ i+1 ]) {
 	double k = (dphi - clutch_dphi[ i ]) / (clutch_dphi[ i+1 ] - clutch_dphi[ i ]);
@@ -307,7 +307,7 @@ static double fclutch_dphi_derivative( double dphi ) {
   } else if ( dphi >= clutch_dphi[ END ] ) {
     df =  ( clutch_torque[ END ] - clutch_torque[ END - 1 ] ) / ( clutch_dphi[ END ] - clutch_dphi[ END - 1 ] );
   } else {
-    int i;
+    size_t i;
     for (i = 0; i < END; ++i) {
       if (dphi >= clutch_dphi[ i ] && dphi <= clutch_dphi[ i+1 ]) {
 	double k =  1.0  / (clutch_dphi[ i+1 ] - clutch_dphi[ i ]);

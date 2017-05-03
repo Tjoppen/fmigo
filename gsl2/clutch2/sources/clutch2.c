@@ -303,7 +303,7 @@ static void get_initial_states(state_t *s, double *initials) {
   }
 }
 
-static int sync_out(int n, const double outputs[], void * params) {
+static int sync_out(double t, int n, const double outputs[], void * params) {
 
   state_t *s = params;
   double dxdt[6];
@@ -373,12 +373,21 @@ static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReferen
 
 #define NEW_DOSTEP //to get noSetFMUStatePriorToCurrentPoint
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
+  int N = get_initial_states_size(s);
+
+  
   if (s->md.is_gearbox && s->md.gear != s->simulation.last_gear) {
     /** gear changed - compute impact that keeps things sane */
     double ratio = gear2ratio(s);
     s->simulation.delta_phi = ratio*s->simulation.sim.model->x[ 2 ] - s->simulation.sim.model->x[ 0 ];
   }
 
+  
+  if ( s->md.reset_dx_e && s->md.integrate_dx_e)
+    s->simulation.sim.model->x[ 2 ] = 0.0;
+  if ( s->md.reset_dx_s && s->md.integrate_dx_s )
+    s->simulation.sim.model->x[ N-1 ] = 0.0;
+  
   //don't dump tentative steps
   s->simulation.sim.print = noSetFMUStatePriorToCurrentPoint;
   cgsl_step_to( &s->simulation, currentCommunicationPoint, communicationStepSize );

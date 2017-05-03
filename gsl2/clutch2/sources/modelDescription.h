@@ -11,7 +11,7 @@
 #define CAN_GET_SET_FMU_STATE 1
 #define NUMBER_OF_REALS 34
 #define NUMBER_OF_INTEGERS 3
-#define NUMBER_OF_BOOLEANS 4
+#define NUMBER_OF_BOOLEANS 6
 #define NUMBER_OF_STRINGS 1
 #define NUMBER_OF_STATES 0
 #define NUMBER_OF_EVENT_INDICATORS 0
@@ -60,6 +60,8 @@ typedef struct {
     fmi2Boolean integrate_dx_s; //VR=11
     fmi2Boolean is_gearbox; //VR=17
     fmi2Boolean octave_output; //VR=97
+    fmi2Boolean reset_dx_e; //VR=203
+    fmi2Boolean reset_dx_s; //VR=204
     fmi2Char    octave_output_file[500]; //VR=202
 } modelDescription_t;
 
@@ -107,7 +109,9 @@ static const modelDescription_t defaults = {
     0, //integrate_dx_s
     0, //is_gearbox
     0, //octave_output
-    "clutch3.m", //octave_output_file
+    0, //reset_dx_e
+    0, //reset_dx_s
+    "clutch2.m", //octave_output_file
 };
 
 
@@ -152,6 +156,8 @@ static const modelDescription_t defaults = {
 #define VR_INTEGRATE_DX_S 11
 #define VR_IS_GEARBOX 17
 #define VR_OCTAVE_OUTPUT 97
+#define VR_RESET_DX_E 203
+#define VR_RESET_DX_S 204
 #define VR_OCTAVE_OUTPUT_FILE 202
 
 //the following getters and setters are static to avoid getting linking errors if this file is included in more than one place
@@ -281,6 +287,8 @@ static fmi2Status generated_fmi2GetBoolean(const modelDescription_t *md, const f
         case 11: value[i] = md->integrate_dx_s; break;
         case 17: value[i] = md->is_gearbox; break;
         case 97: value[i] = md->octave_output; break;
+        case 203: value[i] = md->reset_dx_e; break;
+        case 204: value[i] = md->reset_dx_s; break;
         default: return fmi2Error;
         }
     }
@@ -295,6 +303,8 @@ static fmi2Status generated_fmi2SetBoolean(modelDescription_t *md, const fmi2Val
         case 11: md->integrate_dx_s = value[i]; break;
         case 17: md->is_gearbox = value[i]; break;
         case 97: md->octave_output = value[i]; break;
+        case 203: md->reset_dx_e = value[i]; break;
+        case 204: md->reset_dx_s = value[i]; break;
         default: return fmi2Error;
         }
     }

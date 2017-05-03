@@ -426,13 +426,31 @@
         description="file for internal dump?"
         causality="parameter"
         variability="fixed">
-      <String start="clutch3.m" size="500"/>
+      <String start="clutch2.m" size="500"/>
     </ScalarVariable>
+
+    <!-- index="44"-->
+    <ScalarVariable 
+        name="reset_dx_e"
+        valueReference="203"
+        description="Whether or not angle differences are reset at each step"
+        causality="parameter"
+        variability="fixed">
+      <Boolean start="false"/>
+    </ScalarVariable>
+    <!-- index="45"-->
+     <ScalarVariable 
+        name="reset_dx_s"
+        valueReference="204"
+        description="Whether or not angle differences are reset at each step"
+        causality="parameter"
+        variability="fixed">
+      <Boolean start="false"/>
+    </ScalarVariable>   
+
   </ModelVariables>
 
 
-
-  
   <ModelStructure>
     <Outputs>
       <Unknown index="31"/>

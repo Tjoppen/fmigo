@@ -213,6 +213,7 @@ void cgsl_simulation_get( cgsl_simulation *s );
 void cgsl_simulation_set( cgsl_simulation *s );
 
 typedef int (*epce_post_step_ptr) (
+  double t, 
     int n,                          /** Number of variables */
     const double outputs[],         /** Outputs. Filtered or not, depending
                                      * on filter_length */

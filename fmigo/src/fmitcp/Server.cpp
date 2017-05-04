@@ -330,6 +330,10 @@ string Server::clientData(const char *data, size_t size) {
     if (!m_sendDummyResponses) {
       // instantiate FMU
       status = fmi2_import_instantiate(m_fmi2Instance, m_instanceName, simType, m_resourcePath.c_str(), visible);
+
+      //must be done prior to entering initalization mode, since the master
+      //will be sending values before and during initialization mode
+      setStartValues();
     }
 
     // Create response message
@@ -398,7 +402,6 @@ string Server::clientData(const char *data, size_t size) {
     fmi2_status_t status = fmi2_status_ok;
     if (!m_sendDummyResponses) {
       status = fmi2_import_enter_initialization_mode(m_fmi2Instance);
-      setStartValues();
     }
 
     SERVER_NORMAL_RESPONSE(enter_initialization_mode);

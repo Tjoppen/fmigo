@@ -4,7 +4,7 @@ source boilerplate.sh
 
 (cd ${FMUS_DIR}/me      && ( ./test_me.sh ||  ( echo "failed modelExchange" && exit 1 ) ) )
 (cd articles/work-reports       && ( ./run_tests.sh  || ( echo "failed tests in work-reports" && exit 1 ) ) )
-(cd articles/truck              && ( python test_gsl_trucks.py  || ( echo "failed loop solver test" && exit 1 ) ) )
+(cd articles/truck              && ( python test_gsl_trucks.py  || ( echo "failed GSL truck test" && exit 1 ) ) )
 (cd fmu-examples/co_simulation  && ( ./run_tests.sh ||  ( echo "failted test in co_simulation" && exit 1 ) ) )
 (cd ${FMUS_DIR}/testfmus/typeconvtest    && ( ./test_typeconv.sh ||  ( echo "failed typeconvtest" && exit 1 ) ) )
 (cd ${FMUS_DIR}/testfmus/loopsolvetest   && ( ./test_loops.sh ||  ( echo "failed loopsolvetest" && exit 1 ) ) )

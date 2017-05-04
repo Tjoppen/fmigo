@@ -90,6 +90,10 @@ const variable_map& FMIClient::getVariables() const {
   return m_variables;
 }
 
+const variable_vr_map& FMIClient::getVRVariables() const {
+  return m_vr_variables;
+}
+
 fmi2_fmu_kind_enu_t FMIClient::getFmuKind(){
   return fmi2_import_get_fmu_kind(m_fmi2Instance);
 }
@@ -106,16 +110,20 @@ void FMIClient::setVariables() {
         string name = fmi2_import_get_variable_name(var);
 
         variable var2;
-        var2.vr = fmi2_import_get_variable_vr(var);
-        var2.type = fmi2_import_get_variable_base_type(var);
-        var2.causality = fmi2_import_get_causality(var);
+        var2.vr         = fmi2_import_get_variable_vr(var);
+        var2.type       = fmi2_import_get_variable_base_type(var);
+        var2.causality  = fmi2_import_get_causality(var);
+        var2.initial    = fmi2_import_get_initial(var);
 
         //debug("VR %i, type %i, causality %i: %s \"%s\"\n", var2.vr, var2.type, var2.causality, name.c_str(), fmi2_import_get_variable_description(var));
 
         if (m_variables.find(name) != m_variables.end()) {
             warning("Two or variables named \"%s\"\n", name.c_str());
         }
+
+        //make it possible to look up variables by name or by (vr,type)
         m_variables[name] = var2;
+        m_vr_variables[make_pair(var2.vr, var2.type)] = var2;
     }
     fmi2_import_free_variable_list(vl);
 
@@ -126,9 +134,10 @@ void FMIClient::setVariables() {
         fmi2_import_variable_t *var = fmi2_import_get_variable(m_fmi2Outputs, x);
 
         variable var2;
-        var2.vr = fmi2_import_get_variable_vr(var);
-        var2.type = fmi2_import_get_variable_base_type(var);
-        var2.causality = fmi2_import_get_causality(var);
+        var2.vr         = fmi2_import_get_variable_vr(var);
+        var2.type       = fmi2_import_get_variable_base_type(var);
+        var2.causality  = fmi2_import_get_causality(var);
+        var2.initial    = fmi2_import_get_initial(var);
 
         m_outputs.push_back(var2);
     }

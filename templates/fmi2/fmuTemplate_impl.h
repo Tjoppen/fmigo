@@ -397,7 +397,7 @@ fmi2Status fmi2SetReal (fmi2Component c, const fmi2ValueReference vr[], size_t n
         int N = get_initial_states_size(&comp->s);
         double *initials = calloc(N, sizeof(double));
         get_initial_states(&comp->s, initials);
-        sync_out(N, initials, &comp->s);
+        sync_out(0.0, N, initials, &comp->s);
         free(initials);
     }
 #endif

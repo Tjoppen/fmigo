@@ -14,8 +14,16 @@ typedef struct {
                        *  "springing" when changing gears */
 /* this is to help with computation of dphi */
   double communication_time;
-  double xe;			
-  double xs;			
+  double xe0;			/* angles from last time */
+  double xs0;
+  double xe00;			/* angles from last time */
+  double xs00;
+  double dxe0;			/* angle diffs from last time */
+  double dxs0;			
+  double dxe00;			/* angle diffs from last time */
+  double dxs00;			
+  double zdxe;			/* filtered dx from last time */
+  double zdxs;
 } clutchgear_simulation;
 
 #define SIMULATION_TYPE clutchgear_simulation
@@ -70,6 +78,12 @@ static double gear2ratio(state_t *s) {
 static double fclutch( double dphi, double domega, double clutch_damping ); 
 static double fclutch_dphi_derivative( double dphi );
 
+static double get_dx(double phi, double phi0, double dphi0, double omega_in, double t ){
+  double dx = phi - phi0 - t * omega_in + dphi0;
+//  fprintf(stderr, "dx = %f phi = %f  phi0 = %f dphi0 = %f omega_in = %f  t = %f\n", dx, phi, phi0, dphi0, omega_in, t);
+  return dx;
+
+}
 /*  
     Two (rotational) bodies connected via a piecewise linear clutch model. 
     
@@ -85,13 +99,15 @@ static double fclutch_dphi_derivative( double dphi );
     v_e    : velocity engine plate
     x_s    : position shaft plate
     v_s    : velocity shaft plate
-    dx_e   : angle difference estimate between engine plate and outside coupling
-    dx_s   : angle difference estimate between shaft plate and outside coupling
 
 */
 
-static void compute_forces(state_t *s, const double x[], double *force_e, double *force_s, double *force_clutch) {
-  int dx_s_idx = s->md.integrate_dx_e ? 5 : 4;
+static void compute_forces(state_t *s, const double x[],
+			   double dxe,
+			   double dxs,
+			   double *force_e, double *force_s,
+			   double *force_clutch, double t) {
+
 
 /** compute the coupling force: NOTE THE SIGN!
  *  This is the force *applied* to the coupled system
@@ -101,13 +117,13 @@ static void compute_forces(state_t *s, const double x[], double *force_e, double
 
   
   if ( s->md.integrate_dx_e )
-    *force_e +=  s->md.k_ec *  x[ 4 ];
+    *force_e +=  s->md.k_ec *  dxe;
   else
     *force_e +=  s->md.k_ec *  ( x[ 0 ] - s->md.x_in_e );
 
   *force_s =   s->md.gamma_sc * ( x[ 3 ] - s->md.v_in_s );
   if ( s->md.integrate_dx_s )
-    *force_s +=  s->md.k_sc *  x[ dx_s_idx ];
+    *force_s +=  s->md.k_sc *  dxs;
   else
     *force_s +=  s->md.k_sc *  ( x[ 2 ] - s->md.x_in_s );
 
@@ -131,12 +147,11 @@ int clutch (double t, const double x[], double dxdt[], void * params){
 
   state_t *s = (state_t*)params;
   
-/** the index of dx_s depends on whether we're integrating dx_e or not */
-  int dx_s_idx = s->md.integrate_dx_e ? 5 : 4;
-  int N = 4 + s->md.integrate_dx_e + s->md.integrate_dx_s;
-
   double force_e, force_s, force_clutch;
-  compute_forces(s, x, &force_e, &force_s, &force_clutch);
+  double t0 = s->simulation.communication_time;
+  double dxe = get_dx( x[ 0 ],  s->md.x_e, s->simulation.dxe0, s->md.v_in_e, t-t0);
+  double dxs = get_dx( x[ 2 ],  s->md.x_s, s->simulation.dxs0, s->md.v_in_s, t-t0);
+  compute_forces(s, x, dxe, dxs, &force_e, &force_s, &force_clutch, t);
 
 /** Second order dynamics */
   dxdt[ 0 ]  = x[ 1 ];
@@ -170,15 +185,6 @@ int clutch (double t, const double x[], double dxdt[], void * params){
   dxdt[ 3 ] -= force_s;
   dxdt[ 3 ] /= s->md.mass_s;
  
- 
-/** angle difference */
-  if ( s->md.integrate_dx_e ) { 
-    dxdt[ 4 ]        = x[ 1 ] - s->md.v_in_e;
-  }
-  if ( s->md.integrate_dx_s ){ 
-    dxdt[ dx_s_idx ] = x[ 3 ] - s->md.v_in_s;
-  }
-
   return GSL_SUCCESS;
 
 }
@@ -190,7 +196,7 @@ int jac_clutch (double t, const double x[], double *dfdx, double dfdt[], void *p
 {
   
   state_t *s = (state_t*)params;
-  int N = 4 + s->md.integrate_dx_e + s->md.integrate_dx_s;
+  int N = 4;
   double r = gear2ratio(s);
   int i, j;
   double dphid = fclutch_dphi_derivative( x[0]-x[2] ) ;
@@ -208,42 +214,25 @@ int jac_clutch (double t, const double x[], double *dfdx, double dfdt[], void *p
   /* second order dynamics on the angles */
   gsl_matrix_set (J, 0, 1, 1.0);
   gsl_matrix_set (J, 2, 3, 1.0);
+  
+  gsl_matrix_set(J, 1, 0, -s->md.k_ec * mu_e);
 
-  /* dphi integration */
-  i = 4;
-  if ( s->md.integrate_dx_e ){
-    /* in this case, there's a force -s->md.k_ec * dphi */
-    gsl_matrix_set(J, i, 1, 1.0);
-    gsl_matrix_set(J, 1, i, -s->md.k_ec * mu_e);
-    ++i;
-  } else{			/* we are using phi1 directly */
-    gsl_matrix_set(J, 1, 0, -s->md.k_ec * mu_e);
-  }
-
-  if ( s->md.integrate_dx_s ){
-    gsl_matrix_set(J, i, 3, 1.0);
-    gsl_matrix_set(J, 3, i, -s->md.k_sc * mu_s);
-    ++i;
-  } else{			/* using phi2  directly */
-    gsl_matrix_set(J, 3, 2, -s->md.k_sc * mu_s);
-  }
+  gsl_matrix_set(J, 3, 2, -s->md.k_sc * mu_s);
   
   /* dynamics of the first plate */
   if ( s->md.is_gearbox) {
     
     gsl_matrix_set (J, 1, 1, -( s->md.gear_d + s->md.gamma_ec + s->md.gamma_e ) * mu_e);
-//    gsl_matrix_set (J, 1, 2, s->md.gear_k * mu_e); /* spring to phi2 */
-    //   gsl_matrix_set (J, 1, 3, s->md.gear_d * mu_e); /* damping with w2 */
+    gsl_matrix_set (J, 1, 2, s->md.gear_k * mu_e); /* spring to phi2 */
+    gsl_matrix_set (J, 1, 3, s->md.gear_d * mu_e); /* damping with w2 */
 
     gsl_matrix_set (J, 3, 3, -( r * s->md.gear_d + s->md.gamma_sc + s->md.gamma_s ) * mu_s);
-    //   gsl_matrix_set (J, 3, 0, r * s->md.gear_k * mu_s); /* spring to phi1 */
-    //gsl_matrix_set (J, 3, 1, r * s->md.gear_d * mu_s); /* damping with w1 */
+    gsl_matrix_set (J, 3, 0, r * s->md.gear_k * mu_s); /* spring to phi1 */
+    gsl_matrix_set (J, 3, 1, r * s->md.gear_d * mu_s); /* damping with w1 */
    
     
   } else{
     tmp = -dphid;
-    if ( ! s->md.integrate_dx_e )
-      tmp -= s->md.k_ec;
     gsl_matrix_set (J, 1, 0, tmp * mu_e  ); 
 
     gsl_matrix_set (J, 1, 1, ( -s->md.clutch_damping - s->md.gamma_ec - s->md.gamma_e ) *mu_e );
@@ -255,8 +244,6 @@ int jac_clutch (double t, const double x[], double *dfdx, double dfdt[], void *p
     gsl_matrix_set (J, 3, 1, s->md.clutch_damping *mu_s); /* damping with w1 */
 
     tmp =  -dphid;
-    if ( ! s->md.integrate_dx_s )
-      tmp -= s->md.k_sc;
     gsl_matrix_set (J, 3, 2, tmp  ); 
   }
 
@@ -335,33 +322,63 @@ static double fclutch_dphi_derivative( double dphi ) {
 
 #define HAVE_INITIALIZATION_MODE
 static int get_initial_states_size(state_t *s) {
-  return 4 + s->md.integrate_dx_e + s->md.integrate_dx_s;
+  return 4;
 }
 
 /// WTF?  This is called 25 times during initialization!
 static void get_initial_states(state_t *s, double *initials) {
-  int N = get_initial_states_size(s);
   initials[0] = s->md.x0_e;
   initials[1] = s->md.v0_e;
   initials[2] = s->md.x0_s;
   initials[3] = s->md.v0_s;
-
-  if (N >= 5) {
-    initials[4] = s->md.integrate_dx_e ? s->md.dx0_e : s->md.dx0_s;
-  }
-  if (N >= 6) {
-    initials[5] = s->md.dx0_s;
-  }
 }
 
-static int sync_out(int n, const double outputs[], void * params) {
+/**
+   TODO: 
+   In case of filtering, we have to compute the filtered values of dx. 
+   This means that we need to keep the previous value in the simulation struct. 
 
-  state_t *s = params;
-  double dxdt[6];
+   The correct formula for dx is 
+   <dx>  = <x> - x0 - 0.5 * H * w_in  + dx0
+
+   We get the 1/2 factor because 
+   dx(s)  = x(s) - x0 - s * w_in  + dx0
+   
+   and this is then integrated
+
+ */
+static int sync_out(double t, int n, const double outputs[], void * params) {
+
+  state_t *s = (state_t *) params;
+  double dxdt[4];
   int x;
 
+  
 //compute accelerations. we need them for Server::computeNumericalJacobian()
+
+  double t0   = s->simulation.communication_time;
+  double dxe  = get_dx( outputs[ 0 ],  s->md.x_e, s->simulation.dxe0, s->md.v_in_e, t-t0);
+  double dxs  = get_dx( outputs[ 2 ],  s->md.x_s, s->simulation.dxs0, s->md.v_in_s, t-t0);
+
   clutch(0, outputs, dxdt, params);
+  if ( s->md.filter_length == 0 )
+    compute_forces(s, outputs,  dxe, dxs, &s->md.force_e, &s->md.force_s, NULL, t);
+  else {
+    double zdxe = get_dx( 0,  s->md.x_e, s->simulation.dxe0, s->md.v_in_e, t-t0);
+    double zdxs = get_dx( 0,  s->md.x_s, s->simulation.dxs0, s->md.v_in_s, t-t0);
+
+    compute_forces(s, outputs,  outputs[0] + 0.5 * ( zdxe + s->simulation.zdxe ) ,
+		   outputs[ 2 ] + 0.5 * ( zdxs + s->simulation.zdxs ) ,
+		   &s->md.force_e, &s->md.force_s, NULL, t);
+
+    s->simulation.zdxe = zdxe;
+    s->simulation.zdxs = zdxs;
+  }
+
+  s->simulation.dxe0 =  s->simulation.dxe00;
+  s->simulation.dxs0 =  s->simulation.dxs00;
+  s->simulation.xe0  =  s->simulation.xe00;
+  s->simulation.xs0  =  s->simulation.xs00;
 
   s->md.x_e = outputs[ 0 ];
   s->md.v_e = outputs[ 1 ];
@@ -369,17 +386,44 @@ static int sync_out(int n, const double outputs[], void * params) {
   s->md.x_s = outputs[ 2 ];
   s->md.v_s = outputs[ 3 ];
   s->md.a_s = dxdt[ 2 ];
-  s->md.n_steps = s->simulation.sim.iterations;
-  compute_forces(s, outputs, &s->md.force_e, &s->md.force_s, NULL);
 
+  s->md.n_steps = s->simulation.sim.iterations;
+
+  if ( ! s->md.reset_dx_e ) { 
+    s->simulation.dxe0 =  get_dx( s->simulation.xe0, s->md.x_e, s->simulation.dxe0, s->md.v_in_e,
+				 t - s->simulation.communication_time);
+  }
+  if ( ! s->md.reset_dx_s ) { 
+    s->simulation.dxs0 =  get_dx( s->simulation.xs0, s->md.x_s, s->simulation.dxs0, s->md.v_in_s, t - s->simulation.communication_time);
+  }
+
+
+  s->simulation.communication_time = t;
 
   return GSL_SUCCESS;
+
+}
+
+int post_step (double t, double dt, const double x[], void * params){
+
+  state_t *  s = (state_t * ) params;
+  s->simulation.xe00 =  x[ 0 ];
+  s->simulation.xs00 =  x[ 2 ];
+  s->simulation.dxe00 =  get_dx( s->simulation.xe0, s->md.x_e, s->simulation.dxe0, s->md.v_in_e, t - s->simulation.communication_time);
+  s->simulation.dxs00 =  get_dx( s->simulation.xs0, s->md.x_s, s->simulation.dxs0, s->md.v_in_s, t - s->simulation.communication_time); 
+
+
+  return 0;
 }
 
 
+static int pre_step (double t, double dt, const double y[], void * params){
+  return 0;
+}
+
 static void clutch_init(state_t *s) {
   /** system size and layout depends on which dx's are integrated */
-  double initials[6];
+  double initials[4];
 #if 0 
   // desperate debugging
   if ( outfile == (FILE * ) NULL ) {
@@ -394,7 +438,7 @@ static void clutch_init(state_t *s) {
 
   s->simulation.sim = cgsl_init_simulation(
     cgsl_epce_default_model_init(
-      cgsl_model_default_alloc(get_initial_states_size(s), initials, s, clutch, jac_clutch, NULL, NULL, 0),
+      cgsl_model_default_alloc(sizeof(initials)/sizeof(initials[0]), initials, s, clutch, jac_clutch, NULL, post_step, 0),
       s->md.filter_length,
       sync_out,
       s
@@ -404,6 +448,14 @@ static void clutch_init(state_t *s) {
 
   s->simulation.last_gear = s->md.gear;
   s->simulation.delta_phi = 0;
+  s->simulation.xe0 = 0;
+  s->simulation.xs0 = 0;
+  s->simulation.dxe0 = 0;
+  s->simulation.dxs0 = 0;
+  s->simulation.zdxe = 0;
+  s->simulation.zdxs = 0;
+  s->simulation.communication_time = 0;
+
 }
 
 static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
@@ -431,75 +483,24 @@ static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReferen
 }
 
 
-static int pre_step (double t, double dt, const double y[], void * params){
-
-  return 0;
-}
 
 #define NEW_DOSTEP //to get noSetFMUStatePriorToCurrentPoint
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
 
-#if 0 
-  /*
-    HACKHACK: there's no real support for get/state state in the fmi
-    interface at this time so this is a simple one. 
-
-    We save the current state if we are told that we might come back. 
-
-    Or we restore if the current time is ahead of that in the simulation. 
-
-  */
-  if (  ! noSetFMUStatePriorToCurrentPoint ){
-    
-    /* don't replace the saved state with a state that's ahead of global
-     * time.  
-     */
-    if ( s->simulation.sim.t <= currentCommunicationPoint ){ 
-      if ( s->simulation.sim.model->get_state) 
-	s->simulation.sim.model->get_state( s->simulation.sim.model );
-    }
-  }
-  if ( noSetFMUStatePriorToCurrentPoint && s->simulation.sim.t > currentCommunicationPoint ){
-    if ( s->simulation.sim.model->set_state) {
-      s->simulation.sim.model->set_state( s->simulation.sim.model );
-    }
-  }
-#endif
   if (s->md.is_gearbox && s->md.gear != s->simulation.last_gear) {
     /** gear changed - compute impact that keeps things sane */
     double ratio = gear2ratio(s);
     s->simulation.delta_phi = ratio*s->simulation.sim.model->x[ 2 ] - s->simulation.sim.model->x[ 0 ];
   }
-  /* reset angle differences */
-  int N = s->simulation.sim.model->n_variables;
-  if ( s->md.reset_dx_e ){ 
-    if (N >= 5) {
-      s->simulation.sim.model->x[4] = 0.0;
-    }
-  }
-  if ( s->md.reset_dx_s ){
-    if (N >= 6) {
-      s->simulation.sim.model->x[5] = 0.0;
-    }
-  }
+  /* this is to integrate angle differences */
+  s->simulation.communication_time = currentCommunicationPoint; 
+
   //don't dump tentative steps
   s->simulation.sim.print = noSetFMUStatePriorToCurrentPoint;
   cgsl_step_to( &s->simulation, currentCommunicationPoint, communicationStepSize );
 
-#if 0 
-  // desperate debugging
-  fprintf(outfile, "%f, %f, %f, %f, %f, %f, %f, %f, %f\n",
-    currentCommunicationPoint + communicationStepSize, 
-    s->md.x_e, 
-    s->md.v_e, 
-    s->md.a_e, 
-    s->md.force_e, 
-    s->md.x_s, 
-    s->md.v_s, 
-    s->md.a_s, 
-    s->md.force_s);
-  s->simulation.last_gear = s->md.gear;
-#endif
+
+  return;
 }
 
 

@@ -74,7 +74,7 @@ jac_mass_force (double t, const double x[], double *dfdx, double dfdt[], void *p
   return GSL_SUCCESS;
 }
 
-static int epce_post_step(int n, const double outputs[], void * params) {
+static int epce_post_step(double t, int n, const double outputs[], void * params) {
     state_t *s = params;
 
     s->md.x  = outputs[0];

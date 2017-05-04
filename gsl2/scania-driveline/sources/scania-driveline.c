@@ -146,7 +146,7 @@ int  fcn( double t, const double * x, double *dxdt, void * params){
   return GSL_SUCCESS;
 }
 
-static int sync_out(int n, const double out[], void * params) {
+static int sync_out(double t, int n, const double out[], void * params) {
   state_t *s = ( state_t * ) params;
   double * dxdt = ( double * ) alloca( ( (size_t) n ) * sizeof(double));
 

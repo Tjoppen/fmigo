@@ -180,7 +180,7 @@ static double fclutch_dphi_derivative( double dphi ) {
 }
 
 
-static int epce_post_step(int n, const double outputs[], void * params) {
+static int epce_post_step(double t, int n, const double outputs[], void * params) {
     state_t *s = params;
     double v = flip * s->md.v_in;
 

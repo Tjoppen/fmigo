@@ -9,7 +9,7 @@ static int get_initial_states_size(state_t *s) {
 static void get_initial_states(state_t *s, double *initials) {
 }
 
-static int sync_out(int n, const double outputs[], void * params) {
+static int sync_out(double t, int n, const double outputs[], void * params) {
   state_t *s = params;
   s->md.out = s->md.in1 - s->md.in2;
   return 0;

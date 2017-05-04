@@ -21,6 +21,7 @@ endif ()
 
 add_subdirectory(gsl2/clutch2)
 add_subdirectory(gsl2/clutch3)
+add_subdirectory(gsl2/two_masses)
 add_subdirectory(gsl2/chained_sho)
 add_subdirectory(gsl2/exp)
 add_subdirectory(gsl2/clutch_ef)

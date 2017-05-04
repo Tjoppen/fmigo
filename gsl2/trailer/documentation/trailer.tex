@@ -150,6 +150,28 @@ The equations motion are then, allowing for one further external force $f_{e}$,
   m\ddot{x} = f_{d} + f_{g} + f_{r} + f_{b} - f_{c} + f_{e} - f_{t}. 
 \end{equation}
 
+\section{Jacobians}
+\label{sec:jacobians}
+
+The main issue here in computing the Jacobian is the appearance of the
+signum and absolute value functions.  The two problems can be combined
+since
+\begin{equation}
+  \label{eq:9}
+  \abs{x} = \sign(x)x. 
+\end{equation}
+To make this reasonable for a Newton-Raphson method we use a smoothed
+version so that
+\begin{equation}
+  \label{eq:10}
+  \td{}{x}\sign_{\delta}(x) =
+  \begin{cases}
+    0  & \text{ when }  x > \delta \\
+    0 & \text{ when }  x  < -\delta
+    1/\delta & \text{ when }  x\in[-\delta,\delta]
+  \end{cases}
+\end{equation}
+
 
 \section{Parameters, inputs and outputs}
 \label{sec:param-inputs-outp}

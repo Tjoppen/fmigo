@@ -87,7 +87,7 @@ def fun(t, y, w_in, k1, d1, k2, d2, J1, J2):
 ## return a command line with the parameters of one of the gearboxes
 def parameters(fmu_id, k_coupling, zeta_coupling, frequency, zeta,  w_in=0, filter_length=2, integrator=2, octave='false'):
   cmdline  = ['-p', '%i,octave_output,%s' % (fmu_id, octave)]
-  cmdline += ['-p', '%i,octave_output_file,clutch3-%i-%i.m' % (fmu_id,fmu_id, filter_length) ]
+  cmdline += ['-p', '%i,octave_output_file,clutch2-%i-%i.dat' % (fmu_id,fmu_id, filter_length) ]
   cmdline += ['-p', '%i,integrator,%i' % (fmu_id, integrator) ]
   cmdline += ['-p', '%i,filter_length,%i' % (fmu_id, filter_length) ]
 #  cmdline += ['-p', '%i,v_in_e,%f' % (fmu_id, w_in) ]
@@ -99,14 +99,16 @@ def parameters(fmu_id, k_coupling, zeta_coupling, frequency, zeta,  w_in=0, filt
   cmdline += ['-p', '%i,gamma_s,0' % fmu_id ]
   cmdline += ['-p', '%i,k_ec,%f' % (fmu_id, k_coupling) ]
   cmdline += ['-p', '%i,gamma_ec,%f' % (fmu_id, ( 2.0 * zeta_coupling  * sqrt( k_coupling )))  ]
-  cmdline += ['-p', '%i,gear_k,%f' % (fmu_id, ( ( 2.0 * pi * frequency )**2 / 4.0  )) ]
+  cmdline += ['-p', '%i,gear_k,%f' % (fmu_id, ( ( 2.0 * pi * frequency )**2 / 2.0  )) ]
   cmdline += ['-p', '%i,gear_d,%f' % (fmu_id, (zeta * pi * frequency)) ]
   cmdline += ['-p', '%i,mass_e,0.5' % fmu_id]
   cmdline += ['-p', '%i,mass_s,0.5' % fmu_id]
   cmdline += ['-p', '%i,gear,13' % fmu_id]
   cmdline += ['-p', '%i,is_gearbox,true' % fmu_id]
   cmdline += ['-p', '%i,integrate_dx_e,true'  % fmu_id]
-  cmdline += ['-p', '%i,integrate_dx_s,true' % fmu_id]
+  cmdline += ['-p', '%i,integrate_dx_s,false' % fmu_id]
+  cmdline += ['-p', '%i,reset_dx_e,true'  % fmu_id]
+  cmdline += ['-p', '%i,reset_dx_s,false' % fmu_id]
   return cmdline
 
 def connect(fmu1, fmu2):
@@ -115,8 +117,9 @@ def connect(fmu1, fmu2):
   cmdline += ['-c', '%i,force_e,%i,force_in_s' % (fmu2, fmu1)]
   return cmdline
   
-fmus = [ '../../gsl2/clutch3/clutch3.fmu' ]
-fmus = ['../../gsl2/clutch3/clutch3.fmu', '../../impulse/impulse.fmu'  ]
+fmus = [ '../../gsl2/two_masses/two_masses.fmu' ]
+fmus = [ '../../gsl2/two_masses/two_masses.fmu',
+    '../../impulse/impulse.fmu'  ]
 
 
 def run_simulations(total_time, comm_step, filter_length,  frequency=1.0,
@@ -126,7 +129,7 @@ def run_simulations(total_time, comm_step, filter_length,  frequency=1.0,
 
   nfmus = len(fmus)
   octave='true'
-  integrator=5
+  integrator=4
   #cmdline = ['LD_PRELOAD=/usr/local/lib/valgrind/libmpiwrap-amd64-linux.so', '&&']
   cmdline = ['mpiexec', '-np', str(nfmus+1)]
   cmdline += ['fmigo-mpi', '-t', str(total_time), '-d', str(comm_step)]
@@ -136,9 +139,10 @@ def run_simulations(total_time, comm_step, filter_length,  frequency=1.0,
                         w_in=w_in, filter_length=filter_length, integrator=integrator, octave=octave)
 
   #parameters for the impulse
-  cmdline += ['-p', '1,pulse_type,4:1,pulse_start,1:1,pulse_length,500000:1,pulse_amplitude,1000']
+  cmdline += ['-p', '1,pulse_type,4:1,pulse_start,0:1,pulse_length,500000000000000:1,pulse_amplitude,1']
 # coupling impulse and fmu
   cmdline += ['-c', '1,omega,0,v_in_e' ] 
+  #cmdline += ['-c', '1,theta,0,x_in_e' ] 
 
   cmdline += fmus
 
@@ -166,16 +170,16 @@ frequency = 1
 # element, the spring and damping constants have to be as below so that the
 # oscillations have the desired frequency.
 
-k_internal = (2.0*pi*frequency)**2*J/4
+k_internal = (2.0*pi*frequency)**2*J/2
 
 # internal damping constant derived from dimensionless damping
 
-zeta_internal = 0
+zeta_internal = 0*0.7 
 d_internal =  zeta_internal * J * pi * frequency
 
 # Coupling spring
 
-k_coupling = 1e9
+k_coupling = 1e7
 
 # damping: as above.  Note that the mass is explicitly set to one here
 # meaning that the true non dimensional damping will be different
@@ -200,7 +204,7 @@ dt = 1/ samples / frequency
 
 # number of slow periods to integrate
 
-NP = 4
+NP = 1
 
 #Now run the FMIGo! simulation.  
 if simulate:
@@ -234,17 +238,17 @@ def get_simdata(filter_length):
     return t, x, v, f, s
 
 
-def get_alldata(ts, filter_length, fmuid=1):
+def get_alldata(ts, filter_length, fmuid=0):
     # full simulation data from the FMU written by cgsl
     # Data layout:
     # 
-    #phi1 omega1 phi1 omega1 (dphi1) (dphi2) zphi1 zomega1 zphi1 zomega1 (zdphi1) (zdphi2)
-    #  0     1    2     3      4        5      6      7      8      9       10
-    # 11
+    #phi1 omega1 dphi1 phi2 omega2 dphi2  zphi1 zomega1 zdphi1 
+    #  0     1    2     3      4     5      6      7     ... 
 
     alldata = []
     tt = []
-    filename = 'clutch3-%i-%i.m' % (fmuid, filter_length)
+    N = 5
+    filename = 'clutch2-%i-%i.dat' % (fmuid, filter_length)
     for row in csv.reader(open(filename), delimiter=' '):  
         tt.append(float(row[0]))      # time
         alldata.append([
@@ -258,35 +262,34 @@ def get_alldata(ts, filter_length, fmuid=1):
 
     # variables themselves
     
-    x = alldata[:, arange(0,6)]
+    x = alldata[:, arange(0,N)]
+    zz = alldata[:, arange(N, shape(alldata)[1])]
 
     # Averaged filtered values since that's not what is output in octave 
-
-    z       = vstack(( 0 * alldata[0,arange(6,12)],
-                   0.5 * ( alldata[0:-1, arange(6,12)]  
-                  +alldata[1:, arange(6,12)]  ) / dt))
-    # compute the averaged coupling force
-
+    z       = vstack(( 0 * alldata[0,arange(N,shape(alldata)[1])],
+                   0.5 * ( alldata[0:-1, arange(N,shape(alldata)[1])]  
+                  + alldata[1:, arange(N,shape(alldata)[1])])))
 
     # interpolate to sample points
-
     xinterp = interp2(tt, x,  ts)
     zinterp = interp2(tt, z,  ts)
+    zi      = interp2(tt, zz,  ts)
     # first we need dphi and this will be
-    dphioct = zinterp[:, -5]
-    return tt, x, z, xinterp, zinterp, dphioct
+    return tt, x, z, xinterp, zinterp,zi, zz
 
 ts, xsim, vsim, fcsim, steps = get_simdata(filter_length)
-tt, x, z, xinterp, zinterp, dphioct = get_alldata(ts, filter_length)
+tt, x, z, xinterp, zinterp, zint, zorig = get_alldata(ts, filter_length)
 
 ts0, xsim0, vsim0, fcsim0, steps0 = get_simdata(0)
-tt0, x0, z0, xinterp0, zinterp0, dphioct0 = get_alldata(ts, 0)
+tt0, x0, z0, xinterp0, zinterp0, zint0, zorig0 = get_alldata(ts, 0)
     
 ## now work with standard time integration.
-## start everything at rest
+
+
 
 r = integrate.ode(fun).set_initial_value([0.0]*12, 0)
 r.set_f_params(w_in, k_coupling, d_coupling, k_internal, d_internal, J/2, J/2)
+
 
 # number of samples per *internal* period.  If the filter works, the output
 # should be nice that that time scale, even though there are transients
@@ -299,7 +302,7 @@ tprev = 0
 ys   = [array(list(r.y[0:6]) + [f_coupling(r.y[0:6], w_in, k_coupling, d_coupling)])]
 zs   = [array(list(r.y[6:12]) + [0*f_coupling(r.y[6:12], w_in, k_coupling, d_coupling)])]
 zs2  = [zs[0]]
-r.set_integrator('lsoda')
+r.set_integrator('dopri5', max_step=0.1e-3,rtol=1e-10,atol=1e-10, nsteps=1e4)
 for t in ts[1:]:
   # Reset z, and dphi, integrate
   r.set_initial_value([r.y[0], r.y[1], 0.0*r.y[2], r.y[3], r.y[4], 0.0*r.y[5]] + [0.0]*6, tprev)
@@ -308,30 +311,60 @@ for t in ts[1:]:
   zz = r.y[6:12]/(t-tprev)
 
   fy = f_coupling(r.y, w_in, k_coupling, d_coupling)
-  fz = f_coupling(zz,  w_in, k_coupling, d_coupling)
 
   # Augment results with coupling force
   ys.append(array(list(r.y[0:6]) + [fy]))
+  fz = f_coupling(zz,  w_in, k_coupling, d_coupling)
   zs.append(array(list(zz)       + [fz]))
   zs2.append((zs[-1] + zs[-1 if len(zs) == 1 else -2]) / 2)
   tprev = t
 
 # lists if ndarrays aren't sliceable, so convert to array
 ys = array(ys)
-zs = array(zs2)
+zs = array(zs)
+zs2 = array(zs2)
 dphip = zs[:,-5];
+figure(4)
+clf()
+subplot(211)
+step(ts, zs2[:, 1], ts, ys[:, 1])
+legend(['vf', 'v0'])
+subplot(212)
+step(ts, zs2[:, -1], ts, ys[:, -1])
+legend(['ff', 'f0'])
+show()
 
 
 
 figure(1)
 clf()
 subplot(311)
-plot(ts, xsim, ts0, xsim0)
+step(ts, xsim, ts0, xsim0)
 legend(['xe2', 'xs2', 'xe0', 'xs0'])
 subplot(312)
-plot(ts, vsim,ts0, vsim0)
+step(ts, vsim,ts0, vsim0)
 legend(['ve2', 'vs2', 've0', 'vs0'])
 subplot(313)
-plot(ts, fcsim,ts0, fcsim0)
+step(ts, fcsim,ts0, fcsim0)
 legend(['fe2', 'fs2', 'fe0', 'fs0'])
+show()
+
+figure(2)
+clf()
+subplot(211)
+step(tt, z[:, [0,2]], tt0, z0[:, [0,2]])
+legend(['xe2', 'xs2', 'xe0', 'xs0'])
+subplot(212)
+step(tt, z[:, [1,3]], tt0, z0[:, [1,3]])
+legend(['ve2', 'vs2', 've0', 'vs0'])
+show()
+
+figure(3)
+clf()
+subplot(211)
+step(ts, zs2[:, [1,5]])
+legend(['ode, zve ', 'ode zvs'])
+subplot(212)
+step(ts, zs2[:, -1])
+legend(['ode force'])
 show()

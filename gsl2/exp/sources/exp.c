@@ -60,6 +60,7 @@ cgsl_model  *  init_exp_filter(cgsl_model *exp_model){
 }
 
 static int epce_post_step (
+  double t, 
         int n,
         const double outputs[],
         void * params) {

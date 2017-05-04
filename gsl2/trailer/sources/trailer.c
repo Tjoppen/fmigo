@@ -146,7 +146,7 @@ static void get_initial_states(state_t *s, double *initials) {
   initials[3] = 0;
 }
 
-static int sync_out(int n, const double outputs[], void * params) {
+static int sync_out(double t, int n, const double outputs[], void * params) {
   state_t *s = ( state_t * ) params;
   double * dxdt = (double * ) alloca( sizeof(double) * n );
 

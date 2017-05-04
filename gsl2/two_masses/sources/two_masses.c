@@ -315,12 +315,14 @@ static void get_initial_states(state_t *s, double *initials) {
   initials[Vs] = s->md.v0_s;
   initials[Fe] = 0.0;
   initials[Fs] = 0.0;
+#if 0 
   if (s->md.integrate_dx_e ) {
     initials[Xe()] = s->md.x0_e;
   }
   if (N > Fs + 1 ) {
     initials[ dXs() ] = s->md.dx0_s;
   }
+#endif
 }
 
 static int sync_out(double t, int n, const double outputs[], void * params) {

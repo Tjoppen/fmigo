@@ -17,8 +17,10 @@ namespace fmitcp_master {
         int vr;
         fmi2_base_type_enu_t type;
         fmi2_causality_enu_t causality;
+        fmi2_initial_enu_t initial;
     };
     typedef std::map<std::string, variable> variable_map;
+    typedef std::map<std::pair<int, fmi2_base_type_enu_t>, variable> variable_vr_map;
 
     class BaseMaster;
 
@@ -38,6 +40,7 @@ namespace fmitcp_master {
         fmi2_import_t* m_fmi2Instance;
         fmi2_import_variable_list_t* m_fmi2Outputs;
         variable_map m_variables;
+        variable_vr_map m_vr_variables;
         vector<variable> m_outputs;
         void setVariables();
 
@@ -61,6 +64,7 @@ namespace fmitcp_master {
         std::string getModelName() const;
         fmi2_fmu_kind_enu_t getFmuKind();
         const variable_map& getVariables() const;
+        const variable_vr_map& getVRVariables() const;
         const std::vector<variable>& getOutputs() const;   //outputs in the same order as specified in the modelDescription
 
 #ifdef USE_MPI

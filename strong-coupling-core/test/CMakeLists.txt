@@ -25,7 +25,7 @@ ELSE()
 ENDIF()
 
 IF(WIN32)
-    TARGET_LINK_LIBRARIES(rigid      sc m umfpack amd cblas suitesparseconfig ${OSGLIBS})
+    TARGET_LINK_LIBRARIES(rigid      sc umfpack amd cblas suitesparseconfig ${OSGLIBS})
 ELSE()
     #TARGET_LINK_LIBRARIES(rigid      sc m umfpack amd cblas ${OSGLIBS})
     TARGET_LINK_LIBRARIES(rigid      sc m umfpack amd ${OSGLIBS})

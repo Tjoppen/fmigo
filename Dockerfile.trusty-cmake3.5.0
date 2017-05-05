@@ -11,6 +11,9 @@ RUN apt-get update
 #           psmisc: for killall
 #  mpi-default-bin: for mpiexec
 #        coreutils: for sha1sum
+#       python-dev: for pip to build psutil
+#      libxml2-dev: for lxml
+#     libxstl1-dev: for lxml
 #
 RUN apt-get install --yes \
         build-essential ninja-build git python bc psmisc \
@@ -18,7 +21,7 @@ RUN apt-get install --yes \
         libsuitesparse-dev libzmqpp-dev libhdf5-dev \
         libopenmpi-dev libgsl0-dev mpi-default-bin \
         wget coreutils clang valgrind \
-        python-lxml python-psutil
+        python-pip python-dev libxml2-dev libxslt1-dev
 
 WORKDIR /root
 
@@ -41,6 +44,10 @@ RUN useradd -ms /bin/bash gitlab-ci
 RUN  mkdir              /home/gitlab-ci/umit
 COPY .                  /home/gitlab-ci/umit
 RUN  chown -R gitlab-ci /home/gitlab-ci/umit
+
+# Install python requirements
+WORKDIR /home/gitlab-ci/umit
+RUN pip install -r requirements.txt
 
 # Finally, make us run as gitlab-ci
 USER gitlab-ci

@@ -45,10 +45,10 @@ typedef struct {
 #include "fmuTemplate.h"
 #include "hypotmath.h"
 
-#define SIMULATION_WRAPPER wrapper_ntoeu
-#define SIMULATION_SET     wrapper_set
-#define SIMULATION_GET     wrapper_get
-#define MODEL_INIT         model_init   //like SIMULATION_INIT but get a ModelInstance* instead of state_t*
+#define SIMULATION_INSTANTIATE  wrapper_ntoeu
+#define SIMULATION_SET          wrapper_set
+#define SIMULATION_GET          wrapper_get
+#define SIMULATION_EXIT_INIT    model_init
 
 #include "strlcpy.h"
 
@@ -111,8 +111,22 @@ static fmi2Status generated_fmi2GetString(ModelInstance *comp, const modelDescri
 }
 
 static fmi2Status generated_fmi2SetString(ModelInstance *comp, modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2String value[]) {
-    if( comp->s.simulation.FMU != NULL)
-        return fmi2_import_set_string(comp->s.simulation.FMU,vr,nvr,value);
+    if( comp->s.simulation.FMU != NULL) {
+        size_t x;
+
+        //similar to fmi2SetInteger, but catches VR_FMU
+        //there's no sense in doing anything with it since the FMU has
+        //already been loaded at this point. hence variability=constant
+        for (x = 0; x < nvr; x++) {
+            if (vr[x] == VR_FMU) {
+                continue;
+            } else if (fmi2_import_set_string(comp->s.simulation.FMU,&vr[x],1,&value[x]) != fmi2OK) {
+                return fmi2Error;
+            }
+        }
+
+        return fmi2OK;
+    }
     return fmi2Error;
 }
 

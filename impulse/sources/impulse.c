@@ -6,7 +6,7 @@ typedef struct {
 } impulse_simulation;
 
 #define SIMULATION_TYPE impulse_simulation
-#define SIMULATION_INIT impulse_init
+#define SIMULATION_EXIT_INIT impulse_init
 #define SIMULATION_GET impulse_get
 #define SIMULATION_SET impulse_set
 
@@ -61,8 +61,8 @@ static void pulse_for_current_step(state_t *s, fmi2Real communicationStepSize) {
     }
 }
 
-static void impulse_init(state_t *s) {
-    pulse_for_current_step(s, 0);
+static void impulse_init(ModelInstance *comp) {
+    pulse_for_current_step(&comp->s, 0);
 }
 
 //returns partial derivative of vr with respect to wrt

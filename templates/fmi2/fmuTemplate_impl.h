@@ -281,6 +281,10 @@ fmi2Component fmi2Instantiate(fmi2String instanceName, fmi2Type fmuType, fmi2Str
 
     FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2Instantiate: GUID=%s", fmuGUID)
 
+#ifdef SIMULATION_INSTANTIATE
+    SIMULATION_INSTANTIATE(comp);
+#endif
+
     return comp;
 }
 
@@ -316,10 +320,10 @@ fmi2Status fmi2EnterInitializationMode(fmi2Component c) {
         return fmi2Error;
     FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2EnterInitializationMode")
 
-#ifdef SIMULATION_WRAPPER
-    SIMULATION_WRAPPER(comp);
-#endif
     comp->s.state = modelInitializationMode;
+#ifdef SIMULATION_ENTER_INIT
+    SIMULATION_ENTER_INIT(comp);
+#endif
     return fmi2OK;
 }
 
@@ -329,12 +333,8 @@ fmi2Status fmi2ExitInitializationMode(fmi2Component c) {
         return fmi2Error;
     FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2ExitInitializationMode")
 
-#ifdef MODEL_INIT
-    //meWrapper needs ModelInstance*
-    MODEL_INIT(comp);
-#endif
-#ifdef SIMULATION_INIT
-    SIMULATION_INIT(&comp->s);
+#ifdef SIMULATION_EXIT_INIT
+    SIMULATION_EXIT_INIT(comp);
 #endif
     comp->s.state = modelInitialized;
     return fmi2OK;

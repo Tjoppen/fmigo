@@ -5,7 +5,7 @@
 #include "gsl-interface.h"
 
 #define SIMULATION_TYPE cgsl_simulation
-#define SIMULATION_INIT mass_force_init
+#define SIMULATION_EXIT_INIT mass_force_init
 #define SIMULATION_FREE cgsl_free_simulation
 
 #include "fmuTemplate.h"
@@ -84,7 +84,8 @@ static int epce_post_step(int n, const double outputs[], void * params) {
     return GSL_SUCCESS;
 }
 
-static void mass_force_init(state_t *s) {
+static void mass_force_init(ModelInstance *comp) {
+    state_t *s = &comp->s;
     const double initials[3] = {s->md.x, s->md.v};
     s->simulation = cgsl_init_simulation(
         cgsl_epce_default_model_init(

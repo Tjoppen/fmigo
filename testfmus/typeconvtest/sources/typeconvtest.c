@@ -1,10 +1,11 @@
 #include "modelDescription.h"
 
-#define SIMULATION_INIT typeconvtest_init
+#define SIMULATION_EXIT_INIT typeconvtest_init
 
 #include "fmuTemplate.h"
 
-static void typeconvtest_init(state_t *s) {
+static void typeconvtest_init(ModelInstance *comp) {
+    state_t *s = &comp->s;
     s->md.r_in = s->md.r_out = s->md.r0;
     s->md.i_in = s->md.i_out = s->md.i0;
     s->md.b_in = s->md.b_out = s->md.b0;

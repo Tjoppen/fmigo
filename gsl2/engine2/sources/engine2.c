@@ -5,7 +5,7 @@
 #include "gsl-interface.h"
 
 #define SIMULATION_TYPE cgsl_simulation
-#define SIMULATION_INIT engine2_init
+#define SIMULATION_EXIT_INIT engine2_init
 #define SIMULATION_FREE cgsl_free_simulation
 #define SIMULATION_GET  cgsl_simulation_get   //TODO: some kind of error if these aren't defined
 #define SIMULATION_SET  cgsl_simulation_set
@@ -112,7 +112,8 @@ static int sync_out(int n, const double outputs[], void * params) {
 }
 
 
-static void engine2_init(state_t *s) {
+static void engine2_init(ModelInstance *comp) {
+  state_t *s = &comp->s;
 
   double initials[3];
   get_initial_states(s, initials);

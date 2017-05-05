@@ -13,7 +13,7 @@ typedef struct {
 } coupled_sho_simulation;
 
 #define SIMULATION_TYPE coupled_sho_simulation
-#define SIMULATION_INIT coupled_sho_init
+#define SIMULATION_EXIT_INIT coupled_sho_init
 #define SIMULATION_FREE coupled_sho_free
 //fix compiler warning when casting coupled_sho_simulation* to cgsl_simulation*
 #define SIMULATION_GET(x) cgsl_simulation_get((cgsl_simulation*)(x))
@@ -99,7 +99,8 @@ static int epce_post_step(int n, const double outputs[], void * params) {
     return GSL_SUCCESS;
 }
 
-static void coupled_sho_init(state_t *s) {
+static void coupled_sho_init(ModelInstance *comp) {
+    state_t *s = &comp->s;
     const double initials[3] = {s->md.xstart, s->md.vstart, s->md.dxstart};
 
     s->simulation.momega2_c = s->md.mu * s->md.omega_c * s->md.omega_c;

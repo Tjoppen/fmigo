@@ -2,7 +2,7 @@
 #include "gsl-interface.h"
 
 #define SIMULATION_TYPE cgsl_simulation
-#define SIMULATION_INIT exp_init
+#define SIMULATION_EXIT_INIT exp_init
 #define SIMULATION_FREE cgsl_free_simulation
 
 #include "fmuTemplate.h"
@@ -19,7 +19,8 @@ static int epce_post_step (int n, const double outputs[], void * params) {
     return GSL_SUCCESS;
 }
 
-static void exp_init(state_t *s) {
+static void exp_init(ModelInstance *comp) {
+    state_t *s = &comp->s;
     cgsl_model *exp_model  = init_exp_model( s->md.x0 );
     cgsl_model *exp_filter = init_exp_filter( exp_model );
     cgsl_model *epce_model = cgsl_epce_model_init( exp_model, exp_filter, s->md.filter_length, epce_post_step, s );

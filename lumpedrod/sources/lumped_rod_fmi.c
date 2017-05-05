@@ -7,7 +7,7 @@
 
 #define SIMULATION_TYPE lumped_rod_sim
 //called after getting default values from XML
-#define SIMULATION_INIT setStartValues
+#define SIMULATION_EXIT_INIT setStartValues
 #define SIMULATION_FREE lumped_rod_sim_free_a
 #define SIMULATION_GET lumped_rod_sim_store
 #define SIMULATION_SET lumped_rod_sim_restore
@@ -69,7 +69,8 @@ static void lumped_rod_fmi_sync_in( lumped_rod_sim * sim, state_t *s){
 /**
    Instantiate the simulation and set initial conditions.
 */
-static void setStartValues(state_t *s) {
+static void setStartValues(ModelInstance *comp) {
+  state_t *s = &comp->s;
   /** read the init values given by the master, either from command line
       arguments or as defaults from modelDescription.xml
   */

@@ -5,7 +5,7 @@
 #include "gsl-interface.h"
 
 #define SIMULATION_TYPE cgsl_simulation
-#define SIMULATION_INIT clutch_init
+#define SIMULATION_EXIT_INIT clutch_init
 #define SIMULATION_FREE cgsl_free_simulation
 
 #include "fmuTemplate.h"
@@ -191,7 +191,8 @@ static int epce_post_step(int n, const double outputs[], void * params) {
 }
 
 
-static void clutch_init(state_t *s) {
+static void clutch_init(ModelInstance *comp) {
+    state_t *s = &comp->s;
     const double initials[3] = {s->md.x0, s->md.v0, s->md.dx0};
     s->simulation = cgsl_init_simulation(
         cgsl_epce_default_model_init(

@@ -15,7 +15,7 @@ typedef struct {
 } clutchgear_simulation;
 
 #define SIMULATION_TYPE clutchgear_simulation
-#define SIMULATION_INIT clutch_init
+#define SIMULATION_EXIT_INIT clutch_init
 #define SIMULATION_FREE(s) cgsl_free_simulation((s).sim)
 #define SIMULATION_GET(s)  cgsl_simulation_get(&(s)->sim);
 #define SIMULATION_SET(s)  cgsl_simulation_set(&(s)->sim);
@@ -365,7 +365,8 @@ static int sync_out(int n, const double outputs[], void * params) {
 }
 
 
-static void clutch_init(state_t *s) {
+static void clutch_init(ModelInstance *comp) {
+  state_t *s = &comp->s;
   /** system size and layout depends on which dx's are integrated */
   double initials[6];
   get_initial_states(s, initials);

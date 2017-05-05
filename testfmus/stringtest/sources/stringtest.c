@@ -1,10 +1,11 @@
 #include "modelDescription.h"
 
-#define SIMULATION_INIT stringtest_init
+#define SIMULATION_EXIT_INIT stringtest_init
 
 #include "fmuTemplate.h"
 
-static void stringtest_init(state_t *s) {
+static void stringtest_init(ModelInstance *comp) {
+    state_t *s = &comp->s;
     strlcpy(s->md.s_in, s->md.s0, sizeof(s->md.s_in));
     strlcpy(s->md.s_out, s->md.s0, sizeof(s->md.s_out));
     strlcpy(s->md.s_in2, s->md.s02, sizeof(s->md.s_in2));

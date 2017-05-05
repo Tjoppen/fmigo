@@ -137,7 +137,8 @@ print('''
         name="fmu"
         valueReference="%d"
         description="Path to the ME fmu to be wrapped"
-        causality="parameter">
+        causality="parameter"
+        variability="constant" >
       <String size="%d" start="%s"/>
     </ScalarVariable>'''%(vr,len(fmudir)+1, fmudir))
 

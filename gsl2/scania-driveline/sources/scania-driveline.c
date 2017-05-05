@@ -8,7 +8,7 @@
 #define alloca _alloca
 #endif
 #define SIMULATION_TYPE cgsl_simulation
-#define SIMULATION_INIT scania_driveline_init
+#define SIMULATION_EXIT_INIT scania_driveline_init
 #define SIMULATION_FREE cgsl_free_simulation
 
 #include "fmuTemplate.h"
@@ -156,7 +156,8 @@ static int sync_out(int n, const double out[], void * params) {
 }
 
 
-static void scania_driveline_init(state_t *s) {
+static void scania_driveline_init(ModelInstance *comp) {
+  state_t *s = &comp->s;
   double initials[] = {
     s->md.w_inShaftNeutral,
     s->md.w_wheel

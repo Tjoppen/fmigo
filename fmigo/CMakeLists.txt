@@ -4,7 +4,9 @@ FIND_PACKAGE(Threads REQUIRED)
 
 if (NOT WIN32)
   # cl.exe has a different set of flags
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O3 -Wall -Werror -Wno-unused-variable -Wno-unused-function -Wextra -Wno-unused-parameter")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Werror -Wno-unused-variable -Wno-unused-function -Wextra -Wno-unused-parameter")
+  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
   FIND_PACKAGE(MPI REQUIRED)
   FIND_PACKAGE(Protobuf REQUIRED)
   INCLUDE_DIRECTORIES(${MPI_INCLUDE_PATH})

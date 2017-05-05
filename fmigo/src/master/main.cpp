@@ -292,12 +292,41 @@ map<double, param_map > param_mapFromCSV(fmigo_csv_fmu csvfmus, vector<FMIClient
   return pairmap;
 }
 
-static void sendUserParams(BaseMaster *master, vector<FMIClient*> clients, map<pair<int,fmi2_base_type_enu_t>, vector<param> > params) {
+//if initialization == true, send only values with initial=exact or causality=input
+static void sendUserParams(BaseMaster *master, vector<FMIClient*> clients,
+                           map<pair<int,fmi2_base_type_enu_t>,
+                           vector<param> > params,
+                           bool initialization = false) {
     for (auto it = params.begin(); it != params.end(); it++) {
         FMIClient *client = clients[it->first.first];
+        const variable_vr_map& vr_map = client->getVRVariables();
         vector<int> vrs;
         for (auto it2 = it->second.begin(); it2 != it->second.end(); it2++) {
+          auto it3 = vr_map.find(make_pair(it2->valueReference, it->first.second));
+
+          if (it3 == vr_map.end()) {
+            fatal("Couldn't find variable VR=%i type=%i\n",
+                  it2->valueReference, it->first.second);
+          }
+          if (it3->second.initial == fmi2_initial_enu_calculated) {
+            fatal("Setting variables with initial=\"calculated\" is not allowed (VR=%i type=%i)\n",
+                  it2->valueReference, it->first.second);
+          }
+
+          //skip non-exact, non-inputs during initialization
+          if (initialization &&
+              !(it3->second.initial   == fmi2_initial_enu_exact ||
+                it3->second.causality == fmi2_causality_enu_input)) {
+            debug("Skipping VR=%i (initial = %i, causality = %i)\n", it2->valueReference, it3->second.initial, it3->second.causality);
+            continue;
+          }
+
           vrs.push_back(it2->valueReference);
+          debug("Sending VR=%i type=%i\n", it2->valueReference, it->first.second);
+        }
+
+        if (vrs.size() == 0) {
+          continue;
         }
 
         switch (it->first.second) {
@@ -710,10 +739,36 @@ int main(int argc, char *argv[] ) {
     }
 
     master->send(clients, fmi2_import_setup_experiment(true, relativeTolerance, 0, endTime >= 0, endTime));
+
+    /**
+     * From the FMI 2.0 spec:
+     *
+     * fmi2SetXXX can be called on any variable with variability ≠ "constant"
+     * before initialization (before calling fmi2EnterInitializationMode) if
+     * • initial = "exact" or "approx" [in order to set the corresponding start value].
+     *
+     * Since initial can be "exact", "approx" or "calculated" this means any
+     * non-constant non-calculated variable is allowed to be set. There is a
+     * check inside sendUserParams() making sure the user isn't stupidly
+     * trying set calculated parameters.
+     */
+    sendUserParams(master, clients, resolve_string_params(params, clients));
+
     master->send(clients, fmi2_import_enter_initialization_mode());
 
-    //send user-defined parameters
-    sendUserParams(master, clients, resolve_string_params(params, clients));
+    /**
+     * From the FMI 2.0 spec:
+     *
+     * fmi2SetXXX can be called on any variable with variability ≠ "constant"
+     * during initialization (after calling fmi2EnterInitializationMode and
+     * before fmi2ExitInitializationMode is called) if
+     * • initial = "exact" [in order to set the corresponding start value], or if
+     * • causality = "input" [in order to provide new values for inputs]
+     *
+     * We probably don't need to send parameters with initial=exact more than
+     * once, but it probably doesn't hurt.
+     */
+    sendUserParams(master, clients, resolve_string_params(params, clients), true);
 
     map<double, param_map> csvParam = param_mapFromCSV(csv_fmu, clients);
 

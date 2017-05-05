@@ -34,6 +34,27 @@ void jmCallbacksLogger(jm_callbacks* c, jm_string module, jm_log_level_enu_t log
   }
 }
 
+// deal with combinations of fmi2_status_t and jm_status_t via template specialization
+template<typename T> bool isError(T status);
+bool isOK(fmi2_status_t status) {
+  return status == fmi2_status_ok;
+}
+bool isOK(jm_status_enu_t status) {
+  return status == jm_status_success;
+}
+
+// logs errors as error(), else as debug()
+// the point of this is that successes shouldn't have to pointlessly call arrayToString() except in debug mode
+#define log_error_or_debug(status, fmt, ...) \
+  do {\
+    if (isOK(status)) {\
+      debug(fmt, ##__VA_ARGS__);\
+    } else {\
+      error(fmt, ##__VA_ARGS__);\
+    }\
+  } while (0)
+
+
 Server::Server(string fmuPath, std::string hdf5Filename) {
   m_fmi2Outputs = NULL;
   m_fmuParsed = true;
@@ -164,36 +185,37 @@ void Server::setStartValues() {
 
         if (fmi2_xml_get_variable_has_start(var)) {
             nstart++;
+            fmi2_status_t status;
 
             switch(type) {
             case fmi2_base_type_real: {
                 fmi2_real_t r = fmi2_xml_get_real_variable_start(fmi2_xml_get_variable_as_real(var));
-                fmi2_import_set_real(m_fmi2Instance, &vr, 1, &r);
-                debug("Setting start=%f for VR=%i\n", r, vr);
+                status = fmi2_import_set_real(m_fmi2Instance, &vr, 1, &r);
+                log_error_or_debug(status, "Setting start=%f for VR=%i\n", r, vr);
                 break;
             }
             case fmi2_base_type_int: {
                 fmi2_integer_t i = fmi2_xml_get_integer_variable_start(fmi2_xml_get_variable_as_integer(var));
-                fmi2_import_set_integer(m_fmi2Instance, &vr, 1, &i);
-                debug("Setting start=%i for VR=%i\n", i, vr);
+                status = fmi2_import_set_integer(m_fmi2Instance, &vr, 1, &i);
+                log_error_or_debug(status, "Setting start=%i for VR=%i\n", i, vr);
                 break;
             }
             case fmi2_base_type_bool: {
                 fmi2_boolean_t b = fmi2_xml_get_boolean_variable_start(fmi2_xml_get_variable_as_boolean(var));
-                fmi2_import_set_boolean(m_fmi2Instance, &vr, 1, &b);
-                debug("Setting start=%i for VR=%i\n", b, vr);
+                status = fmi2_import_set_boolean(m_fmi2Instance, &vr, 1, &b);
+                log_error_or_debug(status, "Setting start=%i for VR=%i\n", b, vr);
                 break;
             }
             case fmi2_base_type_str: {
                 fmi2_string_t s = fmi2_xml_get_string_variable_start(fmi2_xml_get_variable_as_string(var));
-                fmi2_import_set_string(m_fmi2Instance, &vr, 1, &s);
-                debug("Setting start=%s for VR=%i\n", s, vr);
+                status = fmi2_import_set_string(m_fmi2Instance, &vr, 1, &s);
+                log_error_or_debug(status, "Setting start=%s for VR=%i\n", s, vr);
                 break;
             }
             case fmi2_base_type_enum: {
                 fmi2_integer_t i = fmi2_xml_get_enum_variable_start(fmi2_xml_get_variable_as_enum(var));
-                fmi2_import_set_integer(m_fmi2Instance, &vr, 1, &i);
-                debug("Setting start=%i for VR=%i\n", i, vr);
+                status = fmi2_import_set_integer(m_fmi2Instance, &vr, 1, &i);
+                log_error_or_debug(status, "Setting start=%i for VR=%i\n", i, vr);
                 break;
             }
             }
@@ -236,7 +258,14 @@ string Server::clientData(const char *data, size_t size) {
       response.set_status(fmi2StatusToProtofmi2Status(status));        \
       ret.first = fmitcp_proto::type_fmi2_import_##type##_res; \
       ret.second = response.SerializeAsString(); \
-      debug("fmi2_import_"#type"_res(status=%s)\n",response.status());
+      log_error_or_debug(status, "fmi2_import_"#type"_res(status=%s)\n",response.status());
+
+#define SERVER_NORMAL_RESPONSE_NO_LOG(type)                             \
+      /* Create response */                                             \
+      fmitcp_proto::fmi2_import_##type##_res response; \
+      response.set_status(fmi2StatusToProtofmi2Status(status));        \
+      ret.first = fmitcp_proto::type_fmi2_import_##type##_res; \
+      ret.second = response.SerializeAsString();
 
   switch (type) {
   case fmitcp_proto::type_fmi2_import_get_version_req: {
@@ -296,6 +325,10 @@ string Server::clientData(const char *data, size_t size) {
     if (!m_sendDummyResponses) {
       // instantiate FMU
       status = fmi2_import_instantiate(m_fmi2Instance, m_instanceName, simType, m_resourcePath.c_str(), visible);
+
+      //must be done prior to entering initalization mode, since the master
+      //will be sending values before and during initialization mode
+      setStartValues();
     }
 
     // Create response message
@@ -303,7 +336,7 @@ string Server::clientData(const char *data, size_t size) {
     instantiateRes.set_status(fmiJMStatusToProtoJMStatus(status));
     ret.first = fmitcp_proto::type_fmi2_import_instantiate_res;
     ret.second = instantiateRes.SerializeAsString();
-    debug("fmi2_import_instantiate_res(status=%d)\n",instantiateRes.status());
+    log_error_or_debug(status, "fmi2_import_instantiate_res(status=%d)\n",instantiateRes.status());
 
   break; } case fmitcp_proto::type_fmi2_import_free_instance_req: {
     if (hdf5Filename.length()) {
@@ -364,7 +397,6 @@ string Server::clientData(const char *data, size_t size) {
     fmi2_status_t status = fmi2_status_ok;
     if (!m_sendDummyResponses) {
       status = fmi2_import_enter_initialization_mode(m_fmi2Instance);
-      setStartValues();
     }
 
     SERVER_NORMAL_RESPONSE(enter_initialization_mode);
@@ -423,7 +455,7 @@ string Server::clientData(const char *data, size_t size) {
     for (int i = 0 ; i < r.valuereferences_size() ; i++) {
       vr[i] = r.valuereferences(i);
     }
-    debug("fmi2_import_get_real_req(vrs=%s)\n",arrayToString(vr, r.valuereferences_size()).c_str());
+    debug("fmi2_import_get_real_req(vrs=%s)\n",arrayToString(vr).c_str());
 
     // Create response
     fmitcp_proto::fmi2_import_get_real_res response;
@@ -446,7 +478,7 @@ string Server::clientData(const char *data, size_t size) {
 
     ret.first = fmitcp_proto::type_fmi2_import_get_real_res;
     ret.second = response.SerializeAsString();
-    debug("fmi2_import_get_real_res(status=%d,values=%s)\n",response.status(),arrayToString(value, r.valuereferences_size()).c_str());
+    log_error_or_debug(status, "fmi2_import_get_real_res(status=%d,values=%s)\n",response.status(),arrayToString(value).c_str());
 
   break; } case fmitcp_proto::type_fmi2_import_get_integer_req: {
 
@@ -458,7 +490,7 @@ string Server::clientData(const char *data, size_t size) {
     for (int i = 0 ; i < r.valuereferences_size() ; i++) {
       vr[i] = r.valuereferences(i);
     }
-    debug("fmi2_import_get_integer_req(vrs=%s)\n",arrayToString(vr, r.valuereferences_size()).c_str());
+    debug("fmi2_import_get_integer_req(vrs=%s)\n",arrayToString(vr).c_str());
 
     fmi2_status_t status = fmi2_status_ok;
     if (!m_sendDummyResponses) {
@@ -474,7 +506,7 @@ string Server::clientData(const char *data, size_t size) {
     }
     ret.first = fmitcp_proto::type_fmi2_import_get_integer_res;
     ret.second = response.SerializeAsString();
-    debug("fmi2_import_get_integer_res(status=%d,values=%s)\n",response.status(),arrayToString(value, r.valuereferences_size()).c_str());
+    log_error_or_debug(status, "fmi2_import_get_integer_res(status=%d,values=%s)\n",response.status(),arrayToString(value).c_str());
 
   break; } case fmitcp_proto::type_fmi2_import_get_boolean_req: {
 
@@ -486,7 +518,7 @@ string Server::clientData(const char *data, size_t size) {
     for (int i = 0 ; i < r.valuereferences_size() ; i++) {
       vr[i] = r.valuereferences(i);
     }
-    debug("fmi2_import_get_boolean_req(vrs=%s)\n",arrayToString(vr, r.valuereferences_size()).c_str());
+    debug("fmi2_import_get_boolean_req(vrs=%s)\n",arrayToString(vr).c_str());
 
     fmi2_status_t status = fmi2_status_ok;
     if (!m_sendDummyResponses) {
@@ -502,7 +534,7 @@ string Server::clientData(const char *data, size_t size) {
     }
     ret.first = fmitcp_proto::type_fmi2_import_get_boolean_res;
     ret.second = response.SerializeAsString();
-    debug("fmi2_import_get_boolean_res(status=%d,values=%s)\n",response.status(),arrayToString(value, r.valuereferences_size()).c_str());
+    log_error_or_debug(status, "fmi2_import_get_boolean_res(status=%d,values=%s)\n",response.status(),arrayToString(value).c_str());
 
   break; } case fmitcp_proto::type_fmi2_import_get_string_req: {
 
@@ -514,7 +546,7 @@ string Server::clientData(const char *data, size_t size) {
     for (int i = 0 ; i < r.valuereferences_size() ; i++) {
       vr[i] = r.valuereferences(i);
     }
-    debug("fmi2_import_get_string_req(vrs=%s)\n",arrayToString(vr, r.valuereferences_size()).c_str());
+    debug("fmi2_import_get_string_req(vrs=%s)\n",arrayToString(vr).c_str());
 
     fmi2_status_t status = fmi2_status_ok;
     if (!m_sendDummyResponses) {
@@ -530,7 +562,7 @@ string Server::clientData(const char *data, size_t size) {
     }
     ret.first = fmitcp_proto::type_fmi2_import_get_string_res;
     ret.second = response.SerializeAsString();
-    debug("fmi2_import_get_string_res(status=%d,values=%s)\n",response.status(),arrayToString(value, r.valuereferences_size()).c_str());
+    log_error_or_debug(status, "fmi2_import_get_string_res(status=%d,values=%s)\n",response.status(),arrayToString(value).c_str());
 
   break; } case fmitcp_proto::type_fmi2_import_set_real_req: {
 
@@ -545,7 +577,7 @@ string Server::clientData(const char *data, size_t size) {
     }
 
     debug("fmi2_import_set_real_req(vrs=%s,values=%s)\n",
-    arrayToString(vr, r.valuereferences_size()).c_str(), arrayToString(value, r.values_size()).c_str());
+      arrayToString(vr).c_str(), arrayToString(value).c_str());
 
     fmi2_status_t status = fmi2_status_ok;
     if (!m_sendDummyResponses) {
@@ -553,7 +585,10 @@ string Server::clientData(const char *data, size_t size) {
        status = fmi2_import_set_real(m_fmi2Instance, vr.data(), r.valuereferences_size(), value.data());
     }
 
-    SERVER_NORMAL_RESPONSE(set_real);
+    log_error_or_debug(status, "fmi2_import_set_real_req(vrs=%s,values=%s)\n",
+      arrayToString(vr).c_str(), arrayToString(value).c_str());
+
+    SERVER_NORMAL_RESPONSE_NO_LOG(set_real);
 
   break; } case fmitcp_proto::type_fmi2_import_set_integer_req: {
 
@@ -567,7 +602,7 @@ string Server::clientData(const char *data, size_t size) {
       value[i] = r.values(i);
     }
     debug("fmi2_import_set_integer_req(vrs=%s,values=%s)\n",
-                       arrayToString(vr, r.valuereferences_size()).c_str(), arrayToString(value, r.values_size()).c_str());
+                       arrayToString(vr).c_str(), arrayToString(value).c_str());
 
     fmi2_status_t status = fmi2_status_ok;
     if (!m_sendDummyResponses) {
@@ -575,7 +610,10 @@ string Server::clientData(const char *data, size_t size) {
       status = fmi2_import_set_integer(m_fmi2Instance, vr.data(), r.valuereferences_size(), value.data());
     }
 
-    SERVER_NORMAL_RESPONSE(set_integer);
+    log_error_or_debug(status, "fmi2_import_set_integer_req(vrs=%s,values=%s)\n",
+                       arrayToString(vr).c_str(), arrayToString(value).c_str());
+
+    SERVER_NORMAL_RESPONSE_NO_LOG(set_integer);
 
   break; } case fmitcp_proto::type_fmi2_import_set_boolean_req: {
 
@@ -589,7 +627,7 @@ string Server::clientData(const char *data, size_t size) {
       value[i] = r.values(i);
     }
     debug("fmi2_import_set_boolean_req(vrs=%s,values=%s)\n",
-                       arrayToString(vr, r.valuereferences_size()).c_str(), arrayToString(value, r.values_size()).c_str());
+                       arrayToString(vr).c_str(), arrayToString(value).c_str());
 
     fmi2_status_t status = fmi2_status_ok;
     if (!m_sendDummyResponses) {
@@ -597,7 +635,10 @@ string Server::clientData(const char *data, size_t size) {
       status = fmi2_import_set_boolean(m_fmi2Instance, vr.data(), r.valuereferences_size(), value.data());
     }
 
-    SERVER_NORMAL_RESPONSE(set_boolean);
+    log_error_or_debug(status, "fmi2_import_set_boolean_req(vrs=%s,values=%s)\n",
+                       arrayToString(vr).c_str(), arrayToString(value).c_str());
+
+    SERVER_NORMAL_RESPONSE_NO_LOG(set_boolean);
 
   break; } case fmitcp_proto::type_fmi2_import_set_string_req: {
 
@@ -611,7 +652,7 @@ string Server::clientData(const char *data, size_t size) {
       value[i] = r.values(i).c_str();
     }
     debug("fmi2_import_set_string_req(vrs=%s,values=%s)\n",
-                       arrayToString(vr, r.valuereferences_size()).c_str(), arrayToString(value, r.values_size()).c_str());
+                       arrayToString(vr).c_str(), arrayToString(value).c_str());
 
     fmi2_status_t status = fmi2_status_ok;
     if (!m_sendDummyResponses) {
@@ -619,7 +660,10 @@ string Server::clientData(const char *data, size_t size) {
       status = fmi2_import_set_string(m_fmi2Instance, vr.data(), r.valuereferences_size(), value.data());
     }
 
-    SERVER_NORMAL_RESPONSE(set_string);
+    log_error_or_debug(status, "fmi2_import_set_string_req(vrs=%s,values=%s)\n",
+                       arrayToString(vr).c_str(), arrayToString(value).c_str());
+
+    SERVER_NORMAL_RESPONSE_NO_LOG(set_string);
 
   break; } case fmitcp_proto::type_fmi2_import_get_fmu_state_req: {
 
@@ -641,7 +685,7 @@ string Server::clientData(const char *data, size_t size) {
     response.set_stateid(stateId);
     ret.first = fmitcp_proto::type_fmi2_import_get_fmu_state_res;
     ret.second = response.SerializeAsString();
-    debug("fmi2_import_get_fmu_state_res(stateId=%d,status=%d)\n",response.stateid(),response.status());
+    log_error_or_debug(status, "fmi2_import_get_fmu_state_res(stateId=%d,status=%d)\n",response.stateid(),response.status());
 
   break; } case fmitcp_proto::type_fmi2_import_set_fmu_state_req: {
 
@@ -674,7 +718,7 @@ string Server::clientData(const char *data, size_t size) {
     response.set_status(fmitcp::fmi2StatusToProtofmi2Status(status));
     ret.first = fmitcp_proto::type_fmi2_import_free_fmu_state_res;
     ret.second = response.SerializeAsString();
-    debug("fmi2_import_free_fmu_state_res(status=%d)\n",response.status());
+    log_error_or_debug(status, "fmi2_import_free_fmu_state_res(status=%d)\n",response.status());
 
   // break; } case fmitcp_proto::type_fmi2_import_serialized_fmu_state_size_req: {
   //   // TODO
@@ -703,7 +747,7 @@ string Server::clientData(const char *data, size_t size) {
       dv[i] = r.dv(i);
     }
     debug("fmi2_import_get_directional_derivative_req(vref=%s,zref=%s,dv=%s)\n",
-                       arrayToString(v_ref, r.v_ref_size()).c_str(), arrayToString(z_ref, r.z_ref_size()).c_str(), arrayToString(dv, r.dv_size()).c_str());
+                       arrayToString(v_ref).c_str(), arrayToString(z_ref).c_str(), arrayToString(dv).c_str());
 
     fmi2_status_t status = fmi2_status_ok;
     if (!m_sendDummyResponses) {
@@ -726,7 +770,7 @@ string Server::clientData(const char *data, size_t size) {
     }
     ret.first = fmitcp_proto::type_fmi2_import_get_directional_derivative_res;
     ret.second = response.SerializeAsString();
-    debug("fmi2_import_get_directional_derivative_res(status=%d,dz=%s)\n",response.status(),arrayToString(dz, r.z_ref_size()).c_str());
+    log_error_or_debug(status, "fmi2_import_get_directional_derivative_res(status=%d,dz=%s)\n",response.status(),arrayToString(dz).c_str());
 
   break; } case fmitcp_proto::type_fmi2_import_enter_event_mode_req: {
     // TODO
@@ -820,7 +864,7 @@ string Server::clientData(const char *data, size_t size) {
       response.add_z(z[i]);
 
     ret.second = response.SerializeAsString();
-    debug("fmi2_import_get_event_indicators_res()\n");
+    log_error_or_debug(status, "fmi2_import_get_event_indicators_res()\n");
   break; } case fmitcp_proto::type_fmi2_import_get_continuous_states_req: {
     // TODO
     // Unpack message
@@ -842,7 +886,7 @@ string Server::clientData(const char *data, size_t size) {
       response.add_x(x[i]);
 
     ret.second = response.SerializeAsString();
-    debug("fmi2_import_get_continuous_states_res()\n");
+    log_error_or_debug(status, "fmi2_import_get_continuous_states_res()\n");
   break; } case fmitcp_proto::type_fmi2_import_get_derivatives_req: {
     // TODO
     // Unpack message
@@ -864,7 +908,7 @@ string Server::clientData(const char *data, size_t size) {
       response.add_derivatives(derivatives[i]);
 
     ret.second = response.SerializeAsString();
-    debug("fmi2_import_get_derivatives_res()\n");
+    log_error_or_debug(status, "fmi2_import_get_derivatives_res()\n");
   break; } case fmitcp_proto::type_fmi2_import_get_nominal_continuous_states_req: {
     // TODO
     // Unpack message
@@ -887,7 +931,7 @@ string Server::clientData(const char *data, size_t size) {
       response.add_nominal(nominal[i]);
 
     ret.second = response.SerializeAsString();
-    debug("fmi2_import_get_nominal_continuous_states_res()\n");
+    log_error_or_debug(status, "fmi2_import_get_nominal_continuous_states_res()\n");
   break; } case fmitcp_proto::type_fmi2_import_set_real_input_derivatives_req: {
 
     // Unpack message
@@ -902,7 +946,7 @@ string Server::clientData(const char *data, size_t size) {
       value[i] = r.values(i);
     }
     debug("fmi2_import_set_real_input_derivatives_req(vrs=%s,orders=%s,values=%s)\n",
-                       arrayToString(vr, r.valuereferences_size()).c_str(), arrayToString(order, r.orders_size()).c_str(), arrayToString(value, r.values_size()).c_str());
+                       arrayToString(vr).c_str(), arrayToString(order).c_str(), arrayToString(value).c_str());
 
     fmi2_status_t status = fmi2_status_ok;
     if (!m_sendDummyResponses) {
@@ -925,7 +969,7 @@ string Server::clientData(const char *data, size_t size) {
       order[i] = r.orders(i);
     }
     debug("fmi2_import_get_real_output_derivatives_req(vrs=%s,orders=%s)\n",
-                       arrayToString(vr, r.valuereferences_size()).c_str(), arrayToString(order, r.orders_size()).c_str());
+                       arrayToString(vr).c_str(), arrayToString(order).c_str());
 
     fmi2_status_t status = fmi2_status_ok;
     if (!m_sendDummyResponses) {
@@ -941,7 +985,7 @@ string Server::clientData(const char *data, size_t size) {
       response.add_values(value[i]);
     }
     ret.second = response.SerializeAsString();
-    debug("fmi2_import_get_real_output_derivatives_res(status=%d,values=%s)\n",response.status(),arrayToString(value, r.valuereferences_size()).c_str());
+    log_error_or_debug(status, "fmi2_import_get_real_output_derivatives_res(status=%d,values=%s)\n",response.status(),arrayToString(value).c_str());
 
   break; } case fmitcp_proto::type_fmi2_import_do_step_req: {
 
@@ -1001,7 +1045,7 @@ string Server::clientData(const char *data, size_t size) {
     ret.first = fmitcp_proto::type_fmi2_import_get_status_res;
     response.set_value(fmi2StatusToProtofmi2Status(status));
     ret.second = response.SerializeAsString();
-    debug("fmi2_import_get_status_res(value=%d)\n",response.value());
+    log_error_or_debug(status, "fmi2_import_get_status_res(value=%d)\n",response.value());
 
   break; } case fmitcp_proto::type_fmi2_import_get_real_status_req: {
 

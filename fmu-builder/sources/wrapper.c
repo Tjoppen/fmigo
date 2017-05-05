@@ -53,12 +53,12 @@ typedef struct {
 #include "strlcpy.h"
 
 static fmi2Status generated_fmi2GetReal(ModelInstance *comp, const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Real value[]) {
-    return fmi2_import_get_real(comp->s.simulation.FMU,vr,nvr,value);
+    return (fmi2Status)fmi2_import_get_real(comp->s.simulation.FMU,vr,nvr,value);
 }
 
 static fmi2Status generated_fmi2SetReal(ModelInstance *comp, modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Real value[]) {
     if( comp->s.simulation.FMU != NULL)
-        return fmi2_import_set_real(comp->s.simulation.FMU,vr,nvr,value);
+        return (fmi2Status)fmi2_import_set_real(comp->s.simulation.FMU,vr,nvr,value);
     return fmi2Error;
 }
 
@@ -97,17 +97,17 @@ static fmi2Status generated_fmi2SetInteger(ModelInstance *comp, modelDescription
 }
 
 static fmi2Status generated_fmi2GetBoolean(ModelInstance *comp, const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Boolean value[]) {
-    return fmi2_import_get_boolean(comp->s.simulation.FMU,vr,nvr,value);
+    return (fmi2Status)fmi2_import_get_boolean(comp->s.simulation.FMU,vr,nvr,value);
 }
 
 static fmi2Status generated_fmi2SetBoolean(ModelInstance *comp, modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Boolean value[]) {
     if( comp->s.simulation.FMU != NULL)
-        return fmi2_import_set_boolean(comp->s.simulation.FMU,vr,nvr,value);
+        return (fmi2Status)fmi2_import_set_boolean(comp->s.simulation.FMU,vr,nvr,value);
     return fmi2Error;
 }
 
 static fmi2Status generated_fmi2GetString(ModelInstance *comp, const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2String value[]) {
-    return fmi2_import_get_string(comp->s.simulation.FMU,vr,nvr,value);
+    return (fmi2Status)fmi2_import_get_string(comp->s.simulation.FMU,vr,nvr,value);
 }
 
 static fmi2Status generated_fmi2SetString(ModelInstance *comp, modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2String value[]) {

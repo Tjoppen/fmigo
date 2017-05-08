@@ -306,11 +306,11 @@ static fmi2Status wrapper_instantiate(ModelInstance *comp)  {
 static fmi2Status wrapper_setup_experiment(ModelInstance *comp,
         fmi2Boolean toleranceDefined, fmi2Real tolerance,
         fmi2Real startTime, fmi2Boolean stopTimeDefined, fmi2Real stopTime) {
-    return fmi2_import_setup_experiment(comp->s.simulation.FMU, toleranceDefined, tolerance, startTime, stopTimeDefined, stopTime) ;
+    return (fmi2Status)fmi2_import_setup_experiment(comp->s.simulation.FMU, toleranceDefined, tolerance, startTime, stopTimeDefined, stopTime) ;
 }
 
 static fmi2Status wrapper_enter_init(ModelInstance *comp) {
-    return fmi2_import_enter_initialization_mode(comp->s.simulation.FMU) ;
+    return (fmi2Status)fmi2_import_enter_initialization_mode(comp->s.simulation.FMU) ;
 }
 
 static fmi2Status wrapper_exit_init(ModelInstance *comp) {
@@ -321,7 +321,7 @@ static fmi2Status wrapper_exit_init(ModelInstance *comp) {
     char path[1024];
 
     prepare(&comp->s.simulation.sim, comp->s.simulation.FMU, comp->s.md.integrator);
-    status = fmi2_import_exit_initialization_mode(comp->s.simulation.FMU);
+    status = (fmi2Status)fmi2_import_exit_initialization_mode(comp->s.simulation.FMU);
     if(status == fmi2Error){
         return status;
     }
@@ -350,6 +350,8 @@ static fmi2Status wrapper_exit_init(ModelInstance *comp) {
 
         fclose(fp);
     }
+
+    return fmi2OK;
 }
 
 #include "fmuTemplate_impl.h"

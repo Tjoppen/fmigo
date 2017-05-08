@@ -39,6 +39,8 @@ typedef struct {
     size_t npartials;
 
     fmi2_import_t *FMU;
+    char* dir;
+    jm_callbacks m_jmCallbacks;
 } me_simulation;
 
 #define SIMULATION_TYPE    me_simulation
@@ -51,6 +53,7 @@ typedef struct {
 #define SIMULATION_GET              wrapper_get
 #define SIMULATION_ENTER_INIT       wrapper_enter_init
 #define SIMULATION_EXIT_INIT        wrapper_exit_init
+#define SIMULATION_FREE             wrapper_free
 
 #include "strlcpy.h"
 
@@ -204,53 +207,51 @@ static fmi2Status wrapper_instantiate(ModelInstance *comp)  {
     //char *m_fmuLocation;
     char m_resourcePath[1024];
     char m_fmuPath[1024];
-    char* dir;
     const char* m_instanceName;
-    jm_callbacks m_jmCallbacks;
     fmi_version_enu_t m_version;
     fmi_import_context_t* m_context;
 
-    m_jmCallbacks.malloc = malloc;
-    m_jmCallbacks.calloc = calloc;
-    m_jmCallbacks.realloc = realloc;
-    m_jmCallbacks.free = free;
-    m_jmCallbacks.logger = jmCallbacksLogger;
-    m_jmCallbacks.log_level = 0;
-    m_jmCallbacks.context = 0;
+    comp->s.simulation.m_jmCallbacks.malloc = malloc;
+    comp->s.simulation.m_jmCallbacks.calloc = calloc;
+    comp->s.simulation.m_jmCallbacks.realloc = realloc;
+    comp->s.simulation.m_jmCallbacks.free = free;
+    comp->s.simulation.m_jmCallbacks.logger = jmCallbacksLogger;
+    comp->s.simulation.m_jmCallbacks.log_level = 0;
+    comp->s.simulation.m_jmCallbacks.context = 0;
 
-    m_jmCallbacks.logger(NULL,"modulename",0,"jm_string");
+    comp->s.simulation.m_jmCallbacks.logger(NULL,"modulename",0,"jm_string");
 
     strlcpy(m_fmuPath, comp->fmuResourceLocation, sizeof(m_fmuPath));
     strlcat(m_fmuPath, "/", sizeof(m_fmuPath));
     strlcat(m_fmuPath, s->md.fmu, sizeof(m_fmuPath));
 
-    if (!(dir = fmi_import_mk_temp_dir(&m_jmCallbacks, NULL, "wrapper_"))) {
+    if (!(comp->s.simulation.dir = fmi_import_mk_temp_dir(&comp->s.simulation.m_jmCallbacks, NULL, "wrapper_"))) {
         fprintf(stderr, "fmi_import_mk_temp_dir() failed\n");
         exit(1);
     }
 
-    m_context = fmi_import_allocate_context(&m_jmCallbacks);
+    m_context = fmi_import_allocate_context(&comp->s.simulation.m_jmCallbacks);
     fprintf(stderr," cont :%p\n",m_context);
     // unzip the real fmu
-    m_version = fmi_import_get_fmi_version(m_context, m_fmuPath, dir);
+    m_version = fmi_import_get_fmi_version(m_context, m_fmuPath, comp->s.simulation.dir);
     fprintf(stderr,"%s\n",m_fmuPath);
     fprintf(stderr,"wrapper: got version %d\n",m_version);
 
     if ((m_version <= fmi_version_unknown_enu) || (m_version >= fmi_version_unsupported_enu)) {
 
         fmi_import_free_context(m_context);
-        fmi_import_rmdir(&m_jmCallbacks, dir);
+        fmi_import_rmdir(&comp->s.simulation.m_jmCallbacks, comp->s.simulation.dir);
         exit(1);
     }
     if (m_version == fmi_version_2_0_enu) { // FMI 2.0
         // parse the xml file
         /* fprintf(stderr,"dir: %s\n",dir); */
-        comp->s.simulation.FMU = fmi2_import_parse_xml(m_context, dir, 0);
-        fprintf(stderr,"dir: %s\n",dir);
+        comp->s.simulation.FMU = fmi2_import_parse_xml(m_context, comp->s.simulation.dir, 0);
+        fprintf(stderr,"dir: %s\n",comp->s.simulation.dir);
         if(!comp->s.simulation.FMU) {
-        fprintf(stderr,"dir: %s\n",dir);
+        fprintf(stderr,"dir: %s\n",comp->s.simulation.dir);
             fmi_import_free_context(m_context);
-            fmi_import_rmdir(&m_jmCallbacks, dir);
+            fmi_import_rmdir(&comp->s.simulation.m_jmCallbacks, comp->s.simulation.dir);
             return fmi2Error;
         }
 
@@ -260,7 +261,7 @@ static fmi2Status wrapper_instantiate(ModelInstance *comp)  {
             fprintf(stderr,"Wrapper only supports model exchange\n");
             fmi2_import_free(comp->s.simulation.FMU);
             fmi_import_free_context(m_context);
-            fmi_import_rmdir(&m_jmCallbacks, dir);
+            fmi_import_rmdir(&comp->s.simulation.m_jmCallbacks, comp->s.simulation.dir);
             return fmi2Error;
         }
         // FMI callback functions
@@ -271,28 +272,28 @@ static fmi2Status wrapper_instantiate(ModelInstance *comp)  {
         if (status == jm_status_error) {
             fmi2_import_free(comp->s.simulation.FMU);
             fmi_import_free_context(m_context);
-            fmi_import_rmdir(&m_jmCallbacks, dir);
+            fmi_import_rmdir(&comp->s.simulation.m_jmCallbacks, comp->s.simulation.dir);
             return fmi2Error;
         }
         m_instanceName = fmi2_import_get_model_name(comp->s.simulation.FMU);
         {
-            //m_fmuLocation = fmi_import_create_URL_from_abs_path(&m_jmCallbacks, m_fmuPath);
+            //m_fmuLocation = fmi_import_create_URL_from_abs_path(&comp->s.simulation.m_jmCallbacks, m_fmuPath);
         }
         fprintf(stderr,"have instancename %s\n",m_instanceName);
 
         {
-            char *temp = fmi_import_create_URL_from_abs_path(&m_jmCallbacks, dir);
+            char *temp = fmi_import_create_URL_from_abs_path(&comp->s.simulation.m_jmCallbacks, comp->s.simulation.dir);
             strlcpy(m_resourcePath, temp, sizeof(m_resourcePath));
             strlcat(m_resourcePath, "/resources", sizeof(m_resourcePath));
-            m_jmCallbacks.free(temp);
+            comp->s.simulation.m_jmCallbacks.free(temp);
         }
     } else {
         // todo add FMI 1.0 later on.
         fmi_import_free_context(m_context);
-        fmi_import_rmdir(&m_jmCallbacks, dir);
+        fmi_import_rmdir(&comp->s.simulation.m_jmCallbacks, comp->s.simulation.dir);
         return fmi2Error;
     }
-    free(dir);
+    fmi_import_free_context(m_context);
 
     fmi2_status_t status = fmi2_import_instantiate(comp->s.simulation.FMU , m_instanceName, fmi2_model_exchange, m_resourcePath, 0);
     if(status == fmi2Error){
@@ -352,6 +353,18 @@ static fmi2Status wrapper_exit_init(ModelInstance *comp) {
     }
 
     return fmi2OK;
+}
+
+
+
+static void wrapper_free(me_simulation me) {
+  fmi2_import_terminate(me.FMU);
+  fmi2_import_free_instance(me.FMU);
+  fmi2_import_destroy_dllfmu(me.FMU);
+  fmi2_import_free(me.FMU);
+  fmi_import_rmdir(&me.m_jmCallbacks, me.dir);
+  free(me.dir);
+  cgsl_free_simulation(me.sim);
 }
 
 #include "fmuTemplate_impl.h"

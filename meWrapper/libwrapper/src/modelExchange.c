@@ -110,6 +110,21 @@ void allocateBackup(Backup *backup, fmu_parameters *p){
     }
 }
 
+static void freeBackup(Backup *backup) {
+  free(backup->ei);
+  free(backup->ei_b);
+  free(backup->x);
+  free(backup->dydt);
+}
+
+static void me_model_free(cgsl_model *model) {
+  fmu_parameters* p = get_p(model);
+  free(p);
+  freeBackup(&m_backup);
+  freeBackup(&m_backup2);
+  cgsl_model_default_free(model);
+}
+
 /** init_fmu_model
  *  Setup all parameters and function pointers needed by fmu_model
  *
@@ -132,6 +147,7 @@ void init_fmu_model(cgsl_model **m, fmi2_import_t *FMU){
     allocateBackup(getTempBackup(),p);
 
     *m = cgsl_model_default_alloc(p->nx, NULL, p, fmu_function, NULL, NULL, NULL, 0);
+    (*m)->free = me_model_free;
 
     m_backup.t = 0;
     m_backup.h = 0;

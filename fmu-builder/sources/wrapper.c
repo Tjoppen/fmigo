@@ -188,7 +188,6 @@ static fmi2Status getPartial(ModelInstance *comp, fmi2ValueReference vr, fmi2Val
     return fmi2OK;
 }
 
-#define NEW_DOSTEP //to get noSetFMUStatePriorToCurrentPoint
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
     //fprintf(stderr,"do step run iteration\n");
     runIteration(&s->simulation.sim, currentCommunicationPoint,communicationStepSize, getBackup());

@@ -203,7 +203,7 @@ static fmi2Status clutch_init(ModelInstance *comp) {
   return fmi2OK;
 }
 
-static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
+static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
   if ( fabs( s->md.on_off ) < 0.1 ){ 
     s->simulation.model->x[ 0 ] = 0;
     s->simulation.model->x[ 2 ] = 0;

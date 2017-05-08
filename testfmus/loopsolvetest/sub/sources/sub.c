@@ -15,7 +15,7 @@ static int sync_out(int n, const double outputs[], void * params) {
   return 0;
 }
 
-static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
+static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
   s->md.out = s->md.in1 - s->md.in2;
 }
 

@@ -75,7 +75,7 @@ static fmi2Status getPartial(ModelInstance *comp, fmi2ValueReference vr, fmi2Val
     return fmi2Error;
 }
 
-static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
+static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
     if (s->md.pulse_type == PULSE_TYPE_OMEGA) {
         s->md.theta += s->md.omega * communicationStepSize;
     }

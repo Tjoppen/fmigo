@@ -420,7 +420,6 @@ static int pre_step (double t, double dt, const double y[], void * params){
   return 0;
 }
 
-#define NEW_DOSTEP //to get noSetFMUStatePriorToCurrentPoint
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
 
   if (s->md.is_gearbox && s->md.gear != s->simulation.last_gear) {

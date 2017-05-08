@@ -175,7 +175,7 @@ static fmi2Status scania_driveline_init(ModelInstance *comp) {
     return fmi2OK;
 }
 
-static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
+static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
   cgsl_step_to( &s->simulation, currentCommunicationPoint, communicationStepSize );
 }
 

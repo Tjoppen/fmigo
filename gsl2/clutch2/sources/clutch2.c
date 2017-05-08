@@ -373,7 +373,6 @@ static fmi2Status getPartial(ModelInstance *comp, fmi2ValueReference vr, fmi2Val
   return fmi2Error;
 }
 
-#define NEW_DOSTEP //to get noSetFMUStatePriorToCurrentPoint
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
   if (s->md.is_gearbox && s->md.gear != s->simulation.last_gear) {
     /** gear changed - compute impact that keeps things sane */

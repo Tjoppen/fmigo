@@ -130,7 +130,7 @@ static void coupled_sho_free(coupled_sho_simulation css) {
     cgsl_free_simulation(css.sim);
 }
 
-static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
+static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
     cgsl_step_to( &s->simulation.sim, currentCommunicationPoint, communicationStepSize );
 }
 

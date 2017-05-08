@@ -13,7 +13,7 @@ static fmi2Status stringtest_init(ModelInstance *comp) {
     return fmi2OK;
 }
 
-static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
+static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
     strlcpy(s->md.s_out, s->md.s_in, sizeof(s->md.s_out));
     strlcpy(s->md.s_out2, s->md.s_in2, sizeof(s->md.s_out2));
 }

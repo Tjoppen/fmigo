@@ -114,7 +114,7 @@ static fmi2Status chained_sho_init(ModelInstance *comp) {
 }
 
 
-static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
+static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
     cgsl_step_to( &s->simulation, currentCommunicationPoint, communicationStepSize );
 }
 

@@ -10,7 +10,7 @@ static fmi2Status getPartial(ModelInstance *comp, fmi2ValueReference vr, fmi2Val
     return fmi2Error;
 }
 
-static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
+static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
     //controller. beta = gas pedal
     //fprintf(stderr, "omega_l0 = %f, omega_l = %f\n", s->md.omega_l0, s->md.omega_l);
     s->md.beta = s->md.kp*(s->md.omega_l0 - s->md.omega_l);

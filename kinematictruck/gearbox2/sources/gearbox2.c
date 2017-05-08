@@ -21,7 +21,7 @@ static fmi2Status getPartial(ModelInstance *comp, fmi2ValueReference vr, fmi2Val
     return fmi2Error;
 }
 
-static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
+static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
     fmi2Real a = s->md.alpha, a2 = a*a, h = communicationStepSize;
     fmi2Real A = s->md.tau_e - s->md.d1*s->md.omega_e;
     fmi2Real B = s->md.tau_l - s->md.d2*s->md.omega_l;

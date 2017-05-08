@@ -19,7 +19,7 @@ static fmi2Status getPartial(ModelInstance *comp, fmi2ValueReference vr, fmi2Val
     return fmi2Error;
 }
 
-static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
+static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
     fmi2Real h = communicationStepSize;
     fmi2Real deltaphi = s->md.theta_e - s->md.theta_l; //angle difference
     

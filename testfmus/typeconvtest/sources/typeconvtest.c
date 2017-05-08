@@ -13,7 +13,7 @@ static fmi2Status typeconvtest_init(ModelInstance *comp) {
     return fmi2OK;
 }
 
-static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
+static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
     s->md.r_out = s->md.r_in;
     s->md.i_out = s->md.i_in;
     s->md.b_out = s->md.b_in;

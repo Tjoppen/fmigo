@@ -112,7 +112,7 @@ static int sync_out(int n, const double outputs[], void * params) {
 }
 
 
-static void engine2_init(ModelInstance *comp) {
+static fmi2Status engine2_init(ModelInstance *comp) {
   state_t *s = &comp->s;
 
   double initials[3];
@@ -129,7 +129,7 @@ static void engine2_init(ModelInstance *comp) {
   );
   //s->simulation.file = fopen( "engine2.m", "w+" );
   //s->simulation.print = 1;
-
+  return fmi2OK;
 }
 
 static fmi2Status getPartial(ModelInstance *comp, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {

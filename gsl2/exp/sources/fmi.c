@@ -19,7 +19,7 @@ static int epce_post_step (int n, const double outputs[], void * params) {
     return GSL_SUCCESS;
 }
 
-static void exp_init(ModelInstance *comp) {
+static fmi2Status exp_init(ModelInstance *comp) {
     state_t *s = &comp->s;
     cgsl_model *exp_model  = init_exp_model( s->md.x0 );
     cgsl_model *exp_filter = init_exp_filter( exp_model );
@@ -33,6 +33,7 @@ static void exp_init(ModelInstance *comp) {
         0,
         NULL
     );
+    return fmi2OK;
 }
 
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {

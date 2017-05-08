@@ -45,10 +45,12 @@ typedef struct {
 #include "fmuTemplate.h"
 #include "hypotmath.h"
 
-#define SIMULATION_INSTANTIATE  wrapper_ntoeu
-#define SIMULATION_SET          wrapper_set
-#define SIMULATION_GET          wrapper_get
-#define SIMULATION_EXIT_INIT    model_init
+#define SIMULATION_INSTANTIATE      wrapper_instantiate
+#define SIMULATION_SETUP_EXPERIMENT wrapper_setup_experiment
+#define SIMULATION_SET              wrapper_set
+#define SIMULATION_GET              wrapper_get
+#define SIMULATION_ENTER_INIT       wrapper_enter_init
+#define SIMULATION_EXIT_INIT        wrapper_exit_init
 
 #include "strlcpy.h"
 
@@ -141,39 +143,6 @@ fmi2Status wrapper_set ( me_simulation *sim) {
     return fmi2OK;
 }
 
-void model_init(ModelInstance *comp) {
-    FILE *fp;
-
-    //PATH_MAX is usually 512 or so, this should be enough
-    char path[1024];
-
-    strlcpy(path, comp->fmuResourceLocation, sizeof(path));
-    strlcat(path, "/directional.txt",        sizeof(path));
-
-    fp = fopen(path, "r");
-
-    if (fp) {
-        //read partials from directional.txt
-        me_simulation *me = &comp->s.simulation;
-
-        for (;;) {
-            partial_t *p = &me->partials[me->npartials];
-            int n = fscanf(fp, "%u %u %u", &p->unknown, &p->known, &p->vr);
-
-            if (n < 3) {
-                break;
-            }
-
-            if (++me->npartials >= sizeof(me->partials)/sizeof(me->partials[0])) {
-                break;
-            }
-        }
-
-        fclose(fp);
-    }
-}
-
-
 static fmi2Status getPartial(ModelInstance *comp, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial){
     size_t x;
     state_t *s = &comp->s;
@@ -230,7 +199,7 @@ void jmCallbacksLogger(jm_callbacks* c, jm_string module, jm_log_level_enu_t log
     fprintf(stderr, "[module = %s][log level = %s] %s\n", module, jm_log_level_to_string(log_level), message);fflush(NULL);
 }
 
-void wrapper_ntoeu(ModelInstance *comp)  {
+static fmi2Status wrapper_instantiate(ModelInstance *comp)  {
     fprintf(stderr,"Init Wrapper\n");
     state_t *s = &comp->s;
     //char *m_fmuLocation;
@@ -283,7 +252,7 @@ void wrapper_ntoeu(ModelInstance *comp)  {
         fprintf(stderr,"dir: %s\n",dir);
             fmi_import_free_context(m_context);
             fmi_import_rmdir(&m_jmCallbacks, dir);
-            return;
+            return fmi2Error;
         }
 
         // check FMU kind
@@ -293,7 +262,7 @@ void wrapper_ntoeu(ModelInstance *comp)  {
             fmi2_import_free(comp->s.simulation.FMU);
             fmi_import_free_context(m_context);
             fmi_import_rmdir(&m_jmCallbacks, dir);
-            return;
+            return fmi2Error;
         }
         // FMI callback functions
         const fmi2_callback_functions_t m_fmi2CallbackFunctions = {fmi2_log_forwarding, calloc, free, 0, 0};
@@ -304,7 +273,7 @@ void wrapper_ntoeu(ModelInstance *comp)  {
             fmi2_import_free(comp->s.simulation.FMU);
             fmi_import_free_context(m_context);
             fmi_import_rmdir(&m_jmCallbacks, dir);
-            return;
+            return fmi2Error;
         }
         m_instanceName = fmi2_import_get_model_name(comp->s.simulation.FMU);
         {
@@ -322,33 +291,65 @@ void wrapper_ntoeu(ModelInstance *comp)  {
         // todo add FMI 1.0 later on.
         fmi_import_free_context(m_context);
         fmi_import_rmdir(&m_jmCallbacks, dir);
-        return;
+        return fmi2Error;
     }
     free(dir);
 
     fmi2_status_t status = fmi2_import_instantiate(comp->s.simulation.FMU , m_instanceName, fmi2_model_exchange, m_resourcePath, 0);
     if(status == fmi2Error){
         fprintf(stderr,"Wrapper: instatiate faild\n");
-        exit(1);
+        return fmi2Error;
     }
 
-    //setup_experiment
-    status = fmi2_import_setup_experiment(comp->s.simulation.FMU, true, 1e-6, 0, false, 0) ;
-    if(status == fmi2Error){
-        fprintf(stderr,"Wrapper: setup Experiment faild\n");
-        exit(1);
-    }
+    return fmi2OK;
+}
 
-    status = fmi2_import_enter_initialization_mode(comp->s.simulation.FMU) ;
-    if(status == fmi2Error){
-        fprintf(stderr,"Wrapper: enter initialization mode faild\n");
-        exit(1);
-    }
-    prepare(&s->simulation.sim, comp->s.simulation.FMU, s->md.integrator);
+static fmi2Status wrapper_setup_experiment(ModelInstance *comp,
+        fmi2Boolean toleranceDefined, fmi2Real tolerance,
+        fmi2Real startTime, fmi2Boolean stopTimeDefined, fmi2Real stopTime) {
+    return fmi2_import_setup_experiment(comp->s.simulation.FMU, toleranceDefined, tolerance, startTime, stopTimeDefined, stopTime) ;
+}
+
+static fmi2Status wrapper_enter_init(ModelInstance *comp) {
+    return fmi2_import_enter_initialization_mode(comp->s.simulation.FMU) ;
+}
+
+static fmi2Status wrapper_exit_init(ModelInstance *comp) {
+    FILE *fp;
+    fmi2Status status;
+
+    //PATH_MAX is usually 512 or so, this should be enough
+    char path[1024];
+
+    prepare(&comp->s.simulation.sim, comp->s.simulation.FMU, comp->s.md.integrator);
     status = fmi2_import_exit_initialization_mode(comp->s.simulation.FMU);
     if(status == fmi2Error){
-        fprintf(stderr,"Wrapper: exit initialization mode faild\n");
-        exit(1);
+        return status;
+    }
+
+    strlcpy(path, comp->fmuResourceLocation, sizeof(path));
+    strlcat(path, "/directional.txt",        sizeof(path));
+
+    fp = fopen(path, "r");
+
+    if (fp) {
+        //read partials from directional.txt
+        me_simulation *me = &comp->s.simulation;
+
+        for (;;) {
+            partial_t *p = &me->partials[me->npartials];
+            int n = fscanf(fp, "%u %u %u", &p->unknown, &p->known, &p->vr);
+
+            if (n < 3) {
+                break;
+            }
+
+            if (++me->npartials >= sizeof(me->partials)/sizeof(me->partials[0])) {
+                break;
+            }
+        }
+
+        fclose(fp);
     }
 }
 

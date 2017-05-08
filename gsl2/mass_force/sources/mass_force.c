@@ -64,7 +64,7 @@ static int epce_post_step(int n, const double outputs[], void * params) {
     return GSL_SUCCESS;
 }
 
-static void mass_force_init(ModelInstance *comp) {
+static fmi2Status mass_force_init(ModelInstance *comp) {
     state_t *s = &comp->s;
     const double initials[2] = {s->md.x, s->md.v};
     s->simulation = cgsl_init_simulation(
@@ -76,6 +76,7 @@ static void mass_force_init(ModelInstance *comp) {
         ),
         rkf45, 1e-5, 0, 0, 0, NULL
     );
+    return fmi2OK;
 }
 
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {

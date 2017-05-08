@@ -69,7 +69,7 @@ static void lumped_rod_fmi_sync_in( lumped_rod_sim * sim, state_t *s){
 /**
    Instantiate the simulation and set initial conditions.
 */
-static void setStartValues(ModelInstance *comp) {
+static fmi2Status setStartValues(ModelInstance *comp) {
   state_t *s = &comp->s;
   /** read the init values given by the master, either from command line
       arguments or as defaults from modelDescription.xml
@@ -133,8 +133,8 @@ static void setStartValues(ModelInstance *comp) {
   }
   fprintf(data_file, "\n");
 #endif
-    
 
+  return fmi2OK;
 };
 
 /** Returns partial derivative of vr with respect to wrt  

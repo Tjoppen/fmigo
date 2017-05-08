@@ -164,7 +164,7 @@ static int sync_out(int n, const double outputs[], void * params) {
 }
 
 
-static void trailer_init(ModelInstance *comp) {
+static fmi2Status trailer_init(ModelInstance *comp) {
   state_t *s = &comp->s;
 
   double initials[4];
@@ -179,6 +179,7 @@ static void trailer_init(ModelInstance *comp) {
       ),
     s->md.integrator, 1e-6, 0, 0, s->md.octave_output, s->md.octave_output ? fopen(s->md.octave_output_file, "w") : NULL
     );
+    return fmi2OK;
 }
 
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {

@@ -181,7 +181,7 @@ static int epce_post_step(int n, const double outputs[], void * params) {
     return GSL_SUCCESS;
 }
 
-static void clutch_init(ModelInstance *comp) {
+static fmi2Status clutch_init(ModelInstance *comp) {
   state_t *s = &comp->s;
   const double initials[4] = {
     s->md.xi0,
@@ -200,6 +200,7 @@ static void clutch_init(ModelInstance *comp) {
     ),
     rkf45, 1e-5, 0, 0, 0, NULL
   );
+  return fmi2OK;
 }
 
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {

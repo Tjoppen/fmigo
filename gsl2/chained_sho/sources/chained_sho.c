@@ -90,7 +90,7 @@ static int epce_post_step(int n, const double outputs[], void * params) {
     return GSL_SUCCESS;
 }
 
-static void chained_sho_init(ModelInstance *comp) {
+static fmi2Status chained_sho_init(ModelInstance *comp) {
     state_t *s = &comp->s;
     const double initials[3] = {s->md.xstart, s->md.vstart, s->md.dxstart};
 
@@ -109,6 +109,8 @@ static void chained_sho_init(ModelInstance *comp) {
         ),
         rkf45, 1e-5, 0, 0, s->md.dump_data, f
     );
+
+    return fmi2OK;
 }
 
 

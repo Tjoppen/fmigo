@@ -156,7 +156,7 @@ static int sync_out(int n, const double out[], void * params) {
 }
 
 
-static void scania_driveline_init(ModelInstance *comp) {
+static fmi2Status scania_driveline_init(ModelInstance *comp) {
   state_t *s = &comp->s;
   double initials[] = {
     s->md.w_inShaftNeutral,
@@ -172,6 +172,7 @@ static void scania_driveline_init(ModelInstance *comp) {
       ),
     rkf45, 1e-5, 0, 0, 0, NULL
     );
+    return fmi2OK;
 }
 
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {

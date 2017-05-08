@@ -324,7 +324,7 @@ static int sync_out(int n, const double outputs[], void * params) {
 }
 
 
-static void clutch_init(ModelInstance *comp) {
+static fmi2Status clutch_init(ModelInstance *comp) {
   state_t *s = &comp->s;
   /** system size and layout depends on which dx's are integrated */
   double initials[6];
@@ -346,6 +346,7 @@ static void clutch_init(ModelInstance *comp) {
     );
   s->simulation.last_gear = s->md.gear;
   s->simulation.delta_phi = 0;
+  return fmi2OK;
 }
 
 static fmi2Status getPartial(ModelInstance *comp, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {

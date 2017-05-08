@@ -282,7 +282,9 @@ fmi2Component fmi2Instantiate(fmi2String instanceName, fmi2Type fmuType, fmi2Str
     FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2Instantiate: GUID=%s", fmuGUID)
 
 #ifdef SIMULATION_INSTANTIATE
-    SIMULATION_INSTANTIATE(comp);
+    if (SIMULATION_INSTANTIATE(comp) != fmi2OK) {
+        return NULL;
+    }
 #endif
 
     return comp;
@@ -311,7 +313,11 @@ fmi2Status fmi2SetupExperiment(fmi2Component c, fmi2Boolean toleranceDefined, fm
         toleranceDefined, tolerance)
 
     comp->s.time = startTime;
+#ifdef SIMULATION_SETUP_EXPERIMENT
+    return SIMULATION_SETUP_EXPERIMENT(comp, toleranceDefined, tolerance, startTime, stopTimeDefined, stopTime);
+#else
     return fmi2OK;
+#endif
 }
 
 fmi2Status fmi2EnterInitializationMode(fmi2Component c) {
@@ -322,22 +328,24 @@ fmi2Status fmi2EnterInitializationMode(fmi2Component c) {
 
     comp->s.state = modelInitializationMode;
 #ifdef SIMULATION_ENTER_INIT
-    SIMULATION_ENTER_INIT(comp);
-#endif
+    return SIMULATION_ENTER_INIT(comp);
+#else
     return fmi2OK;
+#endif
 }
 
 fmi2Status fmi2ExitInitializationMode(fmi2Component c) {
     ModelInstance *comp = (ModelInstance *)c;
+    fmi2Status ret = fmi2OK;
     if (invalidState(comp, "fmi2ExitInitializationMode", modelInitializationMode))
         return fmi2Error;
     FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2ExitInitializationMode")
 
 #ifdef SIMULATION_EXIT_INIT
-    SIMULATION_EXIT_INIT(comp);
+    ret = SIMULATION_EXIT_INIT(comp);
 #endif
     comp->s.state = modelInitialized;
-    return fmi2OK;
+    return ret;
 }
 
 fmi2Status fmi2Terminate(fmi2Component c) {

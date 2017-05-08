@@ -61,8 +61,9 @@ static void pulse_for_current_step(state_t *s, fmi2Real communicationStepSize) {
     }
 }
 
-static void impulse_init(ModelInstance *comp) {
+static fmi2Status impulse_init(ModelInstance *comp) {
     pulse_for_current_step(&comp->s, 0);
+    return fmi2OK;
 }
 
 //returns partial derivative of vr with respect to wrt

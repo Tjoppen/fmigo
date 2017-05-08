@@ -57,6 +57,7 @@ bool isOK(jm_status_enu_t status) {
 
 Server::Server(string fmuPath, std::string hdf5Filename) {
   m_fmi2Outputs = NULL;
+  m_fmi2Variables = NULL;
   m_fmuParsed = true;
   m_fmuPath = fmuPath;
   this->hdf5Filename = hdf5Filename;
@@ -229,6 +230,7 @@ void Server::setStartValues() {
 
 Server::~Server() {
   if(m_fmi2Outputs!=NULL)   fmi2_import_free_variable_list(m_fmi2Outputs);
+  if(m_fmi2Variables!=NULL) fmi2_import_free_variable_list(m_fmi2Variables);
 }
 
 string Server::clientData(const char *data, size_t size) {

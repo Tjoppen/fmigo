@@ -464,7 +464,7 @@ void ModelExchangeStepper::safeTimeStep(cgsl_simulation &sim){
 void ModelExchangeStepper::getSafeTime(const std::vector<FMIClient*> clients, double t, double &dt){
     for(auto client: clients)
         if(client->m_event_info.nextEventTimeDefined)
-            dt = min(dt, t - client->m_event_info.nextEventTime);
+            dt = min(dt, client->m_event_info.nextEventTime - t);
 }
 
 /** solveME()

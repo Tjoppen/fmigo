@@ -351,7 +351,7 @@ void safeTimeStep(cgsl_simulation *sim, TimeLoop *timeLoop){
  */
 void getSafeTime(cgsl_simulation *sim, double t, double *dt, Backup *backup){
     if(backup->eventInfo.nextEventTimeDefined)
-        *dt = min(*dt, t - backup->eventInfo.nextEventTime);
+        *dt = min(*dt, backup->eventInfo.nextEventTime - t);
 }
 
 /** runIteration()

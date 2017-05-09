@@ -24,9 +24,9 @@ typedef struct fmu_parameters {
     bool stateEvent;
 
     fmi2_import_t *FMU;
+    Backup m_backup;
 } fmu_parameters;
 
-static Backup m_backup;
 static Backup m_backup2;
 
 //#define signbits(a,b) ((a > 0)? ( (b > 0) ? 1 : 0) : (b<=0)? 1: 0)
@@ -35,7 +35,6 @@ static Backup m_backup2;
  *
  *  @param m Model
  */
-Backup* getBackup(){return &m_backup;}
 Backup* getTempBackup(){return &m_backup2;}
 
 fmu_parameters* get_p(cgsl_model* m){
@@ -84,8 +83,8 @@ static int fmu_function(double t, const double x[], double dxdt[], void* params)
     fmi2_import_get_derivatives(p->FMU, dxdt, p->nx);
 
     if(p->ni){
-        fmi2_import_get_event_indicators(p->FMU, getBackup()->ei, p->ni);
-        if(past_event(getBackup()->ei_b, getBackup()->ei, p->ni)){
+        fmi2_import_get_event_indicators(p->FMU, p->m_backup.ei, p->ni);
+        if(past_event(p->m_backup.ei_b, p->m_backup.ei, p->ni)){
             p->stateEvent = true;
             p->t_past = t;
             return GSL_SUCCESS;
@@ -120,7 +119,7 @@ static void freeBackup(Backup *backup) {
 static void me_model_free(cgsl_model *model) {
   fmu_parameters* p = get_p(model);
   free(p);
-  freeBackup(&m_backup);
+  freeBackup(&p->m_backup);
   freeBackup(&m_backup2);
   cgsl_model_default_free(model);
 }
@@ -143,19 +142,19 @@ void init_fmu_model(cgsl_model **m, fmi2_import_t *FMU){
     p->stateEvent = false;
     p->count      = 0;
 
-    allocateBackup(getBackup(), p);
+    allocateBackup(&p->m_backup, p);
     allocateBackup(getTempBackup(),p);
 
     *m = cgsl_model_default_alloc(p->nx, NULL, p, fmu_function, NULL, NULL, NULL, 0);
     (*m)->free = me_model_free;
 
-    m_backup.t = 0;
-    m_backup.h = 0;
+    p->m_backup.t = 0;
+    p->m_backup.h = 0;
 
     fmi2_status_t status;
     status = fmi2_import_get_continuous_states(p->FMU, (*m)->x,        p->nx);
     status = fmi2_import_get_continuous_states(p->FMU, (*m)->x_backup, p->nx);
-    status = fmi2_import_get_event_indicators (p->FMU, m_backup.ei_b,  p->ni);
+    status = fmi2_import_get_event_indicators (p->FMU, p->m_backup.ei_b,  p->ni);
 }
 
 /** prepare()
@@ -364,16 +363,17 @@ void getSafeTime(cgsl_simulation *sim, double t, double *dt, Backup *backup){
  *  @param t The current time
  *  @param dt The timestep to be taken
  */
-void runIteration(cgsl_simulation *sim, double t, double dt, Backup *backup) {
+void runIteration(cgsl_simulation *sim, double t, double dt) {
     TimeLoop timeLoop;
+    fmu_parameters* p = get_p(sim->model);
 
     timeLoop.t_safe = t;
     timeLoop.t_crossed = t; //not used before getSafeAndCrossed() I think, but best to be safe
     timeLoop.t_end = t + dt;
     timeLoop.dt_new = dt;
 
-    getSafeTime(sim, t, &timeLoop.dt_new, backup);
-    newDiscreteStates(sim, backup);
+    getSafeTime(sim, t, &timeLoop.dt_new, &p->m_backup);
+    newDiscreteStates(sim, &p->m_backup);
 
     while( timeLoop.t_safe < timeLoop.t_end ){
         me_step(sim, &timeLoop);
@@ -383,18 +383,18 @@ void runIteration(cgsl_simulation *sim, double t, double dt, Backup *backup) {
             getSafeAndCrossed(sim, &timeLoop);
 
             // restore and step to before the event
-            restoreStates(sim, backup);
+            restoreStates(sim, &p->m_backup);
             timeLoop.dt_new = timeLoop.t_safe - sim->t;
             me_step(sim, &timeLoop);
 
             // store and step to the event
-            if(!hasStateEvent(sim)) storeStates(sim, backup);
+            if(!hasStateEvent(sim)) storeStates(sim, &p->m_backup);
             timeLoop.dt_new = timeLoop.t_crossed - sim->t;
             me_step(sim, &timeLoop);
 
             // step closer to the event location
             if(hasStateEvent(sim))
-                stepToEvent(sim, backup, &timeLoop);
+                stepToEvent(sim, &p->m_backup, &timeLoop);
 
         }
         else {
@@ -404,7 +404,7 @@ void runIteration(cgsl_simulation *sim, double t, double dt, Backup *backup) {
 
         safeTimeStep(sim, &timeLoop);
         if(hasStateEvent(sim))
-            newDiscreteStates(sim, backup);
-        storeStates(sim, backup);
+            newDiscreteStates(sim, &p->m_backup);
+        storeStates(sim, &p->m_backup);
     }
 }

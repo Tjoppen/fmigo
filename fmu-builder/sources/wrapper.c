@@ -142,7 +142,6 @@ fmi2Status wrapper_get ( me_simulation *sim) {
 
 fmi2Status wrapper_set ( me_simulation *sim) {
     restoreStates(&sim->sim, getTempBackup());
-    storeStates(&sim->sim, getBackup());
     return fmi2OK;
 }
 
@@ -193,7 +192,7 @@ static fmi2Status getPartial(ModelInstance *comp, fmi2ValueReference vr, fmi2Val
 
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
     //fprintf(stderr,"do step run iteration\n");
-    runIteration(&s->simulation.sim, currentCommunicationPoint,communicationStepSize, getBackup());
+    runIteration(&s->simulation.sim, currentCommunicationPoint,communicationStepSize);
 }
 
 //extern "C"{

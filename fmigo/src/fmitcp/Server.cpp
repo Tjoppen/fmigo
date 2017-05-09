@@ -832,7 +832,7 @@ string Server::clientData(const char *data, size_t size) {
 
     fmi2_status_t status = fmi2_status_ok;
     std::vector<fmi2_real_t> x;
-    x.reserve(r.nx()*sizeof(fmi2_real_t));
+    x.resize(r.nx()*sizeof(fmi2_real_t));
     int i;
     for(i=0; i<r.nx();i++)
       x[i] = r.x(i);
@@ -852,7 +852,7 @@ string Server::clientData(const char *data, size_t size) {
 
     fmi2_status_t status = fmi2_status_ok;
     std::vector<fmi2_real_t> z;
-    z.reserve(r.nz()*sizeof(fmi2_real_t));
+    z.resize(r.nz());
 
     if (!m_sendDummyResponses) {
       status = fmi2_import_get_event_indicators(m_fmi2Instance, z.data(), r.nz());
@@ -919,7 +919,7 @@ string Server::clientData(const char *data, size_t size) {
 
     fmi2_status_t status = fmi2_status_ok;
     std::vector<fmi2_real_t> nominal;
-    nominal.reserve(r.nx()*sizeof(fmi2_real_t));
+    nominal.resize(r.nx());
 
     if (!m_sendDummyResponses) {
       status = fmi2_import_get_nominals_of_continuous_states(m_fmi2Instance, nominal.data(), r.nx());

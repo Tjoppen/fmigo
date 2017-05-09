@@ -173,7 +173,7 @@ void Solver::solve(bool holonomic, int printDebugInfo){
         neq = eqs.size();
 
     // Compute RHS
-    rhs.reserve(numRows);
+    rhs.resize(numRows);
     for(i=0; i<neq; ++i){
         Equation * eq = eqs[i];
         double  Z = eq->getFutureVelocity(), // - eq->getVelocity(),
@@ -266,9 +266,9 @@ void Solver::solve(bool holonomic, int printDebugInfo){
     }
 
     // convert vectors to arrays
-    aSrow.reserve(Srow.size()+1);
-    aScol.reserve(Scol.size()+1);
-    aSval.reserve(Sval.size()+1);
+    aSrow.resize(Srow.size()+1);
+    aScol.resize(Scol.size()+1);
+    aSval.resize(Sval.size()+1);
     for (int i = 0; i < Srow.size(); ++i){
         aSval[i] = Sval[i];
         aScol[i] = Scol[i];
@@ -287,10 +287,10 @@ void Solver::solve(bool holonomic, int printDebugInfo){
     int nz = Sval.size(),       // Non-zeros
         n = eqs.size(),         // Number of equations
         nz1 = std::max(nz,1) ;  // ensure arrays are not of size zero.
-    Ap.reserve(n+1);
-    Ai.reserve(nz1);
-    lambda.reserve(n);
-    Ax.reserve(nz1);
+    Ap.resize(n+1);
+    Ai.resize(nz1);
+    lambda.resize(n);
+    Ax.resize(nz1);
 
     if(printDebugInfo)
         fprintf(stderr, "n=%d, nz=%d\n",n, nz);

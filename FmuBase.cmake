@@ -49,6 +49,7 @@ function (add_fmu_internal dir target extra_srcs defs libs extra_includes consol
     templates/fmi2/fmuTemplate.h
     templates/fmi2/fmuTemplate_impl.h
     templates/fmi2/strlcpy.h
+    ${${target}_dir}/sources/modelDescription.h
     ${fmu_sources}
     ${extra_srcs}
   )
@@ -63,6 +64,17 @@ function (add_fmu_internal dir target extra_srcs defs libs extra_includes consol
   add_library(${target} SHARED
     ${srcs}
   )
+
+  add_custom_command(
+    OUTPUT ${${target}_dir}/sources/modelDescription.h
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${${target}_dir}/sources
+    COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/fmu-builder/modeldescription2header.py ${md2hdr_option}
+      ${${target}_dir}/modelDescription.xml >
+      ${${target}_dir}/sources/modelDescription.h
+    DEPENDS ${${target}_dir}/modelDescription.xml ${xmldeps} ${CMAKE_CURRENT_SOURCE_DIR}/fmu-builder/modeldescription2header.py)
+  add_custom_target(${target}_md DEPENDS ${${target}_dir}/sources/modelDescription.h)
+  add_dependencies(${target} ${target}_md)
+
   set_source_files_properties(${${target}_dir}/sources/modelDescription.h PROPERTIES GENERATED TRUE) # see further down
   target_include_directories(${target} PUBLIC ${includes})
   set_target_properties(${target} PROPERTIES PREFIX "")
@@ -81,15 +93,6 @@ function (add_fmu_internal dir target extra_srcs defs libs extra_includes consol
       target_link_libraries(${target}_c m)
     endif ()
   endif ()
-
-  add_custom_command(
-    OUTPUT ${${target}_dir}/sources/modelDescription.h
-    COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/fmu-builder/modeldescription2header.py ${md2hdr_option}
-      ${${target}_dir}/modelDescription.xml >
-      ${${target}_dir}/sources/modelDescription.h
-    DEPENDS ${${target}_dir}/modelDescription.xml ${xmldeps} ${CMAKE_CURRENT_SOURCE_DIR}/fmu-builder/modeldescription2header.py)
-  add_custom_target(${target}_md DEPENDS ${${target}_dir}/sources/modelDescription.h)
-  add_dependencies(${target} ${target}_md)
 
   set(ZIP_ARGS modelDescription.xml binaries sources resources)
   if (CMAKE_VERSION VERSION_LESS "3.5.0")

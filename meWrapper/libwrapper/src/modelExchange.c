@@ -27,16 +27,12 @@ typedef struct fmu_parameters {
     Backup m_backup;
 } fmu_parameters;
 
-static Backup m_backup2;
-
 //#define signbits(a,b) ((a > 0)? ( (b > 0) ? 1 : 0) : (b<=0)? 1: 0)
 /** get_p
  *  Extracts the parameters from the model
  *
  *  @param m Model
  */
-Backup* getTempBackup(){return &m_backup2;}
-
 fmu_parameters* get_p(cgsl_model* m){
     return (fmu_parameters*)(m->parameters);
 }
@@ -97,7 +93,8 @@ static int fmu_function(double t, const double x[], double dxdt[], void* params)
     return GSL_SUCCESS;
 }
 
-void allocateBackup(Backup *backup, fmu_parameters *p){
+void allocateBackup(Backup *backup, void *params){
+    fmu_parameters *p = (fmu_parameters*)params;
     backup->ei          = (fmi2_real_t*)calloc(p->ni, sizeof(fmi2_real_t));
     backup->ei_b        = (fmi2_real_t*)calloc(p->ni, sizeof(fmi2_real_t));
     backup->x           = (double*)calloc(p->nx, sizeof(double));
@@ -109,7 +106,7 @@ void allocateBackup(Backup *backup, fmu_parameters *p){
     }
 }
 
-static void freeBackup(Backup *backup) {
+void freeBackup(Backup *backup) {
   free(backup->ei);
   free(backup->ei_b);
   free(backup->x);
@@ -120,7 +117,6 @@ static void me_model_free(cgsl_model *model) {
   fmu_parameters* p = get_p(model);
   free(p);
   freeBackup(&p->m_backup);
-  freeBackup(&m_backup2);
   cgsl_model_default_free(model);
 }
 
@@ -143,7 +139,6 @@ void init_fmu_model(cgsl_model **m, fmi2_import_t *FMU){
     p->count      = 0;
 
     allocateBackup(&p->m_backup, p);
-    allocateBackup(getTempBackup(),p);
 
     *m = cgsl_model_default_alloc(p->nx, NULL, p, fmu_function, NULL, NULL, NULL, 0);
     (*m)->free = me_model_free;

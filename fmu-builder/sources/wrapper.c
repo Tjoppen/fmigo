@@ -41,6 +41,7 @@ typedef struct {
     fmi2_import_t *FMU;
     char* dir;
     jm_callbacks m_jmCallbacks;
+    Backup m_backup;
 } me_simulation;
 
 #define SIMULATION_TYPE    me_simulation
@@ -136,12 +137,12 @@ static fmi2Status generated_fmi2SetString(ModelInstance *comp, modelDescription_
 }
 
 fmi2Status wrapper_get ( me_simulation *sim) {
-    storeStates(&sim->sim, getTempBackup());
+    storeStates(&sim->sim, &sim->m_backup);
     return fmi2OK;
 }
 
 fmi2Status wrapper_set ( me_simulation *sim) {
-    restoreStates(&sim->sim, getTempBackup());
+    restoreStates(&sim->sim, &sim->m_backup);
     return fmi2OK;
 }
 
@@ -326,6 +327,8 @@ static fmi2Status wrapper_exit_init(ModelInstance *comp) {
         return status;
     }
 
+    allocateBackup(&comp->s.simulation.m_backup, &comp->s.simulation.sim.model->parameters);
+
     strlcpy(path, comp->fmuResourceLocation, sizeof(path));
     strlcat(path, "/directional.txt",        sizeof(path));
 
@@ -363,6 +366,7 @@ static void wrapper_free(me_simulation me) {
   fmi2_import_free(me.FMU);
   fmi_import_rmdir(&me.m_jmCallbacks, me.dir);
   free(me.dir);
+  freeBackup(&me.m_backup);
   cgsl_free_simulation(me.sim);
 }
 

@@ -18,9 +18,10 @@ typedef struct Backup
     fmi2_event_info_t eventInfo;
 }Backup;
 
-Backup* getTempBackup();
 void restoreStates(cgsl_simulation *sim, Backup *backup);
 void storeStates(cgsl_simulation *sim, Backup *backup);
 void runIteration(cgsl_simulation *sim, double t, double dt);
 void prepare(cgsl_simulation *sim, fmi2_import_t *FMU, enum cgsl_integrator_ids integrator);
+void allocateBackup(Backup *backup, void *params);
+void freeBackup(Backup *backup);
 #endif

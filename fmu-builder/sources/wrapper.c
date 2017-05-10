@@ -327,7 +327,7 @@ static fmi2Status wrapper_exit_init(ModelInstance *comp) {
         return status;
     }
 
-    allocateBackup(&comp->s.simulation.m_backup, &comp->s.simulation.sim.model->parameters);
+    allocateBackup(&comp->s.simulation.m_backup, comp->s.simulation.sim.model->parameters);
 
     strlcpy(path, comp->fmuResourceLocation, sizeof(path));
     strlcat(path, "/directional.txt",        sizeof(path));

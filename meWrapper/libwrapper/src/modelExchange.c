@@ -115,8 +115,8 @@ void freeBackup(Backup *backup) {
 
 static void me_model_free(cgsl_model *model) {
   fmu_parameters* p = get_p(model);
-  free(p);
   freeBackup(&p->m_backup);
+  free(p);
   cgsl_model_default_free(model);
 }
 

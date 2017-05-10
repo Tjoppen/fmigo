@@ -198,7 +198,7 @@ void ModelExchangeStepper::init_fmu_model(fmu_model &m,  const std::vector<FMICl
  *  Sync_out
  *  Does not work yet
  */
-static int epce_post_step(double t, int n, const double outputs[], void * params) {
+static int epce_post_step(int n, const double outputs[], void * params) {
     // make local variables
     fmu_parameters* p = (fmu_parameters*)params;
     if( p->sim_started ){

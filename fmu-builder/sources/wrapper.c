@@ -150,6 +150,19 @@ static fmi2Status getPartial(ModelInstance *comp, fmi2ValueReference vr, fmi2Val
     size_t x;
     state_t *s = &comp->s;
 
+    if ( fmi2_import_get_capability(comp->s.simulation.FMU, fmi2_me_providesDirectionalDerivatives ) ){
+      fmi2_value_reference_t vrp []  = {vr};
+      fmi2_value_reference_t wrtp[]  = {wrt};
+      fmi2_value_reference_t zrefp[] = {0};
+      fmi2Real dv [] = {1.0};
+      // TODO: move this logic to the fmuTemplate_impl.h
+      return fmi2_import_get_directional_derivative(comp->s.simulation.FMU,
+						    vrp, 1,
+						    wrtp, 1,
+						    dv, partial);
+
+    }
+
     //could speed this up with binary search or some kind of simple hash map
     for (x = 0; x < s->simulation.npartials; x++) {
         if (vr  == s->simulation.partials[x].unknown &&

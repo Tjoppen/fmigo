@@ -186,6 +186,13 @@ void restoreStates(cgsl_simulation *sim, Backup *backup){
     sim->i.evolution->failed_steps = backup->failed_steps;
     sim->t = backup->t;
     sim->h = backup->h;
+
+    fmi2_import_set_time(p->FMU, sim->t);
+    fmi2_import_set_continuous_states(p->FMU, sim->model->x, p->nx);
+
+    gsl_odeiv2_evolve_reset(sim->i.evolution);
+    gsl_odeiv2_step_reset(sim->i.step);
+    gsl_odeiv2_driver_reset(sim->i.driver);
 }
 
 /** storeStates()

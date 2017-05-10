@@ -10,7 +10,7 @@
       modelIdentifier="springs2"
       canHandleVariableCommunicationStepSize="true"
       canGetAndSetFMUstate="true"
-      providesDirectionalDerivative="false"/>
+      providesDirectionalDerivative="true"/>
 
   <LogCategories>
     <Category name="logAll"/>

@@ -39,6 +39,34 @@ static void eventUpdate(ModelInstance *comp, fmi2EventInfo *eventInfo) {
     return;
 }
 
+
+
+static fmi2Status getPartial(ModelInstance *comp, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
+  if (vr == VR_A1) {
+    if (wrt == VR_F1 ) {
+        *partial = 1.0/comp->s.md.m1;
+        return fmi2OK;
+    }
+    if (wrt == VR_F2 ) {
+        *partial = 0;
+        return fmi2OK;
+    }
+  }
+  if ( vr == VR_A2){
+    if (wrt == VR_F2 ) {
+        *partial = 1.0/comp->s.md.m2;
+        return fmi2OK;
+    }
+    if (wrt == VR_F1 ) {
+        *partial = 0;
+        return fmi2OK;
+    }
+  }
+
+  return fmi2Error;
+}
+
+
 //gcc -g springs.c ../../../templates/gsl2/gsl-interface.c -DCONSOLE -I../../../templates/gsl2 -I../../../templates/fmi2 -lgsl -lgslcblas -lm -Wall
 #ifdef CONSOLE
 int main(){

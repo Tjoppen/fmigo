@@ -156,7 +156,7 @@ static fmi2Status getPartial(ModelInstance *comp, fmi2ValueReference vr, fmi2Val
       fmi2_value_reference_t zrefp[] = {0};
       fmi2Real dv [] = {1.0};
       // TODO: move this logic to the fmuTemplate_impl.h
-      return fmi2_import_get_directional_derivative(comp->s.simulation.FMU,
+      return (fmi2Status)fmi2_import_get_directional_derivative(comp->s.simulation.FMU,
 						    vrp, 1,
 						    wrtp, 1,
 						    dv, partial);

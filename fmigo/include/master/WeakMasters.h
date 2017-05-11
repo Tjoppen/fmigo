@@ -7,22 +7,30 @@
 
 #ifndef WEAKMASTERS_H_
 #define WEAKMASTERS_H_
-
 #include "master/BaseMaster.h"
 #include "master/WeakConnection.h"
+#include "master/modelExchange.h"
 #include "common/common.h"
 #include <fmitcp/serialize.h>
+#ifdef USE_GPL
+#include "gsl-interface.h"
+#endif
+
+#ifdef DEBUG_MODEL_EXCHANGE
+#include <unistd.h>
+#include <sstream>
+#endif
 
 using namespace fmitcp::serialize;
 
 namespace fmitcp_master {
 
 //aka parallel stepper
-class JacobiMaster : public BaseMaster {
+class JacobiMaster : public model_exchange::ModelExchangeStepper {
 public:
     JacobiMaster(vector<FMIClient*> clients, vector<WeakConnection> weakConnections) :
-            BaseMaster(clients, weakConnections) {
-                info("JacobiMaster\n");
+            model_exchange::ModelExchangeStepper(clients, weakConnections) {
+        info("JacobiMaster\n");
     }
 
     void prepare() {
@@ -35,33 +43,31 @@ public:
         }
         wait();
 
-        //print values
-        /*for (auto it = clientWeakRefs.begin(); it != clientWeakRefs.end(); it++) {
-            int i = 0;
-            for (auto it2 = it->first->m_getRealValues.begin(); it2 != it->first->m_getRealValues.end(); it2++, i++) {
-                debug("%i real VR %i = %f\n", it->first->getId(), it->second[i], *it2);
-            }
-        }*/
-
         //set connection inputs, pipeline with do_step()
         const InputRefsValuesType refValues = getInputWeakRefsAndValues(m_weakConnections);
 
+        // redirect outputs to inputs
         for (auto it = refValues.begin(); it != refValues.end(); it++) {
             it->first->sendSetX(it->second);
         }
 
-        sendWait(m_clients, fmi2_import_do_step(t, dt, true));
+        //this pipelines with the sendGetX() + wait() in printOutputs() in main.cpp
+        
+        send(cs_clients, fmi2_import_do_step(t, dt, true));
+#ifdef USE_GPL
+        solveME(t,dt);
+#endif
     }
 };
 
 //aka serial stepper
-class GaussSeidelMaster : public BaseMaster {
+class GaussSeidelMaster : public model_exchange::ModelExchangeStepper {
     map<FMIClient*, OutputRefsType> clientGetXs;  //one OutputRefsType for each client
     std::vector<int> stepOrder;
 public:
     GaussSeidelMaster(vector<FMIClient*> clients, vector<WeakConnection> weakConnections, std::vector<int> stepOrder) :
-        BaseMaster(clients, weakConnections), stepOrder(stepOrder) {
-            info("GSMaster\n");
+            model_exchange::ModelExchangeStepper(clients, weakConnections), stepOrder(stepOrder) {
+        info("GSMaster\n");
     }
 
     void prepare() {
@@ -81,11 +87,17 @@ public:
             wait();
             const SendSetXType refValues = getInputWeakRefsAndValues(m_weakConnections, client);
             client->sendSetX(refValues);
-            sendWait(client, fmi2_import_do_step(t, dt, true));
+            if (client->getFmuKind() == fmi2_fmu_kind_cs) {
+                sendWait(client, fmi2_import_do_step(t, dt, true));
+            } //else modelExchange, solve all further down simultaneously
         }
+#ifdef USE_GPL
+        solveME(t,dt);
+#endif
     }
 };
-}
+
+}// namespace fmitcp_master
 
 
 #endif /* WEAKMASTERS_H_ */

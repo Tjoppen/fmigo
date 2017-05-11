@@ -4,13 +4,16 @@ FIND_PACKAGE(Threads REQUIRED)
 
 if (NOT WIN32)
   # cl.exe has a different set of flags
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O3 -Wall -Werror -Wno-unused-variable -Wno-unused-function -Wextra -Wno-unused-parameter")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Werror -Wno-unused-variable -Wno-unused-function -Wextra -Wno-unused-parameter")
+  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
   FIND_PACKAGE(MPI REQUIRED)
   FIND_PACKAGE(Protobuf REQUIRED)
   INCLUDE_DIRECTORIES(${MPI_INCLUDE_PATH})
 endif ()
 
-INCLUDE_DIRECTORIES(${FMIL_INCLUDE_DIR} ${STRONG_COUPLING_INCLUDE_DIR} ${FMITCP_INCLUDE_DIR} include include/fmitcp src/fmitcp)
+include_directories(${FMIL_INCLUDE_DIR} ${STRONG_COUPLING_INCLUDE_DIR} ${FMITCP_INCLUDE_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/include/fmitcp ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp)
 LINK_DIRECTORIES   (${FMIL_LIBS_DIR}    ${STRONG_COUPLING_LIBS_DIR}    ${FMITCP_LIBS_DIR})
 
 set(FMITCP_SRCS
@@ -39,6 +42,7 @@ SET(MASTER_SRCS
     src/master/BaseMaster.cpp
     src/master/parseargs.cpp
     src/master/StrongMaster.cpp
+    src/master/modelExchange.cpp
     ${FMITCP_SRCS}
     src/master/control.pb.cc
     src/master/globals.cpp
@@ -48,6 +52,7 @@ SET(MASTER_HEADERS
     include/master/StrongConnector.h
     include/master/WeakConnection.h
     include/master/WeakMasters.h
+    include/master/modelExchange.h
     include/common/common.h
     include/common/CSV-parser.h
     ${FMITCP_HEADERS}
@@ -65,15 +70,18 @@ SET(MPI_MASTER_NAME fmigo-mpi)
 set(TCP_SERVER_NAME fmigo-server)
 
 if (USE_GPL)
-  set(EXTRALIBS gsl gslcblas )
+  set(EXTRALIBS cgsl )
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_GPL")
 
-  if (WIN32)
-    link_directories(${CMAKE_CURRENT_SOURCE_DIR}/../umit-fmus/wingsl/lib)
-    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../umit-fmus/wingsl/include)
-    set(CMAKE_SHARED_LINKER_FLAGS "/SAFESEH:NO")
-    set(CMAKE_EXE_LINKER_FLAGS "/SAFESEH:NO")
-  endif ()
+  set(MASTER_SRCS ${MASTER_SRCS}
+    src/common/fmigo_storage.cpp
+  )
+
+  set(MASTER_HEADERS ${MASTER_HEADERS}
+    include/common/fmigo_storage.h
+  )
+
+  include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../umit-fmus/templates/cgsl/include)
 endif ()
 
 ADD_EXECUTABLE(${TCP_MASTER_NAME} ${MASTER_HEADERS} ${MASTER_SRCS})
@@ -95,15 +103,11 @@ IF(WIN32)
         mpr
         ${Boost_FILESYSTEM_LIBRARY}
         ${Boost_SYSTEM_LIBRARY}
-        libprotobuf
-        libhdf5
-        libhdf5_hl
-        libzmq-v120-mt-4_2_0
         ${CMAKE_THREAD_LIBS_INIT})
     if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-        set(WINLIBS ${WINLIBS} ${EXTRALIBS} sc libumfpackd libamdd libblas libcholmodd libcolamdd libccolamdd libcamdd metisd suitesparseconfigd)
+        set(WINLIBS ${WINLIBS} ${EXTRALIBS} sc libprotobufd libzmq-v120-mt-gd-4_2_0 libhdf5_hl_D libumfpackd libhdf5_D libamdd libblas libcholmodd libcolamdd libccolamdd libcamdd metisd suitesparseconfigd)
     else()
-        set(WINLIBS ${WINLIBS} ${EXTRALIBS} sc libumfpack  libamd  libblas libcholmod  libcolamd  libccolamd  libcamd  metis  suitesparseconfig)
+        set(WINLIBS ${WINLIBS} ${EXTRALIBS} sc libprotobuf libzmq-v120-mt-4_2_0 libhdf5_hl libumfpack  libamd libhdf5 libblas libcholmod  libcolamd  libccolamd  libcamd  metis  suitesparseconfig)
     endif()
     include_directories($ENV{MSMPI_INC} $ENV{MSMPI_INC}x86)
 
@@ -117,6 +121,15 @@ IF(WIN32)
     TARGET_LINK_LIBRARIES(${TCP_SERVER_NAME}  ${WINLIBS})
     target_link_libraries(${MPI_MASTER_NAME} ${WINLIBS} msmpi)
 
+    if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+    INSTALL (FILES
+        ${SUITESPARSE_LIBDIR}/lapack_blas_windows/libblas.dll
+        ${SUITESPARSE_LIBDIR}/lapack_blas_windows/libgfortran-3.dll
+        ${SUITESPARSE_LIBDIR}/lapack_blas_windows/libquadmath-0.dll
+        ${PROTOBUF_PREFIX}/src/protobuf-ext-build/${CMAKE_BUILD_TYPE}/libprotobufd.dll
+        ${ZMQ_PREFIX}/src/zmq-ext-build/bin/${CMAKE_BUILD_TYPE}/libzmq-v120-mt-gd-4_2_0.dll
+        DESTINATION bin)
+    else()
     INSTALL (FILES
         ${SUITESPARSE_LIBDIR}/lapack_blas_windows/libblas.dll
         ${SUITESPARSE_LIBDIR}/lapack_blas_windows/libgfortran-3.dll
@@ -124,6 +137,7 @@ IF(WIN32)
         ${PROTOBUF_PREFIX}/src/protobuf-ext-build/${CMAKE_BUILD_TYPE}/libprotobuf.dll
         ${ZMQ_PREFIX}/src/zmq-ext-build/bin/${CMAKE_BUILD_TYPE}/libzmq-v120-mt-4_2_0.dll
         DESTINATION bin)
+    endif()
     set(PROTOC ${PROTOBUF_BIN_DIR}/protoc)
 ELSE(WIN32)
     SET(LINUXLIBS
@@ -173,18 +187,19 @@ add_custom_target(control_pb DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/master/cont
 install(FILES ${FMITCP_PROTOBUF_TARGETS} ${MASTER_CONTROL_PROTOBUF_TARGETS} DESTINATION protobuf)
 
 add_dependencies(${TCP_MASTER_NAME} fmitcp_pb control_pb)
-add_dependencies(${TCP_SERVER_NAME} fmitcp_pb)
-if(NOT WIN32)
-    add_dependencies(${MPI_MASTER_NAME} fmitcp_pb control_pb)
-endif()
+add_dependencies(${TCP_SERVER_NAME} fmitcp_pb control_pb)
+add_dependencies(${MPI_MASTER_NAME} fmitcp_pb control_pb)
 
 # TODO: Server manpage?
 if(NOT WIN32)
     SET(IN_MANPAGE ${CMAKE_CURRENT_LIST_DIR}/doc/${TCP_MASTER_NAME}.1)
     SET(OUT_MANPAGE ${CMAKE_CURRENT_BINARY_DIR}/${TCP_MASTER_NAME}.1.gz)
-    ADD_CUSTOM_TARGET(manpage COMMAND gzip -kc9 ${IN_MANPAGE} > ${OUT_MANPAGE} DEPENDS ${IN_MANPAGE} SOURCES ${IN_MANPAGE})
+    add_custom_command(OUTPUT ${OUT_MANPAGE} COMMAND gzip -kc9 ${IN_MANPAGE} > ${OUT_MANPAGE} DEPENDS ${IN_MANPAGE})
+    add_custom_target(manpage DEPENDS ${OUT_MANPAGE})
     ADD_DEPENDENCIES(${TCP_MASTER_NAME} manpage)
     INSTALL (FILES ${OUT_MANPAGE} DESTINATION man/man1)
 endif()
 
 INSTALL(TARGETS ${TCP_MASTER_NAME} ${TCP_SERVER_NAME} ${MPI_MASTER_NAME} DESTINATION bin)
+
+add_subdirectory(tests)

@@ -9,12 +9,16 @@ RUN apt-get update
 #              git: for being able to fetch submodules, since gitlab doesn't
 #                   do this for us yet
 #           psmisc: for killall
+#       python-dev: for pip to build psutil
+#      libxml2-dev: for lxml
+#     libxstl1-dev: for lxml
 #
 RUN apt-get install --yes \
         build-essential cmake ninja-build git python bc psmisc \
         protobuf-compiler protobuf-c-compiler libprotobuf-dev \
         libsuitesparse-dev libzmqpp-dev libhdf5-dev \
-        libopenmpi-dev libgsl-dev clang valgrind
+        libopenmpi-dev libgsl-dev clang valgrind \
+        python-pip python-dev libxml2-dev libxslt1-dev
 
 #
 # Create user, since mpiexec doesn't like to run as root
@@ -25,6 +29,10 @@ RUN useradd -ms /bin/bash gitlab-ci
 RUN  mkdir              /home/gitlab-ci/umit
 COPY .                  /home/gitlab-ci/umit
 RUN  chown -R gitlab-ci /home/gitlab-ci/umit
+
+# Install python requirements
+WORKDIR /home/gitlab-ci/umit
+RUN pip install -r requirements.txt
 
 # Finally, make us run as gitlab-ci
 USER gitlab-ci

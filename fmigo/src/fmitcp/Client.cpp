@@ -174,7 +174,7 @@ void Client::clientData(const char* data, long size){
         break;
 
       /* Model exchange */
-    }case type_fmi2_import_enter_event_mode_res:            NORMAL_CASE(fmi2_import_enter_event_mode);
+    }case type_fmi2_import_enter_event_mode_res:            NORMAL_CASE(fmi2_import_enter_event_mode); break;
     case type_fmi2_import_new_discrete_states_res:{
 
         fmi2_import_new_discrete_states_res r; r.ParseFromArray(data, size);
@@ -209,6 +209,11 @@ void Client::clientData(const char* data, long size){
     case type_fmi2_import_get_event_indicators_res: {
         debug("This command is NOT TESTED\n");
         fmi2_import_get_event_indicators_res r; r.ParseFromArray(data, size);
+        std::vector<double> z;
+        for(int i=0; i<r.z_size(); i++)
+            z.push_back(r.z(i));
+
+        on_fmi2_import_get_event_indicators_res(z,r.status());
         debug("< fmi2_import_get_event_indicators_res(mid=%d, status=%d)\n", r.status());
 
         break;
@@ -216,20 +221,30 @@ void Client::clientData(const char* data, long size){
     case type_fmi2_import_get_continuous_states_res: {
         debug("This command is NOT TESTED\n");
         fmi2_import_get_continuous_states_res r; r.ParseFromArray(data, size);
+        std::vector<double> x;
+        for(int i=0; i<r.x_size(); i++)
+            x.push_back(r.x(i));
+        on_fmi2_import_get_continuous_states_res(x,r.status());
         debug("< fmi2_import_get_continuous_states_res(mid=%d, states=%d)\n", r.status());
         break;
     }
     case type_fmi2_import_get_derivatives_res: {
         debug("This command is NOT TESTED\n");
         fmi2_import_get_derivatives_res r; r.ParseFromArray(data, size);
+        std::vector<double> derivatives;
+        for(int i=0; i<r.derivatives_size(); i++)
+            derivatives.push_back(r.derivatives(i));
+        on_fmi2_import_get_derivatives_res(derivatives,r.status());
         debug("< fmi2_import_get_derivatives_res(mid=%d, status=%d)\n", r.status());
-        //        on_fmi2_import_get_derivatives_res(repeated_to_vector<double>(r.derivatives()),r.status());
-
         break;
     }
     case type_fmi2_import_get_nominal_continuous_states_res: {
         debug("This command is NOT TESTED\n");
         fmi2_import_get_nominal_continuous_states_res r; r.ParseFromArray(data, size);
+        std::vector<double> x;
+        for(int i=0; i<r.nominal_size(); i++)
+            x.push_back(r.nominal(i));
+        on_fmi2_import_get_nominal_continuous_states_res(x,r.status());
         debug("< fmi2_import_get_nominal_continuous_states_res(mid=%d, states=%d)\n", r.status());
         break;
     }
@@ -239,7 +254,6 @@ void Client::clientData(const char* data, long size){
         fmi2_import_get_real_output_derivatives_res r; r.ParseFromArray(data, size);
         debug("< fmi2_import_get_real_output_derivatives_res(mid=%d,status=%d,values=...)\n",r.status());
         on_fmi2_import_get_real_output_derivatives_res(r.status(),values_to_vector<double>(r));
-
         break;
     }
     case type_fmi2_import_do_step_res:                      NORMAL_CASE(fmi2_import_do_step); break;
@@ -266,7 +280,7 @@ void Client::clientData(const char* data, long size){
 #ifdef USE_MPI
 Client::Client(int world_rank) : world_rank(world_rank) {
 #else
-Client::Client(zmq::context_t &context, string uri) : m_socket(context, ZMQ_PAIR) {
+Client::Client(zmq::context_t &context, string uri) : m_socket(context, ZMQ_DEALER) {
     debug("connecting to %s\n", uri.c_str());
     m_socket.connect(uri.c_str());
     debug("connected\n");
@@ -284,6 +298,10 @@ void Client::sendMessage(std::string s){
 #ifdef USE_MPI
     MPI_Send((void*)s.c_str(), s.length(), MPI_CHAR, world_rank, 0, MPI_COMM_WORLD);
 #else
+    //ZMQ_DEALERs must send two-part messages with the first part being zero-length
+    zmq::message_t zero(0);
+    m_socket.send(zero, ZMQ_SNDMORE);
+
     zmq::message_t msg(s.size());
     memcpy(msg.data(), s.data(), s.size());
     m_socket.send(msg);
@@ -292,11 +310,22 @@ void Client::sendMessage(std::string s){
 
 void Client::sendMessageBlocking(std::string s) {
     sendMessage(s);
+    receiveAndHandleMessage();
+}
 
+void Client::receiveAndHandleMessage() {
 #ifdef USE_MPI
     std::string str = mpi_recv_string(world_rank, NULL, NULL);
     clientData(str.c_str(), str.length());
 #else
+    //expect to recv a delimiter
+    zmq::message_t delim;
+    m_socket.recv(&delim);
+
+    if (delim.size() != 0) {
+        fatal("Expected to recv zero-length delimiter, got %zu B instead\n", delim.size());
+    }
+
     zmq::message_t msg;
     m_socket.recv(&msg);
     clientData(static_cast<char*>(msg.data()), msg.size());

@@ -31,6 +31,11 @@ static void start_monitor(zmq::socket_t *socket, zmq::context_t *context) {
   //monitor until client disconnects
   mon.monitor(*socket, "inproc://monitor");
 
+#ifdef WIN32
+  //zmq::poll() is incredibly slow on Windows for some strange reason
+  //for now we'll have to resort to exit()
+  exit(0);
+#else
   //send stop message to main thread
   zmq::socket_t stopper2(*context, ZMQ_PAIR);
   stopper2.connect("inproc://stopper");
@@ -38,6 +43,21 @@ static void start_monitor(zmq::socket_t *socket, zmq::context_t *context) {
   stopper2.send(msg);
 
   //at this point this thraed is going to be waiting for join()
+#endif
+}
+
+static void handleMessage(zmq::socket_t& socket, FMIServer& server, int port) {
+  zmq::message_t msg;
+  if (!socket.recv(&msg)) {
+      fatal("Port %i: !socket.recv(&msg)\n", port);
+  }
+  string str = server.clientData(static_cast<char*>(msg.data()), msg.size());
+
+  if (str.length() > 0) {
+    zmq::message_t rep(str.length());
+    memcpy(rep.data(), str.data(), str.length());
+    socket.send(rep, ZMQ_DONTWAIT);
+  }
 }
 
 int main(int argc, char *argv[]) {
@@ -60,9 +80,10 @@ int main(int argc, char *argv[]) {
 
   info("FMI Server %s - %s <-- %s\n",FMITCP_VERSION, oss.str().c_str(), fmuPath.c_str());
 
-  zmq::socket_t socket(context, ZMQ_PAIR);
+  zmq::socket_t socket(context, ZMQ_REP);
   socket.bind(oss.str().c_str());
 
+#ifndef WIN32
   //use monitor + inproc PAIR to stop when the client disconnects
   //maybe there's an easier way? the ZMQ documentation has this to say (http://zeromq.org/area:faq):
   //
@@ -76,9 +97,17 @@ int main(int argc, char *argv[]) {
   //
   zmq::socket_t stopper(context, ZMQ_PAIR);
   stopper.bind("inproc://stopper");
+#endif
 
   std::thread monitor_thread(start_monitor, &socket, &context);
 
+#ifdef WIN32
+  for (;;) {
+    //since zmq::poll() is broken on Windows, all we can do is look indefinitely,
+    //doing blocking recv()s until the monitor detects that the master has disconnected
+    handleMessage(socket, server, port);
+  }
+#else
   for (;;) {
     zmq::pollitem_t items[2];
     items[0].socket = (void*)socket;
@@ -90,17 +119,7 @@ int main(int argc, char *argv[]) {
     int n = zmq::poll(items, 2, -1);
 
     if (items[0].revents & ZMQ_POLLIN) {
-      zmq::message_t msg;
-      if (!socket.recv(&msg)) {
-          fatal("Port %i: !socket.recv(&msg)\n", port);
-      }
-      string str = server.clientData(static_cast<char*>(msg.data()), msg.size());
-
-      if (str.length() > 0) {
-        zmq::message_t rep(str.length());
-        memcpy(rep.data(), str.data(), str.length());
-        socket.send(rep);
-      }
+      handleMessage(socket, server, port);
     }
 
     if (items[1].revents & ZMQ_POLLIN) {
@@ -109,12 +128,13 @@ int main(int argc, char *argv[]) {
       break;
     }
   }
+#endif
 
   return EXIT_SUCCESS;
  } catch (zmq::error_t e) {
       //catch any stray ZMQ exceptions
       //this should prevent "program stopped working" messages on Windows when fmigo-servers are taskkill'd
-     error("zmq::error_t: %s\n", e.what());
+     error("zmq::error_t in %s: %s\n", argv[0], e.what());
      return 1;
  }
 }

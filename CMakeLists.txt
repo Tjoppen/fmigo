@@ -172,13 +172,29 @@ endif()
 
 add_subdirectory(strong-coupling-core)
 add_subdirectory(${FMILIBRARY_VERSION})
+
+if (USE_GPL)
+  if (WIN32)
+    link_directories(${CMAKE_CURRENT_SOURCE_DIR}/umit-fmus/wingsl/lib)
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/umit-fmus/wingsl/include)
+    set(CMAKE_SHARED_LINKER_FLAGS "/SAFESEH:NO")
+    set(CMAKE_EXE_LINKER_FLAGS "/SAFESEH:NO")
+  endif ()
+
+  # We should have umit-fmus checked out
+  # Use its cgsl regardless of whether BUILD_FMUS is ON or not
+  add_subdirectory(umit-fmus/templates/cgsl)
+endif ()
+
 add_subdirectory(fmigo)
 add_dependencies(fmigo-master fmilib)
 add_dependencies(fmigo-mpi    fmilib)
 
+
 if (WIN32)
     add_dependencies(sc suitesparse-ext)
     add_dependencies(fmigo-master protobuf-ext hdf5-ext zmq-ext)
+    add_dependencies(fmigo-server protobuf-ext hdf5-ext zmq-ext)
     add_dependencies(fmigo-mpi    protobuf-ext hdf5-ext zmq-ext)
     add_dependencies(fmitcp_pb    protobuf-ext)
     add_dependencies(control_pb   protobuf-ext)

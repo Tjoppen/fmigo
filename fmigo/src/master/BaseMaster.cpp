@@ -20,6 +20,8 @@ BaseMaster::BaseMaster(vector<FMIClient*> clients, vector<WeakConnection> weakCo
         m_clients(clients),
         m_weakConnections(weakConnections),
         clientWeakRefs(getOutputWeakRefs(m_weakConnections)) {
+    for(auto client: m_clients)
+        client->m_master = this;
 }
 
 BaseMaster::~BaseMaster() {
@@ -129,6 +131,12 @@ void BaseMaster::solveLoops() {
 
   gsl_multiroot_function f = {loop_residual_f, n, this};
   gsl_multiroot_fsolver *s = gsl_multiroot_fsolver_alloc(gsl_multiroot_fsolver_hybrids, n);
+
+  if (s == NULL) {
+    fprintf(stderr, "Failed to allocate multiroot fsolver\n");
+    exit(1);
+  }
+
   gsl_multiroot_fsolver_set(s, &f, x0);
 
   int i = 0, imax = 100, status;
@@ -182,6 +190,17 @@ void BaseMaster::wait() {
 
         m_clients[rank-1]->Client::clientData(str.c_str(), str.length());
 #else
+#ifdef WIN32
+    //zmq::poll() is broken and incredibly slow on Windows
+    //this is the stupidest possible solution, but works surprisingly well
+    //it can't detect that a server has croaked however
+    for (auto client : m_clients) {
+        if (client->getNumPendingRequests() > 0) {
+            client->receiveAndHandleMessage();
+        }
+    }
+#else
+    //all other platforms (GNU/Linux, Mac)
     //poll all clients, decrease m_pendingRequests as we see REPlies coming in
     vector<zmq::pollitem_t> items(m_clients.size());
     for (size_t x = 0; x < m_clients.size(); x++) {
@@ -201,10 +220,7 @@ void BaseMaster::wait() {
     }
     for (size_t x = 0; x < m_clients.size(); x++) {
         if (items[x].revents & ZMQ_POLLIN) {
-            zmq::message_t msg;
-            m_clients[x]->m_socket.recv(&msg);
-            //debug("Got message of size %li\n", msg.size());
-            m_clients[x]->Client::clientData(static_cast<char*>(msg.data()), msg.size());
+            m_clients[x]->receiveAndHandleMessage();
         }
     }
     if (getNumPendingRequests() > 0) {
@@ -215,6 +231,7 @@ void BaseMaster::wait() {
     } else {
         //debug("wait() done\n");
     }
+#endif
 #endif
     }
 }

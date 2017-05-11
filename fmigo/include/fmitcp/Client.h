@@ -41,10 +41,14 @@ namespace fmitcp {
         /// Send a binary message
         void sendMessage(std::string s);
 
-        //like sendMessage() but also receives the result message and calls clientData() on it
+        //like sendMessage() but also calls receiveAndHandleMessage()
         void sendMessageBlocking(std::string s);
 
         size_t getNumPendingRequests() const;
+
+        //called by anyone that knows we have a message waiting or who wants us to do a blocking recv
+        //calls clientData() on the recv'd data
+        void receiveAndHandleMessage();
 
         /**
          * clientData

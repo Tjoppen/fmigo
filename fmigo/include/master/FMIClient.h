@@ -10,14 +10,17 @@
 #include "WeakConnection.h"
 #include "common/common.h"
 #include <deque>
+#include <FMI2/fmi2_functions.h>
 
 namespace fmitcp_master {
     struct variable {
         int vr;
         fmi2_base_type_enu_t type;
         fmi2_causality_enu_t causality;
+        fmi2_initial_enu_t initial;
     };
     typedef std::map<std::string, variable> variable_map;
+    typedef std::map<std::pair<int, fmi2_base_type_enu_t>, variable> variable_vr_map;
 
     class BaseMaster;
 
@@ -37,12 +40,15 @@ namespace fmitcp_master {
         fmi2_import_t* m_fmi2Instance;
         fmi2_import_variable_list_t* m_fmi2Outputs;
         variable_map m_variables;
+        variable_vr_map m_vr_variables;
+        vector<variable> m_outputs;
         void setVariables();
 
     public:
         int m_stateId;
 
         BaseMaster * m_master;
+        fmi2_event_info_t m_event_info;
 
         /// Last fetched result from getX
         std::deque<double>      m_getRealValues;
@@ -56,8 +62,10 @@ namespace fmitcp_master {
         void clearGetValues();
 
         std::string getModelName() const;
+        fmi2_fmu_kind_enu_t getFmuKind();
         const variable_map& getVariables() const;
-        std::vector<variable> getOutputs() const;   //outputs in the same order as specified in the modelDescription
+        const variable_vr_map& getVRVariables() const;
+        const std::vector<variable>& getOutputs() const;   //outputs in the same order as specified in the modelDescription
 
 #ifdef USE_MPI
         FMIClient(int world_rank, int id);
@@ -101,6 +109,9 @@ namespace fmitcp_master {
 
         bool hasCapability(fmi2_capabilities_enu_t cap) const;
 
+        size_t getNumEventIndicators(void);
+        size_t getNumContinuousStates(void);
+
         // --- These methods overrides Client methods. Most of them just passes the result to the Master ---
 
         void on_fmi2_import_instantiate_res                     (fmitcp_proto::jm_status_enu_t status);
@@ -113,6 +124,7 @@ namespace fmitcp_master {
         //void on_fmi2_import_cancel_step_res                     (fmitcp_proto::fmi2_status_t status);
         void on_fmi2_import_do_step_res                         (fmitcp_proto::fmi2_status_t status);
         //void on_fmi2_import_get_status_res                      (fmitcp_proto::fmi2_status_t status);
+        void on_fmi2_import_new_discrete_states_res             (fmitcp_proto::fmi2_event_info_t eventInfo);
         //void on_fmi2_import_get_real_status_res                 (double value);
         //void on_fmi2_import_get_integer_status_res              (int value);
         //void on_fmi2_import_get_boolean_status_res              (bool value);
@@ -121,12 +133,11 @@ namespace fmitcp_master {
         //void on_fmi2_import_set_continuous_states_res           (fmitcp_proto::fmi2_status_t status);
         //void on_fmi2_import_completed_integrator_step_res       (bool callEventUpdate, fmitcp_proto::fmi2_status_t status);
         //void on_fmi2_import_initialize_model_res                (bool iterationConverged, bool stateValueReferencesChanged, bool stateValuesChanged, bool terminateSimulation, bool upcomingTimeEvent, double nextEventTime, fmitcp_proto::fmi2_status_t status);
-        //void on_fmi2_import_get_derivatives_res                 (const vector<double>& derivatives, fmitcp_proto::fmi2_status_t status);
-        //void on_fmi2_import_get_event_indicators_res            (const vector<double>& eventIndicators, fmitcp_proto::fmi2_status_t status);
-        //void on_fmi2_import_eventUpdate_res                     (bool iterationConverged, bool stateValueReferencesChanged, bool stateValuesChanged, bool terminateSimulation, bool upcomingTimeEvent, double nextEventTime, fmitcp_proto::fmi2_status_t status);
+        void on_fmi2_import_get_derivatives_res                 (const vector<double>& derivatives, fmitcp_proto::fmi2_status_t status);
+        void on_fmi2_import_get_event_indicators_res            (const vector<double>& eventIndicators, fmitcp_proto::fmi2_status_t status);
         //void on_fmi2_import_completed_event_iteration_res       (fmitcp_proto::fmi2_status_t status);
-        //void on_fmi2_import_get_continuous_states_res           (const vector<double>& states, fmitcp_proto::fmi2_status_t status);
-        //void on_fmi2_import_get_nominal_continuous_states_res   (const vector<double>& nominal, fmitcp_proto::fmi2_status_t status);
+        void on_fmi2_import_get_continuous_states_res           (const vector<double>& states, fmitcp_proto::fmi2_status_t status);
+        void on_fmi2_import_get_nominal_continuous_states_res   (const vector<double>& nominal, fmitcp_proto::fmi2_status_t status);
         //void on_fmi2_import_terminate_res                       (fmitcp_proto::fmi2_status_t status);
         void on_fmi2_import_get_version_res                     (string version);
         //void on_fmi2_import_set_debug_logging_res               (fmitcp_proto::fmi2_status_t status);

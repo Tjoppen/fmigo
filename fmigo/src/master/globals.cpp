@@ -12,6 +12,8 @@ namespace fmigo {
         return ',';
       } else if (fileFormat == tikz) {
         return ' ';
+      } else if (fileFormat == none) {
+        return '\0';
       } else {
         fprintf(stderr, "Invalid file format: %i\n", fileFormat);
         exit(1);

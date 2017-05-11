@@ -25,6 +25,7 @@
 #include <hdf5.h>
 #include <hdf5_hl.h>
 #include <sys/time.h>
+extern std::string hdf5Filename;
 extern timeval tl1, tl2;
 extern std::vector<int> timelog;
 extern int columnofs;
@@ -33,11 +34,13 @@ extern std::map<int, const char*> columnnames;
 
 //measures and logs elapsed time in microseconds
 #define PRINT_HDF5_DELTA(label) do {\
+      if (hdf5Filename.length() > 0) {\
         gettimeofday(&tl2, NULL);\
         int dt = 1000000*(tl2.tv_sec-tl1.tv_sec) + tl2.tv_usec-tl1.tv_usec;\
         timelog.push_back(dt);\
         columnnames[columnofs++] = label;\
         gettimeofday(&tl1, NULL);\
+      } \
     } while (0)
 #else
 #define PRINT_HDF5_DELTA(label)

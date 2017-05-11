@@ -34,6 +34,7 @@ using namespace sc;
 using namespace common;
 
 #ifndef WIN32
+string hdf5Filename;
 timeval tl1, tl2;
 vector<int> timelog;
 int columnofs;
@@ -624,7 +625,6 @@ int main(int argc, char *argv[] ) {
     vector<int> fmuVisibilities;
     vector<strongconnection> scs;
     Solver solver;
-    string hdf5Filename;
     string fieldnameFilename;
     bool holonomic = true;
     bool useHeadersInCSV = false;
@@ -789,8 +789,15 @@ int main(int argc, char *argv[] ) {
 
 #ifndef WIN32
     //HDF5
-    int expected_records = 1+1.01*endTime/timeStep, nrecords = 0;
-    timelog.reserve(expected_records*MAX_TIME_COLS);
+    //TODO: remove HDF5 output entirely? fix issue #120 for now
+    int nrecords = 0;
+    if (hdf5Filename.length() > 0) {
+      size_t expected_records = (1+1.01*endTime/timeStep) * MAX_TIME_COLS;
+      if (expected_records > 1000000) {
+        expected_records = 1000000;
+      }
+      timelog.reserve(expected_records);
+    }
 
     gettimeofday(&tl1, NULL);
 #endif
@@ -905,18 +912,20 @@ int main(int argc, char *argv[] ) {
 
 
 #ifndef WIN32
-    vector<size_t> field_offset;
-    vector<hid_t> field_types;
-    vector<const char*> field_names;
+    if (hdf5Filename.length() > 0) {
+      vector<size_t> field_offset;
+      vector<hid_t> field_types;
+      vector<const char*> field_names;
 
-    for (size_t x = 0; x < columnnames.size(); x++) {
+      for (size_t x = 0; x < columnnames.size(); x++) {
         field_offset.push_back(x*sizeof(int));
         field_types.push_back(H5T_NATIVE_INT);
         field_names.push_back(columnnames[x]);
-    }
+      }
 
-    writeHDF5File(hdf5Filename, field_offset, field_types, field_names,
-        "Timings", "table", nrecords, columnnames.size()*sizeof(int), &timelog[0]);
+      writeHDF5File(hdf5Filename, field_offset, field_types, field_names,
+          "Timings", "table", nrecords, columnnames.size()*sizeof(int), &timelog[0]);
+    }
 #endif
 
     //clean up

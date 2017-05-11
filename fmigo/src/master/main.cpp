@@ -34,13 +34,13 @@ using namespace sc;
 using namespace common;
 
 #ifndef WIN32
-string hdf5Filename;
 timeval tl1, tl2;
 vector<int> timelog;
 int columnofs;
 std::map<int, const char*> columnnames;
 #endif
 
+string hdf5Filename;
 jm_log_level_enu_t fmigo_loglevel = jm_log_level_warning;
 
 #ifdef USE_MPI

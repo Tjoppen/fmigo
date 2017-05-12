@@ -8,7 +8,6 @@
 
   <ModelExchange
       modelIdentifier="springs2"
-      canHandleVariableCommunicationStepSize="true"
       canGetAndSetFMUstate="true"
       providesDirectionalDerivative="true"/>
 
@@ -295,7 +294,7 @@
         causality="output"
         variability="continuous"
         initial="calculated">
-      <Real start="0"/>
+      <Real/>
     </ScalarVariable>
     <ScalarVariable
         name="m2"

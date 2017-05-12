@@ -64,7 +64,7 @@ typedef struct {
     fmi2Boolean integrate_dw; //VR=17
     fmi2Boolean integrate_dx; //VR=18
     fmi2Boolean octave_output; //VR=1001
-    fmi2Char    octave_output_file[500]; //VR=1003
+    fmi2Char    octave_output_file[1024]; //VR=1003
 } modelDescription_t;
 
 

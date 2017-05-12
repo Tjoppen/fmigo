@@ -80,6 +80,13 @@ derivatives = {}
 SV = root.find('ModelVariables').findall('ScalarVariable')
 strs  = {}
 
+vas = root.find('VendorAnnotations')
+fmuFilename = None
+if vas != None:
+    for tool in vas.findall('Tool'):
+        if tool.attrib['name'] == 'fmigo':
+            fmuFilename = tool.find('fmu').text
+
 for sv in SV:
     name = sv.attrib['name']
     name = re.sub('[.\[\(]', '_', name)
@@ -87,7 +94,7 @@ for sv in SV:
 
     vr = int(sv.attrib['valueReference'])
 
-    if name in reals.values() or name in ints.values() or name in bools.values():
+    if name in reals.values() or name in ints.values() or name in bools.values() or name in strs.values():
         error(args.xml +' contains multiple variables named "' + name + '"!')
         exit(1)
 
@@ -124,10 +131,23 @@ for sv in SV:
         bools[vr] = (name, 1 if start == '1' or start == 'true' else 0)
     elif S != None:
         start = S.attrib['start'] if 'start' in S.attrib else ''
-        if 'size' in S.attrib:
-            size = int(S.attrib['size'])
-        else:
-            error('String variable "%s" missing size' % name)
+        size = None
+        if sv.find('Annotations') != None:
+            for tool in sv.find('Annotations').findall('Tool'):
+                if tool.attrib['name'] == 'fmigo':
+                    sz = tool.find('size')
+                    size = int(sz.text)
+
+        if size == None:
+            error('''String variable "%s" missing size. Use an "fmigo" Annotation to specify maximum size, like this:
+  <ScalarVariable ...>
+    <String start="..."/>
+    <Annotations>
+      <Tool name="fmigo">
+        <size>1024</size>
+      </Tool>
+    </Annotations>
+  </ScalarVariable>''' % name)
             exit(1)
         strs[vr] = (name, start, size)
     else:
@@ -200,6 +220,9 @@ static const modelDescription_t defaults = {
     '\n'.join(['    "%s", //%s' % (value[1], value[0]) for key,value in strs.items()]),
     '\n    1,' if meFmuType else '',
 ))
+
+if fmuFilename:
+    print('static const char fmuFilename[] = "%s";' % fmuFilename)
 
 print('''
 %s

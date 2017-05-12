@@ -67,7 +67,7 @@ typedef struct {
     fmi2Boolean reset_dx_e; //VR=202
     fmi2Boolean integrate_dx_s; //VR=11
     fmi2Boolean is_gearbox; //VR=17
-    fmi2Char    octave_output_file[500]; //VR=202
+    fmi2Char    octave_output_file[1024]; //VR=202
 } modelDescription_t;
 
 

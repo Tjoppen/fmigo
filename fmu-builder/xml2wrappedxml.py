@@ -1,15 +1,14 @@
 #!/usr/bin/python3
 from __future__ import print_function
 import sys
-import xml.etree.ElementTree as e
+from lxml import etree
 import zipfile
 import argparse
+import os
 
 # Parse command line arguments
-parser = argparse.ArgumentParser(
-    description='Generate CMakeLists.txt to build an FMU',
-    epilog=""" """
-    )
+parser = argparse.ArgumentParser(description='Transform modelDescription.xml for an ME FMU to CS, for the FMU wrapper')
+
 parser.add_argument('-f','--fmu',
                     type=str,
                     help='Path to FMU',
@@ -18,10 +17,6 @@ parser.add_argument('-x','--xml',
                     type=str,
                     help='Path to xml',
                     default='')
-parser.add_argument('-i','--integrator',
-                    type=int,
-                    help='gsl integrator',
-                    default='4')
 parser.add_argument('-p','--prefix',
                     type=str,
                     help='Wrapped FMU modelIdentifier prefix',
@@ -29,33 +24,37 @@ parser.add_argument('-p','--prefix',
 args = parser.parse_args()
 
 def warning(*objs):
-    print("WARNING: ", *objs, file=sys.stderr)
+  print("WARNING: ", *objs, file=sys.stderr)
 
 def error(*objs):
-    print("ERROR: ", *objs, file=sys.stderr)
-    exit(1)
+  print("ERROR: ", *objs, file=sys.stderr)
+  exit(1)
+
+# Preserve comments
+# Need to remove whitespace for pretty_print to work
+parser = etree.XMLParser(remove_blank_text=True, remove_comments=False)
 
 if len(args.fmu):
-    fmufile = args.fmu
-    warning(fmufile)
-    zip=zipfile.ZipFile(fmufile, 'r')
-    f=zip.open('modelDescription.xml')
-    root = e.fromstring(f.read())
-    f.close()
+  zip=zipfile.ZipFile(args.fmu, 'r')
+  f=zip.open('modelDescription.xml')
+  tree = etree.parse(f, parser=parser)
+  f.close()
+  fmu = args.fmu
 elif len(args.xml):
-    xmlfile = args.xml
-    # Parse xml file
-    tree = e.parse(xmlfile)
-    root = tree.getroot()
+  tree = etree.parse(args.xml, parser=parser)
+  # No filename for the FMU - guess that it's modelName + '.fmu'
+  fmu = tree.getroot().attrib['modelName'] + '.fmu'
 else:
-    warning(sys.args)
-    error('%s expect eather: -f myfmu.fmu or -x myxml.xml' %(sys.args[0]))
+  warning(sys.args)
+  error('%s expect either: -f myfmu.fmu or -x myxml.xml' %(sys.args[0]))
 
+root = tree.getroot()
 
-# Get FMU version
-fmiVersion = root.get('fmiVersion')
-fmiDescription = root.get('description')
 me = root.find('ModelExchange')
+
+if me == None:
+  error('Not a ModelExchange FMU')
+
 guid = root.attrib['guid']
 
 # Make predictable derived guid by flipping the lowest bit
@@ -65,106 +64,62 @@ guid2 = list(guid)
 guid2[pos] = '%1x' % (int(guid[pos], 16) ^ 1)
 guid2 = "".join(guid2)
 
-if me == None:
-    error('wrapper only supports model exchange')
-    exit(1)
-modelName = root.get('modelName')
+# Transform from ME to CS
+del root.attrib['numberOfEventIndicators']
 
-print('''<?xml version="1.0" encoding="UTF-8"?>
-<fmiModelDescription
-    fmiVersion="%s"
-    description="%s"
-    modelName="%s"
-    guid="%s"
-    numberOfEventIndicators="0">
+root.attrib['modelName']      = args.prefix + root.attrib['modelName']
+root.attrib['guid']           = guid2
+root.attrib['generationTool'] = 'fmigo ME FMU wrapper (original generationTool: %s)' % (
+  root.attrib['generationTool'] if 'generationTool' in root.attrib else 'unknown'
+)
 
-  <CoSimulation
-    modelIdentifier="%s"
-    canHandleVariableCommunicationStepSize="true"
-    canGetAndSetFMUstate="true"
-    providesDirectionalDerivative="true"/>
+me.tag = 'CoSimulation'
+me.attrib['modelIdentifier']                        = args.prefix + me.attrib['modelIdentifier']
+me.attrib['canHandleVariableCommunicationStepSize'] = 'true'
+me.attrib['canGetAndSetFMUstate']                   = 'true'
+me.attrib['canSerializeFMUstate']                   = 'false' #unfortunately
+me.attrib['providesDirectionalDerivative']          = 'true'
 
-  <LogCategories>
-    <Category name="logAll"/>
-    <Category name="logError"/>
-    <Category name="logFmiCall"/>
-    <Category name="logEvent"/>
-  </LogCategories>
+# Find some free VRs for "integrator" and such
+# First grab all VRs
+mvs = root.find('ModelVariables')
+vrs = [int(sv.attrib['valueReference']) for sv in mvs.findall('ScalarVariable')]
 
-  <DefaultExperiment startTime="0" stopTime="10" stepSize="0.1"/>
-'''%(root.get('fmiVersion'),
-     root.get('description'),
-     args.prefix + modelName,
-     guid2,
-     args.prefix + modelName,
+extravars = [
+  ('integrator',    'Integer',  '4',   'cgsl integrator'),
+  ('octave_output', 'String',   '',    'dump output to octave compatible file with given filename'),
+]
 
-))
-SV = root.find('ModelVariables').findall('ScalarVariable')
-print('  <ModelVariables>')
-vrs = []
-for sv in SV:
-    type = 'Real'
-    start = sv.find(type)
-    if start == None:
-        type = 'Boolean'
-        start = sv.find(type)
-    if start == None:
-        type = 'Enum'
-        start = sv.find(type)
-    if start == None:
-        type = 'Integer'
-        start = sv.find(type)
-    if start == None:
-        type = 'String'
-        start = sv.find(type)
+vr = max(vrs)+1
+for extra in extravars:
+  if vr >= 2**32:
+    error("VR %i overflow @ extravar %s" % (vr, extra[0]))
+  el = etree.SubElement(mvs, 'ScalarVariable')
+  el.attrib['variability']    = 'fixed'
+  el.attrib['causality']      = 'parameter'
+  el.attrib['valueReference'] = str(vr)
+  el.attrib['name']           = extra[0]
+  el.attrib['description']    = extra[3]
 
-        error(start)
-    if 'derivative' not in start.attrib:
-        vrs +=[sv.get('valueReference')]
-        print('''    <ScalarVariable%s>'''% (''.join(['\n       '+name+'="' + sv.attrib[name]+'"' for name in sv.attrib])))
+  el2 = etree.SubElement(el, extra[1])
+  el2.attrib['start']         = extra[2]
 
-        print('      <%s %s/>' %( type,
-                           ' '.join([s + '="' + start.attrib[s]+'"' for s in start.attrib])
-        ))
+  # Mark variable as being for wrapper by adding 'fmigo' Annotation
+  tool = etree.SubElement(etree.SubElement(el, 'Annotations'), 'Tool')
+  tool.attrib['name'] = 'fmigo'
 
-        print('''    </ScalarVariable>''')
-vr = 0
-while vr in vrs: vr += 1
-# located under resources/
-fmudir = modelName +'.fmu'
-print('''
-    <ScalarVariable
-        name="fmu"
-        valueReference="%d"
-        description="Path to the ME fmu to be wrapped"
-        causality="parameter"
-        variability="constant" >
-      <String size="%d" start="%s"/>
-    </ScalarVariable>'''%(vr,len(fmudir)+1, fmudir))
+  # Add size to string. Guess 1 KiB is enough
+  if extra[1] == 'String':
+    etree.SubElement(tool, 'size').text = '1024'
 
-vr += 1
-while vr in vrs: vr += 1
-print('''
-    <ScalarVariable
-        name="integrator"
-        valueReference="%d"
-        description="gsl intergator"
-        causality="parameter">
-      <Integer start="%s"/>
-    </ScalarVariable>'''%(vr, args.integrator))
+  vr = vr + 1
 
-outputs = root.find('ModelStructure').find('Outputs')
-print('''
-  </ModelVariables>
-  <ModelStructure>
-    <Outputs>
-%s
-    </Outputs>
+# Add the filename of the FMU as a VendorAnnotation
+vas = etree.Element('VendorAnnotations')
+# VendorAnnotation go before ModelVariables
+mvs.addprevious(vas)
+tool = etree.SubElement(vas, 'Tool')
+tool.attrib['name'] = 'fmigo'
+etree.SubElement(tool, 'fmu').text = os.path.basename(fmu)
 
-    <Derivatives/>
-    <DiscreteStates/>
-    <InitialUnknowns/>
-  </ModelStructure>
-</fmiModelDescription>
-'''%('\n'.join(['      <Unknown index="'+ out.get('index')+'"/>'for out in outputs.findall('Unknown')]),
-))
+print(etree.tostring(root, pretty_print=True, encoding='unicode'))

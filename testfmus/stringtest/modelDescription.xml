@@ -27,13 +27,23 @@
                   valueReference="1"
                   description=""
                   causality="output">
-      <String size="256"/>
+      <String/>
+      <Annotations>
+        <Tool name="fmigo">
+          <size>256</size>
+        </Tool>
+      </Annotations>
   </ScalarVariable>
   <ScalarVariable name="s_out2"
                   valueReference="2"
                   description=""
                   causality="output">
-      <String size="256"/>
+      <String/>
+      <Annotations>
+        <Tool name="fmigo">
+          <size>256</size>
+        </Tool>
+      </Annotations>
   </ScalarVariable>
 
   <!-- Inputs -->
@@ -42,14 +52,24 @@
                   description=""
                   causality="input"
                   initial="approx">
-      <String start="" size="256"/>
+      <String start=""/>
+      <Annotations>
+        <Tool name="fmigo">
+          <size>256</size>
+        </Tool>
+      </Annotations>
   </ScalarVariable>
   <ScalarVariable name="s_in2"
                   valueReference="4"
                   description=""
                   causality="input"
                   initial="approx">
-      <String start="" size="256"/>
+      <String start=""/>
+      <Annotations>
+        <Tool name="fmigo">
+          <size>256</size>
+        </Tool>
+      </Annotations>
   </ScalarVariable>
 
   <!-- Parameters -->
@@ -58,14 +78,24 @@
                   description=""
                   variability="fixed"
                   causality="parameter">
-      <String start="" size="256"/>
+      <String start=""/>
+      <Annotations>
+        <Tool name="fmigo">
+          <size>256</size>
+        </Tool>
+      </Annotations>
   </ScalarVariable>
   <ScalarVariable name="s02"
                   valueReference="6"
                   description=""
                   variability="fixed"
                   causality="parameter">
-      <String start="" size="256"/>
+      <String start=""/>
+      <Annotations>
+        <Tool name="fmigo">
+          <size>256</size>
+        </Tool>
+      </Annotations>
   </ScalarVariable>
 </ModelVariables>
 

@@ -120,12 +120,9 @@ static fmi2Status generated_fmi2SetString(ModelInstance *comp, modelDescription_
     if( comp->s.simulation.FMU != NULL) {
         size_t x;
 
-        //similar to fmi2SetInteger, but catches VR_FMU
-        //there's no sense in doing anything with it since the FMU has
-        //already been loaded at this point. hence variability=constant
         for (x = 0; x < nvr; x++) {
-            if (vr[x] == VR_FMU) {
-                continue;
+            if (vr[x] == VR_OCTAVE_OUTPUT) {
+                strlcpy(comp->s.md.octave_output, value[x], sizeof(comp->s.md.octave_output));
             } else if (fmi2_import_set_string(comp->s.simulation.FMU,&vr[x],1,&value[x]) != fmi2OK) {
                 return fmi2Error;
             }
@@ -236,7 +233,7 @@ static fmi2Status wrapper_instantiate(ModelInstance *comp)  {
 
     strlcpy(m_fmuPath, comp->fmuResourceLocation, sizeof(m_fmuPath));
     strlcat(m_fmuPath, "/", sizeof(m_fmuPath));
-    strlcat(m_fmuPath, s->md.fmu, sizeof(m_fmuPath));
+    strlcat(m_fmuPath, fmuFilename, sizeof(m_fmuPath));
 
     if (!(comp->s.simulation.dir = fmi_import_mk_temp_dir(&comp->s.simulation.m_jmCallbacks, NULL, "wrapper_"))) {
         fprintf(stderr, "fmi_import_mk_temp_dir() failed\n");

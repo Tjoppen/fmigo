@@ -8,7 +8,6 @@
 
   <ModelExchange
       modelIdentifier="springs"
-      canHandleVariableCommunicationStepSize="true"
       canGetAndSetFMUstate="true"
       providesDirectionalDerivative="false"/>
 

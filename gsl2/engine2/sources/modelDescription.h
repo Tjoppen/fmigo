@@ -44,7 +44,7 @@ typedef struct {
     fmi2Integer integrator; //VR=1002
     fmi2Boolean octave_output; //VR=1001
     fmi2Boolean integrate_dtheta; //VR=18
-    fmi2Char    octave_output_file[500]; //VR=1003
+    fmi2Char    octave_output_file[1024]; //VR=1003
 } modelDescription_t;
 
 

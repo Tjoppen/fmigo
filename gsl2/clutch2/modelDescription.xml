@@ -426,7 +426,12 @@
         description="file for internal dump?"
         causality="parameter"
         variability="fixed">
-      <String start="clutch3.m" size="500"/>
+      <String start="clutch2.m"/>
+      <Annotations>
+        <Tool name="fmigo">
+          <size>1024</size>
+        </Tool>
+      </Annotations>
     </ScalarVariable>
   </ModelVariables>
 

@@ -64,7 +64,7 @@ typedef struct {
     fmi2Boolean is_gearbox; //VR=17
     fmi2Boolean integrate_dx_s; //VR=11
     fmi2Boolean octave_output; //VR=97
-    fmi2Char    octave_output_file[500]; //VR=202
+    fmi2Char    octave_output_file[1024]; //VR=202
 } modelDescription_t;
 
 
@@ -111,7 +111,7 @@ static const modelDescription_t defaults = {
     0, //is_gearbox
     0, //integrate_dx_s
     0, //octave_output
-    "clutch3.m", //octave_output_file
+    "clutch2.m", //octave_output_file
 };
 
 

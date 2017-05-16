@@ -17,8 +17,8 @@ from zipfile import ZipFile
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
-default_timestep = 0.1
-default_duration = 10
+default_timestep = 0.01
+default_duration = 100000
 
 RESOURCE_DIR='resources'
 SSD_NAME='SystemStructure.ssd'
@@ -175,7 +175,7 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
     for pb in parameterbindings[1]:
         pb_prefix = get_attrib(pb, 'prefix', '')
         prefix = baseprefix
-
+        
         # Spec says to use prefix="Foo." to address parameters in subsystems
         # We've split FMU names from variable names, so the case where a prefix would not have a trailing dot is nonsensical
         if len(pb_prefix) > 0:
@@ -229,7 +229,6 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
                 if 'unit' in r.attrib:
                     eprint('Not dealing with parameters with units yet')
                     exit(1)
-
                 param.update({
                     'type': 'r',
                     'value': float(r.attrib['value']),
@@ -497,8 +496,8 @@ class System:
         ret = cls(d, s, version, parent, structure)
         remove_if_empty(tree.getroot(), s)
 
-        if len(tree.getroot()) > 0 or len(tree.getroot().attrib) > 0:
-            eprint('WARNING: Residual XML: '+etree.tostring(tree.getroot()))
+        #if len(tree.getroot()) > 0 or len(tree.getroot().attrib) > 0:
+        #    eprint('WARNING: Residual XML: '+etree.tostring(tree.getroot()))
 
         return ret
 
@@ -919,8 +918,9 @@ def get_fmigo_binary(executable, install_env_name):
     if not os.path.exists(fmigo_install_dir):
         raise Exception("{}: {} does not exist".format(install_env_name, str(umit_install_dir)))
 
-    binary_full_path = os.path.join(fmigo_install_dir, 'bin', executable)
-
+    # binary_full_path = os.path.join(fmigo_install_dir, 'bin', executable)
+    binary_full_path = os.path.join(fmigo_install_dir, executable)
+    
     if not os.path.exists(binary_full_path):
         raise Exception("Unable to locate FmiGo binary {}".format(str(binary_full_path)))
 
@@ -975,7 +975,7 @@ if __name__ == '__main__':
                         default=None,
                         nargs='*',
                         type=int)
-    parser.add_argument('ssp', metavar='ssp-filename',
+    parser.add_argument('--ssp', metavar='ssp-filename',
                         help='SSP file to be launched')
 
     parser.add_argument('args',

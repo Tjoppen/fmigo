@@ -24,11 +24,11 @@ add_fmu(kinematictruck/gearbox2         gearbox2                        "" "" ""
 add_fmu(kinematictruck/kinclutch        kinclutch                       "" "" "" FALSE)
 add_fmu(forcevelocitytruck/fvbody       fvbody                          "" "" "" FALSE)
 add_fmu(forcevelocitytruck/gearbox      gearbox                         "" "" "" FALSE)
-add_fmu(testfmus/typeconvtest           typeconvtest                    "" "" "" FALSE)
-add_fmu(testfmus/loopsolvetest/add      add                             "" "" "" FALSE)
-add_fmu(testfmus/loopsolvetest/sub      sub                             "" "" "" FALSE)
-add_fmu(testfmus/loopsolvetest/mul      mul                             "" "" "" FALSE)
-add_fmu(testfmus/stringtest             stringtest                      "" "" "" FALSE)
+add_fmu(tests/typeconvtest              typeconvtest                    "" "" "" FALSE)
+add_fmu(tests/loopsolvetest/add         add                             "" "" "" FALSE)
+add_fmu(tests/loopsolvetest/sub         sub                             "" "" "" FALSE)
+add_fmu(tests/loopsolvetest/mul         mul                             "" "" "" FALSE)
+add_fmu(tests/stringtest                stringtest                      "" "" "" FALSE)
 
 # Model-Exchange FMUs
 add_fmu(me/springs                      springs                         "" "" "" FALSE)

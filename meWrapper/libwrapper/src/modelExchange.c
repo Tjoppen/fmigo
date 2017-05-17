@@ -149,7 +149,6 @@ void init_fmu_model(cgsl_model **m, fmi2_import_t *FMU){
     fmi2_status_t status;
     status = fmi2_import_get_continuous_states(p->FMU, (*m)->x,        p->nx);
     status = fmi2_import_get_continuous_states(p->FMU, (*m)->x_backup, p->nx);
-    status = fmi2_import_get_event_indicators (p->FMU, p->m_backup.ei_b,  p->ni);
 }
 
 /** prepare()

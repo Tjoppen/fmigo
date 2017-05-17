@@ -153,11 +153,13 @@ static fmi2Status getPartial(ModelInstance *comp, fmi2ValueReference vr, fmi2Val
       fmi2_value_reference_t zrefp[] = {0};
       fmi2Real dv [] = {1.0};
       // TODO: move this logic to the fmuTemplate_impl.h
-      return (fmi2Status)fmi2_import_get_directional_derivative(comp->s.simulation.FMU,
-						    vrp, 1,
-						    wrtp, 1,
-						    dv, partial);
-
+      return (fmi2Status)fmi2_import_get_directional_derivative(
+        comp->s.simulation.FMU,
+        wrtp, 1,  //v_ref aka known ("Value references for the seed vector")
+        vrp, 1,   //z_ref aka unknown ("Value references for the derivatives/outputs to be processed")
+        dv,       //dv
+        partial   //dz
+      );
     }
 
     //could speed this up with binary search or some kind of simple hash map

@@ -155,7 +155,7 @@ function (add_wrapped dir sourcetarget)
     OUTPUT ${dstxml}
     COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/fmu-builder/xml2wrappedxml.py
          -x ${srcxml} -p ${prefix} > ${dstxml}
-    DEPENDS ${srcxml} ${CMAKE_CURRENT_SOURCE_DIR}/fmu-builder/xml2wrappedxml.py)
+    DEPENDS ${srcxml} ${sourcetarget} ${CMAKE_CURRENT_SOURCE_DIR}/fmu-builder/xml2wrappedxml.py)
   add_custom_target(${target}_xml DEPENDS ${dstxml})
 
   add_fmu_internal("${dir}" "${target}" "fmu-builder/sources/wrapper.c" "" "cgsl;wrapperlib;fmilib" "fmu-builder/sources" FALSE "-w" "${target}_xml" "${${sourcetarget}_fmu}")

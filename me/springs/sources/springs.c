@@ -4,7 +4,6 @@
 
 #include "fmuTemplate.h"
 
-static void updateStates(modelDescription_t *md){}
 static void update_all(modelDescription_t *md){
     //std::cout << "hello " << sdt::endl;
     md->dx0 = md->v0;

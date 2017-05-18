@@ -31,17 +31,45 @@
       <Real start="0"/>
     </ScalarVariable>
     <ScalarVariable
-        name="dx1"
+        name="v1"
         valueReference="2"
-        description="change in position left mass"
+        description="velocity left mass"
         variability="continuous"
-        initial="calculated"
-        causality="local">
-      <Real derivative="1"/>
+        initial="exact"
+        causality="output">
+      <Real start="0" derivative="1"/>
     </ScalarVariable>
     <ScalarVariable
-        name="x2"
+        name="a1"
         valueReference="3"
+        description="acceleration left mass"
+        variability="continuous"
+        initial="exact"
+        causality="output">
+      <Real start="0" derivative="2"/>
+    </ScalarVariable>
+    <ScalarVariable
+        name="fc1"
+        valueReference="4"
+        description="coupling force on left mass"
+        variability="continuous"
+        initial="calculated"
+        causality="output">
+      <Real />
+    </ScalarVariable>
+    <ScalarVariable
+        name="minv1"
+        valueReference="5"
+        description="inverse of m1 (mobility)"
+        causality="output"
+        variability="continuous"
+        initial="calculated">
+      <Real/>
+    </ScalarVariable>
+
+    <ScalarVariable
+        name="x2"
+        valueReference="6"
         description="position right mass"
         variability="continuous"
         initial="exact"
@@ -49,67 +77,40 @@
       <Real start="0"/>
     </ScalarVariable>
     <ScalarVariable
-        name="dx2"
-        valueReference="4"
-        description="change in position right mass"
-        variability="continuous"
-        initial="calculated"
-        causality="local">
-      <Real derivative="3"/>
-    </ScalarVariable>
-    <ScalarVariable
-        name="v1"
-        valueReference="5"
-        description="velocity left mass"
-        variability="continuous"
-        initial="exact"
-        causality="output">
-      <Real start="0"/>
-    </ScalarVariable>
-    <ScalarVariable
-        name="dv1"
-        valueReference="6"
-        description="change in velocity left mass"
-        variability="continuous"
-        initial="calculated"
-        causality="local">
-      <Real derivative="5"/>
-    </ScalarVariable>
-    <ScalarVariable
-        name="a1"
-        valueReference="7"
-        description=" Acceleration left mass"
-        variability="continuous"
-        initial="exact"
-        causality="output">
-      <Real start="0"/>
-    </ScalarVariable>
-    <ScalarVariable
         name="v2"
-        valueReference="8"
+        valueReference="7"
         description="velocity right mass"
         variability="continuous"
         initial="exact"
         causality="output">
-      <Real start="0"/>
-    </ScalarVariable>
-    <ScalarVariable
-        name="dv2"
-        valueReference="09"
-        description="change in velocity right mass"
-        variability="continuous"
-        initial="calculated"
-        causality="local">
-      <Real derivative="8"/>
+      <Real start="0" derivative="6"/>
     </ScalarVariable>
     <ScalarVariable
         name="a2"
-        valueReference="10"
+        valueReference="8"
         description="Acceleration right mass"
         variability="continuous"
         initial="exact"
         causality="output">
-      <Real start="0"/>
+      <Real start="0" derivative="7"/>
+    </ScalarVariable>
+    <ScalarVariable
+        name="fc2"
+        valueReference="9"
+        description="coupling force on right mass"
+        variability="continuous"
+        initial="calculated"
+        causality="output">
+      <Real/>
+    </ScalarVariable>
+    <ScalarVariable
+        name="minv2"
+        valueReference="10"
+        description="inverse of m12(mobility)"
+        variability="continuous"
+        initial="calculated"
+        causality="output">
+      <Real/>
     </ScalarVariable>
 
     <!-- internal parameter -->
@@ -125,44 +126,17 @@
     <ScalarVariable
         name="gamma1"
         valueReference="12"
-        description="spring constant spring on left mass"
+        description="damping constant spring on left mass"
         causality="parameter"
         variability="fixed"
         initial="exact">
       <Real start="0"/>
-    </ScalarVariable>
-    <ScalarVariable
-        name="omega1"
-        valueReference="13"
-        description="omega1"
-        causality="parameter"
-        variability="fixed"
-        initial="exact">
-      <Real start="0"/>
-    </ScalarVariable>
-    <ScalarVariable
-        name="phi1"
-        valueReference="14"
-        description="phi"
-        causality="parameter"
-        variability="fixed"
-        initial="exact">
-      <Real start="0"/>
-    </ScalarVariable>
-    <ScalarVariable
-        name="fc1"
-        valueReference="15"
-        description="force"
-        variability="continuous"
-        initial="calculated"
-        causality="output">
-      <Real />
     </ScalarVariable>
 
     <ScalarVariable
         name="k2"
-        valueReference="16"
-        description="spring constant spring on left mass"
+        valueReference="13"
+        description="spring constant spring on right mass"
         causality="parameter"
         variability="fixed"
         initial="exact">
@@ -170,44 +144,17 @@
     </ScalarVariable>
     <ScalarVariable
         name="gamma2"
-        valueReference="17"
-        description="spring constant spring on left mass"
+        valueReference="14"
+        description="damping constant spring on right mass"
         causality="parameter"
         variability="fixed"
         initial="exact">
       <Real start="0"/>
-    </ScalarVariable>
-    <ScalarVariable
-        name="omega2"
-        valueReference="18"
-        description="omega1"
-        causality="parameter"
-        variability="fixed"
-        initial="exact">
-      <Real start="0"/>
-    </ScalarVariable>
-    <ScalarVariable
-        name="phi2"
-        valueReference="19"
-        description="phi"
-        causality="parameter"
-        variability="fixed"
-        initial="exact">
-      <Real start="0"/>
-    </ScalarVariable>
-    <ScalarVariable
-        name="fc2"
-        valueReference="20"
-        description="phi"
-        variability="continuous"
-        initial="calculated"
-        causality="output">
-      <Real/>
     </ScalarVariable>
 
     <ScalarVariable
         name="k_internal"
-        valueReference="21"
+        valueReference="15"
         description="spring constant for spring between masses"
         causality="parameter"
         variability="fixed"
@@ -216,8 +163,8 @@
     </ScalarVariable>
     <ScalarVariable
         name="gamma_internal"
-        valueReference="22"
-        description="spring constant for spring between masses"
+        valueReference="16"
+        description="damping constant for spring between masses"
         causality="parameter"
         variability="fixed"
         initial="exact">
@@ -225,8 +172,8 @@
     </ScalarVariable>
     <ScalarVariable
         name="f1"
-        valueReference="23"
-        description="driving force"
+        valueReference="17"
+        description="driving force on left mass"
         variability="continuous"
         initial="approx"
         causality="input" >
@@ -234,8 +181,8 @@
     </ScalarVariable>
     <ScalarVariable
         name="f2"
-        valueReference="24"
-        description="driving force"
+        valueReference="18"
+        description="driving force on right mass"
         variability="continuous"
         initial="approx"
         causality="input" >
@@ -243,7 +190,7 @@
     </ScalarVariable>
     <ScalarVariable
         name="x1_i"
-        valueReference="25"
+        valueReference="19"
         description="driving position"
         variability="continuous"
         initial="approx"
@@ -252,7 +199,7 @@
     </ScalarVariable>
     <ScalarVariable
         name="v1_i"
-        valueReference="26"
+        valueReference="20"
         description="driving velocity"
         variability="continuous"
         initial="approx"
@@ -261,7 +208,7 @@
     </ScalarVariable>
     <ScalarVariable
         name="x2_i"
-        valueReference="27"
+        valueReference="21"
         description="driving position"
         variability="continuous"
         initial="approx"
@@ -270,7 +217,7 @@
     </ScalarVariable>
     <ScalarVariable
         name="v2_i"
-        valueReference="28"
+        valueReference="22"
         description="driving velocity"
         variability="continuous"
         initial="approx"
@@ -280,39 +227,21 @@
 
     <ScalarVariable
         name="m1"
-        valueReference="29"
-        description="spring constant spring on left mass"
+        valueReference="23"
+        description="mass 1"
         causality="parameter"
         variability="fixed"
         initial="exact">
       <Real start="1"/>
-    </ScalarVariable>
-    <ScalarVariable
-        name="m1i_o"
-        valueReference="30"
-        description="output force"
-        causality="output"
-        variability="continuous"
-        initial="calculated">
-      <Real/>
     </ScalarVariable>
     <ScalarVariable
         name="m2"
-        valueReference="31"
-        description="spring constant spring on left mass"
+        valueReference="24"
+        description="mass 2"
         causality="parameter"
         variability="fixed"
         initial="exact">
       <Real start="1"/>
-    </ScalarVariable>
-    <ScalarVariable
-        name="m2i_o"
-        valueReference="32"
-        description="output force"
-        variability="continuous"
-        initial="calculated"
-        causality="output">
-      <Real/>
     </ScalarVariable>
 
 
@@ -321,19 +250,21 @@
   <ModelStructure>
     <Outputs>
       <Unknown index="1"/>
+      <Unknown index="2"/>
       <Unknown index="3"/>
+      <Unknown index="4"/>
       <Unknown index="5"/>
-      <Unknown index="7"/>
-      <Unknown index="8"/>
-      <Unknown index="10"/>
-      <Unknown index="12"/>
-      <Unknown index="14"/>
-    </Outputs>
-    <Derivatives>
       <Unknown index="6"/>
       <Unknown index="7"/>
       <Unknown index="8"/>
       <Unknown index="9"/>
+      <Unknown index="10"/>
+    </Outputs>
+    <Derivatives>
+      <Unknown index="2"/>
+      <Unknown index="3"/>
+      <Unknown index="7"/>
+      <Unknown index="8"/>
     </Derivatives>
     <DiscreteStates/>
     <InitialUnknowns />

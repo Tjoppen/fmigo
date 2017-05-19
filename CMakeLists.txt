@@ -49,7 +49,11 @@ add_wrapped(meWrapper/bouncingBall              bouncingBall)
 add_wrapped(meWrapper/springs                   springs)
 add_wrapped(meWrapper/springs2                  springs2)
 
+# Re-use springs2.fmu but with different modelDescription.xml
+add_wrapped2(meWrapper/springs3                 wrapper_springs3    springs2    "${CMAKE_CURRENT_SOURCE_DIR}/me/springs3/modelDescription.xml")
+add_wrapped2(meWrapper/springs4                 wrapper_springs4    springs2    "${CMAKE_CURRENT_SOURCE_DIR}/me/springs4/modelDescription.xml")
+
 # These generate the modelDescription from the source FMU
-add_wrapped_fmu(meWrapperFmu/bouncingBall       bouncingBall    ${bouncingBall_fmu})
-add_wrapped_fmu(meWrapperFmu/springs2           springs2        ${springs2_fmu})
+add_wrapped_fmu(meWrapperFmu/bouncingBall       bouncingBall    "${bouncingBall_fmu}")
+add_wrapped_fmu(meWrapperFmu/springs2           springs2        "${springs2_fmu}")
 

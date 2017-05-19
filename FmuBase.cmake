@@ -144,9 +144,7 @@ function (add_fmu dir target extra_srcs defs libs console)
 endfunction ()
 
 
-function (add_wrapped dir sourcetarget)
-  set(target "wrapper_${sourcetarget}")
-  set(srcxml ${${sourcetarget}_dir}/modelDescription.xml)
+function (add_wrapped2 dir target sourcetarget srcxml)
   set(dstxml ${CMAKE_CURRENT_SOURCE_DIR}/${dir}/modelDescription.xml)
 
   add_custom_command(
@@ -157,6 +155,10 @@ function (add_wrapped dir sourcetarget)
   add_custom_target(${target}_xml DEPENDS ${dstxml})
 
   add_fmu_internal("${dir}" "${target}" "fmu-builder/sources/wrapper.c" "" "cgsl;wrapperlib;fmilib" "fmu-builder/sources" FALSE "-w" "${target}_xml" "${${sourcetarget}_fmu}")
+endfunction ()
+
+function (add_wrapped dir sourcetarget)
+  add_wrapped2("${dir}" "wrapper_${sourcetarget}" "${sourcetarget}" "${${sourcetarget}_dir}/modelDescription.xml")
 endfunction ()
 
 

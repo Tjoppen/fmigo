@@ -9,7 +9,7 @@
 #define FMI_MODELEXCHANGE
 #define HAVE_DIRECTIONAL_DERIVATIVE 1
 #define CAN_GET_SET_FMU_STATE 1
-#define NUMBER_OF_REALS 24
+#define NUMBER_OF_REALS 25
 #define NUMBER_OF_INTEGERS 0
 #define NUMBER_OF_BOOLEANS 0
 #define NUMBER_OF_STRINGS 0
@@ -23,6 +23,7 @@ struct ModelInstance;
 
 #define HAVE_MODELDESCRIPTION_STRUCT
 typedef struct {
+    fmi2Real    zero; //VR=0
     fmi2Real    x1; //VR=1
     fmi2Real    v1; //VR=2
     fmi2Real    a1; //VR=3
@@ -56,6 +57,7 @@ typedef struct {
 
 #define HAVE_DEFAULTS
 static const modelDescription_t defaults = {
+    0.000000, //zero
     0.000000, //x1
     1.000000, //v1
     2.000000, //a1
@@ -87,6 +89,7 @@ static const modelDescription_t defaults = {
 };
 
 
+#define VR_ZERO 0
 #define VR_X1 1
 #define VR_V1 2
 #define VR_A1 3
@@ -134,6 +137,7 @@ static fmi2Status generated_fmi2GetReal(struct ModelInstance *comp, modelDescrip
 
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
+        case 0: value[i] = md->zero; break;
         case 1: value[i] = md->x1; break;
         case 2: value[i] = md->v1; break;
         case 3: value[i] = md->a1; break;
@@ -171,6 +175,7 @@ static fmi2Status generated_fmi2SetReal(struct ModelInstance *comp, modelDescrip
 
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
+        case 0: md->zero = value[i]; break;
         case 1: md->x1 = value[i]; break;
         case 2: md->v1 = value[i]; break;
         case 3: md->a1 = value[i]; break;

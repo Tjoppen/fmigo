@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <fmiModelDescription
     fmiVersion="2.0"
-    description="Two masses with a spring"
-    modelName="springs2"
-    guid="{78a384b7-1718-4f46-a8ee-9536df41db41}"
+    description="Two masses with a spring, no directional derivatives, no directional.txt"
+    modelName="springs4"
+    guid="{78a384b7-1718-4f46-a8ee-9536df41db61}"
     numberOfEventIndicators="0">
 
   <ModelExchange
-      modelIdentifier="springs2"
+      modelIdentifier="springs4"
       canGetAndSetFMUstate="true"
-      providesDirectionalDerivative="true"/>
+      />
 
   <LogCategories>
     <Category name="logAll"/>

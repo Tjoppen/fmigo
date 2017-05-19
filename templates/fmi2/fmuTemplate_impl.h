@@ -344,7 +344,12 @@ fmi2Status fmi2ExitInitializationMode(fmi2Component c) {
 #ifdef SIMULATION_EXIT_INIT
     ret = SIMULATION_EXIT_INIT(comp);
 #endif
+#ifdef FMI_COSIMULATION
     comp->s.state = modelInitialized;
+#else
+    // ME FMUs enter event mode after initialization (FMI 2.0 spec, fig. 6)
+    comp->s.state = modelEventMode;
+#endif
     return ret;
 }
 

@@ -38,7 +38,7 @@
 typedef enum {
     modelInstantiated       = 1<<0,
     modelInitializationMode = 1<<1,
-    modelInitialized        = 1<<2, // state just after fmiExitInitializationMode
+    modelInitialized        = 1<<2, // state just after fmiExitInitializationMode (CoSimulation only)
     modelStepping           = 1<<3, // state after initialization
     modelTerminated         = 1<<4,
     modelError              = 1<<5,

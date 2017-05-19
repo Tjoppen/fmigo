@@ -338,6 +338,10 @@ static fmi2Status wrapper_exit_init(ModelInstance *comp) {
     if(status == fmi2Error){
         return status;
     }
+    status = (fmi2Status)fmi2_import_enter_continuous_time_mode(comp->s.simulation.FMU);
+    if(status == fmi2Error){
+        return status;
+    }
 
     allocateBackup(&comp->s.simulation.m_backup, comp->s.simulation.sim.model->parameters);
 

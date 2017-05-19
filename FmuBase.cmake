@@ -145,16 +145,14 @@ endfunction ()
 
 
 function (add_wrapped dir sourcetarget)
-  set(prefix wrapper_)
-  set(target ${prefix}${sourcetarget})
-
+  set(target "wrapper_${sourcetarget}")
   set(srcxml ${${sourcetarget}_dir}/modelDescription.xml)
   set(dstxml ${CMAKE_CURRENT_SOURCE_DIR}/${dir}/modelDescription.xml)
 
   add_custom_command(
     OUTPUT ${dstxml}
     COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/fmu-builder/xml2wrappedxml.py
-         -x ${srcxml} -p ${prefix} > ${dstxml}
+         -x ${srcxml} -i ${target} > ${dstxml}
     DEPENDS ${srcxml} ${sourcetarget} ${CMAKE_CURRENT_SOURCE_DIR}/fmu-builder/xml2wrappedxml.py)
   add_custom_target(${target}_xml DEPENDS ${dstxml})
 
@@ -163,15 +161,13 @@ endfunction ()
 
 
 function (add_wrapped_fmu dir sourcetarget sourcefmu)
-  set(prefix wrapperfmu_)
-  set(target ${prefix}${sourcetarget})
-
+  set(target wrapperfmu_${sourcetarget})
   set(dstxml ${CMAKE_CURRENT_SOURCE_DIR}/${dir}/modelDescription.xml)
 
   add_custom_command(
     OUTPUT ${dstxml}
     COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/fmu-builder/xml2wrappedxml.py
-         -f ${sourcefmu} -p ${prefix} > ${dstxml}
+         -f ${sourcefmu} -i ${target} > ${dstxml}
     DEPENDS ${sourcefmu} ${sourcetarget}_fmu_target ${CMAKE_CURRENT_SOURCE_DIR}/fmu-builder/xml2wrappedxml.py)
   add_custom_target(${target}_xml DEPENDS ${dstxml})
 
@@ -191,15 +187,13 @@ endfunction ()
 #  wrap_existing_fmu(springs    ${CMAKE_CURRENT_SOURCE_DIR}/me/springs/springs.fmu  meWrapperFmu/springs)
 #
 function (wrap_existing_fmu modelIdentifier sourcefmu dir)
-  set(prefix wrapperfmu_)
-  set(target ${prefix}${modelIdentifier})
-
+  set(target wrapperfmu_${modelIdentifier})
   set(dstxml ${CMAKE_CURRENT_SOURCE_DIR}/${dir}/modelDescription.xml)
 
   add_custom_command(
     OUTPUT ${dstxml}
     COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/fmu-builder/xml2wrappedxml.py
-         -f ${sourcefmu} -p ${prefix} > ${dstxml}
+         -f ${sourcefmu} -i ${target} > ${dstxml}
     DEPENDS ${sourcefmu} ${CMAKE_CURRENT_SOURCE_DIR}/fmu-builder/xml2wrappedxml.py)
   add_custom_target(${target}_xml DEPENDS ${dstxml})
 

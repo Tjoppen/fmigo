@@ -17,10 +17,7 @@ parser.add_argument('-x','--xml',
                     type=str,
                     help='Path to xml',
                     default='')
-parser.add_argument('-p','--prefix',
-                    type=str,
-                    help='Wrapped FMU modelIdentifier prefix',
-                    default='wrapper_')
+parser.add_argument('-i','--identifier', required=True, help='modelIdentifier')
 args = parser.parse_args()
 
 def warning(*objs):
@@ -67,14 +64,14 @@ guid2 = "".join(guid2)
 # Transform from ME to CS
 del root.attrib['numberOfEventIndicators']
 
-root.attrib['modelName']      = args.prefix + root.attrib['modelName']
+root.attrib['modelName']      = args.identifier
 root.attrib['guid']           = guid2
 root.attrib['generationTool'] = 'fmigo ME FMU wrapper (original generationTool: %s)' % (
   root.attrib['generationTool'] if 'generationTool' in root.attrib else 'unknown'
 )
 
 me.tag = 'CoSimulation'
-me.attrib['modelIdentifier']                        = args.prefix + me.attrib['modelIdentifier']
+me.attrib['modelIdentifier']                        = args.identifier
 me.attrib['canHandleVariableCommunicationStepSize'] = 'true'
 me.attrib['canGetAndSetFMUstate']                   = 'true'
 me.attrib['canSerializeFMUstate']                   = 'false' #unfortunately

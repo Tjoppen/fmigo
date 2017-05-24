@@ -25,6 +25,7 @@ StrongMaster::StrongMaster(vector<FMIClient*> clients, vector<WeakConnection> we
 
 void StrongMaster::prepare() {
     m_strongCouplingSolver.prepare();
+    JacobiMaster::prepare();
 }
 
 void StrongMaster::getDirectionalDerivative(FMIClient *client, Vec3 seedVec, vector<int> accelerationRefs, vector<int> forceRefs) {

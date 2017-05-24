@@ -67,9 +67,9 @@ std::vector<WeakConnection> me_weakConnections;
  protected:
     void solveME(double t, double dt);
 
- private:
     void prepareME();
 
+ private:
     /** allocate Memory
      *  Allocates memory needed by the fmu_model
      *

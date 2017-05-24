@@ -143,6 +143,7 @@ fmi2Status wrapper_set ( me_simulation *sim) {
     return fmi2OK;
 }
 
+//#include <stdio.h>
 static fmi2Status getPartial(ModelInstance *comp, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial){
     size_t x;
     state_t *s = &comp->s;
@@ -173,33 +174,51 @@ static fmi2Status getPartial(ModelInstance *comp, fmi2ValueReference vr, fmi2Val
     //compute d(vr)/d(wrt) = (vr1 - vr0) / (wrt1 - wrt0)
     //since the FMU is ME we don't need to doStep() for the values of vr to update when changing wrt
     fmi2Real dwrt, wrt0, wrt1, vr0, vr1;
+    fmi2Real hi, lo;
 
     //save state
-    wrapper_get(&s->simulation);
+    if (wrapper_get(&s->simulation) != fmi2OK) return fmi2Error;
 
-    generated_fmi2GetReal(comp, &s->md, &wrt, 1, &wrt0);
-    generated_fmi2GetReal(comp, &s->md, &vr,  1, &vr0);
+    if (generated_fmi2GetReal(comp, &s->md, &wrt, 1, &wrt0) != fmi2OK) return fmi2Error;
+    if (generated_fmi2GetReal(comp, &s->md, &vr,  1, &vr0) != fmi2OK) return fmi2Error;
 
-    //take a small step, deal with subnormals
-    //2.0^(-1022) = 2.2251e-308
-    //if we step by 1 ppm we should get around 10 decimals of precision (doubles are 16 decimals, 16-6 = 10)
-    //start kicking in a bit before the subnormal range
-    if (fabs(wrt0) < 1.0e-307) {
-        //at least 1 ppm of number, or more
-        dwrt = wrt0 < 0 ? -1.0e-313 : 1.0e-313; //-307 - 6 = -313
-    } else {
-        dwrt = 1e-6 * wrt0;
+    //binary search for a "lagom" dwrt
+    //we want one that moves vr1 a small distance away from vr0
+    //try dwrt roughly between DBL_MIN and DBL_MAX
+    //this typically takes about 12 iterations
+    lo = 1.0e-307;
+    hi = 1.0e307;
+
+    int i = 0;
+    while (hi / lo > 1.5) {
+      i++;
+      dwrt = sqrt(hi) * sqrt(lo);
+      wrt1 = wrt0 + dwrt;
+
+      if (generated_fmi2SetReal(comp, &s->md, &wrt, 1, &wrt1) != fmi2OK) return fmi2Error;
+      if (generated_fmi2GetReal(comp, &s->md, &vr,  1, &vr1) != fmi2OK) return fmi2Error;
+
+      fmi2Real res = fabs(vr1 - vr0);
+      fmi2Real ref = 0.5*fabs(vr0);
+
+      //fprintf(stderr, "lo=%e dwrt=%e hi=%e hi/lo=%e -> %e vs %e", lo, dwrt, hi, hi/lo, res, ref);
+
+      if (res < ref) {
+        //difference too small - move lo up
+        //fprintf(stderr, " up\n");
+        lo = dwrt;
+      } else {
+        //difference too big - move hi down
+        //fprintf(stderr, " down\n");
+        hi = dwrt;
+      }
     }
 
-    wrt1 = wrt0 + dwrt;
-
-    generated_fmi2SetReal(comp, &s->md, &wrt, 1, &wrt1);
-    generated_fmi2GetReal(comp, &s->md, &vr,  1, &vr1);
-
     //restore state
-    wrapper_set(&s->simulation);
+    if (wrapper_set(&s->simulation) != fmi2OK) return fmi2Error;
 
     *partial = (vr1 - vr0) / dwrt;
+    //fprintf(stderr, "numerical try %i: %+.16le = (%f - %f) / %f  [wrt0 = %f, wrt = %i] hi/lo = %e\n", i, *partial, vr1, vr0, dwrt, wrt0, wrt, hi/lo);
     return fmi2OK;
 }
 

@@ -33,6 +33,8 @@ add_fmu(tests/stringtest                stringtest                      "" "" ""
 # Model-Exchange FMUs
 add_fmu(me/springs                      springs                         "" "" "" FALSE)
 add_fmu(me/springs2                     springs2                        "" "" "" FALSE)
+add_fmu(me/springs3                     springs3                        "" "" "" FALSE)
+add_fmu(me/springs4                     springs4                        "" "" "" FALSE)
 add_fmu(me/bouncingBall                 bouncingBall                    "" "" "" FALSE)
 add_fmu(me/bouncingBallWithSpring       bouncingBallWithSprings         "" "" "" FALSE)
 add_fmu(me/fixedPoint                   fixedPoint                      "" "" "" FALSE)
@@ -48,10 +50,8 @@ add_fmu(me/fixedPoint                   fixedPoint                      "" "" ""
 add_wrapped(meWrapper/bouncingBall              bouncingBall)
 add_wrapped(meWrapper/springs                   springs)
 add_wrapped(meWrapper/springs2                  springs2)
-
-# Re-use springs2.fmu but with different modelDescription.xml
-add_wrapped2(meWrapper/springs3                 wrapper_springs3    springs2    "${CMAKE_CURRENT_SOURCE_DIR}/me/springs3/modelDescription.xml")
-add_wrapped2(meWrapper/springs4                 wrapper_springs4    springs2    "${CMAKE_CURRENT_SOURCE_DIR}/me/springs4/modelDescription.xml")
+add_wrapped(meWrapper/springs3                  springs3)
+add_wrapped(meWrapper/springs4                  springs4)
 
 # These generate the modelDescription from the source FMU
 add_wrapped_fmu(meWrapperFmu/bouncingBall       bouncingBall    "${bouncingBall_fmu}")

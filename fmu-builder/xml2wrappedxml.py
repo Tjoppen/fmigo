@@ -11,11 +11,11 @@ parser = argparse.ArgumentParser(description='Transform modelDescription.xml for
 
 parser.add_argument('-f','--fmu',
                     type=str,
-                    help='Path to FMU',
+                    help='Path to FMU. If -x if set, override internal modelDescription.xml',
                     default='')
 parser.add_argument('-x','--xml',
                     type=str,
-                    help='Path to xml',
+                    help='Path to xml. If -f is set, use that as the FMU but use this XML file for basing modelDescription.xml off of',
                     default='')
 parser.add_argument('-i','--identifier', required=True, help='modelIdentifier')
 args = parser.parse_args()
@@ -31,16 +31,20 @@ def error(*objs):
 # Need to remove whitespace for pretty_print to work
 parser = etree.XMLParser(remove_blank_text=True, remove_comments=False)
 
-if len(args.fmu):
+if len(args.xml):
+  tree = etree.parse(args.xml, parser=parser)
+  if len(args.fmu):
+    # Both XML and FMU specified
+    fmu = args.fmu
+  else:
+    # No filename for the FMU - guess that it's modelName + '.fmu'
+    fmu = tree.getroot().attrib['modelName'] + '.fmu'
+elif len(args.fmu):
   zip=zipfile.ZipFile(args.fmu, 'r')
   f=zip.open('modelDescription.xml')
   tree = etree.parse(f, parser=parser)
   f.close()
   fmu = args.fmu
-elif len(args.xml):
-  tree = etree.parse(args.xml, parser=parser)
-  # No filename for the FMU - guess that it's modelName + '.fmu'
-  fmu = tree.getroot().attrib['modelName'] + '.fmu'
 else:
   warning(sys.args)
   error('%s expect either: -f myfmu.fmu or -x myxml.xml' %(sys.args[0]))

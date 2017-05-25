@@ -49,14 +49,6 @@ ModelExchangeStepper::ModelExchangeStepper(std::vector<FMIClient*> clients, std:
            wc.to->getFmuKind()   == fmi2_fmu_kind_me )
             me_weakConnections.push_back(wc);
     }
-
-    if (me_clients.size() > 0) {
-#ifdef USE_GPL
-        prepareME();
-#else
-        fatal("Running ModelExchange FMUs requires libgsl, which requires enabling GPL\n");
-#endif
-    }
 }
 
 /** ~ModelExchangeStepper()
@@ -186,6 +178,8 @@ void ModelExchangeStepper::init_fmu_model(fmu_model &m,  const std::vector<FMICl
     m.model->pre_step = NULL;
     m.model->free = cgsl_model_default_free;//freeFMUModel;
 
+    p->FMIGO_ME_ENTER_CONTINUOUS_TIME_MODE(me_clients);
+
     for(auto client: clients)
         p->FMIGO_ME_GET_CONTINUOUS_STATES(client);
     wait();
@@ -198,7 +192,7 @@ void ModelExchangeStepper::init_fmu_model(fmu_model &m,  const std::vector<FMICl
  *  Sync_out
  *  Does not work yet
  */
-static int epce_post_step(int n, const double outputs[], void * params) {
+static int epce_post_step(double t, int n, const double outputs[], void * params) {
     // make local variables
     fmu_parameters* p = (fmu_parameters*)params;
     if( p->sim_started ){
@@ -237,6 +231,7 @@ static int epce_post_step(int n, const double outputs[], void * params) {
  *  Setup everything
  */
 void ModelExchangeStepper::prepareME() {
+  if (me_clients.size() > 0) {
 #ifdef USE_GPL
     // set up a gsl_simulation for each client
     init_fmu_model(m_model, me_clients);
@@ -262,7 +257,10 @@ void ModelExchangeStepper::prepareME() {
                                  );
     // might not be needed
     get_storage().sync();
+#else
+    fatal("Running ModelExchange FMUs requires libgsl, which requires enabling GPL\n");
 #endif
+  }
 }
 
 /** restoreStates()

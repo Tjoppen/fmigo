@@ -777,11 +777,11 @@ int main(int argc, char *argv[] ) {
       master->solveLoops();
     }
 
-    //prepare solver and all that
-    master->prepare();
-
     master->send(clients, fmi2_import_exit_initialization_mode());
     master->wait();
+
+    //prepare solver and all that
+    master->prepare();
 
     //double t = 0;
     int step = 0;

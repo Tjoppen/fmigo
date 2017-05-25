@@ -9,7 +9,3 @@ do
     popd
 done
 
-pushd umit-fmus
-./generate_everything.sh
-popd
-

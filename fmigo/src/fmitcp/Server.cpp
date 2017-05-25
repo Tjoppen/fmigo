@@ -57,6 +57,7 @@ bool isOK(jm_status_enu_t status) {
 
 Server::Server(string fmuPath, std::string hdf5Filename) {
   m_fmi2Outputs = NULL;
+  m_fmi2Variables = NULL;
   m_fmuParsed = true;
   m_fmuPath = fmuPath;
   this->hdf5Filename = hdf5Filename;
@@ -145,11 +146,6 @@ Server::Server(string fmuPath, std::string hdf5Filename) {
       return;
     }
     m_instanceName = fmi2_import_get_model_name(m_fmi2Instance);
-    {
-        char *temp = fmi_import_create_URL_from_abs_path(&m_jmCallbacks, m_fmuPath.c_str());
-        m_fmuLocation = temp;
-        m_jmCallbacks.free(temp);
-    }
 
     {
         char *temp = fmi_import_create_URL_from_abs_path(&m_jmCallbacks, m_workingDir.c_str());
@@ -234,6 +230,7 @@ void Server::setStartValues() {
 
 Server::~Server() {
   if(m_fmi2Outputs!=NULL)   fmi2_import_free_variable_list(m_fmi2Outputs);
+  if(m_fmi2Variables!=NULL) fmi2_import_free_variable_list(m_fmi2Variables);
 }
 
 string Server::clientData(const char *data, size_t size) {

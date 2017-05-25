@@ -31,7 +31,7 @@ for row1 in csv1:
         diff = abs(float(row1[i]) - float(row2[i]))
         if diff > thresh:
             print("%s %s %s" % (sys.argv[0], sys.argv[1], sys.argv[2]))
-            print("Line %i differs too much (diff = %f @ column %i):" % (csv1.line_num, diff, i))
+            print("Line %i differs too much (abs(%f - %f) = %f @ column %i):" % (csv1.line_num, float(row1[i]), float(row2[i]), diff, i))
             print(delim.join(row1))
             print(delim.join(row2))
             exit(1)

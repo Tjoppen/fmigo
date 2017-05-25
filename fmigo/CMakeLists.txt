@@ -105,9 +105,11 @@ IF(WIN32)
         ${Boost_SYSTEM_LIBRARY}
         ${CMAKE_THREAD_LIBS_INIT})
     if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-        set(WINLIBS ${WINLIBS} ${EXTRALIBS} sc libprotobufd libzmq-v120-mt-gd-4_2_0 libhdf5_hl_D libumfpackd libhdf5_D libamdd libblas libcholmodd libcolamdd libccolamdd libcamdd metisd suitesparseconfigd)
+        set(WINLIBS ${WINLIBS} ${EXTRALIBS} sc libprotobufd libzmq-v120-mt-gd-4_2_0 libhdf5_hl_D libumfpackd libhdf5_D
+            libamdd libblas libcholmodd libcolamdd libccolamdd libcamdd metisd suitesparseconfigd)
     else()
-        set(WINLIBS ${WINLIBS} ${EXTRALIBS} sc libprotobuf libzmq-v120-mt-4_2_0 libhdf5_hl libumfpack  libamd libhdf5 libblas libcholmod  libcolamd  libccolamd  libcamd  metis  suitesparseconfig)
+        set(WINLIBS ${WINLIBS} ${EXTRALIBS} sc libprotobuf  libzmq-v120-mt-4_2_0 libhdf5_hl      libumfpack  libhdf5
+            libamd  libblas libcholmod  libcolamd  libccolamd  libcamd  metis  suitesparseconfig)
     endif()
     include_directories($ENV{MSMPI_INC} $ENV{MSMPI_INC}x86)
 

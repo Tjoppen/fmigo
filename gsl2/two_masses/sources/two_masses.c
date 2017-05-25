@@ -383,7 +383,8 @@ static void clutch_init(state_t *s) {
 #endif
 }
 
-static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
+static fmi2Status getPartial(ModelInstance *comp, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
+  state_t *s = &comp->s;
   if (vr == VR_A_E) {
     if (wrt == VR_FORCE_IN_E || wrt == VR_FORCE_IN_EX) {
         *partial = 1.0/s->md.mass_e;

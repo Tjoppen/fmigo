@@ -5,7 +5,7 @@
 #include "gsl-interface.h"
 
 #define SIMULATION_TYPE cgsl_simulation
-#define SIMULATION_INIT clutch_init
+#define SIMULATION_EXIT_INIT clutch_init
 #define SIMULATION_FREE cgsl_free_simulation
 
 #include "fmuTemplate.h"
@@ -111,7 +111,7 @@ static double fclutch( double dphi, double domega, double clutch_damping ) {
   } else if ( dphi >= b[ END ] ) {
     tc = ( dphi - b[ END ] ) / 0.078539816339744828 * 3450.0 + c[ END ];
   } else {
-    int i;
+    size_t i;
     for (i = 0; i < END; ++i) {
       if (dphi >= b[ i ] && dphi <= b[ i+1 ]) {
 	double k = (dphi - b[ i ]) / (b[ i+1 ] - b[ i ]);
@@ -153,7 +153,7 @@ static double fclutch_dphi_derivative( double dphi ) {
   } else if ( dphi >= b[ END ] ) {
     df =  1.0 / 0.078539816339744828 * 3450.0 ;
   } else {
-    int i;
+    size_t i;
     for (i = 0; i < END; ++i) {
       if (dphi >= b[ i ] && dphi <= b[ i+1 ]) {
 	double k =  1.0  / (b[ i+1 ] - b[ i ]);
@@ -181,7 +181,8 @@ static int epce_post_step(double t, int n, const double outputs[], void * params
     return GSL_SUCCESS;
 }
 
-static void clutch_init(state_t *s) {
+static fmi2Status clutch_init(ModelInstance *comp) {
+  state_t *s = &comp->s;
   const double initials[4] = {
     s->md.xi0,
     s->md.vi0,
@@ -199,9 +200,10 @@ static void clutch_init(state_t *s) {
     ),
     rkf45, 1e-5, 0, 0, 0, NULL
   );
+  return fmi2OK;
 }
 
-static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
+static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
   if ( fabs( s->md.on_off ) < 0.1 ){ 
     s->simulation.model->x[ 0 ] = 0;
     s->simulation.model->x[ 2 ] = 0;

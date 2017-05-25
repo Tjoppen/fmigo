@@ -9,12 +9,16 @@
 #define FMI_COSIMULATION
 #define HAVE_DIRECTIONAL_DERIVATIVE 1
 #define CAN_GET_SET_FMU_STATE 1
-#define NUMBER_OF_REALS 32
+#define NUMBER_OF_REALS 30
 #define NUMBER_OF_INTEGERS 1
-#define NUMBER_OF_BOOLEANS 0
+#define NUMBER_OF_BOOLEANS 2
 #define NUMBER_OF_STRINGS 0
 #define NUMBER_OF_STATES 0
 #define NUMBER_OF_EVENT_INDICATORS 0
+
+//will be defined in fmuTemplate.h
+//needed in generated_fmi2GetX/fmi2SetX for wrapper.c
+struct ModelInstance;
 
 
 #define HAVE_MODELDESCRIPTION_STRUCT
@@ -44,15 +48,14 @@ typedef struct {
     fmi2Real    D_drive2; //VR=22
     fmi2Real    driver_sign1; //VR=23
     fmi2Real    driver_sign2; //VR=24
-    fmi2Real    integrate_dt1; //VR=25
-    fmi2Real    integrate_dt2; //VR=26
     fmi2Real    step; //VR=27
     fmi2Real    theta01; //VR=29
     fmi2Real    theta02; //VR=30
     fmi2Real    omega01; //VR=31
     fmi2Real    omega02; //VR=32
     fmi2Integer n_elements; //VR=28
-
+    fmi2Boolean integrate_dt1; //VR=25
+    fmi2Boolean integrate_dt2; //VR=26
 
 } modelDescription_t;
 
@@ -84,15 +87,14 @@ static const modelDescription_t defaults = {
     0.000000, //D_drive2
     1.000000, //driver_sign1
     1.000000, //driver_sign2
-    1.000000, //integrate_dt1
-    1.000000, //integrate_dt2
     0.100000, //step
     0.000000, //theta01
     0.000000, //theta02
     0.000000, //omega01
     0.000000, //omega02
     10, //n_elements
-
+    1, //integrate_dt1
+    1, //integrate_dt2
 
 };
 
@@ -122,15 +124,14 @@ static const modelDescription_t defaults = {
 #define VR_D_DRIVE2 22
 #define VR_DRIVER_SIGN1 23
 #define VR_DRIVER_SIGN2 24
-#define VR_INTEGRATE_DT1 25
-#define VR_INTEGRATE_DT2 26
 #define VR_STEP 27
 #define VR_THETA01 29
 #define VR_THETA02 30
 #define VR_OMEGA01 31
 #define VR_OMEGA02 32
 #define VR_N_ELEMENTS 28
-
+#define VR_INTEGRATE_DT1 25
+#define VR_INTEGRATE_DT2 26
 
 
 //the following getters and setters are static to avoid getting linking errors if this file is included in more than one place
@@ -138,8 +139,9 @@ static const modelDescription_t defaults = {
 #define HAVE_GENERATED_GETTERS_SETTERS  //for letting the template know that we have our own getters and setters
 
 
-static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Real value[]) {
-    int i;
+static fmi2Status generated_fmi2GetReal(struct ModelInstance *comp, const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Real value[]) {
+    size_t i;
+
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
         case 0: value[i] = md->theta1; break;
@@ -167,8 +169,6 @@ static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2
         case 22: value[i] = md->D_drive2; break;
         case 23: value[i] = md->driver_sign1; break;
         case 24: value[i] = md->driver_sign2; break;
-        case 25: value[i] = md->integrate_dt1; break;
-        case 26: value[i] = md->integrate_dt2; break;
         case 27: value[i] = md->step; break;
         case 29: value[i] = md->theta01; break;
         case 30: value[i] = md->theta02; break;
@@ -180,8 +180,9 @@ static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2
     return fmi2OK;
 }
 
-static fmi2Status generated_fmi2SetReal(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Real value[]) {
-    int i;
+static fmi2Status generated_fmi2SetReal(struct ModelInstance *comp, modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Real value[]) {
+    size_t i;
+
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
         case 0: md->theta1 = value[i]; break;
@@ -209,8 +210,6 @@ static fmi2Status generated_fmi2SetReal(modelDescription_t *md, const fmi2ValueR
         case 22: md->D_drive2 = value[i]; break;
         case 23: md->driver_sign1 = value[i]; break;
         case 24: md->driver_sign2 = value[i]; break;
-        case 25: md->integrate_dt1 = value[i]; break;
-        case 26: md->integrate_dt2 = value[i]; break;
         case 27: md->step = value[i]; break;
         case 29: md->theta01 = value[i]; break;
         case 30: md->theta02 = value[i]; break;
@@ -222,8 +221,9 @@ static fmi2Status generated_fmi2SetReal(modelDescription_t *md, const fmi2ValueR
     return fmi2OK;
 }
 
-static fmi2Status generated_fmi2GetInteger(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Integer value[]) {
-    int i;
+static fmi2Status generated_fmi2GetInteger(struct ModelInstance *comp, const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Integer value[]) {
+    size_t i;
+
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
         case 28: value[i] = md->n_elements; break;
@@ -233,8 +233,9 @@ static fmi2Status generated_fmi2GetInteger(const modelDescription_t *md, const f
     return fmi2OK;
 }
 
-static fmi2Status generated_fmi2SetInteger(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Integer value[]) {
-    int i;
+static fmi2Status generated_fmi2SetInteger(struct ModelInstance *comp, modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Integer value[]) {
+    size_t i;
+
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
         case 28: md->n_elements = value[i]; break;
@@ -244,8 +245,35 @@ static fmi2Status generated_fmi2SetInteger(modelDescription_t *md, const fmi2Val
     return fmi2OK;
 }
 
-static fmi2Status generated_fmi2GetBoolean(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Boolean value[]) {
-    int i;
+static fmi2Status generated_fmi2GetBoolean(struct ModelInstance *comp, const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Boolean value[]) {
+    size_t i;
+
+    for (i = 0; i < nvr; i++) {
+        switch (vr[i]) {
+        case 25: value[i] = md->integrate_dt1; break;
+        case 26: value[i] = md->integrate_dt2; break;
+        default: return fmi2Error;
+        }
+    }
+    return fmi2OK;
+}
+
+static fmi2Status generated_fmi2SetBoolean(struct ModelInstance *comp, modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Boolean value[]) {
+    size_t i;
+
+    for (i = 0; i < nvr; i++) {
+        switch (vr[i]) {
+        case 25: md->integrate_dt1 = value[i]; break;
+        case 26: md->integrate_dt2 = value[i]; break;
+        default: return fmi2Error;
+        }
+    }
+    return fmi2OK;
+}
+
+static fmi2Status generated_fmi2GetString(struct ModelInstance *comp, const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2String value[]) {
+    size_t i;
+
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
 
@@ -255,30 +283,9 @@ static fmi2Status generated_fmi2GetBoolean(const modelDescription_t *md, const f
     return fmi2OK;
 }
 
-static fmi2Status generated_fmi2SetBoolean(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Boolean value[]) {
-    int i;
-    for (i = 0; i < nvr; i++) {
-        switch (vr[i]) {
+static fmi2Status generated_fmi2SetString(struct ModelInstance *comp, modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2String value[]) {
+    size_t i;
 
-        default: return fmi2Error;
-        }
-    }
-    return fmi2OK;
-}
-
-static fmi2Status generated_fmi2GetString(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2String value[]) {
-    int i;
-    for (i = 0; i < nvr; i++) {
-        switch (vr[i]) {
-
-        default: return fmi2Error;
-        }
-    }
-    return fmi2OK;
-}
-
-static fmi2Status generated_fmi2SetString(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2String value[]) {
-    int i;
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
 

@@ -26,7 +26,7 @@ enum {
 
 #include "fmuTemplate.h"
 
-static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
+static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
     //coupling spring torque
     s->r[TAU] = s->r[KC]*(s->r[THETA2] - s->r[THETA]) + s->r[DC]*(s->r[OMEGA2] - s->r[OMEGA]);
 

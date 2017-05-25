@@ -16,6 +16,10 @@
 #define NUMBER_OF_STATES 0
 #define NUMBER_OF_EVENT_INDICATORS 0
 
+//will be defined in fmuTemplate.h
+//needed in generated_fmi2GetX/fmi2SetX for wrapper.c
+struct ModelInstance;
+
 
 #define HAVE_MODELDESCRIPTION_STRUCT
 typedef struct {
@@ -53,16 +57,16 @@ typedef struct {
     fmi2Real    v_s; //VR=35
     fmi2Real    a_s; //VR=36
     fmi2Real    force_s; //VR=37
-    fmi2Integer gear; //VR=29
-    fmi2Integer filter_length; //VR=98
     fmi2Integer integrator; //VR=201
-    fmi2Boolean integrate_dx_e; //VR=8
-    fmi2Boolean integrate_dx_s; //VR=11
-    fmi2Boolean is_gearbox; //VR=17
+    fmi2Integer filter_length; //VR=98
+    fmi2Integer gear; //VR=29
     fmi2Boolean octave_output; //VR=97
     fmi2Boolean reset_dx_e; //VR=203
+    fmi2Boolean integrate_dx_e; //VR=8
+    fmi2Boolean integrate_dx_s; //VR=11
     fmi2Boolean reset_dx_s; //VR=204
-    fmi2Char    octave_output_file[500]; //VR=202
+    fmi2Boolean is_gearbox; //VR=17
+    fmi2Char    octave_output_file[1024]; //VR=202
 } modelDescription_t;
 
 
@@ -102,15 +106,15 @@ static const modelDescription_t defaults = {
     0.000000, //v_s
     0.000000, //a_s
     0.000000, //force_s
-    1, //gear
-    0, //filter_length
     2, //integrator
-    0, //integrate_dx_e
-    0, //integrate_dx_s
-    0, //is_gearbox
+    0, //filter_length
+    1, //gear
     0, //octave_output
     0, //reset_dx_e
+    0, //integrate_dx_e
+    0, //integrate_dx_s
     0, //reset_dx_s
+    0, //is_gearbox
     "clutch2.m", //octave_output_file
 };
 
@@ -149,15 +153,15 @@ static const modelDescription_t defaults = {
 #define VR_V_S 35
 #define VR_A_S 36
 #define VR_FORCE_S 37
-#define VR_GEAR 29
-#define VR_FILTER_LENGTH 98
 #define VR_INTEGRATOR 201
-#define VR_INTEGRATE_DX_E 8
-#define VR_INTEGRATE_DX_S 11
-#define VR_IS_GEARBOX 17
+#define VR_FILTER_LENGTH 98
+#define VR_GEAR 29
 #define VR_OCTAVE_OUTPUT 97
 #define VR_RESET_DX_E 203
+#define VR_INTEGRATE_DX_E 8
+#define VR_INTEGRATE_DX_S 11
 #define VR_RESET_DX_S 204
+#define VR_IS_GEARBOX 17
 #define VR_OCTAVE_OUTPUT_FILE 202
 
 //the following getters and setters are static to avoid getting linking errors if this file is included in more than one place
@@ -165,8 +169,9 @@ static const modelDescription_t defaults = {
 #define HAVE_GENERATED_GETTERS_SETTERS  //for letting the template know that we have our own getters and setters
 
 
-static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Real value[]) {
-    int i;
+static fmi2Status generated_fmi2GetReal(struct ModelInstance *comp, const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Real value[]) {
+    size_t i;
+
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
         case 0: value[i] = md->x0_e; break;
@@ -209,8 +214,9 @@ static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2
     return fmi2OK;
 }
 
-static fmi2Status generated_fmi2SetReal(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Real value[]) {
-    int i;
+static fmi2Status generated_fmi2SetReal(struct ModelInstance *comp, modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Real value[]) {
+    size_t i;
+
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
         case 0: md->x0_e = value[i]; break;
@@ -253,66 +259,71 @@ static fmi2Status generated_fmi2SetReal(modelDescription_t *md, const fmi2ValueR
     return fmi2OK;
 }
 
-static fmi2Status generated_fmi2GetInteger(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Integer value[]) {
-    int i;
+static fmi2Status generated_fmi2GetInteger(struct ModelInstance *comp, const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Integer value[]) {
+    size_t i;
+
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case 29: value[i] = md->gear; break;
-        case 98: value[i] = md->filter_length; break;
         case 201: value[i] = md->integrator; break;
+        case 98: value[i] = md->filter_length; break;
+        case 29: value[i] = md->gear; break;
         default: return fmi2Error;
         }
     }
     return fmi2OK;
 }
 
-static fmi2Status generated_fmi2SetInteger(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Integer value[]) {
-    int i;
+static fmi2Status generated_fmi2SetInteger(struct ModelInstance *comp, modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Integer value[]) {
+    size_t i;
+
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case 29: md->gear = value[i]; break;
-        case 98: md->filter_length = value[i]; break;
         case 201: md->integrator = value[i]; break;
+        case 98: md->filter_length = value[i]; break;
+        case 29: md->gear = value[i]; break;
         default: return fmi2Error;
         }
     }
     return fmi2OK;
 }
 
-static fmi2Status generated_fmi2GetBoolean(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Boolean value[]) {
-    int i;
+static fmi2Status generated_fmi2GetBoolean(struct ModelInstance *comp, const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Boolean value[]) {
+    size_t i;
+
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case 8: value[i] = md->integrate_dx_e; break;
-        case 11: value[i] = md->integrate_dx_s; break;
-        case 17: value[i] = md->is_gearbox; break;
         case 97: value[i] = md->octave_output; break;
         case 203: value[i] = md->reset_dx_e; break;
+        case 8: value[i] = md->integrate_dx_e; break;
+        case 11: value[i] = md->integrate_dx_s; break;
         case 204: value[i] = md->reset_dx_s; break;
+        case 17: value[i] = md->is_gearbox; break;
         default: return fmi2Error;
         }
     }
     return fmi2OK;
 }
 
-static fmi2Status generated_fmi2SetBoolean(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Boolean value[]) {
-    int i;
+static fmi2Status generated_fmi2SetBoolean(struct ModelInstance *comp, modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Boolean value[]) {
+    size_t i;
+
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case 8: md->integrate_dx_e = value[i]; break;
-        case 11: md->integrate_dx_s = value[i]; break;
-        case 17: md->is_gearbox = value[i]; break;
         case 97: md->octave_output = value[i]; break;
         case 203: md->reset_dx_e = value[i]; break;
+        case 8: md->integrate_dx_e = value[i]; break;
+        case 11: md->integrate_dx_s = value[i]; break;
         case 204: md->reset_dx_s = value[i]; break;
+        case 17: md->is_gearbox = value[i]; break;
         default: return fmi2Error;
         }
     }
     return fmi2OK;
 }
 
-static fmi2Status generated_fmi2GetString(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2String value[]) {
-    int i;
+static fmi2Status generated_fmi2GetString(struct ModelInstance *comp, const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2String value[]) {
+    size_t i;
+
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
         case 202: value[i] = md->octave_output_file; break;
@@ -322,8 +333,9 @@ static fmi2Status generated_fmi2GetString(const modelDescription_t *md, const fm
     return fmi2OK;
 }
 
-static fmi2Status generated_fmi2SetString(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2String value[]) {
-    int i;
+static fmi2Status generated_fmi2SetString(struct ModelInstance *comp, modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2String value[]) {
+    size_t i;
+
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
         case 202: if (strlcpy(md->octave_output_file, value[i], sizeof(md->octave_output_file)) >= sizeof(md->octave_output_file)) { return fmi2Error; } break;

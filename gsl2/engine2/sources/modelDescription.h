@@ -16,6 +16,10 @@
 #define NUMBER_OF_STATES 0
 #define NUMBER_OF_EVENT_INDICATORS 0
 
+//will be defined in fmuTemplate.h
+//needed in generated_fmi2GetX/fmi2SetX for wrapper.c
+struct ModelInstance;
+
 
 #define HAVE_MODELDESCRIPTION_STRUCT
 typedef struct {
@@ -38,9 +42,9 @@ typedef struct {
     fmi2Real    d_in; //VR=17
     fmi2Integer filter_length; //VR=98
     fmi2Integer integrator; //VR=1002
-    fmi2Boolean integrate_dtheta; //VR=18
     fmi2Boolean octave_output; //VR=1001
-    fmi2Char    octave_output_file[500]; //VR=1003
+    fmi2Boolean integrate_dtheta; //VR=18
+    fmi2Char    octave_output_file[1024]; //VR=1003
 } modelDescription_t;
 
 
@@ -65,8 +69,8 @@ static const modelDescription_t defaults = {
     0.000000, //d_in
     0, //filter_length
     2, //integrator
-    0, //integrate_dtheta
     0, //octave_output
+    0, //integrate_dtheta
     "engine2.m", //octave_output_file
 };
 
@@ -90,8 +94,8 @@ static const modelDescription_t defaults = {
 #define VR_D_IN 17
 #define VR_FILTER_LENGTH 98
 #define VR_INTEGRATOR 1002
-#define VR_INTEGRATE_DTHETA 18
 #define VR_OCTAVE_OUTPUT 1001
+#define VR_INTEGRATE_DTHETA 18
 #define VR_OCTAVE_OUTPUT_FILE 1003
 
 //the following getters and setters are static to avoid getting linking errors if this file is included in more than one place
@@ -99,8 +103,9 @@ static const modelDescription_t defaults = {
 #define HAVE_GENERATED_GETTERS_SETTERS  //for letting the template know that we have our own getters and setters
 
 
-static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Real value[]) {
-    int i;
+static fmi2Status generated_fmi2GetReal(struct ModelInstance *comp, const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Real value[]) {
+    size_t i;
+
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
         case 1: value[i] = md->theta_out; break;
@@ -126,8 +131,9 @@ static fmi2Status generated_fmi2GetReal(const modelDescription_t *md, const fmi2
     return fmi2OK;
 }
 
-static fmi2Status generated_fmi2SetReal(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Real value[]) {
-    int i;
+static fmi2Status generated_fmi2SetReal(struct ModelInstance *comp, modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Real value[]) {
+    size_t i;
+
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
         case 1: md->theta_out = value[i]; break;
@@ -153,8 +159,9 @@ static fmi2Status generated_fmi2SetReal(modelDescription_t *md, const fmi2ValueR
     return fmi2OK;
 }
 
-static fmi2Status generated_fmi2GetInteger(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Integer value[]) {
-    int i;
+static fmi2Status generated_fmi2GetInteger(struct ModelInstance *comp, const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Integer value[]) {
+    size_t i;
+
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
         case 98: value[i] = md->filter_length; break;
@@ -165,8 +172,9 @@ static fmi2Status generated_fmi2GetInteger(const modelDescription_t *md, const f
     return fmi2OK;
 }
 
-static fmi2Status generated_fmi2SetInteger(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Integer value[]) {
-    int i;
+static fmi2Status generated_fmi2SetInteger(struct ModelInstance *comp, modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Integer value[]) {
+    size_t i;
+
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
         case 98: md->filter_length = value[i]; break;
@@ -177,32 +185,35 @@ static fmi2Status generated_fmi2SetInteger(modelDescription_t *md, const fmi2Val
     return fmi2OK;
 }
 
-static fmi2Status generated_fmi2GetBoolean(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Boolean value[]) {
-    int i;
+static fmi2Status generated_fmi2GetBoolean(struct ModelInstance *comp, const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Boolean value[]) {
+    size_t i;
+
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case 18: value[i] = md->integrate_dtheta; break;
         case 1001: value[i] = md->octave_output; break;
+        case 18: value[i] = md->integrate_dtheta; break;
         default: return fmi2Error;
         }
     }
     return fmi2OK;
 }
 
-static fmi2Status generated_fmi2SetBoolean(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Boolean value[]) {
-    int i;
+static fmi2Status generated_fmi2SetBoolean(struct ModelInstance *comp, modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Boolean value[]) {
+    size_t i;
+
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case 18: md->integrate_dtheta = value[i]; break;
         case 1001: md->octave_output = value[i]; break;
+        case 18: md->integrate_dtheta = value[i]; break;
         default: return fmi2Error;
         }
     }
     return fmi2OK;
 }
 
-static fmi2Status generated_fmi2GetString(const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2String value[]) {
-    int i;
+static fmi2Status generated_fmi2GetString(struct ModelInstance *comp, const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2String value[]) {
+    size_t i;
+
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
         case 1003: value[i] = md->octave_output_file; break;
@@ -212,8 +223,9 @@ static fmi2Status generated_fmi2GetString(const modelDescription_t *md, const fm
     return fmi2OK;
 }
 
-static fmi2Status generated_fmi2SetString(modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2String value[]) {
-    int i;
+static fmi2Status generated_fmi2SetString(struct ModelInstance *comp, modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2String value[]) {
+    size_t i;
+
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
         case 1003: if (strlcpy(md->octave_output_file, value[i], sizeof(md->octave_output_file)) >= sizeof(md->octave_output_file)) { return fmi2Error; } break;

@@ -435,7 +435,12 @@ Control can be applied via a brake.
         description="file for internal dump?"
         causality="parameter"
         variability="fixed">
-      <String start="trailer.m" size="500"/>
+      <String start="trailer.m"/>
+      <Annotations>
+        <Tool name="fmigo">
+          <size>1024</size>
+        </Tool>
+      </Annotations>
     </ScalarVariable>
   </ModelVariables>
 

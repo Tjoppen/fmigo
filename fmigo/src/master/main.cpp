@@ -753,6 +753,11 @@ int main(int argc, char *argv[] ) {
      * trying set calculated parameters.
      */
     sendUserParams(master, clients, resolve_string_params(params, clients));
+    master->wait();
+
+    for (FMIClient *client : clients) {
+      client->m_fmuState = control_proto::fmu_state_State_initializing;
+    }
 
     master->send(clients, fmi2_import_enter_initialization_mode());
 
@@ -804,6 +809,10 @@ int main(int argc, char *argv[] ) {
 
     if (zmqControl) {
         pushResults(step, 0, endTime, timeStep, push_socket, master, clients, true);
+    }
+
+    for (FMIClient *client : clients) {
+      client->m_fmuState = control_proto::fmu_state_State_running;
     }
 
     #ifdef WIN32
@@ -927,6 +936,10 @@ int main(int argc, char *argv[] ) {
           "Timings", "table", nrecords, columnnames.size()*sizeof(int), &timelog[0]);
     }
 #endif
+
+    for (FMIClient *client : clients) {
+      client->terminate();
+    }
 
     //clean up
     delete master;

@@ -33,13 +33,20 @@ FMIClient::FMIClient(zmq::context_t &context, int id, string uri) : fmitcp::Clie
     m_context = NULL;
     m_fmi2Outputs = NULL;
     m_stateId = 0;
+    m_fmuState = control_proto::fmu_state_State_instantiating;
 };
 
-FMIClient::~FMIClient() {
+void FMIClient::terminate() {
+  m_fmuState = control_proto::fmu_state_State_terminating;
+
   //tell remove FMU to free itself
   sendMessageBlocking(fmi2_import_terminate());
   sendMessageBlocking(fmi2_import_free_instance());
 
+  m_fmuState = control_proto::fmu_state_State_terminated;
+}
+
+FMIClient::~FMIClient() {
   // free the FMIL instances used for parsing the xml file.
   if(m_fmi2Instance!=NULL)  fmi2_import_free(m_fmi2Instance);
   if(m_context!=NULL)       fmi_import_free_context(m_context);
@@ -160,10 +167,12 @@ size_t FMIClient::getNumContinuousStates(void){
 }
 
 void FMIClient::on_fmi2_import_instantiate_res(fmitcp_proto::jm_status_enu_t status){
+    m_fmuState = control_proto::fmu_state_State_instantiated;
     m_master->onSlaveInstantiated(this);
 };
 
 void FMIClient::on_fmi2_import_exit_initialization_mode_res(fmitcp_proto::fmi2_status_t status){
+    m_fmuState = control_proto::fmu_state_State_initialized;
     m_master->onSlaveInitialized(this);
 };
 

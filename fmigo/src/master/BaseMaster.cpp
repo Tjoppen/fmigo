@@ -330,6 +330,12 @@ void BaseMaster::handleZmqControl() {
                 state.set_state(control_proto::state_message::state_running);
             }
 
+            for (FMIClient *client : m_clients) {
+              control_proto::fmu_state *fstate = state.add_fmu_states();
+              fstate->set_fmu_id(client->getId());
+              fstate->set_state(client->m_fmuState);
+            }
+
             string str = state.SerializeAsString();
             zmq::message_t rep(str.length());
             memcpy(rep.data(), str.data(), str.length());

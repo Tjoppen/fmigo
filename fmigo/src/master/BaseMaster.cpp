@@ -12,6 +12,7 @@
 #ifdef USE_MPI
 #include "common/mpi_tools.h"
 #endif
+#include "serialize.h"
 
 using namespace fmitcp_master;
 using namespace fmitcp;
@@ -242,6 +243,24 @@ void BaseMaster::wait() {
     }
 }
 
+//converts RepeatedField to std::vector
+template<typename T> std::vector<T> rf2vec(const ::google::protobuf::RepeatedField<T>& ts) {
+  std::vector<T> ret;
+  for (T t : ts) {
+    ret.push_back(t);
+  }
+  return ret;
+}
+
+//same but for RepeatedPtrField. works thanks to SFINAE
+template<typename T> std::vector<T> rf2vec(const ::google::protobuf::RepeatedPtrField<T>& ts) {
+  std::vector<T> ret;
+  for (T t : ts) {
+    ret.push_back(t);
+  }
+  return ret;
+}
+
 void BaseMaster::handleZmqControl() {
   if (zmqControl) {
     zmq::message_t msg;
@@ -252,10 +271,10 @@ void BaseMaster::handleZmqControl() {
         //version and command set
         control_proto::control_message ctrl;
 
-        if (    ctrl.ParseFromArray(msg.data(), msg.size()) &&
-                ctrl.has_version() &&
-                ctrl.version() == 1 &&
-                ctrl.has_command()) {
+        if (ctrl.ParseFromArray(msg.data(), msg.size()) &&
+            ctrl.has_version() &&
+            ctrl.version() == 1) {
+          if (ctrl.has_command()) {
             switch (ctrl.command()) {
             case control_proto::control_message::command_pause:
                 paused = true;
@@ -269,6 +288,35 @@ void BaseMaster::handleZmqControl() {
             case control_proto::control_message::command_state:
                 break;
             }
+          }
+
+          for (const control_proto::fmu_results& var : ctrl.variables()) {
+            if (var.has_fmu_id() && var.fmu_id() >= 0 && (size_t)var.fmu_id() < m_clients.size()) {
+              FMIClient *client = m_clients[var.fmu_id()];
+
+#define assertit(x) do { if (!(x)) { fatal("bad variables: !(" #x ")\n"); } } while(0)
+
+              if (var.has_reals()) {
+                assertit(var.reals().vrs().size() == var.reals().values().size());
+                send(client, serialize::fmi2_import_set_real(rf2vec(var.reals().vrs()), rf2vec(var.reals().values())));
+              }
+              if (var.has_ints()) {
+                assertit(var.ints().vrs().size() == var.ints().values().size());
+                send(client, serialize::fmi2_import_set_integer(rf2vec(var.ints().vrs()), rf2vec(var.ints().values())));
+              }
+              if (var.has_bools()) {
+                assertit(var.bools().vrs().size() == var.bools().values().size());
+                send(client, serialize::fmi2_import_set_boolean(rf2vec(var.bools().vrs()), rf2vec(var.bools().values())));
+              }
+              if (var.has_strings()) {
+                assertit(var.strings().vrs().size() == var.strings().values().size());
+                send(client, serialize::fmi2_import_set_string(rf2vec(var.strings().vrs()), rf2vec<std::string>(var.strings().values())));
+              }
+            } else {
+              warning("bad/unset fmu_id in control_message.variables\n");
+            }
+          }
+        }
 
             //always reply with state
             control_proto::state_message state;
@@ -286,7 +334,6 @@ void BaseMaster::handleZmqControl() {
             zmq::message_t rep(str.length());
             memcpy(rep.data(), str.data(), str.length());
             rep_socket.send(rep);
-        }
     }
   }
 }

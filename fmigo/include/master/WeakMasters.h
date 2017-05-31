@@ -28,8 +28,8 @@ namespace fmitcp_master {
 //aka parallel stepper
 class JacobiMaster : public model_exchange::ModelExchangeStepper {
 public:
-    JacobiMaster(vector<FMIClient*> clients, vector<WeakConnection> weakConnections) :
-            model_exchange::ModelExchangeStepper(clients, weakConnections) {
+    JacobiMaster(zmq::context_t &context, vector<FMIClient*> clients, vector<WeakConnection> weakConnections) :
+            model_exchange::ModelExchangeStepper(context, clients, weakConnections) {
         info("JacobiMaster\n");
     }
 
@@ -66,8 +66,8 @@ class GaussSeidelMaster : public model_exchange::ModelExchangeStepper {
     map<FMIClient*, OutputRefsType> clientGetXs;  //one OutputRefsType for each client
     std::vector<int> stepOrder;
 public:
-    GaussSeidelMaster(vector<FMIClient*> clients, vector<WeakConnection> weakConnections, std::vector<int> stepOrder) :
-            model_exchange::ModelExchangeStepper(clients, weakConnections), stepOrder(stepOrder) {
+    GaussSeidelMaster(zmq::context_t &context, vector<FMIClient*> clients, vector<WeakConnection> weakConnections, std::vector<int> stepOrder) :
+            model_exchange::ModelExchangeStepper(context, clients, weakConnections), stepOrder(stepOrder) {
         info("GSMaster\n");
     }
 

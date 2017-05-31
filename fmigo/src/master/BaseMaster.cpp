@@ -16,10 +16,14 @@
 using namespace fmitcp_master;
 using namespace fmitcp;
 
-BaseMaster::BaseMaster(vector<FMIClient*> clients, vector<WeakConnection> weakConnections) :
+BaseMaster::BaseMaster(zmq::context_t &context, vector<FMIClient*> clients, vector<WeakConnection> weakConnections) :
         m_clients(clients),
         m_weakConnections(weakConnections),
-        clientWeakRefs(getOutputWeakRefs(m_weakConnections)) {
+        clientWeakRefs(getOutputWeakRefs(m_weakConnections)),
+        rep_socket(context, ZMQ_REP),
+        paused(false),
+        running(true),
+        zmqControl(false) {
     for(auto client: m_clients)
         client->m_master = this;
 }
@@ -180,6 +184,8 @@ void BaseMaster::wait() {
     int numPolls = 0;
 
     while (getNumPendingRequests() > 0) {
+        handleZmqControl();
+
 #ifdef USE_MPI
         int rank;
         std::string str = mpi_recv_string(MPI_ANY_SOURCE, &rank, NULL);
@@ -234,4 +240,53 @@ void BaseMaster::wait() {
 #endif
 #endif
     }
+}
+
+void BaseMaster::handleZmqControl() {
+  if (zmqControl) {
+    zmq::message_t msg;
+
+    //paused means we do blocking polls to avoid wasting CPU time
+    while (rep_socket.recv(&msg, paused ? 0 : ZMQ_NOBLOCK) && running) {
+        //got something - make sure it's a control_message with correct
+        //version and command set
+        control_proto::control_message ctrl;
+
+        if (    ctrl.ParseFromArray(msg.data(), msg.size()) &&
+                ctrl.has_version() &&
+                ctrl.version() == 1 &&
+                ctrl.has_command()) {
+            switch (ctrl.command()) {
+            case control_proto::control_message::command_pause:
+                paused = true;
+                break;
+            case control_proto::control_message::command_unpause:
+                paused = false;
+                break;
+            case control_proto::control_message::command_stop:
+                running = false;
+                break;
+            case control_proto::control_message::command_state:
+                break;
+            }
+
+            //always reply with state
+            control_proto::state_message state;
+            state.set_version(1);
+
+            if (!running) {
+                state.set_state(control_proto::state_message::state_exiting);
+            } else if (paused) {
+                state.set_state(control_proto::state_message::state_paused);
+            } else {
+                state.set_state(control_proto::state_message::state_running);
+            }
+
+            string str = state.SerializeAsString();
+            zmq::message_t rep(str.length());
+            memcpy(rep.data(), str.data(), str.length());
+            rep_socket.send(rep);
+        }
+    }
+  }
 }

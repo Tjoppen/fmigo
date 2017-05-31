@@ -385,53 +385,6 @@ static string getFieldnames(vector<FMIClient*> clients) {
     return oss.str();
 }
 
-static void handleZmqControl(zmq::socket_t& rep_socket, bool *paused, bool *running) {
-    zmq::message_t msg;
-
-    //paused means we do blocking polls to avoid wasting CPU time
-    while (rep_socket.recv(&msg, (*paused) ? 0 : ZMQ_NOBLOCK) && *running) {
-        //got something - make sure it's a control_message with correct
-        //version and command set
-        control_proto::control_message ctrl;
-
-        if (    ctrl.ParseFromArray(msg.data(), msg.size()) &&
-                ctrl.has_version() &&
-                ctrl.version() == 1 &&
-                ctrl.has_command()) {
-            switch (ctrl.command()) {
-            case control_proto::control_message::command_pause:
-                *paused = true;
-                break;
-            case control_proto::control_message::command_unpause:
-                *paused = false;
-                break;
-            case control_proto::control_message::command_stop:
-                *running = false;
-                break;
-            case control_proto::control_message::command_state:
-                break;
-            }
-
-            //always reply with state
-            control_proto::state_message state;
-            state.set_version(1);
-
-            if (!*running) {
-                state.set_state(control_proto::state_message::state_exiting);
-            } else if (*paused) {
-                state.set_state(control_proto::state_message::state_paused);
-            } else {
-                state.set_state(control_proto::state_message::state_running);
-            }
-
-            string str = state.SerializeAsString();
-            zmq::message_t rep(str.length());
-            memcpy(rep.data(), str.data(), str.length());
-            rep_socket.send(rep);
-        }
-    }
-}
-
 template<typename RFType, typename From> void addVectorToRepeatedField(RFType* rf, const From& from) {
     for (auto f : from) {
         *rf->Add() = f;
@@ -629,7 +582,7 @@ int main(int argc, char *argv[] ) {
     bool holonomic = true;
     bool useHeadersInCSV = false;
     int command_port = 0, results_port = 0;
-    bool paused = false, running = true, solveLoops = false;
+    bool startPaused = false, solveLoops = false;
     fmigo_csv_fmu csv_fmu;
 
     parseArguments(
@@ -637,7 +590,7 @@ int main(int argc, char *argv[] ) {
             &fmigo_loglevel, &csv_separator, &outFilePath, &quietMode, &fmigo::globals::fileFormat,
             &method, &realtimeMode, &printXML, &stepOrder, &fmuVisibilities,
             &scs, &hdf5Filename, &fieldnameFilename, &holonomic, &compliance,
-            &command_port, &results_port, &paused, &solveLoops, &useHeadersInCSV, &csv_fmu
+            &command_port, &results_port, &startPaused, &solveLoops, &useHeadersInCSV, &csv_fmu
     );
 
     bool zmqControl = command_port > 0 && results_port > 0;
@@ -666,20 +619,7 @@ int main(int argc, char *argv[] ) {
 #endif
 
     zmq::context_t context(1);
-
-    zmq::socket_t rep_socket(context, ZMQ_REP);
     zmq::socket_t push_socket(context, ZMQ_PUSH);
-
-    if (zmqControl) {
-        info("Init zmq control on ports %i and %i\n", command_port, results_port);
-        char addr[128];
-        snprintf(addr, sizeof(addr), "tcp://*:%i", command_port);
-        rep_socket.bind(addr);
-        snprintf(addr, sizeof(addr), "tcp://*:%i", results_port);
-        push_socket.bind(addr);
-    } else if (paused) {
-        fatal("-Z requires -z\n");
-    }
 
 #ifdef USE_MPI
     vector<FMIClient*> clients = setupClients(world_size-1);
@@ -714,13 +654,27 @@ int main(int argc, char *argv[] ) {
         }
 
         solver.setSpookParams(relaxation,compliance,timeStep);
-        StrongMaster *sm = new StrongMaster(clients, weakConnections, solver, holonomic);
+        StrongMaster *sm = new StrongMaster(context, clients, weakConnections, solver, holonomic);
         master = sm;
         fieldnames += sm->getForceFieldnames();
     } else {
-        master = (method == gs) ?           (BaseMaster*)new GaussSeidelMaster(clients, weakConnections, stepOrder) :
-                                            (BaseMaster*)new JacobiMaster(clients, weakConnections);
+        master = (method == gs) ?           (BaseMaster*)new GaussSeidelMaster(context, clients, weakConnections, stepOrder) :
+                                            (BaseMaster*)new JacobiMaster(context, clients, weakConnections);
     }
+
+    if (zmqControl) {
+        info("Init zmq control on ports %i and %i\n", command_port, results_port);
+        char addr[128];
+        snprintf(addr, sizeof(addr), "tcp://*:%i", command_port);
+        master->rep_socket.bind(addr);
+        snprintf(addr, sizeof(addr), "tcp://*:%i", results_port);
+        push_socket.bind(addr);
+    } else if (startPaused) {
+        fatal("-Z requires -z\n");
+    }
+
+    master->paused = startPaused;
+    master->zmqControl = zmqControl;
 
     if (useHeadersInCSV || fmigo::globals::fileFormat == tikz) {
         printf("%s\n",fieldnames.c_str());
@@ -825,19 +779,17 @@ int main(int argc, char *argv[] ) {
     #endif
 
     //run
-    while ((endTime < 0 || step < nsteps) && running) {
+    while ((endTime < 0 || step < nsteps) && master->running) {
         double t = step * endTime / nsteps;
 
-        if (zmqControl) {
-            handleZmqControl(rep_socket, &paused, &running);
-        }
+        master->handleZmqControl();
 
-        if (!running) {
+        if (!master->running) {
             //termination requested
             break;
         }
 
-        if (paused) {
+        if (master->paused) {
             continue;
         }
 

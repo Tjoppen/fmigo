@@ -31,8 +31,8 @@ inline fmu_parameters* get_p(cgsl_simulation s){
  *  @param clients Vector with clients
  *  @param weakConnections WeakConnections.. not used
  */
-ModelExchangeStepper::ModelExchangeStepper(std::vector<FMIClient*> clients, std::vector<WeakConnection> weakConnections) :
-        BaseMaster(clients, weakConnections) {
+ModelExchangeStepper::ModelExchangeStepper(zmq::context_t &context, std::vector<FMIClient*> clients, std::vector<WeakConnection> weakConnections) :
+        BaseMaster(context, clients, weakConnections) {
     for(auto client : clients) {
         switch (client->getFmuKind()){
         case fmi2_fmu_kind_cs: cs_clients.push_back(client); break;

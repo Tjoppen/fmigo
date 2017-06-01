@@ -13,6 +13,9 @@ message control_message {
     }
 
     optional Command        command =   2;
+    repeated fmu_results    variables = 3;  //for changing variables on the fly.
+                                            //only populate with values you want to change.
+                                            //setting incorrect VRs may result in the simulation stopping, consult modelDescription.xml.
 }
 
 message state_message {
@@ -24,8 +27,24 @@ message state_message {
         state_exiting   =   3;
     }
 
-    optional State          state   =   2;
+    optional State          state       =   2;
+    repeated fmu_state      fmu_states  =   3;  //state of each FMU
 }
+
+message fmu_state {
+    enum State {
+        instantiating   = 1;  //not fully instantiated yet (loading..)
+        instantiated    = 2;  //loaded, ready to initialize
+        initializing    = 3;  //initialization mode. solving loops etc.
+        initialized     = 4;  //ready to go!
+        running         = 5;  //running..
+        terminating     = 6;  //terminating
+        terminated      = 7;  //all done!
+    }
+
+    optional int32          fmu_id  =   1;
+    optional State          state   =   2;
+};
 
 //results are communicated over a PUSH/PULL socket
 message results_message {
@@ -37,6 +56,7 @@ message results_message {
     repeated fmu_results    results =   6; //inputs/outputs from each FMU
 }
 
+//used both for results and for setting variables on the fly
 message fmu_results {
     optional int32          fmu_id  =   1;
     optional values_real    reals   =   2;

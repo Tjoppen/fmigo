@@ -12,14 +12,19 @@
 #ifdef USE_MPI
 #include "common/mpi_tools.h"
 #endif
+#include "serialize.h"
 
 using namespace fmitcp_master;
 using namespace fmitcp;
 
-BaseMaster::BaseMaster(vector<FMIClient*> clients, vector<WeakConnection> weakConnections) :
+BaseMaster::BaseMaster(zmq::context_t &context, vector<FMIClient*> clients, vector<WeakConnection> weakConnections) :
         m_clients(clients),
         m_weakConnections(weakConnections),
-        clientWeakRefs(getOutputWeakRefs(m_weakConnections)) {
+        clientWeakRefs(getOutputWeakRefs(m_weakConnections)),
+        rep_socket(context, ZMQ_REP),
+        paused(false),
+        running(true),
+        zmqControl(false) {
     for(auto client: m_clients)
         client->m_master = this;
 }
@@ -180,6 +185,8 @@ void BaseMaster::wait() {
     int numPolls = 0;
 
     while (getNumPendingRequests() > 0) {
+        handleZmqControl();
+
 #ifdef USE_MPI
         int rank;
         std::string str = mpi_recv_string(MPI_ANY_SOURCE, &rank, NULL);
@@ -234,4 +241,105 @@ void BaseMaster::wait() {
 #endif
 #endif
     }
+}
+
+//converts RepeatedField to std::vector
+template<typename T> std::vector<T> rf2vec(const ::google::protobuf::RepeatedField<T>& ts) {
+  std::vector<T> ret;
+  for (T t : ts) {
+    ret.push_back(t);
+  }
+  return ret;
+}
+
+//same but for RepeatedPtrField. works thanks to SFINAE
+template<typename T> std::vector<T> rf2vec(const ::google::protobuf::RepeatedPtrField<T>& ts) {
+  std::vector<T> ret;
+  for (T t : ts) {
+    ret.push_back(t);
+  }
+  return ret;
+}
+
+void BaseMaster::handleZmqControl() {
+  if (zmqControl) {
+    zmq::message_t msg;
+
+    //paused means we do blocking polls to avoid wasting CPU time
+    while (rep_socket.recv(&msg, paused ? 0 : ZMQ_NOBLOCK) && running) {
+        //got something - make sure it's a control_message with correct
+        //version and command set
+        control_proto::control_message ctrl;
+
+        if (ctrl.ParseFromArray(msg.data(), msg.size()) &&
+            ctrl.has_version() &&
+            ctrl.version() == 1) {
+          if (ctrl.has_command()) {
+            switch (ctrl.command()) {
+            case control_proto::control_message::command_pause:
+                paused = true;
+                break;
+            case control_proto::control_message::command_unpause:
+                paused = false;
+                break;
+            case control_proto::control_message::command_stop:
+                running = false;
+                break;
+            case control_proto::control_message::command_state:
+                break;
+            }
+          }
+
+          for (const control_proto::fmu_results& var : ctrl.variables()) {
+            if (var.has_fmu_id() && var.fmu_id() >= 0 && (size_t)var.fmu_id() < m_clients.size()) {
+              FMIClient *client = m_clients[var.fmu_id()];
+
+#define assertit(x) do { if (!(x)) { fatal("bad variables: !(" #x ")\n"); } } while(0)
+
+              if (var.has_reals()) {
+                assertit(var.reals().vrs().size() == var.reals().values().size());
+                send(client, serialize::fmi2_import_set_real(rf2vec(var.reals().vrs()), rf2vec(var.reals().values())));
+              }
+              if (var.has_ints()) {
+                assertit(var.ints().vrs().size() == var.ints().values().size());
+                send(client, serialize::fmi2_import_set_integer(rf2vec(var.ints().vrs()), rf2vec(var.ints().values())));
+              }
+              if (var.has_bools()) {
+                assertit(var.bools().vrs().size() == var.bools().values().size());
+                send(client, serialize::fmi2_import_set_boolean(rf2vec(var.bools().vrs()), rf2vec(var.bools().values())));
+              }
+              if (var.has_strings()) {
+                assertit(var.strings().vrs().size() == var.strings().values().size());
+                send(client, serialize::fmi2_import_set_string(rf2vec(var.strings().vrs()), rf2vec<std::string>(var.strings().values())));
+              }
+            } else {
+              warning("bad/unset fmu_id in control_message.variables\n");
+            }
+          }
+        }
+
+            //always reply with state
+            control_proto::state_message state;
+            state.set_version(1);
+
+            if (!running) {
+                state.set_state(control_proto::state_message::state_exiting);
+            } else if (paused) {
+                state.set_state(control_proto::state_message::state_paused);
+            } else {
+                state.set_state(control_proto::state_message::state_running);
+            }
+
+            for (FMIClient *client : m_clients) {
+              control_proto::fmu_state *fstate = state.add_fmu_states();
+              fstate->set_fmu_id(client->getId());
+              fstate->set_state(client->m_fmuState);
+            }
+
+            string str = state.SerializeAsString();
+            zmq::message_t rep(str.length());
+            memcpy(rep.data(), str.data(), str.length());
+            rep_socket.send(rep);
+    }
+  }
 }

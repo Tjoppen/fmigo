@@ -1,6 +1,0 @@
-[submodule "wingsl"]
-	path = wingsl
-	url = git@mimmi.math.umu.se:vtb/wingsl.git
-[submodule "templates/cgsl"]
-	path = templates/cgsl
-	url = git@mimmi.math.umu.se:vtb/cgsl.git

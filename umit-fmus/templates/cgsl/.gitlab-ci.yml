@@ -1,0 +1,24 @@
+---
+stages:
+  - build
+  - test
+
+build:
+  stage: build
+  script:
+    - mkdir build && cd build && cmake .. -G Ninja && ninja
+  tags:
+    - shell
+  when: always
+  artifacts:
+    paths:
+    - build
+
+test:
+  stage: test
+  script:
+    - cd build && ctest
+  tags:
+    - shell
+  dependencies:
+    - build

@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fmiModelDescription
+    fmiVersion="2.0"
+    description="Unit mass subject to a force, and driven by a velocity "
+    modelName="mass_force_fe"
+    guid="{c1714c5d-20c2-470c-ad9b-16e26aeae2ce}"
+    numberOfEventIndicators="0">
+
+  <CoSimulation
+      modelIdentifier="mass_force_fe"
+      canHandleVariableCommunicationStepSize="true"
+      canGetAndSetFMUstate="true"
+      providesDirectionalDerivative="false"/>
+
+  <LogCategories>
+    <Category name="logAll"/>
+    <Category name="logError"/>
+    <Category name="logFmiCall"/>
+    <Category name="logEvent"/>
+  </LogCategories>
+
+  <DefaultExperiment startTime="0" stopTime="10" stepSize="0.1"/>
+
+  <ModelVariables>
+    <!-- inputs -->
+    <ScalarVariable name="vin"    
+                    valueReference="0" 
+                    description="driving velocity"  
+                    causality="input"
+                    initial="approx">
+      <Real start="1"/>
+    </ScalarVariable>
+
+    <ScalarVariable name="force_c"  
+                    valueReference="1" 
+                    description="coupling force" 
+                    causality="input"
+                    initial="approx">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <!-- output variables -->
+
+    <ScalarVariable name="x"        
+                    valueReference="2" 
+                    description="position"       
+                    causality="output">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <ScalarVariable name="v"        
+                    valueReference="3" 
+                    description="velocity"       
+                    causality="output">
+      <Real start="0"/>
+    </ScalarVariable>
+    <!-- parameters --> 
+
+    <ScalarVariable name="damping"        
+                    valueReference="4" 
+                    description="velocity damping" 
+                    causality="parameter">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <ScalarVariable name="mass"        
+                    valueReference="5" 
+                    description="mass" 
+                    causality="parameter">
+      <Real start="1"/>
+    </ScalarVariable>
+
+    <ScalarVariable name="coupling_spring"        
+                    valueReference="6" 
+                    description="mass" 
+                    causality="parameter">
+      <Real start="1000"/>
+    </ScalarVariable>
+
+    <ScalarVariable name="coupling_damping"        
+                    valueReference="7" 
+                    description="coupling_damping" 
+                    causality="parameter">
+      <Real start="10"/>
+    </ScalarVariable>
+
+    <ScalarVariable name="force_out1"        
+                    valueReference="8" 
+                    description="output back force to the input giving the
+                                 driving velocity" 
+                    causality="output">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <ScalarVariable name="force_out2"        
+                    valueReference="9" 
+                    description="output force to whatever follows" 
+                    causality="output">
+      <Real start="0"/>
+    </ScalarVariable>
+ 
+    <ScalarVariable name="dx"        
+                    valueReference="10" 
+                    description="angle difference" 
+                    causality="output">
+      <Real start="0"/>
+    </ScalarVariable>   
+
+    <ScalarVariable name="filter_length"
+                    valueReference="98"
+                    description="Length of EPCE FIR filter (0 = disable)"
+                    causality="parameter"
+                    variability="fixed">
+        <Integer start="0"/>
+    </ScalarVariable>
+
+  </ModelVariables>
+
+  <ModelStructure>
+    <Outputs>
+      <Unknown index="3"/>
+      <Unknown index="4"/>
+      <Unknown index="9"/>
+      <Unknown index="10"/>
+      <Unknown index="11"/>
+    </Outputs>
+    <Derivatives/>
+    <DiscreteStates/>
+    <InitialUnknowns />
+  </ModelStructure>
+
+</fmiModelDescription>

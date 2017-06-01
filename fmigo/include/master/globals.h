@@ -15,6 +15,9 @@ namespace fmigo {
     //output file formats. csv, tikz
     extern fmitcp_master::FILEFORMAT fileFormat;
 
+    //whether to ignore fmi2_cs_providesDirectionalDerivatives in Server.cpp
+    extern bool alwaysComputeNumericalDirectionalDerivatives;
+
     /**
      * @brief Returns the separator used for the current file format.
      * For CSV this is comma, for TikZ this is space.

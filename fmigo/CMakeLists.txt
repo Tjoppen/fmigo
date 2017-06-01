@@ -22,6 +22,7 @@ set(FMITCP_SRCS
     src/fmitcp/fmitcp.pb.cc
     src/fmitcp/serialize.cpp
     src/fmitcp/Server.cpp
+    src/master/globals.cpp
 )
 
 set(FMITCP_HEADERS

@@ -9,6 +9,7 @@
 #include <unistd.h>
 #endif
 #include <stdint.h>
+#include "master/globals.h"
 
 using namespace fmitcp;
 
@@ -753,11 +754,12 @@ string Server::clientData(const char *data, size_t size) {
 
     fmi2_status_t status = fmi2_status_ok;
     if (!m_sendDummyResponses) {
-     if (hasCapability(fmi2_cs_providesDirectionalDerivatives)) {
+     if (!fmigo::globals::alwaysComputeNumericalDirectionalDerivatives &&
+          hasCapability(fmi2_cs_providesDirectionalDerivatives)) {
       // interact with FMU
       status = fmi2_import_get_directional_derivative(m_fmi2Instance, v_ref.data(), r.v_ref_size(), z_ref.data(), r.z_ref_size(), dv.data(), dz.data());
      } else if (hasCapability(fmi2_cs_canGetAndSetFMUstate)) {
-      dz = computeNumericalJacobian(z_ref, v_ref, dv);
+      dz = computeNumericalDirectionalDerivative(z_ref, v_ref, dv);
      } else {
          error("Tried to fmi2_import_get_directional_derivative() on FMU without directional derivatives or ability to save/load FMU state\n");
       status = fmi2_status_error;
@@ -1258,7 +1260,7 @@ bool Server::hasCapability(fmi2_capabilities_enu_t cap) const {
     return fmi2_import_get_capability(m_fmi2Instance, cap) != 0;
 }
 
-vector<fmi2_real_t> Server::computeNumericalJacobian(
+vector<fmi2_real_t> Server::computeNumericalDirectionalDerivative(
         const vector<fmi2_value_reference_t>& z_ref,
         const vector<fmi2_value_reference_t>& v_ref,
         const vector<fmi2_real_t>& dv) {
@@ -1280,7 +1282,9 @@ vector<fmi2_real_t> Server::computeNumericalJacobian(
     fmi2_import_get_real(m_fmi2Instance, z_ref.data(), z_ref.size(), z0.data());
     fmi2_import_set_fmu_state(m_fmi2Instance, state);
 
+    debug("dv = ");
     for (size_t x = 0; x < v_ref.size(); x++) {
+        debug("%f ", dv[x]);
         v1.push_back(v0[x] + dv[x]);
     }
 
@@ -1290,6 +1294,7 @@ vector<fmi2_real_t> Server::computeNumericalJacobian(
     fmi2_import_set_fmu_state(m_fmi2Instance, state);
     fmi2_import_free_fmu_state(m_fmi2Instance, &state);
 
+    debug("-> dz = ");
     for (size_t x = 0; x < z_ref.size(); x++) {
         /**
          * NOTE: This works because the master only cares about computing mobilities,
@@ -1305,7 +1310,9 @@ vector<fmi2_real_t> Server::computeNumericalJacobian(
          * magnitude of dv.
          */
         dz.push_back(z1[x] - z0[x]);
+        debug("%f ", *(dz.end()-1));
     }
+    debug("\n");
 
     return dz;
 }

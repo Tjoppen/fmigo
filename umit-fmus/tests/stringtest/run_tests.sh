@@ -35,5 +35,18 @@ diff --ignore-all-space - temp.out <<EOF
 "","""wello"""
 EOF
 
+# Do some tests with setting string parameters by name both via command line and via here-document
+mpiexec -np 2 fmigo-mpi -t 0.0 -p 0,s02,wello stringtest.fmu | sed -e 's/[^,]*,//' > temp.out
+diff --ignore-all-space - temp.out <<EOF
+"","wello"
+EOF
+
+mpiexec -np 2 fmigo-mpi -t 0.0 -a - stringtest.fmu <<EOF | sed -e 's/[^,]*,//' > temp.out
+-p 0,s02,"wello"
+EOF
+diff --ignore-all-space - temp.out <<EOF
+"","""wello"""
+EOF
+
 rm temp.out
 echo String tests OK

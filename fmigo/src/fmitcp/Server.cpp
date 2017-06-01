@@ -676,7 +676,7 @@ string Server::clientData(const char *data, size_t size) {
     fmi2_status_t status = fmi2_status_ok;
     ::google::protobuf::int32 stateId = nextStateId++;
     if(!m_sendDummyResponses){
-        fmi2_FMU_state_t state;
+        fmi2_FMU_state_t state = NULL;
         status = fmi2_import_get_fmu_state(m_fmi2Instance, &state);
         stateMap[stateId] = state;
     }
@@ -1263,7 +1263,7 @@ vector<fmi2_real_t> Server::computeNumericalJacobian(
         const vector<fmi2_value_reference_t>& v_ref,
         const vector<fmi2_real_t>& dv) {
     vector<fmi2_real_t> dz;
-    fmi2_FMU_state_t state;
+    fmi2_FMU_state_t state = NULL;
     double t = currentCommunicationPoint + communicationStepSize;
     double dt = 1e-3 * communicationStepSize;
 

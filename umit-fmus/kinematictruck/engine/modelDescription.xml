@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fmiModelDescription
+    fmiVersion="2.0"
+    description="Very simple engine model with integrated controller"
+    modelName="engine"
+    guid="{a6a01bd9-863d-4a7c-ac09-58b7f438895b}"
+    numberOfEventIndicators="0">
+
+  <CoSimulation
+      modelIdentifier="engine"
+      canHandleVariableCommunicationStepSize="false"
+      canGetAndSetFMUstate="true"
+      providesDirectionalDerivative="true"/>
+
+  <LogCategories>
+    <Category name="logAll"/>
+    <Category name="logError"/>
+    <Category name="logFmiCall"/>
+    <Category name="logEvent"/>
+  </LogCategories>
+
+  <DefaultExperiment startTime="0" stopTime="10" stepSize="0.1"/>
+
+  <ModelVariables>
+    <ScalarVariable name="theta"
+                    valueReference="0"
+                    description="Angle"
+                    causality="output"
+                    initial="exact">
+      <Real start="0"/>
+    </ScalarVariable>
+    <ScalarVariable name="omega"
+                    valueReference="1"
+                    description="Angular velocity"
+                    causality="output"
+                    initial="exact">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    
+    <ScalarVariable name="alpha"
+                    valueReference="2"  
+                    description="Angular acceleration"              
+                    causality="output" 
+                    initial="exact">
+      <Real start="0"/>
+    </ScalarVariable>
+    <ScalarVariable name="tau"        
+                    valueReference="3"  
+                    description="Torque"                            
+                    causality="input">
+      <Real start="0"/>
+    </ScalarVariable>
+    <ScalarVariable name="jinv"       
+                    valueReference="4"  
+                    description="Inverse moment of inertia"         
+                    causality="parameter" 
+                    variability="fixed">
+      <Real start="0.25"/>
+    </ScalarVariable>
+    <ScalarVariable name="d"          
+                    valueReference="5"  
+                    description="Damping"                           
+                    causality="parameter" 
+                    variability="fixed">
+      <Real start="1"/>
+    </ScalarVariable>
+    <ScalarVariable name="omega_l"    
+                    valueReference="6"  
+                    description="Angular velocity of load"          
+                    causality="input">
+      <Real start="0"/>
+    </ScalarVariable>
+    <ScalarVariable name="omega_l0"   
+                    valueReference="7"  
+                    description="Desired angular velocity of load"  
+                    causality="parameter" 
+                    variability="fixed">
+      <Real start="38.88888888888888888"/>
+    </ScalarVariable>
+    <ScalarVariable name="kp"         
+                    valueReference="8"  
+                    description="P controller gain"                 
+                    causality="parameter" 
+                    variability="fixed">
+      <Real start="20"/>
+    </ScalarVariable>
+    <ScalarVariable name="tau_max"    
+                    valueReference="9"  
+                    description="Maximum torque"                    
+                    causality="parameter" 
+                    variability="fixed">
+      <Real start="1350"/>
+    </ScalarVariable>
+    <ScalarVariable name="beta"       
+                    valueReference="10" 
+                    description="Gas pedal"                         
+                    causality="output" 
+                    initial="exact">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <ScalarVariable name="clamp_beta" 
+                    valueReference="0"  
+                    description="Clamp beta?"                       
+                    causality="parameter" 
+                    variability="fixed">
+      <Boolean start="true"/>
+    </ScalarVariable>
+  </ModelVariables>
+
+  <ModelStructure>
+    <Outputs>
+      <Unknown index="1"/>
+      <Unknown index="2"/>
+      <Unknown index="3"/>
+      <Unknown index="11"/>
+    </Outputs>
+    <Derivatives>
+      <Unknown index="2"/>
+      <Unknown index="3"/>
+    </Derivatives>
+    <DiscreteStates/>
+    <InitialUnknowns />
+  </ModelStructure>
+
+</fmiModelDescription>

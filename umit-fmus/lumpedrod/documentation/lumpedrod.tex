@@ -1,0 +1,375 @@
+%%%%%%%%%%%%% preamble for all tex documents  %%%%
+%%%%%%%%%%%%% current style defaults to scrartcl  but that could be changed
+%%%%%%%%%%%%% with a script or by hand   
+%%%%%%%%%%%%% 
+\documentclass[10pt,notitlepage,abstracton]{scrartcl}
+\usepackage[a4, center, dvips]{crop}
+\setlength{\linewidth}{\textwidth}
+\usepackage{scrpage2}
+\usepackage{hhline}
+\usepackage[sort,numbers]{natbib}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amsfonts}
+\usepackage{amsbsy}
+\usepackage{amsxtra}
+\usepackage{amssymb}
+\usepackage{scalerel}
+\usepackage{calc}
+\usepackage[draft]{fixme}
+\usepackage[utf8]{inputenc}
+\usepackage{float}
+\usepackage{url}
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage[ruled, section]{algorithm}
+\usepackage{algorithmicx}
+\usepackage{algpseudocode}
+\usepackage{multirow}
+\usepackage{tabularx}
+\usepackage{subfigure}
+\usepackage[normalem]{ulem}
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{plain}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{example}{Example}[section]
+\theoremstyle{plain}
+\newtheorem*{remark}{Remark}
+\newtheorem*{note}{Note}
+\newtheorem{case}{Case}
+\makeatletter
+\renewcommand{\labelitemi}{$\m@th\triangleright$}
+\renewcommand{\labelitemii}{$\m@th\cdot$}
+\renewcommand{\labelitemiii}{\emdash}
+\renewcommand{\labelitemiv}{\emdash\emdash}
+\makeatother
+
+\makeatletter
+\newsavebox{\@brx}
+\newcommand{\llangle}[1][]{\savebox{\@brx}{\(\m@th{#1\langle}\)}%
+  \mathopen{\copy\@brx\kern-0.5\wd\@brx\usebox{\@brx}}}
+\newcommand{\rrangle}[1][]{\savebox{\@brx}{\(\m@th{#1\rangle}\)}%
+  \mathclose{\copy\@brx\kern-0.5\wd\@brx\usebox{\@brx}}}
+\makeatother
+\newcommand\reallywidehat[1]{\arraycolsep=0pt\relax%
+  \begin{array}{c}
+    \stretchto{
+    \scaleto{
+    \scalerel*[\widthof{\ensuremath{#1}}]{\kern-.5pt\bigwedge\kern-.5pt}
+    {\rule[-\textheight/2]{1ex}{\textheight}} %WIDTH-LIMITED BIG WEDGE
+    }{\textheight} % 
+    }{0.5ex}\\           % THIS SQUEEZES THE WEDGE TO 0.5ex HEIGHT
+    #1\\                 % THIS STACKS THE WEDGE ATOP THE ARGUMENT
+    \rule{-1ex}{0ex}
+  \end{array}
+}
+
+
+\include{notation-macros}
+\usepackage[scrpage]{svninfo} 
+%%%% not sure what to make of revision info right now
+\title{Stable simulation of a lumped element rod}
+\author{Claude Lacoursi{\`{e}}re \\
+  HPC2N/UMIT \\
+  and \\
+  Department of Computing Science \\
+  Ume{\aa} University\\
+  SE-901 87, Ume{\aa}, Sweden\\
+  \texttt{claude@hpc2n.umu.se}
+}
+\begin{document}
+\svnInfo $Id: contact.tex 768 2016-04-04 07:48:45Z claude $
+\maketitle{}
+\svnId
+\begin{abstract}
+
+\end{abstract}
+
+\section{Introduction}
+\label{sec:introduction}
+
+
+
+\section{Lumped element model}
+\label{sec:optim-cont-point}
+
+We consider a one dimensional rod with $N$ elements of identical mass $m$
+and coordinate $\theta$, coupled with spring-damper forces
+\begin{equation}
+  \label{eq:1}
+  \idx{\tau}{i,i+1} = -K(\idx{\theta}{i}-\idx{\theta}{i+1}) -
+  \gamma(\idx{\omega}{i}-\idx{\omega}{i+1}), \text{ and } \idx{\tau}{i+1,i}
+  = -
+  \idx{\tau}{i,i+1}. 
+\end{equation}
+We are particularly interested in the case where $K$ is arbitrarily large,
+even including $K=\infty$, which justifies the choice of implicit
+integration below.
+
+The rod can also be forced externally with $\idx{\tau}{1}$ and $\idx{\tau}{N}$.
+In addition to this, it can be subjected to force-velocity coupling with
+external dynamical systems, assuming these are physical.  This is done by
+adding input spring-dampers at either end which produce forces according to 
+\begin{equation}
+  \label{eq:2}
+  \idx{\tau}{c,i} = 
+-\idx{K}{c}(\idx{\theta}{i}- \idx{\bar{\theta}}{c,i})
+-\idx{\gamma}{c}(\idx{\omega}{i}- \idx{\bar{\omega}}{c,i})
+\end{equation}
+where $(\bar{\cdot})$ are either last known quantities, or extrapolations.
+We also consider the case where only the velocity $\idx{\bar{\omega}}{c,i}$
+is known in which case we have
+\begin{equation}
+  \label{eq:3}
+  \begin{split}
+    \idx{\tau}{c,i} &= 
+    -\idx{K}{c}\idx{\delta\theta}{i}
+    -\idx{\gamma}{c}(\idx{\omega}{i}- \idx{\bar{\omega}}{c,i})\text{ with } \\
+    \idx{\dot{\delta\theta}}{i} & =
+    \idx{\omega}{i}-\idx{\bar{\omega}}{e,i}. 
+  \end{split}
+\end{equation}
+This coupling force is reported to the coupled element of course.  Given
+the input and output signals here, this rod can be coupled to
+other subsystems either kinematically, or via force-velocity or even
+force-displacements couplings.
+
+Given stiffness requirements, we use a stable
+integrator, namely, \textsc{Spook}.  To get maximum stability, we first
+introduce the matrix  $\bar{G}$ which contains internal, pairwise
+interactions as 
+\begin{equation}
+  \label{eq:15}
+  \begin{split}
+    \bar{G} & =
+    \begin{bmatrix}
+      1 &  -1  & 0 & 0 &  \cdots \\
+      0 &   \phantom{-}1  & -1 & 0 &  \cdots \\
+      \vdots &   0  &  \ddots & \ddots &  \ddots \\
+      \vdots &   \vdots  &  \vdots &   1 & -1  \\
+    \end{bmatrix}. 
+  \end{split}
+\end{equation}
+Given its form, the implication here is that $G\theta = 0$ is the unique
+rest configuration, where
+\begin{equation}
+  \label{eq:6}
+  \theta =
+  \begin{bmatrix}
+    \idx{\theta}{1},\idx{\theta}{2}, \ldots, \idx{\theta}{n}
+  \end{bmatrix}^{T}. 
+\end{equation}
+Henceforth, quantities without superscripts are understood to be vectors or
+matrices.  We can therefore associate a potential energy
+\begin{equation}
+  \label{eq:4}
+  U  = \frac{1}{2}\theta^{T} \bar{G}^{T}K\bar{G}\theta. 
+\end{equation}
+If we include the external forces due drivers, again, anticipating
+very high stiffness, we need two additional rows so that
+\begin{equation}
+  \label{eq:32}
+    G = \begin{bmatrix}
+      1 &  0  & 0 & 0 &  \cdots \\
+      1 &  -1  & 0 & 0 &  \cdots \\
+      0 &   \phantom{-}1  & -1 & 0 &  \cdots \\
+      \vdots &   0  &  \ddots & \ddots &  \ddots \\
+      \vdots &   \vdots  &  \ddots &   1 & -1  \\
+      \vdots &   \vdots  &  \vdots &   0 & \phantom{-}1
+    \end{bmatrix}. 
+\end{equation}
+Under infinite stiffness, these additional rows impose the constraint
+\begin{equation}
+  \label{eq:5}
+\idx{\omega}{i} = \idx{\bar{\omega}}{e,i}. 
+\end{equation}
+\begin{anfxnote}{no nonholonomic coupling now}
+  The form of the matrix in Eqn.~\eqref{eq:32} isn't implemented as an
+  option yet meaning that it isn't possible to drive the rod with a hard
+  kinematic driver.  The reason being that we would need a special flag to
+  choose which form the system matrix takes.  
+\end{anfxnote}
+This can also be modified to include the case of displacement-displacement
+coupling as described further below, as well as the case of high but finite
+stiffness for coupling. 
+
+After a Legendre transform and discretization with fixed step $h$ and
+discrete time $k$ we arrive at 
+\begin{equation}
+  \label{eq:18}
+  \begin{split}
+    \begin{bmatrix}
+      \mathcal{J} & -G^{T} \\
+      G & \tilde{K}^{-1}
+    \end{bmatrix}
+    \begin{bmatrix}
+      \omega_{k+1} \\
+      \lambda
+    \end{bmatrix}
+    &=
+    \begin{bmatrix}
+      \mathcal{J}\omega_{k} + h\tau \\
+      -\frac{4}{h}\gamma G\theta_{k}  + \gamma G\omega_{k}
+    \end{bmatrix} \\
+    \theta_{k+1} &= \theta_{k} + h\omega_{k}
+  \end{split}
+\end{equation}
+where $\mathcal{J}$ is the (diagonal) inertia matrix and 
+\begin{equation}
+  \label{eq:19}
+  \begin{split}
+    \gamma &= \frac{1}{1 + 4 \rho / h } \text{ and $\rho$ is a relaxation
+      rate } \\
+    \tilde{K} & = \frac{h^{2}\idx{K}{i}}{4\gamma}
+  \end{split}
+\end{equation}
+The $\rho$ parameter has units of inverse time and describes a relaxation
+rate, i.e., damping, and $\rho/h$ is the number of steps it takes to loose
+half the excitation amplitude locally.  When this is set to $\rho/h= 2$,
+the energy dissipates rapidly, and this provides unconditional stability
+via numerical damping.
+However, as soon as we reach $\rho/h < 1/10$ or so, we have natural
+damping.  
+
+We can of course eliminate the Lagrange multipliers $\lambda$ and solve
+instead 
+\begin{equation}
+  \label{eq:22}
+  \left[ \mathcal{J} + G^{T}\tilde{K}G \right]\omega_{k+1} =
+  \mathcal{J}\omega_{k} + h\tau -
+  \frac{4\gamma}{h}G^{T}\tilde{K}G\theta_{k} + \gamma G^{T}\tilde{K}G\omega_{k}. 
+\end{equation}
+where $\tilde{K}$ is defined as before in Eqn.~\eqref{eq:19}.  This
+requires finite $K$ however.  But we can mix the two methods and treat the
+external forcing terms using the relevant part of Eqn.~\eqref{eq:22} and
+the rest with Eqn.~\eqref{eq:18}.  
+
+\section{Coupling details}
+\label{sec:coupling-details}
+
+Coupling to other simulations comes in various forms.  A pure torque
+coupling simply adds $h\idx{\tau}{i,c}$ to the RHS in  Eqn.~\eqref{eq:18}.
+A velocity or displacement coupling adds
+$\frac{h^{2}}{4\gamma}\idx{K}{i,c}$ to the diagonal as well as
+\begin{equation}
+  \label{eq:7}
+  h\idx{\tau}{i,c} = -h\idx{K}{i,c}(\idx{\theta}{i}-\idx{\bar{\theta}}{i,c}) +
+  \frac{h^{2}}{4}(\idx{\omega}{i}-\idx{\bar{\omega}}{i})
+\end{equation}
+or
+\begin{equation}
+  \label{eq:8}
+  h\idx{\tau}{i,c} = -\idx{K}{i,c}\delta\idx{\theta}{i} + \frac{h^{2}}{4}(\idx{\omega}{i}-\idx{\bar{\omega}}{i})
+\end{equation}
+on the RHS of Eqn.~\eqref{eq:18}.     For the latter case, we update
+$\delta\idx{\theta}{i}$ with
+\begin{equation}
+  \label{eq:10}
+  \delta\idxsub{\theta}{i}{k+1} = \delta\idxsub{\theta}{i}{k} +
+  h(\idxsub{\omega}{i}{k+1}-\idx{\bar{\omega}}{i,c}).
+\end{equation}
+
+
+
+\renewcommand{\arraystretch}{1.5}
+
+Output variables. 
+
+\begin{tabularx}{1.0\linewidth}[H]{ ||X||c|c|c|c|c|| }
+  \hhline{|======|}
+  Name & Symbol & Variable & Value ref.  & Default & Causality\\
+  \hhline{|======|}
+  First angle & $\theta_{1}$ &\texttt{theta1} & 0 &&\\ \hline
+  Last angle & $\theta_{2}$ &\texttt{theta2} & 1 &&\\ \hline
+  First angular speed & $\omega_{1}$ &\texttt{omega1} & 2 &&\\ \hline
+  Last angular speed & $\omega_{2}$ &\texttt{omega2} & 3 &&\\ \hline
+  First angular acceleration & $\alpha_{1}$ &\texttt{alpha1} & 4 &&\\ \hline
+  Last angular acceleration & $\alpha_{2}$ &\texttt{alpha2} & 5 &&\\ \hline
+  First angle difference& $\delta\theta_{1}$ &\texttt{dtheta1} & 6 &&\\ \hline
+  Last angle difference& $\delta\theta_{2}$ &\texttt{dtheta2} & 7 &&\\ \hline
+  First output torque  & $\idx{\tau}{c,1}$ &\texttt{out\_torque1} & 8 &&\\ \hline
+  Last output torque  & $\idx{\tau}{c,N}$ &\texttt{out\_torque2} & 9 &&\\ \hline
+\hhline{|======|}
+\end{tabularx}
+
+Inputs.
+
+\begin{tabularx}{1.0\linewidth}[H]{ ||X||c|c|c|c|c|| }
+  \hhline{|======|}
+  Name & Symbol & Variable & Value ref.  & Default & Causality\\
+  \hhline{|======|}
+  First input torque  & $\idx{\tau}{1}$ &\texttt{tau1} & 10 &&\\ \hline
+  Last input torque  & $\idx{\tau}{N}$ &\texttt{tau2} & 11 &&\\ \hline
+  First driving displacement & $\idx{\bar{\theta}}{c,1}$
+                &\texttt{theta\_drive1} & 12 &&\\ \hline
+  First driving velocity & $\idx{\bar{\omega}}{c,1}$
+                &\texttt{omega\_drive1} & 13 &&\\ \hline
+  Last driving displacement & $\idx{\bar{\theta}}{c,N}$
+                &\texttt{theta\_drive2} & 14 &&\\ \hline
+  Last driving velocity & $\idx{\bar{\omega}}{c,N}$
+                &\texttt{omega\_drive2} & 15 &&\\ \hline
+  \hhline{|======|}
+\end{tabularx}
+
+Parameters.
+
+\begin{tabularx}{1.0\linewidth}[H]{ ||X||c|c|c|c|c|| }
+  \hhline{|======|}
+  Name & Symbol & Variable & Value ref.  & Default & Causality\\
+  \hhline{|======|}
+  Moment of inertia & $\mathcal{J}$
+                &\texttt{J} & 16 &&\\ \hline
+  Compliance & $K^{-1}$
+                &\texttt{compliance} & 17 &&\\ \hline
+  Damping rate & $\rho/h$
+                &\texttt{D} & 18 &&\\ \hline
+  First driving spring & $\idx{K}{c,1}$
+                &\texttt{K\_drive1} & 19 &&\\ \hline
+  First driving damping & $\idx{\gamma}{c,1}$
+                &\texttt{D\_drive1} & 20 &&\\ \hline
+  Last driving spring & $\idx{K}{c,2}$
+                &\texttt{K\_drive2} & 21 &&\\ \hline
+  Last driving damping & $\idx{\gamma}{c,2}$
+                &\texttt{D\_drive2} & 22 &&\\ \hline
+  Time step & $h$
+                &\texttt{step} & 23 &&\\ \hline
+  Number of elements & $N$
+                &\texttt{n\_elements} & 24 &&\\ \hline
+  First initial angle & $\idxsub{\theta}{1}{0}$
+                &\texttt{theta01} & 25 &&\\ \hline
+  Last initial angle & $\idxsub{\theta}{N}{0}$
+                &\texttt{theta02} & 26 &&\\ \hline
+  First initial angular speed & $\idxsub{\omega}{1}{0}$
+                &\texttt{omega01} & 27 &&\\ \hline
+  Last initial angular speed & $\idxsub{\omega}{2}{0}$
+                &\texttt{omega02} & 28 &&\\ \hline
+  Sign for the first driver & $\idx{\sigma}{1}$
+                &\texttt{driver\_sign1} & 29 &&\\ \hline
+  Sign for the last driver & $\idx{\sigma}{N}$
+                &\texttt{driver\_sign2} & 30 &&\\ \hline
+  Integrate angle difference $1$& 
+                &\texttt{integrate\_dt1} & 31 &&\\ \hline
+  Integrate angle difference $N$& 
+                &\texttt{integrate\_dt2} & 32 &&\\ \hline
+\hhline{|======|}
+\end{tabularx}
+\section{Conclusion}
+
+\label{sec:conclusion}
+
+\section*{Acknowledgments}
+\label{sec:acknowledgments}
+
+
+\bibliographystyle{plainnat}  
+\bibliography{lde-bib}
+\end{document}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: t
+%%% End: 

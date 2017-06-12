@@ -42,6 +42,7 @@ std::map<int, const char*> columnnames;
 
 string hdf5Filename;
 jm_log_level_enu_t fmigo_loglevel = jm_log_level_warning;
+bool alwaysComputeNumericalDirectionalDerivatives = false;
 
 #ifdef USE_MPI
 static vector<FMIClient*> setupClients(int numFMUs) {

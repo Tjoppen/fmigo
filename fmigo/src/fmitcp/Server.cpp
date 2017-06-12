@@ -754,7 +754,7 @@ string Server::clientData(const char *data, size_t size) {
 
     fmi2_status_t status = fmi2_status_ok;
     if (!m_sendDummyResponses) {
-     if (!fmigo::globals::alwaysComputeNumericalDirectionalDerivatives &&
+     if (!alwaysComputeNumericalDirectionalDerivatives &&
           hasCapability(fmi2_cs_providesDirectionalDerivatives)) {
       // interact with FMU
       status = fmi2_import_get_directional_derivative(m_fmi2Instance, v_ref.data(), r.v_ref_size(), z_ref.data(), r.z_ref_size(), dv.data(), dz.data());

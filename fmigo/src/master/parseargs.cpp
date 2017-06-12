@@ -477,7 +477,7 @@ void fmitcp_master::parseArguments( int argc,
 
         case 'D':
             info("Always computing numerical directional derivatives, regardless of providesDirectionalDerivatives\n");
-            fmigo::globals::alwaysComputeNumericalDirectionalDerivatives = true;
+            alwaysComputeNumericalDirectionalDerivatives = true;
             break;
 
         default:

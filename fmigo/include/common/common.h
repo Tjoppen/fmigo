@@ -65,6 +65,8 @@ extern std::map<int, const char*> columnnames;
 #endif
 
 extern jm_log_level_enu_t fmigo_loglevel ;
+//whether to ignore fmi2_cs_providesDirectionalDerivatives in Server.cpp
+extern bool alwaysComputeNumericalDirectionalDerivatives;
 
 void info(const char* fmt, ...);
 void error(const char* fmt, ...);

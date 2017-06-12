@@ -34,7 +34,9 @@ public:
     }
 
     void prepare() {
+#ifdef USE_GPL
       prepareME();
+#endif
     }
 
     void runIteration(double t, double dt) {
@@ -76,7 +78,9 @@ public:
             WeakConnection wc = m_weakConnections[x];
             clientGetXs[wc.to][wc.from][wc.conn.fromType].push_back(wc.conn.fromOutputVR);
         }
+#ifdef USE_GPL
         prepareME();
+#endif
     }
 
     void runIteration(double t, double dt) {

@@ -378,6 +378,7 @@ string Server::clientData(const char *data, size_t size) {
     bool toleranceDefined = r.has_tolerancedefined();
     double tolerance = r.tolerance();
     double starttime = r.starttime();
+    this->currentCommunicationPoint = starttime;
     bool stopTimeDefined = r.has_stoptimedefined();
     double stoptime = r.stoptime();
 
@@ -995,11 +996,20 @@ string Server::clientData(const char *data, size_t size) {
 
     // Unpack message
     fmitcp_proto::fmi2_import_do_step_req r; r.ParseFromArray(data, size);
-    //remember values
-    currentCommunicationPoint = r.currentcommunicationpoint();
-    communicationStepSize = r.communicationstepsize();
     bool newStep = r.newstep();
-    debug("fmi2_import_do_step_req(commPoint=%g,stepSize=%g,newStep=%d)\n",currentCommunicationPoint,communicationStepSize,newStep?1:0);
+    debug("fmi2_import_do_step_req(commPoint=%g,stepSize=%g,newStep=%d)\n",r.currentcommunicationpoint(),r.communicationstepsize(),newStep?1:0);
+
+    if (newStep) {
+      //keep track of what the next communication point will be
+      //this may not work correctly if multiple steps with newStep=false are taken
+      //fmigo never does this, so this works
+      //a better solution would be to tie these two values to the current FMUstate
+      this->currentCommunicationPoint = r.currentcommunicationpoint() + r.communicationstepsize();
+    }
+
+    //this step size is really just a guess - it could be variable
+    //but it should be good enough for computeNumericalDirectionalDerivative()
+    this->communicationStepSize = r.communicationstepsize();
 
     if (hdf5Filename.length()) {
         //log outputs before doing anything
@@ -1011,7 +1021,7 @@ string Server::clientData(const char *data, size_t size) {
     fmi2_status_t status = fmi2_status_ok;
     if (!m_sendDummyResponses) {
       // Step the FMU
-      status = fmi2_import_do_step(m_fmi2Instance, currentCommunicationPoint, communicationStepSize, newStep);
+      status = fmi2_import_do_step(m_fmi2Instance, r.currentcommunicationpoint(), r.communicationstepsize(), newStep);
     }
 
     SERVER_NORMAL_RESPONSE(do_step);
@@ -1266,7 +1276,7 @@ vector<fmi2_real_t> Server::computeNumericalDirectionalDerivative(
         const vector<fmi2_real_t>& dv) {
     vector<fmi2_real_t> dz;
     fmi2_FMU_state_t state = NULL;
-    double t = currentCommunicationPoint + communicationStepSize;
+    double t = currentCommunicationPoint;
     double dt = 1e-3 * communicationStepSize;
 
     fmi2_import_get_fmu_state(m_fmi2Instance, &state);

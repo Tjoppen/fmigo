@@ -310,10 +310,11 @@ static void sendUserParams(BaseMaster *master, vector<FMIClient*> clients,
             fatal("Couldn't find variable VR=%i type=%i\n",
                   it2->valueReference, it->first.second);
           }
-          if (it3->second.initial == fmi2_initial_enu_calculated) {
-            fatal("Setting variables with initial=\"calculated\" is not allowed (VR=%i type=%i)\n",
-                  it2->valueReference, it->first.second);
-          }
+          //We used to check for initial="calculated" here, but Dymola FMUs have VRs
+          //with multiple ScalarVariable associated, which makes checks for that more involved.
+          //The reason is that they have some of these SVs without causality or initial defined,
+          //so they default to causality="local" and initial="calculated". FMIL then picks these up
+          //and delivers the first of them to us, not the input one which has an appropriate value for initial.
 
           //skip non-exact, non-inputs during initialization
           if (initialization &&

@@ -20,7 +20,7 @@ static const double gear_ratios[] = {
 };
 static const int ngears = sizeof(gear_ratios)/sizeof(gear_ratios[0]);
 
-static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
+static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
   int gear = s->md.gear;
   if (gear < 0) {
       gear = 0;

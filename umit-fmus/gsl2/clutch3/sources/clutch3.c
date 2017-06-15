@@ -27,7 +27,7 @@ typedef struct {
 } clutchgear_simulation;
 
 #define SIMULATION_TYPE clutchgear_simulation
-#define SIMULATION_EXIT_INIT clutch_init
+#define SIMULATION_INIT clutch_init
 #define SIMULATION_FREE(s) cgsl_free_simulation((s).sim)
 #define SIMULATION_GET(s)  cgsl_simulation_get(&(s)->sim);
 #define SIMULATION_SET(s)  cgsl_simulation_set(&(s)->sim);
@@ -272,7 +272,7 @@ static double fclutch( double dphi, double domega, double clutch_damping ) {
   } else if ( dphi >= clutch_dphi[ END ] ) {
     tc = ( clutch_torque[ END ] - clutch_torque[ END - 1 ] ) * ( dphi - clutch_dphi[ END ] ) / ( clutch_dphi[ END ] - clutch_dphi[ END - 1 ] ) + clutch_torque[ END ];
   } else {
-    size_t i;
+    int i;
     for (i = 0; i < END; ++i) {
       if (dphi >= clutch_dphi[ i ] && dphi <= clutch_dphi[ i+1 ]) {
 	double k = (dphi - clutch_dphi[ i ]) / (clutch_dphi[ i+1 ] - clutch_dphi[ i ]);
@@ -306,7 +306,7 @@ static double fclutch_dphi_derivative( double dphi ) {
   } else if ( dphi >= clutch_dphi[ END ] ) {
     df =  ( clutch_torque[ END ] - clutch_torque[ END - 1 ] ) / ( clutch_dphi[ END ] - clutch_dphi[ END - 1 ] );
   } else {
-    size_t i;
+    int i;
     for (i = 0; i < END; ++i) {
       if (dphi >= clutch_dphi[ i ] && dphi <= clutch_dphi[ i+1 ]) {
 	double k =  1.0  / (clutch_dphi[ i+1 ] - clutch_dphi[ i ]);
@@ -421,8 +421,7 @@ static int pre_step (double t, double dt, const double y[], void * params){
   return 0;
 }
 
-static fmi2Status clutch_init(ModelInstance *comp) {
-  state_t *s = &comp->s;
+static void clutch_init(state_t *s) {
   /** system size and layout depends on which dx's are integrated */
   double initials[4];
 #if 0 
@@ -457,13 +456,12 @@ static fmi2Status clutch_init(ModelInstance *comp) {
   s->simulation.zdxs = 0;
   s->simulation.communication_time = 0;
 
-  return fmi2OK;
 }
 
-static fmi2Status getPartial(ModelInstance *comp, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
+static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
   if (vr == VR_A_E) {
     if (wrt == VR_FORCE_IN_E || wrt == VR_FORCE_IN_EX) {
-      *partial = 1.0/comp->s.md.mass_e;
+      *partial = 1.0/s->md.mass_e;
       return fmi2OK;
     }
     if (wrt == VR_FORCE_IN_S || wrt == VR_FORCE_IN_SX) {
@@ -477,7 +475,7 @@ static fmi2Status getPartial(ModelInstance *comp, fmi2ValueReference vr, fmi2Val
       return fmi2OK;
     }
     if (wrt == VR_FORCE_IN_S || wrt == VR_FORCE_IN_SX) {
-      *partial = 1.0/comp->s.md.mass_s;
+      *partial = 1.0/s->md.mass_s;
       return fmi2OK;
     }
   }
@@ -486,6 +484,7 @@ static fmi2Status getPartial(ModelInstance *comp, fmi2ValueReference vr, fmi2Val
 
 
 
+#define NEW_DOSTEP //to get noSetFMUStatePriorToCurrentPoint
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
 
   if (s->md.is_gearbox && s->md.gear != s->simulation.last_gear) {

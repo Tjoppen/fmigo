@@ -7,7 +7,7 @@
 
 #define SIMULATION_TYPE lumped_rod_sim
 //called after getting default values from XML
-#define SIMULATION_EXIT_INIT setStartValues
+#define SIMULATION_INIT setStartValues
 #define SIMULATION_FREE lumped_rod_sim_free_a
 #define SIMULATION_GET lumped_rod_sim_store
 #define SIMULATION_SET lumped_rod_sim_restore
@@ -69,8 +69,7 @@ static void lumped_rod_fmi_sync_in( lumped_rod_sim * sim, state_t *s){
 /**
    Instantiate the simulation and set initial conditions.
 */
-static fmi2Status setStartValues(ModelInstance *comp) {
-  state_t *s = &comp->s;
+static void setStartValues(state_t *s) {
   /** read the init values given by the master, either from command line
       arguments or as defaults from modelDescription.xml
   */
@@ -133,38 +132,38 @@ static fmi2Status setStartValues(ModelInstance *comp) {
   }
   fprintf(data_file, "\n");
 #endif
+    
 
-  return fmi2OK;
 };
 
 /** Returns partial derivative of vr with respect to wrt  
  *  We could define a smart convention here.  
  */ 
-static fmi2Status getPartial(ModelInstance *comp, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
+static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
   if (vr == VR_ALPHA1 && wrt == VR_TAU1 ) {
-    *partial = comp->s.simulation.rod.mobility[ 0 ];
+    *partial = s->simulation.rod.mobility[ 0 ];
     return fmi2OK;
   }
 
   if (vr == VR_ALPHA1 && wrt == VR_TAU2 ) {
-    *partial = comp->s.simulation.rod.mobility[ 1 ];
+    *partial = s->simulation.rod.mobility[ 1 ];
     return fmi2OK;
   }
 
   if (vr == VR_ALPHA2 && wrt == VR_TAU1 ) {
-    *partial = comp->s.simulation.rod.mobility[ 2 ];
+    *partial = s->simulation.rod.mobility[ 2 ];
     return fmi2OK;
   }
     
   if (vr == VR_ALPHA2 && wrt == VR_TAU2 ) {
-    *partial = comp->s.simulation.rod.mobility[ 3 ];
+    *partial = s->simulation.rod.mobility[ 3 ];
     return fmi2OK;
   }
 
   return fmi2Error;
 }
 
-static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
+static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
   /*  Copy the input variable from the state vector */
   assert( s );
   lumped_rod_fmi_sync_in(&s->simulation, s);

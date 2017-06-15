@@ -17,3 +17,16 @@ tmp
 *.snm
 codelite
 *.fmu
+-*.c~
+-*.cpp~
+-*.hpp~
+-*.h~
+-*.txt~
+-*.sh~
+-*meWrapper/*/sources/
+-*meWrapper/*/fmu/
+-*meWrapper/*/*.xml
+-*GSYMS
+-*core
+-*.swp
+

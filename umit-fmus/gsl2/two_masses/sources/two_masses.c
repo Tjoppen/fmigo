@@ -315,14 +315,12 @@ static void get_initial_states(state_t *s, double *initials) {
   initials[Vs] = s->md.v0_s;
   initials[Fe] = 0.0;
   initials[Fs] = 0.0;
-#if 0 
   if (s->md.integrate_dx_e ) {
-    initials[Xe()] = s->md.x0_e;
+    initials[Xe] = s->md.x0_e;
   }
   if (N > Fs + 1 ) {
     initials[ dXs() ] = s->md.dx0_s;
   }
-#endif
 }
 
 static int sync_out(double t, int n, const double outputs[], void * params) {
@@ -383,8 +381,7 @@ static void clutch_init(state_t *s) {
 #endif
 }
 
-static fmi2Status getPartial(ModelInstance *comp, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
-  state_t *s = &comp->s;
+static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
   if (vr == VR_A_E) {
     if (wrt == VR_FORCE_IN_E || wrt == VR_FORCE_IN_EX) {
         *partial = 1.0/s->md.mass_e;
@@ -410,7 +407,6 @@ static fmi2Status getPartial(ModelInstance *comp, fmi2ValueReference vr, fmi2Val
 
 #define NEW_DOSTEP //to get noSetFMUStatePriorToCurrentPoint
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
-#if 0 
   int N = get_initial_states_size(s);
 
   
@@ -431,7 +427,6 @@ static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real comm
   cgsl_step_to( &s->simulation, currentCommunicationPoint, communicationStepSize );
 
   s->simulation.last_gear = s->md.gear;
-#endif
 }
 
 

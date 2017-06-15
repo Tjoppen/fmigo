@@ -8,7 +8,7 @@
 #define alloca _alloca
 #endif
 #define SIMULATION_TYPE cgsl_simulation
-#define SIMULATION_EXIT_INIT scania_driveline_init
+#define SIMULATION_INIT scania_driveline_init
 #define SIMULATION_FREE cgsl_free_simulation
 
 #include "fmuTemplate.h"
@@ -156,8 +156,7 @@ static int sync_out(double t, int n, const double out[], void * params) {
 }
 
 
-static fmi2Status scania_driveline_init(ModelInstance *comp) {
-  state_t *s = &comp->s;
+static void scania_driveline_init(state_t *s) {
   double initials[] = {
     s->md.w_inShaftNeutral,
     s->md.w_wheel
@@ -172,10 +171,9 @@ static fmi2Status scania_driveline_init(ModelInstance *comp) {
       ),
     rkf45, 1e-5, 0, 0, 0, NULL
     );
-    return fmi2OK;
 }
 
-static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
+static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
   cgsl_step_to( &s->simulation, currentCommunicationPoint, communicationStepSize );
 }
 
@@ -200,7 +198,7 @@ mu * [ g    1 ]
 
 
  */
-static fmi2Status getPartial(ModelInstance *comp, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
+static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
   if (vr == VR_A_SHAFT_OUT ) {
     if (wrt == VR_F_SHAFT_IN ){
       *partial = 0 ; //XXX;

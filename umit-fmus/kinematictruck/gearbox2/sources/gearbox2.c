@@ -2,26 +2,26 @@
 #include "fmuTemplate.h"
 
 //returns partial derivative of vr with respect to wrt
-static fmi2Status getPartial(ModelInstance *comp, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
-    fmi2Real a2 = comp->s.md.alpha*comp->s.md.alpha;
+static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
+    fmi2Real a2 = s->md.alpha*s->md.alpha;
 
     if (vr == VR_OMEGADOT_E && wrt == VR_TAU_E) {
-        *partial = a2/(comp->s.md.j2 + a2*comp->s.md.j1);
+        *partial = a2/(s->md.j2 + a2*s->md.j1);
         return fmi2OK;
     }
     if ((vr == VR_OMEGADOT_L && wrt == VR_TAU_E) || (vr == VR_OMEGADOT_E && wrt == VR_TAU_L)) {
-        *partial = comp->s.md.alpha/(comp->s.md.j2 + a2*comp->s.md.j1);
+        *partial = s->md.alpha/(s->md.j2 + a2*s->md.j1);
         return fmi2OK;
     }
     if (vr == VR_OMEGADOT_L && wrt == VR_TAU_L) {
-        *partial =  1/(comp->s.md.j2 + a2*comp->s.md.j1);   //load side sees a higher moment of inertia (lower inverse)
+        *partial =  1/(s->md.j2 + a2*s->md.j1);   //load side sees a higher moment of inertia (lower inverse)
         return fmi2OK;
     }
 
     return fmi2Error;
 }
 
-static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
+static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
     fmi2Real a = s->md.alpha, a2 = a*a, h = communicationStepSize;
     fmi2Real A = s->md.tau_e - s->md.d1*s->md.omega_e;
     fmi2Real B = s->md.tau_l - s->md.d2*s->md.omega_l;

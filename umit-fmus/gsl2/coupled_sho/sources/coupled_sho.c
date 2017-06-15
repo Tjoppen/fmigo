@@ -13,7 +13,7 @@ typedef struct {
 } coupled_sho_simulation;
 
 #define SIMULATION_TYPE coupled_sho_simulation
-#define SIMULATION_EXIT_INIT coupled_sho_init
+#define SIMULATION_INIT coupled_sho_init
 #define SIMULATION_FREE coupled_sho_free
 //fix compiler warning when casting coupled_sho_simulation* to cgsl_simulation*
 #define SIMULATION_GET(x) cgsl_simulation_get((cgsl_simulation*)(x))
@@ -99,8 +99,7 @@ static int epce_post_step(double t, int n, const double outputs[], void * params
     return GSL_SUCCESS;
 }
 
-static fmi2Status coupled_sho_init(ModelInstance *comp) {
-    state_t *s = &comp->s;
+static void coupled_sho_init(state_t *s) {
     const double initials[3] = {s->md.xstart, s->md.vstart, s->md.dxstart};
 
     s->simulation.momega2_c = s->md.mu * s->md.omega_c * s->md.omega_c;
@@ -123,14 +122,13 @@ static fmi2Status coupled_sho_init(ModelInstance *comp) {
         ),
         rkf45, 1e-5, 0, 0, s->md.dump_data, f
     );
-    return fmi2OK;
 }
 
 static void coupled_sho_free(coupled_sho_simulation css) {
     cgsl_free_simulation(css.sim);
 }
 
-static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
+static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
     cgsl_step_to( &s->simulation.sim, currentCommunicationPoint, communicationStepSize );
 }
 

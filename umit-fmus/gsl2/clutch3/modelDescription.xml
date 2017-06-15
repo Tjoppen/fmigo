@@ -443,12 +443,7 @@
         description="file for internal dump?"
         causality="parameter"
         variability="fixed">
-      <String start="clutch3.m"/>
-      <Annotations>
-        <Tool name="fmigo">
-          <size>1024</size>
-        </Tool>
-      </Annotations>
+      <String start="clutch3.m" size="500"/>
     </ScalarVariable>
 
     <!-- index="44"-->

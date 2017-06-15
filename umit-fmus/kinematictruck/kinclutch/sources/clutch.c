@@ -2,9 +2,9 @@
 #include "fmuTemplate.h"
 
 //returns partial derivative of vr with respect to wrt
-static fmi2Status getPartial(ModelInstance *comp, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
+static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
     if (vr == VR_ALPHA_E && wrt == VR_TAU_E) {
-        *partial = 1/comp->s.md.j_e;
+        *partial = 1/s->md.j_e;
         return fmi2OK;
     }
     if ((vr == VR_ALPHA_L && wrt == VR_TAU_E) || (vr == VR_ALPHA_E && wrt == VR_TAU_L)) {
@@ -12,14 +12,14 @@ static fmi2Status getPartial(ModelInstance *comp, fmi2ValueReference vr, fmi2Val
         return fmi2OK;
     }
     if (vr == VR_ALPHA_L && wrt == VR_TAU_L) {
-        *partial =  1/comp->s.md.j_l;
+        *partial =  1/s->md.j_l;
         return fmi2OK;
     }
 
     return fmi2Error;
 }
 
-static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
+static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
     fmi2Real h = communicationStepSize;
     fmi2Real deltaphi = s->md.theta_e - s->md.theta_l; //angle difference
     

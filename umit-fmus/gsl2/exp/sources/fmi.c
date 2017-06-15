@@ -2,7 +2,7 @@
 #include "gsl-interface.h"
 
 #define SIMULATION_TYPE cgsl_simulation
-#define SIMULATION_EXIT_INIT exp_init
+#define SIMULATION_INIT exp_init
 #define SIMULATION_FREE cgsl_free_simulation
 
 #include "fmuTemplate.h"
@@ -19,8 +19,7 @@ static int epce_post_step (double t, int n, const double outputs[], void * param
     return GSL_SUCCESS;
 }
 
-static fmi2Status exp_init(ModelInstance *comp) {
-    state_t *s = &comp->s;
+static void exp_init(state_t *s) {
     cgsl_model *exp_model  = init_exp_model( s->md.x0 );
     cgsl_model *exp_filter = init_exp_filter( exp_model );
     cgsl_model *epce_model = cgsl_epce_model_init( exp_model, exp_filter, s->md.filter_length, epce_post_step, s );
@@ -33,10 +32,9 @@ static fmi2Status exp_init(ModelInstance *comp) {
         0,
         NULL
     );
-    return fmi2OK;
 }
 
-static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
+static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
     cgsl_step_to( &s->simulation, currentCommunicationPoint, communicationStepSize );
 }
 

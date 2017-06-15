@@ -4,8 +4,8 @@ echo
 
 set -e
 
-MD2HDR="`pwd`/fmu-builder/modeldescription2header"
-FMUBUILDER="`pwd`/fmu-builder/fmu-builder -t `pwd`/templates/fmi2/ -i `pwd`/../FMILibrary-2.0.1/ThirdParty/FMI/default"
+MD2HDR="`pwd`/../fmu-builder/bin/modeldescription2header"
+FMUBUILDER="`pwd`/../fmu-builder/bin/fmu-builder -t `pwd`/templates/fmi2/ -i `pwd`/../FMILibrary-2.0.1/ThirdParty/FMI/default"
 
 for d in \
     lumpedrod\

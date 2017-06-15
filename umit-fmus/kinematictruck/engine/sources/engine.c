@@ -2,15 +2,15 @@
 #include "fmuTemplate.h"
 
 //returns partial derivative of vr with respect to wrt
-static fmi2Status getPartial(ModelInstance *comp, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
+static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
     if (vr == VR_ALPHA && wrt == VR_TAU) {
-        *partial = comp->s.md.jinv;
+        *partial = s->md.jinv;
         return fmi2OK;
     }
     return fmi2Error;
 }
 
-static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
+static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
     //controller. beta = gas pedal
     //fprintf(stderr, "omega_l0 = %f, omega_l = %f\n", s->md.omega_l0, s->md.omega_l);
     s->md.beta = s->md.kp*(s->md.omega_l0 - s->md.omega_l);

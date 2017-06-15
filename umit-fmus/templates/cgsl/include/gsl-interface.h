@@ -42,11 +42,6 @@ typedef int (* ode_jacobian_ptr ) (double t, const double y[], double * dfdy, do
  */
 typedef int (* pre_post_step_ptr ) (double t, double dt, const double y[], void * params);
 
-enum cgsl_callback_actions{
-  CGSL_RESTART = 1                     // multistep integrators need a reset when
-                                // used with the epce filter.
-};
-  
 /**
  *
  *  This is intended to contain everything needed to integrate only one
@@ -159,11 +154,7 @@ enum cgsl_integrator_ids
   msadams,	/* 9 */
   msbdf		/*10 */
 };
-  
-/* this will flag integrators which need restart */
-  extern int restart_integrator;
-  
-  
+
 /**************
  * Function declarations.
  **************
@@ -213,10 +204,8 @@ void cgsl_simulation_get( cgsl_simulation *s );
 void cgsl_simulation_set( cgsl_simulation *s );
 
 typedef int (*epce_post_step_ptr) (
-  double t, 
     int n,                          /** Number of variables */
-    const double outputs[],         /** Outputs. Filtered or not, depending
-                                     * on filter_length */
+    const double outputs[],         /** Outputs. Filtered or not, depending on filter_length */
     void * params                   /** User pointer */
 );
 

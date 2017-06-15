@@ -9,6 +9,7 @@
 #define BASEMASTER_H_
 
 #include "FMIClient.h"
+#include <zmq.hpp>
 #ifdef USE_GPL
 #include <gsl/gsl_multiroots.h>
 #include "common/fmigo_storage.h"
@@ -29,10 +30,15 @@ namespace fmitcp_master {
 #endif
 
     public:
+
+        zmq::socket_t rep_socket;
+        bool paused, running;
+        bool zmqControl;
+
         //number of pending requests sent to clients
         size_t getNumPendingRequests() const;
 
-        explicit BaseMaster(std::vector<FMIClient*> clients, std::vector<WeakConnection> weakConnections);
+        explicit BaseMaster(zmq::context_t &context, std::vector<FMIClient*> clients, std::vector<WeakConnection> weakConnections);
         virtual ~BaseMaster();
 
 #ifdef USE_GPL
@@ -97,6 +103,8 @@ namespace fmitcp_master {
         virtual int getNumForceOutputs() const {
           return 0;
         }
+
+        void handleZmqControl();
     };
 };
 

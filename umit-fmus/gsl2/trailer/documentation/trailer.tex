@@ -1,0 +1,279 @@
+%%%%%%%%%%%%% preamble for all tex documents  %%%%
+%%%%%%%%%%%%% current style defaults to scrartcl  but that could be changed
+%%%%%%%%%%%%% with a script or by hand   
+%%%%%%%%%%%%% 
+\documentclass[10pt,notitlepage,abstracton]{scrartcl}
+\usepackage[a4, center, dvips]{crop}
+\setlength{\linewidth}{\textwidth}
+\usepackage{scrpage2}
+\usepackage{hhline}
+\usepackage[sort,numbers]{natbib}
+\usepackage{amsmath}
+\usepackage{amscd}
+\usepackage{amsthm}
+\usepackage{amsfonts}
+\usepackage{amsbsy}
+\usepackage{amsxtra}
+\usepackage{amssymb}
+\usepackage[draft]{fixme}
+\usepackage[utf8]{inputenc}
+\usepackage{float}
+\usepackage{url}
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage[ruled, section]{algorithm}
+\usepackage{algpseudocode}
+\usepackage{multirow}
+\usepackage{tabularx}
+\usepackage{subfigure}
+\usepackage{tikz}
+\usepackage{pgfplots,pgfplotstable}
+\usepackage{gnuplot-lua-tikz}
+\usepackage[normalem]{ulem}
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{plain}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{example}{Example}[section]
+\theoremstyle{plain}
+\newtheorem*{remark}{Remark}
+\newtheorem*{note}{Note}
+\newtheorem{case}{Case}
+\makeatletter
+\renewcommand{\labelitemi}{$\m@th\triangleright$}
+\renewcommand{\labelitemii}{$\m@th\cdot$}
+\renewcommand{\labelitemiii}{\emdash}
+\renewcommand{\labelitemiv}{\emdash\emdash}
+\makeatother
+\include{notation-macros}
+\usepackage[scrpage]{svninfo} 
+%%%% not sure what to make of revision info right now
+\title{Trailer model}
+\author{Claude Lacoursi{\`{e}}re \\
+  HPC2N/UMIT, Ume{\aa} University\\
+  SE-901 87, Ume{\aa}, Sweden\\
+  \texttt{claude@hpc2n.umu.se}
+}
+\begin{document}
+\svnInfo $Id$
+\maketitle{}
+\svnId
+\begin{abstract}
+
+\end{abstract}
+
+\section{Introduction}
+\label{sec:introduction}
+
+This is a simple model for a ``trailer'', a point mass moving along a
+straight line but with variable elevation.   This is intended to perform
+simple stability tests for cosimulation algorithms, especially for the case
+where different simulations involve objects of different masses. 
+
+\section{The model}
+\label{sec:model}
+
+We represent the trailer as a point mass $m$ moving in a straight line. Even
+though we are considering the trailer to have both vertical and
+longitudinal motion, we take $x\in\R$ as the distance traveled along the road
+which has variable grade $\theta(x)$.  
+
+
+The trailer is powered via a shaft with angle and angular speed
+$\phi_{d},\omega_{d}$.  This shaft goes is connected to the axle
+with a gear with ratio $r_{d}$ from the differential.  Assuming no
+slip, the speed of the point mass is related to that of the wheel via
+$\dot{x} = r_{w}\omega_{w}$, and this corresponds also to the angular speed
+of the differential shaft, $\omega_{s} = \dot{x}/(r_{w}r_{d})$.
+
+The relevant portion of the gravity force is
+\begin{equation}
+  \label{eq:1}
+  f_{g} = - m g \sin(\theta ( x ) ).
+\end{equation}
+A drag force for air resistance is introduced as
+\begin{equation}
+  \label{eq:2}
+  f_{d} = - \sign(\dot{x}) \frac{1}{2}\rho A C_{d} \dot{x}^{2},  
+\end{equation}
+rolling resistance is then
+\begin{equation}
+  \label{eq:3}
+  f_{r} = - \sign(\dot{x})(c_{r_{1}}\abs{\dot{x}} + c_{r_{0}}) m g \cos(\theta(x))
+\end{equation}
+and a braking force
+\begin{equation}
+  \label{eq:4}
+  f_{b} = - r \sign(\dot{x})\mu m g \cos(\theta(x)), \text{ where }   r\in[0,1].
+\end{equation}
+As for the input forces, we either accept a torque directly in which case
+\begin{equation}
+  \label{eq:5}
+  f_{c} = \frac{1}{r_{w}r_{d}}\tau_{i}
+\end{equation}
+or we use a coupling spring with
+\begin{equation}
+  \label{eq:6}
+  \begin{split}
+    f_{c} &= \frac{1}{r_{w}} \left(  k_{d} \delta 
+      +\gamma_{d}( \frac{\dot{x}}{r_{d}r_{w}} - \bar{\omega}_{d} ) \right) \\
+    \dot{\delta} &= \frac{\dot{x}}{r_{d}r_{w}} - \bar{\omega}_{d}. 
+  \end{split}
+\end{equation}
+For the case of displacement-displacement coupling, we use 
+\begin{equation}
+  \label{eq:8}
+    f_{c} = \frac{1}{r_{w}} \left( k_{d} (\frac{x}{r_{d}r_{w}} - \bar{\phi}_{d})  
+      +\gamma_{d}( \frac{\dot{x}}{r_{d}r_{w}} - \bar{\omega}_{d} ) \right) 
+\end{equation}
+We also include a coupling directly on the trailer and this is computed
+either as
+\begin{equation}
+  \label{eq:9}
+  \begin{split}
+    f_{t} &=  k_{t} \delta x + \gamma_{t}(\dot{x} - v_{t}) \\
+    \delta\dot{x} &= \dot{x} - v_{t}
+  \end{split}
+\end{equation}
+or
+\begin{equation}
+  \label{eq:10}
+  f_{t}  = k_{t}(x-x_{t}) + \gamma( \dot{x} - v_{t}).
+\end{equation}
+
+The equations motion are then, allowing for one further external force $f_{e}$, 
+\begin{equation}
+  \label{eq:7}
+  m\ddot{x} = f_{d} + f_{g} + f_{r} + f_{b} - f_{c} + f_{e} - f_{t}. 
+\end{equation}
+
+\section{Jacobians}
+\label{sec:jacobians}
+
+The main issue here in computing the Jacobian is the appearance of the
+signum and absolute value functions.  The two problems can be combined
+since
+\begin{equation}
+  \label{eq:9}
+  \abs{x} = \sign(x)x. 
+\end{equation}
+To make this reasonable for a Newton-Raphson method we use a smoothed
+version so that
+\begin{equation}
+  \label{eq:10}
+  \td{}{x}\sign_{\delta}(x) =
+  \begin{cases}
+    0  & \text{ when }  x > \delta \\
+    0 & \text{ when }  x  < -\delta
+    1/\delta & \text{ when }  x\in[-\delta,\delta]
+  \end{cases}
+\end{equation}
+
+
+\section{Parameters, inputs and outputs}
+\label{sec:param-inputs-outp}
+
+The list of parameters is as follows.  Note that the default values are
+worthless but they have been chosen so the module does not crash if the
+user forgets to set them.  All units are assumed to be in MKS units. 
+
+
+\renewcommand{\arraystretch}{1.5}
+
+\begin{tabularx}{1.0\linewidth}[H]{ ||X|c|c|c|c|c|| }
+  \hhline{|======|}
+  Name & Symbol & Variable & Value ref. & Range & Default \\
+  \hhline{|======|}
+  Initial position & $x_{0}$ & \texttt{x\_0} & 1  & $(-\infty,\infty)$ & 0 \\ \hline
+  Initial velocity & $v_{0}$ & \texttt{v\_0} & 2  & $(-\infty,\infty)$ & 0 \\ \hline
+  Mass  & $m$ & \texttt{mass}& 3 & $(0,\infty]$ & 1 Kg \\ \hline
+  Wheel radius &$r_{w}$& \texttt{r\_w} & 4 &  $(0,\infty]$  &1 m \\ \hline
+  Differential gear ratio & $r_{g}$ &\texttt{r\_g} & 5 & $(0,\infty]$ & 1 \\ \hline
+  Surface area & $A$& \texttt{area} & 6  & $[0,\infty]$ & $1\text{m}^{2}$ \\ \hline
+  Air density & $\rho$ & \texttt{rho} & 7 & $(0,\infty]$ & $1.2$Kg/$\text{m}^{3}$ \\ \hline
+  Drag coefficient & $C_{d}$ & \texttt{c\_d} & 8 & $[0,\infty]$ & $1$ \\ \hline
+  Gravitational \newline acceleration & $g$ &\texttt{g} & 9 & $(-\infty, \infty)$ & $9.8$ m/$\text{s}^{2}$ \\ \hline
+  Static rolling \newline resistance & $c_{r_{1}}$ &\texttt{c\_r\_1} & 10 & $[0, \infty)$ & ???  \\ \hline
+  Kinetic rolling \newline resistance & $c_{r_{2}}$ &\texttt{c\_r\_2} & 11 & $[0, \infty)$ & ??  \\ \hline
+  Static tire 
+  friction & $\mu$ & \texttt{mu} & 12 & $[0, \infty)$ & 1 \\ \hline
+  Differential coupling spring constant & $k_{d}$ &\texttt{k\_d} & 13 & $[0,\infty]$ & \\ \hline
+  Differential  coupling damping  constant & $\gamma$
+                &\texttt{gamma\_d} & 14 & $[0,\infty]$ & N$\cdot$ s/m \\\hline 
+  Trailer coupling spring  constant & $k_{t}$ &\texttt{k\_t} & 15 & $[0,\infty]$ & \\ \hline
+  Trailer coupling damping  constant & $\gamma_{t}$
+                &\texttt{gamma\_t} & 16 & $[0,\infty]$ & N$\cdot$ s/m \\\hline 
+  Integrate angle &  & \texttt{\footnotesize{integrate\_dw}} & 17 &  & integer \\\hline
+  Integrate position &  & \texttt{\footnotesize{integrate\_dx}} & 18 &  & integer \\\hline
+  Integrator &  & & 12 &  & integer \\\hline
+  EPCE filter &  & \texttt{\footnotesize{filter\_length}} & 98 &
+                                                                 $[0,1,3,\ldots]$ & 0 steps \\
+  \hhline{|======|}
+\end{tabularx}
+
+
+The initial values which must be set. 
+
+
+
+Output variables. 
+
+\begin{tabularx}{1.0\linewidth}[H]{ ||X||c|c|c|| }
+  \hhline{|====|}
+  Name & Symbol & Variable & Value ref.   \\
+  \hhline{|====|}
+  Position &  $x$ & \texttt{x} & 29 \\ \hline
+  Velocity &  $v=\dot{x}$ & \texttt{v} & 30 \\ \hline
+  Acceleration &  $a=\ddot{x}$ & \texttt{a} & 31 \\ \hline
+  Shaft angle &  $\phi = \frac{x}{r_{w}r_{g}}$ & \texttt{phi} & 32 \\
+  \hline
+  Shaft speed &  $\omega = \frac{\dot{x}}{r_{w}r_{g}}$ & \texttt{omega} & 33 \\ \hline
+  Shaft acceleration &  $\alpha = \frac{\ddot{x}}{r_{w}r_{g}}$ & \texttt{alpha} & 34 \\ \hline
+  Coupling torque  & $\tau_{c}$ &\texttt{tau\_c} & 35 \\ \hline
+  Coupling force  & $f_{c}$ &\texttt{f\_c} & 36 \\ \hhline{|====|}
+\end{tabularx}
+
+Input variables.
+
+\begin{tabularx}{1.0\linewidth}[H]{ ||X|c|c|c|| }
+  \hhline{|====|}
+  Name & Symbol & Variable & Value ref. \\
+  \hhline{|====|}
+  Input angle &  $\phi_{i}$ & \texttt{phi\_i} & 20\\ \hline
+  Input velocity &  $\omega_{i}$ & \texttt{omega\_i} & 21 \\ \hline
+  Coupling torque &  $\tau_{d}$ & \texttt{tau\_d} &  22 \\ \hline
+  Extra driving torque &  $\tau_{e}$ & \texttt{tau\_e} & 23 \\ \hline
+  Slope & $\theta$ &\texttt{angle} & 24 \\ \hline
+  Brake position & $r$ & \texttt{brake}& 25 \\ \hline
+  Coupling displacement & $x_{in}$ & \texttt{x\_in}& 26 \\ \hline
+  Coupling speed & $v_{in}$ & \texttt{v\_in}& 27 \\ \hline
+  Coupling force & $f_{in}$ & \texttt{f\_in}& 28 \\ 
+ \hhline{|====|}
+\end{tabularx}
+
+
+
+
+
+
+
+
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+\section*{Acknowledgments}
+\label{sec:acknowledgments}
+
+
+\bibliographystyle{plainnat}  
+\bibliography{lde-bib}
+\end{document}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: t
+%%% End: 

@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fmiModelDescription
+  fmiVersion="2.0"
+  description="FMU for testing type conversion"
+  modelName="typeconvtest"
+  guid="{56b28b4e-2f8c-4805-8925-672da2a60074}"
+  numberOfEventIndicators="0">
+
+<CoSimulation
+  modelIdentifier="typeconvtest"
+  canHandleVariableCommunicationStepSize="true"
+  canGetAndSetFMUstate="true"
+  providesDirectionalDerivative="false"/>
+
+<LogCategories>
+  <Category name="logAll"/>
+  <Category name="logError"/>
+  <Category name="logFmiCall"/>
+  <Category name="logEvent"/>
+</LogCategories>
+
+<DefaultExperiment startTime="0" stopTime="10" stepSize="0.1"/>
+
+<ModelVariables>
+  <!-- Outputs -->
+  <ScalarVariable name="r_out"
+                  valueReference="0"
+                  description=""
+                  causality="output">
+      <Real/>
+  </ScalarVariable>
+  <ScalarVariable name="i_out"
+                  valueReference="1"
+                  description=""
+                  causality="output">
+      <Integer/>
+  </ScalarVariable>
+  <ScalarVariable name="b_out"
+                  valueReference="2"
+                  description=""
+                  causality="output">
+      <Boolean/>
+  </ScalarVariable>
+  <!--ScalarVariable name="s_out"
+                  valueReference="3"
+                  description=""
+                  causality="output">
+      <String/>
+  </ScalarVariable-->
+
+  <!-- Inputs -->
+  <ScalarVariable name="r_in"
+                  valueReference="4"
+                  description=""
+                  causality="input"
+                  initial="approx">
+      <Real start="0"/>
+  </ScalarVariable>
+  <ScalarVariable name="i_in"
+                  valueReference="5"
+                  description=""
+                  causality="input"
+                  initial="approx">
+      <Integer start="0"/>
+  </ScalarVariable>
+  <ScalarVariable name="b_in"
+                  valueReference="6"
+                  description=""
+                  causality="input"
+                  initial="approx">
+      <Boolean start="false"/>
+  </ScalarVariable>
+  <!--ScalarVariable name="s_in"
+                  valueReference="7"
+                  description=""
+                  causality="input"
+                  initial="approx">
+      <String start=""/>
+  </ScalarVariable-->
+
+  <!-- Parameters -->
+  <ScalarVariable name="r0"
+                  valueReference="8"
+                  description=""
+                  variability="fixed"
+                  causality="parameter">
+      <Real start="0"/>
+  </ScalarVariable>
+  <ScalarVariable name="i0"
+                  valueReference="9"
+                  description=""
+                  variability="fixed"
+                  causality="parameter">
+      <Integer start="0"/>
+  </ScalarVariable>
+  <ScalarVariable name="b0"
+                  valueReference="10"
+                  description=""
+                  variability="fixed"
+                  causality="parameter">
+      <Boolean start="false"/>
+  </ScalarVariable>
+  <!--ScalarVariable name="s0"
+                  valueReference="11"
+                  description=""
+                  variability="fixed"
+                  causality="parameter">
+      <String start=""/>
+  </ScalarVariable-->
+</ModelVariables>
+
+<ModelStructure>
+  <Outputs>
+   <Unknown index="1"/>
+   <Unknown index="2"/>
+   <Unknown index="3"/>
+   <!--Unknown index="4"/-->
+  </Outputs>
+  <Derivatives/>
+  <DiscreteStates/>
+  <InitialUnknowns />
+</ModelStructure>
+
+</fmiModelDescription>

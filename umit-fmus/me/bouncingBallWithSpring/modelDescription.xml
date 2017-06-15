@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<fmiModelDescription
+  fmiVersion="2.0"
+  modelName="bouncingBallWithSpring"
+  guid="{260a1a5e-c0e4-4461-9eee-421bfd48a64c}"
+  numberOfEventIndicators="1">
+
+<ModelExchange
+  modelIdentifier="bouncingBallWithSpring"/>
+
+<LogCategories>
+  <Category name="logAll"/>
+  <Category name="logError"/>
+  <Category name="logFmiCall"/>
+  <Category name="logEvent"/>
+</LogCategories>
+
+<ModelVariables>
+  <ScalarVariable name="x_in" valueReference="10" description="height, used as state"
+                  causality="input" variability="continuous" initial="exact">
+    <Real start="10"/>
+  </ScalarVariable>
+  <ScalarVariable name="f_out" valueReference="20" description="height, used as state"
+                  causality="output" variability="continuous" initial="approx">
+    <Real start="1"/>
+  </ScalarVariable>
+  <ScalarVariable name="h" valueReference="1" description="height, used as state"
+                  causality="local" variability="continuous" initial="exact">
+    <Real start="1"/>
+  </ScalarVariable>
+  <ScalarVariable name="der_h" valueReference="2" description="velocity of ball"
+                  causality="local" variability="continuous" initial="calculated">
+    <Real derivative="3"/>
+  </ScalarVariable>
+  <ScalarVariable name="v" valueReference="3" description="velocity of ball, used as state"
+                  causality="local" variability="continuous" initial="exact">
+    <Real start="0" reinit="true"/>
+  </ScalarVariable>
+  <ScalarVariable name="der_v" valueReference="4" description="acceleration of ball"
+                  causality="local" variability="continuous" initial="calculated">
+    <Real derivative="5"/>
+  </ScalarVariable>
+  <ScalarVariable name="g" valueReference="5" description="acceleration of gravity"
+                  causality="parameter" variability="fixed" initial="exact">
+    <Real start="9.81"/>
+  </ScalarVariable>
+  <ScalarVariable name="e" valueReference="6" description="dimensionless parameter"
+                  causality="parameter" variability="fixed" initial="exact">
+    <Real start="0.7"/>
+  </ScalarVariable>
+  <ScalarVariable
+    name="k"
+    valueReference="30"
+    description="spring constant spring on left mass"
+    causality="parameter"
+    variability="fixed"
+    initial="exact">
+    <Real start="0"/>
+  </ScalarVariable>
+</ModelVariables>
+
+<ModelStructure>
+    <Outputs>
+      <Unknown index="2"/>
+      <Unknown index="3"/>
+      <Unknown index="4"/>
+    </Outputs>
+  <Derivatives>
+    <Unknown index="4" />
+    <Unknown index="6" />
+  </Derivatives>
+  <InitialUnknowns>
+    <Unknown index="4"/>
+    <Unknown index="6"/>
+  </InitialUnknowns>
+</ModelStructure>
+
+</fmiModelDescription>

@@ -360,11 +360,9 @@ int fmi2_xml_handle_ScalarVariable(fmi2_xml_parser_context_t *context, const cha
             
 				defaultInitial = fmi2_get_default_initial((fmi2_variability_enu_t)variability, (fmi2_causality_enu_t)causality);
 				if(defaultInitial == fmi2_initial_enu_unknown) {
-					fmi2_xml_parse_error(context,
-"Invalid combination of variability %s and causality %s. Setting variability to 'fixed' for variable %s",
+					fmi2_xml_parse_error(context,"Invalid combination of variability %s and causality %s. Setting variability to 'fixed'",
 						fmi2_variability_to_string((fmi2_variability_enu_t)variability), 
-							     fmi2_causality_to_string((fmi2_causality_enu_t)causality),
-					  bufName);
+						fmi2_causality_to_string((fmi2_causality_enu_t)causality));
 					variability = fmi2_variability_enu_fixed;
 					defaultInitial = fmi2_get_default_initial((fmi2_variability_enu_t)variability, (fmi2_causality_enu_t)causality);
 				}
@@ -696,7 +694,9 @@ int fmi2_xml_handle_StringVariable(fmi2_xml_parser_context_t *context, const cha
                 fmi2_xml_parse_fatal(context, "Could not allocate memory");
                 return -1;
             }
+            if (strlen > 0) {
             memcpy(start->start, jm_vector_get_itemp_char(bufStartStr,0), strlen);
+            }
             start->start[strlen] = 0;
             variable->typeBase = &start->typeBase;
         }

@@ -9,6 +9,7 @@
 #include <unistd.h>
 #endif
 #include <stdint.h>
+#include "master/globals.h"
 
 using namespace fmitcp;
 
@@ -57,6 +58,7 @@ bool isOK(jm_status_enu_t status) {
 
 Server::Server(string fmuPath, std::string hdf5Filename) {
   m_fmi2Outputs = NULL;
+  m_fmi2Variables = NULL;
   m_fmuParsed = true;
   m_fmuPath = fmuPath;
   this->hdf5Filename = hdf5Filename;
@@ -145,11 +147,6 @@ Server::Server(string fmuPath, std::string hdf5Filename) {
       return;
     }
     m_instanceName = fmi2_import_get_model_name(m_fmi2Instance);
-    {
-        char *temp = fmi_import_create_URL_from_abs_path(&m_jmCallbacks, m_fmuPath.c_str());
-        m_fmuLocation = temp;
-        m_jmCallbacks.free(temp);
-    }
 
     {
         char *temp = fmi_import_create_URL_from_abs_path(&m_jmCallbacks, m_workingDir.c_str());
@@ -234,6 +231,7 @@ void Server::setStartValues() {
 
 Server::~Server() {
   if(m_fmi2Outputs!=NULL)   fmi2_import_free_variable_list(m_fmi2Outputs);
+  if(m_fmi2Variables!=NULL) fmi2_import_free_variable_list(m_fmi2Variables);
 }
 
 string Server::clientData(const char *data, size_t size) {
@@ -380,6 +378,7 @@ string Server::clientData(const char *data, size_t size) {
     bool toleranceDefined = r.has_tolerancedefined();
     double tolerance = r.tolerance();
     double starttime = r.starttime();
+    this->currentCommunicationPoint = starttime;
     bool stopTimeDefined = r.has_stoptimedefined();
     double stoptime = r.stoptime();
 
@@ -679,7 +678,7 @@ string Server::clientData(const char *data, size_t size) {
     fmi2_status_t status = fmi2_status_ok;
     ::google::protobuf::int32 stateId = nextStateId++;
     if(!m_sendDummyResponses){
-        fmi2_FMU_state_t state;
+        fmi2_FMU_state_t state = NULL;
         status = fmi2_import_get_fmu_state(m_fmi2Instance, &state);
         stateMap[stateId] = state;
     }
@@ -756,11 +755,12 @@ string Server::clientData(const char *data, size_t size) {
 
     fmi2_status_t status = fmi2_status_ok;
     if (!m_sendDummyResponses) {
-     if (hasCapability(fmi2_cs_providesDirectionalDerivatives)) {
+     if (!alwaysComputeNumericalDirectionalDerivatives &&
+          hasCapability(fmi2_cs_providesDirectionalDerivatives)) {
       // interact with FMU
       status = fmi2_import_get_directional_derivative(m_fmi2Instance, v_ref.data(), r.v_ref_size(), z_ref.data(), r.z_ref_size(), dv.data(), dz.data());
      } else if (hasCapability(fmi2_cs_canGetAndSetFMUstate)) {
-      dz = computeNumericalJacobian(z_ref, v_ref, dv);
+      dz = computeNumericalDirectionalDerivative(z_ref, v_ref, dv);
      } else {
          error("Tried to fmi2_import_get_directional_derivative() on FMU without directional derivatives or ability to save/load FMU state\n");
       status = fmi2_status_error;
@@ -996,11 +996,20 @@ string Server::clientData(const char *data, size_t size) {
 
     // Unpack message
     fmitcp_proto::fmi2_import_do_step_req r; r.ParseFromArray(data, size);
-    //remember values
-    currentCommunicationPoint = r.currentcommunicationpoint();
-    communicationStepSize = r.communicationstepsize();
     bool newStep = r.newstep();
-    debug("fmi2_import_do_step_req(commPoint=%g,stepSize=%g,newStep=%d)\n",currentCommunicationPoint,communicationStepSize,newStep?1:0);
+    debug("fmi2_import_do_step_req(commPoint=%g,stepSize=%g,newStep=%d)\n",r.currentcommunicationpoint(),r.communicationstepsize(),newStep?1:0);
+
+    if (newStep) {
+      //keep track of what the next communication point will be
+      //this may not work correctly if multiple steps with newStep=false are taken
+      //fmigo never does this, so this works
+      //a better solution would be to tie these two values to the current FMUstate
+      this->currentCommunicationPoint = r.currentcommunicationpoint() + r.communicationstepsize();
+    }
+
+    //this step size is really just a guess - it could be variable
+    //but it should be good enough for computeNumericalDirectionalDerivative()
+    this->communicationStepSize = r.communicationstepsize();
 
     if (hdf5Filename.length()) {
         //log outputs before doing anything
@@ -1012,7 +1021,7 @@ string Server::clientData(const char *data, size_t size) {
     fmi2_status_t status = fmi2_status_ok;
     if (!m_sendDummyResponses) {
       // Step the FMU
-      status = fmi2_import_do_step(m_fmi2Instance, currentCommunicationPoint, communicationStepSize, newStep);
+      status = fmi2_import_do_step(m_fmi2Instance, r.currentcommunicationpoint(), r.communicationstepsize(), newStep);
     }
 
     SERVER_NORMAL_RESPONSE(do_step);
@@ -1261,13 +1270,13 @@ bool Server::hasCapability(fmi2_capabilities_enu_t cap) const {
     return fmi2_import_get_capability(m_fmi2Instance, cap) != 0;
 }
 
-vector<fmi2_real_t> Server::computeNumericalJacobian(
+vector<fmi2_real_t> Server::computeNumericalDirectionalDerivative(
         const vector<fmi2_value_reference_t>& z_ref,
         const vector<fmi2_value_reference_t>& v_ref,
         const vector<fmi2_real_t>& dv) {
     vector<fmi2_real_t> dz;
-    fmi2_FMU_state_t state;
-    double t = currentCommunicationPoint + communicationStepSize;
+    fmi2_FMU_state_t state = NULL;
+    double t = currentCommunicationPoint;
     double dt = 1e-3 * communicationStepSize;
 
     fmi2_import_get_fmu_state(m_fmi2Instance, &state);
@@ -1283,7 +1292,9 @@ vector<fmi2_real_t> Server::computeNumericalJacobian(
     fmi2_import_get_real(m_fmi2Instance, z_ref.data(), z_ref.size(), z0.data());
     fmi2_import_set_fmu_state(m_fmi2Instance, state);
 
+    debug("dv = ");
     for (size_t x = 0; x < v_ref.size(); x++) {
+        debug("%f ", dv[x]);
         v1.push_back(v0[x] + dv[x]);
     }
 
@@ -1293,6 +1304,7 @@ vector<fmi2_real_t> Server::computeNumericalJacobian(
     fmi2_import_set_fmu_state(m_fmi2Instance, state);
     fmi2_import_free_fmu_state(m_fmi2Instance, &state);
 
+    debug("-> dz = ");
     for (size_t x = 0; x < z_ref.size(); x++) {
         /**
          * NOTE: This works because the master only cares about computing mobilities,
@@ -1308,7 +1320,9 @@ vector<fmi2_real_t> Server::computeNumericalJacobian(
          * magnitude of dv.
          */
         dz.push_back(z1[x] - z0[x]);
+        debug("%f ", *(dz.end()-1));
     }
+    debug("\n");
 
     return dz;
 }

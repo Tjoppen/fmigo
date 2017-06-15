@@ -4,11 +4,7 @@
  */
 #include <iostream>
 #include <cmath>
-#ifdef DEBUG
-#include "fmigo_storage.hpp"
-#else
 #include "common/fmigo_storage.h"
-#endif
 #include "common/common.h"
 using namespace std;
 /// Global data for FMUs as well as maps to fetch and read from the FMI/X

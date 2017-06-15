@@ -60,16 +60,16 @@ std::vector<WeakConnection> me_weakConnections;
     std::vector<FMIClient*>     me_clients;
 
  public:
-    explicit ModelExchangeStepper(std::vector<FMIClient*> clients, std::vector<WeakConnection> weakConnections);
+    explicit ModelExchangeStepper(zmq::context_t &context, std::vector<FMIClient*> clients, std::vector<WeakConnection> weakConnections);
     ~ModelExchangeStepper();
 
 #ifdef USE_GPL
  protected:
     void solveME(double t, double dt);
 
- private:
     void prepareME();
 
+ private:
     /** allocate Memory
      *  Allocates memory needed by the fmu_model
      *

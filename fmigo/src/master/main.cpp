@@ -40,7 +40,9 @@ int columnofs;
 std::map<int, const char*> columnnames;
 #endif
 
+string hdf5Filename;
 jm_log_level_enu_t fmigo_loglevel = jm_log_level_warning;
+bool alwaysComputeNumericalDirectionalDerivatives = false;
 
 #ifdef USE_MPI
 static vector<FMIClient*> setupClients(int numFMUs) {
@@ -308,10 +310,11 @@ static void sendUserParams(BaseMaster *master, vector<FMIClient*> clients,
             fatal("Couldn't find variable VR=%i type=%i\n",
                   it2->valueReference, it->first.second);
           }
-          if (it3->second.initial == fmi2_initial_enu_calculated) {
-            fatal("Setting variables with initial=\"calculated\" is not allowed (VR=%i type=%i)\n",
-                  it2->valueReference, it->first.second);
-          }
+          //We used to check for initial="calculated" here, but Dymola FMUs have VRs
+          //with multiple ScalarVariable associated, which makes checks for that more involved.
+          //The reason is that they have some of these SVs without causality or initial defined,
+          //so they default to causality="local" and initial="calculated". FMIL then picks these up
+          //and delivers the first of them to us, not the input one which has an appropriate value for initial.
 
           //skip non-exact, non-inputs during initialization
           if (initialization &&
@@ -382,53 +385,6 @@ static string getFieldnames(vector<FMIClient*> clients) {
         oss << client->getSpaceSeparatedFieldNames(prefix.str());
     }
     return oss.str();
-}
-
-static void handleZmqControl(zmq::socket_t& rep_socket, bool *paused, bool *running) {
-    zmq::message_t msg;
-
-    //paused means we do blocking polls to avoid wasting CPU time
-    while (rep_socket.recv(&msg, (*paused) ? 0 : ZMQ_NOBLOCK) && *running) {
-        //got something - make sure it's a control_message with correct
-        //version and command set
-        control_proto::control_message ctrl;
-
-        if (    ctrl.ParseFromArray(msg.data(), msg.size()) &&
-                ctrl.has_version() &&
-                ctrl.version() == 1 &&
-                ctrl.has_command()) {
-            switch (ctrl.command()) {
-            case control_proto::control_message::command_pause:
-                *paused = true;
-                break;
-            case control_proto::control_message::command_unpause:
-                *paused = false;
-                break;
-            case control_proto::control_message::command_stop:
-                *running = false;
-                break;
-            case control_proto::control_message::command_state:
-                break;
-            }
-
-            //always reply with state
-            control_proto::state_message state;
-            state.set_version(1);
-
-            if (!*running) {
-                state.set_state(control_proto::state_message::state_exiting);
-            } else if (*paused) {
-                state.set_state(control_proto::state_message::state_paused);
-            } else {
-                state.set_state(control_proto::state_message::state_running);
-            }
-
-            string str = state.SerializeAsString();
-            zmq::message_t rep(str.length());
-            memcpy(rep.data(), str.data(), str.length());
-            rep_socket.send(rep);
-        }
-    }
 }
 
 template<typename RFType, typename From> void addVectorToRepeatedField(RFType* rf, const From& from) {
@@ -624,12 +580,11 @@ int main(int argc, char *argv[] ) {
     vector<int> fmuVisibilities;
     vector<strongconnection> scs;
     Solver solver;
-    string hdf5Filename;
     string fieldnameFilename;
     bool holonomic = true;
     bool useHeadersInCSV = false;
     int command_port = 0, results_port = 0;
-    bool paused = false, running = true, solveLoops = false;
+    bool startPaused = false, solveLoops = false;
     fmigo_csv_fmu csv_fmu;
 
     parseArguments(
@@ -637,7 +592,7 @@ int main(int argc, char *argv[] ) {
             &fmigo_loglevel, &csv_separator, &outFilePath, &quietMode, &fmigo::globals::fileFormat,
             &method, &realtimeMode, &printXML, &stepOrder, &fmuVisibilities,
             &scs, &hdf5Filename, &fieldnameFilename, &holonomic, &compliance,
-            &command_port, &results_port, &paused, &solveLoops, &useHeadersInCSV, &csv_fmu
+            &command_port, &results_port, &startPaused, &solveLoops, &useHeadersInCSV, &csv_fmu
     );
 
     bool zmqControl = command_port > 0 && results_port > 0;
@@ -666,20 +621,7 @@ int main(int argc, char *argv[] ) {
 #endif
 
     zmq::context_t context(1);
-
-    zmq::socket_t rep_socket(context, ZMQ_REP);
     zmq::socket_t push_socket(context, ZMQ_PUSH);
-
-    if (zmqControl) {
-        info("Init zmq control on ports %i and %i\n", command_port, results_port);
-        char addr[128];
-        snprintf(addr, sizeof(addr), "tcp://*:%i", command_port);
-        rep_socket.bind(addr);
-        snprintf(addr, sizeof(addr), "tcp://*:%i", results_port);
-        push_socket.bind(addr);
-    } else if (paused) {
-        fatal("-Z requires -z\n");
-    }
 
 #ifdef USE_MPI
     vector<FMIClient*> clients = setupClients(world_size-1);
@@ -714,13 +656,27 @@ int main(int argc, char *argv[] ) {
         }
 
         solver.setSpookParams(relaxation,compliance,timeStep);
-        StrongMaster *sm = new StrongMaster(clients, weakConnections, solver, holonomic);
+        StrongMaster *sm = new StrongMaster(context, clients, weakConnections, solver, holonomic);
         master = sm;
         fieldnames += sm->getForceFieldnames();
     } else {
-        master = (method == gs) ?           (BaseMaster*)new GaussSeidelMaster(clients, weakConnections, stepOrder) :
-                                            (BaseMaster*)new JacobiMaster(clients, weakConnections);
+        master = (method == gs) ?           (BaseMaster*)new GaussSeidelMaster(context, clients, weakConnections, stepOrder) :
+                                            (BaseMaster*)new JacobiMaster(context, clients, weakConnections);
     }
+
+    if (zmqControl) {
+        info("Init zmq control on ports %i and %i\n", command_port, results_port);
+        char addr[128];
+        snprintf(addr, sizeof(addr), "tcp://*:%i", command_port);
+        master->rep_socket.bind(addr);
+        snprintf(addr, sizeof(addr), "tcp://*:%i", results_port);
+        push_socket.bind(addr);
+    } else if (startPaused) {
+        fatal("-Z requires -z\n");
+    }
+
+    master->paused = startPaused;
+    master->zmqControl = zmqControl;
 
     if (useHeadersInCSV || fmigo::globals::fileFormat == tikz) {
         printf("%s\n",fieldnames.c_str());
@@ -753,6 +709,11 @@ int main(int argc, char *argv[] ) {
      * trying set calculated parameters.
      */
     sendUserParams(master, clients, resolve_string_params(params, clients));
+    master->wait();
+
+    for (FMIClient *client : clients) {
+      client->m_fmuState = control_proto::fmu_state_State_initializing;
+    }
 
     master->send(clients, fmi2_import_enter_initialization_mode());
 
@@ -777,11 +738,11 @@ int main(int argc, char *argv[] ) {
       master->solveLoops();
     }
 
-    //prepare solver and all that
-    master->prepare();
-
     master->send(clients, fmi2_import_exit_initialization_mode());
     master->wait();
+
+    //prepare solver and all that
+    master->prepare();
 
     //double t = 0;
     int step = 0;
@@ -789,14 +750,25 @@ int main(int argc, char *argv[] ) {
 
 #ifndef WIN32
     //HDF5
-    int expected_records = 1+1.01*endTime/timeStep, nrecords = 0;
-    timelog.reserve(expected_records*MAX_TIME_COLS);
+    //TODO: remove HDF5 output entirely? fix issue #120 for now
+    int nrecords = 0;
+    if (hdf5Filename.length() > 0) {
+      size_t expected_records = (1+1.01*endTime/timeStep) * MAX_TIME_COLS;
+      if (expected_records > 1000000) {
+        expected_records = 1000000;
+      }
+      timelog.reserve(expected_records);
+    }
 
     gettimeofday(&tl1, NULL);
 #endif
 
     if (zmqControl) {
         pushResults(step, 0, endTime, timeStep, push_socket, master, clients, true);
+    }
+
+    for (FMIClient *client : clients) {
+      client->m_fmuState = control_proto::fmu_state_State_running;
     }
 
     #ifdef WIN32
@@ -809,19 +781,17 @@ int main(int argc, char *argv[] ) {
     #endif
 
     //run
-    while ((endTime < 0 || step < nsteps) && running) {
+    while ((endTime < 0 || step < nsteps) && master->running) {
         double t = step * endTime / nsteps;
 
-        if (zmqControl) {
-            handleZmqControl(rep_socket, &paused, &running);
-        }
+        master->handleZmqControl();
 
-        if (!running) {
+        if (!master->running) {
             //termination requested
             break;
         }
 
-        if (paused) {
+        if (master->paused) {
             continue;
         }
 
@@ -905,19 +875,25 @@ int main(int argc, char *argv[] ) {
 
 
 #ifndef WIN32
-    vector<size_t> field_offset;
-    vector<hid_t> field_types;
-    vector<const char*> field_names;
+    if (hdf5Filename.length() > 0) {
+      vector<size_t> field_offset;
+      vector<hid_t> field_types;
+      vector<const char*> field_names;
 
-    for (size_t x = 0; x < columnnames.size(); x++) {
+      for (size_t x = 0; x < columnnames.size(); x++) {
         field_offset.push_back(x*sizeof(int));
         field_types.push_back(H5T_NATIVE_INT);
         field_names.push_back(columnnames[x]);
-    }
+      }
 
-    writeHDF5File(hdf5Filename, field_offset, field_types, field_names,
-        "Timings", "table", nrecords, columnnames.size()*sizeof(int), &timelog[0]);
+      writeHDF5File(hdf5Filename, field_offset, field_types, field_names,
+          "Timings", "table", nrecords, columnnames.size()*sizeof(int), &timelog[0]);
+    }
 #endif
+
+    for (FMIClient *client : clients) {
+      client->terminate();
+    }
 
     //clean up
     delete master;

@@ -17,14 +17,15 @@ using namespace fmitcp;
 using namespace fmitcp::serialize;
 using namespace sc;
 
-StrongMaster::StrongMaster(vector<FMIClient*> clients, vector<WeakConnection> weakConnections, Solver strongCouplingSolver, bool holonomic) :
-        JacobiMaster(clients, weakConnections),
+StrongMaster::StrongMaster(zmq::context_t &context, vector<FMIClient*> clients, vector<WeakConnection> weakConnections, Solver strongCouplingSolver, bool holonomic) :
+        JacobiMaster(context, clients, weakConnections),
         m_strongCouplingSolver(strongCouplingSolver), holonomic(holonomic) {
     info("StrongMaster (%s)\n", holonomic ? "holonomic" : "non-holonomic");
 }
 
 void StrongMaster::prepare() {
     m_strongCouplingSolver.prepare();
+    JacobiMaster::prepare();
 }
 
 void StrongMaster::getDirectionalDerivative(FMIClient *client, Vec3 seedVec, vector<int> accelerationRefs, vector<int> forceRefs) {

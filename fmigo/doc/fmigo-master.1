@@ -4,7 +4,7 @@ fmigo-master \- simulate FMUs
 .SH SYNOPSIS
 .ll +8
 .B fmigo-master
-.RB [ " \-xrlvqhtcdsopfmgwC5NMazZLH " ]
+.RB [ " \-xrlvqhtcdsopfmgwC5NMazZLHD " ]
 [
 .I "URLs \&..."
 ]
@@ -330,6 +330,12 @@ Examples:
 .TP
 .B \-H
 Print CSV header.
+.TP
+.B \-D
+Always compute numerical directional derivatives, regardless of the value of providesDirectionalDerivatives in all FMUs' modelDescription.xml.
+This is useful for kinematic coupling if one or more FMUs have a spring-damper type input.
+Such FMUs would give a much too high mobility estimate, unless the timestep is taken into account somehow.
+This is exactly what the numerical directional derivative code does, hence this flag.
 
 .SH EXAMPLES
 To run an FMU simulation from time 0 to 5 with timestep 0.01:

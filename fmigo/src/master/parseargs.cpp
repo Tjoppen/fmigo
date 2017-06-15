@@ -15,6 +15,7 @@
 #include "common/CSV-parser.h"
 
 #include "master/parseargs.h"
+#include "master/globals.h"
 
 using namespace fmitcp_master;
 using namespace common;
@@ -173,7 +174,7 @@ void fmitcp_master::parseArguments( int argc,
 
     vector<char*> argv2 = make_char_vector(argvstore);
 
-    while ((c = getopt (argv2.size(), argv2.data(), "xrl:vqht:c:d:s:o:p:f:m:g:w:C:5:F:NM:a:z:ZLHV:")) != -1){
+    while ((c = getopt (argv2.size(), argv2.data(), "xrl:vqht:c:d:s:o:p:f:m:g:w:C:5:F:NM:a:z:ZLHV:D")) != -1){
         int n, skip, l, cont, i, numScanned, stop, vis;
         deque<string> parts;
         if (optarg) parts = escapeSplit(optarg, ':');
@@ -473,6 +474,12 @@ void fmitcp_master::parseArguments( int argc,
             }
             break;
         }
+
+        case 'D':
+            info("Always computing numerical directional derivatives, regardless of providesDirectionalDerivatives\n");
+            alwaysComputeNumericalDirectionalDerivatives = true;
+            break;
+
         default:
             fatal("abort %c...\n",c);
         }

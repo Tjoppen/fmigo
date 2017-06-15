@@ -1,0 +1,475 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fmiModelDescription
+    fmiVersion="2.0"
+    description="A two plates clutch with GSL integrator and
+                 piecewise linear torque model.  Either plate can be
+                 coupled to another module via force, velocity or
+                 displacements.  In case of force-velocity couplings, the
+                 position difference between this module and the coupled
+                 one is estimated by integrating the velocity difference
+                 internally."
+    modelName="clutch2"
+    guid="{6985712a-2b8e-4ebb-9b6c-05d89b0ec1c8}"
+    numberOfEventIndicators="0">
+
+  <CoSimulation
+      modelIdentifier="clutch2"
+      canHandleVariableCommunicationStepSize="true"
+      canGetAndSetFMUstate="true"
+      providesDirectionalDerivative="true"/>
+
+  <LogCategories>
+    <Category name="logAll"/>
+    <Category name="logError"/>
+    <Category name="logFmiCall"/>
+    <Category name="logEvent"/>
+  </LogCategories>
+
+  <DefaultExperiment startTime="0" stopTime="10" stepSize="0.1"/>
+
+  <ModelVariables>
+    <!-- index="0"-->
+    <ScalarVariable
+        name="x0_e"               
+        valueReference="0"  
+        description="initial position of engine-side plate"                      
+        causality="parameter" 
+        variability="fixed">
+      <Real start="0"/>
+    </ScalarVariable>
+    <!-- index="0"-->
+    <ScalarVariable 
+        name="v0_e"
+        valueReference="1"  
+        description="initial velocity of engine-side plate"                      
+        causality="parameter"
+        variability="fixed">
+      <Real start="0"/>
+    </ScalarVariable>
+    <!-- index="0"-->
+    <ScalarVariable 
+        name="dx0_e"
+        valueReference="2"
+        description="initial angle difference engine-side coupling"
+        causality="parameter" 
+        variability="fixed">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <!-- index="0"-->
+    <ScalarVariable
+        name="x0_s"               
+        valueReference="3"  
+        description="initial position of shaft-side plate"                      
+        causality="parameter" 
+        variability="fixed">
+      <Real start="0"/>
+    </ScalarVariable>
+    <!-- index="0"-->
+    <ScalarVariable 
+        name="v0_s"
+        valueReference="4"  
+        description="initial velocity of shaft-side plate"                      
+        causality="parameter"
+        variability="fixed">
+      <Real start="0"/>
+    </ScalarVariable>
+    <!-- index="0"-->
+    <ScalarVariable 
+        name="dx0_s"
+        valueReference="5"
+        description="initial angle difference shaft-side coupling"
+        causality="parameter" 
+        variability="fixed">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    
+    <!-- coupling parameters -->
+
+    <!-- index="0"-->
+    <ScalarVariable 
+        name="k_ec"             
+        valueReference="6"  
+        description="coupling spring engine side"
+        causality="parameter" 
+        variability="fixed">
+      <Real start="0"/>
+    </ScalarVariable>
+    <!-- index="0"-->
+    <ScalarVariable 
+        name="gamma_ec"            
+        valueReference="7"  
+        description="coupling damping constant, engine side"         
+        causality="parameter" 
+        variability="fixed">
+      <Real start="0"/>
+    </ScalarVariable>
+     <ScalarVariable 
+        name="integrate_dx_e"            
+        valueReference="8"  
+        description="whether or not engine-side coupling angle difference is integrated"         
+        causality="parameter" 
+        variability="fixed">
+      <Boolean start="false"/>
+    </ScalarVariable>
+
+    <!-- index="0"-->
+    <ScalarVariable 
+        name="k_sc"             
+        valueReference="9"  
+        description="coupling spring, shaft side"
+        causality="parameter" 
+        variability="fixed">
+      <Real start="0"/>
+    </ScalarVariable>
+    <!-- index="0"-->
+    <ScalarVariable 
+        name="gamma_sc"            
+        valueReference="10"  
+        description="coupling damping constant, shaft side"         
+        causality="parameter" 
+        variability="fixed">
+      <Real start="0"/>
+    </ScalarVariable>   
+    <ScalarVariable 
+        name="integrate_dx_s"            
+        valueReference="11"  
+        description="whether or not shaft-side coupling angle difference is integrated"         
+        causality="parameter" 
+        variability="fixed">
+      <Boolean start="false"/>
+    </ScalarVariable>
+    <!-- internal parameters -->
+
+    <!-- index="0"-->
+    <ScalarVariable 
+        name="mass_e"             
+        valueReference="12"  
+        description="mass engine-side plate"                                  
+        causality="parameter" 
+        variability="fixed">
+      <Real start="1"/>
+    </ScalarVariable>
+    <!-- index="0"-->
+    <ScalarVariable 
+        name="gamma_e"            
+        valueReference="13"  
+        description="damping constant, engine side"         
+        causality="parameter" 
+        variability="fixed">
+      <Real start="1"/>
+    </ScalarVariable>
+
+    <!-- index="0"-->
+    <ScalarVariable 
+        name="mass_s"             
+        valueReference="14"  
+        description="mass shaft-side plate"                                  
+        causality="parameter" 
+        variability="fixed">
+      <Real start="1"/>
+    </ScalarVariable>
+    <!-- index="0"-->
+    <ScalarVariable 
+        name="gamma_s"            
+        valueReference="15"  
+        description="damping constant, shaft-side"         
+        causality="parameter" 
+        variability="fixed">
+      <Real start="1"/>
+    </ScalarVariable>
+
+    <!-- index="0"-->
+    <ScalarVariable 
+        name="clutch_damping"   
+        valueReference="16"  
+        description="internal clutch damping constant"      
+        causality="parameter" 
+        variability="fixed">
+      <Real start="1"/>
+    </ScalarVariable>
+
+    <ScalarVariable 
+        name="is_gearbox"
+        valueReference="17"
+        description="If true, this is a gearbox instead of a clutch"
+        causality="parameter"
+        variability="fixed">
+      <Boolean start="false"/>
+    </ScalarVariable>
+
+    <ScalarVariable 
+        name="gear_k"
+        valueReference="18"
+        description="Inter-gear spring constant"
+        causality="parameter"
+        variability="fixed">
+      <Real start="10000"/>
+    </ScalarVariable>
+
+    <ScalarVariable 
+        name="gear_d"
+        valueReference="19"
+        description="Inter-gear damping constant"
+        causality="parameter"
+        variability="fixed">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <!-- inputs -->
+    <!-- engine side inputs-->
+    <!-- index="0"-->
+    <ScalarVariable 
+        name="x_in_e"
+        valueReference="20"
+        description="external displacement engine-side"             
+        causality="input">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <!-- index="0"-->
+    <ScalarVariable 
+        name="v_in_e"
+        valueReference="21"
+        description="external driving velocity engine-side"             
+        causality="input">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <!-- index="0"-->
+    <ScalarVariable 
+        name="force_in_e"         
+        valueReference="22"
+        description="driving force, engine-side"
+        causality="input">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <!-- index="0"-->
+    <ScalarVariable 
+        name="force_in_ex"         
+        valueReference="23"
+        description="additional driving force, engine-side"
+        causality="input">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <!-- shaft side inputs-->
+    <!-- index="0"-->
+    <ScalarVariable 
+        name="x_in_s"
+        valueReference="24"
+        description="external displacement shaft-side"             
+        causality="input">
+      <Real start="0"/>
+    </ScalarVariable>
+    <!-- index="0"-->
+ <ScalarVariable 
+        name="v_in_s"
+        valueReference="25"
+        description="external driving velocity shaft-side"             
+        causality="input">
+      <Real start="0"/>
+    </ScalarVariable>
+    <!-- index="0"-->
+    <ScalarVariable 
+        name="force_in_s"         
+        valueReference="26"
+        description="driving force, shaft-side"
+        causality="input">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <!-- index="0"-->
+    <ScalarVariable 
+        name="force_in_sx"         
+        valueReference="27"
+        description="additional driving force, shaft-side"
+        causality="input">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <!-- index="0"-->
+    <ScalarVariable 
+        name="clutch_position"         
+        valueReference="28"  
+        description="how hard the clutch is engaged (only 0 or 1 for now)"
+        causality="input">
+      <Real start="0"/>
+    </ScalarVariable>
+
+    <ScalarVariable 
+        name="gear"
+        valueReference="29"  
+        description="Gear. Reverse = -1, neutral = 0, forward = 1, 2, ..., 14"
+        causality="input">
+      <Integer start="1"/>
+    </ScalarVariable>
+
+    <!-- outputs -->
+
+    <!-- engine side outputs -->
+    <!-- index="0"-->
+    <ScalarVariable 
+        name="x_e"                
+        valueReference="30"
+        description="position of engine-side plate"                              
+        causality="output">
+      <Real />
+    </ScalarVariable>
+    <!-- index="0"-->
+    <ScalarVariable 
+        name="v_e"                
+        valueReference="31"
+        description="velocity of engine-side plate"
+        causality="output">
+      <Real />
+    </ScalarVariable>
+    <!-- index="0"-->
+    <ScalarVariable 
+        name="a_e"                
+        valueReference="32"
+        description="acceleration of engine-side plate"
+        causality="output">
+      <Real />
+    </ScalarVariable>
+    <!-- index="0"-->
+    <ScalarVariable 
+        name="force_e"
+        valueReference="33"
+        description="coupling torque of engine-side plate"
+        causality="output">
+      <Real />
+    </ScalarVariable>
+    <!-- shaft side outputs -->
+    <!-- index="0"-->
+    <ScalarVariable 
+        name="x_s"                
+        valueReference="34"
+        description="position of shaft-side plate"                              
+        causality="output">
+      <Real />
+    </ScalarVariable>
+    <!-- index="0"-->
+    <ScalarVariable 
+        name="v_s"
+        valueReference="35"
+        description="velocity of shaft-side plate"
+        causality="output">
+      <Real />
+    </ScalarVariable>
+    <!-- index="0"-->
+    <ScalarVariable 
+        name="a_s"                
+        valueReference="36"
+        description="acceleration of shaft-side plate"
+        causality="output">
+      <Real />
+    </ScalarVariable>
+    <!-- index="0"-->
+    <ScalarVariable 
+        name="force_s"
+        valueReference="37"
+        description="coupling torque of shaft-side plate"
+        causality="output">
+      <Real />
+    </ScalarVariable>
+
+    <!-- index="0"-->
+    <ScalarVariable 
+        name="filter_length"
+        valueReference="98"
+        description="Length of EPCE FIR filter (0 = disable)"
+        causality="parameter"
+        variability="fixed">
+      <Integer start="0"/>
+    </ScalarVariable>
+
+    <ScalarVariable 
+        name="octave_output"
+        valueReference="97"
+        description="Dump Octave data to clutch2.m?"
+        causality="parameter"
+        variability="fixed">
+      <Boolean start="false"/>
+    </ScalarVariable>
+
+
+    <!-- index="41"-->
+    <ScalarVariable 
+        name="integrator"
+        valueReference="201"
+        description="Choose integrator:
+                     {
+                     rk2,	/* 0 */
+                     rk4,	/* 1 */
+                     rkf45,	/* 2 */
+                     rkck,	/* 3 */
+                     rk8pd,	/* 4 */
+                     rk1imp,	/* 5 */
+                     rk2imp,	/* 6 */
+                     rk4imp,	/* 7 */
+                     bsimp,	/* 8 */
+                     msadams,	/* 9 */
+                     msbdf	/*10 */
+                     };
+                     "
+        causality="parameter"
+        variability="fixed">
+      <Integer start="2"/>
+    </ScalarVariable>
+    <!-- index="39"-->
+    <ScalarVariable 
+        name="octave_output_file"
+        valueReference="202"
+        description="file for internal dump?"
+        causality="parameter"
+        variability="fixed">
+      <String start="clutch2.m"/>
+      <Annotations>
+        <Tool name="fmigo">
+          <size>1024</size>
+        </Tool>
+      </Annotations>
+    </ScalarVariable>
+
+    <!-- index="44"-->
+    <ScalarVariable 
+        name="reset_dx_e"
+        valueReference="203"
+        description="Whether or not angle differences are reset at each step"
+        causality="parameter"
+        variability="fixed">
+      <Boolean start="false"/>
+    </ScalarVariable>
+    <!-- index="45"-->
+     <ScalarVariable 
+        name="reset_dx_s"
+        valueReference="204"
+        description="Whether or not angle differences are reset at each step"
+        causality="parameter"
+        variability="fixed">
+      <Boolean start="false"/>
+    </ScalarVariable>   
+
+  </ModelVariables>
+
+
+  <ModelStructure>
+    <Outputs>
+      <Unknown index="31"/>
+      <Unknown index="32"/>
+      <Unknown index="33"/>
+      <Unknown index="34"/>
+      <Unknown index="35"/>
+      <Unknown index="36"/>
+      <Unknown index="37"/>
+      <Unknown index="38"/>
+    </Outputs>
+    <Derivatives/>
+    <DiscreteStates/>
+    <InitialUnknowns />
+  </ModelStructure>
+
+</fmiModelDescription>

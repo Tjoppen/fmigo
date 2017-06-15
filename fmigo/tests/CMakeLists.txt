@@ -1,4 +1,8 @@
-add_executable (fmigoStorage testStorage.cpp ../src/common/fmigo_storage.cpp)
+add_executable (fmigoStorage
+  testStorage.cpp
+  ../src/common/fmigo_storage.cpp
+  ../src/common/common.cpp
+)
 add_dependencies(fmigoStorage fmitcp_pb control_pb)
 
 add_test(ctest_fmigoStorage_run fmigoStorage)

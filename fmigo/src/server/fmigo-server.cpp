@@ -15,6 +15,7 @@ using namespace fmitcp;
 #include "parse_server_args.cpp"
 
 jm_log_level_enu_t fmigo_loglevel = jm_log_level_warning;
+bool alwaysComputeNumericalDirectionalDerivatives = false;
 
 class mymonitor : public zmq::monitor_t {
 public:

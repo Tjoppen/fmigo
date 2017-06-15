@@ -19,7 +19,7 @@ class StrongMaster : public JacobiMaster {
 
     void getDirectionalDerivative(FMIClient *client, sc::Vec3 seedVec, std::vector<int> accelerationRefs, std::vector<int> forceRefs);
 public:
-    StrongMaster(std::vector<FMIClient*> slaves, std::vector<WeakConnection> weakConnections, sc::Solver strongCouplingSolver, bool holonomic);
+    StrongMaster(zmq::context_t &context, std::vector<FMIClient*> slaves, std::vector<WeakConnection> weakConnections, sc::Solver strongCouplingSolver, bool holonomic);
     void prepare();
     void runIteration(double t, double dt);
 

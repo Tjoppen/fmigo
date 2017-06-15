@@ -31,8 +31,8 @@ inline fmu_parameters* get_p(cgsl_simulation s){
  *  @param clients Vector with clients
  *  @param weakConnections WeakConnections.. not used
  */
-ModelExchangeStepper::ModelExchangeStepper(std::vector<FMIClient*> clients, std::vector<WeakConnection> weakConnections) :
-        BaseMaster(clients, weakConnections) {
+ModelExchangeStepper::ModelExchangeStepper(zmq::context_t &context, std::vector<FMIClient*> clients, std::vector<WeakConnection> weakConnections) :
+        BaseMaster(context, clients, weakConnections) {
     for(auto client : clients) {
         switch (client->getFmuKind()){
         case fmi2_fmu_kind_cs: cs_clients.push_back(client); break;
@@ -48,14 +48,6 @@ ModelExchangeStepper::ModelExchangeStepper(std::vector<FMIClient*> clients, std:
         if(wc.from->getFmuKind() == fmi2_fmu_kind_me &&
            wc.to->getFmuKind()   == fmi2_fmu_kind_me )
             me_weakConnections.push_back(wc);
-    }
-
-    if (me_clients.size() > 0) {
-#ifdef USE_GPL
-        prepareME();
-#else
-        fatal("Running ModelExchange FMUs requires libgsl, which requires enabling GPL\n");
-#endif
     }
 }
 
@@ -186,6 +178,8 @@ void ModelExchangeStepper::init_fmu_model(fmu_model &m,  const std::vector<FMICl
     m.model->pre_step = NULL;
     m.model->free = cgsl_model_default_free;//freeFMUModel;
 
+    p->FMIGO_ME_ENTER_CONTINUOUS_TIME_MODE(me_clients);
+
     for(auto client: clients)
         p->FMIGO_ME_GET_CONTINUOUS_STATES(client);
     wait();
@@ -237,6 +231,7 @@ static int epce_post_step(double t, int n, const double outputs[], void * params
  *  Setup everything
  */
 void ModelExchangeStepper::prepareME() {
+  if (me_clients.size() > 0) {
 #ifdef USE_GPL
     // set up a gsl_simulation for each client
     init_fmu_model(m_model, me_clients);
@@ -262,7 +257,10 @@ void ModelExchangeStepper::prepareME() {
                                  );
     // might not be needed
     get_storage().sync();
+#else
+    fatal("Running ModelExchange FMUs requires libgsl, which requires enabling GPL\n");
 #endif
+  }
 }
 
 /** restoreStates()

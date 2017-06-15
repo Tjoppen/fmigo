@@ -319,8 +319,8 @@ static T jm_vector_get_item(T)(jm_vector(T)* a, size_t index) { \
            return a->items[index]; \
 }\
 static T* jm_vector_get_itemp(T)(jm_vector(T)* a, size_t index) { \
-  /*assert(index < a->size);*/                                    \
-  return (index < a->size)? a->items+index : ( (a->size ==0)? a->items: a->items + a->size-1 ); \
+           assert(index < a->size); \
+           return (a->items+index); \
 }\
  static T jm_vector_get_last(T)(jm_vector(T)* a) { \
         assert(a->size); \

@@ -28,12 +28,15 @@ namespace fmitcp_master {
 //aka parallel stepper
 class JacobiMaster : public model_exchange::ModelExchangeStepper {
 public:
-    JacobiMaster(vector<FMIClient*> clients, vector<WeakConnection> weakConnections) :
-            model_exchange::ModelExchangeStepper(clients, weakConnections) {
+    JacobiMaster(zmq::context_t &context, vector<FMIClient*> clients, vector<WeakConnection> weakConnections) :
+            model_exchange::ModelExchangeStepper(context, clients, weakConnections) {
         info("JacobiMaster\n");
     }
 
     void prepare() {
+#ifdef USE_GPL
+      prepareME();
+#endif
     }
 
     void runIteration(double t, double dt) {
@@ -65,8 +68,8 @@ class GaussSeidelMaster : public model_exchange::ModelExchangeStepper {
     map<FMIClient*, OutputRefsType> clientGetXs;  //one OutputRefsType for each client
     std::vector<int> stepOrder;
 public:
-    GaussSeidelMaster(vector<FMIClient*> clients, vector<WeakConnection> weakConnections, std::vector<int> stepOrder) :
-            model_exchange::ModelExchangeStepper(clients, weakConnections), stepOrder(stepOrder) {
+    GaussSeidelMaster(zmq::context_t &context, vector<FMIClient*> clients, vector<WeakConnection> weakConnections, std::vector<int> stepOrder) :
+            model_exchange::ModelExchangeStepper(context, clients, weakConnections), stepOrder(stepOrder) {
         info("GSMaster\n");
     }
 
@@ -75,6 +78,9 @@ public:
             WeakConnection wc = m_weakConnections[x];
             clientGetXs[wc.to][wc.from][wc.conn.fromType].push_back(wc.conn.fromOutputVR);
         }
+#ifdef USE_GPL
+        prepareME();
+#endif
     }
 
     void runIteration(double t, double dt) {

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fmiModelDescription
+  fmiVersion="2.0"
+  description="Moving body with driveshaft"
+  modelName="body"
+  guid="{1fbe9e15-2bf7-4795-80da-a08eb447744f}"
+  numberOfEventIndicators="0">
+
+<CoSimulation
+  modelIdentifier="body"
+  canHandleVariableCommunicationStepSize="false"
+  canGetAndSetFMUstate="true"
+  providesDirectionalDerivative="true"/>
+
+<LogCategories>
+  <Category name="logAll"/>
+  <Category name="logError"/>
+  <Category name="logFmiCall"/>
+  <Category name="logEvent"/>
+</LogCategories>
+
+<DefaultExperiment startTime="0" stopTime="10" stepSize="0.1"/>
+
+<ModelVariables>
+  <ScalarVariable name="theta"      valueReference="0"  description="Angle"                             causality="output" initial="exact"><Real start="0"/></ScalarVariable>
+  <ScalarVariable name="omega"      valueReference="1"  description="Angular velocity"                  causality="output" initial="exact"><Real start="0"/></ScalarVariable>
+  <ScalarVariable name="alpha"      valueReference="2"  description="Angular acceleration"              causality="output" initial="exact"><Real start="0"/></ScalarVariable>
+  <ScalarVariable name="tau"        valueReference="3"  description="Torque"                            causality="input"><Real start="0"/></ScalarVariable>
+  <ScalarVariable name="jinv"       valueReference="4"  description="Inverse moment of inertia"         causality="parameter" variability="fixed"><Real start="0.0001"/></ScalarVariable>
+  <ScalarVariable name="d"          valueReference="5"  description="Damping"                           causality="parameter" variability="fixed"><Real start="10"/></ScalarVariable>
+</ModelVariables>
+
+<ModelStructure>
+  <Outputs>
+    <Unknown index="1"/>
+    <Unknown index="2"/>
+    <Unknown index="3"/>
+  </Outputs>
+  <Derivatives>
+    <Unknown index="2"/>
+    <Unknown index="3"/>
+  </Derivatives>
+  <DiscreteStates/>
+  <InitialUnknowns />
+</ModelStructure>
+
+</fmiModelDescription>

@@ -6,10 +6,12 @@ if (NOT WIN32)
   # cl.exe has a different set of flags
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Werror -Wno-unused-variable -Wno-unused-function -Wextra -Wno-unused-parameter")
   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -DDEBUG")
   FIND_PACKAGE(MPI REQUIRED)
   FIND_PACKAGE(Protobuf REQUIRED)
   INCLUDE_DIRECTORIES(${MPI_INCLUDE_PATH})
+else ()
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /DDEBUG")
 endif ()
 
 include_directories(${FMIL_INCLUDE_DIR} ${STRONG_COUPLING_INCLUDE_DIR} ${FMITCP_INCLUDE_DIR})
@@ -22,6 +24,7 @@ set(FMITCP_SRCS
     src/fmitcp/fmitcp.pb.cc
     src/fmitcp/serialize.cpp
     src/fmitcp/Server.cpp
+    src/master/globals.cpp
 )
 
 set(FMITCP_HEADERS
@@ -105,9 +108,11 @@ IF(WIN32)
         ${Boost_SYSTEM_LIBRARY}
         ${CMAKE_THREAD_LIBS_INIT})
     if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-        set(WINLIBS ${WINLIBS} ${EXTRALIBS} sc libprotobufd libzmq-v120-mt-gd-4_2_0 libhdf5_hl_D libumfpackd libhdf5_D libamdd libblas libcholmodd libcolamdd libccolamdd libcamdd metisd suitesparseconfigd)
+        set(WINLIBS ${WINLIBS} ${EXTRALIBS} sc libprotobufd libzmq-${CMAKE_VS_PLATFORM_TOOLSET}-mt-gd-4_2_0 libhdf5_hl_D libumfpackd libhdf5_D
+            libamdd libblas libcholmodd libcolamdd libccolamdd libcamdd metisd suitesparseconfigd)
     else()
-        set(WINLIBS ${WINLIBS} ${EXTRALIBS} sc libprotobuf libzmq-v120-mt-4_2_0 libhdf5_hl libumfpack  libamd libhdf5 libblas libcholmod  libcolamd  libccolamd  libcamd  metis  suitesparseconfig)
+        set(WINLIBS ${WINLIBS} ${EXTRALIBS} sc libprotobuf  libzmq-${CMAKE_VS_PLATFORM_TOOLSET}-mt-4_2_0 libhdf5_hl      libumfpack  libhdf5
+            libamd  libblas libcholmod  libcolamd  libccolamd  libcamd  metis  suitesparseconfig)
     endif()
     include_directories($ENV{MSMPI_INC} $ENV{MSMPI_INC}x86)
 
@@ -127,7 +132,7 @@ IF(WIN32)
         ${SUITESPARSE_LIBDIR}/lapack_blas_windows/libgfortran-3.dll
         ${SUITESPARSE_LIBDIR}/lapack_blas_windows/libquadmath-0.dll
         ${PROTOBUF_PREFIX}/src/protobuf-ext-build/${CMAKE_BUILD_TYPE}/libprotobufd.dll
-        ${ZMQ_PREFIX}/src/zmq-ext-build/bin/${CMAKE_BUILD_TYPE}/libzmq-v120-mt-gd-4_2_0.dll
+        ${ZMQ_PREFIX}/src/zmq-ext-build/bin/${CMAKE_BUILD_TYPE}/libzmq-${CMAKE_VS_PLATFORM_TOOLSET}-mt-gd-4_2_0.dll
         DESTINATION bin)
     else()
     INSTALL (FILES
@@ -135,7 +140,7 @@ IF(WIN32)
         ${SUITESPARSE_LIBDIR}/lapack_blas_windows/libgfortran-3.dll
         ${SUITESPARSE_LIBDIR}/lapack_blas_windows/libquadmath-0.dll
         ${PROTOBUF_PREFIX}/src/protobuf-ext-build/${CMAKE_BUILD_TYPE}/libprotobuf.dll
-        ${ZMQ_PREFIX}/src/zmq-ext-build/bin/${CMAKE_BUILD_TYPE}/libzmq-v120-mt-4_2_0.dll
+        ${ZMQ_PREFIX}/src/zmq-ext-build/bin/${CMAKE_BUILD_TYPE}/libzmq-${CMAKE_VS_PLATFORM_TOOLSET}-mt-4_2_0.dll
         DESTINATION bin)
     endif()
     set(PROTOC ${PROTOBUF_BIN_DIR}/protoc)

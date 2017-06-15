@@ -58,6 +58,9 @@ static void parse_server_args(int argc, char **argv, string *fmuPath,
 
     } else if (arg == "-5" && !last) {
       *hdf5Filename = argv[++j];
+    } else if (arg == "-D") {
+      info("Always computing numerical directional derivatives, regardless of providesDirectionalDerivatives\n");
+      alwaysComputeNumericalDirectionalDerivatives = true;
     } else {
       *fmuPath = argv[j];
     }

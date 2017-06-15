@@ -11,6 +11,7 @@
 #include "common/common.h"
 #include <deque>
 #include <FMI2/fmi2_functions.h>
+#include "../master/control.pb.h"
 
 namespace fmitcp_master {
     struct variable {
@@ -59,6 +60,8 @@ namespace fmitcp_master {
         /// Values returned from calls to fmiGetDirectionalDerivative()
         std::deque<std::vector<double> > m_getDirectionalDerivativeValues;
 
+        control_proto::fmu_state::State m_fmuState;
+
         void clearGetValues();
 
         std::string getModelName() const;
@@ -68,10 +71,11 @@ namespace fmitcp_master {
         const std::vector<variable>& getOutputs() const;   //outputs in the same order as specified in the modelDescription
 
 #ifdef USE_MPI
-        FMIClient(int world_rank, int id);
+        explicit FMIClient(int world_rank, int id);
 #else
-        FMIClient(zmq::context_t &context, int id, string uri);
+        explicit FMIClient(zmq::context_t &context, int id, string uri);
 #endif
+        void terminate(); //called just before dtor, to allow controller to see if any FMU is stuck on terminating
         virtual ~FMIClient();
 
         int getId();

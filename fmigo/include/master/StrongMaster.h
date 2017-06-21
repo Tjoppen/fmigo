@@ -28,6 +28,7 @@ public:
     std::string getForceFieldnames() const;
 
     int getNumForceOutputs() const;
+  ~StrongMaster();
 };
 }
 

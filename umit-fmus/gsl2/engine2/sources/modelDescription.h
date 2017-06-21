@@ -42,8 +42,8 @@ typedef struct {
     fmi2Real    d_in; //VR=17
     fmi2Integer filter_length; //VR=98
     fmi2Integer integrator; //VR=1002
-    fmi2Boolean octave_output; //VR=1001
     fmi2Boolean integrate_dtheta; //VR=18
+    fmi2Boolean octave_output; //VR=1001
     fmi2Char    octave_output_file[1024]; //VR=1003
 } modelDescription_t;
 
@@ -69,8 +69,8 @@ static const modelDescription_t defaults = {
     0.000000, //d_in
     0, //filter_length
     2, //integrator
-    0, //octave_output
     0, //integrate_dtheta
+    0, //octave_output
     "engine2.m", //octave_output_file
 };
 
@@ -94,8 +94,8 @@ static const modelDescription_t defaults = {
 #define VR_D_IN 17
 #define VR_FILTER_LENGTH 98
 #define VR_INTEGRATOR 1002
-#define VR_OCTAVE_OUTPUT 1001
 #define VR_INTEGRATE_DTHETA 18
+#define VR_OCTAVE_OUTPUT 1001
 #define VR_OCTAVE_OUTPUT_FILE 1003
 
 //the following getters and setters are static to avoid getting linking errors if this file is included in more than one place
@@ -190,8 +190,8 @@ static fmi2Status generated_fmi2GetBoolean(struct ModelInstance *comp, const mod
 
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case 1001: value[i] = md->octave_output; break;
         case 18: value[i] = md->integrate_dtheta; break;
+        case 1001: value[i] = md->octave_output; break;
         default: return fmi2Error;
         }
     }
@@ -203,8 +203,8 @@ static fmi2Status generated_fmi2SetBoolean(struct ModelInstance *comp, modelDesc
 
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case 1001: md->octave_output = value[i]; break;
         case 18: md->integrate_dtheta = value[i]; break;
+        case 1001: md->octave_output = value[i]; break;
         default: return fmi2Error;
         }
     }

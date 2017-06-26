@@ -5,7 +5,7 @@
 #include "gsl-interface.h"
 
 #define SIMULATION_TYPE cgsl_simulation
-#define SIMULATION_INIT engine2_init
+#define SIMULATION_EXIT_INIT engine2_init
 #define SIMULATION_FREE cgsl_free_simulation
 #define SIMULATION_GET  cgsl_simulation_get   //TODO: some kind of error if these aren't defined
 #define SIMULATION_SET  cgsl_simulation_set
@@ -112,7 +112,8 @@ static int sync_out(double t, int n, const double outputs[], void * params) {
 }
 
 
-static void engine2_init(state_t *s) {
+static fmi2Status engine2_init(ModelInstance *comp) {
+  state_t *s = &comp->s;
 
   double initials[3];
   get_initial_states(s, initials);
@@ -128,18 +129,17 @@ static void engine2_init(state_t *s) {
   );
   //s->simulation.file = fopen( "engine2.m", "w+" );
   //s->simulation.print = 1;
-
+  return fmi2OK;
 }
 
-static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
+static fmi2Status getPartial(ModelInstance *comp, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
   if (vr == VR_ALPHA_OUT && wrt == VR_TAU_IN) {
-    *partial = s->md.jinv;
+    *partial = comp->s.md.jinv;
     return fmi2OK;
   }
   return fmi2Error;
 }
 
-#define NEW_DOSTEP //to get noSetFMUStatePriorToCurrentPoint
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
   //don't dump tentative steps
   s->simulation.print = noSetFMUStatePriorToCurrentPoint;
@@ -149,17 +149,6 @@ static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real comm
 
 #ifdef CONSOLE
 int main(){
-
-  state_t s = {defaults};
-  s.md.jinv = 0.02;
-  s.md.k2 = 0.5;
-
-  engine2_init(&s);
-  s.simulation.file = fopen( "s.m", "w+" );
-  s.simulation.save = 1;
-  s.simulation.print = 1;
-  cgsl_step_to( &s.simulation, 0.0, 2.5 );
-  cgsl_free_simulation(s.simulation);
 
   return 0;
 }

@@ -211,7 +211,12 @@
         description="file for internal dump?"
         causality="parameter"
         variability="fixed">
-      <String start="engine2.m" size="500"/>
+      <String start="engine2.m"/>
+      <Annotations>
+        <Tool name="fmigo">
+          <size>1024</size>
+        </Tool>
+      </Annotations>
     </ScalarVariable>
     
   </ModelVariables>

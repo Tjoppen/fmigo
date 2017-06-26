@@ -5,7 +5,7 @@
 #include "gsl-interface.h"
 
 #define SIMULATION_TYPE cgsl_simulation
-#define SIMULATION_INIT chained_sho_init
+#define SIMULATION_EXIT_INIT chained_sho_init
 #define SIMULATION_FREE cgsl_free_simulation
 
 #include "fmuTemplate.h"
@@ -90,7 +90,8 @@ static int epce_post_step(double t, int n, const double outputs[], void * params
     return GSL_SUCCESS;
 }
 
-static void chained_sho_init(state_t *s) {
+static fmi2Status chained_sho_init(ModelInstance *comp) {
+    state_t *s = &comp->s;
     const double initials[3] = {s->md.xstart, s->md.vstart, s->md.dxstart};
 
     FILE *f = NULL;
@@ -108,10 +109,12 @@ static void chained_sho_init(state_t *s) {
         ),
         rkf45, 1e-5, 0, 0, s->md.dump_data, f
     );
+
+    return fmi2OK;
 }
 
 
-static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
+static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
     cgsl_step_to( &s->simulation, currentCommunicationPoint, communicationStepSize );
 }
 

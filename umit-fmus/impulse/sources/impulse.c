@@ -6,7 +6,7 @@ typedef struct {
 } impulse_simulation;
 
 #define SIMULATION_TYPE impulse_simulation
-#define SIMULATION_INIT impulse_init
+#define SIMULATION_EXIT_INIT impulse_init
 #define SIMULATION_GET impulse_get
 #define SIMULATION_SET impulse_set
 
@@ -61,12 +61,13 @@ static void pulse_for_current_step(state_t *s, fmi2Real communicationStepSize) {
     }
 }
 
-static void impulse_init(state_t *s) {
-    pulse_for_current_step(s, 0);
+static fmi2Status impulse_init(ModelInstance *comp) {
+    pulse_for_current_step(&comp->s, 0);
+    return fmi2OK;
 }
 
 //returns partial derivative of vr with respect to wrt
-static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
+static fmi2Status getPartial(ModelInstance *comp, fmi2ValueReference vr, fmi2ValueReference wrt, fmi2Real *partial) {
     if (vr == VR_ALPHA && wrt == VR_TAU) {
         *partial = 0;
         return fmi2OK;
@@ -74,7 +75,7 @@ static fmi2Status getPartial(state_t *s, fmi2ValueReference vr, fmi2ValueReferen
     return fmi2Error;
 }
 
-static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
+static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
     if (s->md.pulse_type == PULSE_TYPE_OMEGA) {
         s->md.theta += s->md.omega * communicationStepSize;
     }

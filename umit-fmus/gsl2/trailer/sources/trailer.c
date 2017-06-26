@@ -5,7 +5,7 @@
 #include "gsl-interface.h"
 
 #define SIMULATION_TYPE cgsl_simulation
-#define SIMULATION_INIT trailer_init
+#define SIMULATION_EXIT_INIT trailer_init
 #define SIMULATION_FREE cgsl_free_simulation
 
 #include "fmuTemplate.h"
@@ -164,7 +164,8 @@ static int sync_out(double t, int n, const double outputs[], void * params) {
 }
 
 
-static void trailer_init(state_t *s) {
+static fmi2Status trailer_init(ModelInstance *comp) {
+  state_t *s = &comp->s;
 
   double initials[4];
   get_initial_states(s, initials);
@@ -178,9 +179,10 @@ static void trailer_init(state_t *s) {
       ),
     s->md.integrator, 1e-6, 0, 0, s->md.octave_output, s->md.octave_output ? fopen(s->md.octave_output_file, "w") : NULL
     );
+    return fmi2OK;
 }
 
-static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
+static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
   cgsl_step_to( &s->simulation, currentCommunicationPoint, communicationStepSize );
 }
 

@@ -5,7 +5,7 @@
 #include "gsl-interface.h"
 
 #define SIMULATION_TYPE cgsl_simulation
-#define SIMULATION_INIT mass_force_init
+#define SIMULATION_EXIT_INIT mass_force_init
 #define SIMULATION_FREE cgsl_free_simulation
 
 #include "fmuTemplate.h"
@@ -64,7 +64,8 @@ static int epce_post_step(double t, int n, const double outputs[], void * params
     return GSL_SUCCESS;
 }
 
-static void mass_force_init(state_t *s) {
+static fmi2Status mass_force_init(ModelInstance *comp) {
+    state_t *s = &comp->s;
     const double initials[2] = {s->md.x, s->md.v};
     s->simulation = cgsl_init_simulation(
         cgsl_epce_default_model_init(
@@ -75,9 +76,10 @@ static void mass_force_init(state_t *s) {
         ),
         rkf45, 1e-5, 0, 0, 0, NULL
     );
+    return fmi2OK;
 }
 
-static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize) {
+static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
     cgsl_step_to( &s->simulation, currentCommunicationPoint, communicationStepSize );
 }
 

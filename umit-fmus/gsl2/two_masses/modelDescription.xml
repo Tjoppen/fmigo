@@ -428,7 +428,12 @@
         description="file for internal dump?"
         causality="parameter"
         variability="fixed">
-      <String start="two_masses.dat" size="500"/>
+      <String start="two_masses.dat"/>
+      <Annotations>
+        <Tool name="fmigo">
+          <size>1024</size>
+        </Tool>
+      </Annotations>
     </ScalarVariable>
 
     <!-- index="44"-->

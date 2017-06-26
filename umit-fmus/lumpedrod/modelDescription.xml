@@ -222,7 +222,7 @@
                                  first element"
                     causality="parameter"
                     variability="fixed">
-      <Real start="1"/>
+      <Boolean start="true"/>
     </ScalarVariable>
      <ScalarVariable name="integrate_dt2"       
                     valueReference="26"
@@ -230,7 +230,7 @@
                                  last element"
                     causality="parameter"
                     variability="fixed">
-      <Real start="1"/>
+      <Boolean start="true"/>
     </ScalarVariable>   
 
     <ScalarVariable name="step"          

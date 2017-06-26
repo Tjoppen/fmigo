@@ -26,6 +26,22 @@ StrongMaster::StrongMaster(zmq::context_t &context, vector<FMIClient*> clients, 
 void StrongMaster::prepare() {
     m_strongCouplingSolver.prepare();
     JacobiMaster::prepare();
+
+    //check that every FMU involved in an equation has get/set functionality
+    for (size_t i=0; i<m_clients.size(); i++){
+        FMIClient *client = m_clients[i];
+        if (!client->hasCapability(fmi2_cs_canGetAndSetFMUstate)) {
+            //if part of any equation then fail
+            for (sc::Equation *eq : m_strongCouplingSolver.getEquations()) {
+                for (sc::Connector *fc : eq->getConnectors()) {
+                    if (client == fc->m_slave) {
+                        fatal("FMU %i (%s) is part of a kinematic constraint but lacks rollback functionality (canGetAndSetFMUstate=\"false\")\n",
+                            client->getId(), client->getModelName().c_str());
+                    }
+                }
+            }
+        }
+    }
 }
 
 void StrongMaster::getDirectionalDerivative(FMIClient *client, Vec3 seedVec, vector<int> accelerationRefs, vector<int> forceRefs) {

@@ -38,7 +38,7 @@
 typedef enum {
     modelInstantiated       = 1<<0,
     modelInitializationMode = 1<<1,
-    modelInitialized        = 1<<2, // state just after fmiExitInitializationMode
+    modelInitialized        = 1<<2, // state just after fmiExitInitializationMode (CoSimulation only)
     modelStepping           = 1<<3, // state after initialization
     modelTerminated         = 1<<4,
     modelError              = 1<<5,
@@ -58,8 +58,9 @@ static inline int max(int a, int b) {
 //needed because cl.exe doesn't accept zero-length arrays
 #define atleast1(a) ((a) < 1 ? 1 : (a))
 
-typedef struct {
-    char* instanceName;
+typedef struct ModelInstance {
+    char instanceName[1024];
+    char fmuResourceLocation[1024];
     const fmi2CallbackFunctions *functions;
     fmi2ComponentEnvironment componentEnvironment;
     fmi2Type type;

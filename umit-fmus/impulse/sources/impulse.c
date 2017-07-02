@@ -29,6 +29,8 @@ static void pulse_for_current_step(state_t *s, fmi2Real communicationStepSize) {
         } else {
             s->md.theta = s->md.dc_offset;
         }
+
+	s->md.itheta = s->md.theta;
         s->md.omega = 0;
 
         if (s->simulation.current_step == s->md.pulse_start - 1 ||
@@ -75,13 +77,15 @@ static fmi2Status getPartial(ModelInstance *comp, fmi2ValueReference vr, fmi2Val
     return fmi2Error;
 }
 
-static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
+static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real
+    communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
     if (s->md.pulse_type == PULSE_TYPE_OMEGA) {
         s->md.theta += s->md.omega * communicationStepSize;
     }
 
     s->simulation.current_step++;
     pulse_for_current_step(s, communicationStepSize);
+    s->md.itheta = (int)s->md.theta;
 }
 
 // include code that implements the FMI based on the above definitions

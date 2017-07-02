@@ -37,7 +37,30 @@
   <ScalarVariable name="alpha"      valueReference="10" description="Gear ratio (>1 means gear down)"   causality="parameter" variability="fixed"><Real start="4.3"/></ScalarVariable>
   <ScalarVariable name="j2"         valueReference="11" description="Inverse moment of inertia"         causality="parameter" variability="fixed"><Real start="1"/></ScalarVariable>
   <ScalarVariable name="d2"         valueReference="12" description="Damping"                           causality="parameter" variability="fixed"><Real start="1"/></ScalarVariable>
+
+  <!--
+      The following variables apply when a latch is introduced between the
+      gears.  
+      -->
+  <ScalarVariable
+      name="dphi"
+      valueReference="13"
+      description="Angle difference between gears"
+      causality="output">
+    <Real start="0"/>
+  </ScalarVariable>
+
+  <ScalarVariable
+      name="gap"
+      valueReference="14"
+      description="angle difference between the cogs"
+      causality="output">
+    <Real start="0"/>
+  </ScalarVariable>
+  
+
 </ModelVariables>
+
 
 <ModelStructure>
   <Outputs>

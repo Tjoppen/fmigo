@@ -21,13 +21,15 @@ static fmi2Status getPartial(ModelInstance *comp, fmi2ValueReference vr, fmi2Val
     return fmi2Error;
 }
 
-static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
+static void doStep(state_t *s, fmi2Real currentCommunicationPoint,
+		   fmi2Real communicationStepSize,
+		   fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
+
     fmi2Real a = s->md.alpha, a2 = a*a, h = communicationStepSize;
     fmi2Real A = s->md.tau_e - s->md.d1*s->md.omega_e;
     fmi2Real B = s->md.tau_l - s->md.d2*s->md.omega_l;
 
     fmi2Real lambda = (-s->md.omega_e + a*s->md.omega_l - h*s->md.tau_e/s->md.j1 + h*a*s->md.tau_l/s->md.j2) / (s->md.j1 + a2*s->md.j2);
-    
     fmi2Real delta1 = (   lambda + h*A) / s->md.j1;
     fmi2Real delta2 = (-a*lambda + h*B) / s->md.j2;
 
@@ -39,6 +41,49 @@ static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real comm
     s->md.omega_l    += delta2;
     s->md.theta_l    += s->md.omega_l * h;
 }
+
+/*
+ *  The 
+ */
+
+static void doStep(state_t *s, fmi2Real currentCommunicationPoint,
+		   fmi2Real communicationStepSize,
+		   fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
+    
+  fmi2Real a = s->md.alpha;	/* gear ratio */
+  fmi2real a2 = a*a;		/* square */
+  fmi2Real h = communicationStepSize; /* time step */
+  fmi2Real A = s->md.tau_e - s->md.d1*s->md.omega_e; /* force on engine side */
+  fmi2Real schur = (1.0/s->md.j1 + a2/s->md.j2);
+  fmi2Real B = s->md.tau_l - s->md.d2*s->md.omega_l; /* force on shaft side */
+  fmi2Real lambda = (-s->md.omega_e + a*s->md.omega_l - h*s->md.tau_e/s->md.j1 + h*a*s->md.tau_l/s->md.j2) / schur;
+  fmi2Real delta1 = (   lambda + h*A) / s->md.j1;
+  fmi2Real delta2 = (-a*lambda + h*B) / s->md.j2;
+  
+
+  if ( s->md.gap == 0 ){
+
+    return;
+  }else {
+    fmi2Real lower = -s->md.gap;
+    fmi2Real upper = -s->md.gap;
+    fmi2Real dx    = -s->md.dphi;
+    fmi2Real ddx;		/* temp */
+      
+      /* range */
+      if ( lower < dx && dx < upper ){
+	/* free step */
+	if ( ddx > u || ddx < l ){
+	  /* free step would bust the limit: impact the thing.  At impact */
+	  fmi2Real S  = 1.0/s->md.j1 + 1.0/s->m.j2;
+	}
+      }
+  }
+
+  
+}
+
+
 
 // include code that implements the FMI based on the above definitions
 #include "fmuTemplate_impl.h"

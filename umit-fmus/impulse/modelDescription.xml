@@ -106,13 +106,27 @@ Angle pulses have angular velocity = zero.
                   causality="parameter">
       <Real start="0"/>
   </ScalarVariable>
+
+  <!-- Can be derived wrt force to get mobility -->
+  <ScalarVariable name="itheta"
+                  valueReference="9"
+                  description="integer output"
+                  causality="output">
+      <Real/>
+  </ScalarVariable>
+
+  
 </ModelVariables>
+
+
+
 
 <ModelStructure>
   <Outputs>
    <Unknown index="1"/>
    <Unknown index="2"/>
    <Unknown index="3"/>
+   <Unknown index="10"/>
   </Outputs>
   <Derivatives/>
   <DiscreteStates/>

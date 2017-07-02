@@ -9,7 +9,7 @@
 #define FMI_COSIMULATION
 #define HAVE_DIRECTIONAL_DERIVATIVE 1
 #define CAN_GET_SET_FMU_STATE 1
-#define NUMBER_OF_REALS 6
+#define NUMBER_OF_REALS 7
 #define NUMBER_OF_INTEGERS 3
 #define NUMBER_OF_BOOLEANS 0
 #define NUMBER_OF_STRINGS 0
@@ -29,6 +29,7 @@ typedef struct {
     fmi2Real    tau; //VR=3
     fmi2Real    pulse_amplitude; //VR=7
     fmi2Real    dc_offset; //VR=8
+    fmi2Real    itheta; //VR=9
     fmi2Integer pulse_type; //VR=4
     fmi2Integer pulse_start; //VR=5
     fmi2Integer pulse_length; //VR=6
@@ -45,6 +46,7 @@ static const modelDescription_t defaults = {
     0.000000, //tau
     1.000000, //pulse_amplitude
     0.000000, //dc_offset
+    0.000000, //itheta
     0, //pulse_type
     0, //pulse_start
     1, //pulse_length
@@ -59,6 +61,7 @@ static const modelDescription_t defaults = {
 #define VR_TAU 3
 #define VR_PULSE_AMPLITUDE 7
 #define VR_DC_OFFSET 8
+#define VR_ITHETA 9
 #define VR_PULSE_TYPE 4
 #define VR_PULSE_START 5
 #define VR_PULSE_LENGTH 6
@@ -81,6 +84,7 @@ static fmi2Status generated_fmi2GetReal(struct ModelInstance *comp, const modelD
         case 3: value[i] = md->tau; break;
         case 7: value[i] = md->pulse_amplitude; break;
         case 8: value[i] = md->dc_offset; break;
+        case 9: value[i] = md->itheta; break;
         default: return fmi2Error;
         }
     }
@@ -98,6 +102,7 @@ static fmi2Status generated_fmi2SetReal(struct ModelInstance *comp, modelDescrip
         case 3: md->tau = value[i]; break;
         case 7: md->pulse_amplitude = value[i]; break;
         case 8: md->dc_offset = value[i]; break;
+        case 9: md->itheta = value[i]; break;
         default: return fmi2Error;
         }
     }

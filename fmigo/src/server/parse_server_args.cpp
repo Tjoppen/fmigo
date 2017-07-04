@@ -34,11 +34,6 @@ static void parse_server_args(int argc, char **argv, string *fmuPath,
 
     } else if (arg == "-d" || arg == "--debugLogging") {
       *debugLogging = true;
-
-    } else if (arg == "-v" || arg == "--version") {
-      printf("%s\n",FMITCP_VERSION); // todo
-      exit(EXIT_SUCCESS);
-
     } else if ((arg == "-l" || arg == "--logging") && !last) {
       *log_level = common::logOptionToJMLogLevel(argv[j+1]);
     } else if((arg == "--port" || arg == "-p") && !last) {
@@ -52,7 +47,7 @@ static void parse_server_args(int argc, char **argv, string *fmuPath,
       ss >> *port;
 
       if (*port <= 0) {
-        printf("Invalid port.\n");fflush(NULL);
+        fprintf(stderr,"Invalid port.\n");
         exit(EXIT_FAILURE);
       }
 

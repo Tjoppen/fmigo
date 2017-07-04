@@ -4,7 +4,7 @@ fmigo-master \- simulate FMUs
 .SH SYNOPSIS
 .ll +8
 .B fmigo-master
-.RB [ " \-xrlvqhtcdsopfmgwC5NMazZLHD " ]
+.RB [ " \-rlhtcdsopfmgwC5NMazZLHD " ]
 [
 .I "URLs \&..."
 ]
@@ -19,17 +19,8 @@ over TCP/IP, with optional strong coupling between simulation units.
 .B \-h
 Show help and quit.
 .TP
-.B \-q
-Quiet mode, do not print simulation info to STDOUT. This flag should be used together with -r.
-.TP
 .B \-r
 Real time mode. Will usleep() in between communication steps if the execution was faster than real time.
-.TP
-.B \-v
-Show version and quit.
-.TP
-.B \-x
-Print XML and quit.
 .TP
 .B \-N
 Make kinematic connectors nonholonomic rather than holonomic.

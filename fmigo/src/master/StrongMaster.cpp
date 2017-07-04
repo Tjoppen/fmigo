@@ -252,7 +252,7 @@ void StrongMaster::runIteration(double t, double dt) {
             //dump force/torque
             if (sc->hasForce()) {
                 if (fmigo::globals::fileFormat != none) {
-                    printf("%c%+.16le%c%+.16le%c%+.16le", separator, sc->m_force.x(), separator, sc->m_force.y(), separator, sc->m_force.z());
+                    fprintf(fmigo::globals::outfile, "%c%+.16le%c%+.16le%c%+.16le", separator, sc->m_force.x(), separator, sc->m_force.y(), separator, sc->m_force.z());
                 }
                 vec.push_back(sc->m_force.x());
                 vec.push_back(sc->m_force.y());
@@ -261,7 +261,7 @@ void StrongMaster::runIteration(double t, double dt) {
 
             if (sc->hasTorque()) {
                 if (fmigo::globals::fileFormat != none) {
-                    printf("%c%+.16le%c%+.16le%c%+.16le", separator, sc->m_torque.x(), separator, sc->m_torque.y(), separator, sc->m_torque.z());
+                    fprintf(fmigo::globals::outfile, "%c%+.16le%c%+.16le%c%+.16le", separator, sc->m_torque.x(), separator, sc->m_torque.y(), separator, sc->m_torque.z());
                 }
                 vec.push_back(sc->m_torque.x());
                 vec.push_back(sc->m_torque.y());

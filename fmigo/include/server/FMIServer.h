@@ -23,16 +23,13 @@ public:
    : Server(fmuPath, hdf5Filename) {}
   ~FMIServer() {};
   void onClientConnect() {
-    printf("MyFMIServer::onConnect\n");
     //m_pump->exitEventLoop();
   };
 
   void onClientDisconnect() {
-    printf("MyFMIServer::onDisconnect\n");
   };
 
   void onError(string message) {
-    printf("MyFMIServer::onError\n");fflush(NULL);
   };
 };
 

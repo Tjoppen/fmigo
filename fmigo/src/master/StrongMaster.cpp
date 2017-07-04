@@ -113,10 +113,9 @@ void StrongMaster::runIteration(double t, double dt) {
 
     //get future velocities:
     //0. save FMU states
-    //1. zero forces
-    //2. step
-    //3. get velocity
-    //4. restore FMU states
+    //1. step
+    //2. get velocity
+    //3. restore FMU states
 
     //first filter out FMUs with save/load functionality
     std::vector<FMIClient*> saveLoadClients;
@@ -127,22 +126,6 @@ void StrongMaster::runIteration(double t, double dt) {
         }
     }
     send(saveLoadClients, fmi2_import_get_fmu_state());
-
-    //zero forces
-    //if we don't do this then the forces would explode
-    for (size_t i=0; i<saveLoadClients.size(); i++){
-        FMIClient *client = saveLoadClients[i];
-        for (int j = 0; j < client->numConnectors(); j++) {
-            StrongConnector *sc = client->getConnector(j);
-            vector<int> fvrs = sc->getForceValueRefs();
-            vector<int> tvrs = sc->getTorqueValueRefs();
-            fvrs.insert(fvrs.end(), tvrs.begin(), tvrs.end());
-
-            vector<double> vec(fvrs.size(), 0.0);
-
-            send(client, fmi2_import_set_real(fvrs, vec));
-        }
-    }
 
     //noSetFMUStatePriorToCurrentPoint = false
     //This signals to the FMU that we might restore it to a state prior to currentCommunicationPoint=t

@@ -338,9 +338,6 @@ void Solver::solve(bool holonomic, int printDebugInfo){
         exit(1);
     }
 
-    // Set current connector forces to zero
-    resetConstraintForces();
-
     // Store results
     // Remember that we need to divide lambda by the timestep size
     // f = G'*lambda

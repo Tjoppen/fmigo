@@ -52,7 +52,11 @@ for limit = [1,4]
 	state = 1;
 	z = H \ [M*v; -ee*G*v];
 	v = z(1:2);
-	c = min(u-ddx, ddx-l);
+	if ddx > u
+	  c = u-ddx;
+	else
+	  c = l-ddx;
+	endif
 	## continue the step
 	z = H \ [M*v + h*F; -4*c*gamma/h  + gamma * G * v];
 	v = z(1:2);

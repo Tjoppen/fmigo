@@ -1,3 +1,6 @@
+#include <string.h> //for strlen() and memcpy()
+
+#if !defined(__APPLE__)
 //for some reason copying a string safely on all platforms is still a problem in the year 2017
 //this is an implementation of https://www.sudo.ws/todd/papers/strlcpy.html
 //it's not the most efficient, but it gets the job done
@@ -28,4 +31,6 @@ static size_t strlcat(char *dst, const char *src, size_t size) {
     dst[a+bytes] = 0;
     return ret;
 }
+#endif
+
 #endif

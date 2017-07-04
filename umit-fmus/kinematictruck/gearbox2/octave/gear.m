@@ -3,11 +3,14 @@
 engaged = 0;			#reduces chatter
 g  = 20;				#gear ratio
 m1 = 1;
-m2 = 1;
-h = 1/10;			#time step
+m2 = 10;
+tend = 30;
+h = 1/20;			#time step
+N = tend/h;
+T =  linspace(0,tend,N)';
 l = -2;				#lower limit
 u =  2;				#upper limit
-ee = 0.0;				#restitution coefficient
+ee = 0.0;			#restitution coefficient
 
 fe =   2;			#engine force
 fs =  -1;			#shaft torque
@@ -25,42 +28,33 @@ for limit = [1,4]
   M = diag([m1,m2]);
   G   = [1, -g];
   H   = [M -G';G, 0*1e-1];
-  J  = [1, -1];
-  K  = [M, -J';J,0];
-  K = H;
-  J = G;
   tau = 2;
   gamma = 1/(1+4*tau/h);
   tol =  1e-4;			#this to avoid chatter and maintain a good
 				#contact. if 0, we'll probably have chatter
   ## simplify linear algebra
-  schur0 = ( 1/m1 +   1/m2 );
   schur1 = ( 1/m1 + g*g/m2 );
 
-  tend = 30;
-  N = 100;
-  h = tend / N;
-  T =  linspace(0,tend,N)';
   t = 0;
   S = [];
   state = 0;
   u = limit;
   l = -limit;
   for i=2:N
-    F = h * f(t);
+    F =  f(t);
     if ( (l +engaged * tol) < dx && dx < u - ( engaged * tol ) )
       ## solve for free case
-      w = v +  M \ F;
+      w = v +  M \ (h*F);
       ddx = dx + h * (w(1)-w(2));
       ## check to see if we stepped outside
       if ( ddx > u || ddx < l )
 	## yes!  impact the thing
 	state = 1;
-	z = K \ [0*M*v; -ee*G*v];
+	z = H \ [M*v; -ee*G*v];
 	v = z(1:2);
 	c = min(u-ddx, ddx-l);
 	## continue the step
-	z = H \ [M*v + F; -4*c*gamma/h  + gamma * G * v];
+	z = H \ [M*v + h*F; -4*c*gamma/h  + gamma * G * v];
 	v = z(1:2);
 	dx += h * G * v;
 	engaged = 1;
@@ -74,7 +68,7 @@ for limit = [1,4]
     else
       state = 2;
       ## gear is active
-      z = H \ [M*v + F ; -4*dx*gamma/h + gamma *G * v];
+      z = H \ [M*v + h*F ; -4*dx*gamma/h + gamma *G * v];
       v = z(1:2);
       dx += h * G * v;
     endif

@@ -1,39 +1,37 @@
 ##simple gear 
 
-engaged = 0;			#reduces chatter
-g  = 20;				#gear ratio
+engaged = 0;  #reduces chatter
+alpha  = 20;  #gear ratio
 m1 = 1;
 m2 = 10;
 tend = 30;
-h = 1/20;			#time step
+h = 1/20;     #time step
 N = tend/h;
 T =  linspace(0,tend,N)';
-l = -2;				#lower limit
-u =  2;				#upper limit
-ee = 0.0;			#restitution coefficient
+ee = 0.0;     #restitution coefficient
 
-fe =   2;			#engine force
-fs =  -1;			#shaft torque
-f = @(t) [ fe*cos(t/4); fs*cos(t/8) ];
+fe =   2;     #engine force
+fs =  -1;     #shaft torque
+f = @(t) [ ones(size(t)); -alpha*ones(size(t)) ];
 ##f = @(t) [ fe;fs];
 
 fig = 1;
-for limit = [1,4]
-  X = [0,0];				#positions
-  D = [0];				#angle difference
-  V = [0,0];				#velocities
+for limit = 1
+  X = [0,0];  #positions
+  D = [0];    #angle difference
+  V = [0,0];  #velocities
   x = [0;0];
   v = [0;0];
   dx = 0;
   M = diag([m1,m2]);
-  G   = [1, -g];
+  G   = [1, -alpha];
   H   = [M -G';G, 0*1e-1];
   tau = 2;
   gamma = 1/(1+4*tau/h);
-  tol =  1e-4;			#this to avoid chatter and maintain a good
-				#contact. if 0, we'll probably have chatter
+  tol =  1e-4;  #this to avoid chatter and maintain a good
+                #contact. if 0, we'll probably have chatter
   ## simplify linear algebra
-  schur1 = ( 1/m1 + g*g/m2 );
+  schur1 = ( 1/m1 + alpha*alpha/m2 );
 
   t = 0;
   S = [];
@@ -45,29 +43,29 @@ for limit = [1,4]
     if ( (l +engaged * tol) < dx && dx < u - ( engaged * tol ) )
       ## solve for free case
       w = v +  M \ (h*F);
-      ddx = dx + h * (w(1)-w(2));
+      ddx = dx + h * (w(1)-alpha*w(2));
       ## check to see if we stepped outside
       if ( ddx > u || ddx < l )
-	## yes!  impact the thing
-	state = 1;
-	z = H \ [M*v; -ee*G*v];
-	v = z(1:2);
-	if ddx > u
-	  c = u-ddx;
-	else
-	  c = l-ddx;
-	endif
-	## continue the step
-	z = H \ [M*v + h*F; -4*c*gamma/h  + gamma * G * v];
-	v = z(1:2);
-	dx += h * G * v;
-	engaged = 1;
+        ## yes!  impact the thing
+        state = 1;
+        z = H \ [M*v; -ee*G*v];
+        v = z(1:2);
+        if ddx > u
+          c = u-ddx;
+        else
+          c = l-ddx;
+        endif
+        ## continue the step
+        z = H \ [M*v + h*F; -4*c*gamma/h  + gamma * G * v];
+        v = z(1:2);
+        dx += h * G * v;
+        engaged = 1;
       else 
-	## still free: continue
-	engaged = 0;
-	state = 0;
-	v   = w;
-	dx += h *  (v(1)-v(2));
+        ## still free: continue
+        engaged = 0;
+        state = 0;
+        v   = w;
+        dx += h *  (v(1)-alpha*v(2));
       endif
     else
       state = 2;
@@ -92,4 +90,6 @@ for limit = [1,4]
   legend("w1", "w2", "dx", "f1", "f2"); 
   hh = figure(fig++); plot(T, D, ';dx;', T, limit+0*T, T, -limit+0*T)
   set(findall(hh, '-property', 'linewidth'), 'linewidth', 2);
+  figure(fig++); 
+  plot(T,V*G')
 endfor

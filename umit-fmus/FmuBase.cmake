@@ -78,7 +78,13 @@ function (add_fmu_internal dir target extra_srcs defs libs extra_includes consol
   set_source_files_properties(${${target}_dir}/sources/modelDescription.h PROPERTIES GENERATED TRUE) # see further down
   target_include_directories(${target} PUBLIC ${includes})
   set_target_properties(${target} PROPERTIES PREFIX "")
-  set_target_properties(${target} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${binaries_dir}/linux64")
+
+  if(APPLE)
+    set(arch_dir "darwin64")
+  else()
+    set(arch_dir "linux64")
+  endif()
+  set_target_properties(${target} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${binaries_dir}/${arch_dir}")
   target_link_libraries(${target} ${libs})
   if (UNIX)
     target_link_libraries(${target} m)

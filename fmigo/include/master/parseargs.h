@@ -11,8 +11,6 @@
 
 namespace fmitcp_master {
 
-#define DEFAULT_OUTFILE "result.csv"
-
 struct connection {
     connection() {
         slope = 1;
@@ -67,25 +65,6 @@ fmi2_base_type_enu_t type_from_char(std::string type);
  * @brief Parses the command line arguments and stores in the given variable pointer targets.
  * @param argc Given by system
  * @param argv Given by system
- * @param numFMUs
- * @param fmuFilePaths
- * @param numConnections
- * @param connections
- * @param numParameters
- * @param params
- * @param tEnd
- * @param timeStepSize
- * @param loggingOn
- * @param csv_separator
- * @param outFilePath
- * @param outFileGiven
- * @param quietMode
- * @param fileFormat
- * @param method
- * @param realtimeMode
- * @param printXML
- * @param stepOrder
- * @param numStepOrder
  * @return int Returns 0 if the program should proceed, 1 if the program should end.
  */
 void parseArguments( int argc,
@@ -98,11 +77,9 @@ void parseArguments( int argc,
                     jm_log_level_enu_t *loglevel,
                     char* csv_separator,
                     std::string *outFilePath,
-                    int* quietMode,
                     enum FILEFORMAT * fileFormat,
                     enum METHOD * method,
                     int * realtimeMode,
-                    int * printXML,
                     std::vector<int> *stepOrder,
                     std::vector<int> *fmuVisibilities,
                     std::vector<strongconnection> *strongConnections,

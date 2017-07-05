@@ -6,6 +6,7 @@ using namespace fmitcp_master;
 namespace fmigo {
   namespace globals {
     FILEFORMAT fileFormat = csv;
+    FILE *outfile = stdout;
 
     char getSeparator() {
       if (fileFormat == csv) {

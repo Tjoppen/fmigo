@@ -414,21 +414,21 @@ static void printOutputs(double t, BaseMaster *master, vector<FMIClient*>& clien
 
     master->wait();
 
-    printf("%+.16le", t);
+    fprintf(fmigo::globals::outfile, "%+.16le", t);
     for (size_t x = 0; x < clients.size(); x++) {
         FMIClient *client = clients[x];
         for (const variable& out : client->getOutputs()) {
             switch (out.type) {
             case fmi2_base_type_real:
-                printf("%c%+.16le", separator, client->m_getRealValues.front());
+                fprintf(fmigo::globals::outfile, "%c%+.16le", separator, client->m_getRealValues.front());
                 client->m_getRealValues.pop_front();
                 break;
             case fmi2_base_type_int:
-                printf("%c%i", separator, client->m_getIntegerValues.front());
+                fprintf(fmigo::globals::outfile, "%c%i", separator, client->m_getIntegerValues.front());
                 client->m_getIntegerValues.pop_front();
                 break;
             case fmi2_base_type_bool:
-                printf("%c%i", separator, client->m_getBooleanValues.front());
+                fprintf(fmigo::globals::outfile, "%c%i", separator, client->m_getBooleanValues.front());
                 client->m_getBooleanValues.pop_front();
                 break;
             case fmi2_base_type_str: {
@@ -439,7 +439,7 @@ static void printOutputs(double t, BaseMaster *master, vector<FMIClient*>& clien
                     default: oss << c;
                     }
                 }
-                printf("%c\"%s\"", separator, oss.str().c_str());
+                fprintf(fmigo::globals::outfile, "%c\"%s\"", separator, oss.str().c_str());
                 client->m_getStringValues.pop_front();
                 break;
             }
@@ -571,11 +571,9 @@ int main(int argc, char *argv[] ) {
     vector<connection> connections;
     vector<deque<string> > params;
     char csv_separator = ',';
-    string outFilePath = DEFAULT_OUTFILE;
-    int quietMode = 0;
+    string outFilePath = "";
     METHOD method = jacobi;
     int realtimeMode = 0;
-    int printXML = 0;
     vector<int> stepOrder;
     vector<int> fmuVisibilities;
     vector<strongconnection> scs;
@@ -589,25 +587,13 @@ int main(int argc, char *argv[] ) {
 
     parseArguments(
             argc, argv, &fmuURIs, &connections, &params, &endTime, &timeStep,
-            &fmigo_loglevel, &csv_separator, &outFilePath, &quietMode, &fmigo::globals::fileFormat,
-            &method, &realtimeMode, &printXML, &stepOrder, &fmuVisibilities,
+            &fmigo_loglevel, &csv_separator, &outFilePath, &fmigo::globals::fileFormat,
+            &method, &realtimeMode, &stepOrder, &fmuVisibilities,
             &scs, &hdf5Filename, &fieldnameFilename, &holonomic, &compliance,
             &command_port, &results_port, &startPaused, &solveLoops, &useHeadersInCSV, &csv_fmu
     );
 
     bool zmqControl = command_port > 0 && results_port > 0;
-
-    if (printXML) {
-        fatal("XML mode not implemented\n");
-    }
-
-    if (quietMode) {
-        warning("-q not implemented\n");
-    }
-
-    if (outFilePath != DEFAULT_OUTFILE) {
-        warning("-o not implemented (output always goes to stdout)\n");
-    }
 
 #ifdef USE_MPI
     if (world_rank > 0) {
@@ -619,6 +605,14 @@ int main(int argc, char *argv[] ) {
     }
     //world_rank == 0 below
 #endif
+
+    if (outFilePath.size()) {
+        fmigo::globals::outfile = fopen(outFilePath.c_str(), "w");
+
+        if (!fmigo::globals::outfile) {
+            fatal("Failed to open %s\n", outFilePath.c_str());
+        }
+    }
 
     zmq::context_t context(1);
     zmq::socket_t push_socket(context, ZMQ_PUSH);
@@ -679,7 +673,7 @@ int main(int argc, char *argv[] ) {
     master->zmqControl = zmqControl;
 
     if (useHeadersInCSV || fmigo::globals::fileFormat == tikz) {
-        printf("%s\n",fieldnames.c_str());
+        fprintf(fmigo::globals::outfile, "%s\n",fieldnames.c_str());
     }
 
     if (fieldnameFilename.length() > 0) {
@@ -851,7 +845,7 @@ int main(int argc, char *argv[] ) {
         }
 
         if (fmigo::globals::fileFormat != none) {
-            printf("\n");
+            fprintf(fmigo::globals::outfile, "\n");
         }
 
 #ifndef WIN32
@@ -867,10 +861,10 @@ int main(int argc, char *argv[] ) {
       //finish off with zeroes for any extra forces
       int n = master->getNumForceOutputs();
       for (int i = 0; i < n; i++) {
-          printf("%c0", separator);
+          fprintf(fmigo::globals::outfile, "%c0", separator);
       }
 
-      printf("\n");
+      fprintf(fmigo::globals::outfile, "\n");
     }
 
 
@@ -909,6 +903,11 @@ int main(int argc, char *argv[] ) {
     }
     MPI_Finalize();
 #endif
+
+    if (fmigo::globals::outfile != stdout) {
+        fclose(fmigo::globals::outfile);
+    }
+
     } catch (zmq::error_t e) {
       fatal("zmq::error_t in %s: %s\n", argv[0], e.what());
     }

@@ -136,11 +136,9 @@ void fmitcp_master::parseArguments( int argc,
                     jm_log_level_enu_t *loglevel,
                     char* csv_separator,
                     std::string *outFilePath,
-                    int* quietMode,
                     enum FILEFORMAT * fileFormat,
                     enum METHOD * method,
                     int * realtimeMode,
-                    int * printXML,
                     std::vector<int> *stepOrder,
                     std::vector<int> *fmuVisibilities,
                     vector<strongconnection> *strongConnections,
@@ -174,7 +172,7 @@ void fmitcp_master::parseArguments( int argc,
 
     vector<char*> argv2 = make_char_vector(argvstore);
 
-    while ((c = getopt (argv2.size(), argv2.data(), "xrl:vqht:c:d:s:o:p:f:m:g:w:C:5:F:NM:a:z:ZLHV:D")) != -1){
+    while ((c = getopt (argv2.size(), argv2.data(), "rl:ht:c:d:s:o:p:f:m:g:w:C:5:F:NM:a:z:ZLHV:D")) != -1){
         int n, skip, l, cont, i, numScanned, stop, vis;
         deque<string> parts;
         if (optarg) parts = escapeSplit(optarg, ':');
@@ -361,14 +359,6 @@ void fmitcp_master::parseArguments( int argc,
             *outFilePath = optarg;
             break;
 
-        case 'q':
-            *quietMode = 1;
-            break;
-
-        case 'v':
-            printf("%s\n",FMITCPMASTER_VERSION);
-            exit(1);
-
         case 'p':
             for (auto it = parts.begin(); it != parts.end(); it++) {
                 deque<string> values = escapeSplit(*it, ',');
@@ -380,10 +370,6 @@ void fmitcp_master::parseArguments( int argc,
 
                 params->push_back(values);
             }
-            break;
-
-        case 'x':
-            *printXML = 1;
             break;
 
         case 'w':

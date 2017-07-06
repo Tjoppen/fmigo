@@ -22,6 +22,7 @@ add_fmu(lumpedrod                       lumpedrod                       "" "" ""
 add_fmu(kinematictruck/body             body                            "" "" "" FALSE)
 add_fmu(kinematictruck/engine           engine                          "" "" "" FALSE)
 add_fmu(kinematictruck/gearbox2         gearbox2                        "" "" "" FALSE)
+add_fmu(kinematictruck/gearbox_gap      gearbox_gap                     "" "" "" FALSE)
 add_fmu(kinematictruck/kinclutch        kinclutch                       "" "" "" FALSE)
 add_fmu(forcevelocitytruck/fvbody       fvbody                          "" "" "" FALSE)
 add_fmu(forcevelocitytruck/gearbox      gearbox                         "" "" "" FALSE)

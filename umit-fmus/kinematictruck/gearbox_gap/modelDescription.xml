@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <fmiModelDescription
   fmiVersion="2.0"
-  description="Gearbox with better solver"
-  modelName="gearbox2"
-  guid="{9b727233-c36a-4ede-a3e9-ec1ab2cee17b}"
+  description="Gearbox with gap"
+  modelName="gearbox_gap"
+  guid="{35ab6978-a164-4cb1-b0ea-bb2e9f61b715}"
   numberOfEventIndicators="0">
 
 <CoSimulation
-  modelIdentifier="gearbox2"
+  modelIdentifier="gearbox_gap"
   canHandleVariableCommunicationStepSize="false"
   canGetAndSetFMUstate="true"
-  providesDirectionalDerivative="true"/>
+  providesDirectionalDerivative="false"/>
 
 <LogCategories>
   <Category name="logAll"/>
@@ -37,7 +37,31 @@
   <ScalarVariable name="alpha"      valueReference="10" description="Gear ratio (>1 means gear down)"   causality="parameter" variability="fixed"><Real start="4.3"/></ScalarVariable>
   <ScalarVariable name="j2"         valueReference="11" description="Moment of inertia"                 causality="parameter" variability="fixed"><Real start="1"/></ScalarVariable>
   <ScalarVariable name="d2"         valueReference="12" description="Damping"                           causality="parameter" variability="fixed"><Real start="1"/></ScalarVariable>
+
+  <!--
+      The following variables apply when a latch is introduced between the
+      gears.  
+      -->
+  <ScalarVariable
+      name="dphi"
+      valueReference="13"
+      description="Angle difference between gears"
+      causality="output">
+    <Real />
+  </ScalarVariable>
+
+  <ScalarVariable
+      name="gap"
+      valueReference="14"
+      description="angle difference between the cogs"
+      causality="parameter"
+      variability="fixed">
+    <Real start="1"/>
+  </ScalarVariable>
+  
+
 </ModelVariables>
+
 
 <ModelStructure>
   <Outputs>
@@ -47,6 +71,7 @@
     <Unknown index="7"/>
     <Unknown index="8"/>
     <Unknown index="9"/>
+    <!--Unknown index="14"/-->
   </Outputs>
   <Derivatives>
     <Unknown index="2"/>

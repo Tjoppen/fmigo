@@ -17,11 +17,6 @@ using namespace fmitcp;
 using namespace fmitcp::serialize;
 using namespace sc;
 
-// HACKHACK
-
-StrongMaster::~StrongMaster(){
-}
-
 StrongMaster::StrongMaster(zmq::context_t &context, vector<FMIClient*> clients, vector<WeakConnection> weakConnections, Solver strongCouplingSolver, bool holonomic) :
         JacobiMaster(context, clients, weakConnections),
         m_strongCouplingSolver(strongCouplingSolver), holonomic(holonomic) {
@@ -50,7 +45,7 @@ void StrongMaster::getDirectionalDerivative(FMIClient *client, Vec3 seedVec, vec
 }
 
 void StrongMaster::runIteration(double t, double dt) {
-  //get weak connector outputs
+    //get weak connector outputs
     for (auto it = clientWeakRefs.begin(); it != clientWeakRefs.end(); it++) {
         it->first->sendGetX(it->second);
     }
@@ -137,16 +132,6 @@ void StrongMaster::runIteration(double t, double dt) {
     //This signals to the FMU that we might restore it to a state prior to currentCommunicationPoint=t
     //In other words: do the step, but don't commit the results
     send(saveLoadClients, fmi2_import_do_step(t, dt, false));
-
-#if 0 
-    //restore
-    for (size_t i=0; i<saveLoadClients.size(); i++){
-        FMIClient *client = saveLoadClients[i];
-        send(client, fmi2_import_set_fmu_state(client->m_stateId));
-    }
-
-    send(saveLoadClients, fmi2_import_do_step(t, dt, false));
-#endif
 
     //do about the same thing we did a little bit further up, but store the results in future values
     for(size_t i=0; i<saveLoadClients.size(); i++){

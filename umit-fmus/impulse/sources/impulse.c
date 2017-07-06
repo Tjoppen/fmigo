@@ -83,6 +83,7 @@ static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real
         s->md.theta += s->md.omega * communicationStepSize;
     }
 
+    fprintf(stderr, "Impulse: alpha %g  omega %g\n", s->md.theta, s->md.omega);
     s->simulation.current_step++;
     pulse_for_current_step(s, communicationStepSize);
     s->md.itheta = (int)s->md.theta;

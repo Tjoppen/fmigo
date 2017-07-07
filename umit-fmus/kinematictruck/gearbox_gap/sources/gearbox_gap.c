@@ -1,4 +1,5 @@
 #include "modelDescription.h"
+#include <math.h>
 
 typedef struct {
   int engaged;
@@ -57,7 +58,7 @@ static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real comm
   fmi2Real omega_l_copy = s->md.omega_l;
   fmi2Real u =  s->md.gap;
   fmi2Real l = -s->md.gap;
-  fmi2Real hh = 0.05;       //internal step
+  fmi2Real hh = communicationStepSize/2.0;       //internal step
   fmi2Real tend = currentCommunicationPoint + communicationStepSize;
   fmi2Real ee = 0.0;        //resitution
   //M = diag([m1,m2]);
@@ -67,6 +68,8 @@ static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real comm
   fmi2Real tol = 1e-4;
   //simplify linear algebra
   fmi2Real k = 1.0/s->md.j1 + square(s->md.alpha)/s->md.j2;
+
+  //s->md.alpha = cos(2*M_PI*currentCommunicationPoint / 4) > 0 ? 10 : 1000;
 
   //compute Hinv = (inv(H))(1:2,:)
   fmi2Real Hinv[2][3] = {

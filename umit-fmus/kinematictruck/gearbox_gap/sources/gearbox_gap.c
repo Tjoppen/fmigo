@@ -78,7 +78,8 @@ static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real comm
     Hinv[1][0], Hinv[1][1], Hinv[1][2]
   );*/
 
-  for (fmi2Real t = currentCommunicationPoint; t < currentCommunicationPoint + communicationStepSize; t += hh) {
+  fmi2Real t;
+  for (t = currentCommunicationPoint; t < currentCommunicationPoint + communicationStepSize; t += hh) {
     fmi2Real h = min2(currentCommunicationPoint + communicationStepSize - t, hh);
     fmi2Real gamma = 1/(1+4*tau/h);
     /*fprintf(stderr, "t=%f, h=%f, engaged=%i, dphi=%f, %f < %f < %f? dg = v*G' = %f ", t, h, s->simulation.engaged, s->md.dphi,

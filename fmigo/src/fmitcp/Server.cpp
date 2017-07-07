@@ -1277,7 +1277,7 @@ vector<fmi2_real_t> Server::computeNumericalDirectionalDerivative(
     vector<fmi2_real_t> dz;
     fmi2_FMU_state_t state = NULL;
     double t = currentCommunicationPoint;
-    double dt = 1e-3 * communicationStepSize;
+    double dt = communicationStepSize;
 
     fmi2_import_get_fmu_state(m_fmi2Instance, &state);
 

@@ -23,7 +23,6 @@ struct ModelInstance;
 
 #define HAVE_MODELDESCRIPTION_STRUCT
 typedef struct {
-    fmi2Real    zero; //VR=0
     fmi2Real    x1; //VR=1
     fmi2Real    v1; //VR=2
     fmi2Real    a1; //VR=3
@@ -48,6 +47,7 @@ typedef struct {
     fmi2Real    v2_i; //VR=22
     fmi2Real    m1; //VR=23
     fmi2Real    m2; //VR=24
+    fmi2Real    zero; //VR=0
 
 
 
@@ -57,7 +57,6 @@ typedef struct {
 
 #define HAVE_DEFAULTS
 static const modelDescription_t defaults = {
-    0.000000, //zero
     0.000000, //x1
     1.000000, //v1
     2.000000, //a1
@@ -82,6 +81,7 @@ static const modelDescription_t defaults = {
     0.000000, //v2_i
     1.000000, //m1
     1.000000, //m2
+    0.000000, //zero
 
 
 
@@ -89,7 +89,6 @@ static const modelDescription_t defaults = {
 };
 
 
-#define VR_ZERO 0
 #define VR_X1 1
 #define VR_V1 2
 #define VR_A1 3
@@ -114,6 +113,7 @@ static const modelDescription_t defaults = {
 #define VR_V2_I 22
 #define VR_M1 23
 #define VR_M2 24
+#define VR_ZERO 0
 
 
 
@@ -123,8 +123,8 @@ static const modelDescription_t defaults = {
 #define HAVE_GENERATED_GETTERS_SETTERS  //for letting the template know that we have our own getters and setters
 
 
-#define STATES { VR_V2, VR_X1, VR_V1, VR_X2 }
-#define DERIVATIVES { VR_A2, VR_V1, VR_A1, VR_V2 }
+#define STATES { VR_X1, VR_V1, VR_X2, VR_V2 }
+#define DERIVATIVES { VR_V1, VR_A1, VR_V2, VR_A2 }
 
 static void update_all(modelDescription_t *md);
 
@@ -137,7 +137,6 @@ static fmi2Status generated_fmi2GetReal(struct ModelInstance *comp, modelDescrip
 
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case 0: value[i] = md->zero; break;
         case 1: value[i] = md->x1; break;
         case 2: value[i] = md->v1; break;
         case 3: value[i] = md->a1; break;
@@ -162,6 +161,7 @@ static fmi2Status generated_fmi2GetReal(struct ModelInstance *comp, modelDescrip
         case 22: value[i] = md->v2_i; break;
         case 23: value[i] = md->m1; break;
         case 24: value[i] = md->m2; break;
+        case 0: value[i] = md->zero; break;
         default: return fmi2Error;
         }
     }
@@ -175,7 +175,6 @@ static fmi2Status generated_fmi2SetReal(struct ModelInstance *comp, modelDescrip
 
     for (i = 0; i < nvr; i++) {
         switch (vr[i]) {
-        case 0: md->zero = value[i]; break;
         case 1: md->x1 = value[i]; break;
         case 2: md->v1 = value[i]; break;
         case 3: md->a1 = value[i]; break;
@@ -200,6 +199,7 @@ static fmi2Status generated_fmi2SetReal(struct ModelInstance *comp, modelDescrip
         case 22: md->v2_i = value[i]; break;
         case 23: md->m1 = value[i]; break;
         case 24: md->m2 = value[i]; break;
+        case 0: md->zero = value[i]; break;
         default: return fmi2Error;
         }
     }

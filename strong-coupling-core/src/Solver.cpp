@@ -209,15 +209,7 @@ void Solver::solve(bool holonomic, int printDebugInfo){
         for (Connector *conn : ei->getConnectors()) {
             std::pair<int,int> key(conn->m_index, ej->m_index);
             if (m_mobilities.find(key) != m_mobilities.end()) {
-                double e = ei->jacobianElementForConnector(conn).multiply(m_mobilities[key]);
-
-                //disallow negative partials on the diagonal
-                if (i == j && e < 0) {
-                  fprintf(stderr, "Got S(%i,%i) = %f + %f + ... in Solver.cpp\n", i, j, val, e);
-                  exit(1);
-                }
-
-                val += e;
+                val += ei->jacobianElementForConnector(conn).multiply(m_mobilities[key]);
             }
         }
 

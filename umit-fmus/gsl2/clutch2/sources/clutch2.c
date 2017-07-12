@@ -14,6 +14,7 @@ typedef struct {
                        *  "springing" when changing gears */
 } clutchgear_simulation;
 
+
 #define SIMULATION_TYPE clutchgear_simulation
 #define SIMULATION_EXIT_INIT clutch_init
 #define SIMULATION_FREE(s) cgsl_free_simulation((s).sim)
@@ -124,6 +125,9 @@ int clutch (double t, const double x[], double dxdt[], void * params){
   int dx_s_idx = s->md.integrate_dx_e ? 5 : 4;
 
   double force_e, force_s, force_clutch;
+
+  
+  
   compute_forces(s, x, &force_e, &force_s, &force_clutch);
 
   /** Second order dynamics */
@@ -377,7 +381,7 @@ static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real comm
   int N = get_initial_states_size(s);
 
   
-  if (s->md.is_gearbox && s->md.gear != s->simulation.last_gear) {
+  if (0 && s->md.is_gearbox && s->md.gear != s->simulation.last_gear) {
     /** gear changed - compute impact that keeps things sane */
     double ratio = gear2ratio(s);
     s->simulation.delta_phi = ratio*s->simulation.sim.model->x[ 2 ] - s->simulation.sim.model->x[ 0 ];

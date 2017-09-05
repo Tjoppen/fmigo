@@ -95,7 +95,10 @@ namespace common {
     //converts -l option to JM compaible log level
     jm_log_level_enu_t logOptionToJMLogLevel(const char* option);
 
-bool isNumeric(const std::string& input);
+bool isVR(const std::string& input);
+bool isReal(const std::string& input);
+bool isInteger(const std::string& input);
+bool isBoolean(const std::string& input);
 
 }
 

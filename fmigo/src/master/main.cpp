@@ -123,7 +123,7 @@ static StrongConnector* findOrCreateShaftConnector(FMIClient *client,
 
 static int vrFromKeyName(FMIClient* client, string key){
 
-  if(isNumeric(key))
+  if(isVR(key))
     return atoi(key.c_str());
 
   const variable_map& vars = client->getVariables();
@@ -205,15 +205,42 @@ static void setupConstraintsAndSolver(vector<strongconnection> strongConnections
    }
 }
 
-static param param_from_vr_type_string(int vr, fmi2_base_type_enu_t type, string s) {
+static param param_from_vr_type_string(int vr, fmi2_base_type_enu_t type, string s, string varname="") {
     param p;
     p.valueReference = vr;
     p.type = type;
 
     switch (p.type) {
-    case fmi2_base_type_real: p.realValue = atof(s.c_str()); break;
-    case fmi2_base_type_int:  p.intValue = atoi(s.c_str()); break;
-    case fmi2_base_type_bool: p.boolValue = (s == "true"); break;
+    case fmi2_base_type_real:
+        if (!isReal(s)) {
+            if (varname.length()) {
+                fatal("Value \"%s\" for variable %s does not look like a Real\n", s.c_str(), varname.c_str());
+            } else {
+                fatal("Value \"%s\" for VR %i does not look like a Real\n", s.c_str(), vr);
+            }
+        }
+        p.realValue = atof(s.c_str());
+        break;
+    case fmi2_base_type_int:
+        if (!isInteger(s)) {
+            if (varname.length()) {
+                fatal("Value \"%s\" for variable %s does not look like an Integer\n", s.c_str(), varname.c_str());
+            } else {
+                fatal("Value \"%s\" for VR %i does not look like an Integer\n", s.c_str(), vr);
+            }
+        }
+        p.intValue = atoi(s.c_str());
+        break;
+    case fmi2_base_type_bool:
+        if (!isBoolean(s)) {
+            if (varname.length()) {
+                fatal("Value \"%s\" for variable %s does not look like a Boolean\n", s.c_str(), varname.c_str());
+            } else {
+                fatal("Value \"%s\" for VR %i does not look like a Boolean\n", s.c_str(), vr);
+            }
+        }
+        p.boolValue = (s == "true");
+        break;
     case fmi2_base_type_str:  p.stringValue = s; break;
     case fmi2_base_type_enum: fatal("An enum snuck its way into -p\n");
     }
@@ -240,18 +267,20 @@ static param_map resolve_string_params(const vector<deque<string> > &params, vec
             //FMU,VR,value  [type=real]
             //FMU,NAME,value
             int vr = vrFromKeyName(client, parts[1]);
+            string name = "";
 
-            if (!isNumeric(parts[1])) {
+            if (!isVR(parts[1])) {
                 const variable_map& vars = client->getVariables();
+                name = parts[1];
                 type = vars.find(parts[1])->second.type;
             }
 
-            p = param_from_vr_type_string(vr, type, parts[2]);
+            p = param_from_vr_type_string(vr, type, parts[2], name);
         } else if (parts.size() == 4) {
             //type,FMU,VR,value
             type = type_from_char(parts[0]);
 
-            if (!isNumeric(parts[2])) {
+            if (!isVR(parts[2])) {
                 fatal("Must use VRs when specifying parameters with explicit types (-p %s,%s,%s,%s)\n",
                     parts[0].c_str(), parts[1].c_str(), parts[2].c_str(), parts[3].c_str());
             }
@@ -273,19 +302,9 @@ map<double, param_map > param_mapFromCSV(fmigo_csv_fmu csvfmus, vector<FMIClient
       variable_map vmap = clients[it->first]->getVariables();
       for (auto time: it->second.time) {
         for (auto header: it->second.headers) {
-          param p;
-          int fmuIndex = it->first;
-          p.valueReference = vmap[header].vr;
-          p.type = vmap[header].type;
-
           string s = it->second.matrix[time][header];
-          switch (p.type) {
-          case fmi2_base_type_real: p.realValue = atof(s.c_str()); break;
-          case fmi2_base_type_int:  p.intValue = atoi(s.c_str()); break;
-          case fmi2_base_type_bool: p.boolValue = (s == "true"); break;
-          case fmi2_base_type_str:  p.stringValue = s; break;
-          case fmi2_base_type_enum: fprintf(stderr, "An enum snuck its way into -p\n"); exit(1);
-          }
+          param p = param_from_vr_type_string(vmap[header].vr, vmap[header].type, s, header);
+          int fmuIndex = it->first;
           pairmap[atof(time.c_str())][make_pair(fmuIndex,p.type)].push_back(p);
         }
       }

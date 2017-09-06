@@ -131,8 +131,20 @@ jm_log_level_enu_t logOptionToJMLogLevel(const char* option) {
     }
 }
 
-bool isNumeric(const std::string& input) {
+bool isVR(const std::string& input) {
     return std::all_of(input.begin(), input.end(), ::isdigit);
+}
+
+bool isReal(const std::string& input) {
+    return input.find_first_not_of("+-0123456789.eE") == std::string::npos;
+}
+
+bool isInteger(const std::string& input) {
+    return input.find_first_not_of("+-0123456789") == std::string::npos;
+}
+
+bool isBoolean(const std::string& input) {
+    return input == "true" || input == "false";
 }
 
 }

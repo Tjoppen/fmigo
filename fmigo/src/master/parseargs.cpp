@@ -190,7 +190,7 @@ void fmitcp_master::parseArguments( int argc,
 
                 if (values.size() == 8) {
                     //TYPEFROM,FMUFROM,VRFROM,TYPETO,FMUTO,VRTO,k,m
-                    if (!isNumeric(values[2]) || !isNumeric(values[5])) {
+                    if (!isVR(values[2]) || !isVR(values[5])) {
                         fatal("TYPEFROM,FMUFROM,NAMEFROM,TYPETO,FMUTO,NAMETO,k,m syntax not allowed\n");
                     }
                     conn.needs_type = false;
@@ -202,7 +202,7 @@ void fmitcp_master::parseArguments( int argc,
                 } else if (values.size() == 6) {
                     //TYPEFROM,FMUFROM,VRFROM,TYPETO,FMUTO,VRTO
                     //FMUFROM,NAMEFROM,FMUTO,NAMETO,k,m
-                    if (isNumeric(values[1])) {
+                    if (isVR(values[1])) {
                         conn.needs_type = false;
                         conn.fromType = type_from_char(values[0]);
                         conn.toType   = type_from_char(values[3]);
@@ -214,7 +214,7 @@ void fmitcp_master::parseArguments( int argc,
                 } else  if (values.size() == 5) {
                     //TYPE,FMUFROM,VRFROM,FMUTO,VRTO
                     //TYPE,FMUFROM,NAMEFROM,FMUTO,NAMETO (undocumented, not recommended)
-                    if (!isNumeric(values[1]) || !isNumeric(values[4])) {
+                    if (!isVR(values[1]) || !isVR(values[4])) {
                         warning("TYPE,FMUFROM,NAMEFROM,FMUTO,NAMETO syntax not recommended\n");
                     }
                     conn.needs_type = false;
@@ -223,7 +223,7 @@ void fmitcp_master::parseArguments( int argc,
                 } else if (values.size() == 4) {
                     //FMUFROM,VRFROM,FMUTO,VRTO
                     //FMUFROM,NAMEFROM,FMUTO,NAMETO
-                    if (isNumeric(values[1]) != isNumeric(values[3])) {
+                    if (isVR(values[1]) != isVR(values[3])) {
                         fatal("Must specify VRs or names, not both (-c %s,%s,%s,%s)\n",
                             values[0].c_str(), values[1].c_str(), values[2].c_str(), values[3].c_str()
                         );
@@ -231,7 +231,7 @@ void fmitcp_master::parseArguments( int argc,
 
                     //assume real if VRs, request type if names
                     conn.fromType = conn.toType = type_from_char("r");
-                    conn.needs_type = !isNumeric(values[1]);
+                    conn.needs_type = !isVR(values[1]);
                 } else {
                     fatal("Bad param: %s\n", it->c_str());
                 }

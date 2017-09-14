@@ -4,7 +4,11 @@
 using namespace sc;
 
 Slave::Slave(){}
-Slave::~Slave(){}
+Slave::~Slave() {
+    for (Connector* conn : m_connectors) {
+        delete conn;
+    }
+}
 
 void Slave::addConnector(Connector * conn){
     m_connectors.push_back(conn);

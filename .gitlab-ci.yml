@@ -27,6 +27,13 @@ build:xenial:
   tags:
     - shell
 
+build:xenial-fsanitize:
+  stage: build
+  script:
+    - docker build -t umit/xenial-fsanitize:$(git rev-parse HEAD)  -f Dockerfile.xenial-fsanitize  .
+  tags:
+    - shell
+
 test:trusty:
   stage: test
   script:
@@ -57,3 +64,15 @@ test:xenial:
       - umit-*.tar.gz
   tags:
     - shell
+
+##
+## -fsanitize doesn't seem to work with openmpi, so that test is disabled for now
+##
+#test:xenial-fsanitize:
+#  stage: test
+#  script:
+#    - docker run --workdir /home/gitlab-ci/umit umit/xenial-fsanitize:$(git rev-parse HEAD)  bash run_tests.sh
+#  dependencies:
+#    - build:xenial-fsanitize
+#  tags:
+#    - shell

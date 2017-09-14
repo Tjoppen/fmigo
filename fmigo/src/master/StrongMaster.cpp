@@ -17,14 +17,19 @@ using namespace fmitcp;
 using namespace fmitcp::serialize;
 using namespace sc;
 
-StrongMaster::StrongMaster(zmq::context_t &context, vector<FMIClient*> clients, vector<WeakConnection> weakConnections, Solver strongCouplingSolver, bool holonomic) :
+StrongMaster::StrongMaster(zmq::context_t &context, vector<FMIClient*> clients, vector<WeakConnection> weakConnections,
+                           Solver *strongCouplingSolver, bool holonomic) :
         JacobiMaster(context, clients, weakConnections),
         m_strongCouplingSolver(strongCouplingSolver), holonomic(holonomic) {
     info("StrongMaster (%s)\n", holonomic ? "holonomic" : "non-holonomic");
 }
 
+StrongMaster::~StrongMaster() {
+    delete m_strongCouplingSolver;
+}
+
 void StrongMaster::prepare() {
-    m_strongCouplingSolver.prepare();
+    m_strongCouplingSolver->prepare();
     JacobiMaster::prepare();
 
     //check that every FMU involved in an equation has get/set functionality
@@ -32,7 +37,7 @@ void StrongMaster::prepare() {
         FMIClient *client = m_clients[i];
         if (!client->hasCapability(fmi2_cs_canGetAndSetFMUstate)) {
             //if part of any equation then fail
-            for (sc::Equation *eq : m_strongCouplingSolver.getEquations()) {
+            for (sc::Equation *eq : m_strongCouplingSolver->getEquations()) {
                 for (sc::Connector *fc : eq->getConnectors()) {
                     if (client == fc->m_slave) {
                         fatal("FMU %i (%s) is part of a kinematic constraint but lacks rollback functionality (canGetAndSetFMUstate=\"false\")\n",
@@ -109,7 +114,7 @@ void StrongMaster::runIteration(double t, double dt) {
     }
 
     //update constraints since connector values changed
-    m_strongCouplingSolver.updateConstraints();
+    m_strongCouplingSolver->updateConstraints();
 
     //get future velocities:
     //0. save FMU states
@@ -159,7 +164,7 @@ void StrongMaster::runIteration(double t, double dt) {
     //get directional derivatives
     //this is a two-step process which is important to get the order of correct
     for (int step = 0; step < 2; step++) {
-        for (sc::Equation *eq : m_strongCouplingSolver.getEquations()) {
+        for (sc::Equation *eq : m_strongCouplingSolver->getEquations()) {
             for (sc::Connector *fc : eq->getConnectors()) {
                 StrongConnector *forceConnector = dynamic_cast<StrongConnector*>(fc);
                 FMIClient *client = dynamic_cast<FMIClient*>(forceConnector->m_slave);
@@ -195,7 +200,7 @@ void StrongMaster::runIteration(double t, double dt) {
                             //step 1 = put returned directional derivatives in the correct place in the sparse mobility matrix
                             int I = accelerationConnector->m_index;
                             int J = eq->m_index;
-                            JacobianElement &el = m_strongCouplingSolver.m_mobilities[make_pair(I,J)];
+                            JacobianElement &el = m_strongCouplingSolver->m_mobilities[make_pair(I,J)];
 
                             if (eq->m_isSpatial) {
                                 if (accelerationConnector->getAccelerationValueRefs().size() == 1) {
@@ -238,7 +243,7 @@ void StrongMaster::runIteration(double t, double dt) {
     }
 
     //compute strong coupling forces
-    m_strongCouplingSolver.solve(holonomic);
+    m_strongCouplingSolver->solve(holonomic);
     PRINT_HDF5_DELTA("run_solver");
 
     //distribute forces

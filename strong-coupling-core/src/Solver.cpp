@@ -18,7 +18,11 @@ Solver::Solver(){
     equations_dirty = true;
 }
 
-Solver::~Solver(){}
+Solver::~Solver() {
+    for (Constraint *c : m_constraints) {
+        delete c;
+    }
+}
 
 void Solver::addSlave(Slave * slave){
     equations_dirty = true;

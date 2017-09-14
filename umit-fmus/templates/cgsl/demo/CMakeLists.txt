@@ -10,7 +10,8 @@ endif ()
 add_test(ctest_cgsl_run cgsl_demo)
 
 # No valgrind on Windows
-if (NOT WIN32)
+# Also don't run if using any -fsanitize since that interferes with valgrind
+if (NOT WIN32 AND NOT "${CMAKE_C_FLAGS}" MATCHES "-fsanitize")
   # Check for leaks
   add_test(ctest_cgsl_valgrind valgrind --leak-check=full --error-exitcode=1 ${CMAKE_CURRENT_BINARY_DIR}/cgsl_demo)
 endif ()

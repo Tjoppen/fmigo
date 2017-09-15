@@ -355,7 +355,7 @@ fmi2Status fmi2ExitInitializationMode(fmi2Component c) {
 
 fmi2Status fmi2Terminate(fmi2Component c) {
     ModelInstance *comp = (ModelInstance *)c;
-    if (invalidState(comp, "fmi2Terminate", modelInitialized|modelStepping|modelContinuousTimeMode))
+    if (invalidState(comp, "fmi2Terminate", modelInitialized|modelStepping|modelEventMode|modelContinuousTimeMode))
         return fmi2Error;
     FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2Terminate")
 
@@ -376,7 +376,7 @@ fmi2Status fmi2Reset(fmi2Component c) {
 
 fmi2Status fmi2GetReal (fmi2Component c, const fmi2ValueReference vr[], size_t nvr, fmi2Real value[]) {
     ModelInstance *comp = (ModelInstance *)c;
-    if (invalidState(comp, "fmi2GetReal", modelInitializationMode|modelInitialized|modelStepping|modelError|modelContinuousTimeMode))
+    if (invalidState(comp, "fmi2GetReal", MASK_fmi2GetX))
         return fmi2Error;
     if (nvr > 0 && nullPointer(comp, "fmi2GetReal", "vr[]", vr))
         return fmi2Error;
@@ -398,7 +398,7 @@ fmi2Status fmi2GetReal (fmi2Component c, const fmi2ValueReference vr[], size_t n
 
 fmi2Status fmi2GetInteger(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, fmi2Integer value[]) {
     ModelInstance *comp = (ModelInstance *)c;
-    if (invalidState(comp, "fmi2GetInteger", modelInitializationMode|modelInitialized|modelStepping|modelError))
+    if (invalidState(comp, "fmi2GetInteger", MASK_fmi2GetX))
         return fmi2Error;
     if (nvr > 0 && nullPointer(comp, "fmi2GetInteger", "vr[]", vr))
             return fmi2Error;
@@ -420,7 +420,7 @@ fmi2Status fmi2GetInteger(fmi2Component c, const fmi2ValueReference vr[], size_t
 
 fmi2Status fmi2GetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, fmi2Boolean value[]) {
     ModelInstance *comp = (ModelInstance *)c;
-    if (invalidState(comp, "fmi2GetBoolean", modelInitializationMode|modelInitialized|modelStepping|modelError))
+    if (invalidState(comp, "fmi2GetBoolean", MASK_fmi2GetX))
         return fmi2Error;
     if (nvr > 0 && nullPointer(comp, "fmi2GetBoolean", "vr[]", vr))
             return fmi2Error;
@@ -442,11 +442,10 @@ fmi2Status fmi2GetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t
 
 fmi2Status fmi2GetString (fmi2Component c, const fmi2ValueReference vr[], size_t nvr, fmi2String value[]) {
 #ifndef HAVE_GENERATED_GETTERS_SETTERS
-    return unsupportedFunction(c, "fmi2GetString",
-        modelInitializationMode|modelInitialized|modelStepping|modelError);
+    return unsupportedFunction(c, "fmi2GetString", MASK_fmi2GetX);
 #else
     ModelInstance *comp = (ModelInstance *)c;
-    if (invalidState(comp, "fmi2GetString", modelInitializationMode|modelInitialized|modelStepping|modelError))
+    if (invalidState(comp, "fmi2GetString", MASK_fmi2GetX))
         return fmi2Error;
     if (nvr > 0 && nullPointer(comp, "fmi2GetString", "vr[]", vr))
             return fmi2Error;
@@ -460,7 +459,7 @@ fmi2Status fmi2GetString (fmi2Component c, const fmi2ValueReference vr[], size_t
 fmi2Status fmi2SetReal (fmi2Component c, const fmi2ValueReference vr[], size_t nvr, const fmi2Real value[]) {
     fmi2Status ret;
     ModelInstance *comp = (ModelInstance *)c;
-    if (invalidState(comp, "fmi2SetReal", modelInstantiated|modelInitializationMode|modelInitialized|modelStepping|modelContinuousTimeMode))
+    if (invalidState(comp, "fmi2SetReal", MASK_fmi2SetX | modelContinuousTimeMode))
         return fmi2Error;
     if (nvr > 0 && nullPointer(comp, "fmi2SetReal", "vr[]", vr))
         return fmi2Error;
@@ -495,7 +494,7 @@ fmi2Status fmi2SetReal (fmi2Component c, const fmi2ValueReference vr[], size_t n
 
 fmi2Status fmi2SetInteger(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, const fmi2Integer value[]) {
     ModelInstance *comp = (ModelInstance *)c;
-    if (invalidState(comp, "fmi2SetInteger", modelInstantiated|modelInitializationMode|modelInitialized|modelStepping|modelContinuousTimeMode))
+    if (invalidState(comp, "fmi2SetInteger", MASK_fmi2SetX))
         return fmi2Error;
     if (nvr > 0 && nullPointer(comp, "fmi2SetInteger", "vr[]", vr))
         return fmi2Error;
@@ -518,7 +517,7 @@ fmi2Status fmi2SetInteger(fmi2Component c, const fmi2ValueReference vr[], size_t
 
 fmi2Status fmi2SetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, const fmi2Boolean value[]) {
     ModelInstance *comp = (ModelInstance *)c;
-    if (invalidState(comp, "fmi2SetBoolean", modelInstantiated|modelInitializationMode|modelInitialized|modelStepping|modelContinuousTimeMode))
+    if (invalidState(comp, "fmi2SetBoolean", MASK_fmi2SetX))
         return fmi2Error;
     if (nvr>0 && nullPointer(comp, "fmi2SetBoolean", "vr[]", vr))
         return fmi2Error;
@@ -541,12 +540,10 @@ fmi2Status fmi2SetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t
 
 fmi2Status fmi2SetString (fmi2Component c, const fmi2ValueReference vr[], size_t nvr, const fmi2String value[]) {
 #ifndef HAVE_GENERATED_GETTERS_SETTERS
-    return unsupportedFunction(c, "fmi2SetString",
-                               // modelInstantiated|modelInitializationMode|modelInitialized|modelStepping|modelContinuousTimeMode);
-        modelInstantiated|modelInitializationMode|modelInitialized|modelStepping);
+    return unsupportedFunction(c, "fmi2SetString", MASK_fmi2SetX);
 #else
     ModelInstance *comp = (ModelInstance *)c;
-    if (invalidState(comp, "fmi2SetString", modelInstantiated|modelInitializationMode|modelInitialized|modelStepping))
+    if (invalidState(comp, "fmi2SetString", MASK_fmi2SetX))
         return fmi2Error;
     if (nvr>0 && nullPointer(comp, "fmi2SetString", "vr[]", vr))
         return fmi2Error;

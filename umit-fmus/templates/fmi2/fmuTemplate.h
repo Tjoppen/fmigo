@@ -19,21 +19,27 @@
 
 #define NUMBER_OF_CATEGORIES 4
 
-#define MASK_fmi2EnterEventMode          (modelInitialized | modelEventMode | modelContinuousTimeMode)
+#define MASK_fmi2EnterEventMode          (modelEventMode | modelContinuousTimeMode)
 #define MASK_fmi2NewDiscreteStates       modelEventMode
 #define MASK_fmi2EnterContinuousTimeMode modelEventMode
 #define MASK_fmi2CompletedIntegratorStep modelContinuousTimeMode
 #define MASK_fmi2SetTime                 (modelEventMode | modelContinuousTimeMode)
-#define MASK_fmi2SetContinuousStates     (modelContinuousTimeMode | modelInitializationMode)
+#define MASK_fmi2SetContinuousStates     modelContinuousTimeMode
 #define MASK_fmi2GetEventIndicators      (modelInitializationMode \
                                         | modelEventMode | modelContinuousTimeMode \
                                         | modelTerminated | modelError)
-#define MASK_fmi2GetDerivatives          (modelEventMode | modelContinuousTimeMode \
-                                        | modelTerminated | modelError | modelInitializationMode)
 #define MASK_fmi2GetContinuousStates     MASK_fmi2GetEventIndicators
+#define MASK_fmi2GetDerivatives          MASK_fmi2GetEventIndicators
 #define MASK_fmi2GetNominalsOfContinuousStates ( modelInstantiated \
                                         | modelEventMode | modelContinuousTimeMode \
                                         | modelTerminated | modelError)
+#define MASK_fmi2GetX                   (modelInitializationMode | modelInitialized \
+                                        | modelStepping \
+                                        | modelEventMode | modelContinuousTimeMode \
+                                        | modelTerminated | modelError)
+#define MASK_fmi2SetX                   (modelInstantiated \
+                                        | modelInitializationMode | modelInitialized \
+                                        | modelStepping | modelEventMode)
 
 typedef enum {
     modelInstantiated       = 1<<0,

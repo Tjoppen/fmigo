@@ -142,7 +142,12 @@ static int vrFromKeyName(FMIClient* client, string key){
 #define toVR(type, index)                                   \
   vrFromKeyName(clients[it->type##FMU],it->vrORname[index])
 
-static void setupConstraintsAndSolver(vector<strongconnection> strongConnections, vector<FMIClient*> clients, Solver *solver) {
+static Solver* setupConstraintsAndSolver(vector<strongconnection> strongConnections, vector<FMIClient*> clients) {
+    if (strongConnections.size() == 0) {
+        return NULL;
+    }
+    Solver *solver = new Solver;
+
     for (auto it = strongConnections.begin(); it != strongConnections.end(); it++) {
         //NOTE: this leaks memory, but I don't really care since it's only setup
         Constraint *con;
@@ -203,6 +208,8 @@ static void setupConstraintsAndSolver(vector<strongconnection> strongConnections
     for (auto it = clients.begin(); it != clients.end(); it++) {
         solver->addSlave(*it);
    }
+
+   return solver;
 }
 
 static param param_from_vr_type_string(int vr, fmi2_base_type_enu_t type, string s, string varname="") {
@@ -596,7 +603,6 @@ int main(int argc, char *argv[] ) {
     vector<int> stepOrder;
     vector<int> fmuVisibilities;
     vector<strongconnection> scs;
-    Solver solver;
     string fieldnameFilename;
     bool holonomic = true;
     bool useHeadersInCSV = false;
@@ -658,7 +664,7 @@ int main(int argc, char *argv[] ) {
 
     connectionNamesToVr(connections,scs,clients);
     vector<WeakConnection> weakConnections = setupWeakConnections(connections, clients);
-    setupConstraintsAndSolver(scs, clients, &solver);
+    Solver *solver = setupConstraintsAndSolver(scs, clients);
 
     BaseMaster *master = NULL;
     string fieldnames = getFieldnames(clients);
@@ -668,7 +674,7 @@ int main(int argc, char *argv[] ) {
             fatal("Can only do Jacobi stepping for weak connections when also doing strong coupling\n");
         }
 
-        solver.setSpookParams(relaxation,compliance,timeStep);
+        solver->setSpookParams(relaxation,compliance,timeStep);
         StrongMaster *sm = new StrongMaster(context, clients, weakConnections, solver, holonomic);
         master = sm;
         fieldnames += sm->getForceFieldnames();

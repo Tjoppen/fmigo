@@ -237,10 +237,12 @@ void ModelExchangeStepper::prepareME() {
     init_fmu_model(m_model, me_clients);
     fmu_parameters* p = get_p(m_model);
     int filter_length = get_storage().get_current_states().size();
+#ifdef MODEL_EXCHANGE_FILTER
     cgsl_model* e_model = cgsl_epce_default_model_init(m_model.model,  /* model */
                                                        2,
                                                        epce_post_step,
                                                        p);
+#endif
 
     //m_sim = (cgsl_simulation *)malloc(sizeof(cgsl_simulation));
     m_sim = cgsl_init_simulation(

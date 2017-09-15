@@ -157,6 +157,7 @@ function (add_wrapped dir sourcetarget)
 
   add_custom_command(
     OUTPUT ${dstxml}
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_SOURCE_DIR}/${dir}
     COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/fmu-builder/xml2wrappedxml.py
          -x ${srcxml} -f "${${sourcetarget}_fmu}" -i ${target} > ${dstxml}
     DEPENDS ${srcxml} ${sourcetarget} ${CMAKE_CURRENT_SOURCE_DIR}/fmu-builder/xml2wrappedxml.py)
@@ -172,6 +173,7 @@ function (add_wrapped_fmu dir sourcetarget sourcefmu)
 
   add_custom_command(
     OUTPUT ${dstxml}
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_SOURCE_DIR}/${dir}
     COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/fmu-builder/xml2wrappedxml.py
          -f ${sourcefmu} -i ${target} > ${dstxml}
     DEPENDS ${sourcefmu} ${sourcetarget}_fmu_target ${CMAKE_CURRENT_SOURCE_DIR}/fmu-builder/xml2wrappedxml.py)
@@ -198,6 +200,7 @@ function (wrap_existing_fmu modelIdentifier sourcefmu dir)
 
   add_custom_command(
     OUTPUT ${dstxml}
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_SOURCE_DIR}/${dir}
     COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/fmu-builder/xml2wrappedxml.py
          -f ${sourcefmu} -i ${target} > ${dstxml}
     DEPENDS ${sourcefmu} ${CMAKE_CURRENT_SOURCE_DIR}/fmu-builder/xml2wrappedxml.py)

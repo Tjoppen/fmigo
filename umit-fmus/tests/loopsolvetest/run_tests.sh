@@ -1,6 +1,12 @@
 #!/bin/bash
 set -e
 
+# Need GSL (and thus GPL) to solve algebraic loop
+if [ $USE_GPL -eq 0 ]
+then
+  exit 0
+fi
+
 # Simplest test not solvable with fixed point iteration
 mpiexec -np 2 fmigo-mpi -t 0.1 -L -p 0,1,1 -c 0,3,0,2 sub/sub.fmu > temp.csv
 python ../../../compare_csv.py temp.csv simple.ref

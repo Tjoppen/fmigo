@@ -2,9 +2,15 @@
 set -e
 source boilerplate.sh
 
-(cd ${FMUS_DIR}/me      && ( ./test_me.sh ||  ( echo "failed modelExchange" && exit 1 ) ) )
+# Grab configuration, for figuring if we have GPL enabled or not
+for e in $(fmigo-mpi -e); do export "$e"; done
+
+if [ $USE_GPL -eq 1 ]
+then
+  (cd ${FMUS_DIR}/me            && ( ./test_me.sh ||  ( echo "failed modelExchange" && exit 1 ) ) )
+  (cd articles/truck            && ( python test_gsl_trucks.py  || ( echo "failed GSL truck test" && exit 1 ) ) )
+fi
 (cd articles/work-reports       && ( ./run_tests.sh  || ( echo "failed tests in work-reports" && exit 1 ) ) )
-(cd articles/truck              && ( python test_gsl_trucks.py  || ( echo "failed GSL truck test" && exit 1 ) ) )
 (cd ${FMUS_DIR}/tests           && ( ./run_tests.sh ||  ( echo "failed umit-fmus tests" && exit 1 ) ) )
 (cd build                       && ( ctest || ( echo "ctest failed" && exit 1 ) ) )
 (cd ${FMUS_DIR}/meWrapper && pwd &&( ./test_wrapper.sh ||  ( echo "failed wrapper" && exit 1 ) ) )

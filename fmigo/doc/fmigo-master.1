@@ -4,7 +4,7 @@ fmigo-master \- simulate FMUs
 .SH SYNOPSIS
 .ll +8
 .B fmigo-master
-.RB [ " \-rlhtcdsopfmgwC5NMazZLHD " ]
+.RB [ " \-rlhtcdsopfmgwC5NMazZLHDe " ]
 [
 .I "URLs \&..."
 ]
@@ -327,6 +327,24 @@ Always compute numerical directional derivatives, regardless of the value of pro
 This is useful for kinematic coupling if one or more FMUs have a spring-damper type input.
 Such FMUs would give a much too high mobility estimate, unless the timestep is taken into account somehow.
 This is exactly what the numerical directional derivative code does, hence this flag.
+.TP
+.B \-e
+Print some preprocessor variables suitable for "export", to stdout, then quit.
+This is useful for figuring out at runtime how fmigo was configured.
+Example cmake -DUSE_GPL=0:
+
+    $ fmigo-mpi -e
+    USE_MPI=1
+    USE_GPL=0
+    $ fmigo-master -e
+    USE_MPI=0
+    USE_GPL=0
+
+Example of passing to export for further script use:
+
+    $ for e in $(fmigo-mpi -e); do export "$e"; done
+    $ echo "The value of USE_GPL is $USE_GPL"
+    The value of USE_GPL is 0
 
 .SH EXAMPLES
 To run an FMU simulation from time 0 to 5 with timestep 0.01:

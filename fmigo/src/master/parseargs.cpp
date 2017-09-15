@@ -172,7 +172,7 @@ void fmitcp_master::parseArguments( int argc,
 
     vector<char*> argv2 = make_char_vector(argvstore);
 
-    while ((c = getopt (argv2.size(), argv2.data(), "rl:ht:c:d:s:o:p:f:m:g:w:C:5:F:NM:a:z:ZLHV:D")) != -1){
+    while ((c = getopt (argv2.size(), argv2.data(), "rl:ht:c:d:s:o:p:f:m:g:w:C:5:F:NM:a:z:ZLHV:De")) != -1){
         int n, skip, l, cont, i, numScanned, stop, vis;
         deque<string> parts;
         if (optarg) parts = escapeSplit(optarg, ':');
@@ -465,6 +465,19 @@ void fmitcp_master::parseArguments( int argc,
             info("Always computing numerical directional derivatives, regardless of providesDirectionalDerivatives\n");
             alwaysComputeNumericalDirectionalDerivatives = true;
             break;
+
+        case 'e':
+#ifdef USE_MPI
+            printf("USE_MPI=1\n");
+#else
+            printf("USE_MPI=0\n");
+#endif
+#ifdef USE_GPL
+            printf("USE_GPL=1\n");
+#else
+            printf("USE_GPL=0\n");
+#endif
+            exit(0);
 
         default:
             fatal("abort %c...\n",c);

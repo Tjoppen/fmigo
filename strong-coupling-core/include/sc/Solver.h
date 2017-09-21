@@ -77,11 +77,6 @@ public:
      * @brief Get the number of rows in the system matrix
      */
     int getSystemMatrixRows();
-
-    /**
-     * @brief Get number of columns in the system matrix.
-     */
-    int getSystemMatrixCols();
     
     /// Get a constraint
     Constraint * getConstraint(int i);

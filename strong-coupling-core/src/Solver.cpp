@@ -54,17 +54,6 @@ int Solver::getSystemMatrixRows(){
   return numsystemrows;
 }
 
-int Solver::getSystemMatrixCols(){
-    int numSlaves = m_slaves.size(),
-        numConnectors = 0,
-        i;
-    for(i=0; i<numSlaves; ++i){
-        numConnectors += m_slaves[i]->numConnectors();
-    }
-    // Each connector has 6 dofs
-    return 6*numConnectors;
-}
-
 vector<Equation*> Solver::getEquations(){
     if (equations_dirty) {
         eqs.clear();

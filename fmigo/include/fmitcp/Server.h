@@ -2,6 +2,7 @@
 #define SERVER_H_
 
 #include <string>
+#include <chrono>
 #define FMILIB_BUILDING_LIBRARY
 #include <fmilib.h>
 #include "fmitcp.pb.h"
@@ -17,6 +18,9 @@ namespace fmitcp {
   /// Serves an FMU to a port via FMI/TCP.
   class Server {
 
+  public:
+    using clock = std::chrono::high_resolution_clock;
+
   private:
     bool m_sendDummyResponses;
     bool m_fmuParsed;
@@ -26,6 +30,11 @@ namespace fmitcp {
     //future value of currentCommunicationPoint, and a guess for future communicationStepSize
     //for computeNumericalDirectionalDerivative
     double currentCommunicationPoint, communicationStepSize;
+
+    //timing stuff
+    void rotate_timer(std::string label);
+    clock::time_point m_time;                   //time marker
+    std::map<std::string, double> m_durations;  //durations in µs
 
     void setStartValues();
   protected:
@@ -57,7 +66,7 @@ namespace fmitcp {
 
   public:
 
-    Server(string fmuPath, std::string hdf5Filename = "");
+    explicit Server(string fmuPath, std::string hdf5Filename = "");
     virtual ~Server();
 
     /// To be implemented in subclass

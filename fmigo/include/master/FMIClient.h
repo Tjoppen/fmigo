@@ -10,6 +10,7 @@
 #include "WeakConnection.h"
 #include "common/common.h"
 #include <deque>
+#include <set>
 #include <FMI2/fmi2_functions.h>
 #include "../master/control.pb.h"
 
@@ -51,18 +52,47 @@ namespace fmitcp_master {
         BaseMaster * m_master;
         fmi2_event_info_t m_event_info;
 
-        /// Last fetched result from getX
-        std::deque<double>      m_getRealValues;
-        std::deque<int>         m_getIntegerValues;
-        std::deque<bool>        m_getBooleanValues;
-        std::deque<std::string> m_getStringValues;
+        //value cache
+        std::map<int, double>      m_reals;
+        std::map<int, int>         m_ints;
+        std::map<int, bool>        m_bools;
+        std::map<int, std::string> m_strings;
+
+        //set of VRs currently being requested
+        std::set<int>              m_outgoing_reals;
+        std::set<int>              m_outgoing_ints;
+        std::set<int>              m_outgoing_bools;
+        std::set<int>              m_outgoing_strings;
+
+        //delete cached values
+        void deleteCachedValues();
+
+        void queueReals(const std::vector<int>& vrs);
+        void queueInts(const std::vector<int>& vrs);
+        void queueBools(const std::vector<int>& vrs);
+        void queueStrings(const std::vector<int>& vrs);
+        void queueX(const SendGetXType& typeRefs);
+
+        void sendValueRequests();
+
+        std::vector<double>       getReals(const std::vector<int>& vrs) const;
+        std::vector<int>          getInts(const std::vector<int>& vrs) const;
+        std::vector<bool>         getBools(const std::vector<int>& vrs) const;
+        std::vector<std::string>  getStrings(const std::vector<int>& vrs) const;
+
+        double       getReal(int vr) const;
+        int          getInt(int vr) const;
+        bool         getBool(int vr) const;
+        std::string  getString(int vr) const;
+
+        //special thing for bypassing the value caches in strongmaster
+        bool                m_future_values_incoming;
+        std::vector<double> m_future_reals;
 
         /// Values returned from calls to fmiGetDirectionalDerivative()
         std::deque<std::vector<double> > m_getDirectionalDerivativeValues;
 
         control_proto::fmu_state::State m_fmuState;
-
-        void clearGetValues();
 
         std::string getModelName() const;
         fmi2_fmu_kind_enu_t getFmuKind();
@@ -162,7 +192,6 @@ namespace fmitcp_master {
         //returns string of field names, all of which prepended with prefix
         std::string getSpaceSeparatedFieldNames(std::string prefix) const;
 
-        void sendGetX(const SendGetXType& typeRefs);
         void sendSetX(const SendSetXType& typeRefsValues);
     };
 };

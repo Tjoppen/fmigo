@@ -61,10 +61,11 @@ int BaseMaster::loop_residual_f(const gsl_vector *x, void *params, gsl_vector *f
   for (auto it : newInputs) {
     it.first->sendSetX(it.second);
   }
-  master->clearGetValues();
+  master->deleteCachedValues();
   for (auto it : master->clientWeakRefs) {
-    it.first->sendGetX(it.second);
+    it.first->queueX(it.second);
   }
+  master->sendValueRequests();
   master->wait();
 
   k = 0;
@@ -98,10 +99,11 @@ int BaseMaster::loop_residual_f(const gsl_vector *x, void *params, gsl_vector *f
 
 void BaseMaster::solveLoops() {
   //stolen from runIteration()
-  clearGetValues();
+  deleteCachedValues();
   for (auto it = clientWeakRefs.begin(); it != clientWeakRefs.end(); it++) {
-    it->first->sendGetX(it->second);
+    it->first->queueX(it->second);
   }
+  sendValueRequests();
   wait();
   initialNonReals = getInputWeakRefsAndValues(m_weakConnections);
 
@@ -346,8 +348,14 @@ void BaseMaster::handleZmqControl() {
   }
 }
 
-void BaseMaster::clearGetValues() {
+void BaseMaster::sendValueRequests() {
   for (FMIClient *client : m_clients) {
-    client->clearGetValues();
+    client->sendValueRequests();
+  }
+}
+
+void BaseMaster::deleteCachedValues() {
+  for (FMIClient *client : m_clients) {
+    client->deleteCachedValues();
   }
 }

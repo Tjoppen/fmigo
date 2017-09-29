@@ -66,12 +66,11 @@ void StrongMaster::getDirectionalDerivative(FMIClient *client, Vec3 seedVec, vec
 }
 
 void StrongMaster::runIteration(double t, double dt) {
-    clearGetValues();
-
     //get weak connector outputs
     for (auto it = clientWeakRefs.begin(); it != clientWeakRefs.end(); it++) {
-        it->first->sendGetX(it->second);
+        it->first->queueX(it->second);
     }
+    sendValueRequests();
     PRINT_HDF5_DELTA("get_weak_values");
     wait();
     PRINT_HDF5_DELTA("get_weak_values_wait");
@@ -89,7 +88,9 @@ void StrongMaster::runIteration(double t, double dt) {
 
     //get strong connector inputs
     //TODO: it'd be nice if these get_real() were pipelined with the get_real()s done above
-    clearGetValues();
+
+    deleteCachedValues(); //needed?
+
     for(size_t i=0; i<m_clients.size(); i++){
         //check m_getDirectionalDerivativeValues while we're at it
         if (m_clients[i]->m_getDirectionalDerivativeValues.size() > 0) {
@@ -98,8 +99,9 @@ void StrongMaster::runIteration(double t, double dt) {
         }
 
         const vector<int> valueRefs = m_clients[i]->getStrongConnectorValueReferences();
-        send(m_clients[i], fmi2_import_get_real(valueRefs));
+        m_clients[i]->queueReals(valueRefs);
     }
+    sendValueRequests();
     PRINT_HDF5_DELTA("get_strong_reals");
     wait();
     PRINT_HDF5_DELTA("get_strong_reals_wait");
@@ -108,12 +110,7 @@ void StrongMaster::runIteration(double t, double dt) {
     for (size_t i=0; i<m_clients.size(); i++){
         FMIClient *client = m_clients[i];
         vector<int> vrs = client->getStrongConnectorValueReferences();
-        /*debug("m_getRealValues:\n");
-        for (int j = 0; j < client->m_getRealValues.size(); j++) {
-             debug("VR %i = %f\n", vrs[j], client->m_getRealValues[j]);
-        }*/
-
-        client->setConnectorValues(vrs, vector<double>(client->m_getRealValues.begin(), client->m_getRealValues.end()));
+        client->setConnectorValues(vrs, client->getReals(vrs));
     }
 
     //update constraints since connector values changed
@@ -140,10 +137,13 @@ void StrongMaster::runIteration(double t, double dt) {
     //In other words: do the step, but don't commit the results
     send(saveLoadClients, fmi2_import_do_step(t, dt, false));
 
-    clearGetValues();
     //do about the same thing we did a little bit further up, but store the results in future values
     for(size_t i=0; i<saveLoadClients.size(); i++){
         const vector<int> valueRefs = saveLoadClients[i]->getStrongConnectorValueReferences();
+        if (saveLoadClients[i]->m_future_reals.size()) {
+          fatal("saveLoadClients[i]->m_future_reals.size()\n");
+        }
+        saveLoadClients[i]->m_future_values_incoming = true;
         send(saveLoadClients[i], fmi2_import_get_real(valueRefs));
     }
 
@@ -240,7 +240,8 @@ void StrongMaster::runIteration(double t, double dt) {
     for (size_t i=0; i<saveLoadClients.size(); i++){
         FMIClient *client = saveLoadClients[i];
         vector<int> vrs = client->getStrongConnectorValueReferences();
-        client->setConnectorFutureVelocities(vrs, vector<double>(client->m_getRealValues.begin(), client->m_getRealValues.end()));
+        client->setConnectorFutureVelocities(vrs, client->m_future_reals);
+        client->m_future_reals.clear();
     }
 
     //compute strong coupling forces
@@ -288,6 +289,14 @@ void StrongMaster::runIteration(double t, double dt) {
     //In other words: do the step, commit the results (basically, we're not going back)
     send(m_clients, fmi2_import_do_step(t, dt, true));
     PRINT_HDF5_DELTA("do_step");
+
+    //do_step() makes values old
+    deleteCachedValues();
+
+    //pre-fetch values for next step
+    for (auto it = clientWeakRefs.begin(); it != clientWeakRefs.end(); it++) {
+        it->first->queueX(it->second);
+    }
 }
 
 string StrongMaster::getForceFieldnames() const {

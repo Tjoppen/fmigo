@@ -114,33 +114,22 @@ OutputRefsType getOutputWeakRefs(vector<WeakConnection> weakConnections) {
 template<typename T> void doit(
         InputRefsValuesType& refValues,
         WeakConnection& wc,
-        map<FMIClient*, size_t>& valueOfs,
-        const deque<T>& values,
+        const std::map<int,T>& values,
         MultiValue (WeakConnection::*convert)(T) const)
 {
-    size_t ofs = valueOfs[wc.from];
-
-    if (ofs >= values.size()) {
-        //shouldn't happen
-        fatal("Number of setX() doesn't match number of getX() (%zu vs %zu) '%s'\n", ofs, values.size(), typeid(T).name());
+    auto it = values.find(wc.conn.fromOutputVR);
+    if (it == values.end()) {
+      fatal("VR %i was not requested\n", wc.conn.fromOutputVR);
     }
 
-    MultiValue value = (wc.*convert)(values[ofs]);
+    MultiValue value = (wc.*convert)(it->second);
 
     refValues[wc.to][wc.conn.toType].first.push_back(wc.conn.toInputVR);
     refValues[wc.to][wc.conn.toType].second.push_back(value);
-    valueOfs[wc.from]++;
-
 }
 
 static InputRefsValuesType getInputWeakRefsAndValues_internal(vector<WeakConnection> weakConnections, FMIClient *toClient) {
     InputRefsValuesType refValues; //VRs and corresponding values for each client
-
-    //for keeping track of where we are in each FMIClient->m_getXValues
-    map<FMIClient*, size_t> realValueOfs;
-    map<FMIClient*, size_t> integerValueOfs;
-    map<FMIClient*, size_t> booleanValueOfs;
-    map<FMIClient*, size_t> stringValueOfs;
 
     for (size_t x = 0; x < weakConnections.size(); x++) {
         WeakConnection& wc = weakConnections[x];
@@ -152,16 +141,16 @@ static InputRefsValuesType getInputWeakRefsAndValues_internal(vector<WeakConnect
 
         switch (wc.conn.fromType) {
         case fmi2_base_type_real:
-            doit(refValues, wc, realValueOfs,    wc.from->m_getRealValues,    &WeakConnection::setFromReal);
+            doit(refValues, wc, wc.from->m_reals,    &WeakConnection::setFromReal);
             break;
         case fmi2_base_type_int:
-            doit(refValues, wc, integerValueOfs, wc.from->m_getIntegerValues, &WeakConnection::setFromInteger);
+            doit(refValues, wc, wc.from->m_ints,     &WeakConnection::setFromInteger);
             break;
         case fmi2_base_type_bool:
-            doit(refValues, wc, booleanValueOfs, wc.from->m_getBooleanValues, &WeakConnection::setFromBoolean);
+            doit(refValues, wc, wc.from->m_bools,    &WeakConnection::setFromBoolean);
             break;
         case fmi2_base_type_str:
-            doit(refValues, wc, stringValueOfs,  wc.from->m_getStringValues,  &WeakConnection::setFromString);
+            doit(refValues, wc, wc.from->m_strings,  &WeakConnection::setFromString);
             break;
         case fmi2_base_type_enum:
             fatal("Tried to connect enum output somewhere. Enums are not yet supported\n");

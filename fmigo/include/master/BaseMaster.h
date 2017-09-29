@@ -106,7 +106,8 @@ namespace fmitcp_master {
 
         void handleZmqControl();
 
-        void clearGetValues();
+        void sendValueRequests();
+        void deleteCachedValues();
     };
 };
 

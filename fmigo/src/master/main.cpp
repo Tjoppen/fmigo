@@ -422,7 +422,6 @@ template<typename RFType, typename From> void addVectorToRepeatedField(RFType* r
 static void printOutputs(double t, BaseMaster *master, vector<FMIClient*>& clients) {
     char separator = fmigo::globals::getSeparator();
 
-    master->clearGetValues();
     for (auto client : clients) {
         size_t nvars = client->getOutputs().size();
         SendGetXType getX;
@@ -436,9 +435,9 @@ static void printOutputs(double t, BaseMaster *master, vector<FMIClient*>& clien
             getX[var.type].push_back(var.vr);
         }
 
-        client->sendGetX(getX);
+        client->queueX(getX);
     }
-
+    master->sendValueRequests();
     master->wait();
 
     fprintf(fmigo::globals::outfile, "%+.16le", t);
@@ -447,27 +446,24 @@ static void printOutputs(double t, BaseMaster *master, vector<FMIClient*>& clien
         for (const variable& out : client->getOutputs()) {
             switch (out.type) {
             case fmi2_base_type_real:
-                fprintf(fmigo::globals::outfile, "%c%+.16le", separator, client->m_getRealValues.front());
-                client->m_getRealValues.pop_front();
+                fprintf(fmigo::globals::outfile, "%c%+.16le", separator, client->getReal(out.vr));
                 break;
             case fmi2_base_type_int:
-                fprintf(fmigo::globals::outfile, "%c%i", separator, client->m_getIntegerValues.front());
-                client->m_getIntegerValues.pop_front();
+                fprintf(fmigo::globals::outfile, "%c%i", separator, client->getInt(out.vr));
                 break;
             case fmi2_base_type_bool:
-                fprintf(fmigo::globals::outfile, "%c%i", separator, client->m_getBooleanValues.front());
-                client->m_getBooleanValues.pop_front();
+                fprintf(fmigo::globals::outfile, "%c%i", separator, client->getBool(out.vr));
                 break;
             case fmi2_base_type_str: {
                 ostringstream oss;
-                for(char c: client->m_getStringValues.front()){
+                string s = client->getString(out.vr);
+                for(char c: s){
                     switch (c){
                     case '"': oss << "\"\""; break;
                     default: oss << c;
                     }
                 }
                 fprintf(fmigo::globals::outfile, "%c\"%s\"", separator, oss.str().c_str());
-                client->m_getStringValues.pop_front();
                 break;
             }
             case fmi2_base_type_enum:
@@ -489,7 +485,6 @@ static void pushResults(int step, double t, double endTime, double timeStep, zmq
     results.set_t_end(endTime);
     results.set_dt(timeStep);
 
-    master->clearGetValues();
     for (auto client : clients) {
         const variable_map& vars = client->getVariables();
         SendGetXType getVariables;
@@ -504,10 +499,10 @@ static void pushResults(int step, double t, double endTime, double timeStep, zmq
             }
         }
 
-        client->sendGetX(getVariables);
+        client->queueX(getVariables);
         clientVariables[client] = getVariables;
     }
-
+    master->sendValueRequests();
     master->wait();
 
     for (auto cv : clientVariables) {
@@ -516,13 +511,13 @@ static void pushResults(int step, double t, double endTime, double timeStep, zmq
         fmu_res->set_fmu_id(cv.first->getId());
 
         addVectorToRepeatedField(fmu_res->mutable_reals()->mutable_vrs(),       cv.second[fmi2_base_type_real]);
-        addVectorToRepeatedField(fmu_res->mutable_reals()->mutable_values(),    cv.first->m_getRealValues);
+        addVectorToRepeatedField(fmu_res->mutable_reals()->mutable_values(),    cv.first->getReals(cv.second[fmi2_base_type_real]));
         addVectorToRepeatedField(fmu_res->mutable_ints()->mutable_vrs(),        cv.second[fmi2_base_type_int]);
-        addVectorToRepeatedField(fmu_res->mutable_ints()->mutable_values(),     cv.first->m_getIntegerValues);
+        addVectorToRepeatedField(fmu_res->mutable_ints()->mutable_values(),     cv.first->getReals(cv.second[fmi2_base_type_int]));
         addVectorToRepeatedField(fmu_res->mutable_bools()->mutable_vrs(),       cv.second[fmi2_base_type_bool]);
-        addVectorToRepeatedField(fmu_res->mutable_bools()->mutable_values(),    cv.first->m_getBooleanValues);
+        addVectorToRepeatedField(fmu_res->mutable_bools()->mutable_values(),    cv.first->getReals(cv.second[fmi2_base_type_bool]));
         addVectorToRepeatedField(fmu_res->mutable_strings()->mutable_vrs(),     cv.second[fmi2_base_type_str]);
-        addVectorToRepeatedField(fmu_res->mutable_strings()->mutable_values(),  cv.first->m_getStringValues);
+        addVectorToRepeatedField(fmu_res->mutable_strings()->mutable_values(),  cv.first->getReals(cv.second[fmi2_base_type_str]));
     }
 
     string str = results.SerializeAsString();

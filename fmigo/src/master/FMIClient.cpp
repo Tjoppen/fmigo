@@ -381,8 +381,6 @@ string FMIClient::getSpaceSeparatedFieldNames(string prefix) const {
 }
 
 void FMIClient::sendGetX(const SendGetXType& typeRefs) {
-    clearGetValues();
-
     for (const auto& it : typeRefs) {
         if (it.second.size() > 0) {
             switch (it.first) {

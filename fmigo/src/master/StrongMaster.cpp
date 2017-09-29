@@ -66,6 +66,8 @@ void StrongMaster::getDirectionalDerivative(FMIClient *client, Vec3 seedVec, vec
 }
 
 void StrongMaster::runIteration(double t, double dt) {
+    clearGetValues();
+
     //get weak connector outputs
     for (auto it = clientWeakRefs.begin(); it != clientWeakRefs.end(); it++) {
         it->first->sendGetX(it->second);
@@ -87,6 +89,7 @@ void StrongMaster::runIteration(double t, double dt) {
 
     //get strong connector inputs
     //TODO: it'd be nice if these get_real() were pipelined with the get_real()s done above
+    clearGetValues();
     for(size_t i=0; i<m_clients.size(); i++){
         //check m_getDirectionalDerivativeValues while we're at it
         if (m_clients[i]->m_getDirectionalDerivativeValues.size() > 0) {
@@ -137,6 +140,7 @@ void StrongMaster::runIteration(double t, double dt) {
     //In other words: do the step, but don't commit the results
     send(saveLoadClients, fmi2_import_do_step(t, dt, false));
 
+    clearGetValues();
     //do about the same thing we did a little bit further up, but store the results in future values
     for(size_t i=0; i<saveLoadClients.size(); i++){
         const vector<int> valueRefs = saveLoadClients[i]->getStrongConnectorValueReferences();

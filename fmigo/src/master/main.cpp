@@ -422,6 +422,7 @@ template<typename RFType, typename From> void addVectorToRepeatedField(RFType* r
 static void printOutputs(double t, BaseMaster *master, vector<FMIClient*>& clients) {
     char separator = fmigo::globals::getSeparator();
 
+    master->clearGetValues();
     for (auto client : clients) {
         size_t nvars = client->getOutputs().size();
         SendGetXType getX;
@@ -488,6 +489,7 @@ static void pushResults(int step, double t, double endTime, double timeStep, zmq
     results.set_t_end(endTime);
     results.set_dt(timeStep);
 
+    master->clearGetValues();
     for (auto client : clients) {
         const variable_map& vars = client->getVariables();
         SendGetXType getVariables;

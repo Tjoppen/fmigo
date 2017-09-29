@@ -40,6 +40,7 @@ public:
     }
 
     void runIteration(double t, double dt) {
+        clearGetValues();
         //get connection outputs
         for (auto it = clientWeakRefs.begin(); it != clientWeakRefs.end(); it++) {
             it->first->sendGetX(it->second);
@@ -87,6 +88,7 @@ public:
         for (int o : stepOrder) {
             FMIClient *client = m_clients[o];
 
+            clearGetValues();
             for (auto it = clientGetXs[client].begin(); it != clientGetXs[client].end(); it++) {
                 it->first->sendGetX(it->second);
             }

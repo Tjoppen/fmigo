@@ -62,7 +62,7 @@ void StrongMaster::getDirectionalDerivative(FMIClient *client, Vec3 seedVec, vec
         seed.push_back(seedVec.z());
     }
 
-    sendWait(client, fmi2_import_get_directional_derivative(accelerationRefs, forceRefs, seed));
+    send(client, fmi2_import_get_directional_derivative(accelerationRefs, forceRefs, seed));
 }
 
 void StrongMaster::runIteration(double t, double dt) {

@@ -148,15 +148,6 @@ void StrongMaster::runIteration(double t, double dt) {
     }
 
     PRINT_HDF5_DELTA("get_future_values");
-    wait();
-    PRINT_HDF5_DELTA("get_future_values_wait");
-
-    //set FUTURE connector values (velocities only)
-    for (size_t i=0; i<saveLoadClients.size(); i++){
-        FMIClient *client = saveLoadClients[i];
-        vector<int> vrs = client->getStrongConnectorValueReferences();
-        client->setConnectorFutureVelocities(vrs, vector<double>(client->m_getRealValues.begin(), client->m_getRealValues.end()));
-    }
 
     //restore
     for (size_t i=0; i<saveLoadClients.size(); i++){
@@ -243,6 +234,13 @@ void StrongMaster::runIteration(double t, double dt) {
         } else {
             PRINT_HDF5_DELTA("distribute_directional_derivs");
         }
+    }
+
+    //set FUTURE connector values (velocities only)
+    for (size_t i=0; i<saveLoadClients.size(); i++){
+        FMIClient *client = saveLoadClients[i];
+        vector<int> vrs = client->getStrongConnectorValueReferences();
+        client->setConnectorFutureVelocities(vrs, vector<double>(client->m_getRealValues.begin(), client->m_getRealValues.end()));
     }
 
     //compute strong coupling forces

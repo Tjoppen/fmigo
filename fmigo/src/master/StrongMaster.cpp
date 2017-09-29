@@ -71,9 +71,7 @@ void StrongMaster::runIteration(double t, double dt) {
         it->first->queueX(it->second);
     }
     sendValueRequests();
-    PRINT_HDF5_DELTA("get_weak_values");
     wait();
-    PRINT_HDF5_DELTA("get_weak_values_wait");
 
     //disentangle received values for set_real() further down (before do_step())
     //we shouldn't set_real() for these until we've gotten directional derivatives
@@ -84,7 +82,6 @@ void StrongMaster::runIteration(double t, double dt) {
     for (auto it = refValues.begin(); it != refValues.end(); it++) {
         it->first->sendSetX(it->second);
     }
-    PRINT_HDF5_DELTA("send_weak_values");
 
     //get strong connector inputs
     //TODO: it'd be nice if these get_real() were pipelined with the get_real()s done above
@@ -102,9 +99,7 @@ void StrongMaster::runIteration(double t, double dt) {
         m_clients[i]->queueReals(valueRefs);
     }
     sendValueRequests();
-    PRINT_HDF5_DELTA("get_strong_reals");
     wait();
-    PRINT_HDF5_DELTA("get_strong_reals_wait");
 
     //set connector values
     for (size_t i=0; i<m_clients.size(); i++){
@@ -146,8 +141,6 @@ void StrongMaster::runIteration(double t, double dt) {
         saveLoadClients[i]->m_future_values_incoming = true;
         send(saveLoadClients[i], fmi2_import_get_real(valueRefs));
     }
-
-    PRINT_HDF5_DELTA("get_future_values");
 
     //restore
     for (size_t i=0; i<saveLoadClients.size(); i++){
@@ -228,11 +221,8 @@ void StrongMaster::runIteration(double t, double dt) {
             }
         }
         if (step == 0) {
-            PRINT_HDF5_DELTA("get_directional_derivs");
             wait();
-            PRINT_HDF5_DELTA("get_directional_derivs_wait");
         } else {
-            PRINT_HDF5_DELTA("distribute_directional_derivs");
         }
     }
 
@@ -246,7 +236,6 @@ void StrongMaster::runIteration(double t, double dt) {
 
     //compute strong coupling forces
     m_strongCouplingSolver->solve(holonomic);
-    PRINT_HDF5_DELTA("run_solver");
 
     //distribute forces
     char separator = fmigo::globals::getSeparator();
@@ -282,13 +271,11 @@ void StrongMaster::runIteration(double t, double dt) {
             send(client, fmi2_import_set_real(fvrs, vec));
         }
     }
-    PRINT_HDF5_DELTA("send_strong_forces");
 
     //do actual step
     //noSetFMUStatePriorToCurrentPoint = true
     //In other words: do the step, commit the results (basically, we're not going back)
     send(m_clients, fmi2_import_do_step(t, dt, true));
-    PRINT_HDF5_DELTA("do_step");
 
     //do_step() makes values old
     deleteCachedValues();

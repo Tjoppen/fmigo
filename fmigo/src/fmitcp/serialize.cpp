@@ -268,6 +268,11 @@ std::string fmitcp::serialize::fmi2_import_free_fmu_state(int stateId) {
     return pack(type_fmi2_import_free_fmu_state_req, req);
 }
 
+std::string fmitcp::serialize::fmi2_import_set_free_last_fmu_state() {
+    fmi2_import_set_free_last_fmu_state_req req;
+    return pack(type_fmi2_import_set_free_last_fmu_state_req, req);
+}
+
 std::string fmitcp::serialize::fmi2_import_get_directional_derivative(
                                                     const vector<int>& z_ref,
                                                     const vector<int>& v_ref,

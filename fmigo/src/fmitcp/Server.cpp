@@ -74,6 +74,7 @@ Server::Server(string fmuPath, std::string hdf5Filename) {
   m_fmuParsed = true;
   m_fmuPath = fmuPath;
   this->hdf5Filename = hdf5Filename;
+  lastStateId = -1;
   nextStateId = 0;
   m_sendDummyResponses = false;
 
@@ -714,7 +715,9 @@ string Server::clientData(const char *data, size_t size) {
     debug("fmi2_import_get_fmu_state_req()\n");
 
     fmi2_status_t status = fmi2_status_ok;
-    ::google::protobuf::int32 stateId = nextStateId++;
+    ::google::protobuf::int32 stateId = nextStateId;
+    nextStateId = (nextStateId + 1) & 0xFF;
+    lastStateId = stateId;
     if(!m_sendDummyResponses){
         fmi2_FMU_state_t state = NULL;
         status = fmi2_import_get_fmu_state(m_fmi2Instance, &state);
@@ -764,6 +767,27 @@ string Server::clientData(const char *data, size_t size) {
     ret.first = fmitcp_proto::type_fmi2_import_free_fmu_state_res;
     ret.second = response.SerializeAsString();
     log_error_or_debug(status, "fmi2_import_free_fmu_state_res(status=%d)\n",response.status());
+
+  break; } case fmitcp_proto::type_fmi2_import_set_free_last_fmu_state_req: {
+
+    fmi2_status_t status = fmi2_status_ok;
+    auto it = stateMap.find(lastStateId);
+
+    if (lastStateId >= 0 && it != stateMap.end()) {
+        status = fmi2_import_set_fmu_state(m_fmi2Instance, it->second);
+        if (status == fmi2_status_ok) {
+            status = fmi2_import_free_fmu_state(m_fmi2Instance, &it->second);
+            stateMap.erase(it);
+        }
+    } else {
+        status = fmi2_status_error;
+    }
+    rotate_timer("get_set_state");
+
+    fmitcp_proto::fmi2_import_set_free_last_fmu_state_res response;
+    response.set_status(fmitcp::fmi2StatusToProtofmi2Status(status));
+    ret.first = fmitcp_proto::type_fmi2_import_set_free_last_fmu_state_res;
+    ret.second = response.SerializeAsString();
 
   // break; } case fmitcp_proto::type_fmi2_import_serialized_fmu_state_size_req: {
   //   // TODO

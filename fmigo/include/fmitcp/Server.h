@@ -24,7 +24,7 @@ namespace fmitcp {
   private:
     bool m_sendDummyResponses;
     bool m_fmuParsed;
-    ::google::protobuf::int32 nextStateId;
+    ::google::protobuf::int32 lastStateId, nextStateId;
     std::map<::google::protobuf::int32, fmi2_FMU_state_t> stateMap;
 
     //future value of currentCommunicationPoint, and a guess for future communicationStepSize

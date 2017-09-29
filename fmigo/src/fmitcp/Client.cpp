@@ -151,6 +151,9 @@ void Client::clientData(const char* data, long size){
         debug("This command is TODO\n");
         break;
     }
+    case type_fmi2_import_set_free_last_fmu_state_res: {
+        break;
+    }
     // case type_fmi2_import_serialized_fmu_state_size_res: {
     //     debug("This command is TODO\n");
     //     break;

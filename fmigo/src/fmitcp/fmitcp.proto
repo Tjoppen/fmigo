@@ -98,6 +98,9 @@ enum fmitcp_message_Type {
     type_fmi2_import_get_directional_derivative_req = 347;
     type_fmi2_import_get_directional_derivative_res = 348;
 
+    type_fmi2_import_set_free_last_fmu_state_req = 349;
+    type_fmi2_import_set_free_last_fmu_state_res = 350;
+
     // ========= NETWORK SPECIFIC FUNCTIONS ============
     type_get_xml_req = 401;
     type_get_xml_res = 402;
@@ -555,6 +558,13 @@ message fmi2_import_get_directional_derivative_req {
 }
 message fmi2_import_get_directional_derivative_res {
     repeated double dz = 2 [packed=true];
+    required fmi2_status_t status = 3;
+}
+
+//does set_state() and free_state() on the latest stateId known to the Server
+message fmi2_import_set_free_last_fmu_state_req {
+}
+message fmi2_import_set_free_last_fmu_state_res {
     required fmi2_status_t status = 3;
 }
 

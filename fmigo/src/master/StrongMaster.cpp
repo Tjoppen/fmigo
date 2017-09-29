@@ -161,8 +161,7 @@ void StrongMaster::runIteration(double t, double dt) {
     //restore
     for (size_t i=0; i<saveLoadClients.size(); i++){
         FMIClient *client = saveLoadClients[i];
-        send(client, fmi2_import_set_fmu_state(client->m_stateId));
-        send(client, fmi2_import_free_fmu_state(client->m_stateId));
+        send(client, fmi2_import_set_free_last_fmu_state());
     }
 
     //get directional derivatives

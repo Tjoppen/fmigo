@@ -55,6 +55,7 @@ namespace fmitcp {
         std::string fmi2_import_get_fmu_state();
         std::string fmi2_import_set_fmu_state(int stateId);
         std::string fmi2_import_free_fmu_state(int stateId);
+        std::string fmi2_import_set_free_last_fmu_state();
         std::string fmi2_import_serialized_fmu_state_size();
         std::string fmi2_import_serialize_fmu_state();
         std::string fmi2_import_de_serialize_fmu_state();

@@ -285,7 +285,7 @@ void StrongMaster::runIteration(double t, double dt) {
     //do actual step
     //noSetFMUStatePriorToCurrentPoint = true
     //In other words: do the step, commit the results (basically, we're not going back)
-    sendWait(m_clients, fmi2_import_do_step(t, dt, true));
+    send(m_clients, fmi2_import_do_step(t, dt, true));
     PRINT_HDF5_DELTA("do_step");
 }
 

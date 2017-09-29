@@ -70,6 +70,20 @@ void StrongMaster::runIteration(double t, double dt) {
     for (auto it = clientWeakRefs.begin(); it != clientWeakRefs.end(); it++) {
         it->first->queueX(it->second);
     }
+
+    //get strong connector inputs
+    for(size_t i=0; i<m_clients.size(); i++){
+        //check m_getDirectionalDerivativeValues while we're at it
+        if (m_clients[i]->m_getDirectionalDerivativeValues.size() > 0) {
+            fatal("Client %zu had %zu unprocessed directional derivative results\n", i,
+                    m_clients[i]->m_getDirectionalDerivativeValues.size());
+        }
+
+        const vector<int> valueRefs = m_clients[i]->getStrongConnectorValueReferences();
+        m_clients[i]->queueReals(valueRefs);
+    }
+
+    //these two are usually no-ops since we ask for a pre-fetch at the end of the function
     sendValueRequests();
     wait();
 
@@ -82,24 +96,6 @@ void StrongMaster::runIteration(double t, double dt) {
     for (auto it = refValues.begin(); it != refValues.end(); it++) {
         it->first->sendSetX(it->second);
     }
-
-    //get strong connector inputs
-    //TODO: it'd be nice if these get_real() were pipelined with the get_real()s done above
-
-    deleteCachedValues(); //needed?
-
-    for(size_t i=0; i<m_clients.size(); i++){
-        //check m_getDirectionalDerivativeValues while we're at it
-        if (m_clients[i]->m_getDirectionalDerivativeValues.size() > 0) {
-            fatal("Client %zu had %zu unprocessed directional derivative results\n", i,
-                    m_clients[i]->m_getDirectionalDerivativeValues.size());
-        }
-
-        const vector<int> valueRefs = m_clients[i]->getStrongConnectorValueReferences();
-        m_clients[i]->queueReals(valueRefs);
-    }
-    sendValueRequests();
-    wait();
 
     //set connector values
     for (size_t i=0; i<m_clients.size(); i++){
@@ -283,6 +279,10 @@ void StrongMaster::runIteration(double t, double dt) {
     //pre-fetch values for next step
     for (auto it = clientWeakRefs.begin(); it != clientWeakRefs.end(); it++) {
         it->first->queueX(it->second);
+    }
+    for(size_t i=0; i<m_clients.size(); i++){
+        const vector<int> valueRefs = m_clients[i]->getStrongConnectorValueReferences();
+        m_clients[i]->queueReals(valueRefs);
     }
 }
 

@@ -211,16 +211,6 @@ void BaseMaster::wait() {
 
         m_clients[rank-1]->Client::clientData(str.c_str(), str.length());
 #else
-#ifdef WIN32
-    //zmq::poll() is broken and incredibly slow on Windows
-    //this is the stupidest possible solution, but works surprisingly well
-    //it can't detect that a server has croaked however
-    for (auto client : m_clients) {
-        if (client->getNumPendingRequests() > 0) {
-            client->receiveAndHandleMessage();
-        }
-    }
-#else
     //all other platforms (GNU/Linux, Mac)
     //poll all clients, decrease m_pendingRequests as we see REPlies coming in
     vector<zmq::pollitem_t> items(m_clients.size());
@@ -252,7 +242,6 @@ void BaseMaster::wait() {
     } else {
         //debug("wait() done\n");
     }
-#endif
 #endif
     }
 }

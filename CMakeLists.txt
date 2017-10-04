@@ -119,12 +119,12 @@ if(WIN32)
     include_directories(${HDF5_DIR}/src/hdf5-ext-build)
     link_directories(${HDF5_DIR}/src/hdf5-ext-build/bin/${CMAKE_BUILD_TYPE})
 
-    set(ZMQ_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/zeromq-4.2.0")
+    set(ZMQ_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/zeromq-4.2.3")
 
     ExternalProject_Add(zmq-ext
         PREFIX "${ZMQ_PREFIX}"
-        URL https://github.com/zeromq/libzmq/releases/download/v4.2.0/zeromq-4.2.0.zip
-        URL_MD5 1569d8173783d39462907324317febd0
+        GIT_REPOSITORY "https://github.com/zeromq/libzmq.git"
+        GIT_TAG 44f96a36521a8410378ddc83d7c4ff258da5d399
         INSTALL_COMMAND ""
     )
 

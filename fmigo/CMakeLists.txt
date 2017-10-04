@@ -108,10 +108,10 @@ IF(WIN32)
         ${Boost_SYSTEM_LIBRARY}
         ${CMAKE_THREAD_LIBS_INIT})
     if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-        set(WINLIBS ${WINLIBS} ${EXTRALIBS} sc libprotobufd libzmq-${CMAKE_VS_PLATFORM_TOOLSET}-mt-gd-4_2_0 libhdf5_hl_D libumfpackd libhdf5_D
+        set(WINLIBS ${WINLIBS} ${EXTRALIBS} sc libprotobufd libzmq-${CMAKE_VS_PLATFORM_TOOLSET}-mt-gd-4_2_3 libhdf5_hl_D libumfpackd libhdf5_D
             libamdd libblas libcholmodd libcolamdd libccolamdd libcamdd metisd suitesparseconfigd)
     else()
-        set(WINLIBS ${WINLIBS} ${EXTRALIBS} sc libprotobuf  libzmq-${CMAKE_VS_PLATFORM_TOOLSET}-mt-4_2_0 libhdf5_hl      libumfpack  libhdf5
+        set(WINLIBS ${WINLIBS} ${EXTRALIBS} sc libprotobuf  libzmq-${CMAKE_VS_PLATFORM_TOOLSET}-mt-4_2_3 libhdf5_hl      libumfpack  libhdf5
             libamd  libblas libcholmod  libcolamd  libccolamd  libcamd  metis  suitesparseconfig)
     endif()
     include_directories($ENV{MSMPI_INC} $ENV{MSMPI_INC}x86)
@@ -132,7 +132,7 @@ IF(WIN32)
         ${SUITESPARSE_LIBDIR}/lapack_blas_windows/libgfortran-3.dll
         ${SUITESPARSE_LIBDIR}/lapack_blas_windows/libquadmath-0.dll
         ${PROTOBUF_PREFIX}/src/protobuf-ext-build/${CMAKE_BUILD_TYPE}/libprotobufd.dll
-        ${ZMQ_PREFIX}/src/zmq-ext-build/bin/${CMAKE_BUILD_TYPE}/libzmq-${CMAKE_VS_PLATFORM_TOOLSET}-mt-gd-4_2_0.dll
+        ${ZMQ_PREFIX}/src/zmq-ext-build/bin/${CMAKE_BUILD_TYPE}/libzmq-${CMAKE_VS_PLATFORM_TOOLSET}-mt-gd-4_2_3.dll
         DESTINATION bin)
     else()
     INSTALL (FILES
@@ -140,7 +140,7 @@ IF(WIN32)
         ${SUITESPARSE_LIBDIR}/lapack_blas_windows/libgfortran-3.dll
         ${SUITESPARSE_LIBDIR}/lapack_blas_windows/libquadmath-0.dll
         ${PROTOBUF_PREFIX}/src/protobuf-ext-build/${CMAKE_BUILD_TYPE}/libprotobuf.dll
-        ${ZMQ_PREFIX}/src/zmq-ext-build/bin/${CMAKE_BUILD_TYPE}/libzmq-${CMAKE_VS_PLATFORM_TOOLSET}-mt-4_2_0.dll
+        ${ZMQ_PREFIX}/src/zmq-ext-build/bin/${CMAKE_BUILD_TYPE}/libzmq-${CMAKE_VS_PLATFORM_TOOLSET}-mt-4_2_3.dll
         DESTINATION bin)
     endif()
     set(PROTOC ${PROTOBUF_BIN_DIR}/protoc)

@@ -10,6 +10,7 @@
 #endif
 #include <stdint.h>
 #include "master/globals.h"
+#include <set>
 
 using namespace fmitcp;
 
@@ -248,14 +249,32 @@ Server::~Server() {
 
 #ifdef FMIGO_SERVER_PRINT_TIMINGS
   rotate_timer("shutdown");
-  double total = 0;
+
+  //used for separating timings into one-time and recurring
+  set<string> onetime = {
+    "ctor",
+    "instantiate",
+    "initialization",
+    "shutdown",
+  };
+  double total = 0, total2 = 0;
+
   for (auto kv : m_durations) {
-    total += kv.second;
+    if (!onetime.count(kv.first)) {
+      total += kv.second;
+    } else {
+      info("%s: %20s: %10" PRIi64 " µs\n", m_fmuPath.c_str(), kv.first.c_str(), (int64_t)kv.second);
+    }
+    total2 += kv.second;
   }
+
   for (auto kv : m_durations) {
+   if (!onetime.count(kv.first)) {
     info("%s: %20s: %10" PRIi64 " µs (%5.2lf%%)\n", m_fmuPath.c_str(), kv.first.c_str(), (int64_t)kv.second, 100*kv.second/total);
+   }
   }
-  info("%s:                Total: %10.2lf seconds\n", m_fmuPath.c_str(), total * 1e-6);
+
+  info("%s:                Total: %10.2lf seconds\n", m_fmuPath.c_str(), total2 * 1e-6);
 #endif
 }
 

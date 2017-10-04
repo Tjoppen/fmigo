@@ -33,14 +33,6 @@ using namespace fmitcp::serialize;
 using namespace sc;
 using namespace common;
 
-#ifndef WIN32
-timeval tl1, tl2;
-vector<int> timelog;
-int columnofs;
-std::map<int, const char*> columnnames;
-#endif
-
-string hdf5Filename;
 jm_log_level_enu_t fmigo_loglevel = jm_log_level_warning;
 bool alwaysComputeNumericalDirectionalDerivatives = false;
 
@@ -551,8 +543,7 @@ static int connectionNamesToVr(std::vector<connection> &connections,
 }
 
 #ifdef USE_MPI
-static void run_server(string fmuPath) {
-    string hdf5Filename; //TODO?
+static void run_server(string fmuPath, string hdf5Filename) {
     FMIServer server(fmuPath, hdf5Filename);
 
     for (;;) {
@@ -606,6 +597,7 @@ int main(int argc, char *argv[] ) {
     int command_port = 0, results_port = 0;
     bool startPaused = false, solveLoops = false;
     fmigo_csv_fmu csv_fmu;
+    string hdf5Filename;
 
     parseArguments(
             argc, argv, &fmuURIs, &connections, &params, &endTime, &timeStep,
@@ -622,7 +614,7 @@ int main(int argc, char *argv[] ) {
         //we're a server
         //in MPI mode, treat fmuURIs as a list of paths
         //for each server node, fmuURIs[world_rank-1] is the corresponding FMU path
-        run_server(fmuURIs[world_rank-1]);
+        run_server(fmuURIs[world_rank-1], hdf5Filename);
         return 0;
     }
     //world_rank == 0 below
@@ -764,21 +756,6 @@ int main(int argc, char *argv[] ) {
     int step = 0;
     int nsteps = (int)round(endTime / timeStep);
 
-#ifndef WIN32
-    //HDF5
-    //TODO: remove HDF5 output entirely? fix issue #120 for now
-    int nrecords = 0;
-    if (hdf5Filename.length() > 0) {
-      size_t expected_records = (1+1.01*endTime/timeStep) * MAX_TIME_COLS;
-      if (expected_records > 1000000) {
-        expected_records = 1000000;
-      }
-      timelog.reserve(expected_records);
-    }
-
-    gettimeofday(&tl1, NULL);
-#endif
-
     if (zmqControl) {
         pushResults(step, 0, endTime, timeStep, push_socket, master, clients, true);
     }
@@ -810,11 +787,6 @@ int main(int argc, char *argv[] ) {
         if (master->paused) {
             continue;
         }
-
-#ifndef WIN32
-        //HDF5
-        columnofs = 0;
-#endif
 
         if (csvParam.size() > 0) {
             //zero order hold
@@ -869,11 +841,6 @@ int main(int argc, char *argv[] ) {
         if (fmigo::globals::fileFormat != none) {
             fprintf(fmigo::globals::outfile, "\n");
         }
-
-#ifndef WIN32
-        //HDF5
-        nrecords++;
-#endif
     }
 
     if (fmigo::globals::fileFormat != none) {
@@ -888,24 +855,6 @@ int main(int argc, char *argv[] ) {
 
       fprintf(fmigo::globals::outfile, "\n");
     }
-
-
-#ifndef WIN32
-    if (hdf5Filename.length() > 0) {
-      vector<size_t> field_offset;
-      vector<hid_t> field_types;
-      vector<const char*> field_names;
-
-      for (size_t x = 0; x < columnnames.size(); x++) {
-        field_offset.push_back(x*sizeof(int));
-        field_types.push_back(H5T_NATIVE_INT);
-        field_names.push_back(columnnames[x]);
-      }
-
-      writeHDF5File(hdf5Filename, field_offset, field_types, field_names,
-          "Timings", "table", nrecords, columnnames.size()*sizeof(int), &timelog[0]);
-    }
-#endif
 
     for (FMIClient *client : clients) {
       client->terminate();

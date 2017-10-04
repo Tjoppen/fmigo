@@ -18,6 +18,7 @@ using namespace fmitcp_master;
 using namespace fmitcp;
 
 BaseMaster::BaseMaster(zmq::context_t &context, vector<FMIClient*> clients, vector<WeakConnection> weakConnections) :
+        rendezvous(0),
         m_clients(clients),
         m_weakConnections(weakConnections),
         clientWeakRefs(getOutputWeakRefs(m_weakConnections)),
@@ -30,6 +31,11 @@ BaseMaster::BaseMaster(zmq::context_t &context, vector<FMIClient*> clients, vect
 }
 
 BaseMaster::~BaseMaster() {
+  info("%i rendezvous\n", rendezvous);
+  int messages = 0;
+  for(auto client: m_clients)
+    messages += client->messages;
+  info("%i messages\n", messages);
 }
 
 #ifdef USE_GPL
@@ -187,6 +193,10 @@ void BaseMaster::wait() {
     //allow polling once for each request, plus 60 seconds more
     int maxPolls = getNumPendingRequests() + 60;
     int numPolls = 0;
+
+    if (getNumPendingRequests() > 0) {
+      rendezvous++;
+    }
 
     while (getNumPendingRequests() > 0) {
         handleZmqControl();

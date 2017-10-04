@@ -18,6 +18,7 @@ using namespace fmigo_storage;
 
 namespace fmitcp_master {
     class BaseMaster {
+        int rendezvous;
     protected:
         std::vector<FMIClient*> m_clients;
         std::vector<WeakConnection> m_weakConnections;

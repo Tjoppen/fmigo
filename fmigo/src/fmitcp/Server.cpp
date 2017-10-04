@@ -250,10 +250,12 @@ Server::~Server() {
   rotate_timer("shutdown");
   double total = 0;
   for (auto kv : m_durations) {
-    fprintf(stderr, "%s: %20s: %10" PRIi64 " µs\n", m_fmuPath.c_str(), kv.first.c_str(), (int64_t)kv.second);
     total += kv.second;
   }
-  fprintf(stderr, "Total: %.2lf seconds\n", total * 1e-6);
+  for (auto kv : m_durations) {
+    info("%s: %20s: %10" PRIi64 " µs (%5.2lf%%)\n", m_fmuPath.c_str(), kv.first.c_str(), (int64_t)kv.second, 100*kv.second/total);
+  }
+  info("%s:                Total: %10.2lf seconds\n", m_fmuPath.c_str(), total * 1e-6);
 #endif
 }
 

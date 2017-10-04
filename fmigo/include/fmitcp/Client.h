@@ -31,6 +31,7 @@ namespace fmitcp {
 #endif
 
     public:
+        int messages;
 #ifdef USE_MPI
         Client(int world_rank);
 #else

@@ -284,6 +284,7 @@ void Client::clientData(const char* data, long size){
 Client::Client(int world_rank) : world_rank(world_rank) {
 #else
 Client::Client(zmq::context_t &context, string uri) : m_socket(context, ZMQ_DEALER) {
+    messages = 0;
     debug("connecting to %s\n", uri.c_str());
     m_socket.connect(uri.c_str());
     debug("connected\n");
@@ -297,6 +298,7 @@ Client::~Client(){
 }
 
 void Client::sendMessage(std::string s){
+    messages++;
     m_pendingRequests++;
 #ifdef USE_MPI
     MPI_Send((void*)s.c_str(), s.length(), MPI_CHAR, world_rank, 0, MPI_COMM_WORLD);

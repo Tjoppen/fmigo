@@ -46,12 +46,15 @@ static void handleMessage(zmq::socket_t& socket, FMIServer& server, int port) {
   if (!socket.recv(&msg)) {
       fatal("Port %i: !socket.recv(&msg)\n", port);
   }
+  server.m_timer.rotate("recv");
   string str = server.clientData(static_cast<char*>(msg.data()), msg.size());
 
   if (str.length() > 0) {
     zmq::message_t rep(str.length());
     memcpy(rep.data(), str.data(), str.length());
+    server.m_timer.rotate("pre_send");
     socket.send(rep, ZMQ_DONTWAIT);
+    server.m_timer.rotate("send");
   }
 }
 
@@ -67,6 +70,8 @@ int main(int argc, char *argv[]) {
   parse_server_args(argc, argv, &fmuPath, &hdf5Filename, &debugLogging, &fmigo_loglevel, &port);
 
   FMIServer server(fmuPath, hdf5Filename);
+  //HACKHACK: count waiting for the master to start toward "instantiate"
+  server.m_timer.dont_rotate = true;
   if (!server.isFmuParsed())
     return EXIT_FAILURE;
 
@@ -101,8 +106,10 @@ int main(int argc, char *argv[]) {
     items[1].socket = (void*)stopper;
     items[1].events = ZMQ_POLLIN;
 
+    server.m_timer.rotate("pre_poll");
     //wait indefinitely, for now
     int n = zmq::poll(items, 2, -1);
+    server.m_timer.rotate("poll");
 
     if (items[0].revents & ZMQ_POLLIN) {
       handleMessage(socket, server, port);

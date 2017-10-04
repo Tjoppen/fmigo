@@ -5,6 +5,7 @@
  *      Author: thardin
  */
 
+#include "master/globals.h"
 #include "master/BaseMaster.h"
 #ifndef WIN32
 #include <unistd.h>
@@ -200,10 +201,12 @@ void BaseMaster::wait() {
 
     while (getNumPendingRequests() > 0) {
         handleZmqControl();
+        fmigo::globals::timer.rotate("pre_wait");
 
 #ifdef USE_MPI
         int rank;
         std::string str = mpi_recv_string(MPI_ANY_SOURCE, &rank, NULL);
+        fmigo::globals::timer.rotate("wait");
 
         if (rank < 1 || rank > (int)m_clients.size()) {
             fatal("MPI rank out of bounds: %i\n", rank);
@@ -226,6 +229,7 @@ void BaseMaster::wait() {
 #endif
 
     int n = zmq::poll(items.data(), m_clients.size(), ZMQ_POLL_MSEC*1000);
+    fmigo::globals::timer.rotate("wait");
     if (!n) {
         debug("polled %li sockets, %li pending (%i/%i), no new events\n", m_clients.size(), getNumPendingRequests(), numPolls, maxPolls);
     }

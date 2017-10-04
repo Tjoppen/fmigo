@@ -548,7 +548,9 @@ static void run_server(string fmuPath, string hdf5Filename) {
 
     for (;;) {
         int rank, tag;
+        server.m_timer.rotate("pre_wait");
         std::string recv_str = mpi_recv_string(MPI_ANY_SOURCE, &rank, &tag);
+        server.m_timer.rotate("wait");
 
         //shutdown command?
         if (tag == 1) {
@@ -558,7 +560,9 @@ static void run_server(string fmuPath, string hdf5Filename) {
         //let Server handle packet, send reply back to master
         std::string str = server.clientData(recv_str.c_str(), recv_str.length());
         if (str.length() > 0) {
+          server.m_timer.rotate("pre_send");
           MPI_Send((void*)str.c_str(), str.length(), MPI_CHAR, rank, tag, MPI_COMM_WORLD);
+          server.m_timer.rotate("send");
         }
     }
 
@@ -567,6 +571,9 @@ static void run_server(string fmuPath, string hdf5Filename) {
 #endif
 
 int main(int argc, char *argv[] ) {
+    //count everything from here to before the main loop into "setup"
+    fmigo::globals::timer.dont_rotate = true;
+
 #ifdef USE_MPI
     MPI_Init(NULL, NULL);
 
@@ -764,6 +771,9 @@ int main(int argc, char *argv[] ) {
       client->m_fmuState = control_proto::fmu_state_State_running;
     }
 
+    fmigo::globals::timer.dont_rotate = false;
+    fmigo::globals::timer.rotate("setup");
+
     #ifdef WIN32
         LARGE_INTEGER freq, t1;
         QueryPerformanceFrequency(&freq);
@@ -842,6 +852,7 @@ int main(int argc, char *argv[] ) {
             fprintf(fmigo::globals::outfile, "\n");
         }
     }
+    fmigo::globals::timer.rotate("pre_shutdown");
 
     if (fmigo::globals::fileFormat != none) {
       printOutputs(endTime, master, clients);
@@ -878,6 +889,34 @@ int main(int argc, char *argv[] ) {
     if (fmigo::globals::outfile != stdout) {
         fclose(fmigo::globals::outfile);
     }
+    fflush(stdout);
+    fflush(stderr);
+
+    fmigo::globals::timer.rotate("shutdown");
+    set<string> onetime = {
+      "setup",
+      "pre_shutdown",
+      "shutdown",
+      "wait", //not actually onetime, but don't want time spent waiting to be part of percentage
+    };
+    double total = 0, total2 = 0;
+
+    for (auto kv : fmigo::globals::timer.m_durations) {
+      if (!onetime.count(kv.first)) {
+        total += kv.second;
+      } else {
+        info("master: %20s: %10" PRIi64 " µs\n", kv.first.c_str(), (int64_t)kv.second);
+      }
+      total2 += kv.second;
+    }
+
+    for (auto kv : fmigo::globals::timer.m_durations) {
+      if (!onetime.count(kv.first)) {
+        info("master: %20s: %10" PRIi64 " µs (%5.2lf%%)\n", kv.first.c_str(), (int64_t)kv.second, 100*kv.second/total);
+      }
+    }
+    info("master:                Total: %10.2lf seconds (%.1lf ms user time)\n", total2 * 1e-6, total * 1e-3);
+
 
     } catch (zmq::error_t e) {
       fatal("zmq::error_t in %s: %s\n", argv[0], e.what());

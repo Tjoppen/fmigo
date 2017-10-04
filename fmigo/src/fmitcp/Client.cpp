@@ -8,6 +8,7 @@
 #include "common/mpi_tools.h"
 #endif
 #include "common/common.h"
+#include "master/globals.h"
 
 using namespace std;
 using namespace fmitcp;
@@ -298,10 +299,12 @@ Client::~Client(){
 }
 
 void Client::sendMessage(std::string s){
+    fmigo::globals::timer.rotate("pre_sendMessage");
     messages++;
     m_pendingRequests++;
 #ifdef USE_MPI
     MPI_Send((void*)s.c_str(), s.length(), MPI_CHAR, world_rank, 0, MPI_COMM_WORLD);
+    fmigo::globals::timer.rotate("MPI_Send");
 #else
     //ZMQ_DEALERs must send two-part messages with the first part being zero-length
     zmq::message_t zero(0);
@@ -310,6 +313,7 @@ void Client::sendMessage(std::string s){
     zmq::message_t msg(s.size());
     memcpy(msg.data(), s.data(), s.size());
     m_socket.send(msg);
+    fmigo::globals::timer.rotate("zmq::socket::send");
 #endif
 }
 
@@ -319,8 +323,10 @@ void Client::sendMessageBlocking(std::string s) {
 }
 
 void Client::receiveAndHandleMessage() {
+    fmigo::globals::timer.rotate("pre_wait");
 #ifdef USE_MPI
     std::string str = mpi_recv_string(world_rank, NULL, NULL);
+    fmigo::globals::timer.rotate("wait");
     clientData(str.c_str(), str.length());
 #else
     //expect to recv a delimiter
@@ -333,6 +339,7 @@ void Client::receiveAndHandleMessage() {
 
     zmq::message_t msg;
     m_socket.recv(&msg);
+    fmigo::globals::timer.rotate("wait");
     clientData(static_cast<char*>(msg.data()), msg.size());
 #endif
 }

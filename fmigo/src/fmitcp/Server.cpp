@@ -56,20 +56,7 @@ bool isOK(jm_status_enu_t status) {
     }\
   } while (0)
 
-//measures current time, logs duration since last time under given label
-void Server::rotate_timer(std::string label) {
-  clock::time_point t = clock::now();
-
-  if (m_durations.find(label) == m_durations.end()) {
-    m_durations[label] = 0;
-  }
-
-  m_durations[label] += std::chrono::duration<double, std::micro>(t - m_time).count();
-  m_time = t;
-}
-
 Server::Server(string fmuPath, std::string hdf5Filename) {
-  m_time = clock::now();
   m_fmi2Outputs = NULL;
   m_fmi2Variables = NULL;
   m_fmuParsed = true;
@@ -188,7 +175,7 @@ Server::Server(string fmuPath, std::string hdf5Filename) {
     error("Only FMI Co-Simulation 2.0 is supported.\n");
     m_fmuParsed = false;
   }
-  rotate_timer("ctor");
+  m_timer.rotate("ctor");
 }
 
 void Server::setStartValues() {
@@ -248,7 +235,7 @@ Server::~Server() {
   if(m_fmi2Variables!=NULL) fmi2_import_free_variable_list(m_fmi2Variables);
 
 #ifdef FMIGO_SERVER_PRINT_TIMINGS
-  rotate_timer("shutdown");
+  m_timer.rotate("shutdown");
 
   //used for separating timings into one-time and recurring
   set<string> onetime = {
@@ -256,10 +243,14 @@ Server::~Server() {
     "instantiate",
     "initialization",
     "shutdown",
+    //not actually one-time, but uninteresting for overhead measuring purposes
+    "deriv",
+    "do_step",
+    "fake_step",
   };
   double total = 0, total2 = 0;
 
-  for (auto kv : m_durations) {
+  for (auto kv : m_timer.m_durations) {
     if (!onetime.count(kv.first)) {
       total += kv.second;
     } else {
@@ -268,7 +259,7 @@ Server::~Server() {
     total2 += kv.second;
   }
 
-  for (auto kv : m_durations) {
+  for (auto kv : m_timer.m_durations) {
    if (!onetime.count(kv.first)) {
     info("%s: %20s: %10" PRIi64 " µs (%5.2lf%%)\n", m_fmuPath.c_str(), kv.first.c_str(), (int64_t)kv.second, 100*kv.second/total);
    }
@@ -282,11 +273,11 @@ string Server::clientData(const char *data, size_t size) {
   std::pair<fmitcp_proto::fmitcp_message_Type,std::string> ret;
   ret.second = "error"; //to detect if we forgot to set ret.second somewhere below
 
-  rotate_timer("network");
+  m_timer.rotate("pre_parsing");
 
   fmitcp_proto::fmitcp_message_Type type = parseType(data, size);
 
-  rotate_timer("parsing");
+  m_timer.rotate("parsing");
 
   data += 2;
   size -= 2;
@@ -381,7 +372,9 @@ string Server::clientData(const char *data, size_t size) {
       //will be sending values before and during initialization mode
       setStartValues();
     }
-    rotate_timer("instantiate");
+    //HACKHACK: count waiting for the master to start toward "instantiate"
+    m_timer.dont_rotate = false;
+    m_timer.rotate("instantiate");
 
     // Create response message
     fmitcp_proto::fmi2_import_instantiate_res instantiateRes;
@@ -413,6 +406,7 @@ string Server::clientData(const char *data, size_t size) {
       fmi_import_free_context(m_context);
       fmi_import_rmdir(&m_jmCallbacks, m_workingDir.c_str());
     }
+    m_timer.rotate("instantiate");
 
     // Create response message
     fmitcp_proto::fmi2_import_free_instance_res resetRes;
@@ -437,7 +431,7 @@ string Server::clientData(const char *data, size_t size) {
     if (!m_sendDummyResponses) {
       status =  fmi2_import_setup_experiment(m_fmi2Instance, toleranceDefined, tolerance, starttime, stopTimeDefined, stoptime);
     }
-    rotate_timer("initialization");
+    m_timer.rotate("initialization");
 
     SERVER_NORMAL_RESPONSE(setup_experiment);
 
@@ -452,7 +446,7 @@ string Server::clientData(const char *data, size_t size) {
     if (!m_sendDummyResponses) {
       status = fmi2_import_enter_initialization_mode(m_fmi2Instance);
     }
-    rotate_timer("initialization");
+    m_timer.rotate("initialization");
 
     SERVER_NORMAL_RESPONSE(enter_initialization_mode);
 
@@ -467,7 +461,7 @@ string Server::clientData(const char *data, size_t size) {
     if (!m_sendDummyResponses) {
       status = fmi2_import_exit_initialization_mode(m_fmi2Instance);
     }
-    rotate_timer("initialization");
+    m_timer.rotate("initialization");
 
     SERVER_NORMAL_RESPONSE(exit_initialization_mode);
 
@@ -483,6 +477,7 @@ string Server::clientData(const char *data, size_t size) {
       // terminate FMU
       status = fmi2_import_terminate(m_fmi2Instance);
     }
+    m_timer.rotate("instantiate");
 
     SERVER_NORMAL_RESPONSE(terminate);
 
@@ -524,7 +519,7 @@ string Server::clientData(const char *data, size_t size) {
         for (int i = 0 ; i < r.valuereferences_size() ; i++) {
             response.add_values(value[i]);
         }
-        rotate_timer("get_x");
+        m_timer.rotate("get_x");
     } else {
         // Set dummy values
         for (int i = 0 ; i < r.valuereferences_size() ; i++) {
@@ -553,7 +548,7 @@ string Server::clientData(const char *data, size_t size) {
     if (!m_sendDummyResponses) {
       // interact with FMU
       status = fmi2_import_get_integer(m_fmi2Instance, vr.data(), r.valuereferences_size(), value.data());
-      rotate_timer("get_x");
+      m_timer.rotate("get_x");
     }
 
     // Create response
@@ -582,7 +577,7 @@ string Server::clientData(const char *data, size_t size) {
     if (!m_sendDummyResponses) {
       // interact with FMU
       status = fmi2_import_get_boolean(m_fmi2Instance, vr.data(), r.valuereferences_size(), value.data());
-      rotate_timer("get_x");
+      m_timer.rotate("get_x");
     }
 
     // Create response
@@ -611,7 +606,7 @@ string Server::clientData(const char *data, size_t size) {
     if (!m_sendDummyResponses) {
       // interact with FMU
       status = fmi2_import_get_string(m_fmi2Instance, vr.data(), r.valuereferences_size(), value.data());
-      rotate_timer("get_x");
+      m_timer.rotate("get_x");
     }
 
     // Create response
@@ -642,8 +637,9 @@ string Server::clientData(const char *data, size_t size) {
     fmi2_status_t status = fmi2_status_ok;
     if (!m_sendDummyResponses) {
       // interact with FMU
+      m_timer.rotate("pre_set_x");
        status = fmi2_import_set_real(m_fmi2Instance, vr.data(), r.valuereferences_size(), value.data());
-       rotate_timer("set_x");
+       m_timer.rotate("set_x");
     }
 
     log_error_or_debug(status, "fmi2_import_set_real_req(vrs=%s,values=%s)\n",
@@ -669,7 +665,7 @@ string Server::clientData(const char *data, size_t size) {
     if (!m_sendDummyResponses) {
       // interact with FMU
       status = fmi2_import_set_integer(m_fmi2Instance, vr.data(), r.valuereferences_size(), value.data());
-      rotate_timer("set_x");
+      m_timer.rotate("set_x");
     }
 
     log_error_or_debug(status, "fmi2_import_set_integer_req(vrs=%s,values=%s)\n",
@@ -695,7 +691,7 @@ string Server::clientData(const char *data, size_t size) {
     if (!m_sendDummyResponses) {
       // interact with FMU
       status = fmi2_import_set_boolean(m_fmi2Instance, vr.data(), r.valuereferences_size(), value.data());
-      rotate_timer("set_x");
+      m_timer.rotate("set_x");
     }
 
     log_error_or_debug(status, "fmi2_import_set_boolean_req(vrs=%s,values=%s)\n",
@@ -721,7 +717,7 @@ string Server::clientData(const char *data, size_t size) {
     if (!m_sendDummyResponses) {
       // interact with FMU
       status = fmi2_import_set_string(m_fmi2Instance, vr.data(), r.valuereferences_size(), value.data());
-      rotate_timer("set_x");
+      m_timer.rotate("set_x");
     }
 
     log_error_or_debug(status, "fmi2_import_set_string_req(vrs=%s,values=%s)\n",
@@ -743,7 +739,7 @@ string Server::clientData(const char *data, size_t size) {
         fmi2_FMU_state_t state = NULL;
         status = fmi2_import_get_fmu_state(m_fmi2Instance, &state);
         stateMap[stateId] = state;
-        rotate_timer("get_set_state");
+        m_timer.rotate("get_set_state");
     }
 
     // Create response
@@ -763,7 +759,7 @@ string Server::clientData(const char *data, size_t size) {
     fmi2_status_t status = fmi2_status_ok;
     if(!m_sendDummyResponses){
         status = fmi2_import_set_fmu_state(m_fmi2Instance, stateMap[r.stateid()]);
-        rotate_timer("get_set_state");
+        m_timer.rotate("get_set_state");
     }
 
     SERVER_NORMAL_RESPONSE(set_fmu_state);
@@ -779,7 +775,7 @@ string Server::clientData(const char *data, size_t size) {
         auto it = stateMap.find(r.stateid());
         status = fmi2_import_free_fmu_state(m_fmi2Instance, &it->second);
         stateMap.erase(it);
-        rotate_timer("get_set_state");
+        m_timer.rotate("get_set_state");
     }
 
     // Create response
@@ -803,7 +799,7 @@ string Server::clientData(const char *data, size_t size) {
     } else {
         status = fmi2_status_error;
     }
-    rotate_timer("get_set_state");
+    m_timer.rotate("get_set_state");
 
     fmitcp_proto::fmi2_import_set_free_last_fmu_state_res response;
     response.set_status(fmitcp::fmi2StatusToProtofmi2Status(status));
@@ -851,7 +847,7 @@ string Server::clientData(const char *data, size_t size) {
          error("Tried to fmi2_import_get_directional_derivative() on FMU without directional derivatives or ability to save/load FMU state\n");
       status = fmi2_status_error;
      }
-     rotate_timer("deriv");
+     m_timer.rotate("deriv");
     }
 
     // Create response
@@ -1110,9 +1106,9 @@ string Server::clientData(const char *data, size_t size) {
       // Step the FMU
       status = fmi2_import_do_step(m_fmi2Instance, r.currentcommunicationpoint(), r.communicationstepsize(), newStep);
       if (newStep) {
-        rotate_timer("do_step");
+        m_timer.rotate("do_step");
       } else {
-        rotate_timer("fake_step");
+        m_timer.rotate("fake_step");
       }
     }
 
@@ -1277,7 +1273,7 @@ string Server::clientData(const char *data, size_t size) {
     fatal("error!: %i\n", ret.first);
   }
 
-  rotate_timer("other");
+  m_timer.rotate("other");
 
   if (sendResponse) {
     uint16_t t = ret.first;

@@ -282,12 +282,12 @@ StrongConnector* FMIClient::getConnector(int i) const{
     return (StrongConnector*) Slave::getConnector(i);
 };
 
-void FMIClient::setConnectorValues(std::vector<int> valueRefs, std::vector<double> values){
+void FMIClient::setConnectorValues(const std::vector<int>& valueRefs, const std::vector<double>& values){
     for(int i=0; i<numConnectors(); i++)
         getConnector(i)->setValues(valueRefs,values);
 };
 
-void FMIClient::setConnectorFutureVelocities(std::vector<int> valueRefs, std::vector<double> values){
+void FMIClient::setConnectorFutureVelocities(const std::vector<int>& valueRefs, const std::vector<double>& values){
     for(int i=0; i<numConnectors(); i++)
         getConnector(i)->setFutureValues(valueRefs,values);
 };

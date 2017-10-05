@@ -99,10 +99,10 @@ namespace fmitcp_master {
         const std::vector<int>& getTorqueValueRefs() const;
 
         /// Set all connector values, given value references and values
-        void setValues(std::vector<int> valueReferences, std::vector<double> values);
+        void setValues(const std::vector<int>& valueReferences, const std::vector<double>& values);
 
         /// Set velocities of bodies one step forward
-        void setFutureValues(std::vector<int> valueReferences, std::vector<double> values);
+        void setFutureValues(const std::vector<int>& valueReferences, const std::vector<double>& values);
 
         bool matchesBallLockConnector(
                 int posX, int posY, int posZ,

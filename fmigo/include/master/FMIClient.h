@@ -88,8 +88,8 @@ namespace fmitcp_master {
 
         std::vector<int> getRealOutputValueReferences();
 
-        void setConnectorValues          (std::vector<int> valueRefs, std::vector<double> values);
-        void setConnectorFutureVelocities(std::vector<int> valueRefs, std::vector<double> values);
+        void setConnectorValues          (const std::vector<int>& valueRefs, const std::vector<double>& values);
+        void setConnectorFutureVelocities(const std::vector<int>& valueRefs, const std::vector<double>& values);
 
         bool hasCapability(fmi2_capabilities_enu_t cap) const;
 

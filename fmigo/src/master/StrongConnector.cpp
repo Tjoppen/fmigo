@@ -201,7 +201,7 @@ const std::vector<int>& StrongConnector::getTorqueValueRefs() const {
     return m_TorqueValueRefs = result;
 };
 
-void StrongConnector::setValues(std::vector<int> valueReferences, std::vector<double> values){
+void StrongConnector::setValues(const std::vector<int>& valueReferences, const std::vector<double>& values){
     //NOTE: acceleration values are never written, only read
     assert(valueReferences.size() == values.size());
 
@@ -222,7 +222,7 @@ void StrongConnector::setValues(std::vector<int> valueReferences, std::vector<do
     }
 };
 
-void StrongConnector::setFutureValues(std::vector<int> valueReferences, std::vector<double> values){
+void StrongConnector::setFutureValues(const std::vector<int>& valueReferences, const std::vector<double>& values){
     assert(valueReferences.size() == values.size());
 
     for(size_t i=0; i<valueReferences.size(); i++){

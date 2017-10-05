@@ -10,6 +10,10 @@
 
 using namespace std;
 
+namespace fmitcp_master {
+    class BaseMaster;
+}
+
 namespace fmitcp {
 
     /**
@@ -18,10 +22,9 @@ namespace fmitcp {
      */
     class Client {
 
-    protected:
-
     private:
-        size_t m_pendingRequests;
+        //only used during init, before BaseMaster has been created
+        int m_pendingRequests;
 
 #ifdef USE_MPI
         int world_rank;
@@ -32,6 +35,7 @@ namespace fmitcp {
 
     public:
         int messages;
+        fmitcp_master::BaseMaster * m_master;
 
         fmitcp_proto::fmi2_kinematic_res last_kinematic;
 
@@ -47,8 +51,6 @@ namespace fmitcp {
 
         //like sendMessage() but also calls receiveAndHandleMessage()
         void sendMessageBlocking(std::string s);
-
-        size_t getNumPendingRequests() const;
 
         //called by anyone that knows we have a message waiting or who wants us to do a blocking recv
         //calls clientData() on the recv'd data

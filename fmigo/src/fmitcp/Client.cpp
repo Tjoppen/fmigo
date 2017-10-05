@@ -9,6 +9,7 @@
 #endif
 #include "common/common.h"
 #include "master/globals.h"
+#include "master/BaseMaster.h"
 
 using namespace std;
 using namespace fmitcp;
@@ -61,10 +62,14 @@ void Client::clientData(const char* data, long size){
     data += 2;
     size -= 2;
 
-    if (m_pendingRequests == 0) {
+    if ((m_master ? m_master->m_pendingRequests : m_pendingRequests) == 0) {
         fatal("Got response while m_pendingRequests = 0\n");
     }
-    m_pendingRequests--;
+    if (m_master) {
+        m_master->m_pendingRequests--;
+    } else {
+        m_pendingRequests--;
+    }
 
 //useful for providing hints in case of failure
 #define CHECK_WITH_STR(type, str) {\
@@ -296,17 +301,25 @@ Client::Client(zmq::context_t &context, string uri) : m_socket(context, ZMQ_DEAL
     debug("connected\n");
 #endif
     m_pendingRequests = 0;
+    m_master = NULL;
     GOOGLE_PROTOBUF_VERIFY_VERSION;
 }
 
 Client::~Client(){
+    if (m_pendingRequests) {
+        fatal("Had m_pendingRequests=%i in Client::~Client()\n", m_pendingRequests);
+    }
     google::protobuf::ShutdownProtobufLibrary();
 }
 
 void Client::sendMessage(std::string s){
     fmigo::globals::timer.rotate("pre_sendMessage");
     messages++;
-    m_pendingRequests++;
+    if (m_master) {
+        m_master->m_pendingRequests++;
+    } else {
+        m_pendingRequests++;
+    }
 #ifdef USE_MPI
     MPI_Send((void*)s.c_str(), s.length(), MPI_CHAR, world_rank, 0, MPI_COMM_WORLD);
     fmigo::globals::timer.rotate("MPI_Send");
@@ -348,8 +361,3 @@ void Client::receiveAndHandleMessage() {
     clientData(static_cast<char*>(msg.data()), msg.size());
 #endif
 }
-
-size_t Client::getNumPendingRequests() const {
-    return m_pendingRequests;
-}
-

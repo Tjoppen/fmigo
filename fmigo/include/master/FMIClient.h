@@ -24,8 +24,6 @@ namespace fmitcp_master {
     typedef std::map<std::string, variable> variable_map;
     typedef std::map<std::pair<int, fmi2_base_type_enu_t>, variable> variable_vr_map;
 
-    class BaseMaster;
-
     /// Adds high-level FMI methods to the Client, similar to FMILibrary functions.
     class FMIClient : public fmitcp::Client, public sc::Slave {
 
@@ -51,7 +49,6 @@ namespace fmitcp_master {
     public:
         int m_stateId;
 
-        BaseMaster * m_master;
         fmi2_event_info_t m_event_info;
 
         //value cache

@@ -28,7 +28,6 @@ FMIClient::FMIClient(int world_rank, int id) : fmitcp::Client(world_rank), sc::S
 FMIClient::FMIClient(zmq::context_t &context, int id, string uri) : fmitcp::Client(context, uri), sc::Slave() {
 #endif
     m_id = id;
-    m_master = NULL;
     m_fmi2Instance = NULL;
     m_context = NULL;
     m_fmi2Outputs = NULL;

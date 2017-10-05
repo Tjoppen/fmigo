@@ -35,9 +35,7 @@ namespace fmitcp_master {
         zmq::socket_t rep_socket;
         bool paused, running;
         bool zmqControl;
-
-        //number of pending requests sent to clients
-        size_t getNumPendingRequests() const;
+        int m_pendingRequests;
 
         explicit BaseMaster(zmq::context_t &context, std::vector<FMIClient*> clients, std::vector<WeakConnection> weakConnections);
         virtual ~BaseMaster();

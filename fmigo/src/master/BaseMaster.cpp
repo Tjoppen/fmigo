@@ -26,7 +26,8 @@ BaseMaster::BaseMaster(zmq::context_t &context, vector<FMIClient*> clients, vect
         rep_socket(context, ZMQ_REP),
         paused(false),
         running(true),
-        zmqControl(false) {
+        zmqControl(false),
+        m_pendingRequests(0) {
     for(auto client: m_clients)
         client->m_master = this;
 }
@@ -182,24 +183,16 @@ void BaseMaster::solveLoops() {
 #endif
 }
 
-size_t BaseMaster::getNumPendingRequests() const {
-    size_t ret = 0;
-    for (auto s : m_clients) {
-        ret += s->getNumPendingRequests();
-    }
-    return ret;
-}
-
 void BaseMaster::wait() {
     //allow polling once for each request, plus 60 seconds more
-    int maxPolls = getNumPendingRequests() + 60;
+    int maxPolls = m_pendingRequests + 60;
     int numPolls = 0;
 
-    if (getNumPendingRequests() > 0) {
+    if (m_pendingRequests > 0) {
       rendezvous++;
     }
 
-    while (getNumPendingRequests() > 0) {
+    while (m_pendingRequests > 0) {
         handleZmqControl();
         fmigo::globals::timer.rotate("pre_wait");
 
@@ -231,14 +224,14 @@ void BaseMaster::wait() {
     int n = zmq::poll(items.data(), m_clients.size(), ZMQ_POLL_MSEC*1000);
     fmigo::globals::timer.rotate("wait");
     if (!n) {
-        debug("polled %li sockets, %li pending (%i/%i), no new events\n", m_clients.size(), getNumPendingRequests(), numPolls, maxPolls);
+        debug("polled %li sockets, %i pending (%i/%i), no new events\n", m_clients.size(), m_pendingRequests, numPolls, maxPolls);
     }
     for (size_t x = 0; x < m_clients.size(); x++) {
         if (items[x].revents & ZMQ_POLLIN) {
             m_clients[x]->receiveAndHandleMessage();
         }
     }
-    if (getNumPendingRequests() > 0) {
+    if (m_pendingRequests > 0) {
         if (++numPolls >= maxPolls) {
             //Jenkins caught something like this, I think
             fatal("Exceeded max number of polls (%i) - stuck?\n", maxPolls);

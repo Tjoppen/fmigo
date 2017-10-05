@@ -41,6 +41,26 @@ namespace fmitcp_master {
         bool m_hasTorque;
         int  m_vref_torque[3];
 
+        mutable std::vector<int> m_PositionValueRefs;
+        mutable std::vector<int> m_QuaternionValueRefs;
+        mutable std::vector<int> m_ShaftAngleValueRefs;
+        mutable std::vector<int> m_VelocityValueRefs;
+        mutable std::vector<int> m_AccelerationValueRefs;
+        mutable std::vector<int> m_AngularVelocityValueRefs;
+        mutable std::vector<int> m_AngularAccelerationValueRefs;
+        mutable std::vector<int> m_ForceValueRefs;
+        mutable std::vector<int> m_TorqueValueRefs;
+
+        mutable bool m_hasComputedPositionValueRefs;
+        mutable bool m_hasComputedQuaternionValueRefs;
+        mutable bool m_hasComputedShaftAngleValueRefs;
+        mutable bool m_hasComputedVelocityValueRefs;
+        mutable bool m_hasComputedAccelerationValueRefs;
+        mutable bool m_hasComputedAngularVelocityValueRefs;
+        mutable bool m_hasComputedAngularAccelerationValueRefs;
+        mutable bool m_hasComputedForceValueRefs;
+        mutable bool m_hasComputedTorqueValueRefs;
+
     public:
         StrongConnector(FMIClient* slave);
         virtual ~StrongConnector();
@@ -68,15 +88,15 @@ namespace fmitcp_master {
         bool hasTorque();
 
         /// Get value references of the 3 position values
-        std::vector<int> getPositionValueRefs() const;
-        std::vector<int> getQuaternionValueRefs() const;
-        std::vector<int> getShaftAngleValueRefs() const;
-        std::vector<int> getVelocityValueRefs() const;
-        std::vector<int> getAccelerationValueRefs() const;
-        std::vector<int> getAngularVelocityValueRefs() const;
-        std::vector<int> getAngularAccelerationValueRefs() const;
-        std::vector<int> getForceValueRefs() const;
-        std::vector<int> getTorqueValueRefs() const;
+        const std::vector<int>& getPositionValueRefs() const;
+        const std::vector<int>& getQuaternionValueRefs() const;
+        const std::vector<int>& getShaftAngleValueRefs() const;
+        const std::vector<int>& getVelocityValueRefs() const;
+        const std::vector<int>& getAccelerationValueRefs() const;
+        const std::vector<int>& getAngularVelocityValueRefs() const;
+        const std::vector<int>& getAngularAccelerationValueRefs() const;
+        const std::vector<int>& getForceValueRefs() const;
+        const std::vector<int>& getTorqueValueRefs() const;
 
         /// Set all connector values, given value references and values
         void setValues(std::vector<int> valueReferences, std::vector<double> values);

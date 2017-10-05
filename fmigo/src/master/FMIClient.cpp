@@ -197,31 +197,6 @@ void FMIClient::on_fmi2_import_set_real_res(fmitcp_proto::fmi2_status_t status){
     m_master->onSlaveSetReal(this);
 };
 
-template<typename T> void cache_values(const deque<T>& values, set<int>& outgoing, unordered_map<int,T>& dest) {
-  size_t x = 0;
-  for (int vr : outgoing) {
-    dest.insert(make_pair(vr, values[x]));
-    x++;
-  }
-  outgoing.clear();
-}
-
-void FMIClient::on_fmi2_import_get_real_res(const deque<double>& values, fmitcp_proto::fmi2_status_t status){
-  cache_values(values, m_outgoing_reals, m_reals);
-}
-
-void FMIClient::on_fmi2_import_get_integer_res(const deque<int>& values, fmitcp_proto::fmi2_status_t status) {
-  cache_values(values, m_outgoing_ints, m_ints);
-}
-
-void FMIClient::on_fmi2_import_get_boolean_res(const deque<bool>& values, fmitcp_proto::fmi2_status_t status) {
-  cache_values(values, m_outgoing_bools, m_bools);
-}
-
-void FMIClient::on_fmi2_import_get_string_res(const deque<string>& values, fmitcp_proto::fmi2_status_t status) {
-  cache_values(values, m_outgoing_strings, m_strings);
-}
-
 void FMIClient::on_fmi2_import_get_fmu_state_res(int stateId, fmitcp_proto::fmi2_status_t status){
     //remember stateId
     m_stateId = stateId;
@@ -413,37 +388,6 @@ void FMIClient::sendSetX(const SendSetXType& typeRefsValues) {
 }
 //send(it->first, fmi2_import_set_real(0, 0, it->second.first, it->second.second));
 
-void FMIClient::deleteCachedValues() {
-  m_reals.clear();
-  m_ints.clear();
-  m_bools.clear();
-  m_strings.clear();
-}
-
-template<typename T> void queueFoo(const vector<int>& vrs,
-                                   const unordered_map<int,T>& values,
-                                   set<int>& outgoing) {
-  //only queue values which we haven't seen yet
-  for (int vr : vrs) {
-    auto it = values.find(vr);
-    if (it == values.end()) {
-      outgoing.insert(vr);
-    }
-  }
-}
-
-void FMIClient::queueReals(const vector<int>& vrs) {
-  queueFoo(vrs, m_reals, m_outgoing_reals);
-}
-void FMIClient::queueInts(const vector<int>& vrs) {
-  queueFoo(vrs, m_ints, m_outgoing_ints);
-}
-void FMIClient::queueBools(const vector<int>& vrs) {
-  queueFoo(vrs, m_bools, m_outgoing_bools);
-}
-void FMIClient::queueStrings(const vector<int>& vrs) {
-  queueFoo(vrs, m_strings, m_outgoing_strings);
-}
 void FMIClient::queueX(const SendGetXType& typeRefs) {
   for (const auto& it : typeRefs) {
     switch (it.first) {
@@ -460,69 +404,7 @@ void FMIClient::queueX(const SendGetXType& typeRefs) {
       queueStrings(it.second);
       break;
     case fmi2_base_type_enum:
-      fatal("fmi2_base_type_enum snuck its way into FMIClient::queueX() somehow\n");
+      fatal("fmi2_base_type_enum snuck its way into Client::queueX() somehow\n");
     }
   }
-}
-
-static vector<int> setToVector(const set<int> &s) {
-  vector<int> ret;
-  for (int v : s) {
-    ret.push_back(v);
-  }
-  return ret;
-}
-
-void FMIClient::sendValueRequests() {
-  if (m_outgoing_reals.size()) {
-    sendMessage(fmi2_import_get_real(setToVector(m_outgoing_reals)));
-  }
-  if (m_outgoing_ints.size()) {
-    sendMessage(fmi2_import_get_integer(setToVector(m_outgoing_ints)));
-  }
-  if (m_outgoing_bools.size()) {
-    sendMessage(fmi2_import_get_boolean(setToVector(m_outgoing_bools)));
-  }
-  if (m_outgoing_strings.size()) {
-    sendMessage(fmi2_import_get_string(setToVector(m_outgoing_strings)));
-  }
-}
-
-template<typename T> vector<T> getFoo(const vector<int>& vrs,
-                                      const unordered_map<int,T>& values) {
-  vector<T> ret;
-  for (int vr : vrs) {
-    auto it = values.find(vr);
-    if (it == values.end()) {
-      fatal("VR %i was not requested\n", vr);
-    }
-    ret.push_back(it->second);
-  }
-  return ret;
-}
-
-vector<double> FMIClient::getReals(const vector<int>& vrs) const {
-  return getFoo(vrs, m_reals);
-}
-vector<int> FMIClient::getInts(const vector<int>& vrs) const {
-  return getFoo(vrs, m_ints);
-}
-vector<bool> FMIClient::getBools(const vector<int>& vrs) const {
-  return getFoo(vrs, m_bools);
-}
-vector<string> FMIClient::getStrings(const vector<int>& vrs) const {
-  return getFoo(vrs, m_strings);
-}
-
-double FMIClient::getReal(int vr) const {
-  return getReals(std::vector<int>(1, vr))[0];
-}
-int FMIClient::getInt(int vr) const {
-  return getInts(std::vector<int>(1, vr))[0];
-}
-bool FMIClient::getBool(int vr) const {
-  return getBools(std::vector<int>(1, vr))[0];
-}
-string FMIClient::getString(int vr) const {
-  return getStrings(std::vector<int>(1, vr))[0];
 }

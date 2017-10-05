@@ -9,9 +9,6 @@
 #include "master/StrongConnector.h"
 #include "WeakConnection.h"
 #include "common/common.h"
-#include <deque>
-#include <set>
-#include <unordered_map>
 #include <FMI2/fmi2_functions.h>
 #include "../master/control.pb.h"
 
@@ -52,40 +49,9 @@ namespace fmitcp_master {
 
         fmi2_event_info_t m_event_info;
 
-        //value cache
-        std::unordered_map<int, double>      m_reals;
-        std::unordered_map<int, int>         m_ints;
-        std::unordered_map<int, bool>        m_bools;
-        std::unordered_map<int, std::string> m_strings;
-
-        //set of VRs currently being requested
-        std::set<int>              m_outgoing_reals;
-        std::set<int>              m_outgoing_ints;
-        std::set<int>              m_outgoing_bools;
-        std::set<int>              m_outgoing_strings;
-
-        //delete cached values
-        void deleteCachedValues();
-
-        void queueReals(const std::vector<int>& vrs);
-        void queueInts(const std::vector<int>& vrs);
-        void queueBools(const std::vector<int>& vrs);
-        void queueStrings(const std::vector<int>& vrs);
-        void queueX(const SendGetXType& typeRefs);
-
-        void sendValueRequests();
-
-        std::vector<double>       getReals(const std::vector<int>& vrs) const;
-        std::vector<int>          getInts(const std::vector<int>& vrs) const;
-        std::vector<bool>         getBools(const std::vector<int>& vrs) const;
-        std::vector<std::string>  getStrings(const std::vector<int>& vrs) const;
-
-        double       getReal(int vr) const;
-        int          getInt(int vr) const;
-        bool         getBool(int vr) const;
-        std::string  getString(int vr) const;
-
         control_proto::fmu_state::State m_fmuState;
+
+        void queueX(const SendGetXType& typeRefs);
 
         std::string getModelName() const;
         fmi2_fmu_kind_enu_t getFmuKind();
@@ -163,10 +129,6 @@ namespace fmitcp_master {
         //void on_fmi2_import_set_integer_res                     (fmitcp_proto::fmi2_status_t status);
         //void on_fmi2_import_set_boolean_res                     (fmitcp_proto::fmi2_status_t status);
         //void on_fmi2_import_set_string_res                      (fmitcp_proto::fmi2_status_t status);
-        void on_fmi2_import_get_real_res                        (const deque<double>& values, fmitcp_proto::fmi2_status_t status);
-        void on_fmi2_import_get_integer_res                     (const deque<int>& values, fmitcp_proto::fmi2_status_t status);
-        void on_fmi2_import_get_boolean_res                     (const deque<bool>& values, fmitcp_proto::fmi2_status_t status);
-        void on_fmi2_import_get_string_res                      (const deque<string>& values, fmitcp_proto::fmi2_status_t status);
         void on_fmi2_import_get_fmu_state_res                   (int stateId, fmitcp_proto::fmi2_status_t status);
         void on_fmi2_import_set_fmu_state_res                   (fmitcp_proto::fmi2_status_t status);
         void on_fmi2_import_free_fmu_state_res                  (fmitcp_proto::fmi2_status_t status);

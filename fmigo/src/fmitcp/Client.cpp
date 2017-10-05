@@ -391,6 +391,7 @@ void Client::queueStrings(const vector<int>& vrs) {
 
 static vector<int> setToVector(const set<int> &s) {
   vector<int> ret;
+  ret.reserve(s.size());
   for (int v : s) {
     ret.push_back(v);
   }

@@ -41,6 +41,10 @@ public:
         return m_data[i];
     };
 
+    double operator[] (const int i) const {
+        return m_data[i];
+    };
+
     /// u += v
     void operator += (const Vec3& v) {
         this->m_data[0] += v.x();

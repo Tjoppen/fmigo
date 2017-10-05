@@ -50,29 +50,13 @@ void StrongMaster::prepare() {
     }
 }
 
-void StrongMaster::getDirectionalDerivative(fmitcp_proto::fmi2_kinematic_req& kin, Vec3 seedVec, vector<int> accelerationRefs, vector<int> forceRefs) {
-    vector<double> seed;
-    seed.push_back(seedVec.x());
-
-    if (accelerationRefs.size() == 1) {
-        //HACKHACK: special handling for 1-dimensional couplings (shafts)
-        accelerationRefs.resize(1);
-        forceRefs.resize(1);
-    } else {
-        seed.push_back(seedVec.y());
-        seed.push_back(seedVec.z());
-    }
-
+void StrongMaster::getDirectionalDerivative(fmitcp_proto::fmi2_kinematic_req& kin, const Vec3& seedVec, const vector<int>& accelerationRefs, const vector<int>& forceRefs) {
     fmitcp_proto::fmi2_import_get_directional_derivative_req* get_derivs = kin.add_get_derivs();
 
-    for (int z : accelerationRefs) {
-      get_derivs->add_z_ref(z);
-    }
-    for (int v : forceRefs) {
-      get_derivs->add_v_ref(v);
-    }
-    for (double dv : seed) {
-      get_derivs->add_dv(dv);
+    for (size_t x = 0; x < accelerationRefs.size(); x++) {
+      get_derivs->add_z_ref(accelerationRefs[x]);
+      get_derivs->add_v_ref(forceRefs[x]);
+      get_derivs->add_dv(seedVec[x]);
     }
 }
 

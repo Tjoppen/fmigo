@@ -239,6 +239,7 @@ void StrongMaster::runIteration(double t, double dt) {
         if (kv.second.future_velocity_vrs_size()) {
             const vector<int>& vrs = kv.first->getStrongConnectorValueReferences();
             vector<double> reals;
+            reals.reserve(kv.second.future_velocity_vrs_size());
             for (int x = 0; x < kv.second.future_velocity_vrs_size(); x++) {
               reals.push_back(kv.first->last_kinematic.future_velocities(x));
             }
@@ -256,6 +257,7 @@ void StrongMaster::runIteration(double t, double dt) {
         for (int j = 0; j < client->numConnectors(); j++) {
             StrongConnector *sc = client->getConnector(j);
             vector<double> vec;
+            vec.reserve(6);
 
             //dump force/torque
             if (sc->hasForce()) {

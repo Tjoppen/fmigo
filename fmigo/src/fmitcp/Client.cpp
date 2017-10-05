@@ -269,8 +269,7 @@ void Client::clientData(const char* data, long size){
     case type_fmi2_import_get_boolean_status_res:           CLIENT_VALUE_CASE(fmi2_import_get_boolean_status); break;
     case type_fmi2_import_get_string_status_res:            CLIENT_VALUE_CASE(fmi2_import_get_string_status); break;
     case type_fmi2_kinematic_res: {
-        fmi2_kinematic_res r; r.ParseFromArray(data, size);
-        last_kinematic = r;
+        last_kinematic.ParseFromArray(data, size);
         break;
     }
     case type_get_xml_res: {

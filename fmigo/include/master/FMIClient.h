@@ -11,6 +11,7 @@
 #include "common/common.h"
 #include <deque>
 #include <set>
+#include <unordered_map>
 #include <FMI2/fmi2_functions.h>
 #include "../master/control.pb.h"
 
@@ -52,10 +53,10 @@ namespace fmitcp_master {
         fmi2_event_info_t m_event_info;
 
         //value cache
-        std::map<int, double>      m_reals;
-        std::map<int, int>         m_ints;
-        std::map<int, bool>        m_bools;
-        std::map<int, std::string> m_strings;
+        std::unordered_map<int, double>      m_reals;
+        std::unordered_map<int, int>         m_ints;
+        std::unordered_map<int, bool>        m_bools;
+        std::unordered_map<int, std::string> m_strings;
 
         //set of VRs currently being requested
         std::set<int>              m_outgoing_reals;

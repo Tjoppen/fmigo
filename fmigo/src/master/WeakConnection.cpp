@@ -114,7 +114,7 @@ OutputRefsType getOutputWeakRefs(vector<WeakConnection> weakConnections) {
 template<typename T> void doit(
         InputRefsValuesType& refValues,
         WeakConnection& wc,
-        const std::map<int,T>& values,
+        const std::unordered_map<int,T>& values,
         MultiValue (WeakConnection::*convert)(T) const)
 {
     auto it = values.find(wc.conn.fromOutputVR);

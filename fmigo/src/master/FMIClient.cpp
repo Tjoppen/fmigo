@@ -197,16 +197,10 @@ void FMIClient::on_fmi2_import_set_real_res(fmitcp_proto::fmi2_status_t status){
     m_master->onSlaveSetReal(this);
 };
 
-template<typename T> void cache_values(const deque<T>& values, set<int>& outgoing, map<int,T>& dest) {
-  if (values.size() != outgoing.size()) {
-    fatal("values.size() != outgoing.size()\n");
-  }
+template<typename T> void cache_values(const deque<T>& values, set<int>& outgoing, unordered_map<int,T>& dest) {
   size_t x = 0;
   for (int vr : outgoing) {
-    if (dest.count(vr)) {
-      warning("VR %i needlessly fetched\n", vr);
-    }
-    dest[vr] = values[x];
+    dest.insert(make_pair(vr, values[x]));
     x++;
   }
   outgoing.clear();
@@ -427,7 +421,7 @@ void FMIClient::deleteCachedValues() {
 }
 
 template<typename T> void queueFoo(const vector<int>& vrs,
-                                   const map<int,T>& values,
+                                   const unordered_map<int,T>& values,
                                    set<int>& outgoing) {
   //only queue values which we haven't seen yet
   for (int vr : vrs) {
@@ -495,7 +489,7 @@ void FMIClient::sendValueRequests() {
 }
 
 template<typename T> vector<T> getFoo(const vector<int>& vrs,
-                                      const map<int,T>& values) {
+                                      const unordered_map<int,T>& values) {
   vector<T> ret;
   for (int vr : vrs) {
     auto it = values.find(vr);

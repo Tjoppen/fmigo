@@ -102,20 +102,15 @@ void StrongMaster::runIteration(double t, double dt) {
     //this sets StrongMaster apart from the weak masters
     const InputRefsValuesType refValues = getInputWeakRefsAndValues(m_weakConnections);
 
-    map<FMIClient*, fmitcp_proto::fmi2_kinematic_req> kin;
-    map<FMIClient*, bool> sent_kin;   //whether we sent fmi2_kinematic_req for each client
-    map<FMIClient*, int> kin_ofs;     //current offset into derivs
-    for (FMIClient* client : m_clients) {
-        kin[client] = fmitcp_proto::fmi2_kinematic_req();
-        kin_ofs[client] = 0;
-    }
+    vector<fmitcp_proto::fmi2_kinematic_req> kin(m_clients.size(), fmitcp_proto::fmi2_kinematic_req());
+    vector<int> kin_ofs(m_clients.size());  //current offset into derivs
 
     //set weak connector inputs
     for (auto it = refValues.begin(); it != refValues.end(); it++) {
-        fill_kinematic_req(it, kin[it->first], fmi2_base_type_real, &fmitcp_proto::fmi2_kinematic_req::mutable_reals,   &MultiValue::r);
-        fill_kinematic_req(it, kin[it->first], fmi2_base_type_int,  &fmitcp_proto::fmi2_kinematic_req::mutable_ints,    &MultiValue::i);
-        fill_kinematic_req(it, kin[it->first], fmi2_base_type_bool, &fmitcp_proto::fmi2_kinematic_req::mutable_bools,   &MultiValue::b);
-        fill_kinematic_req(it, kin[it->first], fmi2_base_type_str,  &fmitcp_proto::fmi2_kinematic_req::mutable_strings, &MultiValue::s);
+        fill_kinematic_req(it, kin[it->first->getId()], fmi2_base_type_real, &fmitcp_proto::fmi2_kinematic_req::mutable_reals,   &MultiValue::r);
+        fill_kinematic_req(it, kin[it->first->getId()], fmi2_base_type_int,  &fmitcp_proto::fmi2_kinematic_req::mutable_ints,    &MultiValue::i);
+        fill_kinematic_req(it, kin[it->first->getId()], fmi2_base_type_bool, &fmitcp_proto::fmi2_kinematic_req::mutable_bools,   &MultiValue::b);
+        fill_kinematic_req(it, kin[it->first->getId()], fmi2_base_type_str,  &fmitcp_proto::fmi2_kinematic_req::mutable_strings, &MultiValue::s);
     }
 
     //set connector values
@@ -139,10 +134,10 @@ void StrongMaster::runIteration(double t, double dt) {
         FMIClient *client = m_clients[i];
         if (client->hasCapability(fmi2_cs_canGetAndSetFMUstate)) {
             for (int vr : client->getStrongConnectorValueReferences()) {
-                kin[client].add_future_velocity_vrs(vr);
+                kin[client->getId()].add_future_velocity_vrs(vr);
             }
-            kin[client].set_currentcommunicationpoint(t);
-            kin[client].set_communicationstepsize(dt);
+            kin[client->getId()].set_currentcommunicationpoint(t);
+            kin[client->getId()].set_communicationstepsize(dt);
         }
     }
 
@@ -168,7 +163,7 @@ void StrongMaster::runIteration(double t, double dt) {
                             //step 0 = send fmi2_import_get_directional_derivative() requests
                             if (eq->m_isSpatial) {
                                 if (accelerationConnector->hasAcceleration() && forceConnector->hasForce()) {
-                                    getDirectionalDerivative(kin[client], eq->jacobianElementForConnector(forceConnector).getSpatial(), accelerationConnector->getAccelerationValueRefs(), forceConnector->getForceValueRefs());
+                                    getDirectionalDerivative(kin[client->getId()], eq->jacobianElementForConnector(forceConnector).getSpatial(), accelerationConnector->getAccelerationValueRefs(), forceConnector->getForceValueRefs());
                                 } else {
                                     fatal("Strong coupling requires acceleration outputs for now\n");
                                 }
@@ -176,7 +171,7 @@ void StrongMaster::runIteration(double t, double dt) {
 
                             if (eq->m_isRotational) {
                                 if (accelerationConnector->hasAngularAcceleration() && forceConnector->hasTorque()) {
-                                    getDirectionalDerivative(kin[client], eq->jacobianElementForConnector(forceConnector).getRotational(), accelerationConnector->getAngularAccelerationValueRefs(), forceConnector->getTorqueValueRefs());
+                                    getDirectionalDerivative(kin[client->getId()], eq->jacobianElementForConnector(forceConnector).getRotational(), accelerationConnector->getAngularAccelerationValueRefs(), forceConnector->getTorqueValueRefs());
                                 } else {
                                     fatal("Strong coupling requires angular acceleration outputs for now\n");
                                 }
@@ -188,7 +183,7 @@ void StrongMaster::runIteration(double t, double dt) {
                             JacobianElement &el = m_strongCouplingSolver->m_mobilities[make_pair(I,J)];
 
                             if (eq->m_isSpatial) {
-                                const fmitcp_proto::fmi2_import_get_directional_derivative_res& res = client->last_kinematic.derivs(kin_ofs[client]++);
+                                const fmitcp_proto::fmi2_import_get_directional_derivative_res& res = client->last_kinematic.derivs(kin_ofs[client->getId()]++);
                                 if (accelerationConnector->getAccelerationValueRefs().size() == 1) {
                                     el.setSpatial(    res.dz(0), 0,         0);
                                 } else {
@@ -199,7 +194,7 @@ void StrongMaster::runIteration(double t, double dt) {
                             }
 
                             if (eq->m_isRotational) {
-                                const fmitcp_proto::fmi2_import_get_directional_derivative_res& res = client->last_kinematic.derivs(kin_ofs[client]++);
+                                const fmitcp_proto::fmi2_import_get_directional_derivative_res& res = client->last_kinematic.derivs(kin_ofs[client->getId()]++);
                                 //1-D?
                                 if (accelerationConnector->getAngularAccelerationValueRefs().size() == 1) {
                                     //debug("J(%i,%i) = %f\n", I, J, client->m_getDirectionalDerivativeValues.front()[0]);
@@ -215,17 +210,13 @@ void StrongMaster::runIteration(double t, double dt) {
             }
         }
         if (step == 0) {
-
-            for (auto kv : kin) {
-                if (kv.second.has_reals() ||
-                    kv.second.has_ints() ||
-                    kv.second.has_bools() ||
-                    kv.second.has_strings() ||
-                    kv.second.future_velocity_vrs_size()) {
-                  sent_kin[kv.first] = true;
-                  kv.first->sendMessage(pack(fmitcp_proto::type_fmi2_kinematic_req, kv.second));
-                } else {
-                  sent_kin[kv.first] = false;
+            for (FMIClient *client : m_clients) {
+                if (kin[client->getId()].has_reals() ||
+                    kin[client->getId()].has_ints() ||
+                    kin[client->getId()].has_bools() ||
+                    kin[client->getId()].has_strings() ||
+                    kin[client->getId()].future_velocity_vrs_size()) {
+                  client->sendMessage(pack(fmitcp_proto::type_fmi2_kinematic_req, kin[client->getId()]));
                 }
             }
 
@@ -235,15 +226,15 @@ void StrongMaster::runIteration(double t, double dt) {
     }
 
     //set FUTURE connector values (velocities only)
-    for (auto kv : kin) {
-        if (kv.second.future_velocity_vrs_size()) {
-            const vector<int>& vrs = kv.first->getStrongConnectorValueReferences();
+    for (FMIClient *client : m_clients) {
+        if (kin[client->getId()].future_velocity_vrs_size()) {
+            const vector<int>& vrs = client->getStrongConnectorValueReferences();
             vector<double> reals;
-            reals.reserve(kv.second.future_velocity_vrs_size());
-            for (int x = 0; x < kv.second.future_velocity_vrs_size(); x++) {
-              reals.push_back(kv.first->last_kinematic.future_velocities(x));
+            reals.reserve(kin[client->getId()].future_velocity_vrs_size());
+            for (int x = 0; x < kin[client->getId()].future_velocity_vrs_size(); x++) {
+              reals.push_back(client->last_kinematic.future_velocities(x));
             }
-            kv.first->setConnectorFutureVelocities(vrs, reals);
+            client->setConnectorFutureVelocities(vrs, reals);
         }
     }
 

@@ -6,6 +6,12 @@
 
 namespace fmitcp {
     namespace serialize {
+        template<typename T> std::string pack(fmitcp_proto::fmitcp_message_Type type, T &req) {
+          uint16_t t = type;
+          uint8_t bytes[2] = {(uint8_t)t, (uint8_t)(t>>8)};
+          return std::string(reinterpret_cast<char*>(bytes), 2) + req.SerializeAsString();
+        }
+
         // FMI functions follow. These should correspond to FMILibrary functions.
 
         // =========== FMI 2.0 (CS) Co-Simulation functions ===========
@@ -49,10 +55,32 @@ namespace fmitcp {
         std::string fmi2_import_set_integer(const std::vector<int>& valueRefs, const std::vector<int>& values);
         std::string fmi2_import_set_boolean(const std::vector<int>& valueRefs, const std::vector<bool>& values);
         std::string fmi2_import_set_string (const std::vector<int>& valueRefs, const std::vector<std::string>& values);
-        std::string fmi2_import_get_real(const std::vector<int>& valueRefs);
-        std::string fmi2_import_get_integer(const std::vector<int>& valueRefs);
-        std::string fmi2_import_get_boolean(const std::vector<int>& valueRefs);
-        std::string fmi2_import_get_string (const std::vector<int>& valueRefs);
+
+        //C is vector or set
+        template<typename R, typename C> std::string collection_to_req(fmitcp_proto::fmitcp_message_Type type, const C& refs) {
+          R req;
+          for (int vr : refs) {
+            req.add_valuereferences(vr);
+          }
+          return pack(type, req);
+        }
+
+        template<typename C> std::string fmi2_import_get_real(const C& valueRefs) {
+          return collection_to_req<fmitcp_proto::fmi2_import_get_real_req>(fmitcp_proto::type_fmi2_import_get_real_req, valueRefs);
+        }
+
+        template<typename C> std::string fmi2_import_get_integer(const C& valueRefs) {
+          return collection_to_req<fmitcp_proto::fmi2_import_get_integer_req>(fmitcp_proto::type_fmi2_import_get_integer_req, valueRefs);
+        }
+
+        template<typename C> std::string fmi2_import_get_boolean(const C& valueRefs) {
+          return collection_to_req<fmitcp_proto::fmi2_import_get_boolean_req>(fmitcp_proto::type_fmi2_import_get_boolean_req, valueRefs);
+        }
+
+        template<typename C> std::string fmi2_import_get_string(const C& valueRefs) {
+          return collection_to_req<fmitcp_proto::fmi2_import_get_string_req> (fmitcp_proto::type_fmi2_import_get_string_req,  valueRefs);
+        }
+
         std::string fmi2_import_get_fmu_state();
         std::string fmi2_import_set_fmu_state(int stateId);
         std::string fmi2_import_free_fmu_state(int stateId);
@@ -64,12 +92,6 @@ namespace fmitcp {
 
         // ========= NETWORK SPECIFIC FUNCTIONS ============
         std::string get_xml();
-
-        template<typename T> std::string pack(fmitcp_proto::fmitcp_message_Type type, T &req) {
-          uint16_t t = type;
-          uint8_t bytes[2] = {(uint8_t)t, (uint8_t)(t>>8)};
-          return std::string(reinterpret_cast<char*>(bytes), 2) + req.SerializeAsString();
-        }
     }
 }
 

@@ -213,38 +213,6 @@ std::string fmitcp::serialize::fmi2_import_set_string(const vector<int>& valueRe
     return pack(type_fmi2_import_set_string_req, req);
 }
 
-std::string fmitcp::serialize::fmi2_import_get_real(const vector<int>& valueRefs){
-    fmi2_import_get_real_req req;
-    for(size_t i=0; i<valueRefs.size(); i++)
-        req.add_valuereferences(valueRefs[i]);
-
-    return pack(type_fmi2_import_get_real_req, req);
-}
-
-std::string fmitcp::serialize::fmi2_import_get_integer(const vector<int>& valueRefs){
-    fmi2_import_get_integer_req req;
-    for(size_t i=0; i<valueRefs.size(); i++)
-        req.add_valuereferences(valueRefs[i]);
-
-    return pack(type_fmi2_import_get_integer_req, req);
-}
-
-std::string fmitcp::serialize::fmi2_import_get_boolean(const vector<int>& valueRefs){
-    fmi2_import_get_boolean_req req;
-    for(size_t i=0; i<valueRefs.size(); i++)
-        req.add_valuereferences(valueRefs[i]);
-
-    return pack(type_fmi2_import_get_boolean_req, req);
-}
-
-std::string fmitcp::serialize::fmi2_import_get_string (const vector<int>& valueRefs){
-    fmi2_import_get_string_req req;
-    for(size_t i=0; i<valueRefs.size(); i++)
-        req.add_valuereferences(valueRefs[i]);
-
-    return pack(type_fmi2_import_get_string_req, req);
-}
-
 FMU_VOID_REQ_IMPL(fmi2_import_get_fmu_state)
 
 std::string fmitcp::serialize::fmi2_import_set_fmu_state(int stateId){

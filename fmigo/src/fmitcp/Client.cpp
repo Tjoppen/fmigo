@@ -389,27 +389,18 @@ void Client::queueStrings(const vector<int>& vrs) {
   queueFoo(vrs, m_strings, m_outgoing_strings);
 }
 
-static vector<int> setToVector(const set<int> &s) {
-  vector<int> ret;
-  ret.reserve(s.size());
-  for (int v : s) {
-    ret.push_back(v);
-  }
-  return ret;
-}
-
 void Client::sendValueRequests() {
   if (m_outgoing_reals.size()) {
-    sendMessage(fmitcp::serialize::fmi2_import_get_real(setToVector(m_outgoing_reals)));
+    sendMessage(fmitcp::serialize::fmi2_import_get_real(m_outgoing_reals));
   }
   if (m_outgoing_ints.size()) {
-    sendMessage(fmitcp::serialize::fmi2_import_get_integer(setToVector(m_outgoing_ints)));
+    sendMessage(fmitcp::serialize::fmi2_import_get_integer(m_outgoing_ints));
   }
   if (m_outgoing_bools.size()) {
-    sendMessage(fmitcp::serialize::fmi2_import_get_boolean(setToVector(m_outgoing_bools)));
+    sendMessage(fmitcp::serialize::fmi2_import_get_boolean(m_outgoing_bools));
   }
   if (m_outgoing_strings.size()) {
-    sendMessage(fmitcp::serialize::fmi2_import_get_string(setToVector(m_outgoing_strings)));
+    sendMessage(fmitcp::serialize::fmi2_import_get_string(m_outgoing_strings));
   }
 }
 

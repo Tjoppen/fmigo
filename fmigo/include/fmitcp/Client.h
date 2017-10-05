@@ -32,6 +32,9 @@ namespace fmitcp {
 
     public:
         int messages;
+
+        fmitcp_proto::fmi2_kinematic_res last_kinematic;
+
 #ifdef USE_MPI
         Client(int world_rank);
 #else

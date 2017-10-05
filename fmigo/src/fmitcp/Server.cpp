@@ -269,6 +269,49 @@ Server::~Server() {
 #endif
 }
 
+fmi2_status_t Server::getDirectionalDerivatives(
+        const fmitcp_proto::fmi2_import_get_directional_derivative_req& r,
+        fmitcp_proto::fmi2_import_get_directional_derivative_res& response) {
+    vector<fmi2_value_reference_t> v_ref(r.v_ref_size());
+    vector<fmi2_value_reference_t> z_ref(r.z_ref_size());
+    vector<fmi2_real_t> dv(r.dv_size()), dz(r.z_ref_size());
+
+    for (int i = 0 ; i < r.v_ref_size() ; i++) {
+      v_ref[i] = r.v_ref(i);
+    }
+    for (int i = 0 ; i < r.z_ref_size() ; i++) {
+      z_ref[i] = r.z_ref(i);
+    }
+    for (int i = 0 ; i < r.dv_size() ; i++) {
+      dv[i] = r.dv(i);
+    }
+    debug("fmi2_import_get_directional_derivative_req(vref=%s,zref=%s,dv=%s)\n",
+                       arrayToString(v_ref).c_str(), arrayToString(z_ref).c_str(), arrayToString(dv).c_str());
+
+    fmi2_status_t status = fmi2_status_ok;
+    if (!m_sendDummyResponses) {
+     if (!alwaysComputeNumericalDirectionalDerivatives &&
+          hasCapability(fmi2_cs_providesDirectionalDerivatives)) {
+      // interact with FMU
+      status = fmi2_import_get_directional_derivative(m_fmi2Instance, v_ref.data(), r.v_ref_size(), z_ref.data(), r.z_ref_size(), dv.data(), dz.data());
+     } else if (hasCapability(fmi2_cs_canGetAndSetFMUstate)) {
+      dz = computeNumericalDirectionalDerivative(z_ref, v_ref, dv);
+     } else {
+         error("Tried to fmi2_import_get_directional_derivative() on FMU without directional derivatives or ability to save/load FMU state\n");
+      status = fmi2_status_error;
+     }
+     m_timer.rotate("deriv");
+    }
+
+    // Create response
+    response.set_status(fmi2StatusToProtofmi2Status(status));
+    for (int i = 0 ; i < r.z_ref_size() ; i++) {
+      response.add_dz(dz[i]);
+    }
+
+    return status;
+}
+
 string Server::clientData(const char *data, size_t size) {
   std::pair<fmitcp_proto::fmitcp_message_Type,std::string> ret;
   ret.second = "error"; //to detect if we forgot to set ret.second somewhere below
@@ -819,46 +862,11 @@ string Server::clientData(const char *data, size_t size) {
 
     // Unpack message
     fmitcp_proto::fmi2_import_get_directional_derivative_req r; r.ParseFromArray(data, size);
-    vector<fmi2_value_reference_t> v_ref(r.v_ref_size());
-    vector<fmi2_value_reference_t> z_ref(r.z_ref_size());
-    vector<fmi2_real_t> dv(r.dv_size()), dz(r.z_ref_size());
-
-    for (int i = 0 ; i < r.v_ref_size() ; i++) {
-      v_ref[i] = r.v_ref(i);
-    }
-    for (int i = 0 ; i < r.z_ref_size() ; i++) {
-      z_ref[i] = r.z_ref(i);
-    }
-    for (int i = 0 ; i < r.dv_size() ; i++) {
-      dv[i] = r.dv(i);
-    }
-    debug("fmi2_import_get_directional_derivative_req(vref=%s,zref=%s,dv=%s)\n",
-                       arrayToString(v_ref).c_str(), arrayToString(z_ref).c_str(), arrayToString(dv).c_str());
-
-    fmi2_status_t status = fmi2_status_ok;
-    if (!m_sendDummyResponses) {
-     if (!alwaysComputeNumericalDirectionalDerivatives &&
-          hasCapability(fmi2_cs_providesDirectionalDerivatives)) {
-      // interact with FMU
-      status = fmi2_import_get_directional_derivative(m_fmi2Instance, v_ref.data(), r.v_ref_size(), z_ref.data(), r.z_ref_size(), dv.data(), dz.data());
-     } else if (hasCapability(fmi2_cs_canGetAndSetFMUstate)) {
-      dz = computeNumericalDirectionalDerivative(z_ref, v_ref, dv);
-     } else {
-         error("Tried to fmi2_import_get_directional_derivative() on FMU without directional derivatives or ability to save/load FMU state\n");
-      status = fmi2_status_error;
-     }
-     m_timer.rotate("deriv");
-    }
-
-    // Create response
     fmitcp_proto::fmi2_import_get_directional_derivative_res response;
-    response.set_status(fmi2StatusToProtofmi2Status(status));
-    for (int i = 0 ; i < r.z_ref_size() ; i++) {
-      response.add_dz(dz[i]);
-    }
+    fmi2_status_t status = getDirectionalDerivatives(r, response);
     ret.first = fmitcp_proto::type_fmi2_import_get_directional_derivative_res;
     ret.second = response.SerializeAsString();
-    log_error_or_debug(status, "fmi2_import_get_directional_derivative_res(status=%d,dz=%s)\n",response.status(),arrayToString(dz).c_str());
+    log_error_or_debug(status, "fmi2_import_get_directional_derivative_res(status=%d)\n",response.status());
 
   break; } case fmitcp_proto::type_fmi2_import_enter_event_mode_req: {
     // TODO
@@ -1228,6 +1236,94 @@ string Server::clientData(const char *data, size_t size) {
     response.set_value(value);
     ret.second = response.SerializeAsString();
     debug("fmi2_import_get_string_status_res(value=%s)\n",response.value().c_str());
+
+  break; } case fmitcp_proto::type_fmi2_kinematic_req: {
+
+    fmitcp_proto::fmi2_kinematic_req r; r.ParseFromArray(data, size);
+    fmi2_status_t status = fmi2_status_ok;
+    fmitcp_proto::fmi2_kinematic_res response;
+
+    debug("fmi2_kinematic_req: %i %i %i %i %i %i\n",
+        r.has_reals() ? r.reals().values_size() : 0,
+        r.has_ints() ? r.ints().values_size() : 0,
+        r.has_bools() ? r.bools().values_size() : 0,
+        r.has_strings() ? r.strings().values_size() : 0,
+        r.future_velocity_vrs_size(),
+        r.get_derivs_size()
+    );
+
+    //setX
+    if (r.has_reals()) {
+      vector<fmi2_value_reference_t> vr(r.reals().valuereferences_size());
+      vector<fmi2_real_t> value(r.reals().values_size());
+      for (size_t i = 0 ; i < vr.size() ; i++) {
+        vr[i] = r.reals().valuereferences(i);
+        value[i] = r.reals().values(i);
+      }
+      if ((status = fmi2_import_set_real(m_fmi2Instance, vr.data(), vr.size(), value.data())) != fmi2_status_ok) goto bork;
+    }
+    if (r.has_ints()) {
+      vector<fmi2_value_reference_t> vr(r.ints().valuereferences_size());
+      vector<fmi2_integer_t> value(r.ints().values_size());
+      for (size_t i = 0 ; i < vr.size() ; i++) {
+        vr[i] = r.ints().valuereferences(i);
+        value[i] = r.ints().values(i);
+      }
+      if ((status = fmi2_import_set_integer(m_fmi2Instance, vr.data(), vr.size(), value.data())) != fmi2_status_ok) goto bork;
+    }
+    if (r.has_bools()) {
+      vector<fmi2_value_reference_t> vr(r.bools().valuereferences_size());
+      vector<fmi2_boolean_t> value(r.bools().values_size());
+      for (size_t i = 0 ; i < vr.size() ; i++) {
+        vr[i] = r.bools().valuereferences(i);
+        value[i] = r.bools().values(i);
+      }
+      if ((status = fmi2_import_set_boolean(m_fmi2Instance, vr.data(), vr.size(), value.data())) != fmi2_status_ok) goto bork;
+    }
+    if (r.has_strings()) {
+      vector<fmi2_value_reference_t> vr(r.strings().valuereferences_size());
+      vector<fmi2_string_t> value(r.strings().values_size());
+      for (size_t i = 0 ; i < vr.size() ; i++) {
+        vr[i] = r.strings().valuereferences(i);
+        value[i] = r.strings().values(i).c_str();
+      }
+      if ((status = fmi2_import_set_string(m_fmi2Instance, vr.data(), vr.size(), value.data())) != fmi2_status_ok) goto bork;
+    }
+
+    if (r.future_velocity_vrs_size()) {
+      //get state, step, get reals, set state, free state
+      fmi2_FMU_state_t state = NULL;
+      vector<fmi2_value_reference_t> vr(r.future_velocity_vrs_size());
+      vector<fmi2_real_t> vel(r.future_velocity_vrs_size());
+
+      for (size_t i = 0 ; i < vr.size() ; i++) {
+        vr[i] = r.future_velocity_vrs(i);
+      }
+
+      if ((status = fmi2_import_get_fmu_state(m_fmi2Instance, &state)) != fmi2_status_ok) goto bork;
+      if ((status = fmi2_import_do_step(m_fmi2Instance, r.currentcommunicationpoint(), r.communicationstepsize(), false)) != fmi2_status_ok) goto bork;
+      if ((status = fmi2_import_get_real(m_fmi2Instance, vr.data(), vr.size(), vel.data())) != fmi2_status_ok) goto bork;
+      if ((status = fmi2_import_set_fmu_state(m_fmi2Instance, state)) != fmi2_status_ok) goto bork;
+      if ((status = fmi2_import_free_fmu_state(m_fmi2Instance, &state)) != fmi2_status_ok) goto bork;
+
+      for (fmi2_real_t v : vel) {
+        response.add_future_velocities(v);
+      }
+    }
+
+    if (status == fmi2_status_ok) {
+      for (int x = 0; x < r.get_derivs_size(); x++) {
+        const fmitcp_proto::fmi2_import_get_directional_derivative_req &get = r.get_derivs(x);
+        fmitcp_proto::fmi2_import_get_directional_derivative_res *deriv = response.add_derivs();
+
+        if ((status = getDirectionalDerivatives(get, *deriv)) != fmi2_status_ok) goto bork;
+      }
+    }
+
+bork:
+    response.set_status(fmi2StatusToProtofmi2Status(status));
+    ret.first = fmitcp_proto::type_fmi2_kinematic_res;
+    ret.second = response.SerializeAsString();
 
   break; } case fmitcp_proto::type_get_xml_req: {
 

@@ -85,13 +85,6 @@ namespace fmitcp_master {
         bool         getBool(int vr) const;
         std::string  getString(int vr) const;
 
-        //special thing for bypassing the value caches in strongmaster
-        bool                m_future_values_incoming;
-        std::vector<double> m_future_reals;
-
-        /// Values returned from calls to fmiGetDirectionalDerivative()
-        std::deque<std::vector<double> > m_getDirectionalDerivativeValues;
-
         control_proto::fmu_state::State m_fmuState;
 
         std::string getModelName() const;
@@ -117,15 +110,6 @@ namespace fmitcp_master {
 
         /// Get a connector. See getNumConnectors().
         StrongConnector* getConnector(int i);
-
-        /// Accumulate a get_directional_derivative request
-        void pushDirectionalDerivativeRequest(int fmiId, std::vector<int> v_ref, std::vector<int> z_ref, std::vector<double> dv);
-
-        /// Execute the next directional derivative request in the queue
-        void shiftExecuteDirectionalDerivativeRequest();
-
-        /// Get the total number of directional derivative requests queued
-        int numDirectionalDerivativeRequests();
 
         /// Returns value references of positions and velocities of all connectors
         std::vector<int> getStrongConnectorValueReferences();

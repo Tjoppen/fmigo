@@ -2,6 +2,7 @@
 #define FMITCP_SERIALIZE_H
 
 #include <string>
+#include "fmitcp.pb.h"
 
 namespace fmitcp {
     namespace serialize {
@@ -63,6 +64,12 @@ namespace fmitcp {
 
         // ========= NETWORK SPECIFIC FUNCTIONS ============
         std::string get_xml();
+
+        template<typename T> std::string pack(fmitcp_proto::fmitcp_message_Type type, T &req) {
+          uint16_t t = type;
+          uint8_t bytes[2] = {(uint8_t)t, (uint8_t)(t>>8)};
+          return std::string(reinterpret_cast<char*>(bytes), 2) + req.SerializeAsString();
+        }
     }
 }
 

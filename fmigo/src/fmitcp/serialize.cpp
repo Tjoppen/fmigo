@@ -1,14 +1,7 @@
-#include "fmitcp.pb.h"
 #include "serialize.h"
 #include <stdint.h>
 using namespace fmitcp_proto;
 using namespace std;
-
-template<typename T> std::string pack(fmitcp_message_Type type, T &req) {
-  uint16_t t = type;
-  uint8_t bytes[2] = {(uint8_t)t, (uint8_t)(t>>8)};
-  return string(reinterpret_cast<char*>(bytes), 2) + req.SerializeAsString();
-}
 
 #define SERIALIZE_NORMAL_MESSAGE_(type, extra)                          \
     /* Contruct message */                                              \

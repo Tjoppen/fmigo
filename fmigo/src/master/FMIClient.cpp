@@ -27,7 +27,6 @@ FMIClient::FMIClient(int world_rank, int id) : fmitcp::Client(world_rank), sc::S
 #else
 FMIClient::FMIClient(zmq::context_t &context, int id, string uri) : fmitcp::Client(context, uri), sc::Slave() {
 #endif
-    m_future_values_incoming = false;
     m_id = id;
     m_master = NULL;
     m_fmi2Instance = NULL;
@@ -214,14 +213,7 @@ template<typename T> void cache_values(const deque<T>& values, set<int>& outgoin
 }
 
 void FMIClient::on_fmi2_import_get_real_res(const deque<double>& values, fmitcp_proto::fmi2_status_t status){
-  if (m_future_values_incoming) {
-    for (double d : values) {
-      m_future_reals.push_back(d);
-    }
-    m_future_values_incoming = false;
-  } else {
-    cache_values(values, m_outgoing_reals, m_reals);
-  }
+  cache_values(values, m_outgoing_reals, m_reals);
 }
 
 void FMIClient::on_fmi2_import_get_integer_res(const deque<int>& values, fmitcp_proto::fmi2_status_t status) {
@@ -251,12 +243,6 @@ void FMIClient::on_fmi2_import_free_fmu_state_res(fmitcp_proto::fmi2_status_t st
 };
 
 void FMIClient::on_fmi2_import_get_directional_derivative_res(const vector<double>& dz, fmitcp_proto::fmi2_status_t status){
-    /*for (size_t x = 0; x < dz.size(); x++) {
-         debug("%f ", dz[x]);
-    }
-     debug("\n");*/
-
-    m_getDirectionalDerivativeValues.push_back(dz);
     m_master->onSlaveDirectionalDerivative(this);
 }
 void FMIClient::on_fmi2_import_new_discrete_states_res             (fmitcp_proto::fmi2_event_info_t event_info){
@@ -400,16 +386,6 @@ string FMIClient::getSpaceSeparatedFieldNames(string prefix) const {
         oss << prefix << fmi2_import_get_variable_name(var);
     }
     return oss.str();
-}
-
-//converts a vector<MultiValue> to vector<T>, with the help of a member pointer of type T
-template<typename T> vector<T> vectorToBaseType(const vector<MultiValue>& in, T MultiValue::*member) {
-    vector<T> ret;
-    ret.reserve(in.size());
-    for (const MultiValue& it : in) {
-        ret.push_back(it.*member);
-    }
-    return ret;
 }
 
 void FMIClient::sendSetX(const SendSetXType& typeRefsValues) {

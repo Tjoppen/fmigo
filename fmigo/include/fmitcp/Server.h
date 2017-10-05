@@ -33,6 +33,10 @@ namespace fmitcp {
     double currentCommunicationPoint, communicationStepSize;
 
     void setStartValues();
+
+    fmi2_status_t getDirectionalDerivatives(
+        const fmitcp_proto::fmi2_import_get_directional_derivative_req& r,
+        fmitcp_proto::fmi2_import_get_directional_derivative_res& response);
   protected:
     string m_fmuPath;
 

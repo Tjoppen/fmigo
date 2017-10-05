@@ -33,6 +33,8 @@ namespace fmitcp_master {
         int m_id;
         std::string m_xml;
         bool m_initialized;
+        mutable bool m_hasComputedStrongConnectorValueReferences;
+        mutable std::vector<int> m_strongConnectorValueReferences;
 
         // variables for modelDescription.xml
         jm_callbacks m_jmCallbacks;
@@ -109,16 +111,16 @@ namespace fmitcp_master {
         StrongConnector* createConnector();
 
         /// Get a connector. See getNumConnectors().
-        StrongConnector* getConnector(int i);
+        StrongConnector* getConnector(int i) const;
 
         /// Returns value references of positions and velocities of all connectors
-        std::vector<int> getStrongConnectorValueReferences();
+        const std::vector<int>& getStrongConnectorValueReferences() const;
 
         /// Get seed value references, this is equivalent to forces
-        std::vector<int> getStrongSeedInputValueReferences();
+        const std::vector<int>& getStrongSeedInputValueReferences() const;
 
         /// Get "result" value references, this is velocities
-        std::vector<int> getStrongSeedOutputValueReferences();
+        const std::vector<int>& getStrongSeedOutputValueReferences() const;
 
         std::vector<int> getRealOutputValueReferences();
 

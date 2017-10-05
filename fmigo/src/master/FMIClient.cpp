@@ -34,6 +34,7 @@ FMIClient::FMIClient(zmq::context_t &context, int id, string uri) : fmitcp::Clie
     m_fmi2Outputs = NULL;
     m_stateId = 0;
     m_fmuState = control_proto::fmu_state_State_instantiating;
+    m_hasComputedStrongConnectorValueReferences = false;
 };
 
 void FMIClient::terminate() {
@@ -309,7 +310,7 @@ StrongConnector * FMIClient::createConnector(){
     return conn;
 };
 
-StrongConnector* FMIClient::getConnector(int i){
+StrongConnector* FMIClient::getConnector(int i) const{
     return (StrongConnector*) Slave::getConnector(i);
 };
 
@@ -323,8 +324,10 @@ void FMIClient::setConnectorFutureVelocities(std::vector<int> valueRefs, std::ve
         getConnector(i)->setFutureValues(valueRefs,values);
 };
 
-std::vector<int> FMIClient::getStrongConnectorValueReferences(){
-    std::vector<int> valueRefs;
+const std::vector<int>& FMIClient::getStrongConnectorValueReferences() const {
+    if (m_hasComputedStrongConnectorValueReferences) {
+        return m_strongConnectorValueReferences;
+    }
 
     for(int i=0; i<numConnectors(); i++){
         StrongConnector* c = getConnector(i);
@@ -332,42 +335,43 @@ std::vector<int> FMIClient::getStrongConnectorValueReferences(){
         // Do we need position?
         if(c->hasPosition()){
             std::vector<int> refs = c->getPositionValueRefs();
-            valueRefs.insert(valueRefs.end(), refs.begin(), refs.end());
+            m_strongConnectorValueReferences.insert(m_strongConnectorValueReferences.end(), refs.begin(), refs.end());
         }
 
         // Do we need quaternion?
         if(c->hasQuaternion()){
             std::vector<int> refs = c->getQuaternionValueRefs();
-            valueRefs.insert(valueRefs.end(), refs.begin(), refs.end());
+            m_strongConnectorValueReferences.insert(m_strongConnectorValueReferences.end(), refs.begin(), refs.end());
         }
 
         if (c->hasShaftAngle()) {
             std::vector<int> refs = c->getShaftAngleValueRefs();
-            valueRefs.insert(valueRefs.end(), refs.begin(), refs.end());
+            m_strongConnectorValueReferences.insert(m_strongConnectorValueReferences.end(), refs.begin(), refs.end());
         }
 
         // Do we need velocity?
         if(c->hasVelocity()){
             std::vector<int> refs = c->getVelocityValueRefs();
-            valueRefs.insert(valueRefs.end(), refs.begin(), refs.end());
+            m_strongConnectorValueReferences.insert(m_strongConnectorValueReferences.end(), refs.begin(), refs.end());
         }
 
         // Do we need angular velocity?
         if(c->hasAngularVelocity()){
             std::vector<int> refs = c->getAngularVelocityValueRefs();
-            valueRefs.insert(valueRefs.end(), refs.begin(), refs.end());
+            m_strongConnectorValueReferences.insert(m_strongConnectorValueReferences.end(), refs.begin(), refs.end());
         }
     }
 
-    return valueRefs;
+    m_hasComputedStrongConnectorValueReferences = true;
+    return m_strongConnectorValueReferences;
 };
 
-std::vector<int> FMIClient::getStrongSeedInputValueReferences(){
+const std::vector<int>& FMIClient::getStrongSeedInputValueReferences() const {
     //this used to be just a copy-paste of getStrongConnectorValueReferences() - better to just call the function itself directly
     return getStrongConnectorValueReferences();
 };
 
-std::vector<int> FMIClient::getStrongSeedOutputValueReferences(){
+const std::vector<int>& FMIClient::getStrongSeedOutputValueReferences() const {
     //same here - just a copy-paste job
     return getStrongConnectorValueReferences();
 };

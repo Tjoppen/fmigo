@@ -105,7 +105,7 @@ void StrongMaster::runIteration(double t, double dt) {
 
     //get strong connector inputs
     for(size_t i=0; i<m_clients.size(); i++){
-        const vector<int> valueRefs = m_clients[i]->getStrongConnectorValueReferences();
+        const vector<int>& valueRefs = m_clients[i]->getStrongConnectorValueReferences();
         m_clients[i]->queueReals(valueRefs);
     }
 
@@ -137,7 +137,7 @@ void StrongMaster::runIteration(double t, double dt) {
     //set connector values
     for (size_t i=0; i<m_clients.size(); i++){
         FMIClient *client = m_clients[i];
-        vector<int> vrs = client->getStrongConnectorValueReferences();
+        const vector<int>& vrs = client->getStrongConnectorValueReferences();
         client->setConnectorValues(vrs, client->getReals(vrs));
     }
 
@@ -253,7 +253,7 @@ void StrongMaster::runIteration(double t, double dt) {
     //set FUTURE connector values (velocities only)
     for (auto kv : kin) {
         if (kv.second.future_velocity_vrs_size()) {
-            vector<int> vrs = kv.first->getStrongConnectorValueReferences();
+            const vector<int>& vrs = kv.first->getStrongConnectorValueReferences();
             vector<double> reals;
             for (int x = 0; x < kv.second.future_velocity_vrs_size(); x++) {
               reals.push_back(kv.first->last_kinematic.future_velocities(x));
@@ -313,7 +313,7 @@ void StrongMaster::runIteration(double t, double dt) {
         it->first->queueX(it->second);
     }
     for(size_t i=0; i<m_clients.size(); i++){
-        const vector<int> valueRefs = m_clients[i]->getStrongConnectorValueReferences();
+        const vector<int>& valueRefs = m_clients[i]->getStrongConnectorValueReferences();
         m_clients[i]->queueReals(valueRefs);
     }
 }

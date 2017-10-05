@@ -5,7 +5,7 @@ fmigo::timer::timer() :
   dont_rotate(false) {
 }
 
-void fmigo::timer::rotate(std::string label) {
+void fmigo::timer::rotate(const char* label) {
 #ifdef FMIGO_PRINT_TIMINGS
   if (dont_rotate) return;
 

@@ -17,7 +17,7 @@ namespace fmigo {
     timer();
 
     //measures current time, logs duration since last time under given label
-    void rotate(std::string label);
+    void rotate(const char*);
   };
 }
 

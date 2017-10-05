@@ -892,6 +892,7 @@ int main(int argc, char *argv[] ) {
     fflush(stdout);
     fflush(stderr);
 
+#ifdef FMIGO_PRINT_TIMINGS
     fmigo::globals::timer.rotate("shutdown");
     set<string> onetime = {
       "setup",
@@ -916,7 +917,7 @@ int main(int argc, char *argv[] ) {
       }
     }
     info("master:                Total: %10.2lf seconds (%.1lf ms user time)\n", total2 * 1e-6, total * 1e-3);
-
+#endif
 
     } catch (zmq::error_t e) {
       fatal("zmq::error_t in %s: %s\n", argv[0], e.what());

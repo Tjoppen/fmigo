@@ -234,7 +234,7 @@ Server::~Server() {
   if(m_fmi2Outputs!=NULL)   fmi2_import_free_variable_list(m_fmi2Outputs);
   if(m_fmi2Variables!=NULL) fmi2_import_free_variable_list(m_fmi2Variables);
 
-#ifdef FMIGO_SERVER_PRINT_TIMINGS
+#ifdef FMIGO_PRINT_TIMINGS
   m_timer.rotate("shutdown");
 
   //used for separating timings into one-time and recurring

@@ -6,6 +6,7 @@ fmigo::timer::timer() :
 }
 
 void fmigo::timer::rotate(std::string label) {
+#ifdef FMIGO_PRINT_TIMINGS
   if (dont_rotate) return;
 
   std::chrono::high_resolution_clock::time_point t = std::chrono::high_resolution_clock::now();
@@ -16,4 +17,5 @@ void fmigo::timer::rotate(std::string label) {
 
   m_durations[label] += std::chrono::duration<double, std::micro>(t - m_time).count();
   m_time = t;
+#endif
 }

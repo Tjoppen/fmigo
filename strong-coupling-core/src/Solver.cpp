@@ -272,6 +272,11 @@ void Solver::solve(bool holonomic, int printDebugInfo){
     if(printDebugInfo)
         fprintf(stderr, "n=%d, nz=%d\n",n, nz);
 
+    if (n == 1) {
+      solve1x1();
+    } else if (n == 2) {
+      solve2x2();
+    } else {
     // Triplet form to column form
     int status = umfpack_di_triplet_to_col (n, n, nz, Srow.data(), Scol.data(), Sval.data(), Ap.data(), Ai.data(), Ax.data(), (int *) NULL) ;
     if (status < 0){
@@ -305,6 +310,7 @@ void Solver::solve(bool holonomic, int printDebugInfo){
     if (status < 0){
         fprintf(stderr,"umfpack_di_solve failed\n") ;
         exit(1);
+    }
     }
 
     // Store results
@@ -361,8 +367,36 @@ void Solver::solve(bool holonomic, int printDebugInfo){
     }
 #endif
 
+    if (n > 2) {
     umfpack_di_free_symbolic(&Symbolic);
     umfpack_di_free_numeric(&Numeric);
+    }
+}
+
+void Solver::solve1x1() {
+  //S*lambda = rhs
+  lambda[0] = rhs[0] / Sval[0];
+}
+
+void Solver::solve2x2() {
+  //S*lambda = rhs
+  double S[2][2] = {{0,0},{0,0}};
+  double Sinv[2][2];
+
+  for (size_t x = 0; x < Srow.size(); x++) {
+    S[Srow[x]][Scol[x]] = Sval[x];
+  }
+
+  //ad - bc
+  double det = S[0][0]*S[1][1] - S[0][1]*S[1][0];
+
+  Sinv[0][0] =  S[1][1] / det;
+  Sinv[1][1] =  S[0][0] / det;
+  Sinv[1][0] = -S[1][0] / det;
+  Sinv[0][1] = -S[0][1] / det;
+
+  lambda[0] = Sinv[0][0] * rhs[0] + Sinv[0][1] * rhs[1];
+  lambda[1] = Sinv[1][0] * rhs[0] + Sinv[1][1] * rhs[1];
 }
 
 /// Get a constraint

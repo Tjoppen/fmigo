@@ -13,7 +13,7 @@ if len(sys.argv) >= 5:
 # Ignore specified columns
 # This allows ignoring coupling torques and accelerations in directionaltests
 ignorecols = []
-if len(sys.argv) >= 6:
+if len(sys.argv) >= 6 and len(sys.argv[5]) > 0:
     ignorecols = [int(s) for s in sys.argv[5].split(',')]
 
 # Relative tolerance

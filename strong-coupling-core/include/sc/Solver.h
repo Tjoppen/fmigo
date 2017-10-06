@@ -51,6 +51,9 @@ private:
     //for internal use only
     void constructS();
 
+    void solve1x1();
+    void solve2x2();
+
 public:
     std::vector<Equation*> getEquations();
 

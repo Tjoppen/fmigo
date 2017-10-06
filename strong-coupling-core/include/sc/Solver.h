@@ -20,9 +20,6 @@ private:
     std::vector<Connector*> m_connectors;
     std::vector<Equation*> eqs;
     std::vector<double> rhs;
-    std::vector<int> aSrow;
-    std::vector<int> aScol;
-    std::vector<double> aSval;
     std::vector<int> Ap;
     std::vector<int> Ai;
     std::vector<double> lambda;

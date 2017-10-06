@@ -258,18 +258,6 @@ void Solver::solve(bool holonomic, int printDebugInfo){
         }
     }
 
-    // convert vectors to arrays
-    aSrow.resize(Srow.size()+1);
-    aScol.resize(Scol.size()+1);
-    aSval.resize(Sval.size()+1);
-    for (int i = 0; i < Srow.size(); ++i){
-        aSval[i] = Sval[i];
-        aScol[i] = Scol[i];
-        aSrow[i] = Srow[i];
-
-        //printf("(%d,%d) = %g\n", Srow[i], Scol[i], Sval[i]);
-    }
-
     void *Symbolic, *Numeric;
     double Info [UMFPACK_INFO], Control [UMFPACK_CONTROL];
 
@@ -289,7 +277,7 @@ void Solver::solve(bool holonomic, int printDebugInfo){
         fprintf(stderr, "n=%d, nz=%d\n",n, nz);
 
     // Triplet form to column form
-    int status = umfpack_di_triplet_to_col (n, n, nz, aSrow.data(), aScol.data(), aSval.data(), Ap.data(), Ai.data(), Ax.data(), (int *) NULL) ;
+    int status = umfpack_di_triplet_to_col (n, n, nz, Srow.data(), Scol.data(), Sval.data(), Ap.data(), Ai.data(), Ax.data(), (int *) NULL) ;
     if (status < 0){
         umfpack_di_report_status (Control, status) ;
         fprintf(stderr, "umfpack_di_triplet_to_col failed\n") ;

@@ -39,7 +39,7 @@ void StrongMaster::prepare() {
         if (!client->hasCapability(fmi2_cs_canGetAndSetFMUstate)) {
             //if part of any equation then fail
             for (sc::Equation *eq : m_strongCouplingSolver->getEquations()) {
-                for (sc::Connector *fc : eq->getConnectors()) {
+                for (sc::Connector *fc : eq->m_connectors) {
                     if (client == fc->m_slave) {
                         fatal("FMU %i (%s) is part of a kinematic constraint but lacks rollback functionality (canGetAndSetFMUstate=\"false\")\n",
                             client->m_id, client->getModelName().c_str());
@@ -145,7 +145,7 @@ void StrongMaster::runIteration(double t, double dt) {
     //this is a two-step process which is important to get the order of correct
     for (int step = 0; step < 2; step++) {
         for (sc::Equation *eq : m_strongCouplingSolver->getEquations()) {
-            for (sc::Connector *fc : eq->getConnectors()) {
+            for (sc::Connector *fc : eq->m_connectors) {
                 StrongConnector *forceConnector = dynamic_cast<StrongConnector*>(fc);
                 FMIClient *client = dynamic_cast<FMIClient*>(forceConnector->m_slave);
                 for (int x = 0; x < client->numConnectors(); x++) {

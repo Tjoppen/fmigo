@@ -28,16 +28,11 @@ void Equation::setRelativeVelocity(double v){
     m_relativeVelocity = v;
 }
 
-vector<Connector*> Equation::getConnectors() const {
-    vector<Connector*> ret;
-    ret.push_back(m_connA);
-    ret.push_back(m_connB);
-    return ret;
-}
-
 void Equation::setConnectors(Connector* cA, Connector* cB) {
     m_connA = cA;
     m_connB = cB;
+    m_connectors.push_back(m_connA);
+    m_connectors.push_back(m_connB);
 }
 
 void Equation::setDefaultViolation(){
@@ -86,8 +81,8 @@ void Equation::setG(const Vec3& spatialA,
 
 bool Equation::haveOverlappingFMUs(Equation *other) const {
     //quadratic complexity, but only used once in Solver
-    for (Connector *conn1 : getConnectors()) {
-        for (Connector *conn2 : other->getConnectors()) {
+    for (Connector *conn1 : m_connectors) {
+        for (Connector *conn2 : other->m_connectors) {
             if (conn1->m_slave == conn2->m_slave) {
                 return true;
             }

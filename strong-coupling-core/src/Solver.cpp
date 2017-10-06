@@ -56,10 +56,9 @@ int Solver::getSystemMatrixRows(){
   return numsystemrows;
 }
 
-vector<Equation*> Solver::getEquations(){
+const std::vector<Equation*>& Solver::getEquations() const{
     if (equations_dirty) {
         eqs.clear();
-    }
 
     int ofs = 0;
     for (int i=0; i< m_constraints.size(); ++i){
@@ -74,6 +73,7 @@ vector<Equation*> Solver::getEquations(){
                 eqs[ofs] = eq;
             }
         }
+    }
     }
 
     return eqs;
@@ -201,7 +201,7 @@ void Solver::solve(bool holonomic, int printDebugInfo){
         //each S_ij = G_i*J_i^T
         //our job is to figure out J_i^T
         double val = 0;
-        for (Connector *conn : ei->getConnectors()) {
+        for (Connector *conn : ei->m_connectors) {
             std::pair<int,int> key(conn->m_index, ej->m_index);
             if (m_mobilities.find(key) != m_mobilities.end()) {
                 val += ei->jacobianElementForConnector(conn).multiply(m_mobilities[key]);
@@ -320,7 +320,7 @@ void Solver::solve(bool holonomic, int printDebugInfo){
         Equation * eq = eqs[i];
         double l = lambda[i] / m_timeStep;
 
-        for (Connector *conn : eq->getConnectors()) {
+        for (Connector *conn : eq->m_connectors) {
             JacobianElement G = eq->jacobianElementForConnector(conn);
             Vec3 f = G.getSpatial()    * l;
             Vec3 t = G.getRotational() * l;

@@ -21,7 +21,7 @@ private:
     std::vector<Slave*> m_slaves;
     std::vector<Constraint*> m_constraints;
     std::vector<Connector*> m_connectors;
-    std::vector<Equation*> eqs;
+    mutable std::vector<Equation*> eqs;
     std::vector<double> rhs;
     std::vector<int> Ap;
     std::vector<int> Ai;
@@ -55,7 +55,7 @@ private:
     void solve2x2();
 
 public:
-    std::vector<Equation*> getEquations();
+    const std::vector<Equation*>& getEquations() const;
 
     //sparse matrix of mobilities
     std::map<std::pair<int,int>, JacobianElement> m_mobilities;

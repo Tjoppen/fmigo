@@ -20,12 +20,12 @@ private:
 public:
     //index in system (row/column in S)
     int m_index;
+    std::vector<Connector*> m_connectors;
 
     Equation();
     Equation(Connector*,Connector*);
     virtual ~Equation();
 
-    std::vector<Connector*> getConnectors() const;
     void setDefault();
     void setConnectors(Connector *,Connector *);
 

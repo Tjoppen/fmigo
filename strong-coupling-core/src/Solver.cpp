@@ -163,7 +163,9 @@ void Solver::solve(bool holonomic){
 
 void Solver::solve(bool holonomic, int printDebugInfo){
     int i, j, k, l;
-    getEquations();
+    if (equations_dirty) {
+      getEquations();
+    }
     int numRows = getSystemMatrixRows(),
         neq = eqs.size();
 
@@ -322,8 +324,8 @@ void Solver::solve(bool holonomic, int printDebugInfo){
 
         for (Connector *conn : eq->m_connectors) {
             JacobianElement G = eq->jacobianElementForConnector(conn);
-            Vec3 f = G.getSpatial()    * l;
-            Vec3 t = G.getRotational() * l;
+            Vec3 f = G.m_spatial    * l;
+            Vec3 t = G.m_rotational * l;
             conn->m_force  += f;
             conn->m_torque += t;
         }

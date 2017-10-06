@@ -1,5 +1,4 @@
 #include "sc/Equation.h"
-#include "stdio.h"
 
 using namespace sc;
 using namespace std;
@@ -41,22 +40,8 @@ void Equation::setDefaultViolation(){
           m_G_B.multiply(m_connB->m_position, zero);
 }
 
-double Equation::getViolation(){
-    return m_g;
-}
-
 void Equation::setViolation(double g){
     m_g = g;
-}
-
-double Equation::getVelocity(){
-    return  m_G_A.multiply(m_connA->m_velocity, m_connA->m_angularVelocity) +
-            m_G_B.multiply(m_connB->m_velocity, m_connB->m_angularVelocity) + m_relativeVelocity;
-}
-
-double Equation::getFutureVelocity(){
-    return  m_G_A.multiply(m_connA->m_futureVelocity, m_connA->m_futureAngularVelocity) +
-            m_G_B.multiply(m_connB->m_futureVelocity, m_connB->m_futureAngularVelocity);
 }
 
 void Equation::setG(double sxA, double syA, double szA,
@@ -89,15 +74,4 @@ bool Equation::haveOverlappingFMUs(Equation *other) const {
         }
     }
     return false;
-}
-
-JacobianElement& Equation::jacobianElementForConnector(Connector *conn) {
-    if (conn == m_connA) {
-        return m_G_A;
-    } else if (conn == m_connB) {
-        return m_G_B;
-    } else {
-        fprintf(stderr, "Attempted to jacobianElementForConnector() with connector which is not part of the Equation\n");
-        exit(1);
-    }
 }

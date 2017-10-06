@@ -11,9 +11,13 @@ private:
     double m_data[3];
 
 public:
-    Vec3();
-    Vec3(double x, double y, double z);
-    virtual ~Vec3();
+    Vec3(){
+        set(0,0,0);
+    }
+    Vec3(double x, double y, double z){
+        set(x,y,z);
+    }
+    ~Vec3(){}
 
     /// Cross product
     Vec3 cross(const Vec3& u) const;
@@ -23,13 +27,28 @@ public:
     Vec3 subtract(const Vec3& u) const;
 
     /// Dot product
-    double dot(const Vec3& u) const;
-    double x() const;
-    double y() const;
-    double z() const;
+    double dot(const Vec3& u) const {
+        return  u.x() * m_data[0] +
+                u.y() * m_data[1] +
+                u.z() * m_data[2];
+    }
+
+    double x() const {
+        return m_data[0];
+    }
+    double y() const {
+        return m_data[1];
+    }
+    double z() const {
+        return m_data[2];
+    }
 
     /// Set the elements
-    void set(double x, double y, double z);
+    void set(double x, double y, double z){
+        m_data[0] = x;
+        m_data[1] = y;
+        m_data[2] = z;
+    }
 
     /// Copy elements from some other vector
     void copy(const Vec3&);

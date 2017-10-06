@@ -92,7 +92,7 @@ endif ()
 ADD_EXECUTABLE(${TCP_MASTER_NAME} ${MASTER_HEADERS} ${MASTER_SRCS})
 ADD_EXECUTABLE(${TCP_SERVER_NAME}  src/server/fmigo-server.cpp src/common/common.cpp ${COMMON_SRCS})
 
-add_executable(${MPI_MASTER_NAME} ${MASTER_HEADERS} ${MASTER_SRCS}                      src/common/mpi_tools.cpp )
+add_executable(${MPI_MASTER_NAME} ${MASTER_HEADERS} ${MASTER_SRCS})
 set_target_properties(${MPI_MASTER_NAME} PROPERTIES COMPILE_FLAGS -DUSE_MPI)
 
 IF(WIN32)

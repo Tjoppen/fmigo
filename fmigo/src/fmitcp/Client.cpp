@@ -307,7 +307,7 @@ Client::~Client(){
     google::protobuf::ShutdownProtobufLibrary();
 }
 
-void Client::sendMessage(std::string s){
+void Client::sendMessage(const std::string& s){
     fmigo::globals::timer.rotate("pre_sendMessage");
     messages++;
     if (m_master) {
@@ -330,7 +330,7 @@ void Client::sendMessage(std::string s){
 #endif
 }
 
-void Client::sendMessageBlocking(std::string s) {
+void Client::sendMessageBlocking(const std::string& s) {
     sendMessage(s);
     receiveAndHandleMessage();
 }

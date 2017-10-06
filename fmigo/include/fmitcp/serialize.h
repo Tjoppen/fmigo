@@ -8,8 +8,11 @@ namespace fmitcp {
     namespace serialize {
         template<typename T> std::string pack(fmitcp_proto::fmitcp_message_Type type, T &req) {
           uint16_t t = type;
-          uint8_t bytes[2] = {(uint8_t)t, (uint8_t)(t>>8)};
-          return std::string(reinterpret_cast<char*>(bytes), 2) + req.SerializeAsString();
+          std::string ret(2 + req.ByteSize(), 0);
+          ret[0] = (uint8_t)t;
+          ret[1] = (uint8_t)(t>>8);
+          req.SerializeWithCachedSizesToArray((uint8_t*)&ret[2]);
+          return ret;
         }
 
         // FMI functions follow. These should correspond to FMILibrary functions.

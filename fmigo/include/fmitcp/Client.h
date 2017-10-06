@@ -81,10 +81,10 @@ namespace fmitcp {
         virtual ~Client();
 
         /// Send a binary message
-        void sendMessage(std::string s);
+        void sendMessage(const std::string& s);
 
         //like sendMessage() but also calls receiveAndHandleMessage()
-        void sendMessageBlocking(std::string s);
+        void sendMessageBlocking(const std::string& s);
 
         //called by anyone that knows we have a message waiting or who wants us to do a blocking recv
         //calls clientData() on the recv'd data

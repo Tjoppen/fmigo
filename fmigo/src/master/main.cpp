@@ -122,11 +122,11 @@ static int vrFromKeyName(FMIClient* client, string key){
 
   switch (vars.count(key)){
   case 0:{
-    fatal("client(%d):%s\n", client->getId(), key.c_str());
+    fatal("client(%d):%s\n", client->m_id, key.c_str());
   }
   case 1:  return vars.find(key)->second.vr;
   default:{
-    fatal("Not uniq - client(%d):%s\n", client->getId(), key.c_str());
+    fatal("Not uniq - client(%d):%s\n", client->m_id, key.c_str());
   }
   }
 }
@@ -399,7 +399,7 @@ static string getFieldnames(vector<FMIClient*> clients) {
 
     for (auto client : clients) {
         ostringstream prefix;
-        prefix << separator << "fmu" << client->getId() << "_";
+        prefix << separator << "fmu" << client->m_id << "_";
         oss << client->getSpaceSeparatedFieldNames(prefix.str());
     }
     return oss.str();
@@ -500,7 +500,7 @@ static void pushResults(int step, double t, double endTime, double timeStep, zmq
     for (auto cv : clientVariables) {
         control_proto::fmu_results *fmu_res = results.add_results();
 
-        fmu_res->set_fmu_id(cv.first->getId());
+        fmu_res->set_fmu_id(cv.first->m_id);
 
         addVectorToRepeatedField(fmu_res->mutable_reals()->mutable_vrs(),       cv.second[fmi2_base_type_real]);
         addVectorToRepeatedField(fmu_res->mutable_reals()->mutable_values(),    cv.first->getReals(cv.second[fmi2_base_type_real]));

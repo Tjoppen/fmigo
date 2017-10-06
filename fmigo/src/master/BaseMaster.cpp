@@ -332,7 +332,7 @@ void BaseMaster::handleZmqControl() {
 
             for (FMIClient *client : m_clients) {
               control_proto::fmu_state *fstate = state.add_fmu_states();
-              fstate->set_fmu_id(client->getId());
+              fstate->set_fmu_id(client->m_id);
               fstate->set_state(client->m_fmuState);
             }
 

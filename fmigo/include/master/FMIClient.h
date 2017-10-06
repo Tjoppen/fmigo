@@ -26,7 +26,6 @@ namespace fmitcp_master {
     class FMIClient : public fmitcp::Client, public sc::Slave {
 
     private:
-        int m_id;
         std::string m_xml;
         bool m_initialized;
         mutable bool m_hasComputedStrongConnectorValueReferences;
@@ -45,6 +44,7 @@ namespace fmitcp_master {
         void setVariables();
 
     public:
+        int m_id;
         int m_stateId;
 
         fmi2_event_info_t m_event_info;
@@ -66,8 +66,6 @@ namespace fmitcp_master {
 #endif
         void terminate(); //called just before dtor, to allow controller to see if any FMU is stuck on terminating
         virtual ~FMIClient();
-
-        int getId();
 
         bool isInitialized();
 

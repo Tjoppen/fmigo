@@ -54,10 +54,6 @@ FMIClient::~FMIClient() {
   if(m_fmi2Outputs!=NULL)   fmi2_import_free_variable_list(m_fmi2Outputs);
 };
 
-int FMIClient::getId(){
-    return m_id;
-};
-
 void FMIClient::on_get_xml_res(fmitcp_proto::jm_log_level_enu_t logLevel, string xml) {
   m_xml = xml;
   // parse the xml.
@@ -246,24 +242,24 @@ void FMIClient::on_fmi2_import_new_discrete_states_res             (fmitcp_proto
 
 void FMIClient::on_fmi2_import_get_derivatives_res                 (const vector<double>& derivatives, fmitcp_proto::fmi2_status_t status){
 #ifdef USE_GPL
-    m_master->get_storage().push_to(getId(),STORAGE::derivatives, derivatives);
+    m_master->get_storage().push_to(m_id,STORAGE::derivatives, derivatives);
 #endif
 }
 void FMIClient::on_fmi2_import_get_event_indicators_res            (const vector<double>& eventIndicators, fmitcp_proto::fmi2_status_t status){
 #ifdef USE_GPL
-    m_master->get_storage().push_to(getId(),STORAGE::indicators,eventIndicators);
+    m_master->get_storage().push_to(m_id,STORAGE::indicators,eventIndicators);
 #endif
 }
 //void on_fmi2_import_eventUpdate_res                     (int mid, bool iterationConverged, bool stateValueReferencesChanged, bool stateValuesChanged, bool terminateSimulation, bool upcomingTimeEvent, double nextEventTime, fmitcp_proto::fmi2_status_t status);
 //void on_fmi2_import_completed_event_iteration_res       (int mid, fmitcp_proto::fmi2_status_t status);
 void FMIClient::on_fmi2_import_get_continuous_states_res           (const vector<double>& states, fmitcp_proto::fmi2_status_t status){
 #ifdef USE_GPL
-    m_master->get_storage().push_to(getId(),STORAGE::states,states);
+    m_master->get_storage().push_to(m_id,STORAGE::states,states);
 #endif
 }
 void FMIClient::on_fmi2_import_get_nominal_continuous_states_res   (const vector<double>& nominals, fmitcp_proto::fmi2_status_t status){
 #ifdef USE_GPL
-    m_master->get_storage().push_to(getId(),STORAGE::nominals,nominals);
+    m_master->get_storage().push_to(m_id,STORAGE::nominals,nominals);
 #endif
 }
 //void on_fmi2_import_terminate_res                       (int mid, fmitcp_proto::fmi2_status_t status);

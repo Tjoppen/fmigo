@@ -899,6 +899,8 @@ int main(int argc, char *argv[] ) {
       "pre_shutdown",
       "shutdown",
       "wait", //not actually onetime, but don't want time spent waiting to be part of percentage
+      "MPI_Send",
+      "zmq::socket::send",
     };
     double total = 0, total2 = 0;
 

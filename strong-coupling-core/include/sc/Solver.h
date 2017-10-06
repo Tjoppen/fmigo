@@ -6,6 +6,9 @@
 #include "sc/Connector.h"
 #include <vector>
 #include <map>
+extern "C" {
+#include "umfpack.h"
+}
 
 #define SCSOLVER_DEBUGPRINTS 0
 
@@ -29,6 +32,9 @@ private:
     std::vector<int> Srow;
     std::vector<int> Scol;
     std::vector<double> Sval;
+    void *Symbolic, *Numeric;
+    double Info [UMFPACK_INFO], Control [UMFPACK_CONTROL];
+
 
     /// Spook parameter "a"
     double m_a;

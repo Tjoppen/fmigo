@@ -6,16 +6,18 @@
 #include "stdio.h"
 #include <algorithm>
 
-extern "C" {
-#include "umfpack.h"
-}
-
 using namespace sc;
 using namespace std;
 
 Solver::Solver(){
     m_connectorIndexCounter = 0;
     equations_dirty = true;
+
+    Symbolic = NULL;
+    Numeric = NULL;
+
+    // Default control
+    umfpack_di_defaults (Control) ;
 }
 
 Solver::~Solver() {
@@ -257,12 +259,6 @@ void Solver::solve(bool holonomic, int printDebugInfo){
                 fprintf(stderr, ";\n");
         }
     }
-
-    void *Symbolic, *Numeric;
-    double Info [UMFPACK_INFO], Control [UMFPACK_CONTROL];
-
-    // Default control
-    umfpack_di_defaults (Control) ;
 
     // convert to column form
     int nz = Sval.size(),       // Non-zeros

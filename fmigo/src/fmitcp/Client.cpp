@@ -364,31 +364,6 @@ void Client::deleteCachedValues() {
   m_strings.clear();
 }
 
-template<typename T> void queueFoo(const vector<int>& vrs,
-                                   const unordered_map<int,T>& values,
-                                   set<int>& outgoing) {
-  //only queue values which we haven't seen yet
-  for (int vr : vrs) {
-    auto it = values.find(vr);
-    if (it == values.end()) {
-      outgoing.insert(vr);
-    }
-  }
-}
-
-void Client::queueReals(const vector<int>& vrs) {
-  queueFoo(vrs, m_reals, m_outgoing_reals);
-}
-void Client::queueInts(const vector<int>& vrs) {
-  queueFoo(vrs, m_ints, m_outgoing_ints);
-}
-void Client::queueBools(const vector<int>& vrs) {
-  queueFoo(vrs, m_bools, m_outgoing_bools);
-}
-void Client::queueStrings(const vector<int>& vrs) {
-  queueFoo(vrs, m_strings, m_outgoing_strings);
-}
-
 void Client::sendValueRequests() {
   if (m_outgoing_reals.size()) {
     sendMessage(fmitcp::serialize::fmi2_import_get_real(m_outgoing_reals));

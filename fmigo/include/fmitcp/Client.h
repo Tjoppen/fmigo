@@ -56,10 +56,30 @@ namespace fmitcp {
         //delete cached values
         void deleteCachedValues();
 
-        void queueReals(const std::vector<int>& vrs);
-        void queueInts(const std::vector<int>& vrs);
-        void queueBools(const std::vector<int>& vrs);
-        void queueStrings(const std::vector<int>& vrs);
+        template<typename T> void queueFoo(const vector<int>& vrs,
+                                           const unordered_map<int,T>& values,
+                                           set<int>& outgoing) {
+          //only queue values which we haven't seen yet
+          for (int vr : vrs) {
+            auto it = values.find(vr);
+            if (it == values.end()) {
+              outgoing.insert(vr);
+            }
+          }
+        }
+
+        void queueReals(const vector<int>& vrs) {
+          queueFoo(vrs, m_reals, m_outgoing_reals);
+        }
+        void queueInts(const vector<int>& vrs) {
+          queueFoo(vrs, m_ints, m_outgoing_ints);
+        }
+        void queueBools(const vector<int>& vrs) {
+          queueFoo(vrs, m_bools, m_outgoing_bools);
+        }
+        void queueStrings(const vector<int>& vrs) {
+          queueFoo(vrs, m_strings, m_outgoing_strings);
+        }
 
         void sendValueRequests();
 

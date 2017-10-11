@@ -41,9 +41,12 @@ public:
 
     void runIteration(double t, double dt) {
         //get connection outputs
+        //if we're lucky they we already have up-to-date values
+        //in that case queueX(), queueValueRequests() and wait() all become no-ops
         for (auto it = clientWeakRefs.begin(); it != clientWeakRefs.end(); it++) {
-            it->first->sendGetX(it->second);
+            it->first->queueX(it->second);
         }
+        queueValueRequests();
         wait();
 
         //set connection inputs, pipeline with do_step()
@@ -56,10 +59,17 @@ public:
 
         //this pipelines with the sendGetX() + wait() in printOutputs() in main.cpp
         
-        send(cs_clients, fmi2_import_do_step(t, dt, true));
+        queueMessage(cs_clients, fmi2_import_do_step(t, dt, true));
+        deleteCachedValues();
 #ifdef USE_GPL
         solveME(t,dt);
 #endif
+
+        //pre-request values
+        //this causes the CSV printing to fetch output so we have them ready when re-entering this function
+        for (auto it = clientWeakRefs.begin(); it != clientWeakRefs.end(); it++) {
+            it->first->queueX(it->second);
+        }
     }
 };
 
@@ -88,13 +98,17 @@ public:
             FMIClient *client = m_clients[o];
 
             for (auto it = clientGetXs[client].begin(); it != clientGetXs[client].end(); it++) {
-                it->first->sendGetX(it->second);
+                it->first->queueX(it->second);
             }
+            queueValueRequests();
             wait();
             const SendSetXType refValues = getInputWeakRefsAndValues(m_weakConnections, client);
             client->sendSetX(refValues);
             if (client->getFmuKind() == fmi2_fmu_kind_cs) {
                 sendWait(client, fmi2_import_do_step(t, dt, true));
+                client->deleteCachedValues();
+
+                //we could try to pre-request here, but I doubt it's entirely useful
             } //else modelExchange, solve all further down simultaneously
         }
 #ifdef USE_GPL

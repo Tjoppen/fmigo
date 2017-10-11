@@ -1,5 +1,4 @@
 #include "sc/Equation.h"
-#include "stdio.h"
 
 using namespace sc;
 using namespace std;
@@ -28,16 +27,11 @@ void Equation::setRelativeVelocity(double v){
     m_relativeVelocity = v;
 }
 
-vector<Connector*> Equation::getConnectors() const {
-    vector<Connector*> ret;
-    ret.push_back(m_connA);
-    ret.push_back(m_connB);
-    return ret;
-}
-
 void Equation::setConnectors(Connector* cA, Connector* cB) {
     m_connA = cA;
     m_connB = cB;
+    m_connectors.push_back(m_connA);
+    m_connectors.push_back(m_connB);
 }
 
 void Equation::setDefaultViolation(){
@@ -46,22 +40,8 @@ void Equation::setDefaultViolation(){
           m_G_B.multiply(m_connB->m_position, zero);
 }
 
-double Equation::getViolation(){
-    return m_g;
-}
-
 void Equation::setViolation(double g){
     m_g = g;
-}
-
-double Equation::getVelocity(){
-    return  m_G_A.multiply(m_connA->m_velocity, m_connA->m_angularVelocity) +
-            m_G_B.multiply(m_connB->m_velocity, m_connB->m_angularVelocity) + m_relativeVelocity;
-}
-
-double Equation::getFutureVelocity(){
-    return  m_G_A.multiply(m_connA->m_futureVelocity, m_connA->m_futureAngularVelocity) +
-            m_G_B.multiply(m_connB->m_futureVelocity, m_connB->m_futureAngularVelocity);
 }
 
 void Equation::setG(double sxA, double syA, double szA,
@@ -86,23 +66,12 @@ void Equation::setG(const Vec3& spatialA,
 
 bool Equation::haveOverlappingFMUs(Equation *other) const {
     //quadratic complexity, but only used once in Solver
-    for (Connector *conn1 : getConnectors()) {
-        for (Connector *conn2 : other->getConnectors()) {
+    for (Connector *conn1 : m_connectors) {
+        for (Connector *conn2 : other->m_connectors) {
             if (conn1->m_slave == conn2->m_slave) {
                 return true;
             }
         }
     }
     return false;
-}
-
-JacobianElement& Equation::jacobianElementForConnector(Connector *conn) {
-    if (conn == m_connA) {
-        return m_G_A;
-    } else if (conn == m_connB) {
-        return m_G_B;
-    } else {
-        fprintf(stderr, "Attempted to jacobianElementForConnector() with connector which is not part of the Equation\n");
-        exit(1);
-    }
 }

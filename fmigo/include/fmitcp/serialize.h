@@ -2,9 +2,51 @@
 #define FMITCP_SERIALIZE_H
 
 #include <string>
+#include <sstream>
+#include "fmitcp.pb.h"
 
 namespace fmitcp {
     namespace serialize {
+        template<typename T> std::string pack(fmitcp_proto::fmitcp_message_Type type, T &req) {
+          uint16_t t = type;
+          std::string ret(2 + req.ByteSize(), 0);
+          ret[0] = (uint8_t)t;
+          ret[1] = (uint8_t)(t>>8);
+          req.SerializeWithCachedSizesToArray((uint8_t*)&ret[2]);
+          return ret;
+        }
+
+        static void packIntoOstringstream(std::ostringstream& oss, const std::string& s) {
+          size_t sz = s.size();
+
+          if (sz > 0xFFFFFFFF) {
+            fprintf(stderr, "sz = %lu\n", sz);
+            exit(1);
+          }
+
+          //size of packet, including type
+          std::string szStr(4, 0);
+          szStr[0] = (uint8_t)sz;
+          szStr[1] = (uint8_t)(sz>>8);
+          szStr[2] = (uint8_t)(sz>>16);
+          szStr[3] = (uint8_t)(sz>>24);
+          oss << szStr << s;
+        }
+
+        static size_t parseSize(const char *data, size_t size) {
+          if (size < 4) {
+            fprintf(stderr, "parseSize(): not enough data\n");
+            exit(1);
+          }
+
+          size_t packetSize = 0;
+          packetSize += (uint8_t)data[0];
+          packetSize += ((uint8_t)data[1]) << 8;
+          packetSize += ((uint8_t)data[2]) << 16;
+          packetSize += ((uint8_t)data[3]) << 24;
+          return packetSize;
+        }
+
         // FMI functions follow. These should correspond to FMILibrary functions.
 
         // =========== FMI 2.0 (CS) Co-Simulation functions ===========
@@ -48,13 +90,36 @@ namespace fmitcp {
         std::string fmi2_import_set_integer(const std::vector<int>& valueRefs, const std::vector<int>& values);
         std::string fmi2_import_set_boolean(const std::vector<int>& valueRefs, const std::vector<bool>& values);
         std::string fmi2_import_set_string (const std::vector<int>& valueRefs, const std::vector<std::string>& values);
-        std::string fmi2_import_get_real(const std::vector<int>& valueRefs);
-        std::string fmi2_import_get_integer(const std::vector<int>& valueRefs);
-        std::string fmi2_import_get_boolean(const std::vector<int>& valueRefs);
-        std::string fmi2_import_get_string (const std::vector<int>& valueRefs);
+
+        //C is vector or set
+        template<typename R, typename C> std::string collection_to_req(fmitcp_proto::fmitcp_message_Type type, const C& refs) {
+          R req;
+          for (int vr : refs) {
+            req.add_valuereferences(vr);
+          }
+          return pack(type, req);
+        }
+
+        template<typename C> std::string fmi2_import_get_real(const C& valueRefs) {
+          return collection_to_req<fmitcp_proto::fmi2_import_get_real_req>(fmitcp_proto::type_fmi2_import_get_real_req, valueRefs);
+        }
+
+        template<typename C> std::string fmi2_import_get_integer(const C& valueRefs) {
+          return collection_to_req<fmitcp_proto::fmi2_import_get_integer_req>(fmitcp_proto::type_fmi2_import_get_integer_req, valueRefs);
+        }
+
+        template<typename C> std::string fmi2_import_get_boolean(const C& valueRefs) {
+          return collection_to_req<fmitcp_proto::fmi2_import_get_boolean_req>(fmitcp_proto::type_fmi2_import_get_boolean_req, valueRefs);
+        }
+
+        template<typename C> std::string fmi2_import_get_string(const C& valueRefs) {
+          return collection_to_req<fmitcp_proto::fmi2_import_get_string_req> (fmitcp_proto::type_fmi2_import_get_string_req,  valueRefs);
+        }
+
         std::string fmi2_import_get_fmu_state();
         std::string fmi2_import_set_fmu_state(int stateId);
         std::string fmi2_import_free_fmu_state(int stateId);
+        std::string fmi2_import_set_free_last_fmu_state();
         std::string fmi2_import_serialized_fmu_state_size();
         std::string fmi2_import_serialize_fmu_state();
         std::string fmi2_import_de_serialize_fmu_state();

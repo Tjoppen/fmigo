@@ -2,7 +2,6 @@
 #define SERVER_H_
 
 #include <string>
-#include <chrono>
 #define FMILIB_BUILDING_LIBRARY
 #include <fmilib.h>
 #include "fmitcp.pb.h"
@@ -10,6 +9,7 @@
 #include <map>
 #include <list>
 #include "common/common.h"
+#include "common/timer.h"
 
 using namespace std;
 
@@ -19,24 +19,24 @@ namespace fmitcp {
   class Server {
 
   public:
-    using clock = std::chrono::high_resolution_clock;
+    //timing stuff
+    fmigo::timer m_timer;
 
   private:
     bool m_sendDummyResponses;
     bool m_fmuParsed;
-    ::google::protobuf::int32 nextStateId;
+    ::google::protobuf::int32 lastStateId, nextStateId;
     std::map<::google::protobuf::int32, fmi2_FMU_state_t> stateMap;
 
     //future value of currentCommunicationPoint, and a guess for future communicationStepSize
     //for computeNumericalDirectionalDerivative
     double currentCommunicationPoint, communicationStepSize;
 
-    //timing stuff
-    void rotate_timer(std::string label);
-    clock::time_point m_time;                   //time marker
-    std::map<std::string, double> m_durations;  //durations in µs
-
     void setStartValues();
+
+    fmi2_status_t getDirectionalDerivatives(
+        const fmitcp_proto::fmi2_import_get_directional_derivative_req& r,
+        fmitcp_proto::fmi2_import_get_directional_derivative_res& response);
   protected:
     string m_fmuPath;
 
@@ -63,6 +63,8 @@ namespace fmitcp {
     std::vector<const char*> field_names;
     std::vector<char> hdf5data; //this should be a map<int,vector<char>> once we start getting into having multiple FMU instances
     size_t rowsz, nrecords;
+
+    std::string clientDataInner(const char *data, size_t size);
 
   public:
 

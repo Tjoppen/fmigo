@@ -6,16 +6,18 @@
 #include "stdio.h"
 #include <algorithm>
 
-extern "C" {
-#include "umfpack.h"
-}
-
 using namespace sc;
 using namespace std;
 
 Solver::Solver(){
     m_connectorIndexCounter = 0;
     equations_dirty = true;
+
+    Symbolic = NULL;
+    Numeric = NULL;
+
+    // Default control
+    umfpack_di_defaults (Control) ;
 }
 
 Solver::~Solver() {
@@ -54,10 +56,9 @@ int Solver::getSystemMatrixRows(){
   return numsystemrows;
 }
 
-vector<Equation*> Solver::getEquations(){
+const std::vector<Equation*>& Solver::getEquations() const{
     if (equations_dirty) {
         eqs.clear();
-    }
 
     int ofs = 0;
     for (int i=0; i< m_constraints.size(); ++i){
@@ -72,6 +73,7 @@ vector<Equation*> Solver::getEquations(){
                 eqs[ofs] = eq;
             }
         }
+    }
     }
 
     return eqs;
@@ -161,7 +163,9 @@ void Solver::solve(bool holonomic){
 
 void Solver::solve(bool holonomic, int printDebugInfo){
     int i, j, k, l;
-    getEquations();
+    if (equations_dirty) {
+      getEquations();
+    }
     int numRows = getSystemMatrixRows(),
         neq = eqs.size();
 
@@ -199,7 +203,7 @@ void Solver::solve(bool holonomic, int printDebugInfo){
         //each S_ij = G_i*J_i^T
         //our job is to figure out J_i^T
         double val = 0;
-        for (Connector *conn : ei->getConnectors()) {
+        for (Connector *conn : ei->m_connectors) {
             std::pair<int,int> key(conn->m_index, ej->m_index);
             if (m_mobilities.find(key) != m_mobilities.end()) {
                 val += ei->jacobianElementForConnector(conn).multiply(m_mobilities[key]);
@@ -258,24 +262,6 @@ void Solver::solve(bool holonomic, int printDebugInfo){
         }
     }
 
-    // convert vectors to arrays
-    aSrow.resize(Srow.size()+1);
-    aScol.resize(Scol.size()+1);
-    aSval.resize(Sval.size()+1);
-    for (int i = 0; i < Srow.size(); ++i){
-        aSval[i] = Sval[i];
-        aScol[i] = Scol[i];
-        aSrow[i] = Srow[i];
-
-        //printf("(%d,%d) = %g\n", Srow[i], Scol[i], Sval[i]);
-    }
-
-    void *Symbolic, *Numeric;
-    double Info [UMFPACK_INFO], Control [UMFPACK_CONTROL];
-
-    // Default control
-    umfpack_di_defaults (Control) ;
-
     // convert to column form
     int nz = Sval.size(),       // Non-zeros
         n = eqs.size(),         // Number of equations
@@ -288,8 +274,13 @@ void Solver::solve(bool holonomic, int printDebugInfo){
     if(printDebugInfo)
         fprintf(stderr, "n=%d, nz=%d\n",n, nz);
 
+    if (n == 1) {
+      solve1x1();
+    } else if (n == 2) {
+      solve2x2();
+    } else {
     // Triplet form to column form
-    int status = umfpack_di_triplet_to_col (n, n, nz, aSrow.data(), aScol.data(), aSval.data(), Ap.data(), Ai.data(), Ax.data(), (int *) NULL) ;
+    int status = umfpack_di_triplet_to_col (n, n, nz, Srow.data(), Scol.data(), Sval.data(), Ap.data(), Ai.data(), Ax.data(), (int *) NULL) ;
     if (status < 0){
         umfpack_di_report_status (Control, status) ;
         fprintf(stderr, "umfpack_di_triplet_to_col failed\n") ;
@@ -322,6 +313,7 @@ void Solver::solve(bool holonomic, int printDebugInfo){
         fprintf(stderr,"umfpack_di_solve failed\n") ;
         exit(1);
     }
+    }
 
     // Store results
     // Remember that we need to divide lambda by the timestep size
@@ -330,10 +322,10 @@ void Solver::solve(bool holonomic, int printDebugInfo){
         Equation * eq = eqs[i];
         double l = lambda[i] / m_timeStep;
 
-        for (Connector *conn : eq->getConnectors()) {
+        for (Connector *conn : eq->m_connectors) {
             JacobianElement G = eq->jacobianElementForConnector(conn);
-            Vec3 f = G.getSpatial()    * l;
-            Vec3 t = G.getRotational() * l;
+            Vec3 f = G.m_spatial    * l;
+            Vec3 t = G.m_rotational * l;
             conn->m_force  += f;
             conn->m_torque += t;
         }
@@ -377,8 +369,36 @@ void Solver::solve(bool holonomic, int printDebugInfo){
     }
 #endif
 
+    if (n > 2) {
     umfpack_di_free_symbolic(&Symbolic);
     umfpack_di_free_numeric(&Numeric);
+    }
+}
+
+void Solver::solve1x1() {
+  //S*lambda = rhs
+  lambda[0] = rhs[0] / Sval[0];
+}
+
+void Solver::solve2x2() {
+  //S*lambda = rhs
+  double S[2][2] = {{0,0},{0,0}};
+  double Sinv[2][2];
+
+  for (size_t x = 0; x < Srow.size(); x++) {
+    S[Srow[x]][Scol[x]] = Sval[x];
+  }
+
+  //ad - bc
+  double det = S[0][0]*S[1][1] - S[0][1]*S[1][0];
+
+  Sinv[0][0] =  S[1][1] / det;
+  Sinv[1][1] =  S[0][0] / det;
+  Sinv[1][0] = -S[1][0] / det;
+  Sinv[0][1] = -S[0][1] / det;
+
+  lambda[0] = Sinv[0][0] * rhs[0] + Sinv[0][1] * rhs[1];
+  lambda[1] = Sinv[1][0] * rhs[0] + Sinv[1][1] * rhs[1];
 }
 
 /// Get a constraint

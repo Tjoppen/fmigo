@@ -1,14 +1,7 @@
-#include "fmitcp.pb.h"
 #include "serialize.h"
 #include <stdint.h>
 using namespace fmitcp_proto;
 using namespace std;
-
-template<typename T> std::string pack(fmitcp_message_Type type, T &req) {
-  uint16_t t = type;
-  uint8_t bytes[2] = {(uint8_t)t, (uint8_t)(t>>8)};
-  return string(reinterpret_cast<char*>(bytes), 2) + req.SerializeAsString();
-}
 
 #define SERIALIZE_NORMAL_MESSAGE_(type, extra)                          \
     /* Contruct message */                                              \
@@ -220,38 +213,6 @@ std::string fmitcp::serialize::fmi2_import_set_string(const vector<int>& valueRe
     return pack(type_fmi2_import_set_string_req, req);
 }
 
-std::string fmitcp::serialize::fmi2_import_get_real(const vector<int>& valueRefs){
-    fmi2_import_get_real_req req;
-    for(size_t i=0; i<valueRefs.size(); i++)
-        req.add_valuereferences(valueRefs[i]);
-
-    return pack(type_fmi2_import_get_real_req, req);
-}
-
-std::string fmitcp::serialize::fmi2_import_get_integer(const vector<int>& valueRefs){
-    fmi2_import_get_integer_req req;
-    for(size_t i=0; i<valueRefs.size(); i++)
-        req.add_valuereferences(valueRefs[i]);
-
-    return pack(type_fmi2_import_get_integer_req, req);
-}
-
-std::string fmitcp::serialize::fmi2_import_get_boolean(const vector<int>& valueRefs){
-    fmi2_import_get_boolean_req req;
-    for(size_t i=0; i<valueRefs.size(); i++)
-        req.add_valuereferences(valueRefs[i]);
-
-    return pack(type_fmi2_import_get_boolean_req, req);
-}
-
-std::string fmitcp::serialize::fmi2_import_get_string (const vector<int>& valueRefs){
-    fmi2_import_get_string_req req;
-    for(size_t i=0; i<valueRefs.size(); i++)
-        req.add_valuereferences(valueRefs[i]);
-
-    return pack(type_fmi2_import_get_string_req, req);
-}
-
 FMU_VOID_REQ_IMPL(fmi2_import_get_fmu_state)
 
 std::string fmitcp::serialize::fmi2_import_set_fmu_state(int stateId){
@@ -266,6 +227,11 @@ std::string fmitcp::serialize::fmi2_import_free_fmu_state(int stateId) {
     req.set_stateid(stateId);
 
     return pack(type_fmi2_import_free_fmu_state_req, req);
+}
+
+std::string fmitcp::serialize::fmi2_import_set_free_last_fmu_state() {
+    fmi2_import_set_free_last_fmu_state_req req;
+    return pack(type_fmi2_import_set_free_last_fmu_state_req, req);
 }
 
 std::string fmitcp::serialize::fmi2_import_get_directional_derivative(

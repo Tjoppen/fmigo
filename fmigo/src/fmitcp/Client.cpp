@@ -8,6 +8,9 @@
 #include "common/mpi_tools.h"
 #endif
 #include "common/common.h"
+#include "master/globals.h"
+#include "master/BaseMaster.h"
+#include <fmitcp/serialize.h>
 
 using namespace std;
 using namespace fmitcp;
@@ -24,17 +27,6 @@ template<typename T, typename R> vector<T> values_to_vector(R &r) {
     return vector<T>(r.values().data(), &r.values().data()[r.values_size()]);
 }
 
-template<typename T, typename R> deque<T> values_to_deque(R &r) {
-    return deque<T>(r.values().data(), &r.values().data()[r.values_size()]);
-}
-
-template<> deque<string> values_to_deque<string,fmi2_import_get_string_res> (fmi2_import_get_string_res &r) {
-    deque<string> values;
-    for(int i=0; i<r.values_size(); i++)
-        values.push_back(r.values(i));
-    return values;
-}
-
 //fmi_status_t and jm_status_enu_t have different "ok" values
 static bool statusIsOK(fmitcp_proto::jm_status_enu_t jm) {
     return jm == fmitcp_proto::jm_status_success;
@@ -44,26 +36,55 @@ static bool statusIsOK(fmitcp_proto::fmi2_status_t fmi2) {
     return fmi2 == fmitcp_proto::fmi2_status_ok;
 }
 
-template<typename T, typename R> void handle_get_value_res(Client *c, void (Client::*callback)(const deque<T>&,fmitcp_proto::fmi2_status_t), R &r) {
-    std::deque<T> values = values_to_deque<T>(r);
-    if (!statusIsOK(r.status())) {
-        debug("< %s(values=...,status=%d)\n",r.GetTypeName().c_str(), r.status());
-        fatal("FMI call %s failed with status=%d\nMaybe a connection or <Output> was specified incorrectly?",
-            r.GetTypeName().c_str(), r.status());
-    }
-    (c->*callback)(values,r.status());
+template<typename T, typename R> void handle_get_value_res(Client *c, R &r, set<int>& outgoing, unordered_map<int,T>& dest) {
+  if (!statusIsOK(r.status())) {
+      debug("< %s(values=...,status=%d)\n",r.GetTypeName().c_str(), r.status());
+      fatal("FMI call %s failed with status=%d\nMaybe a connection or <Output> was specified incorrectly?",
+          r.GetTypeName().c_str(), r.status());
+  }
+
+  size_t x = 0;
+  for (int vr : outgoing) {
+    dest.insert(make_pair(vr, r.values(x)));
+    x++;
+  }
+  outgoing.clear();
+
 }
 
-void Client::clientData(const char* data, long size){
+void Client::clientData(const char* data, size_t size) {
+  while (size > 0) {
+    //size of packet, including type
+    size_t packetSize = fmitcp::serialize::parseSize(data, size);
+
+    data += 4;
+    size -= 4;
+
+    if (packetSize > size) {
+      fatal("packetSize > size\n");
+    }
+
+    clientDataInner(data, packetSize);
+
+    data += packetSize;
+    size -= packetSize;
+  }
+}
+
+void Client::clientDataInner(const char* data, size_t size){
     fmitcp_message_Type type = parseType(data, size);
 
     data += 2;
     size -= 2;
 
-    if (m_pendingRequests == 0) {
+    if ((m_master ? m_master->m_pendingRequests : m_pendingRequests) == 0) {
         fatal("Got response while m_pendingRequests = 0\n");
     }
-    m_pendingRequests--;
+    if (m_master) {
+        m_master->m_pendingRequests--;
+    } else {
+        m_pendingRequests--;
+    }
 
 //useful for providing hints in case of failure
 #define CHECK_WITH_STR(type, str) {\
@@ -114,25 +135,25 @@ void Client::clientData(const char* data, long size){
     case type_fmi2_import_get_real_res: {
         fmi2_import_get_real_res r;
         r.ParseFromArray(data, size);
-        handle_get_value_res(this, &Client::on_fmi2_import_get_real_res, r);
+        handle_get_value_res(this, r, m_outgoing_reals, m_reals);
         break;
     }
     case type_fmi2_import_get_integer_res: {
         fmi2_import_get_integer_res r;
         r.ParseFromArray(data, size);
-        handle_get_value_res(this, &Client::on_fmi2_import_get_integer_res, r);
+        handle_get_value_res(this, r, m_outgoing_ints, m_ints);
         break;
     }
     case type_fmi2_import_get_boolean_res: {
         fmi2_import_get_boolean_res r;
         r.ParseFromArray(data, size);
-        handle_get_value_res(this, &Client::on_fmi2_import_get_boolean_res, r);
+        handle_get_value_res(this, r, m_outgoing_bools, m_bools);
         break;
     }
     case type_fmi2_import_get_string_res: {
         fmi2_import_get_string_res r;
         r.ParseFromArray(data, size);
-        handle_get_value_res(this, &Client::on_fmi2_import_get_string_res, r);
+        handle_get_value_res(this, r, m_outgoing_strings, m_strings);
         break;
     }
     case type_fmi2_import_set_real_res:                     CHECK_WITH_STR(fmi2_import_set_real, SETX_HINT); break;
@@ -149,6 +170,9 @@ void Client::clientData(const char* data, long size){
     case type_fmi2_import_set_fmu_state_res:                NORMAL_CASE(fmi2_import_set_fmu_state); break;
     case type_fmi2_import_free_fmu_state_res: {
         debug("This command is TODO\n");
+        break;
+    }
+    case type_fmi2_import_set_free_last_fmu_state_res: {
         break;
     }
     // case type_fmi2_import_serialized_fmu_state_size_res: {
@@ -263,6 +287,10 @@ void Client::clientData(const char* data, long size){
     case type_fmi2_import_get_integer_status_res:           CLIENT_VALUE_CASE(fmi2_import_get_integer_status); break;
     case type_fmi2_import_get_boolean_status_res:           CLIENT_VALUE_CASE(fmi2_import_get_boolean_status); break;
     case type_fmi2_import_get_string_status_res:            CLIENT_VALUE_CASE(fmi2_import_get_string_status); break;
+    case type_fmi2_kinematic_res: {
+        last_kinematic.ParseFromArray(data, size);
+        break;
+    }
     case type_get_xml_res: {
 
         get_xml_res r; r.ParseFromArray(data, size);
@@ -281,22 +309,47 @@ void Client::clientData(const char* data, long size){
 Client::Client(int world_rank) : world_rank(world_rank) {
 #else
 Client::Client(zmq::context_t &context, string uri) : m_socket(context, ZMQ_DEALER) {
+    messages = 0;
     debug("connecting to %s\n", uri.c_str());
     m_socket.connect(uri.c_str());
     debug("connected\n");
 #endif
     m_pendingRequests = 0;
+    m_master = NULL;
     GOOGLE_PROTOBUF_VERIFY_VERSION;
 }
 
 Client::~Client(){
+    if (m_pendingRequests) {
+        fatal("Had m_pendingRequests=%i in Client::~Client()\n", m_pendingRequests);
+    }
     google::protobuf::ShutdownProtobufLibrary();
 }
 
-void Client::sendMessage(std::string s){
-    m_pendingRequests++;
+void Client::queueMessage(const std::string& s) {
+    fmitcp::serialize::packIntoOstringstream(m_messageQueue, s);
+
+    if (m_master) {
+        m_master->m_pendingRequests++;
+    } else {
+        m_pendingRequests++;
+    }
+}
+
+void Client::sendQueuedMessages() {
+    string s = m_messageQueue.str();
+    //clear() does not work as expected
+    m_messageQueue = ostringstream();
+
+    if (s.length() == 0) {
+        return;
+    }
+
+    fmigo::globals::timer.rotate("pre_sendMessage");
+    messages++;
 #ifdef USE_MPI
     MPI_Send((void*)s.c_str(), s.length(), MPI_CHAR, world_rank, 0, MPI_COMM_WORLD);
+    fmigo::globals::timer.rotate("MPI_Send");
 #else
     //ZMQ_DEALERs must send two-part messages with the first part being zero-length
     zmq::message_t zero(0);
@@ -305,17 +358,21 @@ void Client::sendMessage(std::string s){
     zmq::message_t msg(s.size());
     memcpy(msg.data(), s.data(), s.size());
     m_socket.send(msg);
+    fmigo::globals::timer.rotate("zmq::socket::send");
 #endif
 }
 
-void Client::sendMessageBlocking(std::string s) {
-    sendMessage(s);
+void Client::sendMessageBlocking(const std::string& s) {
+    queueMessage(s);
+    sendQueuedMessages();
     receiveAndHandleMessage();
 }
 
 void Client::receiveAndHandleMessage() {
+    fmigo::globals::timer.rotate("pre_wait");
 #ifdef USE_MPI
     std::string str = mpi_recv_string(world_rank, NULL, NULL);
+    fmigo::globals::timer.rotate("wait");
     clientData(str.c_str(), str.length());
 #else
     //expect to recv a delimiter
@@ -328,11 +385,68 @@ void Client::receiveAndHandleMessage() {
 
     zmq::message_t msg;
     m_socket.recv(&msg);
+    fmigo::globals::timer.rotate("wait");
     clientData(static_cast<char*>(msg.data()), msg.size());
 #endif
 }
 
-size_t Client::getNumPendingRequests() const {
-    return m_pendingRequests;
+void Client::deleteCachedValues() {
+  m_reals.clear();
+  m_ints.clear();
+  m_bools.clear();
+  m_strings.clear();
 }
 
+void Client::queueValueRequests() {
+  if (m_outgoing_reals.size()) {
+    queueMessage(fmitcp::serialize::fmi2_import_get_real(m_outgoing_reals));
+  }
+  if (m_outgoing_ints.size()) {
+    queueMessage(fmitcp::serialize::fmi2_import_get_integer(m_outgoing_ints));
+  }
+  if (m_outgoing_bools.size()) {
+    queueMessage(fmitcp::serialize::fmi2_import_get_boolean(m_outgoing_bools));
+  }
+  if (m_outgoing_strings.size()) {
+    queueMessage(fmitcp::serialize::fmi2_import_get_string(m_outgoing_strings));
+  }
+}
+
+template<typename T> vector<T> getFoo(const vector<int>& vrs,
+                                      const unordered_map<int,T>& values) {
+  vector<T> ret;
+  for (int vr : vrs) {
+    auto it = values.find(vr);
+    if (it == values.end()) {
+      fatal("VR %i was not requested\n", vr);
+    }
+    ret.push_back(it->second);
+  }
+  return ret;
+}
+
+vector<double> Client::getReals(const vector<int>& vrs) const {
+  return getFoo(vrs, m_reals);
+}
+vector<int> Client::getInts(const vector<int>& vrs) const {
+  return getFoo(vrs, m_ints);
+}
+vector<bool> Client::getBools(const vector<int>& vrs) const {
+  return getFoo(vrs, m_bools);
+}
+vector<string> Client::getStrings(const vector<int>& vrs) const {
+  return getFoo(vrs, m_strings);
+}
+
+double Client::getReal(int vr) const {
+  return getReals(std::vector<int>(1, vr))[0];
+}
+int Client::getInt(int vr) const {
+  return getInts(std::vector<int>(1, vr))[0];
+}
+bool Client::getBool(int vr) const {
+  return getBools(std::vector<int>(1, vr))[0];
+}
+string Client::getString(int vr) const {
+  return getStrings(std::vector<int>(1, vr))[0];
+}

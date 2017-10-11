@@ -18,21 +18,23 @@ include_directories(${FMIL_INCLUDE_DIR} ${STRONG_COUPLING_INCLUDE_DIR} ${FMITCP_
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/include/fmitcp ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp)
 LINK_DIRECTORIES   (${FMIL_LIBS_DIR}    ${STRONG_COUPLING_LIBS_DIR}    ${FMITCP_LIBS_DIR})
 
-set(FMITCP_SRCS
+set(COMMON_SRCS
     src/fmitcp/Client.cpp
     src/fmitcp/fmitcp-common.cpp
     src/fmitcp/fmitcp.pb.cc
     src/fmitcp/serialize.cpp
     src/fmitcp/Server.cpp
     src/master/globals.cpp
+    src/common/timer.cpp
 )
 
-set(FMITCP_HEADERS
+set(COMMON_HEADERS
     include/fmitcp/Client.h
     include/fmitcp/fmitcp-common.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.pb.h
     include/fmitcp/serialize.h
     include/fmitcp/Server.h
+    include/common/timer.h
 )
 
 SET(MASTER_SRCS
@@ -46,7 +48,7 @@ SET(MASTER_SRCS
     src/master/parseargs.cpp
     src/master/StrongMaster.cpp
     src/master/modelExchange.cpp
-    ${FMITCP_SRCS}
+    ${COMMON_SRCS}
     src/master/control.pb.cc
     src/master/globals.cpp
 )
@@ -58,7 +60,7 @@ SET(MASTER_HEADERS
     include/master/modelExchange.h
     include/common/common.h
     include/common/CSV-parser.h
-    ${FMITCP_HEADERS}
+    ${COMMON_HEADERS}
     ${CMAKE_CURRENT_SOURCE_DIR}/src/master/control.pb.h
     include/master/globals.h
 )
@@ -88,9 +90,9 @@ if (USE_GPL)
 endif ()
 
 ADD_EXECUTABLE(${TCP_MASTER_NAME} ${MASTER_HEADERS} ${MASTER_SRCS})
-ADD_EXECUTABLE(${TCP_SERVER_NAME}  src/server/fmigo-server.cpp src/common/common.cpp ${FMITCP_SRCS})
+ADD_EXECUTABLE(${TCP_SERVER_NAME}  src/server/fmigo-server.cpp src/common/common.cpp ${COMMON_SRCS})
 
-add_executable(${MPI_MASTER_NAME} ${MASTER_HEADERS} ${MASTER_SRCS}                      src/common/mpi_tools.cpp )
+add_executable(${MPI_MASTER_NAME} ${MASTER_HEADERS} ${MASTER_SRCS})
 set_target_properties(${MPI_MASTER_NAME} PROPERTIES COMPILE_FLAGS -DUSE_MPI)
 
 IF(WIN32)

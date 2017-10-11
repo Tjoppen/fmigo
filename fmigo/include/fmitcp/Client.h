@@ -6,9 +6,16 @@
 #endif
 #include "fmitcp.pb.h"
 #include <string>
-#include <deque>
+#include <set>
+#include <unordered_map>
+#include <sstream>
+
 
 using namespace std;
+
+namespace fmitcp_master {
+    class BaseMaster;
+}
 
 namespace fmitcp {
 
@@ -18,10 +25,9 @@ namespace fmitcp {
      */
     class Client {
 
-    protected:
-
     private:
-        size_t m_pendingRequests;
+        //only used during init, before BaseMaster has been created
+        int m_pendingRequests;
 
 #ifdef USE_MPI
         int world_rank;
@@ -30,7 +36,68 @@ namespace fmitcp {
         zmq::socket_t m_socket;
 #endif
 
+        std::ostringstream m_messageQueue;
+
+        void clientDataInner(const char* data, size_t size);
+
     public:
+        int messages;
+        fmitcp_master::BaseMaster * m_master;
+
+        fmitcp_proto::fmi2_kinematic_res last_kinematic;
+
+        //value cache
+        std::unordered_map<int, double>      m_reals;
+        std::unordered_map<int, int>         m_ints;
+        std::unordered_map<int, bool>        m_bools;
+        std::unordered_map<int, std::string> m_strings;
+
+        //set of VRs currently being requested
+        std::set<int>              m_outgoing_reals;
+        std::set<int>              m_outgoing_ints;
+        std::set<int>              m_outgoing_bools;
+        std::set<int>              m_outgoing_strings;
+
+        //delete cached values
+        void deleteCachedValues();
+
+        template<typename T> void queueFoo(const vector<int>& vrs,
+                                           const unordered_map<int,T>& values,
+                                           set<int>& outgoing) {
+          //only queue values which we haven't seen yet
+          for (int vr : vrs) {
+            auto it = values.find(vr);
+            if (it == values.end()) {
+              outgoing.insert(vr);
+            }
+          }
+        }
+
+        void queueReals(const vector<int>& vrs) {
+          queueFoo(vrs, m_reals, m_outgoing_reals);
+        }
+        void queueInts(const vector<int>& vrs) {
+          queueFoo(vrs, m_ints, m_outgoing_ints);
+        }
+        void queueBools(const vector<int>& vrs) {
+          queueFoo(vrs, m_bools, m_outgoing_bools);
+        }
+        void queueStrings(const vector<int>& vrs) {
+          queueFoo(vrs, m_strings, m_outgoing_strings);
+        }
+
+        void queueValueRequests();
+
+        std::vector<double>       getReals(const std::vector<int>& vrs) const;
+        std::vector<int>          getInts(const std::vector<int>& vrs) const;
+        std::vector<bool>         getBools(const std::vector<int>& vrs) const;
+        std::vector<std::string>  getStrings(const std::vector<int>& vrs) const;
+
+        double       getReal(int vr) const;
+        int          getInt(int vr) const;
+        bool         getBool(int vr) const;
+        std::string  getString(int vr) const;
+
 #ifdef USE_MPI
         Client(int world_rank);
 #else
@@ -38,13 +105,15 @@ namespace fmitcp {
 #endif
         virtual ~Client();
 
-        /// Send a binary message
-        void sendMessage(std::string s);
+        //queue a message to be sent by sendQueuedMessages()
+        //helps reduce the number of MPI_Send()s performed
+        void queueMessage(const std::string& s);
+
+        //sends queued messages, unsurprisingly
+        void sendQueuedMessages();
 
         //like sendMessage() but also calls receiveAndHandleMessage()
-        void sendMessageBlocking(std::string s);
-
-        size_t getNumPendingRequests() const;
+        void sendMessageBlocking(const std::string& s);
 
         //called by anyone that knows we have a message waiting or who wants us to do a blocking recv
         //calls clientData() on the recv'd data
@@ -56,7 +125,7 @@ namespace fmitcp {
          * @param data Protobuf data buffer
          * @param size Size of data buffer
          */
-        void clientData(const char* data, long size);
+        void clientData(const char* data, size_t size);
 
         // Response functions - to be implemented by subclass
 
@@ -99,10 +168,6 @@ namespace fmitcp {
         virtual void on_fmi2_import_set_integer_res                     (fmitcp_proto::fmi2_status_t status){}
         virtual void on_fmi2_import_set_boolean_res                     (fmitcp_proto::fmi2_status_t status){}
         virtual void on_fmi2_import_set_string_res                      (fmitcp_proto::fmi2_status_t status){}
-        virtual void on_fmi2_import_get_real_res                        (const deque<double>& values, fmitcp_proto::fmi2_status_t status){}
-        virtual void on_fmi2_import_get_integer_res                     (const deque<int>& values, fmitcp_proto::fmi2_status_t status){}
-        virtual void on_fmi2_import_get_boolean_res                     (const deque<bool>& values, fmitcp_proto::fmi2_status_t status){}
-        virtual void on_fmi2_import_get_string_res                      (const deque<string>& values, fmitcp_proto::fmi2_status_t status){}
         virtual void on_fmi2_import_get_fmu_state_res                   (int stateId, fmitcp_proto::fmi2_status_t status){}
         virtual void on_fmi2_import_set_fmu_state_res                   (fmitcp_proto::fmi2_status_t status){}
         virtual void on_fmi2_import_free_fmu_state_res                  (fmitcp_proto::fmi2_status_t status){}

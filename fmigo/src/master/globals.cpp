@@ -7,6 +7,7 @@ namespace fmigo {
   namespace globals {
     FILEFORMAT fileFormat = csv;
     FILE *outfile = stdout;
+    fmigo::timer timer;
 
     char getSeparator() {
       if (fileFormat == csv) {

@@ -32,14 +32,6 @@ BaseMaster::BaseMaster(zmq::context_t &context, vector<FMIClient*> clients, vect
         client->m_master = this;
 }
 
-BaseMaster::~BaseMaster() {
-  info("%i rendezvous\n", rendezvous);
-  int messages = 0;
-  for(auto client: m_clients)
-    messages += client->messages;
-  info("%i messages\n", messages);
-}
-
 #ifdef USE_GPL
 int BaseMaster::loop_residual_f(const gsl_vector *x, void *params, gsl_vector *f) {
   fmitcp_master::BaseMaster *master = (fmitcp_master::BaseMaster*)params;

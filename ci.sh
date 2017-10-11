@@ -7,4 +7,4 @@ for t in trusty trusty-cmake3.5.0 xenial
 do
   gitlab-ci-multi-runner exec shell build:$t && gitlab-ci-multi-runner exec shell test:$t || break
 done
-
+gitlab-ci-multi-runner exec shell build:xenial-fsanitize

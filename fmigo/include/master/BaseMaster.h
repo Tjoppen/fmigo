@@ -38,7 +38,13 @@ namespace fmitcp_master {
         int m_pendingRequests;
 
         explicit BaseMaster(zmq::context_t &context, std::vector<FMIClient*> clients, std::vector<WeakConnection> weakConnections);
-        virtual ~BaseMaster();
+        virtual ~BaseMaster() {
+          info("%i rendezvous\n", rendezvous);
+          int messages = 0;
+          for(auto client: m_clients)
+            messages += client->messages;
+          info("%i messages\n", messages);
+        }
 
 #ifdef USE_GPL
         static int loop_residual_f(const gsl_vector *x, void *params, gsl_vector *f);

@@ -338,8 +338,8 @@ void Client::queueMessage(const std::string& s) {
 
 void Client::sendQueuedMessages() {
     string s = m_messageQueue.str();
-    //clear() does not work as expected
-    m_messageQueue = ostringstream();
+    m_messageQueue.str("");
+    m_messageQueue.clear();
 
     if (s.length() == 0) {
         return;

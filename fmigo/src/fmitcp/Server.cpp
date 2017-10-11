@@ -11,6 +11,7 @@
 #include <stdint.h>
 #include "master/globals.h"
 #include <set>
+#include "serialize.h"
 
 using namespace fmitcp;
 
@@ -313,6 +314,33 @@ fmi2_status_t Server::getDirectionalDerivatives(
 }
 
 string Server::clientData(const char *data, size_t size) {
+  //split up packets
+  //each one starts with a 4-byte length
+  ostringstream oss;
+
+  while (size > 0) {
+    //size of packet, including type
+    size_t packetSize = fmitcp::serialize::parseSize(data, size);
+
+    data += 4;
+    size -= 4;
+
+    if (packetSize > size) {
+      fatal("packetSize > size\n");
+    }
+
+    string s = clientDataInner(data, packetSize);
+
+    fmitcp::serialize::packIntoOstringstream(oss, s);
+
+    data += packetSize;
+    size -= packetSize;
+  }
+
+  return oss.str();
+}
+
+string Server::clientDataInner(const char *data, size_t size) {
   std::pair<fmitcp_proto::fmitcp_message_Type,std::string> ret;
   ret.second = "error"; //to detect if we forgot to set ret.second somewhere below
 

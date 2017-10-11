@@ -42,11 +42,11 @@ public:
     void runIteration(double t, double dt) {
         //get connection outputs
         //if we're lucky they we already have up-to-date values
-        //in that case queueX(), sendValueRequests() and wait() all become no-ops
+        //in that case queueX(), queueValueRequests() and wait() all become no-ops
         for (auto it = clientWeakRefs.begin(); it != clientWeakRefs.end(); it++) {
             it->first->queueX(it->second);
         }
-        sendValueRequests();
+        queueValueRequests();
         wait();
 
         //set connection inputs, pipeline with do_step()
@@ -59,7 +59,7 @@ public:
 
         //this pipelines with the sendGetX() + wait() in printOutputs() in main.cpp
         
-        send(cs_clients, fmi2_import_do_step(t, dt, true));
+        queueMessage(cs_clients, fmi2_import_do_step(t, dt, true));
         deleteCachedValues();
 #ifdef USE_GPL
         solveME(t,dt);
@@ -100,7 +100,7 @@ public:
             for (auto it = clientGetXs[client].begin(); it != clientGetXs[client].end(); it++) {
                 it->first->queueX(it->second);
             }
-            sendValueRequests();
+            queueValueRequests();
             wait();
             const SendSetXType refValues = getInputWeakRefsAndValues(m_weakConnections, client);
             client->sendSetX(refValues);

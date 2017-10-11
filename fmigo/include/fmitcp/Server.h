@@ -64,6 +64,8 @@ namespace fmitcp {
     std::vector<char> hdf5data; //this should be a map<int,vector<char>> once we start getting into having multiple FMU instances
     size_t rowsz, nrecords;
 
+    std::string clientDataInner(const char *data, size_t size);
+
   public:
 
     explicit Server(string fmuPath, std::string hdf5Filename = "");

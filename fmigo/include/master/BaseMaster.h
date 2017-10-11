@@ -73,26 +73,26 @@ namespace fmitcp_master {
         on(onSlaveDirectionalDerivative)
 
         //T is needed because func maybe of a function in Client (from which FMIClient is derived)
-        void send(std::vector<FMIClient*> fmus, std::string str) {
+        void queueMessage(std::vector<FMIClient*> fmus, std::string str) {
             for (auto it = fmus.begin(); it != fmus.end(); it++) {
-                (*it)->sendMessage(str);
+                (*it)->queueMessage(str);
             }
         }
 
-        //like send() but only for one FMU
-        void send(FMIClient *fmu, std::string str) {
-            fmu->sendMessage(str);
+        //like queueMessage() but only for one FMU
+        void queueMessage(FMIClient *fmu, std::string str) {
+            fmu->queueMessage(str);
         }
 
-        //send() followed by wait() (blocking)
+        //queueMessage() followed by wait() (blocking)
         void sendWait(std::vector<FMIClient*> fmus, std::string str) {
-            send(fmus, str);
+            queueMessage(fmus, str);
             wait();
         }
 
         //like sendWait() but only for one FMU (blocking)
         void sendWait(FMIClient *fmu, std::string str) {
-            send(fmu, str);
+            queueMessage(fmu, str);
             wait();
         }
 
@@ -105,7 +105,7 @@ namespace fmitcp_master {
 
         void handleZmqControl();
 
-        void sendValueRequests();
+        void queueValueRequests();
         void deleteCachedValues();
     };
 };

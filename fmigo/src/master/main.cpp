@@ -356,7 +356,7 @@ static void sendUserParams(BaseMaster *master, vector<FMIClient*> clients,
             for (auto it2 = it->second.begin(); it2 != it->second.end(); it2++) {
                 values.push_back(it2->realValue);
             }
-            master->send(client, fmi2_import_set_real(vrs, values));
+            client->queueMessage(fmi2_import_set_real(vrs, values));
             break;
         }
         case fmi2_base_type_enum:
@@ -365,7 +365,7 @@ static void sendUserParams(BaseMaster *master, vector<FMIClient*> clients,
             for (auto it2 = it->second.begin(); it2 != it->second.end(); it2++) {
                 values.push_back(it2->intValue);
             }
-            master->send(client, fmi2_import_set_integer(vrs, values));
+            client->queueMessage(fmi2_import_set_integer(vrs, values));
             break;
         }
         case fmi2_base_type_bool: {
@@ -373,7 +373,7 @@ static void sendUserParams(BaseMaster *master, vector<FMIClient*> clients,
             for (auto it2 = it->second.begin(); it2 != it->second.end(); it2++) {
                 values.push_back(it2->boolValue);
             }
-            master->send(client, fmi2_import_set_boolean(vrs, values));
+            client->queueMessage(fmi2_import_set_boolean(vrs, values));
             break;
         }
         case fmi2_base_type_str: {
@@ -381,7 +381,7 @@ static void sendUserParams(BaseMaster *master, vector<FMIClient*> clients,
             for (auto it2 = it->second.begin(); it2 != it->second.end(); it2++) {
                 values.push_back(it2->stringValue);
             }
-            master->send(client, fmi2_import_set_string(vrs, values));
+            client->queueMessage(fmi2_import_set_string(vrs, values));
             break;
         }
         }
@@ -429,7 +429,7 @@ static void printOutputs(double t, BaseMaster *master, vector<FMIClient*>& clien
 
         client->queueX(getX);
     }
-    master->sendValueRequests();
+    master->queueValueRequests();
     master->wait();
 
     fprintf(fmigo::globals::outfile, "%+.16le", t);
@@ -494,7 +494,7 @@ static void pushResults(int step, double t, double endTime, double timeStep, zmq
         client->queueX(getVariables);
         clientVariables[client] = getVariables;
     }
-    master->sendValueRequests();
+    master->queueValueRequests();
     master->wait();
 
     for (auto cv : clientVariables) {
@@ -706,10 +706,10 @@ int main(int argc, char *argv[] ) {
     //init
     for (size_t x = 0; x < clients.size(); x++) {
         //set visibility based on command line
-        master->send(clients[x], fmi2_import_instantiate2( x < fmuVisibilities.size() ? fmuVisibilities[x] : false));
+        clients[x]->queueMessage(fmi2_import_instantiate2( x < fmuVisibilities.size() ? fmuVisibilities[x] : false));
     }
 
-    master->send(clients, fmi2_import_setup_experiment(true, relativeTolerance, 0, endTime >= 0, endTime));
+    master->queueMessage(clients, fmi2_import_setup_experiment(true, relativeTolerance, 0, endTime >= 0, endTime));
 
     /**
      * From the FMI 2.0 spec:
@@ -730,7 +730,7 @@ int main(int argc, char *argv[] ) {
       client->m_fmuState = control_proto::fmu_state_State_initializing;
     }
 
-    master->send(clients, fmi2_import_enter_initialization_mode());
+    master->queueMessage(clients, fmi2_import_enter_initialization_mode());
 
     /**
      * From the FMI 2.0 spec:
@@ -753,7 +753,7 @@ int main(int argc, char *argv[] ) {
       master->solveLoops();
     }
 
-    master->send(clients, fmi2_import_exit_initialization_mode());
+    master->queueMessage(clients, fmi2_import_exit_initialization_mode());
     master->wait();
 
     //prepare solver and all that

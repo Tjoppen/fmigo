@@ -2,6 +2,7 @@
 #define FMITCP_SERIALIZE_H
 
 #include <string>
+#include <sstream>
 #include "fmitcp.pb.h"
 
 namespace fmitcp {
@@ -13,6 +14,37 @@ namespace fmitcp {
           ret[1] = (uint8_t)(t>>8);
           req.SerializeWithCachedSizesToArray((uint8_t*)&ret[2]);
           return ret;
+        }
+
+        static void packIntoOstringstream(std::ostringstream& oss, const std::string& s) {
+          size_t sz = s.size();
+
+          if (sz > 0xFFFFFFFF) {
+            fprintf(stderr, "sz = %lu\n", sz);
+            exit(1);
+          }
+
+          //size of packet, including type
+          std::string szStr(4, 0);
+          szStr[0] = (uint8_t)sz;
+          szStr[1] = (uint8_t)(sz>>8);
+          szStr[2] = (uint8_t)(sz>>16);
+          szStr[3] = (uint8_t)(sz>>24);
+          oss << szStr << s;
+        }
+
+        static size_t parseSize(const char *data, size_t size) {
+          if (size < 4) {
+            fprintf(stderr, "parseSize(): not enough data\n");
+            exit(1);
+          }
+
+          size_t packetSize = 0;
+          packetSize += (uint8_t)data[0];
+          packetSize += ((uint8_t)data[1]) << 8;
+          packetSize += ((uint8_t)data[2]) << 16;
+          packetSize += ((uint8_t)data[3]) << 24;
+          return packetSize;
         }
 
         // FMI functions follow. These should correspond to FMILibrary functions.

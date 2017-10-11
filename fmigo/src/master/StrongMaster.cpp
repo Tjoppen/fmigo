@@ -94,7 +94,7 @@ void StrongMaster::runIteration(double t, double dt) {
     }
 
     //these two are usually no-ops since we ask for a pre-fetch at the end of the function
-    sendValueRequests();
+    queueValueRequests();
     wait();
 
     //disentangle received values for set_real() further down (before do_step())
@@ -216,7 +216,7 @@ void StrongMaster::runIteration(double t, double dt) {
                     kin[client->m_id].has_bools() ||
                     kin[client->m_id].has_strings() ||
                     kin[client->m_id].future_velocity_vrs_size()) {
-                  client->sendMessage(pack(fmitcp_proto::type_fmi2_kinematic_req, kin[client->m_id]));
+                  client->queueMessage(pack(fmitcp_proto::type_fmi2_kinematic_req, kin[client->m_id]));
                 }
             }
 
@@ -273,14 +273,14 @@ void StrongMaster::runIteration(double t, double dt) {
             vector<int> tvrs = sc->getTorqueValueRefs();
             fvrs.insert(fvrs.end(), tvrs.begin(), tvrs.end());
 
-            send(client, fmi2_import_set_real(fvrs, vec));
+            queueMessage(client, fmi2_import_set_real(fvrs, vec));
         }
     }
 
     //do actual step
     //noSetFMUStatePriorToCurrentPoint = true
     //In other words: do the step, commit the results (basically, we're not going back)
-    send(m_clients, fmi2_import_do_step(t, dt, true));
+    queueMessage(m_clients, fmi2_import_do_step(t, dt, true));
 
     //do_step() makes values old
     deleteCachedValues();

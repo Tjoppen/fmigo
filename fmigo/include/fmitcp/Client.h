@@ -8,6 +8,7 @@
 #include <string>
 #include <set>
 #include <unordered_map>
+#include <sstream>
 
 
 using namespace std;
@@ -34,6 +35,10 @@ namespace fmitcp {
     public:
         zmq::socket_t m_socket;
 #endif
+
+        std::ostringstream m_messageQueue;
+
+        void clientDataInner(const char* data, size_t size);
 
     public:
         int messages;
@@ -81,7 +86,7 @@ namespace fmitcp {
           queueFoo(vrs, m_strings, m_outgoing_strings);
         }
 
-        void sendValueRequests();
+        void queueValueRequests();
 
         std::vector<double>       getReals(const std::vector<int>& vrs) const;
         std::vector<int>          getInts(const std::vector<int>& vrs) const;
@@ -100,8 +105,12 @@ namespace fmitcp {
 #endif
         virtual ~Client();
 
-        /// Send a binary message
-        void sendMessage(const std::string& s);
+        //queue a message to be sent by sendQueuedMessages()
+        //helps reduce the number of MPI_Send()s performed
+        void queueMessage(const std::string& s);
+
+        //sends queued messages, unsurprisingly
+        void sendQueuedMessages();
 
         //like sendMessage() but also calls receiveAndHandleMessage()
         void sendMessageBlocking(const std::string& s);
@@ -116,7 +125,7 @@ namespace fmitcp {
          * @param data Protobuf data buffer
          * @param size Size of data buffer
          */
-        void clientData(const char* data, long size);
+        void clientData(const char* data, size_t size);
 
         // Response functions - to be implemented by subclass
 

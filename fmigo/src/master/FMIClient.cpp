@@ -365,16 +365,16 @@ void FMIClient::sendSetX(const SendSetXType& typeRefsValues) {
         if (it->second.first.size() > 0) {
             switch (it->first) {
             case fmi2_base_type_real:
-                sendMessage(fmi2_import_set_real   (it->second.first, vectorToBaseType(it->second.second, &MultiValue::r)));
+                queueMessage(fmi2_import_set_real   (it->second.first, vectorToBaseType(it->second.second, &MultiValue::r)));
                 break;
             case fmi2_base_type_int:
-                sendMessage(fmi2_import_set_integer(it->second.first, vectorToBaseType(it->second.second, &MultiValue::i)));
+                queueMessage(fmi2_import_set_integer(it->second.first, vectorToBaseType(it->second.second, &MultiValue::i)));
                 break;
             case fmi2_base_type_bool:
-                sendMessage(fmi2_import_set_boolean(it->second.first, vectorToBaseType(it->second.second, &MultiValue::b)));
+                queueMessage(fmi2_import_set_boolean(it->second.first, vectorToBaseType(it->second.second, &MultiValue::b)));
                 break;
             case fmi2_base_type_str:
-                sendMessage(fmi2_import_set_string (it->second.first, vectorToBaseType(it->second.second, &MultiValue::s)));
+                queueMessage(fmi2_import_set_string (it->second.first, vectorToBaseType(it->second.second, &MultiValue::s)));
                 break;
             case fmi2_base_type_enum:
                 fatal("fmi2_base_type_enum snuck its way into FMIClient::sendSetX() somehow\n");

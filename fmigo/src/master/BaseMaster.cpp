@@ -73,7 +73,7 @@ int BaseMaster::loop_residual_f(const gsl_vector *x, void *params, gsl_vector *f
   for (auto it : master->clientWeakRefs) {
     it.first->queueX(it.second);
   }
-  master->sendValueRequests();
+  master->queueValueRequests();
   master->wait();
 
   k = 0;
@@ -111,7 +111,7 @@ void BaseMaster::solveLoops() {
   for (auto it = clientWeakRefs.begin(); it != clientWeakRefs.end(); it++) {
     it->first->queueX(it->second);
   }
-  sendValueRequests();
+  queueValueRequests();
   wait();
   initialNonReals = getInputWeakRefsAndValues(m_weakConnections);
 
@@ -190,6 +190,11 @@ void BaseMaster::wait() {
 
     if (m_pendingRequests > 0) {
       rendezvous++;
+
+      //send messages
+      for (FMIClient *client : m_clients) {
+        client->sendQueuedMessages();
+      }
     }
 
     while (m_pendingRequests > 0) {
@@ -298,19 +303,19 @@ void BaseMaster::handleZmqControl() {
 
               if (var.has_reals()) {
                 assertit(var.reals().vrs().size() == var.reals().values().size());
-                send(client, serialize::fmi2_import_set_real(rf2vec(var.reals().vrs()), rf2vec(var.reals().values())));
+                queueMessage(client, serialize::fmi2_import_set_real(rf2vec(var.reals().vrs()), rf2vec(var.reals().values())));
               }
               if (var.has_ints()) {
                 assertit(var.ints().vrs().size() == var.ints().values().size());
-                send(client, serialize::fmi2_import_set_integer(rf2vec(var.ints().vrs()), rf2vec(var.ints().values())));
+                queueMessage(client, serialize::fmi2_import_set_integer(rf2vec(var.ints().vrs()), rf2vec(var.ints().values())));
               }
               if (var.has_bools()) {
                 assertit(var.bools().vrs().size() == var.bools().values().size());
-                send(client, serialize::fmi2_import_set_boolean(rf2vec(var.bools().vrs()), rf2vec(var.bools().values())));
+                queueMessage(client, serialize::fmi2_import_set_boolean(rf2vec(var.bools().vrs()), rf2vec(var.bools().values())));
               }
               if (var.has_strings()) {
                 assertit(var.strings().vrs().size() == var.strings().values().size());
-                send(client, serialize::fmi2_import_set_string(rf2vec(var.strings().vrs()), rf2vec<std::string>(var.strings().values())));
+                queueMessage(client, serialize::fmi2_import_set_string(rf2vec(var.strings().vrs()), rf2vec<std::string>(var.strings().values())));
               }
             } else {
               warning("bad/unset fmu_id in control_message.variables\n");
@@ -344,9 +349,9 @@ void BaseMaster::handleZmqControl() {
   }
 }
 
-void BaseMaster::sendValueRequests() {
+void BaseMaster::queueValueRequests() {
   for (FMIClient *client : m_clients) {
-    client->sendValueRequests();
+    client->queueValueRequests();
   }
 }
 

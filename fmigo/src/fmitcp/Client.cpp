@@ -52,7 +52,26 @@ template<typename T, typename R> void handle_get_value_res(Client *c, R &r, set<
 
 }
 
-void Client::clientData(const char* data, long size){
+void Client::clientData(const char* data, size_t size) {
+  while (size > 0) {
+    //size of packet, including type
+    size_t packetSize = fmitcp::serialize::parseSize(data, size);
+
+    data += 4;
+    size -= 4;
+
+    if (packetSize > size) {
+      fatal("packetSize > size\n");
+    }
+
+    clientDataInner(data, packetSize);
+
+    data += packetSize;
+    size -= packetSize;
+  }
+}
+
+void Client::clientDataInner(const char* data, size_t size){
     fmitcp_message_Type type = parseType(data, size);
 
     data += 2;
@@ -307,14 +326,27 @@ Client::~Client(){
     google::protobuf::ShutdownProtobufLibrary();
 }
 
-void Client::sendMessage(const std::string& s){
-    fmigo::globals::timer.rotate("pre_sendMessage");
-    messages++;
+void Client::queueMessage(const std::string& s) {
+    fmitcp::serialize::packIntoOstringstream(m_messageQueue, s);
+
     if (m_master) {
         m_master->m_pendingRequests++;
     } else {
         m_pendingRequests++;
     }
+}
+
+void Client::sendQueuedMessages() {
+    string s = m_messageQueue.str();
+    //clear() does not work as expected
+    m_messageQueue = ostringstream();
+
+    if (s.length() == 0) {
+        return;
+    }
+
+    fmigo::globals::timer.rotate("pre_sendMessage");
+    messages++;
 #ifdef USE_MPI
     MPI_Send((void*)s.c_str(), s.length(), MPI_CHAR, world_rank, 0, MPI_COMM_WORLD);
     fmigo::globals::timer.rotate("MPI_Send");
@@ -331,7 +363,8 @@ void Client::sendMessage(const std::string& s){
 }
 
 void Client::sendMessageBlocking(const std::string& s) {
-    sendMessage(s);
+    queueMessage(s);
+    sendQueuedMessages();
     receiveAndHandleMessage();
 }
 
@@ -364,18 +397,18 @@ void Client::deleteCachedValues() {
   m_strings.clear();
 }
 
-void Client::sendValueRequests() {
+void Client::queueValueRequests() {
   if (m_outgoing_reals.size()) {
-    sendMessage(fmitcp::serialize::fmi2_import_get_real(m_outgoing_reals));
+    queueMessage(fmitcp::serialize::fmi2_import_get_real(m_outgoing_reals));
   }
   if (m_outgoing_ints.size()) {
-    sendMessage(fmitcp::serialize::fmi2_import_get_integer(m_outgoing_ints));
+    queueMessage(fmitcp::serialize::fmi2_import_get_integer(m_outgoing_ints));
   }
   if (m_outgoing_bools.size()) {
-    sendMessage(fmitcp::serialize::fmi2_import_get_boolean(m_outgoing_bools));
+    queueMessage(fmitcp::serialize::fmi2_import_get_boolean(m_outgoing_bools));
   }
   if (m_outgoing_strings.size()) {
-    sendMessage(fmitcp::serialize::fmi2_import_get_string(m_outgoing_strings));
+    queueMessage(fmitcp::serialize::fmi2_import_get_string(m_outgoing_strings));
   }
 }
 

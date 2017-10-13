@@ -13,7 +13,7 @@ def error(*objs):
   print("ERROR: ", *objs, file=sys.stderr)
   exit(1)
 
-def xml2wrappedxml(args_xml, args_fmu, args_identifier):
+def xml2wrappedxml(args_xml, args_fmu, args_identifier, file=sys.stdout):
   # Preserve comments
   # Need to remove whitespace for pretty_print to work
   parser = etree.XMLParser(remove_blank_text=True, remove_comments=False)
@@ -110,7 +110,7 @@ def xml2wrappedxml(args_xml, args_fmu, args_identifier):
   tool.attrib['name'] = 'fmigo'
   etree.SubElement(tool, 'fmu').text = os.path.basename(fmu)
 
-  print(etree.tostring(root, pretty_print=True, encoding='unicode'))
+  print(etree.tostring(root, pretty_print=True, encoding='unicode'), file=file)
 
 if __name__ == '__main__':
   # Parse command line arguments

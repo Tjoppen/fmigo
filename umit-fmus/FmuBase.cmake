@@ -232,4 +232,4 @@ if (NOT TARGET cgsl)
     add_subdirectory(templates/cgsl)
 endif ()
 
-add_subdirectory(meWrapper/libwrapper)
+add_subdirectory(wrapper/libwrapper)

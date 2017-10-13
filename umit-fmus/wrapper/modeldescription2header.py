@@ -11,8 +11,8 @@ def error(*objs):
     print('#error ',*objs)
     print("ERROR: ", *objs, file=sys.stderr)
 
-def modeldescription2header(args_xml, args_wrapper):
-  print('''/*This file is genereted by modeldescription2header. DO NOT EDIT! */''')
+def modeldescription2header(args_xml, args_wrapper, file=sys.stdout):
+  print('''/*This file is genereted by modeldescription2header. DO NOT EDIT! */''', file=file)
 
   tree = e.parse(args_xml)
   root = tree.getroot()
@@ -185,7 +185,7 @@ struct ModelInstance;
       len(strs),
       len(states),
       ni,
-  ))
+  ), file=file)
 
   print('''
 #define HAVE_MODELDESCRIPTION_STRUCT
@@ -201,7 +201,7 @@ typedef struct {
       '\n'.join(['    fmi2Boolean %s; //VR=%s' % (value[0], str(key)) for key,value in bools.items() if value[2]]),
       '\n'.join(['    fmi2Char    %s[%i]; //VR=%s' % (value[0], value[3], str(key)) for key,value in strs.items() if value[2]]),
       '\n    fmi2Boolean dirty;' if meFmuType else '',
-  ))
+  ), file=file)
 
   print('''
 #define HAVE_DEFAULTS
@@ -217,10 +217,10 @@ static const modelDescription_t defaults = {
       '\n'.join(['    %i, //%s' % (value[1], value[0]) for key,value in bools.items() if value[2]]),
       '\n'.join(['    "%s", //%s' % (value[1], value[0]) for key,value in strs.items() if value[2]]),
       '\n    1,' if meFmuType else '',
-  ))
+  ), file=file)
 
   if fmuFilename:
-      print('static const char fmuFilename[] = "%s";' % fmuFilename)
+      print('static const char fmuFilename[] = "%s";' % fmuFilename, file=file)
 
   print('''
 %s
@@ -231,14 +231,14 @@ static const modelDescription_t defaults = {
       '\n'.join(['#define VR_'+value[0].upper()+' '+str(key) for key,value in ints.items() if value[2]]),
       '\n'.join(['#define VR_'+value[0].upper()+' '+str(key) for key,value in bools.items() if value[2]]),
       '\n'.join(['#define VR_'+value[0].upper()+' '+str(key) for key,value in strs.items() if value[2]]),
-  ))
+  ), file=file)
 
   if not args_wrapper:
       print('''
 //the following getters and setters are static to avoid getting linking errors if this file is included in more than one place
 
 #define HAVE_GENERATED_GETTERS_SETTERS  //for letting the template know that we have our own getters and setters
-''')
+''', file=file)
 
   if meFmuType:
       print('''
@@ -247,8 +247,8 @@ static const modelDescription_t defaults = {
 ''' % (
       ', '.join(['VR_'+value[0].upper() for key,value in states.items()]),
       ', '.join(['VR_'+value[0].upper() for key,value in derivatives.items()]),
-      ))
-      print('static void update_all(modelDescription_t *md);')
+      ), file=file)
+      print('static void update_all(modelDescription_t *md);', file=file)
 
   def gen_getters_setters(t, d):
       print('''
@@ -287,7 +287,7 @@ static fmi2Status generated_fmi2Set%s(struct ModelInstance *comp, modelDescripti
           '\n'.join(['        case %i: if (strlcpy(md->%s, value[i], sizeof(md->%s)) >= sizeof(md->%s)) { return fmi2Error; } break;' %
                                                     (key, value[0], value[0], value[0]) for key,value in d.items()]) if t == 'String' else
           '\n'.join(['        case %i: md->%s = value[i]; break;' % (key, value[0]) for key,value in d.items()]),
-      ))
+      ), file=file)
 
   if not args_wrapper:
       gen_getters_setters('Real',    reals)
@@ -295,7 +295,7 @@ static fmi2Status generated_fmi2Set%s(struct ModelInstance *comp, modelDescripti
       gen_getters_setters('Boolean', bools)
       gen_getters_setters('String',  strs)
 
-  print('#endif //MODELDESCRIPTION_H')
+  print('#endif //MODELDESCRIPTION_H', file=file)
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(

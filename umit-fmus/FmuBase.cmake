@@ -68,10 +68,10 @@ function (add_fmu_internal dir target extra_srcs defs libs extra_includes consol
   add_custom_command(
     OUTPUT ${${target}_dir}/sources/modelDescription.h
     COMMAND ${CMAKE_COMMAND} -E make_directory ${${target}_dir}/sources
-    COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/fmu-builder/modeldescription2header.py ${md2hdr_option}
+    COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/wrapper/modeldescription2header.py ${md2hdr_option}
       ${${target}_dir}/modelDescription.xml >
       ${${target}_dir}/sources/modelDescription.h
-    DEPENDS ${${target}_dir}/modelDescription.xml ${xmldeps} ${CMAKE_CURRENT_SOURCE_DIR}/fmu-builder/modeldescription2header.py)
+    DEPENDS ${${target}_dir}/modelDescription.xml ${xmldeps} ${CMAKE_CURRENT_SOURCE_DIR}/wrapper/modeldescription2header.py)
   add_custom_target(${target}_md DEPENDS ${${target}_dir}/sources/modelDescription.h)
   add_dependencies(${target} ${target}_md)
 
@@ -158,12 +158,12 @@ function (add_wrapped dir sourcetarget)
   add_custom_command(
     OUTPUT ${dstxml}
     COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_SOURCE_DIR}/${dir}
-    COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/fmu-builder/xml2wrappedxml.py
+    COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/wrapper/xml2wrappedxml.py
          -x ${srcxml} -f "${${sourcetarget}_fmu}" -i ${target} > ${dstxml}
-    DEPENDS ${srcxml} ${sourcetarget} ${CMAKE_CURRENT_SOURCE_DIR}/fmu-builder/xml2wrappedxml.py)
+    DEPENDS ${srcxml} ${sourcetarget} ${CMAKE_CURRENT_SOURCE_DIR}/wrapper/xml2wrappedxml.py)
   add_custom_target(${target}_xml DEPENDS ${dstxml})
 
-  add_fmu_internal("${dir}" "${target}" "fmu-builder/sources/wrapper.c" "" "cgsl;wrapperlib;fmilib" "fmu-builder/sources" FALSE "-w" "${target}_xml" "${${sourcetarget}_fmu}")
+  add_fmu_internal("${dir}" "${target}" "wrapper/sources/wrapper.c" "" "cgsl;wrapperlib;fmilib" "wrapper/sources" FALSE "-w" "${target}_xml" "${${sourcetarget}_fmu}")
 endfunction ()
 
 
@@ -174,12 +174,12 @@ function (add_wrapped_fmu dir sourcetarget sourcefmu)
   add_custom_command(
     OUTPUT ${dstxml}
     COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_SOURCE_DIR}/${dir}
-    COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/fmu-builder/xml2wrappedxml.py
+    COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/wrapper/xml2wrappedxml.py
          -f ${sourcefmu} -i ${target} > ${dstxml}
-    DEPENDS ${sourcefmu} ${sourcetarget}_fmu_target ${CMAKE_CURRENT_SOURCE_DIR}/fmu-builder/xml2wrappedxml.py)
+    DEPENDS ${sourcefmu} ${sourcetarget}_fmu_target ${CMAKE_CURRENT_SOURCE_DIR}/wrapper/xml2wrappedxml.py)
   add_custom_target(${target}_xml DEPENDS ${dstxml})
 
-  add_fmu_internal("${dir}" "${target}" "fmu-builder/sources/wrapper.c" "" "cgsl;wrapperlib;fmilib" "fmu-builder/sources" FALSE "-w" "${target}_xml" "${${sourcetarget}_fmu}")
+  add_fmu_internal("${dir}" "${target}" "wrapper/sources/wrapper.c" "" "cgsl;wrapperlib;fmilib" "wrapper/sources" FALSE "-w" "${target}_xml" "${${sourcetarget}_fmu}")
 endfunction ()
 
 # wrap_existing_fmu
@@ -201,13 +201,13 @@ function (wrap_existing_fmu modelIdentifier sourcefmu dir)
   add_custom_command(
     OUTPUT ${dstxml}
     COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_SOURCE_DIR}/${dir}
-    COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/fmu-builder/xml2wrappedxml.py
+    COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/wrapper/xml2wrappedxml.py
          -f ${sourcefmu} -i ${target} > ${dstxml}
-    DEPENDS ${sourcefmu} ${CMAKE_CURRENT_SOURCE_DIR}/fmu-builder/xml2wrappedxml.py)
+    DEPENDS ${sourcefmu} ${CMAKE_CURRENT_SOURCE_DIR}/wrapper/xml2wrappedxml.py)
   add_custom_target(${target}_xml DEPENDS ${dstxml})
 
   #function (add_fmu_internal dir target extra_srcs defs libs extra_includes console md2hdr_option xmldeps extra_resources)
-  add_fmu_internal("${dir}" "${target}" "fmu-builder/sources/wrapper.c" "" "cgsl;wrapperlib;fmilib" "fmu-builder/sources" FALSE "-w" "${target}_xml" "${sourcefmu}")
+  add_fmu_internal("${dir}" "${target}" "wrapper/sources/wrapper.c" "" "cgsl;wrapperlib;fmilib" "wrapper/sources" FALSE "-w" "${target}_xml" "${sourcefmu}")
 endfunction ()
 
 

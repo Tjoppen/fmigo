@@ -2,6 +2,7 @@
 from __future__ import print_function
 import sys, argparse, re
 import xml.etree.ElementTree as e
+from collections import OrderedDict
 
 parser = argparse.ArgumentParser(
     description='Transforms modelDescription.xml to stdout (pipe to sources/modelDescription.h)',
@@ -73,14 +74,14 @@ elif fmiVersion == "2.0":
         exit(1)
 
 
-reals = {}
-ints  = {}
-bools = {}
-states = {}
-derivatives = {}
+reals = OrderedDict()
+ints  = OrderedDict()
+bools = OrderedDict()
+states = OrderedDict()
+derivatives = OrderedDict()
 
 SV = root.find('ModelVariables').findall('ScalarVariable')
-strs  = {}
+strs  = OrderedDict()
 
 vas = root.find('VendorAnnotations')
 fmuFilename = None

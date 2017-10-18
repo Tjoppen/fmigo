@@ -9,15 +9,37 @@ from wrapper.modeldescription2header import modeldescription2header
 from wrapper.xml2wrappedxml import xml2wrappedxml
 
 if __name__ == '__main__':
-  parser = argparse.ArgumentParser(description='Wrap a ModelExchange FMU (.fmu file) into CoSimulation using GNU GSL as an integrator')
-  parser.add_argument('sourcefmu', type=str, help='Path to source FMU')
-  parser.add_argument('outputfmu', type=str, help='Path to output FMU')
-  parser.add_argument('-i','--modelIdentifier', type=str, help='modelIdentifier to use for generated FMU. Default = outputfmu filename sans extension')
+  # Figure out where this script is located
+  # We may be called from someplace other than umit-fmus, and
+  # need a proper base path for the stuff we need to pull in.
+  scriptpath = os.path.split(sys.argv[0])[0]
+  cwd = os.getcwd()
+  umit_fmus = os.path.join(cwd, scriptpath)
+
+  parser = argparse.ArgumentParser(description='''
+  Wrap a ModelExchange FMU (.fmu file) into CoSimulation using GNU GSL as an integrator.
+  Compilation will be significantly faster if FMILib and ninja are installed systemwide.
+  ''')
+  parser.add_argument(
+    'sourcefmu',
+    type=str,
+    help='Path to source FMU'
+  )
+  parser.add_argument(
+    'outputfmu',
+    type=str,
+    help='Path to output FMU'
+  )
+  parser.add_argument(
+    '-i',
+    dest='modelIdentifier',
+    type=str,
+    help='Model identifier to use for generated FMU. Default = outputfmu filename sans extension ("output" for output.fmu)'
+  )
   args = parser.parse_args()
 
   modelIdentifier = args.modelIdentifier if args.modelIdentifier != None else os.path.basename(args.outputfmu).split('.')[0]
 
-  cwd = os.getcwd()
   d = tempfile.mkdtemp(prefix='wrapper_')
   sources   = os.path.join(d, 'sources')
   build     = os.path.join(d, 'build')
@@ -35,10 +57,10 @@ if __name__ == '__main__':
   mdh.close()
 
   # FmuBase.cmake contains lots of useful utilities..
-  shutil.copy('FmuBase.cmake', sources)
-  shutil.copytree('wrapper', os.path.join(sources, 'wrapper'))
-  shutil.copytree('templates', os.path.join(sources, 'templates'))
-  shutil.copytree('../FMILibrary-2.0.1', os.path.join(sources, 'FMILibrary-2.0.1'))
+  shutil.copy(os.path.join(umit_fmus, 'FmuBase.cmake'), sources)
+  shutil.copytree(os.path.join(umit_fmus, 'wrapper'), os.path.join(sources, 'wrapper'))
+  shutil.copytree(os.path.join(umit_fmus, 'templates'), os.path.join(sources, 'templates'))
+  shutil.copytree(os.path.join(umit_fmus, '../FMILibrary-2.0.1'), os.path.join(sources, 'FMILibrary-2.0.1'))
 
   cmake = open(os.path.join(d, 'CMakeLists.txt'), 'w')
   cmake.write('''

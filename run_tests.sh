@@ -41,4 +41,7 @@ do
 done
 rm temp
 
+# Test wrapper
+python umit-fmus/wrapper.py umit-fmus/me/bouncingBall/bouncingBall.fmu ${BUILD_DIR}/bouncingBall_wrapped.fmu
+
 echo All tests OK

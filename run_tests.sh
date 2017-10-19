@@ -45,4 +45,9 @@ rm temp
 python umit-fmus/wrapper.py -t Debug   umit-fmus/me/bouncingBall/bouncingBall.fmu ${BUILD_DIR}/bouncingBall_wrapped_Debug.fmu
 python umit-fmus/wrapper.py -t Release umit-fmus/me/bouncingBall/bouncingBall.fmu ${BUILD_DIR}/bouncingBall_wrapped_Release.fmu
 
+# Test alternative MPI command line
+mpiexec -np 1 fmigo-mpi -f none \
+  : -np 1 fmigo-mpi ${FMUS_DIR}/gsl2/clutch2/clutch2.fmu
+  : -np 1 fmigo-mpi ${FMUS_DIR}/gsl2/clutch2/clutch2.fmu
+
 echo All tests OK

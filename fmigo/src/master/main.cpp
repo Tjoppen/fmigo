@@ -619,9 +619,17 @@ int main(int argc, char *argv[] ) {
 #ifdef USE_MPI
     if (world_rank > 0) {
         //we're a server
-        //in MPI mode, treat fmuURIs as a list of paths
-        //for each server node, fmuURIs[world_rank-1] is the corresponding FMU path
-        run_server(fmuURIs[world_rank-1], hdf5Filename);
+        //In MPI mode, treat fmuURIs as a list of paths,
+        //or as the single FMU filename to use for this node.
+        //See parseargs.cpp for more information.
+        if (fmuURIs.size() == 0 || (fmuURIs.size() > 1 && (size_t)world_rank > fmuURIs.size())) {
+          //checked in parseArguments()
+          fatal("This should never happen\n");
+        } else if (fmuURIs.size() == 1) {
+          run_server(fmuURIs[0], hdf5Filename);
+        } else {
+          run_server(fmuURIs[world_rank-1], hdf5Filename);
+        }
         return 0;
     }
     //world_rank == 0 below

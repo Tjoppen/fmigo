@@ -489,23 +489,55 @@ void fmitcp_master::parseArguments( int argc,
         fmuFilePaths->push_back(argv2[index]);
     }
 
+#ifndef USE_MPI
+    //ZMQ
     size_t numFMUs = fmuFilePaths->size();
 
     if (numFMUs == 0){
-        error("No FMUs given. Aborting...\n");
+        error("No FMU URIs given. Aborting...\n");
         printHelp();
         exit(1);
     }
 
-#ifdef USE_MPI
-    if ((size_t)world_size != numFMUs + 1) {
+#else //USE_MPI
+    // Support two types of command lines:
+    //
+    //  mpiexec -np 3 fmigo-mpi [master arguments] fmu1.fmu fmu2.fmu
+    //
+    // Where the argument to -np is the number of FMUs + 1.
+    // Second form:
+    //
+    //  mpiexec -np 1 fmigo-mpi [master arguments] : -np 1 fmigo-mpi fmu1.fmu : -np 1 fmigo-mpi fmu2.fmu
+    //
+    if (world_size <= 1) {
+        //world too small to make sense
+        fatal("No FMUs given and MPI world too small. Aborting...\n");
+    }
+
+    if (fmuFilePaths->size() == 0) {
+        //zero FMU filename is only OK for the master node
+        if (world_rank != 0) {
+            fatal("MPI non-master node given no FMU filename(s)\n");
+        }
+    } else if (fmuFilePaths->size() == 1) {
+        //a single filename is OK most of the time, unless we're the master node and world_size > 2
+        if (world_rank == 0 && world_size > 2) {
+            fatal("MPI master node given too few FMU filenames for given MPI world size (%i)\n", world_size);
+        }
+    } else {
+      //multiple filenames only OK if all nodes given full list of FMU filenames
+      size_t numFMUs = fmuFilePaths->size();
+      if ((size_t)world_size != numFMUs + 1) {
         //only complain for the first node
         if (world_rank == 0) {
             error("Need exactly n+1 processes, where n is the number of FMUs (%zu)\n", numFMUs);
             info("Try re-running with mpiexec -np %zu fmigo-mpi [rest of command line]\n", numFMUs+1 );
         }
         exit(1);
+      }
     }
+
+    size_t numFMUs = world_size - 1;
 #endif
 
     // Check if connections refer to nonexistant FMU index

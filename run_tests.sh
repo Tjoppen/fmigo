@@ -41,4 +41,8 @@ do
 done
 rm temp
 
+# Test wrapper, both Debug and Release
+python umit-fmus/wrapper.py -t Debug   umit-fmus/me/bouncingBall/bouncingBall.fmu ${BUILD_DIR}/bouncingBall_wrapped_Debug.fmu
+python umit-fmus/wrapper.py -t Release umit-fmus/me/bouncingBall/bouncingBall.fmu ${BUILD_DIR}/bouncingBall_wrapped_Release.fmu
+
 echo All tests OK

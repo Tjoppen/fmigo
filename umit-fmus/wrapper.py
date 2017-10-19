@@ -36,6 +36,13 @@ if __name__ == '__main__':
     type=str,
     help='Model identifier to use for generated FMU. Default = outputfmu filename sans extension ("output" for output.fmu)'
   )
+  parser.add_argument(
+    '-t',
+    dest='build_type',
+    default='Release',
+    type=str,
+    help='Build type (default: Release)'
+  )
   args = parser.parse_args()
 
   modelIdentifier = args.modelIdentifier if args.modelIdentifier != None else os.path.basename(args.outputfmu).split('.')[0]
@@ -61,6 +68,7 @@ if __name__ == '__main__':
   shutil.copytree(os.path.join(umit_fmus, 'wrapper'), os.path.join(sources, 'wrapper'))
   shutil.copytree(os.path.join(umit_fmus, 'templates'), os.path.join(sources, 'templates'))
   shutil.copytree(os.path.join(umit_fmus, '../FMILibrary-2.0.1'), os.path.join(sources, 'FMILibrary-2.0.1'))
+  shutil.copytree(os.path.join(umit_fmus, 'wingsl'), os.path.join(sources, 'wingsl'))
 
   cmake = open(os.path.join(d, 'CMakeLists.txt'), 'w')
   cmake.write('''
@@ -105,22 +113,29 @@ include_directories(
 )
 
 wrap_existing_fmu2("%s" "%s" "${CMAKE_CURRENT_BINARY_DIR}")
-''' % (modelIdentifier, os.path.join(cwd, args.sourcefmu)))
+''' % (modelIdentifier, os.path.join(cwd, args.sourcefmu).replace('\\','\\\\')))
   cmake2.close();
 
   os.chdir(build)
+
   # Use ninja if it's installed
-  have_ninja = 'build.ninja' in subprocess.check_output(['cmake','--help']).decode()
+  try:
+    subprocess.check_output(['ninja','--version'])
+    have_ninja = True
+  except:
+    have_ninja = False
+
   cmake_opts = (['-GNinja'] if have_ninja else []) + [
     '-DFMILIB_BUILD_TESTS=OFF',
     '-DFMILIB_BUILD_SHARED_LIB=OFF',
     '-DFMILIB_INSTALL_SUBLIBS=OFF',
     '-DFMILIB_GENERATE_DOXYGEN_DOC=OFF',
+    '-DCMAKE_BUILD_TYPE=%s' % args.build_type,
     '--no-warn-unused-cli', # Don't warn about FMILIB_* being unused in case of using system FMILib
   ]
 
   if  not subprocess.call(['cmake','..'] + cmake_opts) == 0 or \
-      not subprocess.call(['cmake','--build','.']) == 0:
+      not subprocess.call(['cmake','--build','.','--config',args.build_type]) == 0:
     exit(1)
 
   os.chdir(cwd)

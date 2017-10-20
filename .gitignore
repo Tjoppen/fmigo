@@ -1,4 +1,5 @@
 build
+builds
 testout
 *.pb.cc
 *.pb.h
@@ -16,4 +17,4 @@ tmp
 *.bcf
 *.snm
 codelite
-*.fmu
+*.pyc

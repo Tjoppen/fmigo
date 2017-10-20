@@ -37,26 +37,28 @@ function(copy_recursive TARGET BUILD_STEP distant dst)
 endfunction()
 
 
-function (add_fmu_internal dir target extra_srcs defs libs extra_includes console md2hdr_option xmldeps extra_resources)
-  set(${target}_fmu     ${dir}/${target}.fmu CACHE INTERNAL "" FORCE)
-  set(${target}_dir     ${dir}               CACHE INTERNAL "" FORCE)
+function (add_fmu_internal srcdir dstdir xmldir target extra_srcs defs libs extra_includes console md2hdr_option xmldeps extra_resources)
+  set(${target}_fmu     ${dstdir}/${target}.fmu CACHE INTERNAL "" FORCE)
+  set(${target}_srcdir  ${srcdir}               CACHE INTERNAL "" FORCE)
+  set(${target}_dstdir  ${srcdir}               CACHE INTERNAL "" FORCE)
+  set(${target}_xmldir  ${xmldir}               CACHE INTERNAL "" FORCE)
   set(${target}_packdir ${CMAKE_CURRENT_BINARY_DIR}/${target}/fmu        CACHE INTERNAL "" FORCE)
 
-  file(GLOB fmu_sources ${${target}_dir}/sources/*)
+  file(GLOB fmu_sources ${${target}_srcdir}/sources/*)
   set(binaries_dir ${CMAKE_CURRENT_BINARY_DIR}/${target}/binaries)
 
   set(srcs
     templates/fmi2/fmuTemplate.h
     templates/fmi2/fmuTemplate_impl.h
     templates/fmi2/strlcpy.h
-    ${${target}_dir}/sources/modelDescription.h
+    ${${target}_dstdir}/sources/modelDescription.h
     ${fmu_sources}
     ${extra_srcs}
   )
 
   set(includes
     templates/fmi2
-    ${${target}_dir}/sources
+    ${${target}_srcdir}/sources
     ${extra_includes}
   )
 
@@ -66,16 +68,16 @@ function (add_fmu_internal dir target extra_srcs defs libs extra_includes consol
   )
 
   add_custom_command(
-    OUTPUT ${${target}_dir}/sources/modelDescription.h
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${${target}_dir}/sources
+    OUTPUT ${${target}_dstdir}/sources/modelDescription.h
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${${target}_dstdir}/sources
     COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/wrapper/modeldescription2header.py ${md2hdr_option}
-      ${${target}_dir}/modelDescription.xml >
-      ${${target}_dir}/sources/modelDescription.h
-    DEPENDS ${${target}_dir}/modelDescription.xml ${xmldeps} ${CMAKE_CURRENT_SOURCE_DIR}/wrapper/modeldescription2header.py)
-  add_custom_target(${target}_md DEPENDS ${${target}_dir}/sources/modelDescription.h)
+      ${${target}_xmldir}/modelDescription.xml >
+      ${${target}_dstdir}/sources/modelDescription.h
+    DEPENDS ${${target}_xmldir}/modelDescription.xml ${xmldeps} ${CMAKE_CURRENT_SOURCE_DIR}/wrapper/modeldescription2header.py)
+  add_custom_target(${target}_md DEPENDS ${${target}_dstdir}/sources/modelDescription.h)
   add_dependencies(${target} ${target}_md)
 
-  set_source_files_properties(${${target}_dir}/sources/modelDescription.h PROPERTIES GENERATED TRUE) # see further down
+  set_source_files_properties(${${target}_dstdir}/sources/modelDescription.h PROPERTIES GENERATED TRUE) # see further down
   target_include_directories(${target} PUBLIC ${includes})
   set_target_properties(${target} PROPERTIES PREFIX "")
 
@@ -123,8 +125,8 @@ function (add_fmu_internal dir target extra_srcs defs libs extra_includes consol
     )
   endif ()
 
-  if (IS_DIRECTORY ${${target}_dir}/resources)
-    copy_recursive(${target} POST_BUILD ${${target}_dir}/resources ${${target}_packdir}/resources/)
+  if (IS_DIRECTORY ${${target}_srcdir}/resources)
+    copy_recursive(${target} POST_BUILD ${${target}_srcdir}/resources ${${target}_packdir}/resources/)
   endif ()
 
   if (NOT "${extra_resources}" STREQUAL "")
@@ -132,7 +134,7 @@ function (add_fmu_internal dir target extra_srcs defs libs extra_includes consol
   endif ()
 
   add_custom_command(TARGET ${target} POST_BUILD
-      COMMAND ${CMAKE_COMMAND} -E copy ${${target}_dir}/modelDescription.xml ${${target}_packdir}
+      COMMAND ${CMAKE_COMMAND} -E copy ${${target}_xmldir}/modelDescription.xml ${${target}_packdir}
   )
 
   add_custom_command(OUTPUT ${${target}_fmu}
@@ -146,40 +148,40 @@ endfunction ()
 
 
 function (add_fmu dir target extra_srcs defs libs console)
-  add_fmu_internal("${CMAKE_CURRENT_SOURCE_DIR}/${dir}" "${target}" "${extra_srcs}" "${defs}" "${libs}" "" "${console}" "" "" "")
+  add_fmu_internal("${CMAKE_CURRENT_SOURCE_DIR}/${dir}" "${CMAKE_CURRENT_BINARY_DIR}/${dir}" "${CMAKE_CURRENT_SOURCE_DIR}/${dir}" "${target}" "${extra_srcs}" "${defs}" "${libs}" "" "${console}" "" "" "")
 endfunction ()
 
 
 function (add_wrapped dir sourcetarget)
   set(target "wrapper_${sourcetarget}")
-  set(srcxml "${${sourcetarget}_dir}/modelDescription.xml")
-  set(dstxml ${CMAKE_CURRENT_SOURCE_DIR}/${dir}/modelDescription.xml)
+  set(srcxml "${${sourcetarget}_xmldir}/modelDescription.xml")
+  set(dstxml ${CMAKE_CURRENT_BINARY_DIR}/${dir}/modelDescription.xml)
 
   add_custom_command(
     OUTPUT ${dstxml}
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_SOURCE_DIR}/${dir}
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/${dir}
     COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/wrapper/xml2wrappedxml.py
          -x ${srcxml} -f "${${sourcetarget}_fmu}" -i ${target} > ${dstxml}
     DEPENDS ${srcxml} ${sourcetarget} ${CMAKE_CURRENT_SOURCE_DIR}/wrapper/xml2wrappedxml.py)
   add_custom_target(${target}_xml DEPENDS ${dstxml})
 
-  add_fmu_internal("${CMAKE_CURRENT_SOURCE_DIR}/${dir}" "${target}" "wrapper/sources/wrapper.c" "" "cgsl;wrapperlib;fmilib" "wrapper/sources" FALSE "-w" "${target}_xml" "${${sourcetarget}_fmu}")
+  add_fmu_internal("${CMAKE_CURRENT_SOURCE_DIR}/${dir}" "${CMAKE_CURRENT_BINARY_DIR}/${dir}" "${CMAKE_CURRENT_BINARY_DIR}/${dir}" "${target}" "wrapper/sources/wrapper.c" "" "cgsl;wrapperlib;fmilib" "wrapper/sources" FALSE "-w" "${target}_xml" "${${sourcetarget}_fmu}")
 endfunction ()
 
 
 function (add_wrapped_fmu dir sourcetarget sourcefmu)
   set(target wrapperfmu_${sourcetarget})
-  set(dstxml ${CMAKE_CURRENT_SOURCE_DIR}/${dir}/modelDescription.xml)
+  set(dstxml ${CMAKE_CURRENT_BINARY_DIR}/${dir}/modelDescription.xml)
 
   add_custom_command(
     OUTPUT ${dstxml}
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_SOURCE_DIR}/${dir}
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/${dir}
     COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/wrapper/xml2wrappedxml.py
          -f ${sourcefmu} -i ${target} > ${dstxml}
     DEPENDS ${sourcefmu} ${sourcetarget}_fmu_target ${CMAKE_CURRENT_SOURCE_DIR}/wrapper/xml2wrappedxml.py)
   add_custom_target(${target}_xml DEPENDS ${dstxml})
 
-  add_fmu_internal("${CMAKE_CURRENT_SOURCE_DIR}/${dir}" "${target}" "wrapper/sources/wrapper.c" "" "cgsl;wrapperlib;fmilib" "wrapper/sources" FALSE "-w" "${target}_xml" "${${sourcetarget}_fmu}")
+  add_fmu_internal("${CMAKE_CURRENT_BINARY_DIR}/${dir}" "${CMAKE_CURRENT_BINARY_DIR}/${dir}" "${CMAKE_CURRENT_BINARY_DIR}/${dir}" "${target}" "wrapper/sources/wrapper.c" "" "cgsl;wrapperlib;fmilib" "wrapper/sources" FALSE "-w" "${target}_xml" "${${sourcetarget}_fmu}")
 endfunction ()
 
 # wrap_existing_fmu
@@ -206,7 +208,7 @@ function (wrap_existing_fmu2 target sourcefmu dir)
   add_custom_target(${target}_xml DEPENDS ${dstxml})
 
   #function (add_fmu_internal dir target extra_srcs defs libs extra_includes console md2hdr_option xmldeps extra_resources)
-  add_fmu_internal("${dir}" "${target}" "wrapper/sources/wrapper.c" "" "cgsl;wrapperlib;fmilib" "wrapper/sources" FALSE "-w" "${target}_xml" "${sourcefmu}")
+  add_fmu_internal("${dir}" "${dir}" "${dir}" "${target}" "wrapper/sources/wrapper.c" "" "cgsl;wrapperlib;fmilib" "wrapper/sources" FALSE "-w" "${target}_xml" "${sourcefmu}")
 endfunction ()
 
 function (wrap_existing_fmu modelIdentifier sourcefmu dir)

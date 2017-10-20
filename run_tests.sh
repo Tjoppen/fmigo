@@ -7,13 +7,13 @@ for e in $(fmigo-mpi -e); do export "$e"; done
 
 if [ $USE_GPL -eq 1 ]
 then
-  (cd ${FMUS_DIR}/me            && ( ./test_me.sh ||  ( echo "failed modelExchange" && exit 1 ) ) )
+  (cd umit-fmus/me              && ( ./test_me.sh ||  ( echo "failed modelExchange" && exit 1 ) ) )
   (cd articles/truck            && ( python test_gsl_trucks.py  || ( echo "failed GSL truck test" && exit 1 ) ) )
 fi
 (cd articles/work-reports       && ( ./run_tests.sh  || ( echo "failed tests in work-reports" && exit 1 ) ) )
-(cd ${FMUS_DIR}/tests           && ( ./run_tests.sh ||  ( echo "failed umit-fmus tests" && exit 1 ) ) )
+(cd umit-fmus/tests             && ( ./run_tests.sh ||  ( echo "failed umit-fmus tests" && exit 1 ) ) )
 (cd ${BUILD_DIR}                && ( ctest || ( echo "ctest failed" && exit 1 ) ) )
-(cd ${FMUS_DIR}/meWrapper && pwd &&( ./test_wrapper.sh ||  ( echo "failed wrapper" && exit 1 ) ) )
+(cd umit-fmus/meWrapper         &&( ./test_wrapper.sh ||  ( echo "failed wrapper" && exit 1 ) ) )
 
 # Check -f none
 touch empty_file
@@ -42,8 +42,8 @@ done
 rm temp
 
 # Test wrapper, both Debug and Release
-python umit-fmus/wrapper.py -t Debug   umit-fmus/me/bouncingBall/bouncingBall.fmu ${BUILD_DIR}/bouncingBall_wrapped_Debug.fmu
-python umit-fmus/wrapper.py -t Release umit-fmus/me/bouncingBall/bouncingBall.fmu ${BUILD_DIR}/bouncingBall_wrapped_Release.fmu
+python umit-fmus/wrapper.py -t Debug   ${FMUS_DIR}/me/bouncingBall/bouncingBall.fmu ${BUILD_DIR}/bouncingBall_wrapped_Debug.fmu
+python umit-fmus/wrapper.py -t Release ${FMUS_DIR}/me/bouncingBall/bouncingBall.fmu ${BUILD_DIR}/bouncingBall_wrapped_Release.fmu
 
 # Test alternative MPI command line
 mpiexec -np 1 fmigo-mpi -f none \

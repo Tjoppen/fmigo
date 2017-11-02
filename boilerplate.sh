@@ -1,5 +1,10 @@
-export BUILD_DIR=$(pwd)/build
-export FMUS_DIR=$(pwd)/umit-fmus
+# Set BUILD_DIR if not set
+if [ -z "${BUILD_DIR+x}" ]
+then
+  export BUILD_DIR="$(pwd)/build"
+fi
+
+export FMUS_DIR="${BUILD_DIR}/umit-fmus"
 export PATH=$BUILD_DIR/install/bin:$PATH
 export SERVER=fmigo-server
 export MASTER=fmigo-master

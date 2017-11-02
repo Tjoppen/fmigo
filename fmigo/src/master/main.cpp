@@ -33,14 +33,6 @@ using namespace fmitcp::serialize;
 using namespace sc;
 using namespace common;
 
-#ifndef WIN32
-timeval tl1, tl2;
-vector<int> timelog;
-int columnofs;
-std::map<int, const char*> columnnames;
-#endif
-
-string hdf5Filename;
 jm_log_level_enu_t fmigo_loglevel = jm_log_level_warning;
 bool alwaysComputeNumericalDirectionalDerivatives = false;
 
@@ -123,18 +115,18 @@ static StrongConnector* findOrCreateShaftConnector(FMIClient *client,
 
 static int vrFromKeyName(FMIClient* client, string key){
 
-  if(isNumeric(key))
+  if(isVR(key))
     return atoi(key.c_str());
 
   const variable_map& vars = client->getVariables();
 
   switch (vars.count(key)){
   case 0:{
-    fatal("client(%d):%s\n", client->getId(), key.c_str());
+    fatal("client(%d):%s\n", client->m_id, key.c_str());
   }
   case 1:  return vars.find(key)->second.vr;
   default:{
-    fatal("Not uniq - client(%d):%s\n", client->getId(), key.c_str());
+    fatal("Not uniq - client(%d):%s\n", client->m_id, key.c_str());
   }
   }
 }
@@ -142,7 +134,12 @@ static int vrFromKeyName(FMIClient* client, string key){
 #define toVR(type, index)                                   \
   vrFromKeyName(clients[it->type##FMU],it->vrORname[index])
 
-static void setupConstraintsAndSolver(vector<strongconnection> strongConnections, vector<FMIClient*> clients, Solver *solver) {
+static Solver* setupConstraintsAndSolver(vector<strongconnection> strongConnections, vector<FMIClient*> clients) {
+    if (strongConnections.size() == 0) {
+        return NULL;
+    }
+    Solver *solver = new Solver;
+
     for (auto it = strongConnections.begin(); it != strongConnections.end(); it++) {
         //NOTE: this leaks memory, but I don't really care since it's only setup
         Constraint *con;
@@ -203,17 +200,46 @@ static void setupConstraintsAndSolver(vector<strongconnection> strongConnections
     for (auto it = clients.begin(); it != clients.end(); it++) {
         solver->addSlave(*it);
    }
+
+   return solver;
 }
 
-static param param_from_vr_type_string(int vr, fmi2_base_type_enu_t type, string s) {
+static param param_from_vr_type_string(int vr, fmi2_base_type_enu_t type, string s, string varname="") {
     param p;
     p.valueReference = vr;
     p.type = type;
 
     switch (p.type) {
-    case fmi2_base_type_real: p.realValue = atof(s.c_str()); break;
-    case fmi2_base_type_int:  p.intValue = atoi(s.c_str()); break;
-    case fmi2_base_type_bool: p.boolValue = (s == "true"); break;
+    case fmi2_base_type_real:
+        if (!isReal(s)) {
+            if (varname.length()) {
+                fatal("Value \"%s\" for variable %s does not look like a Real\n", s.c_str(), varname.c_str());
+            } else {
+                fatal("Value \"%s\" for VR %i does not look like a Real\n", s.c_str(), vr);
+            }
+        }
+        p.realValue = atof(s.c_str());
+        break;
+    case fmi2_base_type_int:
+        if (!isInteger(s)) {
+            if (varname.length()) {
+                fatal("Value \"%s\" for variable %s does not look like an Integer\n", s.c_str(), varname.c_str());
+            } else {
+                fatal("Value \"%s\" for VR %i does not look like an Integer\n", s.c_str(), vr);
+            }
+        }
+        p.intValue = atoi(s.c_str());
+        break;
+    case fmi2_base_type_bool:
+        if (!isBoolean(s)) {
+            if (varname.length()) {
+                fatal("Value \"%s\" for variable %s does not look like a Boolean\n", s.c_str(), varname.c_str());
+            } else {
+                fatal("Value \"%s\" for VR %i does not look like a Boolean\n", s.c_str(), vr);
+            }
+        }
+        p.boolValue = (s == "true");
+        break;
     case fmi2_base_type_str:  p.stringValue = s; break;
     case fmi2_base_type_enum: fatal("An enum snuck its way into -p\n");
     }
@@ -240,18 +266,20 @@ static param_map resolve_string_params(const vector<deque<string> > &params, vec
             //FMU,VR,value  [type=real]
             //FMU,NAME,value
             int vr = vrFromKeyName(client, parts[1]);
+            string name = "";
 
-            if (!isNumeric(parts[1])) {
+            if (!isVR(parts[1])) {
                 const variable_map& vars = client->getVariables();
+                name = parts[1];
                 type = vars.find(parts[1])->second.type;
             }
 
-            p = param_from_vr_type_string(vr, type, parts[2]);
+            p = param_from_vr_type_string(vr, type, parts[2], name);
         } else if (parts.size() == 4) {
             //type,FMU,VR,value
             type = type_from_char(parts[0]);
 
-            if (!isNumeric(parts[2])) {
+            if (!isVR(parts[2])) {
                 fatal("Must use VRs when specifying parameters with explicit types (-p %s,%s,%s,%s)\n",
                     parts[0].c_str(), parts[1].c_str(), parts[2].c_str(), parts[3].c_str());
             }
@@ -273,19 +301,9 @@ map<double, param_map > param_mapFromCSV(fmigo_csv_fmu csvfmus, vector<FMIClient
       variable_map vmap = clients[it->first]->getVariables();
       for (auto time: it->second.time) {
         for (auto header: it->second.headers) {
-          param p;
-          int fmuIndex = it->first;
-          p.valueReference = vmap[header].vr;
-          p.type = vmap[header].type;
-
           string s = it->second.matrix[time][header];
-          switch (p.type) {
-          case fmi2_base_type_real: p.realValue = atof(s.c_str()); break;
-          case fmi2_base_type_int:  p.intValue = atoi(s.c_str()); break;
-          case fmi2_base_type_bool: p.boolValue = (s == "true"); break;
-          case fmi2_base_type_str:  p.stringValue = s; break;
-          case fmi2_base_type_enum: fprintf(stderr, "An enum snuck its way into -p\n"); exit(1);
-          }
+          param p = param_from_vr_type_string(vmap[header].vr, vmap[header].type, s, header);
+          int fmuIndex = it->first;
           pairmap[atof(time.c_str())][make_pair(fmuIndex,p.type)].push_back(p);
         }
       }
@@ -338,7 +356,7 @@ static void sendUserParams(BaseMaster *master, vector<FMIClient*> clients,
             for (auto it2 = it->second.begin(); it2 != it->second.end(); it2++) {
                 values.push_back(it2->realValue);
             }
-            master->send(client, fmi2_import_set_real(vrs, values));
+            client->queueMessage(fmi2_import_set_real(vrs, values));
             break;
         }
         case fmi2_base_type_enum:
@@ -347,7 +365,7 @@ static void sendUserParams(BaseMaster *master, vector<FMIClient*> clients,
             for (auto it2 = it->second.begin(); it2 != it->second.end(); it2++) {
                 values.push_back(it2->intValue);
             }
-            master->send(client, fmi2_import_set_integer(vrs, values));
+            client->queueMessage(fmi2_import_set_integer(vrs, values));
             break;
         }
         case fmi2_base_type_bool: {
@@ -355,7 +373,7 @@ static void sendUserParams(BaseMaster *master, vector<FMIClient*> clients,
             for (auto it2 = it->second.begin(); it2 != it->second.end(); it2++) {
                 values.push_back(it2->boolValue);
             }
-            master->send(client, fmi2_import_set_boolean(vrs, values));
+            client->queueMessage(fmi2_import_set_boolean(vrs, values));
             break;
         }
         case fmi2_base_type_str: {
@@ -363,7 +381,7 @@ static void sendUserParams(BaseMaster *master, vector<FMIClient*> clients,
             for (auto it2 = it->second.begin(); it2 != it->second.end(); it2++) {
                 values.push_back(it2->stringValue);
             }
-            master->send(client, fmi2_import_set_string(vrs, values));
+            client->queueMessage(fmi2_import_set_string(vrs, values));
             break;
         }
         }
@@ -381,7 +399,7 @@ static string getFieldnames(vector<FMIClient*> clients) {
 
     for (auto client : clients) {
         ostringstream prefix;
-        prefix << separator << "fmu" << client->getId() << "_";
+        prefix << separator << "fmu" << client->m_id << "_";
         oss << client->getSpaceSeparatedFieldNames(prefix.str());
     }
     return oss.str();
@@ -409,38 +427,35 @@ static void printOutputs(double t, BaseMaster *master, vector<FMIClient*>& clien
             getX[var.type].push_back(var.vr);
         }
 
-        client->sendGetX(getX);
+        client->queueX(getX);
     }
-
+    master->queueValueRequests();
     master->wait();
 
-    printf("%+.16le", t);
+    fprintf(fmigo::globals::outfile, "%+.16le", t);
     for (size_t x = 0; x < clients.size(); x++) {
         FMIClient *client = clients[x];
         for (const variable& out : client->getOutputs()) {
             switch (out.type) {
             case fmi2_base_type_real:
-                printf("%c%+.16le", separator, client->m_getRealValues.front());
-                client->m_getRealValues.pop_front();
+                fprintf(fmigo::globals::outfile, "%c%+.16le", separator, client->getReal(out.vr));
                 break;
             case fmi2_base_type_int:
-                printf("%c%i", separator, client->m_getIntegerValues.front());
-                client->m_getIntegerValues.pop_front();
+                fprintf(fmigo::globals::outfile, "%c%i", separator, client->getInt(out.vr));
                 break;
             case fmi2_base_type_bool:
-                printf("%c%i", separator, client->m_getBooleanValues.front());
-                client->m_getBooleanValues.pop_front();
+                fprintf(fmigo::globals::outfile, "%c%i", separator, client->getBool(out.vr));
                 break;
             case fmi2_base_type_str: {
                 ostringstream oss;
-                for(char c: client->m_getStringValues.front()){
+                string s = client->getString(out.vr);
+                for(char c: s){
                     switch (c){
                     case '"': oss << "\"\""; break;
                     default: oss << c;
                     }
                 }
-                printf("%c\"%s\"", separator, oss.str().c_str());
-                client->m_getStringValues.pop_front();
+                fprintf(fmigo::globals::outfile, "%c\"%s\"", separator, oss.str().c_str());
                 break;
             }
             case fmi2_base_type_enum:
@@ -476,25 +491,25 @@ static void pushResults(int step, double t, double endTime, double timeStep, zmq
             }
         }
 
-        client->sendGetX(getVariables);
+        client->queueX(getVariables);
         clientVariables[client] = getVariables;
     }
-
+    master->queueValueRequests();
     master->wait();
 
     for (auto cv : clientVariables) {
         control_proto::fmu_results *fmu_res = results.add_results();
 
-        fmu_res->set_fmu_id(cv.first->getId());
+        fmu_res->set_fmu_id(cv.first->m_id);
 
         addVectorToRepeatedField(fmu_res->mutable_reals()->mutable_vrs(),       cv.second[fmi2_base_type_real]);
-        addVectorToRepeatedField(fmu_res->mutable_reals()->mutable_values(),    cv.first->m_getRealValues);
+        addVectorToRepeatedField(fmu_res->mutable_reals()->mutable_values(),    cv.first->getReals(cv.second[fmi2_base_type_real]));
         addVectorToRepeatedField(fmu_res->mutable_ints()->mutable_vrs(),        cv.second[fmi2_base_type_int]);
-        addVectorToRepeatedField(fmu_res->mutable_ints()->mutable_values(),     cv.first->m_getIntegerValues);
+        addVectorToRepeatedField(fmu_res->mutable_ints()->mutable_values(),     cv.first->getReals(cv.second[fmi2_base_type_int]));
         addVectorToRepeatedField(fmu_res->mutable_bools()->mutable_vrs(),       cv.second[fmi2_base_type_bool]);
-        addVectorToRepeatedField(fmu_res->mutable_bools()->mutable_values(),    cv.first->m_getBooleanValues);
+        addVectorToRepeatedField(fmu_res->mutable_bools()->mutable_values(),    cv.first->getReals(cv.second[fmi2_base_type_bool]));
         addVectorToRepeatedField(fmu_res->mutable_strings()->mutable_vrs(),     cv.second[fmi2_base_type_str]);
-        addVectorToRepeatedField(fmu_res->mutable_strings()->mutable_values(),  cv.first->m_getStringValues);
+        addVectorToRepeatedField(fmu_res->mutable_strings()->mutable_values(),  cv.first->getReals(cv.second[fmi2_base_type_str]));
     }
 
     string str = results.SerializeAsString();
@@ -528,13 +543,14 @@ static int connectionNamesToVr(std::vector<connection> &connections,
 }
 
 #ifdef USE_MPI
-static void run_server(string fmuPath) {
-    string hdf5Filename; //TODO?
+static void run_server(string fmuPath, string hdf5Filename) {
     FMIServer server(fmuPath, hdf5Filename);
 
     for (;;) {
         int rank, tag;
+        server.m_timer.rotate("pre_wait");
         std::string recv_str = mpi_recv_string(MPI_ANY_SOURCE, &rank, &tag);
+        server.m_timer.rotate("wait");
 
         //shutdown command?
         if (tag == 1) {
@@ -544,7 +560,9 @@ static void run_server(string fmuPath) {
         //let Server handle packet, send reply back to master
         std::string str = server.clientData(recv_str.c_str(), recv_str.length());
         if (str.length() > 0) {
+          server.m_timer.rotate("pre_send");
           MPI_Send((void*)str.c_str(), str.length(), MPI_CHAR, rank, tag, MPI_COMM_WORLD);
+          server.m_timer.rotate("send");
         }
     }
 
@@ -553,6 +571,9 @@ static void run_server(string fmuPath) {
 #endif
 
 int main(int argc, char *argv[] ) {
+    //count everything from here to before the main loop into "setup"
+    fmigo::globals::timer.dont_rotate = true;
+
 #ifdef USE_MPI
     MPI_Init(NULL, NULL);
 
@@ -571,54 +592,56 @@ int main(int argc, char *argv[] ) {
     vector<connection> connections;
     vector<deque<string> > params;
     char csv_separator = ',';
-    string outFilePath = DEFAULT_OUTFILE;
-    int quietMode = 0;
+    string outFilePath = "";
     METHOD method = jacobi;
     int realtimeMode = 0;
-    int printXML = 0;
     vector<int> stepOrder;
     vector<int> fmuVisibilities;
     vector<strongconnection> scs;
-    Solver solver;
     string fieldnameFilename;
     bool holonomic = true;
     bool useHeadersInCSV = false;
     int command_port = 0, results_port = 0;
     bool startPaused = false, solveLoops = false;
     fmigo_csv_fmu csv_fmu;
+    string hdf5Filename;
 
     parseArguments(
             argc, argv, &fmuURIs, &connections, &params, &endTime, &timeStep,
-            &fmigo_loglevel, &csv_separator, &outFilePath, &quietMode, &fmigo::globals::fileFormat,
-            &method, &realtimeMode, &printXML, &stepOrder, &fmuVisibilities,
+            &fmigo_loglevel, &csv_separator, &outFilePath, &fmigo::globals::fileFormat,
+            &method, &realtimeMode, &stepOrder, &fmuVisibilities,
             &scs, &hdf5Filename, &fieldnameFilename, &holonomic, &compliance,
             &command_port, &results_port, &startPaused, &solveLoops, &useHeadersInCSV, &csv_fmu
     );
 
     bool zmqControl = command_port > 0 && results_port > 0;
 
-    if (printXML) {
-        fatal("XML mode not implemented\n");
-    }
-
-    if (quietMode) {
-        warning("-q not implemented\n");
-    }
-
-    if (outFilePath != DEFAULT_OUTFILE) {
-        warning("-o not implemented (output always goes to stdout)\n");
-    }
-
 #ifdef USE_MPI
     if (world_rank > 0) {
         //we're a server
-        //in MPI mode, treat fmuURIs as a list of paths
-        //for each server node, fmuURIs[world_rank-1] is the corresponding FMU path
-        run_server(fmuURIs[world_rank-1]);
+        //In MPI mode, treat fmuURIs as a list of paths,
+        //or as the single FMU filename to use for this node.
+        //See parseargs.cpp for more information.
+        if (fmuURIs.size() == 0 || (fmuURIs.size() > 1 && (size_t)world_rank > fmuURIs.size())) {
+          //checked in parseArguments()
+          fatal("This should never happen\n");
+        } else if (fmuURIs.size() == 1) {
+          run_server(fmuURIs[0], hdf5Filename);
+        } else {
+          run_server(fmuURIs[world_rank-1], hdf5Filename);
+        }
         return 0;
     }
     //world_rank == 0 below
 #endif
+
+    if (outFilePath.size()) {
+        fmigo::globals::outfile = fopen(outFilePath.c_str(), "w");
+
+        if (!fmigo::globals::outfile) {
+            fatal("Failed to open %s\n", outFilePath.c_str());
+        }
+    }
 
     zmq::context_t context(1);
     zmq::socket_t push_socket(context, ZMQ_PUSH);
@@ -645,7 +668,7 @@ int main(int argc, char *argv[] ) {
 
     connectionNamesToVr(connections,scs,clients);
     vector<WeakConnection> weakConnections = setupWeakConnections(connections, clients);
-    setupConstraintsAndSolver(scs, clients, &solver);
+    Solver *solver = setupConstraintsAndSolver(scs, clients);
 
     BaseMaster *master = NULL;
     string fieldnames = getFieldnames(clients);
@@ -655,7 +678,7 @@ int main(int argc, char *argv[] ) {
             fatal("Can only do Jacobi stepping for weak connections when also doing strong coupling\n");
         }
 
-        solver.setSpookParams(relaxation,compliance,timeStep);
+        solver->setSpookParams(relaxation,compliance,timeStep);
         StrongMaster *sm = new StrongMaster(context, clients, weakConnections, solver, holonomic);
         master = sm;
         fieldnames += sm->getForceFieldnames();
@@ -679,7 +702,7 @@ int main(int argc, char *argv[] ) {
     master->zmqControl = zmqControl;
 
     if (useHeadersInCSV || fmigo::globals::fileFormat == tikz) {
-        printf("%s\n",fieldnames.c_str());
+        fprintf(fmigo::globals::outfile, "%s\n",fieldnames.c_str());
     }
 
     if (fieldnameFilename.length() > 0) {
@@ -691,10 +714,10 @@ int main(int argc, char *argv[] ) {
     //init
     for (size_t x = 0; x < clients.size(); x++) {
         //set visibility based on command line
-        master->send(clients[x], fmi2_import_instantiate2( x < fmuVisibilities.size() ? fmuVisibilities[x] : false));
+        clients[x]->queueMessage(fmi2_import_instantiate2( x < fmuVisibilities.size() ? fmuVisibilities[x] : false));
     }
 
-    master->send(clients, fmi2_import_setup_experiment(true, relativeTolerance, 0, endTime >= 0, endTime));
+    master->queueMessage(clients, fmi2_import_setup_experiment(true, relativeTolerance, 0, endTime >= 0, endTime));
 
     /**
      * From the FMI 2.0 spec:
@@ -715,7 +738,7 @@ int main(int argc, char *argv[] ) {
       client->m_fmuState = control_proto::fmu_state_State_initializing;
     }
 
-    master->send(clients, fmi2_import_enter_initialization_mode());
+    master->queueMessage(clients, fmi2_import_enter_initialization_mode());
 
     /**
      * From the FMI 2.0 spec:
@@ -738,7 +761,7 @@ int main(int argc, char *argv[] ) {
       master->solveLoops();
     }
 
-    master->send(clients, fmi2_import_exit_initialization_mode());
+    master->queueMessage(clients, fmi2_import_exit_initialization_mode());
     master->wait();
 
     //prepare solver and all that
@@ -748,21 +771,6 @@ int main(int argc, char *argv[] ) {
     int step = 0;
     int nsteps = (int)round(endTime / timeStep);
 
-#ifndef WIN32
-    //HDF5
-    //TODO: remove HDF5 output entirely? fix issue #120 for now
-    int nrecords = 0;
-    if (hdf5Filename.length() > 0) {
-      size_t expected_records = (1+1.01*endTime/timeStep) * MAX_TIME_COLS;
-      if (expected_records > 1000000) {
-        expected_records = 1000000;
-      }
-      timelog.reserve(expected_records);
-    }
-
-    gettimeofday(&tl1, NULL);
-#endif
-
     if (zmqControl) {
         pushResults(step, 0, endTime, timeStep, push_socket, master, clients, true);
     }
@@ -770,6 +778,9 @@ int main(int argc, char *argv[] ) {
     for (FMIClient *client : clients) {
       client->m_fmuState = control_proto::fmu_state_State_running;
     }
+
+    fmigo::globals::timer.dont_rotate = false;
+    fmigo::globals::timer.rotate("setup");
 
     #ifdef WIN32
         LARGE_INTEGER freq, t1;
@@ -794,11 +805,6 @@ int main(int argc, char *argv[] ) {
         if (master->paused) {
             continue;
         }
-
-#ifndef WIN32
-        //HDF5
-        columnofs = 0;
-#endif
 
         if (csvParam.size() > 0) {
             //zero order hold
@@ -851,14 +857,10 @@ int main(int argc, char *argv[] ) {
         }
 
         if (fmigo::globals::fileFormat != none) {
-            printf("\n");
+            fprintf(fmigo::globals::outfile, "\n");
         }
-
-#ifndef WIN32
-        //HDF5
-        nrecords++;
-#endif
     }
+    fmigo::globals::timer.rotate("pre_shutdown");
 
     if (fmigo::globals::fileFormat != none) {
       printOutputs(endTime, master, clients);
@@ -867,29 +869,11 @@ int main(int argc, char *argv[] ) {
       //finish off with zeroes for any extra forces
       int n = master->getNumForceOutputs();
       for (int i = 0; i < n; i++) {
-          printf("%c0", separator);
+          fprintf(fmigo::globals::outfile, "%c0", separator);
       }
 
-      printf("\n");
+      fprintf(fmigo::globals::outfile, "\n");
     }
-
-
-#ifndef WIN32
-    if (hdf5Filename.length() > 0) {
-      vector<size_t> field_offset;
-      vector<hid_t> field_types;
-      vector<const char*> field_names;
-
-      for (size_t x = 0; x < columnnames.size(); x++) {
-        field_offset.push_back(x*sizeof(int));
-        field_types.push_back(H5T_NATIVE_INT);
-        field_names.push_back(columnnames[x]);
-      }
-
-      writeHDF5File(hdf5Filename, field_offset, field_types, field_names,
-          "Timings", "table", nrecords, columnnames.size()*sizeof(int), &timelog[0]);
-    }
-#endif
 
     for (FMIClient *client : clients) {
       client->terminate();
@@ -909,6 +893,42 @@ int main(int argc, char *argv[] ) {
     }
     MPI_Finalize();
 #endif
+
+    if (fmigo::globals::outfile != stdout) {
+        fclose(fmigo::globals::outfile);
+    }
+    fflush(stdout);
+    fflush(stderr);
+
+#ifdef FMIGO_PRINT_TIMINGS
+    fmigo::globals::timer.rotate("shutdown");
+    set<string> onetime = {
+      "setup",
+      "pre_shutdown",
+      "shutdown",
+      "wait", //not actually onetime, but don't want time spent waiting to be part of percentage
+      "MPI_Send",
+      "zmq::socket::send",
+    };
+    double total = 0, total2 = 0;
+
+    for (auto kv : fmigo::globals::timer.m_durations) {
+      if (!onetime.count(kv.first)) {
+        total += kv.second;
+      } else {
+        info("master: %20s: %10" PRIi64 " µs\n", kv.first.c_str(), (int64_t)kv.second);
+      }
+      total2 += kv.second;
+    }
+
+    for (auto kv : fmigo::globals::timer.m_durations) {
+      if (!onetime.count(kv.first)) {
+        info("master: %20s: %10" PRIi64 " µs (%5.2lf%%)\n", kv.first.c_str(), (int64_t)kv.second, 100*kv.second/total);
+      }
+    }
+    info("master:                Total: %10.2lf seconds (%.1lf ms user time)\n", total2 * 1e-6, total * 1e-3);
+#endif
+
     } catch (zmq::error_t e) {
       fatal("zmq::error_t in %s: %s\n", argv[0], e.what());
     }

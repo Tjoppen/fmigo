@@ -3,6 +3,7 @@
 
 #define FMITCP_VERSION "0.0.1"
 
+#include "common/common.h"
 #include "fmitcp.pb.h"
 #define FMILIB_BUILDING_LIBRARY
 #include <fmilib.h>
@@ -47,7 +48,16 @@ namespace fmitcp {
         hsize_t type_size,
         const void *buf);
 
-  fmitcp_proto::fmitcp_message_Type parseType(const char* data, long size);
+  static fmitcp_proto::fmitcp_message_Type parseType(const char* data, long size) {
+      if (size < 2) {
+          fatal("Client::clientData() needs at least 2 bytes\n");
+      }
+      int t = (uint8_t)data[0] + 256*(uint8_t)data[1];
+      if (!fmitcp_proto::fmitcp_message_Type_IsValid(t)) {
+          fatal("Message type %i invalid\n", t);
+      }
+      return (fmitcp_proto::fmitcp_message_Type)t;
+  }
 }
 
 #endif

@@ -1,5 +1,4 @@
 #include "fmitcp-common.h"
-#include "common/common.h"
 #include <vector>
 #include <string>
 #include <stdint.h>
@@ -125,15 +124,4 @@ fmi2_event_info_t fmitcp::protoEventInfoToFmi2EventInfo(fmitcp_proto::fmi2_event
   info.nextEventTime = eventInfo.nexteventtime();
 
   return info;
-}
-
-fmitcp_proto::fmitcp_message_Type fmitcp::parseType(const char* data, long size) {
-    if (size < 2) {
-        fatal("Client::clientData() needs at least 2 bytes\n");
-    }
-    int t = (uint8_t)data[0] + 256*(uint8_t)data[1];
-    if (!fmitcp_proto::fmitcp_message_Type_IsValid(t)) {
-        fatal("Message type %i invalid\n", t);
-    }
-    return (fmitcp_proto::fmitcp_message_Type)t;
 }

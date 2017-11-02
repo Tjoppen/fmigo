@@ -7,18 +7,21 @@ namespace sc {
 
     /// An element containing 6 entries, 3 spatial and 3 rotational degrees of freedom.
     class JacobianElement {
-
-        private:
+        public:
             Vec3 m_spatial;
             Vec3 m_rotational;
 
-        public:
+            JacobianElement() {
+            }
+            ~JacobianElement() {
+            }
 
-            JacobianElement();
-            virtual ~JacobianElement();
-
-            double multiply(const Vec3& spatial, const Vec3& rotational);
-            double multiply(const JacobianElement& e);
+            double multiply(const Vec3& spatial, const Vec3& rotational) const {
+                return spatial.dot(m_spatial) + rotational.dot(m_rotational);
+            }
+            double multiply(const JacobianElement& e) const {
+                return e.m_spatial.dot(m_spatial) + e.m_rotational.dot(m_rotational);
+            }
 
             void setSpatial(double,double,double);
             void setRotational(double,double,double);

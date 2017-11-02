@@ -6,6 +6,9 @@
 #include "sc/Connector.h"
 #include <vector>
 #include <map>
+extern "C" {
+#include "umfpack.h"
+}
 
 #define SCSOLVER_DEBUGPRINTS 0
 
@@ -18,11 +21,8 @@ private:
     std::vector<Slave*> m_slaves;
     std::vector<Constraint*> m_constraints;
     std::vector<Connector*> m_connectors;
-    std::vector<Equation*> eqs;
+    mutable std::vector<Equation*> eqs;
     std::vector<double> rhs;
-    std::vector<int> aSrow;
-    std::vector<int> aScol;
-    std::vector<double> aSval;
     std::vector<int> Ap;
     std::vector<int> Ai;
     std::vector<double> lambda;
@@ -32,6 +32,9 @@ private:
     std::vector<int> Srow;
     std::vector<int> Scol;
     std::vector<double> Sval;
+    void *Symbolic, *Numeric;
+    double Info [UMFPACK_INFO], Control [UMFPACK_CONTROL];
+
 
     /// Spook parameter "a"
     double m_a;
@@ -48,8 +51,11 @@ private:
     //for internal use only
     void constructS();
 
+    void solve1x1();
+    void solve2x2();
+
 public:
-    std::vector<Equation*> getEquations();
+    const std::vector<Equation*>& getEquations() const;
 
     //sparse matrix of mobilities
     std::map<std::pair<int,int>, JacobianElement> m_mobilities;
@@ -77,11 +83,6 @@ public:
      * @brief Get the number of rows in the system matrix
      */
     int getSystemMatrixRows();
-
-    /**
-     * @brief Get number of columns in the system matrix.
-     */
-    int getSystemMatrixCols();
     
     /// Get a constraint
     Constraint * getConstraint(int i);

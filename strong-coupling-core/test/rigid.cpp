@@ -302,7 +302,7 @@ int main(int argc, char ** argv){
             for (int j = 0; j < eqs.size(); ++j){
                 Equation * eq = eqs[j];
 
-                for (Connector *conn : eq->getConnectors()) {
+                for (Connector *conn : eq->m_connectors) {
                     RigidBody * body = (RigidBody *)conn->m_userData;
 
                     Vec3 spatSeed = eq->jacobianElementForConnector(conn).getSpatial(),

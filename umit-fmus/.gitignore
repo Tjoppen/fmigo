@@ -5,7 +5,6 @@
 *.mex*
 slprj/
 nbproject/
-*.fmu
 *.log
 *.aux
 *.bbl

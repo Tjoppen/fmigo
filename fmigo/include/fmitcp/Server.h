@@ -9,6 +9,7 @@
 #include <map>
 #include <list>
 #include "common/common.h"
+#include "common/timer.h"
 
 using namespace std;
 
@@ -17,10 +18,14 @@ namespace fmitcp {
   /// Serves an FMU to a port via FMI/TCP.
   class Server {
 
+  public:
+    //timing stuff
+    fmigo::timer m_timer;
+
   private:
     bool m_sendDummyResponses;
     bool m_fmuParsed;
-    ::google::protobuf::int32 nextStateId;
+    ::google::protobuf::int32 lastStateId, nextStateId;
     std::map<::google::protobuf::int32, fmi2_FMU_state_t> stateMap;
 
     //future value of currentCommunicationPoint, and a guess for future communicationStepSize
@@ -28,6 +33,10 @@ namespace fmitcp {
     double currentCommunicationPoint, communicationStepSize;
 
     void setStartValues();
+
+    fmi2_status_t getDirectionalDerivatives(
+        const fmitcp_proto::fmi2_import_get_directional_derivative_req& r,
+        fmitcp_proto::fmi2_import_get_directional_derivative_res& response);
   protected:
     string m_fmuPath;
 
@@ -55,9 +64,11 @@ namespace fmitcp {
     std::vector<char> hdf5data; //this should be a map<int,vector<char>> once we start getting into having multiple FMU instances
     size_t rowsz, nrecords;
 
+    std::string clientDataInner(const char *data, size_t size);
+
   public:
 
-    Server(string fmuPath, std::string hdf5Filename = "");
+    explicit Server(string fmuPath, std::string hdf5Filename = "");
     virtual ~Server();
 
     /// To be implemented in subclass

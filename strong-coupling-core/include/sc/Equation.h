@@ -3,6 +3,7 @@
 
 #include "sc/Connector.h"
 #include "sc/JacobianElement.h"
+#include "stdio.h"
 
 namespace sc {
 
@@ -20,12 +21,12 @@ private:
 public:
     //index in system (row/column in S)
     int m_index;
+    std::vector<Connector*> m_connectors;
 
     Equation();
     Equation(Connector*,Connector*);
     virtual ~Equation();
 
-    std::vector<Connector*> getConnectors() const;
     void setDefault();
     void setConnectors(Connector *,Connector *);
 
@@ -33,14 +34,24 @@ public:
     bool m_isSpatial, m_isRotational;
 
     /// Get constraint violation, g
-    double getViolation();
+    double getViolation() const {
+        return m_g;
+    }
     void setViolation(double g);
     void setDefaultViolation();
 
     /// Get constraint velocity, G*W
-    double getVelocity();
     void setRelativeVelocity(double);
-    double getFutureVelocity();
+
+    double getVelocity() const {
+        return  m_G_A.multiply(m_connA->m_velocity, m_connA->m_angularVelocity) +
+                m_G_B.multiply(m_connB->m_velocity, m_connB->m_angularVelocity) + m_relativeVelocity;
+    }
+
+    double getFutureVelocity() const {
+        return  m_G_A.multiply(m_connA->m_futureVelocity, m_connA->m_futureAngularVelocity) +
+                m_G_B.multiply(m_connB->m_futureVelocity, m_connB->m_futureAngularVelocity);
+    }
 
     void setG(  double,double,double,
                 double,double,double,
@@ -52,7 +63,16 @@ public:
                 const Vec3& rotationalB);
 
     bool haveOverlappingFMUs(Equation *other) const;
-    JacobianElement& jacobianElementForConnector(Connector *conn);
+    JacobianElement& jacobianElementForConnector(Connector *conn) {
+        if (conn == m_connA) {
+            return m_G_A;
+        } else if (conn == m_connB) {
+            return m_G_B;
+        } else {
+            fprintf(stderr, "Attempted to jacobianElementForConnector() with connector which is not part of the Equation\n");
+            exit(1);
+        }
+    }
 };
 
 }

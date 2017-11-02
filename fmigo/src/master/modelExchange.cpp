@@ -94,7 +94,7 @@ static int fmu_function(double t, const double x[], double dxdt[], void* params)
     p->FMIGO_ME_WAIT();
 
     for(auto client: p->clients)
-        p->stepper->get_storage().get_current_derivatives(dxdt, client->getId());
+        p->stepper->get_storage().get_current_derivatives(dxdt, client->m_id);
 
     for(auto client: p->clients){
         if(client->getNumEventIndicators())
@@ -107,7 +107,7 @@ static int fmu_function(double t, const double x[], double dxdt[], void* params)
     //debug("x[0] %f x[1] %f\n",x[0],x[1]);
     for(auto client: p->clients){
         if(client->getNumEventIndicators()){
-            if(p->stepper->get_storage().past_event(client->getId())){
+            if(p->stepper->get_storage().past_event(client->m_id)){
                 p->stateEvent = true;
                 p->t_past = t;
                 return GSL_SUCCESS;
@@ -185,7 +185,7 @@ void ModelExchangeStepper::init_fmu_model(fmu_model &m,  const std::vector<FMICl
     wait();
 
     for(auto client: clients)
-        get_storage().get_current_states(m.model->x, client->getId());
+        get_storage().get_current_states(m.model->x, client->m_id);
 }
 
 /** epce_post_step()
@@ -237,10 +237,12 @@ void ModelExchangeStepper::prepareME() {
     init_fmu_model(m_model, me_clients);
     fmu_parameters* p = get_p(m_model);
     int filter_length = get_storage().get_current_states().size();
+#ifdef MODEL_EXCHANGE_FILTER
     cgsl_model* e_model = cgsl_epce_default_model_init(m_model.model,  /* model */
                                                        2,
                                                        epce_post_step,
                                                        p);
+#endif
 
     //m_sim = (cgsl_simulation *)malloc(sizeof(cgsl_simulation));
     m_sim = cgsl_init_simulation(
@@ -276,7 +278,7 @@ void ModelExchangeStepper::restoreStates(cgsl_simulation &sim){
     //restore previous states
 
     for(auto client: me_clients)
-        get_storage().get_current_states(sim.model->x,client->getId());
+        get_storage().get_current_states(sim.model->x,client->m_id);
 
     memcpy(sim.i.evolution->dydt_out, p->backup.dydt,
            sim.model->n_variables * sizeof(p->backup.dydt[0]));
@@ -306,7 +308,7 @@ void ModelExchangeStepper::storeStates(cgsl_simulation &sim){
 
     wait();
     for(auto client: me_clients)
-        get_storage().get_current_states(sim.model->x,client->getId());
+        get_storage().get_current_states(sim.model->x,client->m_id);
     get_storage().sync();
 }
 
@@ -414,7 +416,7 @@ void ModelExchangeStepper::newDiscreteStates(){
                 newDiscreteStatesNeeded = true;
             }
             if(client->m_event_info.terminateSimulation){
-                debug("modelExchange.cpp: client %d terminated simulation\n",client->getId());
+                debug("modelExchange.cpp: client %d terminated simulation\n",client->m_id);
                 exit(1);
             }
         }

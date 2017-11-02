@@ -28,12 +28,12 @@ FMIClient::FMIClient(int world_rank, int id) : fmitcp::Client(world_rank), sc::S
 FMIClient::FMIClient(zmq::context_t &context, int id, string uri) : fmitcp::Client(context, uri), sc::Slave() {
 #endif
     m_id = id;
-    m_master = NULL;
     m_fmi2Instance = NULL;
     m_context = NULL;
     m_fmi2Outputs = NULL;
     m_stateId = 0;
     m_fmuState = control_proto::fmu_state_State_instantiating;
+    m_hasComputedStrongConnectorValueReferences = false;
 };
 
 void FMIClient::terminate() {
@@ -52,10 +52,6 @@ FMIClient::~FMIClient() {
   if(m_context!=NULL)       fmi_import_free_context(m_context);
   fmi_import_rmdir(&m_jmCallbacks, m_workingDir.c_str());
   if(m_fmi2Outputs!=NULL)   fmi2_import_free_variable_list(m_fmi2Outputs);
-};
-
-int FMIClient::getId(){
-    return m_id;
 };
 
 void FMIClient::on_get_xml_res(fmitcp_proto::jm_log_level_enu_t logLevel, string xml) {
@@ -197,23 +193,6 @@ void FMIClient::on_fmi2_import_set_real_res(fmitcp_proto::fmi2_status_t status){
     m_master->onSlaveSetReal(this);
 };
 
-void FMIClient::on_fmi2_import_get_real_res(const deque<double>& values, fmitcp_proto::fmi2_status_t status){
-    // Store result
-    m_getRealValues = values;
-};
-
-void FMIClient::on_fmi2_import_get_integer_res(const deque<int>& values, fmitcp_proto::fmi2_status_t status) {
-    m_getIntegerValues = values;
-}
-
-void FMIClient::on_fmi2_import_get_boolean_res(const deque<bool>& values, fmitcp_proto::fmi2_status_t status) {
-    m_getBooleanValues = values;
-}
-
-void FMIClient::on_fmi2_import_get_string_res(const deque<string>& values, fmitcp_proto::fmi2_status_t status) {
-    m_getStringValues = values;
-}
-
 void FMIClient::on_fmi2_import_get_fmu_state_res(int stateId, fmitcp_proto::fmi2_status_t status){
     //remember stateId
     m_stateId = stateId;
@@ -229,12 +208,6 @@ void FMIClient::on_fmi2_import_free_fmu_state_res(fmitcp_proto::fmi2_status_t st
 };
 
 void FMIClient::on_fmi2_import_get_directional_derivative_res(const vector<double>& dz, fmitcp_proto::fmi2_status_t status){
-    /*for (size_t x = 0; x < dz.size(); x++) {
-         debug("%f ", dz[x]);
-    }
-     debug("\n");*/
-
-    m_getDirectionalDerivativeValues.push_back(dz);
     m_master->onSlaveDirectionalDerivative(this);
 }
 void FMIClient::on_fmi2_import_new_discrete_states_res             (fmitcp_proto::fmi2_event_info_t event_info){
@@ -269,24 +242,24 @@ void FMIClient::on_fmi2_import_new_discrete_states_res             (fmitcp_proto
 
 void FMIClient::on_fmi2_import_get_derivatives_res                 (const vector<double>& derivatives, fmitcp_proto::fmi2_status_t status){
 #ifdef USE_GPL
-    m_master->get_storage().push_to(getId(),STORAGE::derivatives, derivatives);
+    m_master->get_storage().push_to(m_id,STORAGE::derivatives, derivatives);
 #endif
 }
 void FMIClient::on_fmi2_import_get_event_indicators_res            (const vector<double>& eventIndicators, fmitcp_proto::fmi2_status_t status){
 #ifdef USE_GPL
-    m_master->get_storage().push_to(getId(),STORAGE::indicators,eventIndicators);
+    m_master->get_storage().push_to(m_id,STORAGE::indicators,eventIndicators);
 #endif
 }
 //void on_fmi2_import_eventUpdate_res                     (int mid, bool iterationConverged, bool stateValueReferencesChanged, bool stateValuesChanged, bool terminateSimulation, bool upcomingTimeEvent, double nextEventTime, fmitcp_proto::fmi2_status_t status);
 //void on_fmi2_import_completed_event_iteration_res       (int mid, fmitcp_proto::fmi2_status_t status);
 void FMIClient::on_fmi2_import_get_continuous_states_res           (const vector<double>& states, fmitcp_proto::fmi2_status_t status){
 #ifdef USE_GPL
-    m_master->get_storage().push_to(getId(),STORAGE::states,states);
+    m_master->get_storage().push_to(m_id,STORAGE::states,states);
 #endif
 }
 void FMIClient::on_fmi2_import_get_nominal_continuous_states_res   (const vector<double>& nominals, fmitcp_proto::fmi2_status_t status){
 #ifdef USE_GPL
-    m_master->get_storage().push_to(getId(),STORAGE::nominals,nominals);
+    m_master->get_storage().push_to(m_id,STORAGE::nominals,nominals);
 #endif
 }
 //void on_fmi2_import_terminate_res                       (int mid, fmitcp_proto::fmi2_status_t status);
@@ -301,22 +274,24 @@ StrongConnector * FMIClient::createConnector(){
     return conn;
 };
 
-StrongConnector* FMIClient::getConnector(int i){
+StrongConnector* FMIClient::getConnector(int i) const{
     return (StrongConnector*) Slave::getConnector(i);
 };
 
-void FMIClient::setConnectorValues(std::vector<int> valueRefs, std::vector<double> values){
+void FMIClient::setConnectorValues(const std::vector<int>& valueRefs, const std::vector<double>& values){
     for(int i=0; i<numConnectors(); i++)
         getConnector(i)->setValues(valueRefs,values);
 };
 
-void FMIClient::setConnectorFutureVelocities(std::vector<int> valueRefs, std::vector<double> values){
+void FMIClient::setConnectorFutureVelocities(const std::vector<int>& valueRefs, const std::vector<double>& values){
     for(int i=0; i<numConnectors(); i++)
         getConnector(i)->setFutureValues(valueRefs,values);
 };
 
-std::vector<int> FMIClient::getStrongConnectorValueReferences(){
-    std::vector<int> valueRefs;
+const std::vector<int>& FMIClient::getStrongConnectorValueReferences() const {
+    if (m_hasComputedStrongConnectorValueReferences) {
+        return m_strongConnectorValueReferences;
+    }
 
     for(int i=0; i<numConnectors(); i++){
         StrongConnector* c = getConnector(i);
@@ -324,42 +299,43 @@ std::vector<int> FMIClient::getStrongConnectorValueReferences(){
         // Do we need position?
         if(c->hasPosition()){
             std::vector<int> refs = c->getPositionValueRefs();
-            valueRefs.insert(valueRefs.end(), refs.begin(), refs.end());
+            m_strongConnectorValueReferences.insert(m_strongConnectorValueReferences.end(), refs.begin(), refs.end());
         }
 
         // Do we need quaternion?
         if(c->hasQuaternion()){
             std::vector<int> refs = c->getQuaternionValueRefs();
-            valueRefs.insert(valueRefs.end(), refs.begin(), refs.end());
+            m_strongConnectorValueReferences.insert(m_strongConnectorValueReferences.end(), refs.begin(), refs.end());
         }
 
         if (c->hasShaftAngle()) {
             std::vector<int> refs = c->getShaftAngleValueRefs();
-            valueRefs.insert(valueRefs.end(), refs.begin(), refs.end());
+            m_strongConnectorValueReferences.insert(m_strongConnectorValueReferences.end(), refs.begin(), refs.end());
         }
 
         // Do we need velocity?
         if(c->hasVelocity()){
             std::vector<int> refs = c->getVelocityValueRefs();
-            valueRefs.insert(valueRefs.end(), refs.begin(), refs.end());
+            m_strongConnectorValueReferences.insert(m_strongConnectorValueReferences.end(), refs.begin(), refs.end());
         }
 
         // Do we need angular velocity?
         if(c->hasAngularVelocity()){
             std::vector<int> refs = c->getAngularVelocityValueRefs();
-            valueRefs.insert(valueRefs.end(), refs.begin(), refs.end());
+            m_strongConnectorValueReferences.insert(m_strongConnectorValueReferences.end(), refs.begin(), refs.end());
         }
     }
 
-    return valueRefs;
+    m_hasComputedStrongConnectorValueReferences = true;
+    return m_strongConnectorValueReferences;
 };
 
-std::vector<int> FMIClient::getStrongSeedInputValueReferences(){
+const std::vector<int>& FMIClient::getStrongSeedInputValueReferences() const {
     //this used to be just a copy-paste of getStrongConnectorValueReferences() - better to just call the function itself directly
     return getStrongConnectorValueReferences();
 };
 
-std::vector<int> FMIClient::getStrongSeedOutputValueReferences(){
+const std::vector<int>& FMIClient::getStrongSeedOutputValueReferences() const {
     //same here - just a copy-paste job
     return getStrongConnectorValueReferences();
 };
@@ -380,41 +356,6 @@ string FMIClient::getSpaceSeparatedFieldNames(string prefix) const {
     return oss.str();
 }
 
-void FMIClient::sendGetX(const SendGetXType& typeRefs) {
-    clearGetValues();
-
-    for (const auto& it : typeRefs) {
-        if (it.second.size() > 0) {
-            switch (it.first) {
-            case fmi2_base_type_real:
-                sendMessage(fmi2_import_get_real(it.second));
-                break;
-            case fmi2_base_type_int:
-                sendMessage(fmi2_import_get_integer(it.second));
-                break;
-            case fmi2_base_type_bool:
-                sendMessage(fmi2_import_get_boolean(it.second));
-                break;
-            case fmi2_base_type_str:
-                sendMessage(fmi2_import_get_string(it.second));
-                break;
-            case fmi2_base_type_enum:
-                fatal("fmi2_base_type_enum snuck its way into FMIClient::sendGetX() somehow\n");
-            }
-        }
-    }
-}
-
-//converts a vector<MultiValue> to vector<T>, with the help of a member pointer of type T
-template<typename T> vector<T> vectorToBaseType(const vector<MultiValue>& in, T MultiValue::*member) {
-    vector<T> ret;
-    ret.reserve(in.size());
-    for (const MultiValue& it : in) {
-        ret.push_back(it.*member);
-    }
-    return ret;
-}
-
 void FMIClient::sendSetX(const SendSetXType& typeRefsValues) {
     for (auto it = typeRefsValues.begin(); it != typeRefsValues.end(); it++) {
         if (it->second.first.size() != it->second.second.size()) {
@@ -424,16 +365,16 @@ void FMIClient::sendSetX(const SendSetXType& typeRefsValues) {
         if (it->second.first.size() > 0) {
             switch (it->first) {
             case fmi2_base_type_real:
-                sendMessage(fmi2_import_set_real   (it->second.first, vectorToBaseType(it->second.second, &MultiValue::r)));
+                queueMessage(fmi2_import_set_real   (it->second.first, vectorToBaseType(it->second.second, &MultiValue::r)));
                 break;
             case fmi2_base_type_int:
-                sendMessage(fmi2_import_set_integer(it->second.first, vectorToBaseType(it->second.second, &MultiValue::i)));
+                queueMessage(fmi2_import_set_integer(it->second.first, vectorToBaseType(it->second.second, &MultiValue::i)));
                 break;
             case fmi2_base_type_bool:
-                sendMessage(fmi2_import_set_boolean(it->second.first, vectorToBaseType(it->second.second, &MultiValue::b)));
+                queueMessage(fmi2_import_set_boolean(it->second.first, vectorToBaseType(it->second.second, &MultiValue::b)));
                 break;
             case fmi2_base_type_str:
-                sendMessage(fmi2_import_set_string (it->second.first, vectorToBaseType(it->second.second, &MultiValue::s)));
+                queueMessage(fmi2_import_set_string (it->second.first, vectorToBaseType(it->second.second, &MultiValue::s)));
                 break;
             case fmi2_base_type_enum:
                 fatal("fmi2_base_type_enum snuck its way into FMIClient::sendSetX() somehow\n");
@@ -443,10 +384,23 @@ void FMIClient::sendSetX(const SendSetXType& typeRefsValues) {
 }
 //send(it->first, fmi2_import_set_real(0, 0, it->second.first, it->second.second));
 
-void FMIClient::clearGetValues() {
-    m_getRealValues.clear();
-    m_getIntegerValues.clear();
-    m_getBooleanValues.clear();
-    m_getStringValues.clear();
-    m_getDirectionalDerivativeValues.clear();
+void FMIClient::queueX(const SendGetXType& typeRefs) {
+  for (const auto& it : typeRefs) {
+    switch (it.first) {
+    case fmi2_base_type_real:
+      queueReals(it.second);
+      break;
+    case fmi2_base_type_int:
+      queueInts(it.second);
+      break;
+    case fmi2_base_type_bool:
+      queueBools(it.second);
+      break;
+    case fmi2_base_type_str:
+      queueStrings(it.second);
+      break;
+    case fmi2_base_type_enum:
+      fatal("fmi2_base_type_enum snuck its way into Client::queueX() somehow\n");
+    }
+  }
 }

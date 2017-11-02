@@ -1,4 +1,5 @@
 #include "modelDescription.h"
+#include <math.h>
 
 typedef struct {
   int engaged;
@@ -57,7 +58,7 @@ static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real comm
   fmi2Real omega_l_copy = s->md.omega_l;
   fmi2Real u =  s->md.gap;
   fmi2Real l = -s->md.gap;
-  fmi2Real hh = 0.05;       //internal step
+  fmi2Real hh = communicationStepSize/2.0;       //internal step
   fmi2Real tend = currentCommunicationPoint + communicationStepSize;
   fmi2Real ee = 0.0;        //resitution
   //M = diag([m1,m2]);
@@ -67,6 +68,8 @@ static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real comm
   fmi2Real tol = 1e-4;
   //simplify linear algebra
   fmi2Real k = 1.0/s->md.j1 + square(s->md.alpha)/s->md.j2;
+
+  //s->md.alpha = cos(2*M_PI*currentCommunicationPoint / 4) > 0 ? 10 : 1000;
 
   //compute Hinv = (inv(H))(1:2,:)
   fmi2Real Hinv[2][3] = {
@@ -78,7 +81,8 @@ static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real comm
     Hinv[1][0], Hinv[1][1], Hinv[1][2]
   );*/
 
-  for (fmi2Real t = currentCommunicationPoint; t < currentCommunicationPoint + communicationStepSize; t += hh) {
+  fmi2Real t;
+  for (t = currentCommunicationPoint; t < currentCommunicationPoint + communicationStepSize; t += hh) {
     fmi2Real h = min2(currentCommunicationPoint + communicationStepSize - t, hh);
     fmi2Real gamma = 1/(1+4*tau/h);
     /*fprintf(stderr, "t=%f, h=%f, engaged=%i, dphi=%f, %f < %f < %f? dg = v*G' = %f ", t, h, s->simulation.engaged, s->md.dphi,

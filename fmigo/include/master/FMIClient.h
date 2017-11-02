@@ -78,14 +78,6 @@ namespace fmitcp_master {
         /// Returns value references of positions and velocities of all connectors
         const std::vector<int>& getStrongConnectorValueReferences() const;
 
-        /// Get seed value references, this is equivalent to forces
-        const std::vector<int>& getStrongSeedInputValueReferences() const;
-
-        /// Get "result" value references, this is velocities
-        const std::vector<int>& getStrongSeedOutputValueReferences() const;
-
-        std::vector<int> getRealOutputValueReferences();
-
         void setConnectorValues          (const std::vector<int>& valueRefs, const std::vector<double>& values);
         void setConnectorFutureVelocities(const std::vector<int>& valueRefs, const std::vector<double>& values);
 

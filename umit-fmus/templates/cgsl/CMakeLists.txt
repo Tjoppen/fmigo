@@ -15,6 +15,9 @@ target_link_libraries (cgsl LINK_PUBLIC gsl gslcblas)
 if (UNIX)
   target_link_libraries (cgsl LINK_PUBLIC m)
 endif ()
+if (WIN32 AND MSVC14)
+  target_link_libraries(cgsl LINK_PUBLIC legacy_stdio_definitions)
+endif ()
 
 add_subdirectory(demo)
 

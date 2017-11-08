@@ -30,6 +30,16 @@ struct MultiValue {
     }
 };
 
+//converts a vector<MultiValue> to vector<T>, with the help of a member pointer of type T
+template<typename T> std::vector<T> vectorToBaseType(const std::vector<MultiValue>& in, T MultiValue::*member) {
+    std::vector<T> ret;
+    ret.reserve(in.size());
+    for (const MultiValue& it : in) {
+        ret.push_back(it.*member);
+    }
+    return ret;
+}
+
 class WeakConnection {
 public:
     connection conn;

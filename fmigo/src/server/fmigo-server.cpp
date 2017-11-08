@@ -32,11 +32,6 @@ static void start_monitor(zmq::socket_t *socket, zmq::context_t *context) {
   //monitor until client disconnects
   mon.monitor(*socket, "inproc://monitor");
 
-#ifdef WIN32
-  //zmq::poll() is incredibly slow on Windows for some strange reason
-  //for now we'll have to resort to exit()
-  exit(0);
-#else
   //send stop message to main thread
   zmq::socket_t stopper2(*context, ZMQ_PAIR);
   stopper2.connect("inproc://stopper");
@@ -44,7 +39,6 @@ static void start_monitor(zmq::socket_t *socket, zmq::context_t *context) {
   stopper2.send(msg);
 
   //at this point this thraed is going to be waiting for join()
-#endif
 }
 
 static void handleMessage(zmq::socket_t& socket, FMIServer& server, int port) {
@@ -52,12 +46,15 @@ static void handleMessage(zmq::socket_t& socket, FMIServer& server, int port) {
   if (!socket.recv(&msg)) {
       fatal("Port %i: !socket.recv(&msg)\n", port);
   }
+  server.m_timer.rotate("recv");
   string str = server.clientData(static_cast<char*>(msg.data()), msg.size());
 
   if (str.length() > 0) {
     zmq::message_t rep(str.length());
     memcpy(rep.data(), str.data(), str.length());
+    server.m_timer.rotate("pre_send");
     socket.send(rep, ZMQ_DONTWAIT);
+    server.m_timer.rotate("send");
   }
 }
 
@@ -73,6 +70,8 @@ int main(int argc, char *argv[]) {
   parse_server_args(argc, argv, &fmuPath, &hdf5Filename, &debugLogging, &fmigo_loglevel, &port);
 
   FMIServer server(fmuPath, hdf5Filename);
+  //HACKHACK: count waiting for the master to start toward "instantiate"
+  server.m_timer.dont_rotate = true;
   if (!server.isFmuParsed())
     return EXIT_FAILURE;
 
@@ -84,7 +83,6 @@ int main(int argc, char *argv[]) {
   zmq::socket_t socket(context, ZMQ_REP);
   socket.bind(oss.str().c_str());
 
-#ifndef WIN32
   //use monitor + inproc PAIR to stop when the client disconnects
   //maybe there's an easier way? the ZMQ documentation has this to say (http://zeromq.org/area:faq):
   //
@@ -98,17 +96,9 @@ int main(int argc, char *argv[]) {
   //
   zmq::socket_t stopper(context, ZMQ_PAIR);
   stopper.bind("inproc://stopper");
-#endif
 
   std::thread monitor_thread(start_monitor, &socket, &context);
 
-#ifdef WIN32
-  for (;;) {
-    //since zmq::poll() is broken on Windows, all we can do is look indefinitely,
-    //doing blocking recv()s until the monitor detects that the master has disconnected
-    handleMessage(socket, server, port);
-  }
-#else
   for (;;) {
     zmq::pollitem_t items[2];
     items[0].socket = (void*)socket;
@@ -116,8 +106,10 @@ int main(int argc, char *argv[]) {
     items[1].socket = (void*)stopper;
     items[1].events = ZMQ_POLLIN;
 
+    server.m_timer.rotate("pre_poll");
     //wait indefinitely, for now
     int n = zmq::poll(items, 2, -1);
+    server.m_timer.rotate("poll");
 
     if (items[0].revents & ZMQ_POLLIN) {
       handleMessage(socket, server, port);
@@ -129,7 +121,6 @@ int main(int argc, char *argv[]) {
       break;
     }
   }
-#endif
 
   return EXIT_SUCCESS;
  } catch (zmq::error_t e) {

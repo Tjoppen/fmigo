@@ -9,7 +9,6 @@
 #include "master/StrongConnector.h"
 #include "WeakConnection.h"
 #include "common/common.h"
-#include <deque>
 #include <FMI2/fmi2_functions.h>
 #include "../master/control.pb.h"
 
@@ -23,15 +22,14 @@ namespace fmitcp_master {
     typedef std::map<std::string, variable> variable_map;
     typedef std::map<std::pair<int, fmi2_base_type_enu_t>, variable> variable_vr_map;
 
-    class BaseMaster;
-
     /// Adds high-level FMI methods to the Client, similar to FMILibrary functions.
     class FMIClient : public fmitcp::Client, public sc::Slave {
 
     private:
-        int m_id;
         std::string m_xml;
         bool m_initialized;
+        mutable bool m_hasComputedStrongConnectorValueReferences;
+        mutable std::vector<int> m_strongConnectorValueReferences;
 
         // variables for modelDescription.xml
         jm_callbacks m_jmCallbacks;
@@ -46,23 +44,14 @@ namespace fmitcp_master {
         void setVariables();
 
     public:
+        int m_id;
         int m_stateId;
 
-        BaseMaster * m_master;
         fmi2_event_info_t m_event_info;
-
-        /// Last fetched result from getX
-        std::deque<double>      m_getRealValues;
-        std::deque<int>         m_getIntegerValues;
-        std::deque<bool>        m_getBooleanValues;
-        std::deque<std::string> m_getStringValues;
-
-        /// Values returned from calls to fmiGetDirectionalDerivative()
-        std::deque<std::vector<double> > m_getDirectionalDerivativeValues;
 
         control_proto::fmu_state::State m_fmuState;
 
-        void clearGetValues();
+        void queueX(const SendGetXType& typeRefs);
 
         std::string getModelName() const;
         fmi2_fmu_kind_enu_t getFmuKind();
@@ -78,38 +67,19 @@ namespace fmitcp_master {
         void terminate(); //called just before dtor, to allow controller to see if any FMU is stuck on terminating
         virtual ~FMIClient();
 
-        int getId();
-
         bool isInitialized();
 
         /// Create a strong coupling connector for this client
         StrongConnector* createConnector();
 
         /// Get a connector. See getNumConnectors().
-        StrongConnector* getConnector(int i);
-
-        /// Accumulate a get_directional_derivative request
-        void pushDirectionalDerivativeRequest(int fmiId, std::vector<int> v_ref, std::vector<int> z_ref, std::vector<double> dv);
-
-        /// Execute the next directional derivative request in the queue
-        void shiftExecuteDirectionalDerivativeRequest();
-
-        /// Get the total number of directional derivative requests queued
-        int numDirectionalDerivativeRequests();
+        StrongConnector* getConnector(int i) const;
 
         /// Returns value references of positions and velocities of all connectors
-        std::vector<int> getStrongConnectorValueReferences();
+        const std::vector<int>& getStrongConnectorValueReferences() const;
 
-        /// Get seed value references, this is equivalent to forces
-        std::vector<int> getStrongSeedInputValueReferences();
-
-        /// Get "result" value references, this is velocities
-        std::vector<int> getStrongSeedOutputValueReferences();
-
-        std::vector<int> getRealOutputValueReferences();
-
-        void setConnectorValues          (std::vector<int> valueRefs, std::vector<double> values);
-        void setConnectorFutureVelocities(std::vector<int> valueRefs, std::vector<double> values);
+        void setConnectorValues          (const std::vector<int>& valueRefs, const std::vector<double>& values);
+        void setConnectorFutureVelocities(const std::vector<int>& valueRefs, const std::vector<double>& values);
 
         bool hasCapability(fmi2_capabilities_enu_t cap) const;
 
@@ -149,10 +119,6 @@ namespace fmitcp_master {
         //void on_fmi2_import_set_integer_res                     (fmitcp_proto::fmi2_status_t status);
         //void on_fmi2_import_set_boolean_res                     (fmitcp_proto::fmi2_status_t status);
         //void on_fmi2_import_set_string_res                      (fmitcp_proto::fmi2_status_t status);
-        void on_fmi2_import_get_real_res                        (const deque<double>& values, fmitcp_proto::fmi2_status_t status);
-        void on_fmi2_import_get_integer_res                     (const deque<int>& values, fmitcp_proto::fmi2_status_t status);
-        void on_fmi2_import_get_boolean_res                     (const deque<bool>& values, fmitcp_proto::fmi2_status_t status);
-        void on_fmi2_import_get_string_res                      (const deque<string>& values, fmitcp_proto::fmi2_status_t status);
         void on_fmi2_import_get_fmu_state_res                   (int stateId, fmitcp_proto::fmi2_status_t status);
         void on_fmi2_import_set_fmu_state_res                   (fmitcp_proto::fmi2_status_t status);
         void on_fmi2_import_free_fmu_state_res                  (fmitcp_proto::fmi2_status_t status);
@@ -162,7 +128,6 @@ namespace fmitcp_master {
         //returns string of field names, all of which prepended with prefix
         std::string getSpaceSeparatedFieldNames(std::string prefix) const;
 
-        void sendGetX(const SendGetXType& typeRefs);
         void sendSetX(const SendSetXType& typeRefsValues);
     };
 };

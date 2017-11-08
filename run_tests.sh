@@ -2,12 +2,18 @@
 set -e
 source boilerplate.sh
 
-(cd ${FMUS_DIR}/me      && ( ./test_me.sh ||  ( echo "failed modelExchange" && exit 1 ) ) )
+# Grab configuration, for figuring if we have GPL enabled or not
+for e in $(fmigo-mpi -e); do export "$e"; done
+
+if [ $USE_GPL -eq 1 ]
+then
+  (cd umit-fmus/me              && ( ./test_me.sh ||  ( echo "failed modelExchange" && exit 1 ) ) )
+  (cd articles/truck            && ( python test_gsl_trucks.py  || ( echo "failed GSL truck test" && exit 1 ) ) )
+fi
 (cd articles/work-reports       && ( ./run_tests.sh  || ( echo "failed tests in work-reports" && exit 1 ) ) )
-(cd articles/truck              && ( python test_gsl_trucks.py  || ( echo "failed GSL truck test" && exit 1 ) ) )
-(cd ${FMUS_DIR}/tests           && ( ./run_tests.sh ||  ( echo "failed umit-fmus tests" && exit 1 ) ) )
-(cd build                       && ( ctest || ( echo "ctest failed" && exit 1 ) ) )
-(cd ${FMUS_DIR}/meWrapper && pwd &&( ./test_wrapper.sh ||  ( echo "failed wrapper" && exit 1 ) ) )
+(cd umit-fmus/tests             && ( ./run_tests.sh ||  ( echo "failed umit-fmus tests" && exit 1 ) ) )
+(cd ${BUILD_DIR}                && ( ctest || ( echo "ctest failed" && exit 1 ) ) )
+(cd umit-fmus/meWrapper         &&( ./test_wrapper.sh ||  ( echo "failed wrapper" && exit 1 ) ) )
 
 # Check -f none
 touch empty_file
@@ -34,5 +40,14 @@ do
   echo Setting incorrect $t fails as expected
 done
 rm temp
+
+# Test wrapper, both Debug and Release
+python umit-fmus/wrapper.py -t Debug   ${FMUS_DIR}/me/bouncingBall/bouncingBall.fmu ${BUILD_DIR}/bouncingBall_wrapped_Debug.fmu
+python umit-fmus/wrapper.py -t Release ${FMUS_DIR}/me/bouncingBall/bouncingBall.fmu ${BUILD_DIR}/bouncingBall_wrapped_Release.fmu
+
+# Test alternative MPI command line
+mpiexec -np 1 fmigo-mpi -f none \
+  : -np 1 fmigo-mpi ${FMUS_DIR}/gsl2/clutch2/clutch2.fmu
+  : -np 1 fmigo-mpi ${FMUS_DIR}/gsl2/clutch2/clutch2.fmu
 
 echo All tests OK

@@ -18,6 +18,7 @@ using namespace fmigo_storage;
 
 namespace fmitcp_master {
     class BaseMaster {
+        int rendezvous;
     protected:
         std::vector<FMIClient*> m_clients;
         std::vector<WeakConnection> m_weakConnections;
@@ -34,12 +35,16 @@ namespace fmitcp_master {
         zmq::socket_t rep_socket;
         bool paused, running;
         bool zmqControl;
-
-        //number of pending requests sent to clients
-        size_t getNumPendingRequests() const;
+        int m_pendingRequests;
 
         explicit BaseMaster(zmq::context_t &context, std::vector<FMIClient*> clients, std::vector<WeakConnection> weakConnections);
-        virtual ~BaseMaster();
+        virtual ~BaseMaster() {
+          info("%i rendezvous\n", rendezvous);
+          int messages = 0;
+          for(auto client: m_clients)
+            messages += client->messages;
+          info("%i messages\n", messages);
+        }
 
 #ifdef USE_GPL
         static int loop_residual_f(const gsl_vector *x, void *params, gsl_vector *f);
@@ -74,26 +79,26 @@ namespace fmitcp_master {
         on(onSlaveDirectionalDerivative)
 
         //T is needed because func maybe of a function in Client (from which FMIClient is derived)
-        void send(std::vector<FMIClient*> fmus, std::string str) {
+        void queueMessage(std::vector<FMIClient*> fmus, std::string str) {
             for (auto it = fmus.begin(); it != fmus.end(); it++) {
-                (*it)->sendMessage(str);
+                (*it)->queueMessage(str);
             }
         }
 
-        //like send() but only for one FMU
-        void send(FMIClient *fmu, std::string str) {
-            fmu->sendMessage(str);
+        //like queueMessage() but only for one FMU
+        void queueMessage(FMIClient *fmu, std::string str) {
+            fmu->queueMessage(str);
         }
 
-        //send() followed by wait() (blocking)
+        //queueMessage() followed by wait() (blocking)
         void sendWait(std::vector<FMIClient*> fmus, std::string str) {
-            send(fmus, str);
+            queueMessage(fmus, str);
             wait();
         }
 
         //like sendWait() but only for one FMU (blocking)
         void sendWait(FMIClient *fmu, std::string str) {
-            send(fmu, str);
+            queueMessage(fmu, str);
             wait();
         }
 
@@ -105,6 +110,9 @@ namespace fmitcp_master {
         }
 
         void handleZmqControl();
+
+        void queueValueRequests();
+        void deleteCachedValues();
     };
 };
 

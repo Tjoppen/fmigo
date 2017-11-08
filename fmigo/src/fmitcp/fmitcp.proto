@@ -98,6 +98,12 @@ enum fmitcp_message_Type {
     type_fmi2_import_get_directional_derivative_req = 347;
     type_fmi2_import_get_directional_derivative_res = 348;
 
+    type_fmi2_import_set_free_last_fmu_state_req = 349;
+    type_fmi2_import_set_free_last_fmu_state_res = 350;
+
+    type_fmi2_kinematic_req = 351;
+    type_fmi2_kinematic_res = 352;
+
     // ========= NETWORK SPECIFIC FUNCTIONS ============
     type_get_xml_req = 401;
     type_get_xml_res = 402;
@@ -556,6 +562,42 @@ message fmi2_import_get_directional_derivative_req {
 message fmi2_import_get_directional_derivative_res {
     repeated double dz = 2 [packed=true];
     required fmi2_status_t status = 3;
+}
+
+//does set_state() and free_state() on the latest stateId known to the Server
+message fmi2_import_set_free_last_fmu_state_req {
+}
+message fmi2_import_set_free_last_fmu_state_res {
+    required fmi2_status_t status = 3;
+}
+
+//special message to speed up kinematic coupling
+//setX, getState, doStep(false), getReal, setState, getDirectionalDerivative
+message fmi2_kinematic_req {
+    //weak coupling values
+    optional fmi2_import_set_real_req       reals   = 1;
+    optional fmi2_import_set_integer_req    ints    = 2;
+    optional fmi2_import_set_boolean_req    bools   = 3;
+    optional fmi2_import_set_string_req     strings = 4;
+
+    //if future_velocity_vrs.size() > 0, perform fake do_step to get future velocities
+    //else don't
+    repeated int32                future_velocity_vrs               = 5;  //reals
+    optional double               currentCommunicationPoint         = 6;
+    optional double               communicationStepSize             = 7;
+
+    //get directional derivatives
+    repeated fmi2_import_get_directional_derivative_req get_derivs  = 8;
+}
+
+message fmi2_kinematic_res {
+    required fmi2_status_t                        status            = 1;
+
+    //length matches future_velocity_vrs
+    repeated double                               future_velocities = 2 [packed=true];
+
+    //length matches get_derivs
+    repeated fmi2_import_get_directional_derivative_res      derivs = 3;
 }
 
 

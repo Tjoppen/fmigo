@@ -2,6 +2,7 @@
 #define GLOBALS_H
 
 #include "master/parseargs.h"  //for FILEFORMAT
+#include "common/timer.h"
 
 namespace fmigo {
   namespace globals {
@@ -17,6 +18,8 @@ namespace fmigo {
 
     //output file (default = stdout)
     extern FILE *outfile;
+
+    extern fmigo::timer timer;
 
     /**
      * @brief Returns the separator used for the current file format.

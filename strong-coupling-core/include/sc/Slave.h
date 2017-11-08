@@ -23,10 +23,10 @@ public:
     void addConnector(Connector * connector);
 
     // Get total number of connectors attached.
-    int numConnectors();
+    int numConnectors() const;
 
     /// Get one of the connectors
-    Connector * getConnector(int i);
+    Connector * getConnector(int i) const;
 };
 
 }

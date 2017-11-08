@@ -1,6 +1,20 @@
 #include "gsl-interface.h"
 #include <string.h>
 
+#ifdef WIN32
+//This fixes linking on MSVC14
+#if _MSC_VER >= 1900
+static FILE iob[3];
+FILE* _imp___iob() {
+  iob[0] = *stdin;
+  iob[1] = *stdout;
+  iob[2] = *stderr;
+  return iob;
+}
+#endif
+#endif
+
+
 const gsl_odeiv2_step_type * cgsl_get_integrator( int  i ) {
 
   const gsl_odeiv2_step_type * integrators [] =

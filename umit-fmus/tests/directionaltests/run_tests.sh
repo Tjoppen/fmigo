@@ -21,7 +21,7 @@ testit() {
   # a not-exactly-the-same mobility estimate results in
   # some slight phase shifts on the forces, which throws
   # the comparison entirely off
-  python ../../../compare_csv.py ref.csv ${s}.csv "," $2 $3 $4
+  python ../../../compare_csv.py ref.csv ${s}.csv "," "$2" "$3" "$4"
   rm ${s}.csv
   echo "OK"
 }
@@ -29,4 +29,4 @@ testit() {
 # Test the three different ways to get directional derivatives in wrapper.c
 testit springs2 0.00001 ""               0     "pass-through (providesDirectionalDerivatives = true)"
 testit springs3 0.00001 ""               0     "directional.txt"
-testit springs4 0.00001 "3,4,7,12,15,18" 0.035 "numerical derivative"
+testit springs4 0.00001 "3,4,7,12,15,18" 0.05  "numerical derivative"

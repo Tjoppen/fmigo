@@ -1,19 +1,105 @@
-.TH FMI-TCP-MASTER 1 local
+.TH FmiGo 1 local
 .SH NAME
-fmigo-master \- simulate FMUs
-.SH SYNOPSIS
-.ll +8
+.I fmigo-master
+- connect to FMUs served by
+.I fmigo-server
+over TCP/IP
+.br
+.I fmigo-server
+- serve FMU over TCP/IP
+.br
+.I fmigo-mpi
+- runs FMUs in an MPI cluster
+
+.SH SYNOPSIS (TCP/IP)
 .B fmigo-master
-.RB [ " \-rlhtcdsopfmgwC5NMazZLHD " ]
+.RB [ " \-rlhtcdsopfmgwC5NMazZLHDe " ]
 [
 .I "URLs \&..."
 ]
-.ll -8
 .br
+.B fmigo-server --port PORT
+.I FMUFILENAME
+.br
+
+.SH SYNOPSIS (MPI)
+.B mpiexec -np 1 fmigo-mpi [arguments]
+: -np 1 fmigo-mpi
+.I FMUFILENAME
+[
+: -np 1 fmigo-mpi
+.I FMUFILENAME
+[
+: ...
+]
+]
+.br
+.B mpiexec -np (num_fmus+1) fmigo-mpi [arguments]
+[
+.I "FMUFILENAMEs \&..."
+]
+.br
+
 .SH DESCRIPTION
-.I fmigo-master
-simulates FMUs using the FMILibrary from JModelica.org
+FmiGo simulates FMUs using the FMILibrary from JModelica.org
 over TCP/IP, with optional strong coupling between simulation units.
+Communication over MPI is also possible.
+
+.SH TCP/IP
+TCP/IP communication is handled by ZeroMQ.
+Serialization is done via libprotobuf.
+FmiGo uses a master/server architecture,
+with a central node 
+(
+.I fmigo-master
+)
+connecting to a number of servers
+(
+.I fmigo-server
+)
+, each of which serve a single FMU.
+See synopsis for syntax.
+
+.SH URLs
+Each URL specifies the address and TCP port of an FMU server. The syntax is:
+
+    tcp://<address>:<port>
+
+Examples:
+
+    tcp://localhost:3000
+    tcp://192.168.0.2:3000
+
+.SH MPI
+The MPI version of FmiGo uses a structure similar to the TCP/IP version,
+but with only a single executable. The MPI world consists of a master node (rank 0) and server nodes (rank 1..N).
+For N FMUs the world size must be N+1.
+A simple system with two FMUs and a weak connection from FMU0 variable x to FMU1 variable y looks like this:
+
+.B
+    mpiexec -np 1 fmigo-mpi -c 0,x,1,y \\
+.B
+        : -np 1 fmigo-mpi fmu0.fmu \\
+.B
+        : -np 1 fmigo-mpi fmu1.fmu
+
+
+Keep in mind that FMU indices in connections and parameters are still zero based, even if the FMU server nodes begin at rank 1.
+The MPI ranks do not change the master argument syntax.
+
+If you want multiple copies of one FMU you can increase the -np argument instead of adding more lines to the command line:
+
+.B
+    mpiexec -np 1 fmigo-mpi -c 0,x,1,y \\
+.B
+        : -np 2 fmigo-mpi fmu01.fmu
+
+
+There is also an alternative syntax which produces shorter command lines but require computing the total number of nodes (N FMUs + 1):
+
+.B
+    mpiexec -np 3 fmigo-mpi -c 0,x,1,y fmu0.fmu fmu1.fmu
+
 .SH FLAGS
 .TP
 .B \-h
@@ -25,6 +111,42 @@ Real time mode. Will usleep() in between communication steps if the execution wa
 .B \-N
 Make kinematic connectors nonholonomic rather than holonomic.
 In other words, only lock spatial/angular velocities, not positions or angles.
+.TP
+.B \-Z
+Start master in paused state.
+Use ZMQ "unpause" command to start simulation.
+Requires -z.
+.TP
+.B \-L
+Solve algebraic loops in initialization mode. Requires GPL and GNU GSL.
+.TP
+.B \-H
+Print CSV header.
+.TP
+.B \-D
+Always compute numerical directional derivatives, regardless of the value of providesDirectionalDerivatives in all FMUs' modelDescription.xml.
+This is useful for kinematic coupling if one or more FMUs have a spring-damper type input.
+Such FMUs would give a much too high mobility estimate, unless the timestep is taken into account somehow.
+This is exactly what the numerical directional derivative code does, hence this flag.
+.TP
+.B \-e
+Print some preprocessor variables suitable for "export", to stdout, then quit.
+This is useful for figuring out at runtime how fmigo was configured.
+Example cmake -DUSE_GPL=0:
+
+    $ fmigo-mpi -e
+    USE_MPI=1
+    USE_GPL=0
+    $ fmigo-master -e
+    USE_MPI=0
+    USE_GPL=0
+
+Example of passing to export for further script use:
+
+    $ for e in $(fmigo-mpi -e); do export "$e"; done
+    $ echo "The value of USE_GPL is $USE_GPL"
+    The value of USE_GPL is 0
+
 .SH OPTIONS
 First note that some options specify lists of values.
 These can either be specified as colon separated lists (like "-w 0:1:0") in one long option, or multiple times for each one ("-w 0 -w 1 -w 0"), or any combination of the two ("-w 0 -w 1:0").
@@ -39,7 +161,7 @@ Set FMILibrary log level. Levels are as follows:
     3 = warning     Non-critical issues
     4 = info        Informative messages
     5 = verbose     Verbose messages
-    6 = debug       Debug messages. Only enabled if FMILibrary is configured with FMILIB_ENABLE_LOG_LEVEL_DEBUG
+    6 = debug       Debug messages. Only enabled if FMILibrary is configured with FMILIB_ENABLE_LOG_LEVEL_DEBUG and FmiGo is compiled in Debug mode
     7 = all
 
 .TP
@@ -261,9 +383,6 @@ CSV separator character. Default is comma (,).
 .B \-t [ENDTIME]
 End simulation time in seconds. Default is 1.0.
 .TP
-.B \-5 [HDF5FILENAME]
-Dump timing information to HDF5 file with given filename.
-.TP
 .B \-M [COMPLIANCE]
 Set compliance for kinematic solver (real value, default = 0.0).
 .TP
@@ -301,32 +420,6 @@ Set up ZMQ command (REQ/REP) and results (PUSH/PULL) ports.
 Allows controlling master and PULLing results over ZMQ.
 Messages are serialized using protobuf.
 For more information, see src/master/control.proto.
-.TP
-.B \-Z
-Start master in paused state.
-Use ZMQ "unpause" command to start simulation.
-Requires -z.
-.TP
-.B \-L
-Solve algebraic loops in initialization mode.
-.SH URLs
-Each URL specifies the address and TCP port of an FMU. The syntax is:
-
-    tcp://<address>:<port>
-
-Examples:
-
-    tcp://localhost:3000
-    tcp://192.168.0.2:3000
-.TP
-.B \-H
-Print CSV header.
-.TP
-.B \-D
-Always compute numerical directional derivatives, regardless of the value of providesDirectionalDerivatives in all FMUs' modelDescription.xml.
-This is useful for kinematic coupling if one or more FMUs have a spring-damper type input.
-Such FMUs would give a much too high mobility estimate, unless the timestep is taken into account somehow.
-This is exactly what the numerical directional derivative code does, hence this flag.
 
 .SH EXAMPLES
 To run an FMU simulation from time 0 to 5 with timestep 0.01:
@@ -337,12 +430,12 @@ To simulate two FMUs connected from the first output of the first FMU to the fir
 
 Simulating four strongly coupled spring systems for 100 s at 100 Hz and writing the result to a CSV file:
 
-    fmigo-master -t 100 -d 0.01\\
-        -p 0,3,0 -p 0,0,0:0,6,1 -p 0,9,2 -p 1,0,1:1,6,2 -p 1,3,2 -p 1,9,2 -p 2,0,2:2,6,3 -p 2,3,2 -p 2,9,2 -p 3,0,3:3,6,4\\
-        -C ball,0,1,6,16,16,8,16,16,10,16,16,16,16,16,16,16,16,16,16,16,16,0,16,16,2,16,16,4,16,16,16,16,16,16,16,16,16,16,16,16\\
-        -C ball,1,2,6,16,16,8,16,16,10,16,16,16,16,16,16,16,16,16,16,16,16,0,16,16,2,16,16,4,16,16,16,16,16,16,16,16,16,16,16,16\\
-        -C ball,2,3,6,16,16,8,16,16,10,16,16,16,16,16,16,16,16,16,16,16,16,0,16,16,2,16,16,4,16,16,16,16,16,16,16,16,16,16,16,16\\
+    fmigo-master -t 100 -d 0.01 \\
+        -p 0,3,0 -p 0,0,0:0,6,1 -p 0,9,2 -p 1,0,1:1,6,2 -p 1,3,2 -p 1,9,2 -p 2,0,2:2,6,3 -p 2,3,2 -p 2,9,2 -p 3,0,3:3,6,4 \\
+        -C shaft,0,1,6,7,8,10,0,1,2,4 \\
+        -C shaft,1,2,6,7,8,10,0,1,2,4 \\
+        -C shaft,2,3,6,7,8,10,0,1,2,4 \\
         tcp://localhost:3000 tcp://localhost:3001 tcp://localhost:3002 tcp://localhost:3003 > results/output-N4-h0.01.csv
 
 .SH "ABOUT"
-The app was built by Stefan Hedman at UMIT Research Lab 2013. Large parts were rewritten by Tomas Härdin at UMIT Research Lab 2014.
+The app was built by Stefan Hedman at UMIT Research Lab 2013. Large parts were rewritten by Tomas Härdin at UMIT Research Lab 2014 - 2017.

@@ -5,6 +5,7 @@
  *      Author: thardin
  */
 
+#include "master/globals.h"
 #include "master/BaseMaster.h"
 #ifndef WIN32
 #include <unistd.h>
@@ -18,18 +19,17 @@ using namespace fmitcp_master;
 using namespace fmitcp;
 
 BaseMaster::BaseMaster(zmq::context_t &context, vector<FMIClient*> clients, vector<WeakConnection> weakConnections) :
+        rendezvous(0),
         m_clients(clients),
         m_weakConnections(weakConnections),
         clientWeakRefs(getOutputWeakRefs(m_weakConnections)),
         rep_socket(context, ZMQ_REP),
         paused(false),
         running(true),
-        zmqControl(false) {
+        zmqControl(false),
+        m_pendingRequests(0) {
     for(auto client: m_clients)
         client->m_master = this;
-}
-
-BaseMaster::~BaseMaster() {
 }
 
 #ifdef USE_GPL
@@ -61,9 +61,11 @@ int BaseMaster::loop_residual_f(const gsl_vector *x, void *params, gsl_vector *f
   for (auto it : newInputs) {
     it.first->sendSetX(it.second);
   }
+  master->deleteCachedValues();
   for (auto it : master->clientWeakRefs) {
-    it.first->sendGetX(it.second);
+    it.first->queueX(it.second);
   }
+  master->queueValueRequests();
   master->wait();
 
   k = 0;
@@ -97,9 +99,11 @@ int BaseMaster::loop_residual_f(const gsl_vector *x, void *params, gsl_vector *f
 
 void BaseMaster::solveLoops() {
   //stolen from runIteration()
+  deleteCachedValues();
   for (auto it = clientWeakRefs.begin(); it != clientWeakRefs.end(); it++) {
-    it->first->sendGetX(it->second);
+    it->first->queueX(it->second);
   }
+  queueValueRequests();
   wait();
   initialNonReals = getInputWeakRefsAndValues(m_weakConnections);
 
@@ -171,41 +175,34 @@ void BaseMaster::solveLoops() {
 #endif
 }
 
-size_t BaseMaster::getNumPendingRequests() const {
-    size_t ret = 0;
-    for (auto s : m_clients) {
-        ret += s->getNumPendingRequests();
-    }
-    return ret;
-}
-
 void BaseMaster::wait() {
     //allow polling once for each request, plus 60 seconds more
-    int maxPolls = getNumPendingRequests() + 60;
+    int maxPolls = m_pendingRequests + 60;
     int numPolls = 0;
 
-    while (getNumPendingRequests() > 0) {
+    if (m_pendingRequests > 0) {
+      rendezvous++;
+
+      //send messages
+      for (FMIClient *client : m_clients) {
+        client->sendQueuedMessages();
+      }
+    }
+
+    while (m_pendingRequests > 0) {
         handleZmqControl();
+        fmigo::globals::timer.rotate("pre_wait");
 
 #ifdef USE_MPI
         int rank;
         std::string str = mpi_recv_string(MPI_ANY_SOURCE, &rank, NULL);
+        fmigo::globals::timer.rotate("wait");
 
         if (rank < 1 || rank > (int)m_clients.size()) {
             fatal("MPI rank out of bounds: %i\n", rank);
         }
 
         m_clients[rank-1]->Client::clientData(str.c_str(), str.length());
-#else
-#ifdef WIN32
-    //zmq::poll() is broken and incredibly slow on Windows
-    //this is the stupidest possible solution, but works surprisingly well
-    //it can't detect that a server has croaked however
-    for (auto client : m_clients) {
-        if (client->getNumPendingRequests() > 0) {
-            client->receiveAndHandleMessage();
-        }
-    }
 #else
     //all other platforms (GNU/Linux, Mac)
     //poll all clients, decrease m_pendingRequests as we see REPlies coming in
@@ -222,15 +219,16 @@ void BaseMaster::wait() {
 #endif
 
     int n = zmq::poll(items.data(), m_clients.size(), ZMQ_POLL_MSEC*1000);
+    fmigo::globals::timer.rotate("wait");
     if (!n) {
-        debug("polled %li sockets, %li pending (%i/%i), no new events\n", m_clients.size(), getNumPendingRequests(), numPolls, maxPolls);
+        debug("polled %li sockets, %i pending (%i/%i), no new events\n", m_clients.size(), m_pendingRequests, numPolls, maxPolls);
     }
     for (size_t x = 0; x < m_clients.size(); x++) {
         if (items[x].revents & ZMQ_POLLIN) {
             m_clients[x]->receiveAndHandleMessage();
         }
     }
-    if (getNumPendingRequests() > 0) {
+    if (m_pendingRequests > 0) {
         if (++numPolls >= maxPolls) {
             //Jenkins caught something like this, I think
             fatal("Exceeded max number of polls (%i) - stuck?\n", maxPolls);
@@ -238,7 +236,6 @@ void BaseMaster::wait() {
     } else {
         //debug("wait() done\n");
     }
-#endif
 #endif
     }
 }
@@ -298,19 +295,19 @@ void BaseMaster::handleZmqControl() {
 
               if (var.has_reals()) {
                 assertit(var.reals().vrs().size() == var.reals().values().size());
-                send(client, serialize::fmi2_import_set_real(rf2vec(var.reals().vrs()), rf2vec(var.reals().values())));
+                queueMessage(client, serialize::fmi2_import_set_real(rf2vec(var.reals().vrs()), rf2vec(var.reals().values())));
               }
               if (var.has_ints()) {
                 assertit(var.ints().vrs().size() == var.ints().values().size());
-                send(client, serialize::fmi2_import_set_integer(rf2vec(var.ints().vrs()), rf2vec(var.ints().values())));
+                queueMessage(client, serialize::fmi2_import_set_integer(rf2vec(var.ints().vrs()), rf2vec(var.ints().values())));
               }
               if (var.has_bools()) {
                 assertit(var.bools().vrs().size() == var.bools().values().size());
-                send(client, serialize::fmi2_import_set_boolean(rf2vec(var.bools().vrs()), rf2vec(var.bools().values())));
+                queueMessage(client, serialize::fmi2_import_set_boolean(rf2vec(var.bools().vrs()), rf2vec(var.bools().values())));
               }
               if (var.has_strings()) {
                 assertit(var.strings().vrs().size() == var.strings().values().size());
-                send(client, serialize::fmi2_import_set_string(rf2vec(var.strings().vrs()), rf2vec<std::string>(var.strings().values())));
+                queueMessage(client, serialize::fmi2_import_set_string(rf2vec(var.strings().vrs()), rf2vec<std::string>(var.strings().values())));
               }
             } else {
               warning("bad/unset fmu_id in control_message.variables\n");
@@ -332,7 +329,7 @@ void BaseMaster::handleZmqControl() {
 
             for (FMIClient *client : m_clients) {
               control_proto::fmu_state *fstate = state.add_fmu_states();
-              fstate->set_fmu_id(client->getId());
+              fstate->set_fmu_id(client->m_id);
               fstate->set_state(client->m_fmuState);
             }
 
@@ -341,5 +338,17 @@ void BaseMaster::handleZmqControl() {
             memcpy(rep.data(), str.data(), str.length());
             rep_socket.send(rep);
     }
+  }
+}
+
+void BaseMaster::queueValueRequests() {
+  for (FMIClient *client : m_clients) {
+    client->queueValueRequests();
+  }
+}
+
+void BaseMaster::deleteCachedValues() {
+  for (FMIClient *client : m_clients) {
+    client->deleteCachedValues();
   }
 }

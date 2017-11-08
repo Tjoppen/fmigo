@@ -20,32 +20,6 @@
 #include <fmilib.h>
 #include "fmitcp.pb.h"
 
-#ifndef WIN32
-//for HDF5 output
-#include <hdf5.h>
-#include <hdf5_hl.h>
-#include <sys/time.h>
-extern std::string hdf5Filename;
-extern timeval tl1, tl2;
-extern std::vector<int> timelog;
-extern int columnofs;
-extern std::map<int, const char*> columnnames;
-#define MAX_TIME_COLS 20    //for estimating the size of timelog
-
-//measures and logs elapsed time in microseconds
-#define PRINT_HDF5_DELTA(label) do {\
-      if (hdf5Filename.length() > 0) {\
-        gettimeofday(&tl2, NULL);\
-        int dt = 1000000*(tl2.tv_sec-tl1.tv_sec) + tl2.tv_usec-tl1.tv_usec;\
-        timelog.push_back(dt);\
-        columnnames[columnofs++] = label;\
-        gettimeofday(&tl1, NULL);\
-      } \
-    } while (0)
-#else
-#define PRINT_HDF5_DELTA(label)
-#endif
-
 #ifdef WIN32
 #define ANSI_COLOR_RED     ""
 #define ANSI_COLOR_GREEN   ""

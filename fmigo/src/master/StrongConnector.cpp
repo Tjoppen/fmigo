@@ -6,6 +6,15 @@ using namespace fmitcp_master;
 StrongConnector::StrongConnector(FMIClient* slave) : sc::Connector() {
     m_userData = (void*)slave;
     m_hasPosition = m_hasQuaternion = m_hasShaftAngle = m_hasVelocity = m_hasAcceleration = m_hasAngularVelocity = m_hasAngularAcceleration = m_hasForce = m_hasTorque = false;
+    m_hasComputedPositionValueRefs = false;
+    m_hasComputedQuaternionValueRefs = false;
+    m_hasComputedShaftAngleValueRefs = false;
+    m_hasComputedVelocityValueRefs = false;
+    m_hasComputedAccelerationValueRefs = false;
+    m_hasComputedAngularVelocityValueRefs = false;
+    m_hasComputedAngularAccelerationValueRefs = false;
+    m_hasComputedForceValueRefs = false;
+    m_hasComputedTorqueValueRefs = false;
 }
 
 StrongConnector::~StrongConnector(){
@@ -85,78 +94,114 @@ bool StrongConnector::hasAngularAcceleration(){ return m_hasAngularAcceleration;
 bool StrongConnector::hasForce(){ return m_hasForce; };
 bool StrongConnector::hasTorque(){ return m_hasTorque; };
 
-std::vector<int> StrongConnector::getForceValueRefs() const {
+const std::vector<int>& StrongConnector::getForceValueRefs() const {
+    if (m_hasComputedForceValueRefs) return m_ForceValueRefs;
+    m_hasComputedForceValueRefs = true;
+
     std::vector<int> result;
     for(int i=0; m_hasForce && i<3; i++)
         result.push_back(m_vref_force[i]);
-    return result;
+
+    return m_ForceValueRefs = result;
 };
 
-std::vector<int> StrongConnector::getVelocityValueRefs() const {
+const std::vector<int>& StrongConnector::getVelocityValueRefs() const {
+    if (m_hasComputedVelocityValueRefs) return m_VelocityValueRefs;
+    m_hasComputedVelocityValueRefs = true;
+
     std::vector<int> result;
     if(m_hasVelocity){
         for(int i=0; i<3; i++)
             result.push_back(m_vref_velocity[i]);
     }
-    return result;
+
+    return m_VelocityValueRefs = result;
 };
 
-std::vector<int> StrongConnector::getAccelerationValueRefs() const {
+const std::vector<int>& StrongConnector::getAccelerationValueRefs() const {
+    if (m_hasComputedAccelerationValueRefs) return m_AccelerationValueRefs;
+    m_hasComputedAccelerationValueRefs = true;
+
     std::vector<int> result;
     if(m_hasAcceleration){
         for(int i=0; i<3; i++)
             result.push_back(m_vref_acceleration[i]);
     }
-    return result;
+
+    return m_AccelerationValueRefs = result;
 }
 
-std::vector<int> StrongConnector::getPositionValueRefs() const {
+const std::vector<int>& StrongConnector::getPositionValueRefs() const {
+    if (m_hasComputedPositionValueRefs) return m_PositionValueRefs;
+    m_hasComputedPositionValueRefs = true;
+
     std::vector<int> result;
     for(int i=0; m_hasPosition && i<3; i++)
         result.push_back(m_vref_position[i]);
-    return result;
+
+    return m_PositionValueRefs = result;
 };
 
-std::vector<int> StrongConnector::getQuaternionValueRefs() const {
+const std::vector<int>& StrongConnector::getQuaternionValueRefs() const {
+    if (m_hasComputedQuaternionValueRefs) return m_QuaternionValueRefs;
+    m_hasComputedQuaternionValueRefs = true;
+
     std::vector<int> result;
     for(int i=0; m_hasQuaternion && i<4; i++)
         result.push_back(m_vref_quaternion[i]);
-    return result;
+
+    return m_QuaternionValueRefs = result;
 };
 
-std::vector<int> StrongConnector::getShaftAngleValueRefs() const {
+const std::vector<int>& StrongConnector::getShaftAngleValueRefs() const {
+    if (m_hasComputedShaftAngleValueRefs) return m_ShaftAngleValueRefs;
+    m_hasComputedShaftAngleValueRefs = true;
+
     std::vector<int> result;
     if (m_hasShaftAngle) {
         result.push_back(m_vref_shaftAngle);
     }
-    return result;
+
+    return m_ShaftAngleValueRefs = result;
 }
 
-std::vector<int> StrongConnector::getAngularVelocityValueRefs() const {
+const std::vector<int>& StrongConnector::getAngularVelocityValueRefs() const {
+    if (m_hasComputedAngularVelocityValueRefs) return m_AngularVelocityValueRefs;
+    m_hasComputedAngularVelocityValueRefs = true;
+
     std::vector<int> result;
     for(int i=0; m_hasAngularVelocity && i<3; i++)
         if (m_vref_angularVelocity[i] >= 0)
         result.push_back(m_vref_angularVelocity[i]);
-    return result;
+
+    return m_AngularVelocityValueRefs = result;
 };
 
-std::vector<int> StrongConnector::getAngularAccelerationValueRefs() const {
+const std::vector<int>& StrongConnector::getAngularAccelerationValueRefs() const {
+    if (m_hasComputedAngularAccelerationValueRefs) return m_AngularAccelerationValueRefs;
+    m_hasComputedAngularAccelerationValueRefs = true;
+
     std::vector<int> result;
     for(int i=0; m_hasAngularAcceleration && i<3; i++)
         if (m_vref_angularAcceleration[i] >= 0)
         result.push_back(m_vref_angularAcceleration[i]);
-    return result;
+
+    return m_AngularAccelerationValueRefs = result;
 };
 
-std::vector<int> StrongConnector::getTorqueValueRefs() const {
+const std::vector<int>& StrongConnector::getTorqueValueRefs() const {
+    if (m_hasComputedTorqueValueRefs) return m_TorqueValueRefs;
+    m_hasComputedTorqueValueRefs = true;
+
     std::vector<int> result;
     for(int i=0; m_hasTorque && i<3; i++)
         if (m_vref_torque[i] >= 0)
         result.push_back(m_vref_torque[i]);
-    return result;
+
+    return m_TorqueValueRefs = result;
 };
 
-void StrongConnector::setValues(std::vector<int> valueReferences, std::vector<double> values){
+void StrongConnector::setValues(const std::vector<int>& valueReferences, const std::vector<double>& values){
     //NOTE: acceleration values are never written, only read
     assert(valueReferences.size() == values.size());
 
@@ -177,7 +222,7 @@ void StrongConnector::setValues(std::vector<int> valueReferences, std::vector<do
     }
 };
 
-void StrongConnector::setFutureValues(std::vector<int> valueReferences, std::vector<double> values){
+void StrongConnector::setFutureValues(const std::vector<int>& valueReferences, const std::vector<double>& values){
     assert(valueReferences.size() == values.size());
 
     for(size_t i=0; i<valueReferences.size(); i++){

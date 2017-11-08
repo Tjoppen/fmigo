@@ -89,7 +89,7 @@ std::vector<WeakConnection> me_weakConnections;
     void init_fmu_model(fmu_model &m,  const std::vector<FMIClient*> &clients);
 
 #define STATIC_GET_CLIENT_OFFSET(name)                                  \
-   p->baseMaster->get_storage().get_offset(client->getId(), STORAGE::name)
+   p->baseMaster->get_storage().get_offset(client->m_id, STORAGE::name)
 #define STATIC_SET_(name, name2, data)                                       \
     p->baseMaster->send(client, fmi2_import_set_##name##_##name2(     \
                                                        data + STATIC_GET_CLIENT_OFFSET(name2), \

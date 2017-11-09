@@ -10,6 +10,7 @@ then
   (cd umit-fmus/me              && ( ./test_me.sh ||  ( echo "failed modelExchange" && exit 1 ) ) )
   # Can't run GSL truck test without working EPCE code
   #(cd articles/truck            && ( python test_gsl_trucks.py  || ( echo "failed GSL truck test" && exit 1 ) ) )
+  (cd articles/splitting/python && ( python truckstring.py --test  || ( echo "failed truckstring test" && exit 1 ) ) )
 fi
 (cd articles/work-reports       && ( ./run_tests.sh  || ( echo "failed tests in work-reports" && exit 1 ) ) )
 (cd umit-fmus/tests             && ( ./run_tests.sh ||  ( echo "failed umit-fmus tests" && exit 1 ) ) )

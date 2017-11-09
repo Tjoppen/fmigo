@@ -381,7 +381,7 @@
     <ScalarVariable 
         name="filter_length"
         valueReference="98"
-        description="Length of EPCE FIR filter (0 = disable)"
+        description="EPCE broken, this won't do anything for a while"
         causality="parameter"
         variability="fixed">
       <Integer start="0"/>

@@ -190,7 +190,9 @@ void BaseMaster::wait() {
     }
 
     while (m_pendingRequests > 0) {
+        std::cout << "handleZmqControl" << std::endl;
         handleZmqControl();
+        std::cout << "done" << std::endl;
         fmigo::globals::timer.rotate("pre_wait");
 
 #ifdef USE_MPI
@@ -263,7 +265,8 @@ void BaseMaster::handleZmqControl() {
     zmq::message_t msg;
 
     //paused means we do blocking polls to avoid wasting CPU time
-    while (rep_socket.recv(&msg, paused ? 0 : ZMQ_NOBLOCK) && running) {
+    // std::cout << "running: " << running << ", paused: " << paused << std::endl;
+    while (rep_socket.recv(&msg, paused ? ZMQ_NOBLOCK : ZMQ_NOBLOCK) && running) {
         //got something - make sure it's a control_message with correct
         //version and command set
         control_proto::control_message ctrl;

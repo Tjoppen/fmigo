@@ -1059,8 +1059,8 @@ if __name__ == '__main__':
     args += append
 
 
-    pipeinput = " ".join(flatconns+flatparams+kinematicconns+csvs)
-    eprint('(cd %s && %s <<< "%s")' % (d, " ".join(args), pipeinput))
+    pipeinput = " ".join(['"%s"' % s for s in flatconns+flatparams+kinematicconns+csvs])
+    eprint("(cd %s && %s <<< '%s')" % (d, " ".join(args), pipeinput))
 
     if parse.dry_run:
         ret = 0

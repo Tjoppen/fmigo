@@ -733,7 +733,7 @@ def unzip_ssp(dest_dir, ssp_filename):
 
 def parse_ssp(ssp_path, cleanup_zip = True):
 
-    global fmus, system, parameters, SSD_NAME, d
+    global fmus, system, parameters, shaftconstraints, SSD_NAME, d
     fmus = []
     systems = []
     parameters = {}

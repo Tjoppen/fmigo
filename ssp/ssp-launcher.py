@@ -733,10 +733,11 @@ def unzip_ssp(dest_dir, ssp_filename):
 
 def parse_ssp(ssp_path, cleanup_zip = True):
 
-    global fmus, system, parameters, SSD_NAME, d
+    global fmus, system, parameters, shaftconstraints, SSD_NAME, d
     fmus = []
     systems = []
     parameters = {}
+    shaftconstraints = []
 
     file_ext = os.path.splitext(ssp_path)[1].lower()
 
@@ -988,7 +989,8 @@ if __name__ == '__main__':
     flatconns, flatparams, kinematicconns, csvs, unzipped_ssp, d, timestep, duration = parse_ssp(parse.ssp, False)
 
     cwd = os.getcwd()
-    os.chdir(d)
+    if d:
+        os.chdir(d)
 
     # If we are working with TCP, create tcp://localhost:port for all given local hosts
     # If no ports are given then try to find some free TCP ports
@@ -1057,8 +1059,8 @@ if __name__ == '__main__':
     args += append
 
 
-    pipeinput = " ".join(flatconns+flatparams+kinematicconns+csvs)
-    eprint('(cd %s && %s <<< "%s")' % (d, " ".join(args), pipeinput))
+    pipeinput = " ".join(['"%s"' % s for s in flatconns+flatparams+kinematicconns+csvs])
+    eprint("(cd %s && %s <<< '%s')" % (d, " ".join(args), pipeinput))
 
     if parse.dry_run:
         ret = 0

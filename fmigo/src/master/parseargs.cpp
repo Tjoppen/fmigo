@@ -12,6 +12,7 @@
 #include <mpi.h>
 #endif
 #include <sstream>
+#include <iomanip>  //for std::quoted, requires C++14
 #include "common/CSV-parser.h"
 
 #include "master/parseargs.h"
@@ -67,7 +68,7 @@ template<typename T> void add_args_internal(T& ifs, vector<string>& argvstore, v
     string token;
 
     //read tokens, insert into argvstore/argv2
-    while (ifs >> token) {
+    while (ifs >> std::quoted(token)) {
         if (token == "-a") {
             fatal("Found -a token in argument file, which might lead to recursive list of arguments. Stopping.\n");
         }

@@ -330,23 +330,6 @@ const std::vector<int>& FMIClient::getStrongConnectorValueReferences() const {
     return m_strongConnectorValueReferences;
 };
 
-const std::vector<int>& FMIClient::getStrongSeedInputValueReferences() const {
-    //this used to be just a copy-paste of getStrongConnectorValueReferences() - better to just call the function itself directly
-    return getStrongConnectorValueReferences();
-};
-
-const std::vector<int>& FMIClient::getStrongSeedOutputValueReferences() const {
-    //same here - just a copy-paste job
-    return getStrongConnectorValueReferences();
-};
-
-std::vector<int> FMIClient::getRealOutputValueReferences() {
-    const fmi2_value_reference_t *vrs = fmi2_import_get_value_referece_list(m_fmi2Outputs);
-    size_t n = fmi2_import_get_variable_list_size(m_fmi2Outputs);
-
-    return std::vector<int>(vrs, vrs + n);
-}
-
 string FMIClient::getSpaceSeparatedFieldNames(string prefix) const {
     ostringstream oss;
     for (size_t x = 0; x < fmi2_import_get_variable_list_size(m_fmi2Outputs); x++) {

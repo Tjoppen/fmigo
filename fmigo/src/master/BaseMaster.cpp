@@ -190,9 +190,7 @@ void BaseMaster::wait() {
     }
 
     while (m_pendingRequests > 0) {
-        std::cout << "handleZmqControl" << std::endl;
         handleZmqControl();
-        std::cout << "done" << std::endl;
         fmigo::globals::timer.rotate("pre_wait");
 
 #ifdef USE_MPI

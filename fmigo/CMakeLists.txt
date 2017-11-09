@@ -165,6 +165,9 @@ ELSE(WIN32)
 
     # MPI stuff. Linux only for now
     # NOTE: switching to MPI compilers. This seems to work fine, surprisingly
+    # mpicc/cxx uses gcc/g++, which needs -Wno-literal-suffix on trusty
+    # Sometimes clang gets picked up which lacks -Wno-literal-suffix on trusty, hence -Wno-unknown-warning-option
+    target_compile_options(${MPI_MASTER_NAME} PRIVATE -Wno-unknown-warning-option -Wno-literal-suffix)
     set(CMAKE_C_COMPILER   mpicc)
     set(CMAKE_CXX_COMPILER mpicxx)
     target_link_libraries(${MPI_MASTER_NAME} ${LINUXLIBS} ${EXTRALIBS})

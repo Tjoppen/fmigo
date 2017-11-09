@@ -19,6 +19,7 @@ RUN apt-get install --yes \
         libsuitesparse-dev libzmqpp-dev libhdf5-dev \
         libopenmpi-dev libgsl-dev valgrind \
         python-pip python-dev libxml2-dev libxslt1-dev
+RUN apt-get install -y python-numpy python-scipy python-matplotlib
 
 #
 # Create user, since mpiexec doesn't like to run as root

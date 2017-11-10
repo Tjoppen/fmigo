@@ -23,6 +23,7 @@ RUN apt-get install --yes \
         libopenmpi-dev libgsl0-dev mpi-default-bin zip clang-3.8 valgrind \
         python-pip python-dev libxml2-dev libxslt1-dev
 RUN apt-get install -y python-numpy python-scipy python-matplotlib
+RUN apt-get install -y python3-pip
 
 # Need gcc-4.9 for -std=c++14
 # https://askubuntu.com/questions/466651/how-do-i-use-the-latest-gcc-on-ubuntu#581497
@@ -46,7 +47,8 @@ RUN  chown -R gitlab-ci /home/gitlab-ci/umit
 
 # Install python requirements
 WORKDIR /home/gitlab-ci/umit
-RUN pip install -r requirements.txt
+RUN pip2 install -r requirements.txt
+RUN pip3 install -r requirements.txt
 
 # Finally, make us run as gitlab-ci
 USER gitlab-ci

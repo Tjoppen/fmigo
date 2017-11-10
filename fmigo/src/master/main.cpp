@@ -26,6 +26,7 @@
 #include <fstream>
 #include "control.pb.h"
 #include "master/globals.h"
+#include <chrono>
 
 using namespace fmitcp_master;
 using namespace fmitcp;
@@ -782,14 +783,8 @@ int main(int argc, char *argv[] ) {
     fmigo::globals::timer.dont_rotate = false;
     fmigo::globals::timer.rotate("setup");
 
-    #ifdef WIN32
-        LARGE_INTEGER freq, t1;
-        QueryPerformanceFrequency(&freq);
-        QueryPerformanceCounter(&t1);
-    #else
-        timeval t1;
-        gettimeofday(&t1, NULL);
-    #endif
+    //t1 = time at which to perform next step
+    std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
 
     //run
     while ((endTime < 0 || step < nsteps) && master->running) {
@@ -803,6 +798,8 @@ int main(int argc, char *argv[] ) {
         }
 
         if (master->paused) {
+            //step immediately after unpausing
+            t1 = std::chrono::high_resolution_clock::now();
             continue;
         }
 
@@ -816,32 +813,21 @@ int main(int argc, char *argv[] ) {
         }
 
         if (realtimeMode) {
-            double t_wall;
-
             //delay loop
             for (;;) {
-#ifdef WIN32
-                LARGE_INTEGER t2;
-                QueryPerformanceCounter(&t2);
-                t_wall = (t2.QuadPart - t1.QuadPart) / (double)freq.QuadPart;
-
-                if (t_wall >= t)
+                std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
+                if (t2 >= t1) {
                     break;
-
+                }
+#ifdef WIN32
                 Yield();
 #else
-                timeval t2;
-                gettimeofday(&t2, NULL);
-
-                t_wall = ((double)t2.tv_sec - t1.tv_sec) + 1.0e-6 * ((double)t2.tv_usec - t1.tv_usec);
-                int us = 1000000 * (t - t_wall);
-
-                if (us <= 0)
-                    break;
-
-                usleep(us);
+                usleep(std::chrono::duration<double, std::micro>(t1 - t2).count());
 #endif
             }
+
+            //aren't C++ templates wonderful?
+            t1 += std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(std::chrono::duration<double>(timeStep));
         }
 
         if (fmigo::globals::fileFormat != none) {

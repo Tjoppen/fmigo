@@ -505,11 +505,11 @@ static void pushResults(int step, double t, double endTime, double timeStep, zmq
         addVectorToRepeatedField(fmu_res->mutable_reals()->mutable_vrs(),       cv.second[fmi2_base_type_real]);
         addVectorToRepeatedField(fmu_res->mutable_reals()->mutable_values(),    cv.first->getReals(cv.second[fmi2_base_type_real]));
         addVectorToRepeatedField(fmu_res->mutable_ints()->mutable_vrs(),        cv.second[fmi2_base_type_int]);
-        addVectorToRepeatedField(fmu_res->mutable_ints()->mutable_values(),     cv.first->getReals(cv.second[fmi2_base_type_int]));
+        addVectorToRepeatedField(fmu_res->mutable_ints()->mutable_values(),     cv.first->getInts(cv.second[fmi2_base_type_int]));
         addVectorToRepeatedField(fmu_res->mutable_bools()->mutable_vrs(),       cv.second[fmi2_base_type_bool]);
-        addVectorToRepeatedField(fmu_res->mutable_bools()->mutable_values(),    cv.first->getReals(cv.second[fmi2_base_type_bool]));
+        addVectorToRepeatedField(fmu_res->mutable_bools()->mutable_values(),    cv.first->getBools(cv.second[fmi2_base_type_bool]));
         addVectorToRepeatedField(fmu_res->mutable_strings()->mutable_vrs(),     cv.second[fmi2_base_type_str]);
-        addVectorToRepeatedField(fmu_res->mutable_strings()->mutable_values(),  cv.first->getReals(cv.second[fmi2_base_type_str]));
+        addVectorToRepeatedField(fmu_res->mutable_strings()->mutable_values(),  cv.first->getStrings(cv.second[fmi2_base_type_str]));
     }
 
     string str = results.SerializeAsString();

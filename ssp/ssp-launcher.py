@@ -386,7 +386,7 @@ class FMU:
         '''
         Adds connections for this FMU to other FMUs in the System tree to the given connections multimap
         '''
-        for name,conn in self.connectors.iteritems():
+        for name,conn in self.connectors.items():
             # Look at inputs, work back toward outputs
             if conn['kind'] == 'input':
                 fmu, fmu_variable = traverse(self.system, (self.name, name), 'output', True)
@@ -683,12 +683,12 @@ class System:
     def resolve_dictionary_inputs(self):
         #for each signal dictionary, find where it is referenced and if that reference is connected to by an output
         #this because multiple inputs can connect to a dictionary, but only one output can be connected
-        for name,(dictionary_name,drs) in self.sigdictrefs.iteritems():
+        for name,(dictionary_name,drs) in self.sigdictrefs.items():
             #eprint('name: ' + name)
             #eprint('dict: ' + dictionary)
             #eprint('drs: ' + str(drs))
 
-            for key,unit in drs.iteritems():
+            for key,unit in drs.items():
                 #eprint('traversing from ' + str((name, key)))
                 fmu, fmu_variable = traverse(self, (name, key), 'output', False)
 
@@ -707,7 +707,7 @@ class System:
                     #put the FMU and variable name in the dict
                     signaldict[key] = (de[0], fmu, fmu_variable)
 
-        for name,subsystem in self.subsystems.iteritems():
+        for name,subsystem in self.subsystems.items():
             subsystem.resolve_dictionary_inputs()
 
     def get_name(self):
@@ -932,8 +932,9 @@ def get_fmu_server(fmu_path, executable):
     platforms = get_fmu_platforms(fmu_path)
 
     plaform_prefix_table = {
-        'win32': 'win',
+        'win32':  'win',
         'darwin': 'darwin',
+        'linux':  'linux',
         'linux2': 'linux'
     }
 
@@ -1059,8 +1060,8 @@ if __name__ == '__main__':
     args += append
 
 
-    pipeinput = " ".join(flatconns+flatparams+kinematicconns+csvs)
-    eprint('(cd %s && %s <<< "%s")' % (d, " ".join(args), pipeinput))
+    pipeinput = " ".join(['"%s"' % s for s in flatconns+flatparams+kinematicconns+csvs])
+    eprint("(cd %s && %s <<< '%s')" % (d, " ".join(args), pipeinput))
 
     if parse.dry_run:
         ret = 0

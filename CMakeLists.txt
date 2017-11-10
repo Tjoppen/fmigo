@@ -50,6 +50,9 @@ if (BUILD_FMUS AND CMAKE_VERSION VERSION_LESS "3.5.0")
     endif ()
 endif ()
 
+find_program(PYTHON2 python2)
+find_program(PYTHON3 python3)
+
 # Download/install protobuf, umfpack as needed
 if(WIN32)
     add_definitions(-D_SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS) # required by protobuf-ext

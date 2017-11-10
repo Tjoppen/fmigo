@@ -14,7 +14,7 @@ then
 fi
 (cd articles/work-reports       && ( ./run_tests.sh  || ( echo "failed tests in work-reports" && exit 1 ) ) )
 (cd umit-fmus/tests             && ( ./run_tests.sh ||  ( echo "failed umit-fmus tests" && exit 1 ) ) )
-(cd ${BUILD_DIR}                && ( ctest || ( echo "ctest failed" && exit 1 ) ) )
+(cd ${BUILD_DIR}                && ( ctest --output-on-failure || ( echo "ctest failed" && exit 1 ) ) )
 (cd umit-fmus/meWrapper         &&( ./test_wrapper.sh ||  ( echo "failed wrapper" && exit 1 ) ) )
 
 # Check -f none

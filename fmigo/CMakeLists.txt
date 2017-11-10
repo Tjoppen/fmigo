@@ -4,7 +4,7 @@ FIND_PACKAGE(Threads REQUIRED)
 
 if (NOT WIN32)
   # cl.exe has a different set of flags
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Werror -Wno-unused-variable -Wno-unused-function -Wextra -Wno-unused-parameter")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall -Werror -Wno-unused-variable -Wno-unused-function -Wextra -Wno-unused-parameter")
   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -DDEBUG")
   FIND_PACKAGE(MPI REQUIRED)
@@ -165,6 +165,9 @@ ELSE(WIN32)
 
     # MPI stuff. Linux only for now
     # NOTE: switching to MPI compilers. This seems to work fine, surprisingly
+    # mpicc/cxx uses gcc/g++, which needs -Wno-literal-suffix on trusty
+    # Sometimes clang gets picked up which lacks -Wno-literal-suffix on trusty, hence -Wno-unknown-warning-option
+    target_compile_options(${MPI_MASTER_NAME} PRIVATE -Wno-unknown-warning-option -Wno-literal-suffix)
     set(CMAKE_C_COMPILER   mpicc)
     set(CMAKE_CXX_COMPILER mpicxx)
     target_link_libraries(${MPI_MASTER_NAME} ${LINUXLIBS} ${EXTRALIBS})

@@ -33,7 +33,7 @@ namespace fmitcp_master {
     public:
 
         zmq::socket_t rep_socket;
-        bool paused, running;
+        bool initing, paused, running;
         bool zmqControl;
         int m_pendingRequests;
 

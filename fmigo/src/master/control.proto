@@ -22,6 +22,7 @@ message state_message {
     required int32          version =   1; //protocol version (1 for now)
 
     enum State {
+        state_initing   =   0;
         state_paused    =   1;
         state_running   =   2;
         state_exiting   =   3;

@@ -24,8 +24,9 @@ BaseMaster::BaseMaster(zmq::context_t &context, vector<FMIClient*> clients, vect
         m_weakConnections(weakConnections),
         clientWeakRefs(getOutputWeakRefs(m_weakConnections)),
         rep_socket(context, ZMQ_REP),
+        initing(true),
         paused(false),
-        running(true),
+        running(false),
         zmqControl(false),
         m_pendingRequests(0) {
     for(auto client: m_clients)
@@ -263,8 +264,7 @@ void BaseMaster::handleZmqControl() {
     zmq::message_t msg;
 
     //paused means we do blocking polls to avoid wasting CPU time
-    // std::cout << "running: " << running << ", paused: " << paused << std::endl;
-    while (rep_socket.recv(&msg, paused ? ZMQ_NOBLOCK : ZMQ_NOBLOCK) && running) {
+    while (rep_socket.recv(&msg, paused ? 0 : ZMQ_NOBLOCK) && (initing || running)) {
         //got something - make sure it's a control_message with correct
         //version and command set
         control_proto::control_message ctrl;
@@ -320,7 +320,9 @@ void BaseMaster::handleZmqControl() {
             control_proto::state_message state;
             state.set_version(1);
 
-            if (!running) {
+            if (initing) {
+                state.set_state(control_proto::state_message::state_initing);
+            } else if (!running) {
                 state.set_state(control_proto::state_message::state_exiting);
             } else if (paused) {
                 state.set_state(control_proto::state_message::state_paused);

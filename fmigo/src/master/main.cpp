@@ -698,7 +698,6 @@ int main(int argc, char *argv[] ) {
         fatal("-Z requires -z\n");
     }
 
-    master->paused = startPaused;
     master->zmqControl = zmqControl;
 
     if (useHeadersInCSV || fmigo::globals::fileFormat == tikz) {
@@ -778,6 +777,11 @@ int main(int argc, char *argv[] ) {
     for (FMIClient *client : clients) {
       client->m_fmuState = control_proto::fmu_state_State_running;
     }
+
+    //switch to running mode, pause if we should
+    master->initing = false;
+    master->running = true;
+    master->paused = startPaused;
 
     fmigo::globals::timer.dont_rotate = false;
     fmigo::globals::timer.rotate("setup");

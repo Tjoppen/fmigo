@@ -20,8 +20,20 @@ RUN apt-get install --yes \
         build-essential cmake ninja-build git python bc psmisc \
         protobuf-compiler protobuf-c-compiler libprotobuf-dev \
         libsuitesparse-dev libzmqpp-dev libhdf5-dev \
-        libopenmpi-dev libgsl0-dev mpi-default-bin zip clang valgrind \
+        libopenmpi-dev libgsl0-dev mpi-default-bin zip clang-3.8 valgrind \
         python-pip python-dev libxml2-dev libxslt1-dev
+RUN apt-get install -y python-numpy python-scipy python-matplotlib
+RUN apt-get install -y python3-pip
+
+# Need gcc-4.9 for -std=c++14
+# https://askubuntu.com/questions/466651/how-do-i-use-the-latest-gcc-on-ubuntu#581497
+# https://github.com/moby/moby/issues/5383
+RUN apt-get install -y software-properties-common
+RUN add-apt-repository ppa:ubuntu-toolchain-r/test
+RUN apt-get update
+RUN apt-get install -y gcc-4.9 g++-4.9
+RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
+RUN update-alternatives --install /usr/bin/clang clang /usr/bin/clang-3.8 60 --slave /usr/bin/clang++ clang++ /usr/bin/clang++-3.8
 
 #
 # Create user, since mpiexec doesn't like to run as root
@@ -35,7 +47,8 @@ RUN  chown -R gitlab-ci /home/gitlab-ci/umit
 
 # Install python requirements
 WORKDIR /home/gitlab-ci/umit
-RUN pip install -r requirements.txt
+RUN pip2 install -r requirements.txt
+RUN pip3 install -r requirements.txt
 
 # Finally, make us run as gitlab-ci
 USER gitlab-ci
@@ -46,7 +59,7 @@ RUN mkdir FMILibrary-2.0.1/ThirdParty/Expat/expat-2.1.0/src
 RUN mkdir build
 RUN mkdir build-clang
 WORKDIR /home/gitlab-ci/umit/build
-RUN cmake .. -G Ninja
+RUN cmake .. -G Ninja -DCMAKE_CXX_FLAGS="-Wno-literal-suffix"
 RUN ninja install
 WORKDIR /home/gitlab-ci/umit/build-clang
 RUN cmake .. -G Ninja -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++

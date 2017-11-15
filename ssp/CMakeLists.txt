@@ -56,7 +56,8 @@ if (USE_GPL AND BUILD_FMUS)
   # one without having to use a generator to parse SystemStructure.ssd
   add_ssp(ssp-test              SpringChainSystem       clutch2)
   add_ssp(ssp-work-reports      WorkReportHolonomic     engine      gearbox2    body)
-  add_ssp(ssp-kinematic-example KinematicExample        clutch2)
+  add_ssp(examples/kinematic    KinematicExample        clutch2)
+  add_ssp(examples/master-args  MasterArguments         clutch2)
 
   # Run each test over both MPI and TCP
   foreach (p FALSE TRUE)
@@ -72,9 +73,11 @@ if (USE_GPL AND BUILD_FMUS)
       add_test(ssp-test${suffix}-${NAME}                  ${PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/ssp-launcher.py ${option} -- ${SpringChainSystem_ssp})
       add_test(ssp-work-reports${suffix}-${NAME}          ${PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/ssp-launcher.py ${option} -- ${WorkReportHolonomic_ssp})
       add_test(ssp-kinematic-example${suffix}-${NAME}     ${PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/ssp-launcher.py ${option} -- ${KinematicExample_ssp})
+      add_test(ssp-master-args${suffix}-${NAME}           ${PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/ssp-launcher.py ${option} -- ${MasterArguments_ssp})
       add_test(ssp-test-unzipped${suffix}-${NAME}         ${PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/ssp-launcher.py ${option} -- ${SpringChainSystem_dir}/SystemStructure.ssd)
       add_test(ssp-work-reports-unzipped${suffix}-${NAME} ${PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/ssp-launcher.py ${option} -- ${WorkReportHolonomic_dir}/SystemStructure.ssd)
       add_test(ssp-kinematic-example${suffix}-${NAME}     ${PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/ssp-launcher.py ${option} -- ${KinematicExample_dir}/SystemStructure.ssd)
+      add_test(ssp-master-args${suffix}-${NAME}           ${PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/ssp-launcher.py ${option} -- ${MasterArguments_dir}/SystemStructure.ssd)
     endfunction()
 
     if (PYTHON2)

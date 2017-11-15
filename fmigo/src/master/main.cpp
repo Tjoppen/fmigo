@@ -26,7 +26,6 @@
 #include <fstream>
 #include "control.pb.h"
 #include "master/globals.h"
-#include <chrono>
 
 using namespace fmitcp_master;
 using namespace fmitcp;
@@ -785,19 +784,14 @@ int main(int argc, char *argv[] ) {
     master->initing = false;
     master->running = true;
     master->paused = startPaused;
+    master->resetT1();
 
     fmigo::globals::timer.dont_rotate = false;
     fmigo::globals::timer.rotate("setup");
 
-    //t1 = time at which to perform next step
-    std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
-
     //run
     while ((endTime < 0 || step < nsteps) && master->running) {
-        double t = step * endTime / nsteps;
-
-        //for detecting paused -> !paused
-        bool prepaused = master->paused;
+        master->t = step * endTime / nsteps;
 
         master->handleZmqControl();
 
@@ -806,49 +800,33 @@ int main(int argc, char *argv[] ) {
             break;
         }
 
-        if (prepaused && !master->paused) {
-            //step immediately after unpausing
-            t1 = std::chrono::high_resolution_clock::now();
+        if (master->paused) {
             continue;
         }
 
         if (csvParam.size() > 0) {
             //zero order hold
-            auto it = csvParam.upper_bound(t);
+            auto it = csvParam.upper_bound(master->t);
             if (it != csvParam.begin()) {
                 it--;
             }
             sendUserParams(master, clients, it->second);
         }
 
-        if (realtimeMode) {
-            //delay loop
-            for (;;) {
-                std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
-                if (t2 >= t1) {
-                    break;
-                }
-#ifdef WIN32
-                Yield();
-#else
-                usleep(std::chrono::duration<double, std::micro>(t1 - t2).count());
-#endif
-            }
-
-            //aren't C++ templates wonderful?
-            t1 += std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(std::chrono::duration<double>(timeStep));
-        }
-
         if (fmigo::globals::fileFormat != none) {
-            printOutputs(t, master, clients);
+            printOutputs(master->t, master, clients);
         }
 
-        master->runIteration(t, timeStep);
+        if (realtimeMode) {
+            master->waitupT1(timeStep);
+        }
+
+        master->runIteration(master->t, timeStep);
 
         step++;
 
         if (results_port > 0) {
-            pushResults(step, t+timeStep, endTime, timeStep, push_socket, master, clients, false);
+            pushResults(step, master->t+timeStep, endTime, timeStep, push_socket, master, clients, false);
         }
 
         if (fmigo::globals::fileFormat != none) {

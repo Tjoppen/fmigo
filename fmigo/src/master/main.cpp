@@ -614,8 +614,6 @@ int main(int argc, char *argv[] ) {
             &command_port, &results_port, &startPaused, &solveLoops, &useHeadersInCSV, &csv_fmu
     );
 
-    bool zmqControl = command_port > 0 && results_port > 0;
-
 #ifdef USE_MPI
     if (world_rank > 0) {
         //we're a server
@@ -652,7 +650,7 @@ int main(int argc, char *argv[] ) {
     //without this the maximum number of clients tops out at 300 on Linux,
     //around 63 on Windows (according to Web searches)
 #ifdef ZMQ_MAX_SOCKETS
-    zmq_ctx_set((void *)context, ZMQ_MAX_SOCKETS, fmuURIs.size() + (zmqControl ? 2 : 0));
+    zmq_ctx_set((void *)context, ZMQ_MAX_SOCKETS, fmuURIs.size() + !!command_port + !!results_port);
 #endif
     vector<FMIClient*> clients = setupClients(fmuURIs, context);
     info("Successfully connected to all %zu servers\n", fmuURIs.size());
@@ -687,18 +685,22 @@ int main(int argc, char *argv[] ) {
                                             (BaseMaster*)new JacobiMaster(context, clients, weakConnections);
     }
 
-    if (zmqControl) {
-        info("Init zmq control on ports %i and %i\n", command_port, results_port);
+    master->zmqControl = command_port > 0;
+
+    if (master->zmqControl > 0) {
+        info("Init ZMQ control on port %i\n", command_port);
         char addr[128];
         snprintf(addr, sizeof(addr), "tcp://*:%i", command_port);
         master->rep_socket.bind(addr);
-        snprintf(addr, sizeof(addr), "tcp://*:%i", results_port);
-        push_socket.bind(addr);
+
+        if (results_port > 0) {
+          info("Init ZMQ results on port %i\n", results_port);
+          snprintf(addr, sizeof(addr), "tcp://*:%i", results_port);
+          push_socket.bind(addr);
+        }
     } else if (startPaused) {
         fatal("-Z requires -z\n");
     }
-
-    master->zmqControl = zmqControl;
 
     if (useHeadersInCSV || fmigo::globals::fileFormat == tikz) {
         fprintf(fmigo::globals::outfile, "%s\n",fieldnames.c_str());
@@ -770,7 +772,7 @@ int main(int argc, char *argv[] ) {
     int step = 0;
     int nsteps = (int)round(endTime / timeStep);
 
-    if (zmqControl) {
+    if (results_port > 0) {
         pushResults(step, 0, endTime, timeStep, push_socket, master, clients, true);
     }
 
@@ -782,22 +784,14 @@ int main(int argc, char *argv[] ) {
     master->initing = false;
     master->running = true;
     master->paused = startPaused;
+    master->resetT1();
 
     fmigo::globals::timer.dont_rotate = false;
     fmigo::globals::timer.rotate("setup");
 
-    #ifdef WIN32
-        LARGE_INTEGER freq, t1;
-        QueryPerformanceFrequency(&freq);
-        QueryPerformanceCounter(&t1);
-    #else
-        timeval t1;
-        gettimeofday(&t1, NULL);
-    #endif
-
     //run
     while ((endTime < 0 || step < nsteps) && master->running) {
-        double t = step * endTime / nsteps;
+        master->t = step * endTime / nsteps;
 
         master->handleZmqControl();
 
@@ -812,52 +806,27 @@ int main(int argc, char *argv[] ) {
 
         if (csvParam.size() > 0) {
             //zero order hold
-            auto it = csvParam.upper_bound(t);
+            auto it = csvParam.upper_bound(master->t);
             if (it != csvParam.begin()) {
                 it--;
             }
             sendUserParams(master, clients, it->second);
         }
 
-        if (realtimeMode) {
-            double t_wall;
-
-            //delay loop
-            for (;;) {
-#ifdef WIN32
-                LARGE_INTEGER t2;
-                QueryPerformanceCounter(&t2);
-                t_wall = (t2.QuadPart - t1.QuadPart) / (double)freq.QuadPart;
-
-                if (t_wall >= t)
-                    break;
-
-                Yield();
-#else
-                timeval t2;
-                gettimeofday(&t2, NULL);
-
-                t_wall = ((double)t2.tv_sec - t1.tv_sec) + 1.0e-6 * ((double)t2.tv_usec - t1.tv_usec);
-                int us = 1000000 * (t - t_wall);
-
-                if (us <= 0)
-                    break;
-
-                usleep(us);
-#endif
-            }
-        }
-
         if (fmigo::globals::fileFormat != none) {
-            printOutputs(t, master, clients);
+            printOutputs(master->t, master, clients);
         }
 
-        master->runIteration(t, timeStep);
+        if (realtimeMode) {
+            master->waitupT1(timeStep);
+        }
+
+        master->runIteration(master->t, timeStep);
 
         step++;
 
-        if (zmqControl) {
-            pushResults(step, t+timeStep, endTime, timeStep, push_socket, master, clients, false);
+        if (results_port > 0) {
+            pushResults(step, master->t+timeStep, endTime, timeStep, push_socket, master, clients, false);
         }
 
         if (fmigo::globals::fileFormat != none) {

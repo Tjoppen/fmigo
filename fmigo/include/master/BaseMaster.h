@@ -15,10 +15,13 @@
 #include "common/fmigo_storage.h"
 using namespace fmigo_storage;
 #endif
+#include <chrono>
 
 namespace fmitcp_master {
     class BaseMaster {
         int rendezvous;
+        //t1 = time at which to perform next step
+        std::chrono::high_resolution_clock::time_point t1;
     protected:
         std::vector<FMIClient*> m_clients;
         std::vector<WeakConnection> m_weakConnections;
@@ -36,6 +39,7 @@ namespace fmitcp_master {
         bool initing, paused, running;
         bool zmqControl;
         int m_pendingRequests;
+        double t; //current time
 
         explicit BaseMaster(zmq::context_t &context, std::vector<FMIClient*> clients, std::vector<WeakConnection> weakConnections);
         virtual ~BaseMaster() {
@@ -109,6 +113,9 @@ namespace fmitcp_master {
           return 0;
         }
 
+        void resetT1();
+        //wait for t1, advance t1 by timeStep
+        void waitupT1(double timeStep);
         void handleZmqControl();
 
         void queueValueRequests();

@@ -30,6 +30,7 @@ message state_message {
 
     optional State          state       =   2;
     repeated fmu_state      fmu_states  =   3;  //state of each FMU
+    optional double         t           =   4;  //time of current communication point
 }
 
 message fmu_state {

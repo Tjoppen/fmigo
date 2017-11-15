@@ -506,11 +506,11 @@ static void pushResults(int step, double t, double endTime, double timeStep, zmq
         addVectorToRepeatedField(fmu_res->mutable_reals()->mutable_vrs(),       cv.second[fmi2_base_type_real]);
         addVectorToRepeatedField(fmu_res->mutable_reals()->mutable_values(),    cv.first->getReals(cv.second[fmi2_base_type_real]));
         addVectorToRepeatedField(fmu_res->mutable_ints()->mutable_vrs(),        cv.second[fmi2_base_type_int]);
-        addVectorToRepeatedField(fmu_res->mutable_ints()->mutable_values(),     cv.first->getReals(cv.second[fmi2_base_type_int]));
+        addVectorToRepeatedField(fmu_res->mutable_ints()->mutable_values(),     cv.first->getInts(cv.second[fmi2_base_type_int]));
         addVectorToRepeatedField(fmu_res->mutable_bools()->mutable_vrs(),       cv.second[fmi2_base_type_bool]);
-        addVectorToRepeatedField(fmu_res->mutable_bools()->mutable_values(),    cv.first->getReals(cv.second[fmi2_base_type_bool]));
+        addVectorToRepeatedField(fmu_res->mutable_bools()->mutable_values(),    cv.first->getBools(cv.second[fmi2_base_type_bool]));
         addVectorToRepeatedField(fmu_res->mutable_strings()->mutable_vrs(),     cv.second[fmi2_base_type_str]);
-        addVectorToRepeatedField(fmu_res->mutable_strings()->mutable_values(),  cv.first->getReals(cv.second[fmi2_base_type_str]));
+        addVectorToRepeatedField(fmu_res->mutable_strings()->mutable_values(),  cv.first->getStrings(cv.second[fmi2_base_type_str]));
     }
 
     string str = results.SerializeAsString();
@@ -699,7 +699,6 @@ int main(int argc, char *argv[] ) {
         fatal("-Z requires -z\n");
     }
 
-    master->paused = startPaused;
     master->zmqControl = zmqControl;
 
     if (useHeadersInCSV || fmigo::globals::fileFormat == tikz) {
@@ -779,6 +778,11 @@ int main(int argc, char *argv[] ) {
     for (FMIClient *client : clients) {
       client->m_fmuState = control_proto::fmu_state_State_running;
     }
+
+    //switch to running mode, pause if we should
+    master->initing = false;
+    master->running = true;
+    master->paused = startPaused;
 
     fmigo::globals::timer.dont_rotate = false;
     fmigo::globals::timer.rotate("setup");

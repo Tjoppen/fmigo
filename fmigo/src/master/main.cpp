@@ -615,8 +615,6 @@ int main(int argc, char *argv[] ) {
             &command_port, &results_port, &startPaused, &solveLoops, &useHeadersInCSV, &csv_fmu
     );
 
-    bool zmqControl = command_port > 0 && results_port > 0;
-
 #ifdef USE_MPI
     if (world_rank > 0) {
         //we're a server
@@ -653,7 +651,7 @@ int main(int argc, char *argv[] ) {
     //without this the maximum number of clients tops out at 300 on Linux,
     //around 63 on Windows (according to Web searches)
 #ifdef ZMQ_MAX_SOCKETS
-    zmq_ctx_set((void *)context, ZMQ_MAX_SOCKETS, fmuURIs.size() + (zmqControl ? 2 : 0));
+    zmq_ctx_set((void *)context, ZMQ_MAX_SOCKETS, fmuURIs.size() + !!command_port + !!results_port);
 #endif
     vector<FMIClient*> clients = setupClients(fmuURIs, context);
     info("Successfully connected to all %zu servers\n", fmuURIs.size());
@@ -688,18 +686,22 @@ int main(int argc, char *argv[] ) {
                                             (BaseMaster*)new JacobiMaster(context, clients, weakConnections);
     }
 
-    if (zmqControl) {
-        info("Init zmq control on ports %i and %i\n", command_port, results_port);
+    master->zmqControl = command_port > 0;
+
+    if (master->zmqControl > 0) {
+        info("Init ZMQ control on port %i\n", command_port);
         char addr[128];
         snprintf(addr, sizeof(addr), "tcp://*:%i", command_port);
         master->rep_socket.bind(addr);
-        snprintf(addr, sizeof(addr), "tcp://*:%i", results_port);
-        push_socket.bind(addr);
+
+        if (results_port > 0) {
+          info("Init ZMQ results on port %i\n", results_port);
+          snprintf(addr, sizeof(addr), "tcp://*:%i", results_port);
+          push_socket.bind(addr);
+        }
     } else if (startPaused) {
         fatal("-Z requires -z\n");
     }
-
-    master->zmqControl = zmqControl;
 
     if (useHeadersInCSV || fmigo::globals::fileFormat == tikz) {
         fprintf(fmigo::globals::outfile, "%s\n",fieldnames.c_str());
@@ -771,7 +773,7 @@ int main(int argc, char *argv[] ) {
     int step = 0;
     int nsteps = (int)round(endTime / timeStep);
 
-    if (zmqControl) {
+    if (results_port > 0) {
         pushResults(step, 0, endTime, timeStep, push_socket, master, clients, true);
     }
 
@@ -794,6 +796,9 @@ int main(int argc, char *argv[] ) {
     while ((endTime < 0 || step < nsteps) && master->running) {
         double t = step * endTime / nsteps;
 
+        //for detecting paused -> !paused
+        bool prepaused = master->paused;
+
         master->handleZmqControl();
 
         if (!master->running) {
@@ -801,7 +806,7 @@ int main(int argc, char *argv[] ) {
             break;
         }
 
-        if (master->paused) {
+        if (prepaused && !master->paused) {
             //step immediately after unpausing
             t1 = std::chrono::high_resolution_clock::now();
             continue;
@@ -842,7 +847,7 @@ int main(int argc, char *argv[] ) {
 
         step++;
 
-        if (zmqControl) {
+        if (results_port > 0) {
             pushResults(step, t+timeStep, endTime, timeStep, push_socket, master, clients, false);
         }
 

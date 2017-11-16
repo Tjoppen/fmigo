@@ -38,9 +38,9 @@
       </xs:documentation>
     </xs:annotation>
     <xs:complexType>
-      <!--xs:sequence>
+      <xs:sequence>
         <xs:element name="arg" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
-      </xs:sequence-->
+      </xs:sequence>
       <xs:attribute name="timestep" type="xs:double" use="optional"/>
       <xs:attribute name="duration" type="xs:double" use="optional"/>
     </xs:complexType>

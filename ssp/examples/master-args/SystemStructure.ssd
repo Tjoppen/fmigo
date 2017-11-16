@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ssd:SystemStructureDescription version="Draft20160502"
+    xmlns:ssd="http://www.pmsf.net/xsd/SystemStructureDescriptionDraft"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:fmigo="http://umit.math.umu.se/FmiGo.xsd"
+    xsi:schemaLocation="http://www.pmsf.net/xsd/SystemStructureDescriptionDraft http://www.pmsf.net/xsd/SystemStructureDescriptionDraft/Draft20150721/SystemStructureDescription.xsd"
+    name="MasterArguments">
+  <ssd:System name="MasterArguments" description="Example how to use fmigo:MasterArguments">
+    <ssd:Elements>
+      <ssd:Component name="FMU0" source="resources/clutch2.fmu" type="application/x-fmu-sharedlibrary" />
+    </ssd:Elements>
+  </ssd:System>
+
+  <!--
+    fmigo arguments annotations go here, outside <ssd:System>.
+    This example runs in realtime for 3 seconds. Or does it!? Keep reading.
+    Anything specified in <fmigo:arg> is inserted at the very end of the list of arguments.
+    It is therefore possible to override many arguments. One such example is duration.
+    So this example actually runs for half a second, not three.
+  -->
+  <ssd:Annotations>
+    <ssd:Annotation type="se.umu.math.umit.fmigo-master.arguments">
+      <fmigo:MasterArguments timestep="0.1" duration="3">
+        <fmigo:arg>-r</fmigo:arg>   <!-- realtime mode      -->
+        <fmigo:arg>-t</fmigo:arg>   <!-- change duration..  -->
+        <fmigo:arg>0.5</fmigo:arg>  <!-- to half a second!  -->
+      </fmigo:MasterArguments>
+    </ssd:Annotation>
+  </ssd:Annotations>
+</ssd:SystemStructureDescription>

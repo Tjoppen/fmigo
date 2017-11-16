@@ -399,6 +399,7 @@ class SystemStructure:
     def __init__(self, root):
         units = find_elements(root, 'ssd:Units', 'ssd:Unit')
         self.name = get_attrib(root, 'name')
+        self.arguments = []
         check_name(self.name)
 
         # Get schemaLocation if set. This avoids some residual XML
@@ -452,10 +453,10 @@ class SystemStructure:
                     self.duration = float(duration)
 
                 # We might do this later
-                #for arg in find_elements(annotation, 'fmigo:MasterArguments', 'fmigo:arg')[1]:
-                #    self.arguments.append(arg.text)
-                #    arg.text = None
-                #    remove_if_empty(annotation[0], arg)
+                for arg in find_elements(annotation, 'fmigo:MasterArguments', 'fmigo:arg')[1]:
+                    self.arguments.append(arg.text)
+                    arg.text = None
+                    remove_if_empty(annotation[0], arg)
 
                 remove_if_empty(annotation, annotation[0])
             else:
@@ -896,7 +897,8 @@ def parse_ssp(ssp_path, cleanup_zip = True):
     if unzipped_ssp and cleanup_zip:
         shutil.rmtree(d)
 
-    return flatconns, flatparams, kinematicconns, csvs, unzipped_ssp, d, root_system.structure.timestep, root_system.structure.duration
+    return flatconns, flatparams, kinematicconns, csvs, unzipped_ssp, d, \
+            root_system.structure.timestep, root_system.structure.duration, root_system.structure.arguments
 
 def get_fmu_platforms(fmu_path):
     zip = ZipFile(fmu_path)
@@ -987,7 +989,7 @@ if __name__ == '__main__':
 
     parse = parser.parse_args()
 
-    flatconns, flatparams, kinematicconns, csvs, unzipped_ssp, d, timestep, duration = parse_ssp(parse.ssp, False)
+    flatconns, flatparams, kinematicconns, csvs, unzipped_ssp, d, timestep, duration, arguments = parse_ssp(parse.ssp, False)
 
     # If we are working with TCP, create tcp://localhost:port for all given local hosts
     # If no ports are given then try to find some free TCP ports
@@ -1056,7 +1058,7 @@ if __name__ == '__main__':
     args += append
 
 
-    pipeinput = " ".join(['"%s"' % s for s in flatconns+flatparams+kinematicconns+csvs])
+    pipeinput = " ".join(['"%s"' % s for s in flatconns+flatparams+kinematicconns+csvs+arguments])
     eprint("(cd %s && %s <<< '%s')" % (d, " ".join(args), pipeinput))
 
     if parse.dry_run:

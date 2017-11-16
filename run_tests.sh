@@ -52,4 +52,9 @@ mpiexec -np 1 fmigo-mpi -f none \
   : -np 1 fmigo-mpi ${FMUS_DIR}/gsl2/clutch2/clutch2.fmu
   : -np 1 fmigo-mpi ${FMUS_DIR}/gsl2/clutch2/clutch2.fmu
 
+# Test ZMQ control + starting paused
+# "python" instead of "python2" or "python3" to pick up the right variant
+# on trusty vs xenial for control_pb2.py to work.
+python test_control.py
+
 echo All tests OK

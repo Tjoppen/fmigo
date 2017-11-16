@@ -99,14 +99,13 @@ t4 = time.time()
 # Expected elapsed time for the end part of the simulation
 # The -2*dt accounts for unpause happening immediately
 # -tmid for the time already simulated
-# Finally it takes about 10 ms to shut everything down
-expected = t_end - 2*dt - tmid + 0.01
+expected = t_end - 2*dt - tmid
 
 elapsed = t4 - t3
 print('Last half: %f vs %f' % (elapsed, expected))
 
-# 10% tolerance on time elapsed
-if ret != 0 or abs(elapsed - expected) > expected / 10:
+# 10% tolerance on time elapsed, plus another 50 ms for shutdown
+if ret != 0 or abs(elapsed - expected) > expected / 10 + 0.05:
   fail()
 else:
   print('ZMQ control + pause test passed')

@@ -989,10 +989,6 @@ if __name__ == '__main__':
 
     flatconns, flatparams, kinematicconns, csvs, unzipped_ssp, d, timestep, duration = parse_ssp(parse.ssp, False)
 
-    cwd = os.getcwd()
-    if d:
-        os.chdir(d)
-
     # If we are working with TCP, create tcp://localhost:port for all given local hosts
     # If no ports are given then try to find some free TCP ports
     if parse.ports != None:
@@ -1037,7 +1033,7 @@ if __name__ == '__main__':
         # Everything looks OK; start servers
         for i in range(len(fmus)):
             fmigo_server = get_fmu_server(fmus[i].path, 'fmigo-server')
-            subprocess.Popen([fmigo_server,'-p', str(ports[i]), fmus[i].relpath(d)])
+            subprocess.Popen([fmigo_server,'-p', str(ports[i]), fmus[i].relpath(d)], cwd=d)
 
         #read connections and parameters from stdin, since they can be quite many
         #stdin because we want to avoid leaving useless files on the filesystem
@@ -1053,7 +1049,7 @@ if __name__ == '__main__':
 
         for fmu in fmus:
             fmigo_mpi = get_fmu_server(fmu.path, 'fmigo-mpi')
-            append += [':','-n', '1', fmigo_mpi]
+            append += [':','-n', '1', '-wdir', d, fmigo_mpi]
             append += fmu_paths
 
     args += ['-t',str(duration),'-d',str(timestep)] + parse.args + ['-a','-']
@@ -1070,8 +1066,6 @@ if __name__ == '__main__':
         p = subprocess.Popen(args, stdin=subprocess.PIPE)
         p.communicate(input=pipeinput.encode('utf-8'))
         ret = p.returncode  #ret can be None
-
-    os.chdir(cwd)
 
     if ret == 0:
         if unzipped_ssp:

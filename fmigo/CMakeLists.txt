@@ -216,7 +216,8 @@ if (GZIP)
   install (FILES ${OUT_MANPAGE} DESTINATION man/man1)
 endif ()
 
-if (ICONV AND GROFF AND SED)
+# groff on Mac is different
+if (ICONV AND GROFF AND SED AND NOT APPLE)
   set(OUT_PDF ${CMAKE_CURRENT_LIST_DIR}/doc/fmigo.pdf)
 
   # The sed part strips out date so the PDF output is always the same (reproducible)

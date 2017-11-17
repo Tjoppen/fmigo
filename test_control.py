@@ -3,12 +3,14 @@ import zmq
 import os
 import subprocess
 import time
+import io
+from numpy import * # genfromtxt, array
 import sys
 sys.path.append('fmigo/src/master')
 import control_pb2
 
 FMUS_DIR = 'build/umit-fmus' if not 'FMUS_DIR' in os.environ else os.environ['FMUS_DIR']
-fmu = os.path.join(FMUS_DIR, 'kinematictruck/body/body.fmu')
+fmu = os.path.join(FMUS_DIR, 'tests/typeconvtest/typeconvtest.fmu')
 
 print('ZMQ control + pause test')
 
@@ -39,10 +41,13 @@ def fail():
   exit(1)
 
 
-def send_cmd_expect_state(cmd, expected_state):
+def send_cmd_expect_state(cmd, expected_state, variables=None):
   ctrl = control_pb2.control_message()
   ctrl.version = 1
   ctrl.command = cmd
+  if not variables is None:
+    ctrl.variables.extend([variables])
+
   socket.send(ctrl.SerializeToString())
   state = control_pb2.state_message()
   state.ParseFromString(socket.recv())
@@ -109,3 +114,56 @@ if ret != 0 or abs(elapsed - expected) > expected / 10 + 0.05:
   fail()
 else:
   print('ZMQ control + pause test passed')
+
+
+
+#################################################################
+# Check that setting parameters via the control channel works   #
+#################################################################
+
+print('ZMQ parameter control test..')
+
+# *Not* realtime, ZMQ control, start paused, CSV output
+proc = subprocess.Popen([
+  'mpiexec', '-np', '2', 'fmigo-mpi',
+    '-t', '1',
+    '-d', '1',
+    '-z', str(control_port),
+    '-Z',
+    fmu
+], stdout=subprocess.PIPE)
+
+# Set some known values, unpause
+params = control_pb2.fmu_results()
+params.fmu_id = 0
+params.reals.vrs.append(4)
+params.reals.values.append(4.0)
+params.ints.vrs.append(5)
+params.ints.values.append(5)
+params.bools.vrs.append(6)
+params.bools.values.append(True)
+
+send_cmd_expect_state(
+  control_pb2.control_message.command_unpause,
+  control_pb2.state_message.state_running,
+  params
+)
+
+# Grab output, compare to reference
+stdout, stderr = proc.communicate()
+
+mat = genfromtxt(io.BytesIO(stdout), delimiter=',')
+ref = array([[0,0,0,0],[1,4,5,1]])
+norm = sum(abs(mat-ref))
+
+print(ref)
+print(' vs ')
+print(stdout)
+print('norm = %f' % norm)
+
+if norm < 1e-6:
+  print('ZMQ parameter control test passed')
+else:
+  print('ZMQ parameter control test false')
+  exit(1)
+

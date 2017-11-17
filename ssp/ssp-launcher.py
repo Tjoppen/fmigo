@@ -17,9 +17,6 @@ from zipfile import ZipFile
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
-default_timestep = 0.1
-default_duration = 10
-
 RESOURCE_DIR='resources'
 SSD_NAME='SystemStructure.ssd'
 CAUSALITY='causality'
@@ -434,8 +431,9 @@ class SystemStructure:
         #eprint('unitsbyname: '+str(self.unitsbyname))
         #eprint('unitsbyunits: '+str(self.unitsbyunits))
 
-        self.timestep = default_timestep
-        self.duration = default_duration
+        # Return None if no fmigo:MasterArguments
+        self.timestep = None
+        self.duration = None
 
         annotations = find_elements(root, 'ssd:Annotations', 'ssd:Annotation')
         for annotation in annotations[1]:
@@ -897,8 +895,20 @@ def parse_ssp(ssp_path, cleanup_zip = True):
     if unzipped_ssp and cleanup_zip:
         shutil.rmtree(d)
 
-    return flatconns, flatparams, kinematicconns, csvs, unzipped_ssp, d, \
-            root_system.structure.timestep, root_system.structure.duration, root_system.structure.arguments
+    return {
+    'flatconns':        flatconns,
+    'flatparams':       flatparams,
+    'kinematicconns':   kinematicconns,
+    'csvs':             csvs,
+    'unzipped_ssp':     unzipped_ssp,
+    'temp_dir':         d,
+    'timestep':         root_system.structure.timestep, # None if no fmigo:MasterArguments
+    'duration':         root_system.structure.duration, # None if no fmigo:MasterArguments
+    'masterarguments':  root_system.structure.arguments,
+    }
+
+    #return flatconns, flatparams, kinematicconns, csvs, unzipped_ssp, d, \
+    #        root_system.structure.timestep, root_system.structure.duration, root_system.structure.arguments
 
 def get_fmu_platforms(fmu_path):
     zip = ZipFile(fmu_path)
@@ -989,7 +999,11 @@ if __name__ == '__main__':
 
     parse = parser.parse_args()
 
-    flatconns, flatparams, kinematicconns, csvs, unzipped_ssp, d, timestep, duration, arguments = parse_ssp(parse.ssp, False)
+    ssp_dict = parse_ssp(parse.ssp, False)
+    d = ssp_dict['temp_dir']
+
+    duration = ssp_dict['duration'] if not ssp_dict['duration'] is None else 10
+    timestep = ssp_dict['timestep'] if not ssp_dict['timestep'] is None else 0.01
 
     cwd = os.getcwd()
     if d:
@@ -1058,11 +1072,17 @@ if __name__ == '__main__':
             append += [':','-n', '1', fmigo_mpi]
             append += fmu_paths
 
-    args += ['-t',str(duration),'-d',str(timestep)] + parse.args + ['-a','-']
+    args += ['-t',str(duration),'-d',str(timestep)] + ['-a','-']
     args += append
 
-
-    pipeinput = " ".join(['"%s"' % s for s in flatconns+flatparams+kinematicconns+csvs+arguments])
+    pipelist = \
+      ssp_dict['flatconns'] +\
+      ssp_dict['flatparams'] +\
+      ssp_dict['kinematicconns'] +\
+      ssp_dict['csvs'] +\
+      ssp_dict['masterarguments'] +\
+      parse.args
+    pipeinput = " ".join(['"%s"' % s for s in pipelist])
     eprint("(cd %s && %s <<< '%s')" % (d, " ".join(args), pipeinput))
 
     if parse.dry_run:
@@ -1076,7 +1096,7 @@ if __name__ == '__main__':
     os.chdir(cwd)
 
     if ret == 0:
-        if unzipped_ssp:
+        if ssp_dict['unzipped_ssp']:
             shutil.rmtree(d)
     else:
         eprint('An error occured (returncode = ' + str(ret) + '). Check ' + d)

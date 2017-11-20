@@ -13,7 +13,7 @@ cd %BUILD_DIR%
 
 @rem Note that we're not building FMUs here because we have no 64-bit GSL yet
 @rem This also means we can't run tests on this build at the moment.
-cmake .. -G %CMAKE_GENERATOR% -DBUILD_FMUS=0 -DUSE_GPL=0 -DCMAKE_BUILD_TYPE=%CMAKE_BUILD_TYPE% && ^
+cmake .. -G %CMAKE_GENERATOR% -DBUILD_FMUS=OFF -DUSE_GPL=0 -DCMAKE_BUILD_TYPE=%CMAKE_BUILD_TYPE% && ^
 cmake --build .                  -- /m %BUILD_OPTIONS% && ^
 cmake --build . --target package -- %BUILD_OPTIONS%
 

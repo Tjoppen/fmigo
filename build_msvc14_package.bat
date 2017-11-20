@@ -14,7 +14,7 @@ cd %BUILD_DIR%
 @rem Building FMUs is required for Jenkins. If you change the value of BUILD_FMUS in here you will receive a stern talking to
 @rem Create your own copy of this file if you need to do that!
 @rem To reiterate: ~vv  ABSOLUTELY NO GEFINGERPOKEN BUILD_FMUS vv~
-cmake .. -G %CMAKE_GENERATOR% -DBUILD_FMUS=1 -DUSE_GPL=0 -DCMAKE_BUILD_TYPE=%CMAKE_BUILD_TYPE% && ^
+cmake .. -G %CMAKE_GENERATOR% -DBUILD_FMUS=OFF -DUSE_GPL=0 -DCMAKE_BUILD_TYPE=%CMAKE_BUILD_TYPE% && ^
 cmake --build .                  -- /m %BUILD_OPTIONS% && ^
 cmake --build . --target package -- %BUILD_OPTIONS%
 

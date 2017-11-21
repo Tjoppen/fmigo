@@ -23,6 +23,7 @@ CAUSALITY='causality'
 MODELDESCRIPTION='modelDescription.xml'
 
 ns = {
+    'ssc': 'http://www.pmsf.net/xsd/SystemStructureCommonDraft',
     'ssd': 'http://www.pmsf.net/xsd/SystemStructureDescriptionDraft',
     'ssv': 'http://www.pmsf.net/xsd/SystemStructureParameterValuesDraft',
     'ssm': 'http://www.pmsf.net/xsd/SystemStructureParameterMappingDraft',
@@ -336,7 +337,7 @@ class FMU:
             }
         remove_if_empty(comp, connectors[0])
 
-        cannotations = find_elements(comp, 'ssd:Annotations', 'ssd:Annotation')
+        cannotations = find_elements(comp, 'ssd:Annotations', 'ssc:Annotation')
         for cannotation in cannotations[1]:
             type = get_attrib(cannotation, 'type')
             if type == 'se.umu.math.umit.ssp.physicalconnectors':
@@ -435,7 +436,7 @@ class SystemStructure:
         self.timestep = None
         self.duration = None
 
-        annotations = find_elements(root, 'ssd:Annotations', 'ssd:Annotation')
+        annotations = find_elements(root, 'ssd:Annotations', 'ssc:Annotation')
         for annotation in annotations[1]:
             type = get_attrib(annotation, 'type')
             if type == 'se.umu.math.umit.fmigo-master.arguments':
@@ -497,7 +498,8 @@ class System:
         remove_if_empty(tree.getroot(), s)
 
         if len(tree.getroot()) > 0 or len(tree.getroot().attrib) > 0:
-            eprint('WARNING: Residual XML: '+etree.tostring(tree.getroot()))
+            s = etree.tostring(tree.getroot())
+            eprint('WARNING: Residual XML: '+s.decode('utf-8'))
 
         return ret
 
@@ -530,7 +532,7 @@ class System:
         signaldicts = find_elements(s, 'ssd:SignalDictionaries',    'ssd:SignalDictionary')
         sigdictrefs = find_elements(s, 'ssd:Elements',              'ssd:SignalDictionaryReference')
         params      = find_elements(s, 'ssd:ParameterBindings',     'ssd:ParameterBinding')
-        annotations = find_elements(s, 'ssd:Annotations',           'ssd:Annotation')
+        annotations = find_elements(s, 'ssd:Annotations',           'ssc:Annotation')
         elements    = s.find('ssd:Elements', ns)
 
         for conn in connectors[1]:

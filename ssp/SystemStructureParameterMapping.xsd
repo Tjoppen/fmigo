@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
     xmlns:ssm="http://www.pmsf.net/xsd/SystemStructureParameterMappingDraft"
+    xmlns:ssc="http://www.pmsf.net/xsd/SystemStructureCommonDraft"
     targetNamespace="http://www.pmsf.net/xsd/SystemStructureParameterMappingDraft">
     <xs:annotation>
         <xs:documentation xml:lang="en">
@@ -28,58 +29,30 @@
             elements are directly contained in the ParameterMapping element of the SSD, without
             use of the ParameterMapping element of this schema.
                         
-            Version: 20160204
+            Version: 20170606
             
         </xs:documentation>
     </xs:annotation>
+    
+    <xs:import namespace="http://www.pmsf.net/xsd/SystemStructureCommonDraft" schemaLocation="SystemStructureCommon.xsd"/>
     
     <xs:element name="ParameterMapping">
         <xs:complexType>
             <xs:sequence>
                 <xs:element name="MappingEntry" minOccurs="0" maxOccurs="unbounded" type="ssm:TMappingEntry"/>
-                <xs:element name="Annotations" minOccurs="0" type="ssm:TAnnotations"/>
+                <xs:element name="Annotations" minOccurs="0" type="ssc:TAnnotations"/>
             </xs:sequence>
-            <xs:attribute name="version" type="xs:normalizedString" use="required" fixed="Draft20160204">
+            <xs:attribute name="version" type="xs:normalizedString" use="required" fixed="Draft20170606">
                 <xs:annotation>
                     <xs:documentation xml:lang="en">
                         Version of SSM format, fixed at 1.0 for the actual release.
                     </xs:documentation>
                 </xs:annotation>
             </xs:attribute>
-            <xs:attributeGroup ref="ssm:ABaseElement"/>
-            <!-- Generic FMI-like metadata -->
-            <xs:attribute name="author" type="xs:string" use="optional"/>
-            <xs:attribute name="fileversion" type="xs:normalizedString" use="optional"/>
-            <xs:attribute name="copyright" type="xs:string" use="optional"/>
-            <xs:attribute name="license" type="xs:string" use="optional"/>
-            <xs:attribute name="generationTool" type="xs:normalizedString"/>
-            <xs:attribute name="generationDateAndTime" type="xs:dateTime"/>
+            <xs:attributeGroup ref="ssc:ABaseElement"/>
+            <xs:attributeGroup ref="ssc:ATopLevelMetaData"/>
         </xs:complexType>
     </xs:element>
-    
-    <xs:attributeGroup name="ABaseElement">
-        <xs:annotation>
-            <xs:documentation xml:lang="en">
-                This attribute group specifies the attributes common to all model elements.
-            </xs:documentation>
-        </xs:annotation>
-        <xs:attribute name="id" type="xs:ID" use="optional">
-            <xs:annotation>
-                <xs:documentation xml:lang="en">
-                    This attribute gives the model element a file-wide unique id which can
-                    be referenced from other elements or via URI fragment identifier.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="description" type="xs:string" use="optional">
-            <xs:annotation>
-                <xs:documentation xml:lang="en">
-                    This attribute gives a human readable longer description of the
-                    model element, which can be shown to the user where appropriate. 
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-    </xs:attributeGroup>
     
     <xs:complexType name="TMappingEntry">
         <xs:sequence>
@@ -227,9 +200,9 @@
                     </xs:complexType>
                 </xs:element>
             </xs:choice>
-            <xs:element name="Annotations" minOccurs="0" type="ssm:TAnnotations"/>
+            <xs:element name="Annotations" minOccurs="0" type="ssc:TAnnotations"/>
         </xs:sequence>
-        <xs:attributeGroup ref="ssm:ABaseElement"/>
+        <xs:attributeGroup ref="ssc:ABaseElement"/>
         <xs:attribute name="source" type="xs:string" use="required">
             <xs:annotation>
                 <xs:documentation xml:lang="en">
@@ -265,53 +238,5 @@
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
-
-    <xs:complexType name="TAnnotations">
-        <xs:sequence maxOccurs="unbounded">
-            <xs:element name="Annotation">
-                <xs:complexType>
-                    <xs:sequence>
-                        <xs:any namespace="##any" processContents="lax" minOccurs="0"/>
-                    </xs:sequence>
-                    <xs:attribute name="type" type="xs:normalizedString" use="required">
-                        <xs:annotation>
-                            <xs:documentation xml:lang="en">
-                                The unique name of the type of the annotation.
-                                
-                                In order to ensure uniqueness all types should be identified
-                                with reverse domain name notation (cf. Java package names
-                                or Apple UTIs) of a domain that is controlled by the entity
-                                defining the semantics and content of the annotation.
-                                
-                                For vendor-specific annotations this would e.g. be a domain
-                                controlled by the tool vendor.
-                                
-                                For MAP-SSP defined annotations, this will be a domain under
-                                the org.modelica prefix.
-                                
-                                <!-- Rationale:
-                                     
-                                     The vendor annotations mechanism was initially patterned
-                                     after the one in FMI, for good or worse.  In order to
-                                     avoid some of the problems with that mechanism, annotations
-                                     are allowed on all model elements, so that no complex
-                                     mechanisms for mapping annotation information to model 
-                                     elements is needed.  The use of rDNS notation for type
-                                     names should at least alleviate the problem of clashing
-                                     tool names.
-                                     
-                                     In order to make this mechanism also usable for agreed
-                                     upon extensions to the base standard, it was deemed to
-                                     be useful to rename the mechanism to remove vendor and tool
-                                     from the names and to reserve some namespace for non-vendor-
-                                     specific extensions.
-                                -->
-                            </xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                </xs:complexType>
-            </xs:element>
-        </xs:sequence>
-    </xs:complexType>
-    
+   
 </xs:schema>

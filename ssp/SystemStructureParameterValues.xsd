@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
     xmlns:ssv="http://www.pmsf.net/xsd/SystemStructureParameterValuesDraft"
+    xmlns:ssc="http://www.pmsf.net/xsd/SystemStructureCommonDraft"
     targetNamespace="http://www.pmsf.net/xsd/SystemStructureParameterValuesDraft">
     <xs:annotation>
         <xs:documentation xml:lang="en">
@@ -25,26 +26,28 @@
             A parameter set can be provided as a stand-alone XML file (conventionally with a .ssv file type)
             which can be referenced from SSD files.
                         
-            Version: 20151124
+            Version: 20170606
             
         </xs:documentation>
     </xs:annotation>
+    
+    <xs:import namespace="http://www.pmsf.net/xsd/SystemStructureCommonDraft" schemaLocation="SystemStructureCommon.xsd"/>
     
     <xs:element name="ParameterSet">
         <xs:complexType>
             <xs:sequence>
                 <xs:element name="Parameters" type="ssv:TParameters"/>
-                <xs:element name="Units" minOccurs="0" type="ssv:TUnits"/>
-                <xs:element name="Annotations" minOccurs="0" type="ssv:TAnnotations"/>
+                <xs:element name="Units" minOccurs="0" type="ssc:TUnits"/>
+                <xs:element name="Annotations" minOccurs="0" type="ssc:TAnnotations"/>
             </xs:sequence>
-            <xs:attribute name="version" type="xs:normalizedString" use="required" fixed="Draft20151124">
+            <xs:attribute name="version" type="xs:normalizedString" use="required" fixed="Draft20170606">
                 <xs:annotation>
                     <xs:documentation xml:lang="en">
                         Version of SSV format, fixed at 1.0 for the actual release.
                     </xs:documentation>
                 </xs:annotation>
             </xs:attribute>
-            <xs:attributeGroup ref="ssv:ABaseElement"/>
+            <xs:attributeGroup ref="ssc:ABaseElement"/>
             <xs:attribute name="name" type="xs:string" use="required">
                 <xs:annotation>
                     <xs:documentation xml:lang="en">
@@ -52,40 +55,10 @@
                     </xs:documentation>
                 </xs:annotation>
             </xs:attribute>
-            <!-- Generic FMI-like metadata -->
-            <xs:attribute name="author" type="xs:string" use="optional"/>
-            <xs:attribute name="fileversion" type="xs:normalizedString" use="optional"/>
-            <xs:attribute name="copyright" type="xs:string" use="optional"/>
-            <xs:attribute name="license" type="xs:string" use="optional"/>
-            <xs:attribute name="generationTool" type="xs:normalizedString"/>
-            <xs:attribute name="generationDateAndTime" type="xs:dateTime"/>
+            <xs:attributeGroup ref="ssc:ATopLevelMetaData"/>
         </xs:complexType>
     </xs:element>
-    
-    <xs:attributeGroup name="ABaseElement">
-        <xs:annotation>
-            <xs:documentation xml:lang="en">
-                This attribute group specifies the attributes common to all model elements.
-            </xs:documentation>
-        </xs:annotation>
-        <xs:attribute name="id" type="xs:ID" use="optional">
-            <xs:annotation>
-                <xs:documentation xml:lang="en">
-                    This attribute gives the model element a file-wide unique id which can
-                    be referenced from other elements or via URI fragment identifier.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="description" type="xs:string" use="optional">
-            <xs:annotation>
-                <xs:documentation xml:lang="en">
-                    This attribute gives a human readable longer description of the
-                    model element, which can be shown to the user where appropriate. 
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-    </xs:attributeGroup>
-    
+        
     <xs:complexType name="TParameters">
         <xs:sequence>
             <xs:element name="Parameter" minOccurs="0" maxOccurs="unbounded" type="ssv:TParameter"/>
@@ -109,7 +82,7 @@
                                 <xs:documentation xml:lang="en">
                                     This attribute gives the unit of the parameter value and must
                                     reference one of the unit definitions provided in the Units
-                                    element of the ParameterSet.
+                                    element of the enclosing file.
                                 </xs:documentation>
                             </xs:annotation>
                         </xs:attribute>
@@ -163,10 +136,38 @@
                         </xs:attribute>
                     </xs:complexType>
                 </xs:element>
+                <xs:element name="Binary">
+                    <xs:complexType>
+                        <xs:attribute name="mime-type" type="xs:string" default="application/octet-stream">
+                            <xs:annotation>
+                                <xs:documentation xml:lang="en">
+                                    This optional attribute specifies the MIME type of the
+                                    underlying binary data, which defaults to the non-specific
+                                    application/octet-stream type.  This information can be
+                                    used by the implementation to detect mismatches between
+                                    binary parameters, or provide automatic conversions
+                                    between different formats.  It should be noted that the
+                                    implementation is not required to provide this service,
+                                    i.e. it remains the responsibility of the operator to
+                                    ensure only compatible binary connectors/parameters are
+                                    connected.
+                                </xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
+                        <xs:attribute name="value" type="xs:hexBinary" use="required">
+                            <xs:annotation>
+                                <xs:documentation xml:lang="en">
+                                    This attribute gives the value of the parameter as a
+                                    hex encoded binary value.
+                                </xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
+                    </xs:complexType>
+                </xs:element>
             </xs:choice>
-            <xs:element name="Annotations" minOccurs="0" type="ssv:TAnnotations"/>
+            <xs:element name="Annotations" minOccurs="0" type="ssc:TAnnotations"/>
         </xs:sequence>
-        <xs:attributeGroup ref="ssv:ABaseElement"/>
+        <xs:attributeGroup ref="ssc:ABaseElement"/>
         <xs:attribute name="name" type="xs:string" use="required">
             <xs:annotation>
                 <xs:documentation xml:lang="en">
@@ -176,120 +177,5 @@
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
-    
-    <xs:complexType name="TUnits">
-        <xs:sequence>
-            <xs:element name="Unit" minOccurs="1" maxOccurs="unbounded" type="ssv:TUnit"/>
-        </xs:sequence>
-    </xs:complexType>
-    
-    <xs:complexType name="TUnit">
-        <xs:sequence>
-            <xs:element name="BaseUnit">
-                <xs:complexType>
-                    <xs:attribute name="kg" type="xs:int" default="0">
-                        <xs:annotation>
-                            <xs:documentation>Exponent of SI base unit "kg"</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="m" type="xs:int" default="0">
-                        <xs:annotation>
-                            <xs:documentation>Exponent of SI base unit "m"</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="s" type="xs:int" default="0">
-                        <xs:annotation>
-                            <xs:documentation>Exponent of SI base unit "s"</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="A" type="xs:int" default="0">
-                        <xs:annotation>
-                            <xs:documentation>Exponent of SI base unit "A"</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="K" type="xs:int" default="0">
-                        <xs:annotation>
-                            <xs:documentation>Exponent of SI base unit "K"</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="mol" type="xs:int" default="0">
-                        <xs:annotation>
-                            <xs:documentation>Exponent of SI base unit "mol"</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="cd" type="xs:int" default="0">
-                        <xs:annotation>
-                            <xs:documentation>Exponent of SI base unit "cd"</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="rad" type="xs:int" default="0">
-                        <xs:annotation>
-                            <xs:documentation>Exponent of SI derived unit "rad"</xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                    <xs:attribute name="factor" type="xs:double" default="1"/>
-                    <xs:attribute name="offset" type="xs:double" default="0"/>
-                </xs:complexType>
-            </xs:element>
-            <xs:element name="Annotations" minOccurs="0" type="ssv:TAnnotations"/>
-        </xs:sequence>
-        <xs:attributeGroup ref="ssv:ABaseElement"/>
-        <xs:attribute name="name" type="xs:string" use="required">
-            <xs:annotation>
-                <xs:documentation xml:lang="en">
-                    This attribute specifies the name of the parameter in the parameter set,
-                    which must be unique within in the parameter set.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-    </xs:complexType>
-
-    <xs:complexType name="TAnnotations">
-        <xs:sequence maxOccurs="unbounded">
-            <xs:element name="Annotation">
-                <xs:complexType>
-                    <xs:sequence>
-                        <xs:any namespace="##any" processContents="lax" minOccurs="0"/>
-                    </xs:sequence>
-                    <xs:attribute name="type" type="xs:normalizedString" use="required">
-                        <xs:annotation>
-                            <xs:documentation xml:lang="en">
-                                The unique name of the type of the annotation.
-                                
-                                In order to ensure uniqueness all types should be identified
-                                with reverse domain name notation (cf. Java package names
-                                or Apple UTIs) of a domain that is controlled by the entity
-                                defining the semantics and content of the annotation.
-                                
-                                For vendor-specific annotations this would e.g. be a domain
-                                controlled by the tool vendor.
-                                
-                                For MAP-SSP defined annotations, this will be a domain under
-                                the org.modelica prefix.
-                                
-                                <!-- Rationale:
-                                     
-                                     The vendor annotations mechanism was initially patterned
-                                     after the one in FMI, for good or worse.  In order to
-                                     avoid some of the problems with that mechanism, annotations
-                                     are allowed on all model elements, so that no complex
-                                     mechanisms for mapping annotation information to model 
-                                     elements is needed.  The use of rDNS notation for type
-                                     names should at least alleviate the problem of clashing
-                                     tool names.
-                                     
-                                     In order to make this mechanism also usable for agreed
-                                     upon extensions to the base standard, it was deemed to
-                                     be useful to rename the mechanism to remove vendor and tool
-                                     from the names and to reserve some namespace for non-vendor-
-                                     specific extensions.
-                                -->
-                            </xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                </xs:complexType>
-            </xs:element>
-        </xs:sequence>
-    </xs:complexType>
-    
+     
 </xs:schema>

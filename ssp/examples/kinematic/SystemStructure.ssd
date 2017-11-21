@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ssd:SystemStructureDescription version="Draft20160502"
+<ssd:SystemStructureDescription version="Draft20170606"
     xmlns:ssd="http://www.pmsf.net/xsd/SystemStructureDescriptionDraft"
+    xmlns:ssc="http://www.pmsf.net/xsd/SystemStructureCommonDraft"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:fmigo="http://umit.math.umu.se/FmiGo.xsd"
     xsi:schemaLocation="http://www.pmsf.net/xsd/SystemStructureDescriptionDraft http://www.pmsf.net/xsd/SystemStructureDescriptionDraft/Draft20150721/SystemStructureDescription.xsd"
@@ -9,7 +10,7 @@
     <ssd:Elements>
       <ssd:Component name="FMU0" source="resources/clutch2.fmu" type="application/x-fmu-sharedlibrary">
         <ssd:Annotations>
-          <ssd:Annotation type="se.umu.math.umit.ssp.physicalconnectors">
+          <ssc:Annotation type="se.umu.math.umit.ssp.physicalconnectors">
             <fmigo:PhysicalConnectors>
               <fmigo:PhysicalConnector1D
                 name="outputShaft"
@@ -19,12 +20,12 @@
                 effortVariable="force_in_s"
               />
             </fmigo:PhysicalConnectors>
-          </ssd:Annotation>
+          </ssc:Annotation>
         </ssd:Annotations>
       </ssd:Component>
       <ssd:Component name="FMU1" source="resources/clutch2.fmu" type="application/x-fmu-sharedlibrary">
         <ssd:Annotations>
-          <ssd:Annotation type="se.umu.math.umit.ssp.physicalconnectors">
+          <ssc:Annotation type="se.umu.math.umit.ssp.physicalconnectors">
             <fmigo:PhysicalConnectors>
               <fmigo:PhysicalConnector1D
                 name="inputShaft"
@@ -41,12 +42,12 @@
                 effortVariable="force_in_s"
               />
             </fmigo:PhysicalConnectors>
-          </ssd:Annotation>
+          </ssc:Annotation>
         </ssd:Annotations>
       </ssd:Component>
       <ssd:Component name="FMU2" source="resources/clutch2.fmu" type="application/x-fmu-sharedlibrary">
         <ssd:Annotations>
-          <ssd:Annotation type="se.umu.math.umit.ssp.physicalconnectors">
+          <ssc:Annotation type="se.umu.math.umit.ssp.physicalconnectors">
             <fmigo:PhysicalConnectors>
               <fmigo:PhysicalConnector1D
                 name="inputShaft"
@@ -56,12 +57,12 @@
                 effortVariable="force_in_e"
               />
             </fmigo:PhysicalConnectors>
-          </ssd:Annotation>
+          </ssc:Annotation>
         </ssd:Annotations>
       </ssd:Component>
     </ssd:Elements>
     <ssd:Annotations>
-      <ssd:Annotation type="se.umu.math.umit.ssp.kinematicconstraints">
+      <ssc:Annotation type="se.umu.math.umit.ssp.kinematicconstraints">
         <fmigo:KinematicConstraints>
           <fmigo:ShaftConstraint
             element1="FMU0" connector1="outputShaft"
@@ -74,7 +75,7 @@
             holonomic="true"
           />
         </fmigo:KinematicConstraints>
-      </ssd:Annotation>
+      </ssc:Annotation>
     </ssd:Annotations>
   </ssd:System>
 </ssd:SystemStructureDescription>

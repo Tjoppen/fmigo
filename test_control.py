@@ -19,6 +19,7 @@ t_end = 0.7
 dt = 0.1
 
 control_port = 5555
+results_port = 5556
 
 # Realtime, ZMQ control, start paused, no output
 proc = subprocess.Popen([
@@ -32,7 +33,7 @@ proc = subprocess.Popen([
     fmu
 ])
 
-context = zmq.Context()
+context = zmq.Context(2)
 socket = context.socket(zmq.REQ) # control is REQ-REP
 socket.connect('tcp://localhost:%i' % control_port)
 
@@ -121,17 +122,20 @@ else:
 # Check that setting parameters via the control channel works   #
 #################################################################
 
-print('ZMQ parameter control test..')
+print('ZMQ parameter control + results test..')
 
 # *Not* realtime, ZMQ control, start paused, CSV output
 proc = subprocess.Popen([
   'mpiexec', '-np', '2', 'fmigo-mpi',
     '-t', '1',
     '-d', '1',
-    '-z', str(control_port),
+    '-z', '%i:%i' % (control_port, results_port),
     '-Z',
     fmu
-], stdout=subprocess.PIPE)
+])
+
+results_socket = context.socket(zmq.PULL)
+results_socket.connect('tcp://localhost:%i' % results_port)
 
 # Set some known values, unpause
 params = control_pb2.fmu_results()
@@ -150,20 +154,29 @@ send_cmd_expect_state(
 )
 
 # Grab output, compare to reference
-stdout, stderr = proc.communicate()
-
-mat = genfromtxt(io.BytesIO(stdout), delimiter=',')
-ref = array([[0,0,0,0],[1,4,5,1]])
-norm = sum(abs(mat-ref))
-
-print(ref)
-print(' vs ')
-print(stdout)
-print('norm = %f' % norm)
-
-if norm < 1e-6:
-  print('ZMQ parameter control test passed')
-else:
-  print('ZMQ parameter control test false')
+def fail2():
+  print('ZMQ parameter control + results test failed')
   exit(1)
 
+def vr2val(vrval, vr):
+  # figure out index
+  for index in range(len(vrval.vrs)):
+    if vrval.vrs[index] == vr:
+      return vrval.values[index]
+  print("Couldn't look up VR=%i" % vr)
+  fail2()
+
+results = control_pb2.results_message()
+
+# Testing float equality may look suspicious, but 0.0 and 4.0 should carry over properly if we have some level of sanity
+results.ParseFromString(results_socket.recv())
+if not (vr2val(results.results[0].reals, 4), vr2val(results.results[0].ints, 5), vr2val(results.results[0].bools, 6)) == (0.0, 0, False):
+  print(results)
+  fail2()
+
+results.ParseFromString(results_socket.recv())
+if not (vr2val(results.results[0].reals, 4), vr2val(results.results[0].ints, 5), vr2val(results.results[0].bools, 6)) == (4.0, 5, True):
+  print(results)
+  fail2()
+
+print('ZMQ parameter control + results test passed')

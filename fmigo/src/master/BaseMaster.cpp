@@ -24,10 +24,12 @@ BaseMaster::BaseMaster(zmq::context_t &context, vector<FMIClient*> clients, vect
         m_weakConnections(weakConnections),
         clientWeakRefs(getOutputWeakRefs(m_weakConnections)),
         rep_socket(context, ZMQ_REP),
+        initing(true),
         paused(false),
-        running(true),
+        running(false),
         zmqControl(false),
-        m_pendingRequests(0) {
+        m_pendingRequests(0),
+        t(0.0) {
     for(auto client: m_clients)
         client->m_master = this;
 }
@@ -258,12 +260,34 @@ template<typename T> std::vector<T> rf2vec(const ::google::protobuf::RepeatedPtr
   return ret;
 }
 
+void BaseMaster::resetT1() {
+  t1 = std::chrono::high_resolution_clock::now();
+}
+
+void BaseMaster::waitupT1(double timeStep) {
+  //delay loop
+  for (;;) {
+    std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
+    if (t2 >= t1) {
+      break;
+    }
+#ifdef WIN32
+    Yield();
+#else
+    usleep(std::chrono::duration<double, std::micro>(t1 - t2).count());
+#endif
+  }
+
+  //aren't C++ templates wonderful?
+  t1 += std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(std::chrono::duration<double>(timeStep));
+}
+
 void BaseMaster::handleZmqControl() {
   if (zmqControl) {
     zmq::message_t msg;
 
     //paused means we do blocking polls to avoid wasting CPU time
-    while (rep_socket.recv(&msg, paused ? 0 : ZMQ_NOBLOCK) && running) {
+    while (rep_socket.recv(&msg, paused ? 0 : ZMQ_NOBLOCK) && (initing || running)) {
         //got something - make sure it's a control_message with correct
         //version and command set
         control_proto::control_message ctrl;
@@ -277,6 +301,10 @@ void BaseMaster::handleZmqControl() {
                 paused = true;
                 break;
             case control_proto::control_message::command_unpause:
+                if (paused) {
+                  //step immediately after unpause
+                  resetT1();
+                }
                 paused = false;
                 break;
             case control_proto::control_message::command_stop:
@@ -318,8 +346,11 @@ void BaseMaster::handleZmqControl() {
             //always reply with state
             control_proto::state_message state;
             state.set_version(1);
+            state.set_t(t);
 
-            if (!running) {
+            if (initing) {
+                state.set_state(control_proto::state_message::state_initing);
+            } else if (!running) {
                 state.set_state(control_proto::state_message::state_exiting);
             } else if (paused) {
                 state.set_state(control_proto::state_message::state_paused);

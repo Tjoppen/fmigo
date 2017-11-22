@@ -14,9 +14,7 @@ over TCP/IP
 .SH SYNOPSIS (TCP/IP)
 .B fmigo-master
 .RB [ " \-rlhtcdsopfmgwC5NMazZLHDe " ]
-[
-.I "URLs \&..."
-]
+.I URLs
 .br
 .B fmigo-server --port PORT
 .I FMUFILENAME
@@ -30,14 +28,12 @@ over TCP/IP
 : -np 1 fmigo-mpi
 .I FMUFILENAME
 [
-: ...
+: \&...
 ]
 ]
 .br
 .B mpiexec -np (num_fmus+1) fmigo-mpi [arguments]
-[
-.I "FMUFILENAMEs \&..."
-]
+.I FMUFILENAMEs
 .br
 
 .SH DESCRIPTION
@@ -106,7 +102,7 @@ There is also an alternative syntax which produces shorter command lines but req
 Show help and quit.
 .TP
 .B \-r
-Real time mode. Will usleep() in between communication steps if the execution was faster than real time.
+Realtime mode. Will usleep() in between communication steps if the execution was faster than real time.
 .TP
 .B \-N
 Make kinematic connectors nonholonomic rather than holonomic.
@@ -152,7 +148,7 @@ First note that some options specify lists of values.
 These can either be specified as colon separated lists (like "-w 0:1:0") in one long option, or multiple times for each one ("-w 0 -w 1 -w 0"), or any combination of the two ("-w 0 -w 1:0").
 This is convenient when building command lines in script, especially when lengthy strong connection specifications (-C) are involved. 
 .TP
-.B \-l [0..7]
+.B \-l LOGLEVEL
 Set FMILibrary log level. Levels are as follows:
 
     0 = nothing     (default)
@@ -165,7 +161,7 @@ Set FMILibrary log level. Levels are as follows:
     7 = all
 
 .TP
-.B \-w [VISIBILITIES]
+.B \-w VISIBILITIES
 Visibility specification list. Specifies which FMUs should show their simulator application windows. Syntax is
 
     -w VIS0:VIS1:VIS2...
@@ -186,7 +182,7 @@ Unlike -p, -c and -C order is significant for visibility lists. The following is
 
 By default no windows are shown (batch mode).
 .TP
-.B \-g [STEPPING ORDER SPEC]
+.B \-g STEPPING_ORDER_SPEC
 FMU stepping order list. Used in serial algorithms. Should be a comma separated list of FMU indices. If the list starts with 0, then the first FMU will be stepped, and its output values will be transferred through their connections (if any).
 Example:
 
@@ -199,7 +195,7 @@ Like other lists stepping order lists can also be broken up. This is equivalent 
 
 Order is significant, just like visibility lists. If no -g is specified then FMUs are stepped in numerical order (FMU0 -> FMU1 -> FMU2 etc.).
 .TP
-.B \-c [WEAK CONNECTIONS]
+.B \-c WEAK_CONNECTIONS
 Weak connection specification list. Represents which FMU and value reference to connect from and what to connect to. Syntax is
 
     -c WCONN1:WCONN2:WCONN3...
@@ -275,7 +271,7 @@ For booleans, abs(y) > 0.5 is considered true.
 
 Default is no connections.
 .TP
-.B \-p [PARAMS]
+.B \-p PARAMS
 Parameter specification list. Specifies parameters to send to FMUs during initialization. Format is:
 
     -p PARAM1:PARAM2:PARAM3...
@@ -320,7 +316,7 @@ Finally, some examples using names:
 
 Default is no parameters.
 .TP
-.B \-C [STRONG CONNECTIONS]
+.B \-C STRONG_CONNECTIONS
 Strong coupling specification. Syntax is
 
     -C SCONN1:SCONN2:SCONN3...
@@ -364,33 +360,33 @@ Just like weak connections, variable references can be resolved by name. So the 
 
 Default is no strong connections. Specifying strong connections is incompatible with using the Gauss-Seidel stepper (-m gs).
 .TP
-.B \-d [TIMESTEP]
+.B \-d TIMESTEP
 Timestep size. Default is 0.1.
 .TP
-.B \-f [OUTFORMAT]
+.B \-f OUTFORMAT
 Output file format. Can be "csv" (default) or "tikz". Use -H to print header with CSV output. TikZ output always uses a header.
 .TP
-.B \-m [METHOD]
+.B \-m METHOD
 Stepping method. Available methods are "jacobi" (Jacobi, parallel) and "gs" (Gauss-Seidel, serial). Default is "jacobi".
 When strong coupling is used only "jacobi" is possible.
 .TP
-.B \-o [OUTFILE]
+.B \-o OUTFILE
 Result output file. Default is STDOUT.
 .TP
-.B \-s [SEPARATOR]
+.B \-s SEPARATOR
 CSV separator character. Default is comma (,).
 .TP
-.B \-t [ENDTIME]
+.B \-t ENDTIME
 End simulation time in seconds. Default is 1.0.
 .TP
-.B \-M [COMPLIANCE]
+.B \-M COMPLIANCE
 Set compliance for kinematic solver (real value, default = 0.0).
 .TP
-.B \-a [ARGSFILENAME]
+.B \-a ARGSFILENAME
 Add extra arguments parsed from file with given name, or stdin if filename is -.
 This is useful for large systems where the total size of the connection specification exceeds the operating system's limit for program arguments (2 KiB of Windows).
 The arguments in the file may be separated by anything std::ifstream::operator>>(std::string) considers a white space (space, newline, tab etc.).
-The parsed tokens effectively replace the "-a [ARGSFILENAME]" in the list of arguments.
+The parsed tokens effectively replace the "-a ARGSFILENAME" in the list of arguments.
 Recursive files are not allowed - if the argument file itself contains a "-a" token then the program stops.
 Example:
 
@@ -415,9 +411,11 @@ stdin example producing the same command line (bash style here-document):
     EOF
 
 .TP
-.B \-z [command_port:results_port]
-Set up ZMQ command (REQ/REP) and results (PUSH/PULL) ports.
+.B \-z command_port[:results_port]
+Set up ZMQ command (REQ/REP) and optional results (PUSH/PULL) ports.
 Allows controlling master and PULLing results over ZMQ.
+If results_port is given then -f none is assumed, unless -f csv or -f tikz is specified after -z.
+
 Messages are serialized using protobuf.
 For more information, see src/master/control.proto.
 

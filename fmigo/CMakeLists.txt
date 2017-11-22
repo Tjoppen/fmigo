@@ -165,6 +165,9 @@ ELSE(WIN32)
 
     # MPI stuff. Linux only for now
     # NOTE: switching to MPI compilers. This seems to work fine, surprisingly
+    # mpicc/cxx uses gcc/g++, which needs -Wno-literal-suffix on trusty
+    # Sometimes clang gets picked up which lacks -Wno-literal-suffix on trusty, hence -Wno-unknown-warning-option
+    target_compile_options(${MPI_MASTER_NAME} PRIVATE -Wno-unknown-warning-option -Wno-literal-suffix)
     set(CMAKE_C_COMPILER   mpicc)
     set(CMAKE_CXX_COMPILER mpicxx)
     target_link_libraries(${MPI_MASTER_NAME} ${LINUXLIBS} ${EXTRALIBS})
@@ -197,15 +200,36 @@ add_dependencies(${TCP_MASTER_NAME} fmitcp_pb control_pb)
 add_dependencies(${TCP_SERVER_NAME} fmitcp_pb control_pb)
 add_dependencies(${MPI_MASTER_NAME} fmitcp_pb control_pb)
 
-# TODO: Server manpage?
-if(NOT WIN32)
-    SET(IN_MANPAGE ${CMAKE_CURRENT_LIST_DIR}/doc/${TCP_MASTER_NAME}.1)
-    SET(OUT_MANPAGE ${CMAKE_CURRENT_BINARY_DIR}/${TCP_MASTER_NAME}.1.gz)
-    add_custom_command(OUTPUT ${OUT_MANPAGE} COMMAND gzip -kc9 ${IN_MANPAGE} > ${OUT_MANPAGE} DEPENDS ${IN_MANPAGE})
-    add_custom_target(manpage DEPENDS ${OUT_MANPAGE})
-    ADD_DEPENDENCIES(${TCP_MASTER_NAME} manpage)
-    INSTALL (FILES ${OUT_MANPAGE} DESTINATION man/man1)
-endif()
+
+# Manpage stuff
+find_program(GZIP   gzip)
+find_program(ICONV  iconv)
+find_program(GROFF  groff)
+find_program(SED    sed)
+
+set(IN_MANPAGE ${CMAKE_CURRENT_LIST_DIR}/doc/fmigo.1)
+
+if (GZIP)
+  set(OUT_MANPAGE ${CMAKE_CURRENT_BINARY_DIR}/fmigo.1.gz)
+  add_custom_command(OUTPUT ${OUT_MANPAGE} COMMAND ${GZIP} -kc9 ${IN_MANPAGE} > ${OUT_MANPAGE} DEPENDS ${IN_MANPAGE})
+  add_custom_target(manpage ALL DEPENDS ${OUT_MANPAGE})
+  install (FILES ${OUT_MANPAGE} DESTINATION man/man1)
+endif ()
+
+# groff on Mac is different
+if (ICONV AND GROFF AND SED AND NOT APPLE)
+  set(OUT_PDF ${CMAKE_CURRENT_LIST_DIR}/doc/fmigo.pdf)
+
+  # The sed part strips out date so the PDF output is always the same (reproducible)
+  add_custom_command(OUTPUT ${OUT_PDF} COMMAND
+    ${ICONV} -t ISO-8859-15 -f UTF-8 < ${IN_MANPAGE} |
+    ${GROFF} -T pdf -mandoc |
+    ${SED} -e '/CreationDate/,/endobj/d' > ${OUT_PDF}
+    DEPENDS ${IN_MANPAGE}
+  )
+  add_custom_target(manpage_pdf ALL DEPENDS ${OUT_PDF})
+  install(FILES ${OUT_PDF} DESTINATION doc)
+endif ()
 
 INSTALL(TARGETS ${TCP_MASTER_NAME} ${TCP_SERVER_NAME} ${MPI_MASTER_NAME} DESTINATION bin)
 

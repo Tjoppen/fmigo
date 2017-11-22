@@ -17,15 +17,13 @@ from zipfile import ZipFile
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
-default_timestep = 0.1
-default_duration = 10
-
 RESOURCE_DIR='resources'
 SSD_NAME='SystemStructure.ssd'
 CAUSALITY='causality'
 MODELDESCRIPTION='modelDescription.xml'
 
 ns = {
+    'ssc': 'http://www.pmsf.net/xsd/SystemStructureCommonDraft',
     'ssd': 'http://www.pmsf.net/xsd/SystemStructureDescriptionDraft',
     'ssv': 'http://www.pmsf.net/xsd/SystemStructureParameterValuesDraft',
     'ssm': 'http://www.pmsf.net/xsd/SystemStructureParameterMappingDraft',
@@ -45,6 +43,9 @@ schema_names = {
     'FmiGo':'FmiGo.xsd',
 }
 schemas = {}
+
+class SSPException(Exception):
+    pass
 
 for type in schema_names:
     # Expect schema to be located next to this script
@@ -68,8 +69,7 @@ def parse_and_validate(type, path):
 def add_multimap_value(multimap, key, value):
     if key in multimap:
         if value in multimap[key]:
-            eprint( str((key,value)) + ' already exists in ' + str(multimap))
-            exit(1)
+            raise SSPException( str((key,value)) + ' already exists in ' + str(multimap))
         multimap[key].add(value)
     else:
         multimap[key] = set([value])
@@ -126,20 +126,17 @@ def traverse(startsystem, startkey, target_kind, use_sigdictrefs):
             de = signaldict[key[1]]
 
             if de[1] == None:
-                eprint('SignalDictionary "%s" has no output signal connected to it' % dictionary_name)
-                exit(1)
+                raise SSPException('SignalDictionary "%s" has no output signal connected to it' % dictionary_name)
 
             return de[1], de[2]
         else:
-            eprint('Key %s of kind %s not found in system %s' % (str(key), target_kind, sys.name))
-            eprint (sys.fmus)
-            eprint (sys.subsystems)
-            exit(1)
+            raise SSPException('Key %s of kind %s not found in system %s. fmus = %s, subsystems = %s' %
+                (str(key), target_kind, sys.name, sys.fmus, sys.subsystems)
+            )
 
         ttl -= 1
         if ttl <= 0:
-            eprint ('SSP contains a loop!')
-            exit(1)
+            raise SSPException('SSP contains a loop!')
 
 def get_attrib(s, name, default=None):
     if name in s.attrib:
@@ -148,8 +145,7 @@ def get_attrib(s, name, default=None):
         return ret
     else:
         if default == None:
-            eprint('get_attrib(): missing required attribute ' + name)
-            exit(1)
+            raise SSPException('get_attrib(): missing required attribute ' + name)
         return default
 
 def remove_if_empty(parent, node):
@@ -164,8 +160,7 @@ def find_elements(s, first, second):
 def check_name(name):
     if '.' in name:
         # We might allow this at some point
-        eprint('ERROR: FMU/System name "%s" contains a dot, which is not allowed' % name)
-        exit(1)
+        raise SSPException('ERROR: FMU/System name "%s" contains a dot, which is not allowed' % name)
 
 # Escapes a variable name or value
 def escape(s):
@@ -181,8 +176,7 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
         if len(pb_prefix) > 0:
             # Expect a trailing dot and strip it
             if pb_prefix[-1] != '.':
-                eprint('ERROR: ParameterBinding prefix must end in dot (%s -> "%s")' % (baseprefix, pb_prefix) )
-                exit(1)
+                raise SSPException('ERROR: ParameterBinding prefix must end in dot (%s -> "%s")' % (baseprefix, pb_prefix) )
             prefix = baseprefix + '.' + pb_prefix[0:-1]
 
         pvs = (pb, pb.findall('ssd:ParameterValues', ns))
@@ -190,13 +184,11 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
         x_ssp_parameter_set = 'application/x-ssp-parameter-set'
         t = get_attrib(pb, 'type', x_ssp_parameter_set)
         if t != x_ssp_parameter_set:
-            eprint('Expected ' + x_ssp_parameter_set + ', got ' + t)
-            exit(1)
+            raise SSPException('Expected ' + x_ssp_parameter_set + ', got ' + t)
 
         if 'source' in pb.attrib:
             if len(pvs[1]) != 0:
-                eprint('ParameterBindings must have source or ParameterValues, not both')
-                exit(1)
+                raise SSPException('ParameterBindings must have source or ParameterValues, not both')
 
             #read from file
             #TODO: print unhandled XML in ParameterSet
@@ -205,13 +197,11 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
             #eprint('Parsed %i params' % len(pvs))
         else:
             if len(pvs[1]) == 0:
-                eprint('ParameterBindings missing both source and ParameterValues')
-                exit(1)
+                raise SSPException('ParameterBindings missing both source and ParameterValues')
 
             #don't know whether it's ParameterValues -> Parameters -> Parameter or just ParameterValues -> Parameter
             #the spec doesn't help
-            eprint('Parsing ParameterValues is TODO, for lack of examples or complete schema as of 2016-11-11')
-            exit(1)
+            raise SSPException('Parsing ParameterValues is TODO, for lack of examples or complete schema as of 2016-11-11')
 
         for pv in pvs[1]:
             r = pv.find('ssv:Real', ns)
@@ -227,8 +217,7 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
 
             if r != None:
                 if 'unit' in r.attrib:
-                    eprint('Not dealing with parameters with units yet')
-                    exit(1)
+                    raise SSPException('Not dealing with parameters with units yet')
 
                 param.update({
                     'type': 'r',
@@ -250,11 +239,9 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
                     'value': s.attrib['value'],
                 })
             elif e != None:
-                eprint('Enumerations not supported')
-                exit(1)
+                raise SSPException('Enumerations not supported')
             else:
-                eprint('Unsupported parameter type: ' + str(pv[0].tag))
-                exit(1)
+                raise SSPException('Unsupported parameter type: ' + str(pv[0].tag))
 
             parameters[key] = param
             remove_if_empty(pvs[0], pv)
@@ -263,14 +250,12 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
         pm = pb.find('ssd:ParameterMapping', ns)
         if pm != None:
             if not 'source' in pm.attrib:
-                eprint('"source" not set in ParameterMapping. In-line PMs not supported yet')
-                exit(1)
+                raise SSPException('"source" not set in ParameterMapping. In-line PMs not supported yet')
 
             x_ssp_parameter_mapping = 'application/x-ssp-parameter-mapping'
             t = get_attrib(pm, 'type', x_ssp_parameter_mapping)
             if t != x_ssp_parameter_mapping:
-                eprint('Expected ' + x_ssp_parameter_mapping + ', got ' + t)
-                exit(1)
+                raise SSPException('Expected ' + x_ssp_parameter_mapping + ', got ' + t)
 
             #TODO: print unhandled XML in ParameterMapping too
             tree = parse_and_validate('SSM', os.path.join(path, get_attrib(pm, 'source')))
@@ -291,13 +276,11 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
                     offset = float(lt.attrib['offset'])
 
                     if p['type'] != 'r':
-                        eprint('LinearTransformation only supported in Real')
-                        exit(1)
+                        raise SSPException('LinearTransformation only supported in Real')
 
                     p['value'] = p['value'] * factor + offset
                 elif len(me) > 0:
-                    eprint("Found MappingEntry with sub-element which isn't LinearTransformation, which is not yet supported")
-                    exit(1)
+                    raise SSPException("Found MappingEntry with sub-element which isn't LinearTransformation, which is not yet supported")
 
                 parameters[targetkey] = p
 
@@ -324,8 +307,7 @@ class FMU:
 
             if len(conn) > 0:
                 if len(conn) > 1:
-                    eprint('More then one sub-element of Connector - bailing out')
-                    exit(1)
+                    raise SSPException('More then one sub-element of Connector - bailing out')
                 unit = get_attrib(conn[0], 'unit', False)
                 if unit == False:
                     unit = None
@@ -339,7 +321,7 @@ class FMU:
             }
         remove_if_empty(comp, connectors[0])
 
-        cannotations = find_elements(comp, 'ssd:Annotations', 'ssd:Annotation')
+        cannotations = find_elements(comp, 'ssd:Annotations', 'ssc:Annotation')
         for cannotation in cannotations[1]:
             type = get_attrib(cannotation, 'type')
             if type == 'se.umu.math.umit.ssp.physicalconnectors':
@@ -386,7 +368,7 @@ class FMU:
         '''
         Adds connections for this FMU to other FMUs in the System tree to the given connections multimap
         '''
-        for name,conn in self.connectors.iteritems():
+        for name,conn in self.connectors.items():
             # Look at inputs, work back toward outputs
             if conn['kind'] == 'input':
                 fmu, fmu_variable = traverse(self.system, (self.name, name), 'output', True)
@@ -399,6 +381,7 @@ class SystemStructure:
     def __init__(self, root):
         units = find_elements(root, 'ssd:Units', 'ssd:Unit')
         self.name = get_attrib(root, 'name')
+        self.arguments = []
         check_name(self.name)
 
         # Get schemaLocation if set. This avoids some residual XML
@@ -433,10 +416,11 @@ class SystemStructure:
         #eprint('unitsbyname: '+str(self.unitsbyname))
         #eprint('unitsbyunits: '+str(self.unitsbyunits))
 
-        self.timestep = default_timestep
-        self.duration = default_duration
+        # Return None if no fmigo:MasterArguments
+        self.timestep = None
+        self.duration = None
 
-        annotations = find_elements(root, 'ssd:Annotations', 'ssd:Annotation')
+        annotations = find_elements(root, 'ssd:Annotations', 'ssc:Annotation')
         for annotation in annotations[1]:
             type = get_attrib(annotation, 'type')
             if type == 'se.umu.math.umit.fmigo-master.arguments':
@@ -452,10 +436,10 @@ class SystemStructure:
                     self.duration = float(duration)
 
                 # We might do this later
-                #for arg in find_elements(annotation, 'fmigo:MasterArguments', 'fmigo:arg')[1]:
-                #    self.arguments.append(arg.text)
-                #    arg.text = None
-                #    remove_if_empty(annotation[0], arg)
+                for arg in find_elements(annotation, 'fmigo:MasterArguments', 'fmigo:arg')[1]:
+                    self.arguments.append(arg.text)
+                    arg.text = None
+                    remove_if_empty(annotation[0], arg)
 
                 remove_if_empty(annotation, annotation[0])
             else:
@@ -491,14 +475,14 @@ class System:
 
         sys = tree.getroot().findall('ssd:System', ns)
         if len(sys) != 1:
-            eprint( 'Must have exactly one System')
-            exit(1)
+            raise SSPException( 'Must have exactly one System')
         s = sys[0]
         ret = cls(d, s, version, parent, structure)
         remove_if_empty(tree.getroot(), s)
 
         if len(tree.getroot()) > 0 or len(tree.getroot().attrib) > 0:
-            eprint('WARNING: Residual XML: '+etree.tostring(tree.getroot()))
+            s = etree.tostring(tree.getroot())
+            eprint('WARNING: Residual XML: '+s.decode('utf-8'))
 
         return ret
 
@@ -531,7 +515,7 @@ class System:
         signaldicts = find_elements(s, 'ssd:SignalDictionaries',    'ssd:SignalDictionary')
         sigdictrefs = find_elements(s, 'ssd:Elements',              'ssd:SignalDictionaryReference')
         params      = find_elements(s, 'ssd:ParameterBindings',     'ssd:ParameterBinding')
-        annotations = find_elements(s, 'ssd:Annotations',           'ssd:Annotation')
+        annotations = find_elements(s, 'ssd:Annotations',           'ssc:Annotation')
         elements    = s.find('ssd:Elements', ns)
 
         for conn in connectors[1]:
@@ -546,8 +530,7 @@ class System:
             elif kind in ['parameter', 'calculatedParameter', 'inout']:
                 eprint('WARNING: Unimplemented connector kind: ' + kind)
             else:
-                eprint('Unknown connector kind: ' + kind)
-                exit(1)
+                raise SSPException('Unknown connector kind: ' + kind)
 
             if len(conn) > 0:
                 eprint("WARNING: Connection %s in system %s has type information, which isn't handled yet" % (name, self.name))
@@ -590,8 +573,7 @@ class System:
                     self,
                 )
             else:
-                eprint('unknown type: ' + t)
-                exit(1)
+                raise SSPException('unknown type: ' + t)
 
             #parse parameters after subsystems so their values get overriden properly
             cparams = find_elements(comp, 'ssd:ParameterBindings', 'ssd:ParameterBinding')
@@ -619,8 +601,7 @@ class System:
             conns = find_elements(sdr, 'ssd:Connectors', 'ssd:Connector')
             for conn in conns[1]:
                 if get_attrib(conn, 'kind') != 'inout':
-                    eprint('Only inout connectors supports in SignalDictionaryReferences for now')
-                    exit(1)
+                    raise SSPException('Only inout connectors supports in SignalDictionaryReferences for now')
                 drs[get_attrib(conn, 'name')] = get_attrib(conn[0], 'unit')
                 remove_if_empty(conn, conn[0])
                 remove_if_empty(conns[0], conn)
@@ -677,18 +658,17 @@ class System:
             if sys == None:
                 #we're assuming that dictionaries exist somewhere straight up in the hierarchy, never in a sibling/child system
                 #this may change if we find a counterexample in the wild
-                eprint('Failed to find SignalDictionary "%s" starting at System "%s"' % (dictionary_name, self.name))
-                exit(1)
+                raise SSPException('Failed to find SignalDictionary "%s" starting at System "%s"' % (dictionary_name, self.name))
 
     def resolve_dictionary_inputs(self):
         #for each signal dictionary, find where it is referenced and if that reference is connected to by an output
         #this because multiple inputs can connect to a dictionary, but only one output can be connected
-        for name,(dictionary_name,drs) in self.sigdictrefs.iteritems():
+        for name,(dictionary_name,drs) in self.sigdictrefs.items():
             #eprint('name: ' + name)
             #eprint('dict: ' + dictionary)
             #eprint('drs: ' + str(drs))
 
-            for key,unit in drs.iteritems():
+            for key,unit in drs.items():
                 #eprint('traversing from ' + str((name, key)))
                 fmu, fmu_variable = traverse(self, (name, key), 'output', False)
 
@@ -701,13 +681,12 @@ class System:
                     de = signaldict[key]
 
                     if de[1] != None:
-                        eprint('Dictionary %s has more than one output connected to %s' % (dictionary_name, key))
-                        exit(1)
+                        raise SSPException('Dictionary %s has more than one output connected to %s' % (dictionary_name, key))
 
                     #put the FMU and variable name in the dict
                     signaldict[key] = (de[0], fmu, fmu_variable)
 
-        for name,subsystem in self.subsystems.iteritems():
+        for name,subsystem in self.subsystems.items():
             subsystem.resolve_dictionary_inputs()
 
     def get_name(self):
@@ -779,8 +758,7 @@ def parse_ssp(ssp_path, cleanup_zip = True):
         for sv in root.find('ModelVariables').findall('ScalarVariable'):
             name = sv.attrib['name']
             if name in svs:
-                eprint(fmu.path + ' contains multiple variables named "' + name + '"!')
-                exit(1)
+                raise SSPException(fmu.path + ' contains multiple variables named "' + name + '"!')
 
             causality = ''
 
@@ -803,8 +781,7 @@ def parse_ssp(ssp_path, cleanup_zip = True):
             elif sv.find('Enum')    != None: t = 'e'
             elif sv.find('String')  != None: t = 's'
             else:
-                eprint(fmu.path + ' variable "' + name + '" has unknown type')
-                exit(1)
+                raise SSPException(fmu.path + ' variable "' + name + '" has unknown type')
 
             svs[name] = {
                 'vr': int(sv.attrib['valueReference']),
@@ -868,21 +845,18 @@ def parse_ssp(ssp_path, cleanup_zip = True):
             name    = shaft['connector%i' % i]
 
             if not name in pcs:
-                eprint('ERROR: Shaft constraint refers to physical connector %s in %s, which does not exist' % (name, fmuname))
-                exit(1)
+                raise SSPException('ERROR: Shaft constraint refers to physical connector %s in %s, which does not exist' % (name, fmuname))
 
             pc = pcs[name]
 
             if pc['type'] != '1d':
-                eprint('ERROR: Physical connector %s in %s of type %s, not 1d' % (name, fmuname, pc['type']))
-                exit(1)
+                raise SSPException('ERROR: Physical connector %s in %s of type %s, not 1d' % (name, fmuname, pc['type']))
 
             # NOTE: We could resolve variables using mds[] here, but fmigo now has
             # support for looking variables up based on name, so there's no need to
             # TODO: Non-holonomic shaft constraints
             if not shaft['holonomic']:
-                eprint('ERROR: ShaftConstraints must be holonomic for now')
-                exit(1)
+                raise SSPException('ERROR: ShaftConstraints must be holonomic for now')
 
             conn += [escape(key) for key in pc['vars']]
 
@@ -896,7 +870,20 @@ def parse_ssp(ssp_path, cleanup_zip = True):
     if unzipped_ssp and cleanup_zip:
         shutil.rmtree(d)
 
-    return flatconns, flatparams, kinematicconns, csvs, unzipped_ssp, d, root_system.structure.timestep, root_system.structure.duration
+    return {
+    'flatconns':        flatconns,
+    'flatparams':       flatparams,
+    'kinematicconns':   kinematicconns,
+    'csvs':             csvs,
+    'unzipped_ssp':     unzipped_ssp,
+    'temp_dir':         d,
+    'timestep':         root_system.structure.timestep, # None if no fmigo:MasterArguments
+    'duration':         root_system.structure.duration, # None if no fmigo:MasterArguments
+    'masterarguments':  root_system.structure.arguments,
+    }
+
+    #return flatconns, flatparams, kinematicconns, csvs, unzipped_ssp, d, \
+    #        root_system.structure.timestep, root_system.structure.duration, root_system.structure.arguments
 
 def get_fmu_platforms(fmu_path):
     zip = ZipFile(fmu_path)
@@ -932,8 +919,9 @@ def get_fmu_server(fmu_path, executable):
     platforms = get_fmu_platforms(fmu_path)
 
     plaform_prefix_table = {
-        'win32': 'win',
+        'win32':  'win',
         'darwin': 'darwin',
+        'linux':  'linux',
         'linux2': 'linux'
     }
 
@@ -986,11 +974,11 @@ if __name__ == '__main__':
 
     parse = parser.parse_args()
 
-    flatconns, flatparams, kinematicconns, csvs, unzipped_ssp, d, timestep, duration = parse_ssp(parse.ssp, False)
+    ssp_dict = parse_ssp(parse.ssp, False)
+    d = ssp_dict['temp_dir']
 
-    cwd = os.getcwd()
-    if d:
-        os.chdir(d)
+    duration = ssp_dict['duration'] if not ssp_dict['duration'] is None else 10
+    timestep = ssp_dict['timestep'] if not ssp_dict['timestep'] is None else 0.01
 
     # If we are working with TCP, create tcp://localhost:port for all given local hosts
     # If no ports are given then try to find some free TCP ports
@@ -1036,7 +1024,7 @@ if __name__ == '__main__':
         # Everything looks OK; start servers
         for i in range(len(fmus)):
             fmigo_server = get_fmu_server(fmus[i].path, 'fmigo-server')
-            subprocess.Popen([fmigo_server,'-p', str(ports[i]), fmus[i].relpath(d)])
+            subprocess.Popen([fmigo_server,'-p', str(ports[i]), fmus[i].relpath(d)], cwd=d)
 
         #read connections and parameters from stdin, since they can be quite many
         #stdin because we want to avoid leaving useless files on the filesystem
@@ -1052,14 +1040,20 @@ if __name__ == '__main__':
 
         for fmu in fmus:
             fmigo_mpi = get_fmu_server(fmu.path, 'fmigo-mpi')
-            append += [':','-n', '1', fmigo_mpi]
+            append += [':','-n', '1', '-wdir', d, fmigo_mpi]
             append += fmu_paths
 
-    args += ['-t',str(duration),'-d',str(timestep)] + parse.args + ['-a','-']
+    args += ['-t',str(duration),'-d',str(timestep)] + ['-a','-']
     args += append
 
-
-    pipeinput = " ".join(['"%s"' % s for s in flatconns+flatparams+kinematicconns+csvs])
+    pipelist = \
+      ssp_dict['flatconns'] +\
+      ssp_dict['flatparams'] +\
+      ssp_dict['kinematicconns'] +\
+      ssp_dict['csvs'] +\
+      ssp_dict['masterarguments'] +\
+      parse.args
+    pipeinput = " ".join(['"%s"' % s for s in pipelist])
     eprint("(cd %s && %s <<< '%s')" % (d, " ".join(args), pipeinput))
 
     if parse.dry_run:
@@ -1070,10 +1064,8 @@ if __name__ == '__main__':
         p.communicate(input=pipeinput.encode('utf-8'))
         ret = p.returncode  #ret can be None
 
-    os.chdir(cwd)
-
     if ret == 0:
-        if unzipped_ssp:
+        if ssp_dict['unzipped_ssp']:
             shutil.rmtree(d)
     else:
         eprint('An error occured (returncode = ' + str(ret) + '). Check ' + d)

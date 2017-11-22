@@ -14,7 +14,7 @@ then
 fi
 (cd articles/work-reports       && ( ./run_tests.sh  || ( echo "failed tests in work-reports" && exit 1 ) ) )
 (cd umit-fmus/tests             && ( ./run_tests.sh ||  ( echo "failed umit-fmus tests" && exit 1 ) ) )
-(cd ${BUILD_DIR}                && ( ctest || ( echo "ctest failed" && exit 1 ) ) )
+(cd ${BUILD_DIR}                && ( ctest --output-on-failure || ( echo "ctest failed" && exit 1 ) ) )
 (cd umit-fmus/meWrapper         &&( ./test_wrapper.sh ||  ( echo "failed wrapper" && exit 1 ) ) )
 
 # Check -f none
@@ -51,5 +51,10 @@ python umit-fmus/wrapper.py -t Release ${FMUS_DIR}/me/bouncingBall/bouncingBall.
 mpiexec -np 1 fmigo-mpi -f none \
   : -np 1 fmigo-mpi ${FMUS_DIR}/gsl2/clutch2/clutch2.fmu
   : -np 1 fmigo-mpi ${FMUS_DIR}/gsl2/clutch2/clutch2.fmu
+
+# Test ZMQ control + starting paused
+# "python" instead of "python2" or "python3" to pick up the right variant
+# on trusty vs xenial for control_pb2.py to work.
+python test_control.py
 
 echo All tests OK

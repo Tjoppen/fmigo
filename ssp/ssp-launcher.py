@@ -179,7 +179,7 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
                 raise SSPException('ERROR: ParameterBinding prefix must end in dot (%s -> "%s")' % (baseprefix, pb_prefix) )
             prefix = baseprefix + '.' + pb_prefix[0:-1]
 
-        pvs = (pb, pb.findall('ssd:ParameterValues', ns))
+        pvs = pb.find('ssd:ParameterValues', ns)
 
         x_ssp_parameter_set = 'application/x-ssp-parameter-set'
         t = get_attrib(pb, 'type', x_ssp_parameter_set)
@@ -187,23 +187,26 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
             raise SSPException('Expected ' + x_ssp_parameter_set + ', got ' + t)
 
         if 'source' in pb.attrib:
-            if len(pvs[1]) != 0:
-                raise SSPException('ParameterBindings must have source or ParameterValues, not both')
+            if not pvs is None:
+                raise SSPException('ParameterBinding must have source or ParameterValues, not both')
 
             #read from file
             #TODO: print unhandled XML in ParameterSet
             tree = parse_and_validate('SSV', os.path.join(path, get_attrib(pb, 'source')))
-            pvs = find_elements(tree.getroot(), 'ssv:Parameters', 'ssv:Parameter')
-            #eprint('Parsed %i params' % len(pvs))
+            parameterset = tree.getroot()
+            inline_ssv = False
         else:
-            if len(pvs[1]) == 0:
-                raise SSPException('ParameterBindings missing both source and ParameterValues')
+            if pvs is None:
+                raise SSPException('ParameterBinding missing both source and ParameterValues')
 
-            #don't know whether it's ParameterValues -> Parameters -> Parameter or just ParameterValues -> Parameter
-            #the spec doesn't help
-            raise SSPException('Parsing ParameterValues is TODO, for lack of examples or complete schema as of 2016-11-11')
+            # Clarification from MAP-SSP mailing list says that ParameterSet should be put inside ParameterValues
+            parameterset = pvs.find('ssd:ParameterSet')
+            inline_ssv = True
 
-        for pv in pvs[1]:
+            if parameterset is None:
+                raise SSPException('No ParameterSet in ParameterValues')
+
+        for pv in find_elements(parameterset, 'ssv:Parameters', 'ssv:Parameter')[1]:
             r = pv.find('ssv:Real', ns)
             i = pv.find('ssv:Integer', ns)
             b = pv.find('ssv:Boolean', ns)
@@ -244,24 +247,31 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
                 raise SSPException('Unsupported parameter type: ' + str(pv[0].tag))
 
             parameters[key] = param
-            remove_if_empty(pvs[0], pv)
+            remove_if_empty(parameterset, pv)
+
+        if inline_ssv:
+            remove_if_empty(pvs, parameterset)
+            remove_if_empty(pb, pvs)
 
         #deal with any ssm
         pm = pb.find('ssd:ParameterMapping', ns)
         if pm != None:
-            if not 'source' in pm.attrib:
-                raise SSPException('"source" not set in ParameterMapping. In-line PMs not supported yet')
-
             x_ssp_parameter_mapping = 'application/x-ssp-parameter-mapping'
             t = get_attrib(pm, 'type', x_ssp_parameter_mapping)
             if t != x_ssp_parameter_mapping:
                 raise SSPException('Expected ' + x_ssp_parameter_mapping + ', got ' + t)
 
             #TODO: print unhandled XML in ParameterMapping too
-            tree = parse_and_validate('SSM', os.path.join(path, get_attrib(pm, 'source')))
-            mes = tree.getroot().findall('ssm:MappingEntry', ns)
 
-            #eprint('mes: ' +mes)
+            if 'source' in pm.attrib:
+                tree = parse_and_validate('SSM', os.path.join(path, get_attrib(pm, 'source')))
+                pm2 = tree.getroot()
+                inline_ssm = False
+            else:
+                pm2 = pm
+                inline_ssm = True
+
+            mes = pm2.findall('ssm:MappingEntry', ns)
             for me in mes:
                 sourcekey = str([prefix, me.attrib['source']])
                 targetkey = str([prefix, me.attrib['target']])
@@ -279,10 +289,12 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
                         raise SSPException('LinearTransformation only supported in Real')
 
                     p['value'] = p['value'] * factor + offset
+                    remove_if_empty(me, lt)
                 elif len(me) > 0:
                     raise SSPException("Found MappingEntry with sub-element which isn't LinearTransformation, which is not yet supported")
 
                 parameters[targetkey] = p
+                remove_if_empty(pm2, me)
 
             remove_if_empty(pb, pm)
 

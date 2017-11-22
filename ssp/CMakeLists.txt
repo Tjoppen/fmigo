@@ -9,6 +9,7 @@ function (add_ssp dir sspname)
     set(ZIPNAME ${ZIPDIR}.ssp)
     set(${sspname}_dir ${ZIPDIR}  CACHE INTERNAL "" FORCE)
     set(${sspname}_ssp ${ZIPNAME} CACHE INTERNAL "" FORCE)
+    set(${sspname}_ssd ${CMAKE_CURRENT_SOURCE_DIR}/${dir}/SystemStructure.ssd CACHE INTERNAL "" FORCE)
 
     set(FMUS "")
     set(FMU_TARGETS "")
@@ -19,10 +20,10 @@ function (add_ssp dir sspname)
 
     if (CMAKE_VERSION VERSION_LESS "3.5.0")
         set(ZIP_COMMAND            zip -r ${ZIPNAME} .)
-        set(COPY_SSD_COMMAND       cp ${CMAKE_CURRENT_SOURCE_DIR}/${dir}/SystemStructure.ssd ${ZIPDIR})
+        set(COPY_SSD_COMMAND       cp ${${sspname}_ssd} ${ZIPDIR})
         set(COPY_RESOURCES_COMMAND cp ${FMUS} ${ZIPDIR}/resources)
     else ()
-        set(COPY_SSD_COMMAND       ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/${dir}/SystemStructure.ssd ${ZIPDIR})
+        set(COPY_SSD_COMMAND       ${CMAKE_COMMAND} -E copy ${${sspname}_ssd} ${ZIPDIR})
         set(COPY_RESOURCES_COMMAND ${CMAKE_COMMAND} -E copy ${FMUS} ${ZIPDIR}/resources)
         set(ZIP_COMMAND            ${CMAKE_COMMAND} -E tar cf ${ZIPNAME} --format=zip .)
     endif ()
@@ -35,7 +36,7 @@ function (add_ssp dir sspname)
         COMMAND ${COPY_RESOURCES_COMMAND}
         COMMAND ${CMAKE_COMMAND} -E remove -f ${ZIPNAME}
         COMMAND ${CMAKE_COMMAND} -E chdir ${ZIPDIR} ${ZIP_COMMAND}
-        DEPENDS ${FMUS} ${FMU_TARGETS}
+        DEPENDS ${FMUS} ${FMU_TARGETS} ${${sspname}_ssd}
     )
     add_custom_target(${sspname} ALL DEPENDS ${ZIPNAME})
 endfunction ()

@@ -497,7 +497,7 @@ class System:
         remove_if_empty(tree.getroot(), s)
 
         if len(tree.getroot()) > 0 or len(tree.getroot().attrib) > 0:
-            eprint('WARNING: Residual XML: '+etree.tostring(tree.getroot()))
+            eprint('WARNING: Residual XML: '+ etree.tostring(tree.getroot()).decode())
 
         return ret
 

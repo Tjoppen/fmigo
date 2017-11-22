@@ -24,6 +24,7 @@
               </ssv:ParameterSet>
             </ssd:ParameterValues>
             <!-- ssm:ParameterMapping or ssd:ParameterMapping? former would be easier for validating, but schema is ssd: -->
+            <!-- word on the street is it may be necessary to nest ssm:ParameterMapping in ssd:ParameterMapping -->
             <ssd:ParameterMapping>
               <ssm:MappingEntry source="Param1" target="x0_e">
                 <ssm:LinearTransformation factor="2" offset="3"/>

@@ -999,7 +999,12 @@ if __name__ == '__main__':
 
     parse = parser.parse_args()
 
-    ssp_dict = parse_ssp(parse.ssp, False)
+    try:
+        ssp_dict = parse_ssp(parse.ssp, False)
+    except Exception as e:
+        print('Exception during SSP parsing: {}'.format(e))
+        raise e
+
     d = ssp_dict['temp_dir']
 
     duration = ssp_dict['duration'] if not ssp_dict['duration'] is None else 10

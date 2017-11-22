@@ -137,12 +137,14 @@ if(WIN32)
 
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/3dparty/zeromq/4.2.0-master/include)
+    include_directories(/usr/local/Cellar/hdf5/1.10.1/include)
+    link_directories(/usr/local/Cellar/hdf5/1.10.1/lib)
 else(WIN32)
     # TODO: tell the user what's needed?
-	include(FindProtobuf)
-	find_package(Protobuf REQUIRED)
-	include_directories(${PROTOBUF_INCLUDE_DIR})
-	link_directories(${PROTOBUF_LIBRARY_DIR})
+    include(FindProtobuf)
+    find_package(Protobuf REQUIRED)
+    include_directories(${PROTOBUF_INCLUDE_DIR})
+    link_directories(${PROTOBUF_LIBRARY_DIR})
 
     include_directories(/usr/include/hdf5/serial)
     include_directories(/usr/include/suitesparse)

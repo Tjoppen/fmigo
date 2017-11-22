@@ -466,7 +466,7 @@ class System:
     '''
 
     @classmethod
-    def fromfile(cls, d, filename, parent=None):
+    def fromfile(cls, d, filename, parent=None, residual_is_error=False):
         path = os.path.join(d, filename)
 
         #parse XML, delete all attribs and element we know how to deal with
@@ -494,7 +494,11 @@ class System:
 
         if len(tree.getroot()) > 0 or len(tree.getroot().attrib) > 0:
             s = etree.tostring(tree.getroot())
-            eprint('WARNING: Residual XML: '+s.decode('utf-8'))
+            err = 'Residual XML: \n'+s.decode('utf-8')
+            if residual_is_error:
+                raise SSPException(err)
+            else:
+                eprint('WARNING: '+err)
 
         return ret
 
@@ -502,7 +506,7 @@ class System:
     def fromxml(cls, d, s, version, parent):
         return cls(d, s, version, parent, parent.structure)
 
-    def __init__(self, d, s, version, parent, structure):
+    def __init__(self, d, s, version, parent, structure, residual_is_error=False):
         global systems
         systems.append(self)
 
@@ -573,7 +577,7 @@ class System:
 
             if t == 'application/x-ssp-package':
                 d2 = os.path.join(d, os.path.splitext(get_attrib(comp, 'source'))[0])
-                child = System.fromfile(d2, SSD_NAME, self)
+                child = System.fromfile(d2, SSD_NAME, self, residual_is_error=residual_is_error)
                 #eprint('Added subsystem ' + child.name)
                 self.subsystems[name] = child
             elif t == 'application/x-fmu-sharedlibrary':
@@ -722,7 +726,7 @@ def unzip_ssp(dest_dir, ssp_filename):
                 z.extract(MODELDESCRIPTION, d)
 
 
-def parse_ssp(ssp_path, cleanup_zip = True):
+def parse_ssp(ssp_path, cleanup_zip = True, residual_is_error = False):
 
     global fmus, system, parameters, shaftconstraints, SSD_NAME, d
     fmus = []
@@ -745,7 +749,7 @@ def parse_ssp(ssp_path, cleanup_zip = True):
         unzip_ssp(d, ssp_path)
         unzipped_ssp = True
 
-    root_system = System.fromfile(d, SSD_NAME)
+    root_system = System.fromfile(d, SSD_NAME, residual_is_error=residual_is_error)
 
     root_system.resolve_dictionary_inputs()
 
@@ -976,6 +980,9 @@ if __name__ == '__main__':
                         default=None,
                         nargs='*',
                         type=int)
+    parser.add_argument('-e','--residual-is-error',
+                        help='Consider residual/unparsed XML to be an error',
+                        action='store_true')
     parser.add_argument('ssp', metavar='ssp-filename',
                         help='SSP file to be launched')
 
@@ -986,7 +993,7 @@ if __name__ == '__main__':
 
     parse = parser.parse_args()
 
-    ssp_dict = parse_ssp(parse.ssp, False)
+    ssp_dict = parse_ssp(parse.ssp, False, parse.residual_is_error)
     d = ssp_dict['temp_dir']
 
     duration = ssp_dict['duration'] if not ssp_dict['duration'] is None else 10

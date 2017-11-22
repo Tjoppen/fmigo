@@ -43,6 +43,7 @@ endfunction ()
 
 install(FILES
   ssp-launcher.py
+  SystemStructureCommon.xsd
   SystemStructureDescription.xsd
   SystemStructureParameterMapping.xsd
   SystemStructureParameterValues.xsd

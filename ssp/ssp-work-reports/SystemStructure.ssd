@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ssd:SystemStructureDescription version="Draft20160502"
+<ssd:SystemStructureDescription version="Draft20170606"
     xmlns:ssd="http://www.pmsf.net/xsd/SystemStructureDescriptionDraft"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.pmsf.net/xsd/SystemStructureDescriptionDraft http://www.pmsf.net/xsd/SystemStructureDescriptionDraft/Draft20150721/SystemStructureDescription.xsd"

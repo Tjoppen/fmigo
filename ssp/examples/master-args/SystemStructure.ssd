@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ssd:SystemStructureDescription version="Draft20160502"
+<ssd:SystemStructureDescription version="Draft20170606"
     xmlns:ssd="http://www.pmsf.net/xsd/SystemStructureDescriptionDraft"
+    xmlns:ssc="http://www.pmsf.net/xsd/SystemStructureCommonDraft"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:fmigo="http://umit.math.umu.se/FmiGo.xsd"
     xsi:schemaLocation="http://www.pmsf.net/xsd/SystemStructureDescriptionDraft http://www.pmsf.net/xsd/SystemStructureDescriptionDraft/Draft20150721/SystemStructureDescription.xsd"
@@ -19,12 +20,12 @@
     So this example actually runs for half a second, not three.
   -->
   <ssd:Annotations>
-    <ssd:Annotation type="se.umu.math.umit.fmigo-master.arguments">
+    <ssc:Annotation type="se.umu.math.umit.fmigo-master.arguments">
       <fmigo:MasterArguments timestep="0.1" duration="3">
         <fmigo:arg>-r</fmigo:arg>   <!-- realtime mode      -->
         <fmigo:arg>-t</fmigo:arg>   <!-- change duration..  -->
         <fmigo:arg>0.5</fmigo:arg>  <!-- to half a second!  -->
       </fmigo:MasterArguments>
-    </ssd:Annotation>
+    </ssc:Annotation>
   </ssd:Annotations>
 </ssd:SystemStructureDescription>

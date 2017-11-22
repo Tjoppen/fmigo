@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ssd:SystemStructureDescription version="Draft20170606"
+    xmlns:ssd="http://www.pmsf.net/xsd/SystemStructureDescriptionDraft"
+    xmlns:ssc="http://www.pmsf.net/xsd/SystemStructureCommonDraft"
+    xmlns:ssm="http://www.pmsf.net/xsd/SystemStructureParameterMappingDraft"
+    xmlns:ssv="http://www.pmsf.net/xsd/SystemStructureParameterValuesDraft"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:fmigo="http://umit.math.umu.se/FmiGo.xsd"
+    xsi:schemaLocation="http://www.pmsf.net/xsd/SystemStructureDescriptionDraft http://www.pmsf.net/xsd/SystemStructureDescriptionDraft/Draft20150721/SystemStructureDescription.xsd"
+    name="ParametersInline">
+  <ssd:System name="ParametersInline" description="Example showing how to inline parameters values+mappings in ParameterBinding">
+    <ssd:Elements>
+      <ssd:Component name="FMU0" source="resources/clutch2.fmu" type="application/x-fmu-sharedlibrary">
+        <ssd:ParameterBindings>
+          <ssd:ParameterBinding>
+            <ssd:ParameterValues>
+              <!-- version and name needed? doing so makes validating with etree.XMLSchema easier -->
+              <ssv:ParameterSet version="Draft20170606" name="SystemParams">
+                <ssv:Parameters>
+                  <ssv:Parameter name="Param1">
+                    <ssv:Real value="1.0" />
+                  </ssv:Parameter>
+                </ssv:Parameters>
+              </ssv:ParameterSet>
+            </ssd:ParameterValues>
+            <!-- ssm:ParameterMapping or ssd:ParameterMapping? former would be easier for validating, but schema is ssd: -->
+            <ssd:ParameterMapping>
+              <ssm:MappingEntry source="Param1" target="x0_e">
+                <ssm:LinearTransformation factor="2" offset="3"/>
+              </ssm:MappingEntry>
+            </ssd:ParameterMapping>
+          </ssd:ParameterBinding>
+        </ssd:ParameterBindings>
+      </ssd:Component>
+    </ssd:Elements>
+  </ssd:System>
+</ssd:SystemStructureDescription>

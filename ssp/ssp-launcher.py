@@ -37,10 +37,10 @@ parameters = {}
 shaftconstraints = []
 
 schema_names = {
-    'SSD': 'SystemStructureDescription.xsd',
-    'SSM': 'SystemStructureParameterMapping.xsd',
-    'SSV': 'SystemStructureParameterValues.xsd',
-    'FmiGo':'FmiGo.xsd',
+    'ssd': 'SystemStructureDescription.xsd',
+    'ssm': 'SystemStructureParameterMapping.xsd',
+    'ssv': 'SystemStructureParameterValues.xsd',
+    'fmigo':'FmiGo.xsd',
 }
 schemas = {}
 
@@ -148,10 +148,18 @@ def get_attrib(s, name, default=None):
             raise SSPException('get_attrib(): missing required attribute ' + name)
         return default
 
+# Can remove single node, or list/tuple of nodes
 def remove_if_empty(parent, node):
-    #remove if all attributes, subnodes and text have been dealt with
+  def remove_if_empty_internal(parent, node):
     if node != None and len(node.attrib) == 0 and len(node) == 0 and (node.text == None or node.text.strip() == ''):
         parent.remove(node)
+
+  #remove if all attributes, subnodes and text have been dealt with
+  if isinstance(node, tuple) or isinstance(node, list):
+    for n in node:
+      remove_if_empty_internal(parent, n)
+  else:
+    remove_if_empty_internal(parent, node)
 
 def find_elements(s, first, second):
     a = s.find(first,  ns)
@@ -192,7 +200,7 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
 
             #read from file
             #TODO: print unhandled XML in ParameterSet
-            tree = parse_and_validate('SSV', os.path.join(path, get_attrib(pb, 'source')))
+            tree = parse_and_validate('ssv', os.path.join(path, get_attrib(pb, 'source')))
             parameterset = tree.getroot()
             inline_ssv = False
         else:
@@ -200,21 +208,31 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
                 raise SSPException('ParameterBinding missing both source and ParameterValues')
 
             # Clarification from MAP-SSP mailing list says that ParameterSet should be put inside ParameterValues
-            parameterset = pvs.find('ssd:ParameterSet')
+            # Validate while we're at it
+            parameterset = pvs.find('ssv:ParameterSet', ns)
+            schemas['ssv'].assertValid(parameterset)
             inline_ssv = True
 
             if parameterset is None:
                 raise SSPException('No ParameterSet in ParameterValues')
 
-        for pv in find_elements(parameterset, 'ssv:Parameters', 'ssv:Parameter')[1]:
+        ssv_version = get_attrib(parameterset, 'version')
+        ssv_name    = get_attrib(parameterset, 'name')
+        ps          = find_elements(parameterset, 'ssv:Parameters', 'ssv:Parameter')
+
+        if ssv_version != 'Draft20170606':
+            raise SSPException('Expected SSV version Draft20170606, got %s' % ssv_version)
+
+        for pv in ps[1]:
             r = pv.find('ssv:Real', ns)
             i = pv.find('ssv:Integer', ns)
             b = pv.find('ssv:Boolean', ns)
             s = pv.find('ssv:String', ns)
             e = pv.find('ssv:Enumeration', ns)
-            key = str([prefix,pv.attrib['name']])
+            name = get_attrib(pv, 'name')
+            key = str([prefix, name])
             param = {
-            'paramname': pv.attrib['name'],
+            'paramname': name,
             'fmuname':   prefix,
             }
 
@@ -224,22 +242,22 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
 
                 param.update({
                     'type': 'r',
-                    'value': float(r.attrib['value']),
+                    'value': float(get_attrib(r, 'value')),
                 })
             elif i != None:
                 param.update({
                     'type': 'i',
-                    'value': int(i.attrib['value']),
+                    'value': int(get_attrib(i, 'value')),
                 })
             elif b != None:
                 param.update({
                     'type': 'b',
-                    'value': b.attrib['value'], #keep booleans as-is
+                    'value': get_attrib(b, 'value'), #keep booleans as-is
                 })
             elif s != None:
                 param.update({
                     'type': 's',
-                    'value': s.attrib['value'],
+                    'value': get_attrib(s, 'value'),
                 })
             elif e != None:
                 raise SSPException('Enumerations not supported')
@@ -247,8 +265,10 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
                 raise SSPException('Unsupported parameter type: ' + str(pv[0].tag))
 
             parameters[key] = param
-            remove_if_empty(parameterset, pv)
+            remove_if_empty(pv, (r, i, b, s))
+            remove_if_empty(ps[0], pv)
 
+        remove_if_empty(parameterset, ps[0])
         if inline_ssv:
             remove_if_empty(pvs, parameterset)
             remove_if_empty(pb, pvs)
@@ -264,17 +284,18 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
             #TODO: print unhandled XML in ParameterMapping too
 
             if 'source' in pm.attrib:
-                tree = parse_and_validate('SSM', os.path.join(path, get_attrib(pm, 'source')))
+                tree = parse_and_validate('ssm', os.path.join(path, get_attrib(pm, 'source')))
                 pm2 = tree.getroot()
                 inline_ssm = False
             else:
+                #TODO: Can't validate inline SSM yet
                 pm2 = pm
                 inline_ssm = True
 
             mes = pm2.findall('ssm:MappingEntry', ns)
             for me in mes:
-                sourcekey = str([prefix, me.attrib['source']])
-                targetkey = str([prefix, me.attrib['target']])
+                sourcekey = str([prefix, get_attrib(me, 'source')])
+                targetkey = str([prefix, get_attrib(me, 'target')])
                 #eprint('target: ' +target)
 
                 p = parameters[sourcekey]
@@ -282,8 +303,8 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
 
                 lt = me.find('ssm:LinearTransformation', ns)
                 if lt != None:
-                    factor = float(lt.attrib['factor'])
-                    offset = float(lt.attrib['offset'])
+                    factor = float(get_attrib(lt, 'factor'))
+                    offset = float(get_attrib(lt, 'offset'))
 
                     if p['type'] != 'r':
                         raise SSPException('LinearTransformation only supported in Real')
@@ -337,8 +358,8 @@ class FMU:
         for cannotation in cannotations[1]:
             type = get_attrib(cannotation, 'type')
             if type == 'se.umu.math.umit.ssp.physicalconnectors':
-                if 'FmiGo' in schemas:
-                    schemas['FmiGo'].assertValid(cannotation[0])
+                if 'fmigo' in schemas:
+                    schemas['fmigo'].assertValid(cannotation[0])
 
                 for pc in find_elements(cannotation, 'fmigo:PhysicalConnectors', 'fmigo:PhysicalConnector1D')[1]:
                     name = get_attrib(pc, 'name')
@@ -351,8 +372,8 @@ class FMU:
                     remove_if_empty(cannotation[0], pc)
                 remove_if_empty(cannotation, cannotation[0])
             elif type == 'se.umu.math.umit.fmigo-master.csvinput':
-                if 'FmiGo' in schemas:
-                    schemas['FmiGo'].assertValid(cannotation[0])
+                if 'fmigo' in schemas:
+                    schemas['fmigo'].assertValid(cannotation[0])
 
                 for csv in find_elements(cannotation, 'fmigo:CSVFilenames', 'fmigo:CSVFilename')[1]:
                     self.csvs.append(csv.text)
@@ -436,8 +457,8 @@ class SystemStructure:
         for annotation in annotations[1]:
             type = get_attrib(annotation, 'type')
             if type == 'se.umu.math.umit.fmigo-master.arguments':
-                if 'FmiGo' in schemas:
-                    schemas['FmiGo'].assertValid(annotation[0])
+                if 'fmigo' in schemas:
+                    schemas['fmigo'].assertValid(annotation[0])
 
                 timestep = get_attrib(annotation[0], 'timestep', '')
                 if len(timestep) > 0:
@@ -471,7 +492,7 @@ class System:
 
         #parse XML, delete all attribs and element we know how to deal with
         #print residual, indicating things we don't yet support
-        tree = parse_and_validate('SSD', path)
+        tree = parse_and_validate('ssd', path)
 
         # Remove comments, which would otherwise result in residual XML
         for c in tree.xpath('//comment()'):
@@ -629,8 +650,8 @@ class System:
         for annotation in annotations[1]:
             type = get_attrib(annotation, 'type')
             if type == 'se.umu.math.umit.ssp.kinematicconstraints':
-                if 'FmiGo' in schemas:
-                    schemas['FmiGo'].assertValid(annotation[0])
+                if 'fmigo' in schemas:
+                    schemas['fmigo'].assertValid(annotation[0])
 
                 for shaft in find_elements(annotation, 'fmigo:KinematicConstraints', 'fmigo:ShaftConstraint')[1]:
                     shaftconstraint = {

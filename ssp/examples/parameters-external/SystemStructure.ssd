@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ssd:SystemStructureDescription version="Draft20170606"
+    xmlns:ssd="http://www.pmsf.net/xsd/SystemStructureDescriptionDraft"
+    xmlns:ssc="http://www.pmsf.net/xsd/SystemStructureCommonDraft"
+    xmlns:ssm="http://www.pmsf.net/xsd/SystemStructureParameterMappingDraft"
+    xmlns:ssv="http://www.pmsf.net/xsd/SystemStructureParameterValuesDraft"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:fmigo="http://umit.math.umu.se/FmiGo.xsd"
+    xsi:schemaLocation="http://www.pmsf.net/xsd/SystemStructureDescriptionDraft http://www.pmsf.net/xsd/SystemStructureDescriptionDraft/Draft20150721/SystemStructureDescription.xsd"
+    name="ParametersExternal">
+  <ssd:System name="ParametersExternal" description="Example showing how to external parameters values+mappings in ParameterBinding">
+    <ssd:Elements>
+      <ssd:Component name="FMU0" source="resources/clutch2.fmu" type="application/x-fmu-sharedlibrary">
+        <ssd:ParameterBindings>
+          <ssd:ParameterBinding source="resources/Values.ssv">
+            <ssd:ParameterMapping source="resources/Mappings.ssm" />
+          </ssd:ParameterBinding>
+        </ssd:ParameterBindings>
+      </ssd:Component>
+    </ssd:Elements>
+  </ssd:System>
+</ssd:SystemStructureDescription>

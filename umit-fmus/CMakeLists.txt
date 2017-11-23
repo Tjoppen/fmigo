@@ -32,6 +32,7 @@ add_fmu(tests/loopsolvetest/add         add                             "" "" ""
 add_fmu(tests/loopsolvetest/sub         sub                             "" "" "" FALSE)
 add_fmu(tests/loopsolvetest/mul         mul                             "" "" "" FALSE)
 add_fmu(tests/stringtest                stringtest                      "" "" "" FALSE)
+add_fmu(tests/strange_variable_names    strange_variable_names          "" "" "" FALSE)
 
 # Model-Exchange FMUs
 add_fmu(me/springs                      springs                         "" "" "" FALSE)

@@ -1079,14 +1079,12 @@ if __name__ == '__main__':
         #read connections and parameters from stdin, since they can be quite many
         #stdin because we want to avoid leaving useless files on the filesystem
         args   = ['mpiexec','-n', '1','fmigo-mpi']
-        fmu_paths = [fmu.relpath(d) for fmu in fmus]
-        #make a copy of the list
-        append = list(fmu_paths)
+        append = []
 
         for fmu in fmus:
             fmigo_mpi = get_fmu_server(fmu.path, 'fmigo-mpi')
             append += [':','-n', '1', '-wdir', d, fmigo_mpi]
-            append += fmu_paths
+            append += [fmu.relpath(d)]
 
     args += ['-t',str(duration),'-d',str(timestep)] + ['-a','-']
     args += append

@@ -289,8 +289,9 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
                 inline_ssm = False
             else:
                 #TODO: Can't validate inline SSM yet
-                pm2 = pm
-                inline_ssm = True
+                #pm2 = pm
+                #inline_ssm = True
+                raise SSPException("Can't parse inline ParamaterMapping (SSM) yet. See the MAP-SSP mailing list for more information")
 
             mes = pm2.findall('ssm:MappingEntry', ns)
             for me in mes:

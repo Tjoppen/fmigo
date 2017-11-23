@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ssm:ParameterMapping version="Draft20170606" xmlns:ssm="http://www.pmsf.net/xsd/SystemStructureParameterMappingDraft">
+  <ssm:MappingEntry source="Param1" target="x0_e">
+    <ssm:LinearTransformation factor="2" offset="3"/>
+  </ssm:MappingEntry>
+</ssm:ParameterMapping>

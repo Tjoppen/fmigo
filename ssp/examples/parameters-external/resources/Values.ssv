@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ssv:ParameterSet version="Draft20170606" name="Values"
+    xmlns:ssv="http://www.pmsf.net/xsd/SystemStructureParameterValuesDraft">
+  <ssv:Parameters>
+    <ssv:Parameter name="Param1">
+      <ssv:Real value="1.0" />
+    </ssv:Parameter>
+  </ssv:Parameters>
+</ssv:ParameterSet>

@@ -37,10 +37,10 @@ parameters = {}
 shaftconstraints = []
 
 schema_names = {
-    'SSD': 'SystemStructureDescription.xsd',
-    'SSM': 'SystemStructureParameterMapping.xsd',
-    'SSV': 'SystemStructureParameterValues.xsd',
-    'FmiGo':'FmiGo.xsd',
+    'ssd': 'SystemStructureDescription.xsd',
+    'ssm': 'SystemStructureParameterMapping.xsd',
+    'ssv': 'SystemStructureParameterValues.xsd',
+    'fmigo':'FmiGo.xsd',
 }
 schemas = {}
 
@@ -148,10 +148,18 @@ def get_attrib(s, name, default=None):
             raise SSPException('get_attrib(): missing required attribute ' + name)
         return default
 
+# Can remove single node, or list/tuple of nodes
 def remove_if_empty(parent, node):
-    #remove if all attributes, subnodes and text have been dealt with
+  def remove_if_empty_internal(parent, node):
     if node != None and len(node.attrib) == 0 and len(node) == 0 and (node.text == None or node.text.strip() == ''):
         parent.remove(node)
+
+  #remove if all attributes, subnodes and text have been dealt with
+  if isinstance(node, tuple) or isinstance(node, list):
+    for n in node:
+      remove_if_empty_internal(parent, n)
+  else:
+    remove_if_empty_internal(parent, node)
 
 def find_elements(s, first, second):
     a = s.find(first,  ns)
@@ -179,7 +187,7 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
                 raise SSPException('ERROR: ParameterBinding prefix must end in dot (%s -> "%s")' % (baseprefix, pb_prefix) )
             prefix = baseprefix + '.' + pb_prefix[0:-1]
 
-        pvs = (pb, pb.findall('ssd:ParameterValues', ns))
+        pvs = pb.find('ssd:ParameterValues', ns)
 
         x_ssp_parameter_set = 'application/x-ssp-parameter-set'
         t = get_attrib(pb, 'type', x_ssp_parameter_set)
@@ -187,31 +195,44 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
             raise SSPException('Expected ' + x_ssp_parameter_set + ', got ' + t)
 
         if 'source' in pb.attrib:
-            if len(pvs[1]) != 0:
-                raise SSPException('ParameterBindings must have source or ParameterValues, not both')
+            if not pvs is None:
+                raise SSPException('ParameterBinding must have source or ParameterValues, not both')
 
             #read from file
             #TODO: print unhandled XML in ParameterSet
-            tree = parse_and_validate('SSV', os.path.join(path, get_attrib(pb, 'source')))
-            pvs = find_elements(tree.getroot(), 'ssv:Parameters', 'ssv:Parameter')
-            #eprint('Parsed %i params' % len(pvs))
+            tree = parse_and_validate('ssv', os.path.join(path, get_attrib(pb, 'source')))
+            parameterset = tree.getroot()
+            inline_ssv = False
         else:
-            if len(pvs[1]) == 0:
-                raise SSPException('ParameterBindings missing both source and ParameterValues')
+            if pvs is None:
+                raise SSPException('ParameterBinding missing both source and ParameterValues')
 
-            #don't know whether it's ParameterValues -> Parameters -> Parameter or just ParameterValues -> Parameter
-            #the spec doesn't help
-            raise SSPException('Parsing ParameterValues is TODO, for lack of examples or complete schema as of 2016-11-11')
+            # Clarification from MAP-SSP mailing list says that ParameterSet should be put inside ParameterValues
+            # Validate while we're at it
+            parameterset = pvs.find('ssv:ParameterSet', ns)
+            schemas['ssv'].assertValid(parameterset)
+            inline_ssv = True
 
-        for pv in pvs[1]:
+            if parameterset is None:
+                raise SSPException('No ParameterSet in ParameterValues')
+
+        ssv_version = get_attrib(parameterset, 'version')
+        ssv_name    = get_attrib(parameterset, 'name')
+        ps          = find_elements(parameterset, 'ssv:Parameters', 'ssv:Parameter')
+
+        if ssv_version != 'Draft20170606':
+            raise SSPException('Expected SSV version Draft20170606, got %s' % ssv_version)
+
+        for pv in ps[1]:
             r = pv.find('ssv:Real', ns)
             i = pv.find('ssv:Integer', ns)
             b = pv.find('ssv:Boolean', ns)
             s = pv.find('ssv:String', ns)
             e = pv.find('ssv:Enumeration', ns)
-            key = str([prefix,pv.attrib['name']])
+            name = get_attrib(pv, 'name')
+            key = str([prefix, name])
             param = {
-            'paramname': pv.attrib['name'],
+            'paramname': name,
             'fmuname':   prefix,
             }
 
@@ -221,22 +242,22 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
 
                 param.update({
                     'type': 'r',
-                    'value': float(r.attrib['value']),
+                    'value': float(get_attrib(r, 'value')),
                 })
             elif i != None:
                 param.update({
                     'type': 'i',
-                    'value': int(i.attrib['value']),
+                    'value': int(get_attrib(i, 'value')),
                 })
             elif b != None:
                 param.update({
                     'type': 'b',
-                    'value': b.attrib['value'], #keep booleans as-is
+                    'value': get_attrib(b, 'value'), #keep booleans as-is
                 })
             elif s != None:
                 param.update({
                     'type': 's',
-                    'value': s.attrib['value'],
+                    'value': get_attrib(s, 'value'),
                 })
             elif e != None:
                 raise SSPException('Enumerations not supported')
@@ -244,27 +265,38 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
                 raise SSPException('Unsupported parameter type: ' + str(pv[0].tag))
 
             parameters[key] = param
-            remove_if_empty(pvs[0], pv)
+            remove_if_empty(pv, (r, i, b, s))
+            remove_if_empty(ps[0], pv)
+
+        remove_if_empty(parameterset, ps[0])
+        if inline_ssv:
+            remove_if_empty(pvs, parameterset)
+            remove_if_empty(pb, pvs)
 
         #deal with any ssm
         pm = pb.find('ssd:ParameterMapping', ns)
         if pm != None:
-            if not 'source' in pm.attrib:
-                raise SSPException('"source" not set in ParameterMapping. In-line PMs not supported yet')
-
             x_ssp_parameter_mapping = 'application/x-ssp-parameter-mapping'
             t = get_attrib(pm, 'type', x_ssp_parameter_mapping)
             if t != x_ssp_parameter_mapping:
                 raise SSPException('Expected ' + x_ssp_parameter_mapping + ', got ' + t)
 
             #TODO: print unhandled XML in ParameterMapping too
-            tree = parse_and_validate('SSM', os.path.join(path, get_attrib(pm, 'source')))
-            mes = tree.getroot().findall('ssm:MappingEntry', ns)
 
-            #eprint('mes: ' +mes)
+            if 'source' in pm.attrib:
+                tree = parse_and_validate('ssm', os.path.join(path, get_attrib(pm, 'source')))
+                pm2 = tree.getroot()
+                inline_ssm = False
+            else:
+                #TODO: Can't validate inline SSM yet
+                #pm2 = pm
+                #inline_ssm = True
+                raise SSPException("Can't parse inline ParamaterMapping (SSM) yet. See the MAP-SSP mailing list for more information")
+
+            mes = pm2.findall('ssm:MappingEntry', ns)
             for me in mes:
-                sourcekey = str([prefix, me.attrib['source']])
-                targetkey = str([prefix, me.attrib['target']])
+                sourcekey = str([prefix, get_attrib(me, 'source')])
+                targetkey = str([prefix, get_attrib(me, 'target')])
                 #eprint('target: ' +target)
 
                 p = parameters[sourcekey]
@@ -272,17 +304,19 @@ def parse_parameter_bindings(path, baseprefix, parameterbindings):
 
                 lt = me.find('ssm:LinearTransformation', ns)
                 if lt != None:
-                    factor = float(lt.attrib['factor'])
-                    offset = float(lt.attrib['offset'])
+                    factor = float(get_attrib(lt, 'factor'))
+                    offset = float(get_attrib(lt, 'offset'))
 
                     if p['type'] != 'r':
                         raise SSPException('LinearTransformation only supported in Real')
 
                     p['value'] = p['value'] * factor + offset
+                    remove_if_empty(me, lt)
                 elif len(me) > 0:
                     raise SSPException("Found MappingEntry with sub-element which isn't LinearTransformation, which is not yet supported")
 
                 parameters[targetkey] = p
+                remove_if_empty(pm2, me)
 
             remove_if_empty(pb, pm)
 
@@ -325,8 +359,8 @@ class FMU:
         for cannotation in cannotations[1]:
             type = get_attrib(cannotation, 'type')
             if type == 'se.umu.math.umit.ssp.physicalconnectors':
-                if 'FmiGo' in schemas:
-                    schemas['FmiGo'].assertValid(cannotation[0])
+                if 'fmigo' in schemas:
+                    schemas['fmigo'].assertValid(cannotation[0])
 
                 for pc in find_elements(cannotation, 'fmigo:PhysicalConnectors', 'fmigo:PhysicalConnector1D')[1]:
                     name = get_attrib(pc, 'name')
@@ -339,8 +373,8 @@ class FMU:
                     remove_if_empty(cannotation[0], pc)
                 remove_if_empty(cannotation, cannotation[0])
             elif type == 'se.umu.math.umit.fmigo-master.csvinput':
-                if 'FmiGo' in schemas:
-                    schemas['FmiGo'].assertValid(cannotation[0])
+                if 'fmigo' in schemas:
+                    schemas['fmigo'].assertValid(cannotation[0])
 
                 for csv in find_elements(cannotation, 'fmigo:CSVFilenames', 'fmigo:CSVFilename')[1]:
                     self.csvs.append(csv.text)
@@ -424,8 +458,8 @@ class SystemStructure:
         for annotation in annotations[1]:
             type = get_attrib(annotation, 'type')
             if type == 'se.umu.math.umit.fmigo-master.arguments':
-                if 'FmiGo' in schemas:
-                    schemas['FmiGo'].assertValid(annotation[0])
+                if 'fmigo' in schemas:
+                    schemas['fmigo'].assertValid(annotation[0])
 
                 timestep = get_attrib(annotation[0], 'timestep', '')
                 if len(timestep) > 0:
@@ -454,12 +488,12 @@ class System:
     '''
 
     @classmethod
-    def fromfile(cls, d, filename, parent=None):
+    def fromfile(cls, d, filename, parent=None, residual_is_error=False):
         path = os.path.join(d, filename)
 
         #parse XML, delete all attribs and element we know how to deal with
         #print residual, indicating things we don't yet support
-        tree = parse_and_validate('SSD', path)
+        tree = parse_and_validate('ssd', path)
 
         # Remove comments, which would otherwise result in residual XML
         for c in tree.xpath('//comment()'):
@@ -482,7 +516,11 @@ class System:
 
         if len(tree.getroot()) > 0 or len(tree.getroot().attrib) > 0:
             s = etree.tostring(tree.getroot())
-            eprint('WARNING: Residual XML: '+s.decode('utf-8'))
+            err = 'Residual XML: \n'+s.decode('utf-8')
+            if residual_is_error:
+                raise SSPException(err)
+            else:
+                eprint('WARNING: '+err)
 
         return ret
 
@@ -490,7 +528,7 @@ class System:
     def fromxml(cls, d, s, version, parent):
         return cls(d, s, version, parent, parent.structure)
 
-    def __init__(self, d, s, version, parent, structure):
+    def __init__(self, d, s, version, parent, structure, residual_is_error=False):
         global systems
         systems.append(self)
 
@@ -561,7 +599,7 @@ class System:
 
             if t == 'application/x-ssp-package':
                 d2 = os.path.join(d, os.path.splitext(get_attrib(comp, 'source'))[0])
-                child = System.fromfile(d2, SSD_NAME, self)
+                child = System.fromfile(d2, SSD_NAME, self, residual_is_error=residual_is_error)
                 #eprint('Added subsystem ' + child.name)
                 self.subsystems[name] = child
             elif t == 'application/x-fmu-sharedlibrary':
@@ -613,8 +651,8 @@ class System:
         for annotation in annotations[1]:
             type = get_attrib(annotation, 'type')
             if type == 'se.umu.math.umit.ssp.kinematicconstraints':
-                if 'FmiGo' in schemas:
-                    schemas['FmiGo'].assertValid(annotation[0])
+                if 'fmigo' in schemas:
+                    schemas['fmigo'].assertValid(annotation[0])
 
                 for shaft in find_elements(annotation, 'fmigo:KinematicConstraints', 'fmigo:ShaftConstraint')[1]:
                     shaftconstraint = {
@@ -710,7 +748,7 @@ def unzip_ssp(dest_dir, ssp_filename):
                 z.extract(MODELDESCRIPTION, d)
 
 
-def parse_ssp(ssp_path, cleanup_zip = True):
+def parse_ssp(ssp_path, cleanup_zip = True, residual_is_error = False):
 
     global fmus, system, parameters, shaftconstraints, SSD_NAME, d
     fmus = []
@@ -733,7 +771,7 @@ def parse_ssp(ssp_path, cleanup_zip = True):
         unzip_ssp(d, ssp_path)
         unzipped_ssp = True
 
-    root_system = System.fromfile(d, SSD_NAME)
+    root_system = System.fromfile(d, SSD_NAME, residual_is_error=residual_is_error)
 
     root_system.resolve_dictionary_inputs()
 
@@ -833,6 +871,7 @@ def parse_ssp(ssp_path, cleanup_zip = True):
             connstr = '%s,%i,%i,%s,%i,%i' % (fv['type'], fr[0], fv['vr'], tv['type'], to[0], tv['vr'])
             flatconns.extend(['-c', connstr])
 
+    holonomic = None
     kinematicconns = []
     for shaft in shaftconstraints:
         ids = [fmumap[shaft['element%i' % i]] for i in [1,2]]
@@ -852,15 +891,18 @@ def parse_ssp(ssp_path, cleanup_zip = True):
             if pc['type'] != '1d':
                 raise SSPException('ERROR: Physical connector %s in %s of type %s, not 1d' % (name, fmuname, pc['type']))
 
-            # NOTE: We could resolve variables using mds[] here, but fmigo now has
-            # support for looking variables up based on name, so there's no need to
-            # TODO: Non-holonomic shaft constraints
-            if not shaft['holonomic']:
-                raise SSPException('ERROR: ShaftConstraints must be holonomic for now')
+            eprint("shaft['holonomic'] = " + str(shaft['holonomic']))
+            if holonomic is None:
+                holonomic = shaft['holonomic']
+            elif shaft['holonomic'] != holonomic:
+                raise SSPException('ERROR: ShaftConstraints cannot mix-and-match holonomic true/false')
 
             conn += [escape(key) for key in pc['vars']]
 
         kinematicconns.extend(['-C', ','.join(conn)])
+
+    # -N only if holonomic=false
+    holonomic_arg = ['-N'] if holonomic is False else []
 
     csvs = []
     for fmu in fmus:
@@ -879,7 +921,7 @@ def parse_ssp(ssp_path, cleanup_zip = True):
     'temp_dir':         d,
     'timestep':         root_system.structure.timestep, # None if no fmigo:MasterArguments
     'duration':         root_system.structure.duration, # None if no fmigo:MasterArguments
-    'masterarguments':  root_system.structure.arguments,
+    'masterarguments':  root_system.structure.arguments + holonomic_arg,
     }
 
     #return flatconns, flatparams, kinematicconns, csvs, unzipped_ssp, d, \
@@ -964,6 +1006,9 @@ if __name__ == '__main__':
                         default=None,
                         nargs='*',
                         type=int)
+    parser.add_argument('-e','--residual-is-error',
+                        help='Consider residual/unparsed XML to be an error',
+                        action='store_true')
     parser.add_argument('ssp', metavar='ssp-filename',
                         help='SSP file to be launched')
 
@@ -975,7 +1020,7 @@ if __name__ == '__main__':
     parse = parser.parse_args()
 
     try:
-        ssp_dict = parse_ssp(parse.ssp, False)
+        ssp_dict = parse_ssp(parse.ssp, False, parse.residual_is_error)
     except Exception as e:
         print('Exception during SSP parsing: {}'.format(e))
         raise e
@@ -984,10 +1029,6 @@ if __name__ == '__main__':
 
     duration = ssp_dict['duration'] if not ssp_dict['duration'] is None else 10
     timestep = ssp_dict['timestep'] if not ssp_dict['timestep'] is None else 0.01
-
-    cwd = os.getcwd()
-    if d:
-        os.chdir(d)
 
     # If we are working with TCP, create tcp://localhost:port for all given local hosts
     # If no ports are given then try to find some free TCP ports
@@ -1033,7 +1074,7 @@ if __name__ == '__main__':
         # Everything looks OK; start servers
         for i in range(len(fmus)):
             fmigo_server = get_fmu_server(fmus[i].path, 'fmigo-server')
-            subprocess.Popen([fmigo_server,'-p', str(ports[i]), fmus[i].relpath(d)])
+            subprocess.Popen([fmigo_server,'-p', str(ports[i]), fmus[i].relpath(d)], cwd=d)
 
         #read connections and parameters from stdin, since they can be quite many
         #stdin because we want to avoid leaving useless files on the filesystem
@@ -1043,14 +1084,12 @@ if __name__ == '__main__':
         #read connections and parameters from stdin, since they can be quite many
         #stdin because we want to avoid leaving useless files on the filesystem
         args   = ['mpiexec','-n', '1','fmigo-mpi']
-        fmu_paths = [fmu.relpath(d) for fmu in fmus]
-        #make a copy of the list
-        append = list(fmu_paths)
+        append = []
 
         for fmu in fmus:
             fmigo_mpi = get_fmu_server(fmu.path, 'fmigo-mpi')
-            append += [':','-n', '1', fmigo_mpi]
-            append += fmu_paths
+            append += [':','-n', '1', '-wdir', d, fmigo_mpi]
+            append += [fmu.relpath(d)]
 
     args += ['-t',str(duration),'-d',str(timestep)] + ['-a','-']
     args += append
@@ -1072,8 +1111,6 @@ if __name__ == '__main__':
         p = subprocess.Popen(args, stdin=subprocess.PIPE)
         p.communicate(input=pipeinput.encode('utf-8'))
         ret = p.returncode  #ret can be None
-
-    os.chdir(cwd)
 
     if ret == 0:
         if ssp_dict['unzipped_ssp']:

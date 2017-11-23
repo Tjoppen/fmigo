@@ -70,9 +70,10 @@ def modeldescription2header(args_xml, args_wrapper, file=sys.stdout):
               fmuFilename = tool.find('fmu').text
 
   for sv in SV:
-      name = sv.attrib['name']
-      name = re.sub('[.\[\(]', '_', name)
-      name = re.sub('[\]\)]', '', name)
+      # Make names C compatible
+      name = ''.join([c if re.match('[a-zA-Z0-9]', c) else '_' for c in sv.attrib['name']])
+      if re.match('[0-9]', name[0]):
+          name = '_'+name
 
       vr = int(sv.attrib['valueReference'])
 

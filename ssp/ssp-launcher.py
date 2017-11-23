@@ -871,6 +871,7 @@ def parse_ssp(ssp_path, cleanup_zip = True, residual_is_error = False):
             connstr = '%s,%i,%i,%s,%i,%i' % (fv['type'], fr[0], fv['vr'], tv['type'], to[0], tv['vr'])
             flatconns.extend(['-c', connstr])
 
+    holonomic = None
     kinematicconns = []
     for shaft in shaftconstraints:
         ids = [fmumap[shaft['element%i' % i]] for i in [1,2]]
@@ -890,15 +891,18 @@ def parse_ssp(ssp_path, cleanup_zip = True, residual_is_error = False):
             if pc['type'] != '1d':
                 raise SSPException('ERROR: Physical connector %s in %s of type %s, not 1d' % (name, fmuname, pc['type']))
 
-            # NOTE: We could resolve variables using mds[] here, but fmigo now has
-            # support for looking variables up based on name, so there's no need to
-            # TODO: Non-holonomic shaft constraints
-            if not shaft['holonomic']:
-                raise SSPException('ERROR: ShaftConstraints must be holonomic for now')
+            eprint("shaft['holonomic'] = " + str(shaft['holonomic']))
+            if holonomic is None:
+                holonomic = shaft['holonomic']
+            elif shaft['holonomic'] != holonomic:
+                raise SSPException('ERROR: ShaftConstraints cannot mix-and-match holonomic true/false')
 
             conn += [escape(key) for key in pc['vars']]
 
         kinematicconns.extend(['-C', ','.join(conn)])
+
+    # -N only if holonomic=false
+    holonomic_arg = ['-N'] if holonomic is False else []
 
     csvs = []
     for fmu in fmus:
@@ -917,7 +921,7 @@ def parse_ssp(ssp_path, cleanup_zip = True, residual_is_error = False):
     'temp_dir':         d,
     'timestep':         root_system.structure.timestep, # None if no fmigo:MasterArguments
     'duration':         root_system.structure.duration, # None if no fmigo:MasterArguments
-    'masterarguments':  root_system.structure.arguments,
+    'masterarguments':  root_system.structure.arguments + holonomic_arg,
     }
 
     #return flatconns, flatparams, kinematicconns, csvs, unzipped_ssp, d, \

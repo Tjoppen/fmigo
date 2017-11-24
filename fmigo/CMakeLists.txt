@@ -211,7 +211,7 @@ set(IN_MANPAGE ${CMAKE_CURRENT_LIST_DIR}/doc/fmigo.1)
 
 if (GZIP)
   set(OUT_MANPAGE ${CMAKE_CURRENT_BINARY_DIR}/fmigo.1.gz)
-  add_custom_command(OUTPUT ${OUT_MANPAGE} COMMAND ${GZIP} -kc9 ${IN_MANPAGE} > ${OUT_MANPAGE} DEPENDS ${IN_MANPAGE})
+  add_custom_command(OUTPUT ${OUT_MANPAGE} COMMAND ${GZIP} -c9 < ${IN_MANPAGE} > ${OUT_MANPAGE} DEPENDS ${IN_MANPAGE})
   add_custom_target(manpage ALL DEPENDS ${OUT_MANPAGE})
   install (FILES ${OUT_MANPAGE} DESTINATION man/man1)
 endif ()

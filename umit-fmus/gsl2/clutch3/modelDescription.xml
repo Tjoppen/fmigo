@@ -385,16 +385,6 @@
 
     <!-- index="39"-->
     <ScalarVariable 
-        name="filter_length"
-        valueReference="98"
-        description="Length of EPCE FIR filter (0 = disable)"
-        causality="parameter"
-        variability="fixed">
-      <Integer start="0"/>
-    </ScalarVariable>
-
-    <!-- index="40"-->
-    <ScalarVariable 
         name="octave_output"
         valueReference="97"
         description="Dump integration data to a space separated value file?"
@@ -403,7 +393,7 @@
       <Boolean start="false"/>
     </ScalarVariable>
 
-    <!-- index="41"-->
+    <!-- index="40"-->
     <ScalarVariable 
         name="n_steps"
         valueReference="100"
@@ -412,7 +402,7 @@
       <Integer />
     </ScalarVariable>
 
-    <!-- index="42"-->
+    <!-- index="41"-->
     <ScalarVariable 
         name="integrator"
         valueReference="201"
@@ -436,7 +426,7 @@
       <Integer start="2"/>
     </ScalarVariable>
 
-    <!-- index="43"-->
+    <!-- index="42"-->
     <ScalarVariable 
         name="octave_output_file"
         valueReference="202"
@@ -451,7 +441,7 @@
       </Annotations>
     </ScalarVariable>
 
-    <!-- index="44"-->
+    <!-- index="43"-->
     <ScalarVariable 
         name="reset_dx_e"
         valueReference="202"
@@ -460,7 +450,7 @@
         variability="fixed">
       <Boolean start="false"/>
     </ScalarVariable>
-    <!-- index="45"-->
+    <!-- index="44"-->
      <ScalarVariable 
         name="reset_dx_s"
         valueReference="203"
@@ -482,7 +472,7 @@
       <Unknown index="34"/>     <!--coupling force: 3-->
       <Unknown index="35"/>     <!--angle s: 4-->
       <Unknown index="36"/>     <!--velocity s: 5-->
-      <Unknown index="41"/>  <!-- number of steps: 6 -->
+      <Unknown index="40"/>  <!-- number of steps: 6 -->
       <Unknown index="38"/>  <!--coupling force s: 7-->
     </Outputs>
     <Derivatives/>

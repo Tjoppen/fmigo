@@ -180,7 +180,7 @@ static double fclutch_dphi_derivative( double dphi ) {
 }
 
 
-static int epce_post_step(double t, int n, const double outputs[], void * params) {
+static int epce_post_step(double t, double dt, int n, const double outputs[], void * params) {
     state_t *s = params;
     double v = flip * s->md.v_in;
 
@@ -195,12 +195,7 @@ static fmi2Status clutch_init(ModelInstance *comp) {
     state_t *s = &comp->s;
     const double initials[3] = {s->md.x0, s->md.v0, s->md.dx0};
     s->simulation = cgsl_init_simulation(
-        cgsl_epce_default_model_init(
-            cgsl_model_default_alloc(3, initials, s, clutch, jac_clutch, NULL, NULL, 0),
-            s->md.filter_length,
-            epce_post_step,
-            s
-        ),
+        cgsl_model_default_alloc(3, initials, s, clutch, jac_clutch, NULL, epce_post_step, 0),
         rkf45, 1e-5, 0, 0, 0, NULL
     );
     return fmi2OK;

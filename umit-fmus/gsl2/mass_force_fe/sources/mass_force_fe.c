@@ -74,7 +74,7 @@ jac_mass_force (double t, const double x[], double *dfdx, double dfdt[], void *p
   return GSL_SUCCESS;
 }
 
-static int epce_post_step(double t, int n, const double outputs[], void * params) {
+static int epce_post_step(double t, double dt, int n, const double outputs[], void * params) {
     state_t *s = params;
 
     s->md.x  = outputs[0];
@@ -88,12 +88,7 @@ static fmi2Status mass_force_init(ModelInstance *comp) {
     state_t *s = &comp->s;
     const double initials[3] = {s->md.x, s->md.v};
     s->simulation = cgsl_init_simulation(
-        cgsl_epce_default_model_init(
-            cgsl_model_default_alloc(3, initials, s, mass_force, jac_mass_force, NULL, NULL, 0),
-            s->md.filter_length,
-            epce_post_step,
-            s
-        ),
+        cgsl_model_default_alloc(3, initials, s, mass_force, jac_mass_force, NULL, epce_post_step, 0),
         rkf45, 1e-5, 0, 0, 0, NULL
     );
     return fmi2OK;

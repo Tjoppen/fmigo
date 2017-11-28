@@ -15,7 +15,6 @@ typedef struct {
                        *  "springing" when changing gears */
   double last_force_e;
   double last_force_s;
-  double t0;			/* start of integration time */
 
 } clutchgear_simulation;
 
@@ -325,12 +324,10 @@ static void get_initial_states(state_t *s, double *initials) {
 #endif
 }
 
-static int sync_out(double t, int n, const double outputs[], void * params) {
+static int sync_out(double t, double dt, int n, const double outputs[], void * params) {
 
   state_t *s = params;
   double dxdt[NV_MAX];
-  double dt = t - s->simulation.t0;
-  s->simulation.t0 = t; 
 
   //compute accelerations. we need them for Server::computeNumericalJacobian()
   clutch(0, outputs, dxdt, params);
@@ -342,7 +339,7 @@ static int sync_out(double t, int n, const double outputs[], void * params) {
   s->md.v_s = outputs[ Vs ];
   s->md.a_s = dxdt[ Vs ];
   /** filtered outputs */
-  if ( s->md.filter_length == 2 && dt!=0 ){
+  /*if ( s->md.filter_length == 2 && dt!=0 ){
     s->md.force_e  = 0.5 * ( s->simulation.last_force_e  + outputs[ Fe ] ) /  dt;
     s->md.force_s  = 0.5 * ( s->simulation.last_force_s  + outputs[ Fs ] ) /  dt;
     s->simulation.last_force_e  = outputs[ Fe ] ;
@@ -350,10 +347,10 @@ static int sync_out(double t, int n, const double outputs[], void * params) {
   } else if ( s->md.filter_length == 2 && dt == 0 ){
     s->md.force_e = 0;
     s->md.force_s = 0;
-  }else{
+  }else{*/
     /* standard */
     compute_forces(s, outputs, &s->md.force_e, &s->md.force_s, NULL);
-  }
+  //}
 
   return GSL_SUCCESS;
 }
@@ -370,12 +367,7 @@ static void clutch_init(state_t *s) {
     s->md.integrator = rkf45;
   }
   s->simulation.sim = cgsl_init_simulation(
-    cgsl_epce_default_model_init(
-      cgsl_model_default_alloc(get_initial_states_size(s), initials, s, clutch, jac_clutch, NULL, NULL, 0),
-      s->md.filter_length,
-      sync_out,
-      s
-      ),
+    cgsl_model_default_alloc(get_initial_states_size(s), initials, s, clutch, jac_clutch, NULL, sync_out, 0),
     s->md.integrator, 1e-6, 0, 0, s->md.octave_output, s->md.octave_output ? fopen(s->md.octave_output_file, "w") : NULL
     );
   s->simulation.last_gear = s->md.gear;

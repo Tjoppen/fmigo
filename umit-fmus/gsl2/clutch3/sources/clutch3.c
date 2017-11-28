@@ -347,13 +347,17 @@ static void get_initial_states(state_t *s, double *initials) {
    and this is then integrated
 
  */
-static int sync_out(double t, int n, const double outputs[], void * params) {
+static int sync_out(double t, double dt, int n, const double outputs[], void * params) {
 
   state_t *s = (state_t *) params;
   double dxdt[4];
   int x;
 
-  
+  s->simulation.xe00 =  outputs[ 0 ];
+  s->simulation.xs00 =  outputs[ 2 ];
+  s->simulation.dxe00 =  get_dx( s->simulation.xe0, s->md.x_e, s->simulation.dxe0, s->md.v_in_e, t - s->simulation.communication_time);
+  s->simulation.dxs00 =  get_dx( s->simulation.xs0, s->md.x_s, s->simulation.dxs0, s->md.v_in_s, t - s->simulation.communication_time); 
+
 //compute accelerations. we need them for Server::computeNumericalJacobian()
 
   double t0   = s->simulation.communication_time;
@@ -361,9 +365,9 @@ static int sync_out(double t, int n, const double outputs[], void * params) {
   double dxs  = get_dx( outputs[ 2 ],  s->md.x_s, s->simulation.dxs0, s->md.v_in_s, t-t0);
 
   clutch(0, outputs, dxdt, params);
-  if ( s->md.filter_length == 0 )
+  /*if ( s->md.filter_length == 0 )
     compute_forces(s, outputs,  dxe, dxs, &s->md.force_e, &s->md.force_s, NULL, t);
-  else {
+  else {*/
     double zdxe = get_dx( 0,  s->md.x_e, s->simulation.dxe0, s->md.v_in_e, t-t0);
     double zdxs = get_dx( 0,  s->md.x_s, s->simulation.dxs0, s->md.v_in_s, t-t0);
 
@@ -373,7 +377,7 @@ static int sync_out(double t, int n, const double outputs[], void * params) {
 
     s->simulation.zdxe = zdxe;
     s->simulation.zdxs = zdxs;
-  }
+  //}
 
   s->simulation.dxe0 =  s->simulation.dxe00;
   s->simulation.dxs0 =  s->simulation.dxs00;
@@ -404,23 +408,6 @@ static int sync_out(double t, int n, const double outputs[], void * params) {
 
 }
 
-int post_step (double t, double dt, const double x[], void * params){
-
-  state_t *  s = (state_t * ) params;
-  s->simulation.xe00 =  x[ 0 ];
-  s->simulation.xs00 =  x[ 2 ];
-  s->simulation.dxe00 =  get_dx( s->simulation.xe0, s->md.x_e, s->simulation.dxe0, s->md.v_in_e, t - s->simulation.communication_time);
-  s->simulation.dxs00 =  get_dx( s->simulation.xs0, s->md.x_s, s->simulation.dxs0, s->md.v_in_s, t - s->simulation.communication_time); 
-
-
-  return 0;
-}
-
-
-static int pre_step (double t, double dt, const double y[], void * params){
-  return 0;
-}
-
 static fmi2Status clutch_init(ModelInstance *comp) {
   state_t *s = &comp->s;
   /** system size and layout depends on which dx's are integrated */
@@ -438,14 +425,9 @@ static fmi2Status clutch_init(ModelInstance *comp) {
   }
 
   s->simulation.sim = cgsl_init_simulation(
-    cgsl_epce_default_model_init(
-      cgsl_model_default_alloc(sizeof(initials)/sizeof(initials[0]), initials, s, clutch, jac_clutch, NULL, post_step, 0),
-      s->md.filter_length,
-      sync_out,
-      s
-      ),
+    cgsl_model_default_alloc(sizeof(initials)/sizeof(initials[0]), initials, s, clutch, jac_clutch, NULL, sync_out, 0),
     s->md.integrator, 1e-6, 0, 0, s->md.octave_output, s->md.octave_output ? fopen(s->md.octave_output_file, "w") : NULL
-    );
+  );
 
   s->simulation.last_gear = s->md.gear;
   s->simulation.delta_phi = 0;

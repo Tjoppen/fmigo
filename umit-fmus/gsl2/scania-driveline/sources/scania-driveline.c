@@ -146,7 +146,7 @@ int  fcn( double t, const double * x, double *dxdt, void * params){
   return GSL_SUCCESS;
 }
 
-static int sync_out(double t, int n, const double out[], void * params) {
+static int sync_out(double t, double dt, int n, const double out[], void * params) {
   state_t *s = ( state_t * ) params;
   double * dxdt = ( double * ) alloca( ( (size_t) n ) * sizeof(double));
 
@@ -164,12 +164,7 @@ static fmi2Status scania_driveline_init(ModelInstance *comp) {
   };
 
   s->simulation = cgsl_init_simulation(
-    cgsl_epce_default_model_init(
-      cgsl_model_default_alloc(sizeof(initials)/sizeof(initials[0]), initials, s, fcn, NULL, NULL, NULL, 0),
-      0,//s->md.filter_length,
-      sync_out,
-      s
-      ),
+    cgsl_model_default_alloc(sizeof(initials)/sizeof(initials[0]), initials, s, fcn, NULL, NULL, sync_out, 0),
     rkf45, 1e-5, 0, 0, 0, NULL
     );
     return fmi2OK;

@@ -40,7 +40,7 @@ endfunction()
 function (add_fmu_internal srcdir dstdir xmldir target extra_srcs defs libs extra_includes console md2hdr_option xmldeps extra_resources)
   set(${target}_fmu     ${dstdir}/${target}.fmu CACHE INTERNAL "" FORCE)
   set(${target}_srcdir  ${srcdir}               CACHE INTERNAL "" FORCE)
-  set(${target}_dstdir  ${srcdir}               CACHE INTERNAL "" FORCE)
+  set(${target}_dstdir  ${dstdir}               CACHE INTERNAL "" FORCE)
   set(${target}_xmldir  ${xmldir}               CACHE INTERNAL "" FORCE)
   set(${target}_packdir ${CMAKE_CURRENT_BINARY_DIR}/${target}/fmu        CACHE INTERNAL "" FORCE)
 
@@ -59,6 +59,7 @@ function (add_fmu_internal srcdir dstdir xmldir target extra_srcs defs libs extr
   set(includes
     templates/fmi2
     ${${target}_srcdir}/sources
+    ${${target}_dstdir}/sources
     ${extra_includes}
   )
 
@@ -166,6 +167,7 @@ function (add_wrapped dir sourcetarget)
   add_custom_target(${target}_xml DEPENDS ${dstxml})
 
   add_fmu_internal("${CMAKE_CURRENT_SOURCE_DIR}/${dir}" "${CMAKE_CURRENT_BINARY_DIR}/${dir}" "${CMAKE_CURRENT_BINARY_DIR}/${dir}" "${target}" "wrapper/sources/wrapper.c" "" "cgsl;wrapperlib;fmilib" "wrapper/sources" FALSE "-w" "${target}_xml" "${${sourcetarget}_fmu}")
+  add_dependencies(${target} ${sourcetarget}_fmu_target)
 endfunction ()
 
 
@@ -182,6 +184,7 @@ function (add_wrapped_fmu dir sourcetarget sourcefmu)
   add_custom_target(${target}_xml DEPENDS ${dstxml})
 
   add_fmu_internal("${CMAKE_CURRENT_BINARY_DIR}/${dir}" "${CMAKE_CURRENT_BINARY_DIR}/${dir}" "${CMAKE_CURRENT_BINARY_DIR}/${dir}" "${target}" "wrapper/sources/wrapper.c" "" "cgsl;wrapperlib;fmilib" "wrapper/sources" FALSE "-w" "${target}_xml" "${${sourcetarget}_fmu}")
+  add_dependencies(${target} ${sourcetarget}_fmu_target)
 endfunction ()
 
 # wrap_existing_fmu

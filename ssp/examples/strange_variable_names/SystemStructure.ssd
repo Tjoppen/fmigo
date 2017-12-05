@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ssd:SystemStructureDescription version="Draft20170606"
+    xmlns:ssd="http://www.pmsf.net/xsd/SystemStructureDescriptionDraft"
+    xmlns:ssc="http://www.pmsf.net/xsd/SystemStructureCommonDraft"
+    xmlns:ssm="http://www.pmsf.net/xsd/SystemStructureParameterMappingDraft"
+    xmlns:ssv="http://www.pmsf.net/xsd/SystemStructureParameterValuesDraft"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:fmigo="http://umit.math.umu.se/FmiGo.xsd"
+    xsi:schemaLocation="http://www.pmsf.net/xsd/SystemStructureDescriptionDraft http://www.pmsf.net/xsd/SystemStructureDescriptionDraft/Draft20150721/SystemStructureDescription.xsd"
+    name="StrangeVarNames">
+  <ssd:System name="StrangeVarNames" description="Used for testing that we can have dots, spaces, parenthesis and colon in variable names">
+    <ssd:Elements>
+      <ssd:Component name="FMU0" source="resources/strange_variable_names.fmu" type="application/x-fmu-sharedlibrary">
+        <ssd:ParameterBindings>
+          <ssd:ParameterBinding>
+            <ssd:ParameterValues>
+              <!-- version and name needed? doing so makes validating with etree.XMLSchema easier -->
+              <ssv:ParameterSet version="Draft20170606" name="SystemParams">
+                <ssv:Parameters>
+                  <ssv:Parameter name="dot.0">
+                    <ssv:Real value="1.0" />
+                  </ssv:Parameter>
+                  <ssv:Parameter name="colon:0">
+                    <ssv:Integer value="1" />
+                  </ssv:Parameter>
+                  <ssv:Parameter name="der(0)">
+                    <ssv:Boolean value="true" />
+                  </ssv:Parameter>
+                  <ssv:Parameter name="space 0">
+                    <ssv:String value="hello" />
+                  </ssv:Parameter>
+                </ssv:Parameters>
+              </ssv:ParameterSet>
+            </ssd:ParameterValues>
+          </ssd:ParameterBinding>
+        </ssd:ParameterBindings>
+      </ssd:Component>
+    </ssd:Elements>
+  </ssd:System>
+</ssd:SystemStructureDescription>

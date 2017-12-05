@@ -1,3 +1,4 @@
+syntax = "proto2";
 package fmitcp_proto;
 
 // Allow using the "lite" version of the wire implementation

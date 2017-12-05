@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fmiModelDescription
+  fmiVersion="2.0"
+  description="FMU for testing strange variables names"
+  modelName="strange_variable_names"
+  guid="{f15cb318-7f08-4e71-a21b-b709c8559d1e}"
+  numberOfEventIndicators="0">
+
+<CoSimulation
+  modelIdentifier="strange_variable_names"
+  canHandleVariableCommunicationStepSize="true"
+  canGetAndSetFMUstate="true"
+  providesDirectionalDerivative="false"/>
+
+<LogCategories>
+  <Category name="logAll"/>
+  <Category name="logError"/>
+  <Category name="logFmiCall"/>
+  <Category name="logEvent"/>
+</LogCategories>
+
+<DefaultExperiment startTime="0" stopTime="10" stepSize="0.1"/>
+
+<ModelVariables>
+  <!-- Outputs -->
+  <ScalarVariable name="dot.out"
+                  valueReference="0"
+                  description=""
+                  causality="output">
+      <Real/>
+  </ScalarVariable>
+  <ScalarVariable name="colon:out"
+                  valueReference="1"
+                  description=""
+                  causality="output">
+      <Integer/>
+  </ScalarVariable>
+  <ScalarVariable name="der(out)"
+                  valueReference="2"
+                  description=""
+                  causality="output">
+      <Boolean/>
+  </ScalarVariable>
+  <ScalarVariable name="space out"
+                  valueReference="3"
+                  description=""
+                  causality="output">
+      <String/>
+      <Annotations>
+        <Tool name="fmigo">
+          <size>1024</size>
+        </Tool>
+      </Annotations>
+  </ScalarVariable>
+
+  <!-- Inputs -->
+  <ScalarVariable name="dot.in"
+                  valueReference="4"
+                  description=""
+                  causality="input"
+                  initial="approx">
+      <Real start="0"/>
+  </ScalarVariable>
+  <ScalarVariable name="colon:in"
+                  valueReference="5"
+                  description=""
+                  causality="input"
+                  initial="approx">
+      <Integer start="0"/>
+  </ScalarVariable>
+  <ScalarVariable name="der(in)"
+                  valueReference="6"
+                  description=""
+                  causality="input"
+                  initial="approx">
+      <Boolean start="false"/>
+  </ScalarVariable>
+  <ScalarVariable name="space in"
+                  valueReference="7"
+                  description=""
+                  causality="input"
+                  initial="approx">
+      <String start=""/>
+      <Annotations>
+        <Tool name="fmigo">
+          <size>1024</size>
+        </Tool>
+      </Annotations>
+  </ScalarVariable>
+
+  <!-- Parameters -->
+  <ScalarVariable name="dot.0"
+                  valueReference="8"
+                  description=""
+                  variability="fixed"
+                  causality="parameter">
+      <Real start="0"/>
+  </ScalarVariable>
+  <ScalarVariable name="colon:0"
+                  valueReference="9"
+                  description=""
+                  variability="fixed"
+                  causality="parameter">
+      <Integer start="0"/>
+  </ScalarVariable>
+  <ScalarVariable name="der(0)"
+                  valueReference="10"
+                  description=""
+                  variability="fixed"
+                  causality="parameter">
+      <Boolean start="false"/>
+  </ScalarVariable>
+  <ScalarVariable name="space 0"
+                  valueReference="11"
+                  description=""
+                  variability="fixed"
+                  causality="parameter">
+      <String start=""/>
+      <Annotations>
+        <Tool name="fmigo">
+          <size>1024</size>
+        </Tool>
+      </Annotations>
+  </ScalarVariable>
+</ModelVariables>
+
+<ModelStructure>
+  <Outputs>
+   <Unknown index="1"/>
+   <Unknown index="2"/>
+   <Unknown index="3"/>
+   <Unknown index="4"/>
+  </Outputs>
+  <Derivatives/>
+  <DiscreteStates/>
+  <InitialUnknowns />
+</ModelStructure>
+
+</fmiModelDescription>

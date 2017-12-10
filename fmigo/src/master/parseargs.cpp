@@ -152,8 +152,8 @@ void fmitcp_master::parseArguments( int argc,
                     bool *paused,
                     bool *solveLoops,
                     bool *useHeadersInCSV,
-                    fmigo_csv_fmu *csv_fmu
-        ) {
+                    fmigo_csv_fmu *csv_fmu,
+                    int* maxSamples ) {
     int index, c;
     opterr = 0;
 
@@ -173,7 +173,7 @@ void fmitcp_master::parseArguments( int argc,
 
     vector<char*> argv2 = make_char_vector(argvstore);
 
-    while ((c = getopt (argv2.size(), argv2.data(), "rl:ht:c:d:s:o:p:f:m:g:w:C:5:F:NM:a:z:ZLHV:De")) != -1){
+    while ((c = getopt (argv2.size(), argv2.data(), "rl:ht:c:d:s:o:p:f:m:g:w:C:5:F:NM:a:z:ZLHV:DeS:")) != -1){
         int n, skip, l, cont, i, numScanned, stop, vis;
         deque<string> parts;
         if (optarg) parts = escapeSplit(optarg, ':');
@@ -276,6 +276,13 @@ void fmitcp_master::parseArguments( int argc,
             }
             break;
 
+        case 'S':
+            numScanned = sscanf(optarg,"%i", maxSamples);
+            if(numScanned <= 0){
+                printInvalidArg(c);
+                exit(1);
+            }
+            break;
         case 'f':
             if(strcmp(optarg,"csv") == 0){
                 *fileFormat = csv;

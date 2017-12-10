@@ -411,6 +411,12 @@ template<typename RFType, typename From> void addVectorToRepeatedField(RFType* r
     }
 }
 
+/**
+   Insert all values from the clients, starting the the global time. 
+
+   Separation sign is inserted after *each* value which means we have a
+   dangling separator at the end of the line when this function returns.
+ */
 static void printOutputs(double t, BaseMaster *master, vector<FMIClient*>& clients) {
     char separator = fmigo::globals::getSeparator();
 
@@ -465,7 +471,9 @@ static void printOutputs(double t, BaseMaster *master, vector<FMIClient*>& clien
     }
 }
 
-
+/**
+   This will push all the data from all FMUs including global data on a port.
+ */
 static void pushResults(int step, double t, double endTime, double timeStep, zmq::socket_t& push_socket, BaseMaster *master, vector<FMIClient*>& clients, bool pushEverything) {
     //collect data
     control_proto::results_message results;
@@ -518,6 +526,9 @@ static void pushResults(int step, double t, double endTime, double timeStep, zmq
     push_socket.send(rep);
 }
 
+/**
+   Utility so variable names can be used on the command line.
+ */
 static int connectionNamesToVr(std::vector<connection> &connections,
                         vector<strongconnection> &strongConnections,
                         const vector<FMIClient*> clients // could not get this to compile when defined in parseargs
@@ -605,13 +616,14 @@ int main(int argc, char *argv[] ) {
     bool startPaused = false, solveLoops = false;
     fmigo_csv_fmu csv_fmu;
     string hdf5Filename;
+    int maxSamples = -1;
 
     parseArguments(
             argc, argv, &fmuURIs, &connections, &params, &endTime, &timeStep,
             &fmigo_loglevel, &csv_separator, &outFilePath, &fmigo::globals::fileFormat,
             &method, &realtimeMode, &stepOrder, &fmuVisibilities,
             &scs, &hdf5Filename, &fieldnameFilename, &holonomic, &compliance,
-            &command_port, &results_port, &startPaused, &solveLoops, &useHeadersInCSV, &csv_fmu
+            &command_port, &results_port, &startPaused, &solveLoops, &useHeadersInCSV, &csv_fmu, &maxSamples
     );
 
 #ifdef USE_MPI
@@ -789,10 +801,17 @@ int main(int argc, char *argv[] ) {
     fmigo::globals::timer.dont_rotate = false;
     fmigo::globals::timer.rotate("setup");
 
+    /// reduce amount of output if wanted. 
+    int write_period = (maxSamples>0) ? ceil( nsteps / maxSamples) : 1;
+    auto fileFormat = fmigo::globals::fileFormat;
     //run
     while ((endTime < 0 || step < nsteps) && master->running) {
+      if ( step % write_period  ){
+        fmigo::globals::fileFormat = none;
+      }else{
+        fmigo::globals::fileFormat = fileFormat;
+      }
         master->t = step * endTime / nsteps;
-
         master->handleZmqControl();
 
         if (!master->running) {

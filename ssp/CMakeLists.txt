@@ -40,6 +40,31 @@ function (add_ssp dir sspname)
         DEPENDS ${FMUS} ${FMU_TARGETS} ${${sspname}_ssd} ${extra_resources}
     )
     add_custom_target(${sspname} ALL DEPENDS ${ZIPNAME})
+
+    # Run each test over both MPI and TCP
+    foreach (p FALSE TRUE)
+      if (p)
+        set(suffix "tcp")
+        set(option "-e" "-p")
+      else ()
+        set(suffix "mpi")
+        set(option "-e")
+      endif()
+
+      function(test_ssp PYTHON PYTHONNAME)
+        add_test(ssp-${sspname}-${suffix}-${PYTHONNAME}           ${PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/ssp-launcher.py ${option} -- ${${sspname}_ssp}                      -d 0.1 -t 0.1 )
+        add_test(ssp-unzipped-${sspname}-${suffix}-${PYTHONNAME}  ${PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/ssp-launcher.py ${option} -- ${${sspname}_dir}/SystemStructure.ssd  -d 0.1 -t 0.1 )
+      endfunction()
+
+      if (PYTHON2)
+        test_ssp(${PYTHON2} python2)
+      endif ()
+
+      if (PYTHON3)
+        test_ssp(${PYTHON3} python3)
+      endif ()
+    endforeach ()
+
 endfunction ()
 
 
@@ -64,40 +89,5 @@ if (USE_GPL AND BUILD_FMUS)
   add_ssp(examples/master-args            MasterArguments           clutch2)
   add_ssp(examples/parameters-inline      ParametersInline          clutch2)
   add_ssp(examples/parameters-external    ParametersExternal        clutch2)
-
-  # Run each test over both MPI and TCP
-  foreach (p FALSE TRUE)
-    if (p)
-      set(suffix "-tcp")
-      set(option "-e" "-p")
-    else ()
-      set(suffix "-mpi")
-      set(option "-e")
-    endif()
-
-    function(test_ssp PYTHON NAME)
-      add_test(ssp-test${suffix}-${NAME}                            ${PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/ssp-launcher.py ${option} -- ${SpringChainSystem_ssp})
-      add_test(ssp-work-reports${suffix}-${NAME}                    ${PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/ssp-launcher.py ${option} -- ${WorkReportHolonomic_ssp})
-      add_test(ssp-kinematic-example${suffix}-${NAME}               ${PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/ssp-launcher.py ${option} -- ${KinematicExample_ssp})
-      add_test(ssp-kinematic-nonholonomic${suffix}-${NAME}          ${PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/ssp-launcher.py ${option} -- ${KinematicNHExample_ssp})
-      add_test(ssp-master-args${suffix}-${NAME}                     ${PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/ssp-launcher.py ${option} -- ${MasterArguments_ssp})
-      add_test(ssp-parameters-inline${suffix}-${NAME}               ${PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/ssp-launcher.py ${option} -- ${ParametersInline_ssp})
-      add_test(ssp-parameters-external${suffix}-${NAME}             ${PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/ssp-launcher.py ${option} -- ${ParametersExternal_ssp})
-      add_test(ssp-unzipped-test${suffix}-${NAME}                   ${PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/ssp-launcher.py ${option} -- ${SpringChainSystem_dir}/SystemStructure.ssd)
-      add_test(ssp-unzipped-work-reports${suffix}-${NAME}           ${PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/ssp-launcher.py ${option} -- ${WorkReportHolonomic_dir}/SystemStructure.ssd)
-      add_test(ssp-unzipped-kinematic-example${suffix}-${NAME}      ${PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/ssp-launcher.py ${option} -- ${KinematicExample_dir}/SystemStructure.ssd)
-      add_test(ssp-unzipped-kinematic-nonholonomic${suffix}-${NAME} ${PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/ssp-launcher.py ${option} -- ${KinematicNHExample_dir}/SystemStructure.ssd)
-      add_test(ssp-unzipped-master-args${suffix}-${NAME}            ${PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/ssp-launcher.py ${option} -- ${MasterArguments_dir}/SystemStructure.ssd)
-      add_test(ssp-unzipped-parameters-inline${suffix}-${NAME}      ${PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/ssp-launcher.py ${option} -- ${ParametersInline_dir}/SystemStructure.ssd)
-      add_test(ssp-unzipped-parameters-external${suffix}-${NAME}    ${PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/ssp-launcher.py ${option} -- ${ParametersExternal_dir}/SystemStructure.ssd)
-    endfunction()
-
-    if (PYTHON2)
-      test_ssp(${PYTHON2} python2)
-    endif ()
-
-    if (PYTHON3)
-      test_ssp(${PYTHON3} python3)
-    endif ()
-  endforeach ()
+  add_ssp(examples/strange_variable_names StrangeVarNames           strange_variable_names)
 endif ()

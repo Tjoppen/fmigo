@@ -9,28 +9,28 @@ variables:
 build:trusty:
   stage: build
   script:
-    - docker build -t umit/trusty:$(git rev-parse HEAD)            -f Dockerfile.trusty            .
+    - docker build -t umit/trusty:$(git rev-parse HEAD)            -f Dockerfiles/Dockerfile.trusty            .
   tags:
     - shell
 
 build:trusty-cmake3.5.0:
   stage: build
   script:
-    - docker build -t umit/trusty-cmake3.5.0:$(git rev-parse HEAD) -f Dockerfile.trusty-cmake3.5.0 .
+    - docker build -t umit/trusty-cmake3.5.0:$(git rev-parse HEAD) -f Dockerfiles/Dockerfile.trusty-cmake3.5.0 .
   tags:
     - shell
 
 build:xenial:
   stage: build
   script:
-    - docker build -t umit/xenial:$(git rev-parse HEAD)            -f Dockerfile.xenial            .
+    - docker build -t umit/xenial:$(git rev-parse HEAD)            -f Dockerfiles/Dockerfile.xenial            .
   tags:
     - shell
 
 build:xenial-fsanitize:
   stage: build
   script:
-    - docker build -t umit/xenial-fsanitize:$(git rev-parse HEAD)  -f Dockerfile.xenial-fsanitize  .
+    - docker build -t umit/xenial-fsanitize:$(git rev-parse HEAD)  -f Dockerfiles/Dockerfile.xenial-fsanitize  .
   tags:
     - shell
 

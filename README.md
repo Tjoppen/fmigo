@@ -1,6 +1,8 @@
 <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
 
-FMIGo is a backend for the Functional Mockup Interface (FMI) standard.
+# FmiGo
+
+FmiGo is a backend for the Functional Mockup Interface (FMI) standard.
 It connects multiple Functional Mockup Units (FMUs) over ZeroMQ or MPI in a master-server architecture.
 There is support for stepping both Model Exchange and Co-Simulation FMUs.
 The latter can be connected with typical weak coupling or using an algebraic constraint solver based on Claude Lacoursière's SPOOK solver.
@@ -181,40 +183,35 @@ Here is the contents of the old README:
 
 Things to do:
 
--- Merge, rename to FMIGo, cleanup, code review (Tomas, Jonas, Claude)
+* cleanup, code review (Tomas, Jonas, Claude)
 
--- FMU cosim wrapper for FMU model exchange, including directional
-            derivatives (Jonas + Claude)
+* check performance on high performance switches, clusters, etc.
+  Abisko for TCP/IP and MPI  (Tomas, when there's free time)
 
--- check performance on high performance switches, clusters, etc.
-    Abisko for TCP/IP and MPI  (Tomas, when there's free time)
-
--- Servers for FMI/X
-            -- support for directional derivatives and numerical Jacobians for Model Exchange support
-
--- Master stepper
+* Master stepper
          
-          -- support for NEPCE from Benedikt 
-          -- Support for TLM
-          -- extrapolation + interpolation
-          -- iterative methods
-          -- event handling
-          -- multirate
-          -- model based extrapolation model reduction and identification (Benedikt) 
-          inside FMU ModelExchange wrapper 
-          -- Grand mix of model exchange and co-sim: master stepper
-             takes change of several ME FMUs as well as cosim ones, and
-             time-integrates the ME FMUs together with a sensible
-             integrator.  (See Ziegler and Vangheluwe for theory)
-          -- define kinematic couplings in SSP
+    - support for NEPCE from Benedikt
+    - Support for TLM
+    - extrapolation + interpolation
+    - iterative methods
+    - multirate
+    - model based extrapolation model reduction and identification (Benedikt)
+      inside FMU ModelExchange wrapper
+    - Grand mix of model exchange and co-sim: master stepper
+      takes change of several ME FMUs as well as cosim ones, and
+      time-integrates the ME FMUs together with a sensible
+      integrator.  (See Ziegler and Vangheluwe for theory)
+    - define kinematic couplings in SSP
 
--- Simulation master
-              -- weather report
-              -- database to store and communicate data
-              
+* Simulation master
+
+    - weather report
+    - database to store and communicate data
+
              
--- publication plan
-               -- Edo's filter
-               -- large comparisons of different weak masters
-               -- kinematic coupling
-               -- theory of linear stability
+* publication plan
+
+    - Edo's filter
+    - large comparisons of different weak masters
+    - kinematic coupling
+    - theory of linear stability

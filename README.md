@@ -14,7 +14,7 @@ CMake is meta build system required for creating the build system on all platfor
 We support versions down to 2.8.12.2 in GitLab CI, but recommend version 3.5.1 or later.
 
 We recommend using Ninja for building on platforms where it is available,
-since it is much faster than make (at least when using CMake generated Makefiles).
+since it is much faster than msbuild and make (at least when using CMake generated Makefiles).
 
 Python 2.7 or 3.x is required for running the tests.
 You will also need to install some Python packages specified in requirements.txt using pip and/or pip3:
@@ -53,7 +53,7 @@ Ask Claude ;)
 
 # Windows
 
-There are two major paths to building on Windows: Microsoft Visual Studio 2015 or msys2.
+There are two major paths to building on Windows: Microsoft Visual Studio 2015 and msys2.
 
 ## Microsoft Visual Studio 2015
 
@@ -83,6 +83,7 @@ It is not yet covered by CI however.
 
 Since msys2 uses pacman, see Arch above for instruction.
 GNU GSL may require special attention.
+You may also need MS-MPI as with the Visual Studio build.
 
 ## Testing
 

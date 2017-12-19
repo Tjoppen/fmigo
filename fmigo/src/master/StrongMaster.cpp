@@ -143,85 +143,89 @@ void StrongMaster::runIteration(double t, double dt) {
 
     //get directional derivatives
     //this is a two-step process which is important to get the order of correct
-    for (int step = 0; step < 2; step++) {
-        for (sc::Equation *eq : m_strongCouplingSolver->getEquations()) {
-            for (sc::Connector *fc : eq->m_connectors) {
-                StrongConnector *forceConnector = dynamic_cast<StrongConnector*>(fc);
-                FMIClient *client = dynamic_cast<FMIClient*>(forceConnector->m_slave);
-                for (int x = 0; x < client->numConnectors(); x++) {
-                    StrongConnector *accelerationConnector = dynamic_cast<StrongConnector*>(forceConnector->m_slave->getConnector(x));
+    for (sc::Equation *eq : m_strongCouplingSolver->getEquations()) {
+        for (sc::Connector *fc : eq->m_connectors) {
+            StrongConnector *forceConnector = dynamic_cast<StrongConnector*>(fc);
+            FMIClient *client = dynamic_cast<FMIClient*>(forceConnector->m_slave);
+            for (int x = 0; x < client->numConnectors(); x++) {
+                StrongConnector *accelerationConnector = dynamic_cast<StrongConnector*>(forceConnector->m_slave->getConnector(x));
 
-                        //HACKHACK: use the presence of shaft angle VR to distinguish connector type
-                        if (accelerationConnector->hasShaftAngle() != forceConnector->hasShaftAngle()) {
-                            //the reason this is a problem is because we can't always get the positional mobilities for rotational constraints and vice versa
-                            //in theory we can though, by just putting zeroes in the relevant places
-                            //it's just very hairy, so i'm not doing it right now
-                            fatal("Can't deal with different types of kinematic connections to the same FMU\n");
-                        }
+                //HACKHACK: use the presence of shaft angle VR to distinguish connector type
+                if (accelerationConnector->hasShaftAngle() != forceConnector->hasShaftAngle()) {
+                    //the reason this is a problem is because we can't always get the positional mobilities for rotational constraints and vice versa
+                    //in theory we can though, by just putting zeroes in the relevant places
+                    //it's just very hairy, so i'm not doing it right now
+                    fatal("Can't deal with different types of kinematic connections to the same FMU\n");
+                }
 
-                        if (step == 0) {
-                            //step 0 = send fmi2_import_get_directional_derivative() requests
-                            if (eq->m_isSpatial) {
-                                if (accelerationConnector->hasAcceleration() && forceConnector->hasForce()) {
-                                    getDirectionalDerivative(kin[client->m_id], eq->jacobianElementForConnector(forceConnector).getSpatial(), accelerationConnector->getAccelerationValueRefs(), forceConnector->getForceValueRefs());
-                                } else {
-                                    fatal("Strong coupling requires acceleration outputs for now\n");
-                                }
-                            }
+                //step 0 = send fmi2_import_get_directional_derivative() requests
+                if (eq->m_isSpatial) {
+                    if (accelerationConnector->hasAcceleration() && forceConnector->hasForce()) {
+                        getDirectionalDerivative(kin[client->m_id], eq->jacobianElementForConnector(forceConnector).getSpatial(), accelerationConnector->getAccelerationValueRefs(), forceConnector->getForceValueRefs());
+                    } else {
+                        fatal("Strong coupling requires acceleration outputs for now\n");
+                    }
+                }
 
-                            if (eq->m_isRotational) {
-                                if (accelerationConnector->hasAngularAcceleration() && forceConnector->hasTorque()) {
-                                    getDirectionalDerivative(kin[client->m_id], eq->jacobianElementForConnector(forceConnector).getRotational(), accelerationConnector->getAngularAccelerationValueRefs(), forceConnector->getTorqueValueRefs());
-                                } else {
-                                    fatal("Strong coupling requires angular acceleration outputs for now\n");
-                                }
-                            }
-                        } else {
-                            //step 1 = put returned directional derivatives in the correct place in the sparse mobility matrix
-                            int I = accelerationConnector->m_index;
-                            int J = eq->m_index;
-                            JacobianElement &el = m_strongCouplingSolver->m_mobilities[make_pair(I,J)];
-
-                            if (eq->m_isSpatial) {
-                                const fmitcp_proto::fmi2_import_get_directional_derivative_res& res = client->last_kinematic.derivs(kin_ofs[client->m_id]++);
-                                if (accelerationConnector->getAccelerationValueRefs().size() == 1) {
-                                    el.setSpatial(    res.dz(0), 0,         0);
-                                } else {
-                                    el.setSpatial(    res.dz(0), res.dz(1), res.dz(2));
-                                }
-                            } else {
-                                el.setSpatial(0,0,0);
-                            }
-
-                            if (eq->m_isRotational) {
-                                const fmitcp_proto::fmi2_import_get_directional_derivative_res& res = client->last_kinematic.derivs(kin_ofs[client->m_id]++);
-                                //1-D?
-                                if (accelerationConnector->getAngularAccelerationValueRefs().size() == 1) {
-                                    //debug("J(%i,%i) = %f\n", I, J, client->m_getDirectionalDerivativeValues.front()[0]);
-                                    el.setRotational( res.dz(0), 0,         0);
-                                } else {
-                                    el.setRotational( res.dz(0), res.dz(1), res.dz(2));
-                                }
-                            } else {
-                                el.setRotational(0,0,0);
-                            }
-                        }
+                if (eq->m_isRotational) {
+                    if (accelerationConnector->hasAngularAcceleration() && forceConnector->hasTorque()) {
+                        getDirectionalDerivative(kin[client->m_id], eq->jacobianElementForConnector(forceConnector).getRotational(), accelerationConnector->getAngularAccelerationValueRefs(), forceConnector->getTorqueValueRefs());
+                    } else {
+                        fatal("Strong coupling requires angular acceleration outputs for now\n");
+                    }
                 }
             }
         }
-        if (step == 0) {
-            for (FMIClient *client : m_clients) {
-                if (kin[client->m_id].has_reals() ||
-                    kin[client->m_id].has_ints() ||
-                    kin[client->m_id].has_bools() ||
-                    kin[client->m_id].has_strings() ||
-                    kin[client->m_id].future_velocity_vrs_size()) {
-                  client->queueMessage(pack(fmitcp_proto::type_fmi2_kinematic_req, kin[client->m_id]));
+    }
+
+    for (FMIClient *client : m_clients) {
+        if (kin[client->m_id].has_reals() ||
+            kin[client->m_id].has_ints() ||
+            kin[client->m_id].has_bools() ||
+            kin[client->m_id].has_strings() ||
+            kin[client->m_id].future_velocity_vrs_size()) {
+          client->queueMessage(pack(fmitcp_proto::type_fmi2_kinematic_req, kin[client->m_id]));
+        }
+    }
+
+    wait();
+
+    for (sc::Equation *eq : m_strongCouplingSolver->getEquations()) {
+        for (sc::Connector *fc : eq->m_connectors) {
+            StrongConnector *forceConnector = dynamic_cast<StrongConnector*>(fc);
+            FMIClient *client = dynamic_cast<FMIClient*>(forceConnector->m_slave);
+            for (int x = 0; x < client->numConnectors(); x++) {
+                StrongConnector *accelerationConnector = dynamic_cast<StrongConnector*>(forceConnector->m_slave->getConnector(x));
+
+                //step 1 = put returned directional derivatives in the correct place in the sparse mobility matrix
+                int I = accelerationConnector->m_index;
+                int J = eq->m_index;
+                JacobianElement &el = m_strongCouplingSolver->m_mobilities[make_pair(I,J)];
+
+                if (eq->m_isSpatial) {
+                    const fmitcp_proto::fmi2_import_get_directional_derivative_res& res = client->last_kinematic.derivs(kin_ofs[client->m_id]++);
+                    if (accelerationConnector->getAccelerationValueRefs().size() == 1) {
+                        el.setSpatial(    res.dz(0), 0,         0);
+                    } else {
+                        el.setSpatial(    res.dz(0), res.dz(1), res.dz(2));
+                    }
+                } else {
+                    el.setSpatial(0,0,0);
+                }
+
+                if (eq->m_isRotational) {
+                    const fmitcp_proto::fmi2_import_get_directional_derivative_res& res = client->last_kinematic.derivs(kin_ofs[client->m_id]++);
+                    //1-D?
+                    if (accelerationConnector->getAngularAccelerationValueRefs().size() == 1) {
+                        //debug("J(%i,%i) = %f\n", I, J, client->m_getDirectionalDerivativeValues.front()[0]);
+                        el.setRotational( res.dz(0), 0,         0);
+                    } else {
+                        el.setRotational( res.dz(0), res.dz(1), res.dz(2));
+                    }
+                } else {
+                    el.setRotational(0,0,0);
                 }
             }
-
-            wait();
-        } else {
         }
     }
 

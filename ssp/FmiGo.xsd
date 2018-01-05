@@ -59,6 +59,47 @@
     </xs:complexType>
   </xs:element>
 
+  <xs:element name="ExecutionOrder">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+        SSD annotation type: se.umu.math.umit.fmigo-master.executionorder
+
+        Execution order is specified as a nested collection of serial and parallel execution groups.
+        Parallel groups must have at least one element while serial groups must have at least two.
+        For this reason the root group is parallel, and a serial group must be put inside it if the "root" structure should be serial.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="p" type="fmigo:ParallelExecutionGroup" minOccurs="1" maxOccurs="1"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:complexType name="ParallelExecutionGroup">
+    <xs:annotation>
+      <xs:documentation xml:lang="en">
+        Put some documentation here maybe woooo
+      </xs:documentation>
+    </xs:annotation>
+    <xs:choice minOccurs="1" maxOccurs="unbounded">
+      <!-- Component name in SSP -->
+      <xs:element name="c" type="xs:string"/>
+      <!-- FMU ID in fmigo -->
+      <xs:element name="f" type="xs:int"/>
+      <xs:element name="s" type="fmigo:SerialExecutionGroup"/>
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:complexType name="SerialExecutionGroup">
+    <!-- minOccurs="2" since it doesn't make much sense to serial:ize just a single element -->
+    <xs:choice minOccurs="2" maxOccurs="unbounded">
+      <xs:element name="c" type="xs:string"/>
+      <xs:element name="f" type="xs:int"/>
+      <xs:element name="p" type="fmigo:ParallelExecutionGroup"/>
+    </xs:choice>
+  </xs:complexType>
+
   <xs:complexType name="TPhysicalConnector1D">
       <xs:attribute name="name" type="xs:string" use="required"/>
       <!-- At some later time we'll allow not specifying stateVariable 

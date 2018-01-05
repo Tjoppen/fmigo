@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ssd:SystemStructureDescription version="Draft20170606"
+    xmlns:ssd="http://www.pmsf.net/xsd/SystemStructureDescriptionDraft"
+    xmlns:ssc="http://www.pmsf.net/xsd/SystemStructureCommonDraft"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:fmigo="http://umit.math.umu.se/FmiGo.xsd"
+    xsi:schemaLocation="http://www.pmsf.net/xsd/SystemStructureDescriptionDraft http://www.pmsf.net/xsd/SystemStructureDescriptionDraft/Draft20150721/SystemStructureDescription.xsd"
+    name="ExecutionOrder">
+  <ssd:System name="ExecutionOrder" description="Example how to use fmigo:ExecutionOrder">
+    <ssd:Elements>
+      <ssd:Component name="FMU0" source="resources/clutch2.fmu" type="application/x-fmu-sharedlibrary" />
+      <ssd:Component name="FMU1" source="resources/clutch2.fmu" type="application/x-fmu-sharedlibrary" />
+      <ssd:Component name="FMU2" source="resources/clutch2.fmu" type="application/x-fmu-sharedlibrary" />
+      <ssd:Component name="FMU3" source="resources/clutch2.fmu" type="application/x-fmu-sharedlibrary" />
+      <ssd:Component name="FMU4" source="resources/clutch2.fmu" type="application/x-fmu-sharedlibrary" />
+    </ssd:Elements>
+  </ssd:System>
+
+  <!--
+    Execution order goes here, outside <ssd:System>.
+    Must use full ssd:Component names.
+    Names are translated to FMU IDs by ssp-launher.py.
+  -->
+  <ssd:Annotations>
+    <ssc:Annotation type="se.umu.math.umit.fmigo-master.executionorder">
+      <fmigo:ExecutionOrder>
+        <fmigo:p>
+          <fmigo:s>
+            <fmigo:c>ExecutionOrder.FMU0</fmigo:c>
+            <fmigo:c>ExecutionOrder.FMU1</fmigo:c>
+            <fmigo:p>
+              <fmigo:c>ExecutionOrder.FMU2</fmigo:c>
+              <fmigo:c>ExecutionOrder.FMU3</fmigo:c>
+            </fmigo:p>
+          </fmigo:s>
+          <fmigo:c>ExecutionOrder.FMU4</fmigo:c>
+        </fmigo:p>
+      </fmigo:ExecutionOrder>
+    </ssc:Annotation>
+  </ssd:Annotations>
+</ssd:SystemStructureDescription>

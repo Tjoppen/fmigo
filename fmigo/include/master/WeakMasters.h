@@ -73,50 +73,6 @@ public:
     }
 };
 
-//aka serial stepper
-class GaussSeidelMaster : public model_exchange::ModelExchangeStepper {
-    map<FMIClient*, OutputRefsType> clientGetXs;  //one OutputRefsType for each client
-    std::vector<int> stepOrder;
-public:
-    GaussSeidelMaster(zmq::context_t &context, vector<FMIClient*> clients, vector<WeakConnection> weakConnections, std::vector<int> stepOrder) :
-            model_exchange::ModelExchangeStepper(context, clients, weakConnections), stepOrder(stepOrder) {
-        info("GSMaster\n");
-    }
-
-    void prepare() {
-        for (size_t x = 0; x < m_weakConnections.size(); x++) {
-            WeakConnection wc = m_weakConnections[x];
-            clientGetXs[wc.to][wc.from][wc.conn.fromType].push_back(wc.conn.fromOutputVR);
-        }
-#ifdef USE_GPL
-        prepareME();
-#endif
-    }
-
-    void runIteration(double t, double dt) {
-        for (int o : stepOrder) {
-            FMIClient *client = m_clients[o];
-
-            for (auto it = clientGetXs[client].begin(); it != clientGetXs[client].end(); it++) {
-                it->first->queueX(it->second);
-            }
-            queueValueRequests();
-            wait();
-            const SendSetXType refValues = getInputWeakRefsAndValues(m_weakConnections, client);
-            client->sendSetX(refValues);
-            if (client->getFmuKind() == fmi2_fmu_kind_cs) {
-                sendWait(client, fmi2_import_do_step(t, dt, true));
-                client->deleteCachedValues();
-
-                //we could try to pre-request here, but I doubt it's entirely useful
-            } //else modelExchange, solve all further down simultaneously
-        }
-#ifdef USE_GPL
-        solveME(t,dt);
-#endif
-    }
-};
-
 }// namespace fmitcp_master
 
 

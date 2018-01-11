@@ -68,8 +68,9 @@ OutputRefsType getOutputWeakRefs(std::vector<WeakConnection> weakConnections);
 typedef std::map<fmi2_base_type_enu_t, std::pair<std::vector<int>, std::vector<MultiValue> > > SendSetXType;
 typedef std::map<FMIClient*, SendSetXType> InputRefsValuesType;
 
-//if cset is non-empty, only request values for clients whose IDs is in cset
-InputRefsValuesType getInputWeakRefsAndValues(std::vector<WeakConnection> weakConnections, const std::set<int>& cset = std::set<int>());
+InputRefsValuesType getInputWeakRefsAndValues(std::vector<WeakConnection> weakConnections);
+//only request values for clients whose IDs is in cset
+InputRefsValuesType getInputWeakRefsAndValues(std::vector<WeakConnection> weakConnections, const std::set<int>& cset);
 SendSetXType        getInputWeakRefsAndValues(std::vector<WeakConnection> weakConnections, FMIClient *client);
 
 }

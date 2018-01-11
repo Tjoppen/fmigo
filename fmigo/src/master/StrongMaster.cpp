@@ -12,6 +12,7 @@
 #include "common/common.h"
 #include "master/globals.h"
 #include "fmitcp.pb.h"
+#include <algorithm>
 
 using namespace fmitcp_master;
 using namespace fmitcp;
@@ -19,31 +20,78 @@ using namespace fmitcp::serialize;
 using namespace sc;
 
 StrongMaster::StrongMaster(zmq::context_t &context, vector<FMIClient*> clients, vector<WeakConnection> weakConnections,
-                           Solver *strongCouplingSolver, bool holonomic) :
+                           Solver *strongCouplingSolver, bool holonomic, const std::vector<Rend>& rends) :
         JacobiMaster(context, clients, weakConnections),
-        m_strongCouplingSolver(strongCouplingSolver), holonomic(holonomic) {
+        m_strongCouplingSolver(strongCouplingSolver), holonomic(holonomic), rends(rends) {
     info("StrongMaster (%s)\n", holonomic ? "holonomic" : "non-holonomic");
+
+    if (rends.size() < 2) {
+        fatal("rends too small: %i\n", (int)rends.size());
+    }
+
+    counters.resize(rends.size());
+
+    //populate clientrend
+    //sanity check rends while we're at it - it should contain all client IDs in children and parents
+    set<int> children, parents;
+
+    clientrend.resize(m_clients.size());
+    for (int i = 0; i < (int)rends.size(); i++) {
+        for (int id : rends[i].parents) {
+            clientrend[id] = i;
+            if (parents.count(id)) {
+                fatal("parent id=%i occurs more than once in execution order\n", id);
+            }
+            parents.insert(id);
+            if (id < 0 || (size_t)id >= clients.size()) {
+                fatal("parent id=%i in execution order is outside the valid range\n", id);
+            }
+        }
+        for (int id : rends[i].children) {
+            if (children.count(id)) {
+                fatal("child id=%i occurs more than once in execution order\n", id);
+            }
+            children.insert(id);
+            if (id < 0 || (size_t)id >= clients.size()) {
+                fatal("child id=%i in execution order is outside the valid range\n", id);
+            }
+        }
+    }
+
+    if (children.size() != clients.size()) {
+        fatal("execution order child count %i != FMU count %i\n", (int)children.size(), (int)clients.size());
+    }
+    if (parents.size() != clients.size()) {
+        fatal("execution order parent count %i != FMU count %i\n", (int)parents.size(), (int)clients.size());
+    }
+
+    for (auto wc : m_weakConnections) {
+        clientGetXs[wc.to->m_id][wc.from][wc.conn.fromType].push_back(wc.conn.fromOutputVR);
+    }
 }
 
 StrongMaster::~StrongMaster() {
-    delete m_strongCouplingSolver;
+    if (m_strongCouplingSolver) {
+        delete m_strongCouplingSolver;
+    }
 }
 
 void StrongMaster::prepare() {
-    m_strongCouplingSolver->prepare();
     JacobiMaster::prepare();
 
-    //check that every FMU involved in an equation has get/set functionality
-    for (size_t i=0; i<m_clients.size(); i++){
-        FMIClient *client = m_clients[i];
-        if (!client->hasCapability(fmi2_cs_canGetAndSetFMUstate)) {
-            //if part of any equation then fail
-            for (sc::Equation *eq : m_strongCouplingSolver->getEquations()) {
-                for (sc::Connector *fc : eq->m_connectors) {
-                    if (client == fc->m_slave) {
-                        fatal("FMU %i (%s) is part of a kinematic constraint but lacks rollback functionality (canGetAndSetFMUstate=\"false\")\n",
-                            client->m_id, client->getModelName().c_str());
-                    }
+    if (m_strongCouplingSolver) {
+        m_strongCouplingSolver->prepare();
+
+        //check that every FMU involved in an equation has get/set functionality
+        //also put their IDs in the kinematic set
+        for (sc::Equation *eq : m_strongCouplingSolver->getEquations()) {
+            for (sc::Connector *fc : eq->m_connectors) {
+                FMIClient *client = dynamic_cast<FMIClient*>(fc->m_slave);
+                kins.insert(client->m_id);
+
+                if (!client->hasCapability(fmi2_cs_canGetAndSetFMUstate)) {
+                    fatal("FMU %i (%s) is part of a kinematic constraint but lacks rollback functionality (canGetAndSetFMUstate=\"false\")\n",
+                        client->m_id, client->getModelName().c_str());
                 }
             }
         }
@@ -61,15 +109,15 @@ void StrongMaster::getDirectionalDerivative(fmitcp_proto::fmi2_kinematic_req& ki
 }
 
 //"convenience" function for filling out setX entries in fmi2_kinematic_req
-template<typename IT, typename T, typename set_x_req>
+template<typename T, typename set_x_req>
 void fill_kinematic_req(
-          IT it,
+          const SendSetXType& it,
           fmitcp_proto::fmi2_kinematic_req& req,
           fmi2_base_type_enu_t type,
           set_x_req* (fmitcp_proto::fmi2_kinematic_req::*mutable_x)(),
           T MultiValue::*member) {
-    if (it->second.count(type)) {
-        const pair<vector<int>, vector<MultiValue> > vrs_values = it->second.find(type)->second;
+    if (it.count(type)) {
+        const pair<vector<int>, vector<MultiValue> > vrs_values = it.find(type)->second;
         set_x_req* values = (req.*mutable_x)();
 
         for (int vr : vrs_values.first) {
@@ -81,16 +129,95 @@ void fill_kinematic_req(
     }
 }
 
-void StrongMaster::runIteration(double t, double dt) {
+void StrongMaster::crankIt(double t, double dt, const std::set<int>& target) {
+    //crank system until open set contains target,
+    //or until the end if target is empty
+    debug("into  crankIt: %zu %zu %zu %zu\n", done.size(), open.size(), todo.size(), target.size());
+    while (done.size() < m_clients.size() &&
+            (target.size() == 0 ||
+             !std::includes(open.begin(), open.end(), target.begin(), target.end()))) {
+        debug("      -crankIt: %zu %zu %zu %zu\n", done.size(), open.size(), todo.size(), target.size());
+
+        //only step those which are not in the target set
+        set<int> toStep;
+        for (int id : open) {
+            if (target.count(id) == 0) {
+                toStep.insert(id);
+            }
+        }
+
+        if (toStep.size() == 0) {
+            fatal("toStep = 0? Stepping order must be unfulfillable\n");
+        }
+
+        //request inputs for the FMUs we're about to step
+        for (int id : toStep) {
+            for (auto it : clientGetXs[id]) {
+                it.first->queueX(it.second);
+            }
+        }
+
+        queueValueRequests();
+        wait();
+
+        //grab the values that we requested
+        InputRefsValuesType refValues = getInputWeakRefsAndValues(m_weakConnections, toStep);
+
+        //distribute inputs, step
+        for (int id : toStep) {
+            m_clients[id]->sendSetX(refValues[m_clients[id]]);
+            queueMessage(m_clients[id], fmi2_import_do_step(t, dt, true));
+        }
+
+        //all cached values are now bork
+        deleteCachedValues(true, toStep);
+
+        moveCranked(toStep);
+    }
+    debug(" out  crankIt: %zu %zu %zu %zu\n", done.size(), open.size(), todo.size(), target.size());
+}
+
+void StrongMaster::moveCranked(std::set<int> cranked) {
+    set<int> triggered_rends;
+    for (int id : cranked) {
+        //poke the corresponding rend
+        int v = --counters[clientrend[id]];
+        if (v < 0) {
+            fatal("negative rend counter\n");
+        } else if (v == 0) {
+            triggered_rends.insert(clientrend[id]);
+        }
+
+        done.insert(id);
+        open.erase(id);
+    }
+
+    //deal with triggered rends
+    for (int t : triggered_rends) {
+        for (int id : rends[t].children) {
+            if (todo.count(id) != 1) {
+                string s = executionOrderToString(rends);
+                info(s.c_str());
+                fatal("rend child %i not in todo set\n", id);
+            }
+            todo.erase(id);
+            open.insert(id);
+        }
+    }
+}
+
+void StrongMaster::stepKinematicFmus(double t, double dt) {
     //get weak connector outputs
-    for (auto it = clientWeakRefs.begin(); it != clientWeakRefs.end(); it++) {
-        it->first->queueX(it->second);
+    for (int id : open) {
+        for (auto it : clientGetXs[id]) {
+            it.first->queueX(it.second);
+        }
     }
 
     //get strong connector inputs
-    for(size_t i=0; i<m_clients.size(); i++){
-        const vector<int>& valueRefs = m_clients[i]->getStrongConnectorValueReferences();
-        m_clients[i]->queueReals(valueRefs);
+    for (int id : open) {
+        const vector<int>& valueRefs = m_clients[id]->getStrongConnectorValueReferences();
+        m_clients[id]->queueReals(valueRefs);
     }
 
     //these two are usually no-ops since we ask for a pre-fetch at the end of the function
@@ -100,28 +227,35 @@ void StrongMaster::runIteration(double t, double dt) {
     //disentangle received values for set_real() further down (before do_step())
     //we shouldn't set_real() for these until we've gotten directional derivatives
     //this sets StrongMaster apart from the weak masters
-    const InputRefsValuesType refValues = getInputWeakRefsAndValues(m_weakConnections);
+    InputRefsValuesType refValues = getInputWeakRefsAndValues(m_weakConnections, open);
 
-    vector<fmitcp_proto::fmi2_kinematic_req> kin(m_clients.size(), fmitcp_proto::fmi2_kinematic_req());
-    vector<int> kin_ofs(m_clients.size());  //current offset into derivs
+    vector<fmitcp_proto::fmi2_kinematic_req> kin(open.size(), fmitcp_proto::fmi2_kinematic_req());
+    vector<int> kin_ofs(open.size(), 0);  //current offset into derivs
+    map<int,int> id2kin; //maps FMU IDs into indices into kin
 
     //set weak connector inputs
-    for (auto it = refValues.begin(); it != refValues.end(); it++) {
-        fill_kinematic_req(it, kin[it->first->m_id], fmi2_base_type_real, &fmitcp_proto::fmi2_kinematic_req::mutable_reals,   &MultiValue::r);
-        fill_kinematic_req(it, kin[it->first->m_id], fmi2_base_type_int,  &fmitcp_proto::fmi2_kinematic_req::mutable_ints,    &MultiValue::i);
-        fill_kinematic_req(it, kin[it->first->m_id], fmi2_base_type_bool, &fmitcp_proto::fmi2_kinematic_req::mutable_bools,   &MultiValue::b);
-        fill_kinematic_req(it, kin[it->first->m_id], fmi2_base_type_str,  &fmitcp_proto::fmi2_kinematic_req::mutable_strings, &MultiValue::s);
+    int kini = 0;
+    for (int id : open) {
+        id2kin[id] = kini;
+        SendSetXType it = refValues[m_clients[id]];
+        fill_kinematic_req(it, kin[kini], fmi2_base_type_real, &fmitcp_proto::fmi2_kinematic_req::mutable_reals,   &MultiValue::r);
+        fill_kinematic_req(it, kin[kini], fmi2_base_type_int,  &fmitcp_proto::fmi2_kinematic_req::mutable_ints,    &MultiValue::i);
+        fill_kinematic_req(it, kin[kini], fmi2_base_type_bool, &fmitcp_proto::fmi2_kinematic_req::mutable_bools,   &MultiValue::b);
+        fill_kinematic_req(it, kin[kini], fmi2_base_type_str,  &fmitcp_proto::fmi2_kinematic_req::mutable_strings, &MultiValue::s);
+        kini++;
     }
 
     //set connector values
-    for (size_t i=0; i<m_clients.size(); i++){
-        FMIClient *client = m_clients[i];
+    for (int id : open) {
+        FMIClient *client = m_clients[id];
         const vector<int>& vrs = client->getStrongConnectorValueReferences();
         client->setConnectorValues(vrs, client->getReals(vrs));
     }
 
     //update constraints since connector values changed
-    m_strongCouplingSolver->updateConstraints();
+    if (m_strongCouplingSolver) {
+        m_strongCouplingSolver->updateConstraints();
+    }
 
     //get future velocities:
     //0. save FMU states
@@ -130,19 +264,20 @@ void StrongMaster::runIteration(double t, double dt) {
     //3. restore FMU states
 
     //first filter out FMUs with save/load functionality
-    for (size_t i=0; i<m_clients.size(); i++){
-        FMIClient *client = m_clients[i];
+    for (int id : open) {
+        FMIClient *client = m_clients[id];
         if (client->hasCapability(fmi2_cs_canGetAndSetFMUstate)) {
             for (int vr : client->getStrongConnectorValueReferences()) {
-                kin[client->m_id].add_future_velocity_vrs(vr);
+                kin[id2kin[id]].add_future_velocity_vrs(vr);
             }
-            kin[client->m_id].set_currentcommunicationpoint(t);
-            kin[client->m_id].set_communicationstepsize(dt);
+            kin[id2kin[id]].set_currentcommunicationpoint(t);
+            kin[id2kin[id]].set_communicationstepsize(dt);
         }
     }
 
     //get directional derivatives
     //this is a two-step process which is important to get the order of correct
+    if (m_strongCouplingSolver) {
     for (sc::Equation *eq : m_strongCouplingSolver->getEquations()) {
         for (sc::Connector *fc : eq->m_connectors) {
             StrongConnector *forceConnector = dynamic_cast<StrongConnector*>(fc);
@@ -161,7 +296,7 @@ void StrongMaster::runIteration(double t, double dt) {
                 //step 0 = send fmi2_import_get_directional_derivative() requests
                 if (eq->m_isSpatial) {
                     if (accelerationConnector->hasAcceleration() && forceConnector->hasForce()) {
-                        getDirectionalDerivative(kin[client->m_id], eq->jacobianElementForConnector(forceConnector).getSpatial(), accelerationConnector->getAccelerationValueRefs(), forceConnector->getForceValueRefs());
+                        getDirectionalDerivative(kin[id2kin[client->m_id]], eq->jacobianElementForConnector(forceConnector).getSpatial(), accelerationConnector->getAccelerationValueRefs(), forceConnector->getForceValueRefs());
                     } else {
                         fatal("Strong coupling requires acceleration outputs for now\n");
                     }
@@ -169,7 +304,7 @@ void StrongMaster::runIteration(double t, double dt) {
 
                 if (eq->m_isRotational) {
                     if (accelerationConnector->hasAngularAcceleration() && forceConnector->hasTorque()) {
-                        getDirectionalDerivative(kin[client->m_id], eq->jacobianElementForConnector(forceConnector).getRotational(), accelerationConnector->getAngularAccelerationValueRefs(), forceConnector->getTorqueValueRefs());
+                        getDirectionalDerivative(kin[id2kin[client->m_id]], eq->jacobianElementForConnector(forceConnector).getRotational(), accelerationConnector->getAngularAccelerationValueRefs(), forceConnector->getTorqueValueRefs());
                     } else {
                         fatal("Strong coupling requires angular acceleration outputs for now\n");
                     }
@@ -177,23 +312,28 @@ void StrongMaster::runIteration(double t, double dt) {
             }
         }
     }
+    }
 
-    for (FMIClient *client : m_clients) {
-        if (kin[client->m_id].has_reals() ||
-            kin[client->m_id].has_ints() ||
-            kin[client->m_id].has_bools() ||
-            kin[client->m_id].has_strings() ||
-            kin[client->m_id].future_velocity_vrs_size()) {
-          client->queueMessage(pack(fmitcp_proto::type_fmi2_kinematic_req, kin[client->m_id]));
+    for (int id : open) {
+        if (kin[id2kin[id]].has_reals() ||
+            kin[id2kin[id]].has_ints() ||
+            kin[id2kin[id]].has_bools() ||
+            kin[id2kin[id]].has_strings() ||
+            kin[id2kin[id]].future_velocity_vrs_size()) {
+          m_clients[id]->queueMessage(pack(fmitcp_proto::type_fmi2_kinematic_req, kin[id2kin[id]]));
         }
     }
 
     wait();
 
+    if (m_strongCouplingSolver) {
     for (sc::Equation *eq : m_strongCouplingSolver->getEquations()) {
         for (sc::Connector *fc : eq->m_connectors) {
             StrongConnector *forceConnector = dynamic_cast<StrongConnector*>(fc);
             FMIClient *client = dynamic_cast<FMIClient*>(forceConnector->m_slave);
+            if (!open.count(client->m_id)) {
+                fatal("Kinematic FMU %i not in open set\n", client->m_id);
+            }
             for (int x = 0; x < client->numConnectors(); x++) {
                 StrongConnector *accelerationConnector = dynamic_cast<StrongConnector*>(forceConnector->m_slave->getConnector(x));
 
@@ -203,7 +343,7 @@ void StrongMaster::runIteration(double t, double dt) {
                 JacobianElement &el = m_strongCouplingSolver->m_mobilities[make_pair(I,J)];
 
                 if (eq->m_isSpatial) {
-                    const fmitcp_proto::fmi2_import_get_directional_derivative_res& res = client->last_kinematic.derivs(kin_ofs[client->m_id]++);
+                    const fmitcp_proto::fmi2_import_get_directional_derivative_res& res = client->last_kinematic.derivs(kin_ofs[id2kin[client->m_id]]++);
                     if (accelerationConnector->getAccelerationValueRefs().size() == 1) {
                         el.setSpatial(    res.dz(0), 0,         0);
                     } else {
@@ -214,7 +354,7 @@ void StrongMaster::runIteration(double t, double dt) {
                 }
 
                 if (eq->m_isRotational) {
-                    const fmitcp_proto::fmi2_import_get_directional_derivative_res& res = client->last_kinematic.derivs(kin_ofs[client->m_id]++);
+                    const fmitcp_proto::fmi2_import_get_directional_derivative_res& res = client->last_kinematic.derivs(kin_ofs[id2kin[client->m_id]]++);
                     //1-D?
                     if (accelerationConnector->getAngularAccelerationValueRefs().size() == 1) {
                         //debug("J(%i,%i) = %f\n", I, J, client->m_getDirectionalDerivativeValues.front()[0]);
@@ -228,27 +368,30 @@ void StrongMaster::runIteration(double t, double dt) {
             }
         }
     }
+    }
 
     //set FUTURE connector values (velocities only)
-    for (FMIClient *client : m_clients) {
-        if (kin[client->m_id].future_velocity_vrs_size()) {
-            const vector<int>& vrs = client->getStrongConnectorValueReferences();
+    for (int id : open) {
+        if (kin[id2kin[id]].future_velocity_vrs_size()) {
+            const vector<int>& vrs = m_clients[id]->getStrongConnectorValueReferences();
             vector<double> reals;
-            reals.reserve(kin[client->m_id].future_velocity_vrs_size());
-            for (int x = 0; x < kin[client->m_id].future_velocity_vrs_size(); x++) {
-              reals.push_back(client->last_kinematic.future_velocities(x));
+            reals.reserve(kin[id2kin[id]].future_velocity_vrs_size());
+            for (int x = 0; x < kin[id2kin[id]].future_velocity_vrs_size(); x++) {
+              reals.push_back(m_clients[id]->last_kinematic.future_velocities(x));
             }
-            client->setConnectorFutureVelocities(vrs, reals);
+            m_clients[id]->setConnectorFutureVelocities(vrs, reals);
         }
     }
 
     //compute strong coupling forces
-    m_strongCouplingSolver->solve(holonomic);
+    if (m_strongCouplingSolver) {
+        m_strongCouplingSolver->solve(holonomic);
+    }
 
     //distribute forces
     char separator = fmigo::globals::getSeparator();
-    for (size_t i=0; i<m_clients.size(); i++){
-        FMIClient *client = m_clients[i];
+    for (int id : open) {
+        FMIClient *client = m_clients[id];
         for (int j = 0; j < client->numConnectors(); j++) {
             StrongConnector *sc = client->getConnector(j);
             vector<double> vec;
@@ -284,14 +427,53 @@ void StrongMaster::runIteration(double t, double dt) {
     //do actual step
     //noSetFMUStatePriorToCurrentPoint = true
     //In other words: do the step, commit the results (basically, we're not going back)
-    queueMessage(m_clients, fmi2_import_do_step(t, dt, true));
+    for (int id : open) {
+        queueMessage(m_clients[id], fmi2_import_do_step(t, dt, true));
+    }
 
     //do_step() makes values old
-    deleteCachedValues();
+    deleteCachedValues(true, open);
+
+    //pass open by value so a copy happens
+    moveCranked(open);
+}
+
+void StrongMaster::runIteration(double t, double dt) {
+    //execution order stuff
+    //first set up the rend counters and all three sets
+    done.clear();
+    open = rends[0].children;
+    todo.clear();
+
+    for (size_t x = 0; x < rends.size(); x++) {
+        counters[x] = (int)rends[x].parents.size();
+    }
+
+    for (FMIClient *client : m_clients) {
+        if (open.count(client->m_id) == 0) {
+            todo.insert(client->m_id);
+        }
+    }
+
+    //crank system until kins \in open
+    crankIt(t, dt, kins);
+
+    //only bother doing anything more if we have some FMUs left to step
+    if (open.size() > 0) {
+        stepKinematicFmus(t, dt);
+
+        //crank the rest of the system
+        crankIt(t, dt, set<int>());
+    } else if (todo.size() > 0) {
+        //probably broken execution order XML parsing if we got here
+        fatal("open.size() == 0 but todo.size() == %i\n", (int)todo.size());
+    }
 
     //pre-fetch values for next step
-    for (auto it = clientWeakRefs.begin(); it != clientWeakRefs.end(); it++) {
-        it->first->queueX(it->second);
+    for (int id : rends[0].children) {
+        for (auto it : clientGetXs[id]) {
+            it.first->queueX(it.second);
+        }
     }
     for(size_t i=0; i<m_clients.size(); i++){
         const vector<int>& valueRefs = m_clients[i]->getStrongConnectorValueReferences();

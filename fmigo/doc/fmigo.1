@@ -13,7 +13,7 @@ over TCP/IP
 
 .SH SYNOPSIS (TCP/IP)
 .B fmigo-master
-.RB [ " \-rlhtcdsopfmgwC5NMazZLHDe " ]
+.RB [ " \-rltcdsopfmgwC5NMazZLHDeG " ]
 .I URLs
 .br
 .B fmigo-server --port PORT
@@ -100,9 +100,6 @@ There is also an alternative syntax which produces shorter command lines but req
 
 .SH FLAGS
 .TP
-.B \-h
-Show help and quit.
-.TP
 .B \-r
 Realtime mode. Will usleep() in between communication steps if the execution was faster than real time.
 .TP
@@ -151,7 +148,7 @@ These can either be specified as colon separated lists (like "-w 0:1:0") in one 
 This is convenient when building command lines in script, especially when lengthy strong connection specifications (-C) are involved. 
 .TP
 .B \-l LOGLEVEL
-Set FMILibrary log level. Levels are as follows:
+Set FmiGo and FMILibrary log level. Levels are as follows:
 
     0 = nothing     (default)
     1 = fatal       Unrecoverable errors
@@ -163,39 +160,67 @@ Set FMILibrary log level. Levels are as follows:
     7 = all
 
 .TP
-.B \-w VISIBILITIES
-Visibility specification list. Specifies which FMUs should show their simulator application windows. Syntax is
+.B \-G EXECUTION_ORDER_XML
+Some systems need information to propagate as if they were using super-dense time.
+One common example is Gauss-Seidel type stepping,
+where each FMU is executed one-at-a-time in a serial manner,
+and only the latest data being used at each step.
+This is not something the FMI Co-Simulation spec allows since data must be exchanged at matching communication points only.
+But, since it is required in many cases FmiGo allows it regardless of what the specification says.
 
-    -w VIS0:VIS1:VIS2...
+This option is for specifying an execution order in an XML format.
+The format is based on nested execution groups, which can be either serial (<s></s>) or parallel (<p></p>).
+Each group can contain some FMU IDs (<f></f>) and nest several of the other type of group inside.
+So a parallel group may contain a bunch of FMU IDs and some serial groups, all of which are executed in parallel.
+The serial groups in turn may contain FMU IDs and parallel groups which are executed in the order they appear in the XML.
+The root group is parallel, but may contain a single serial element if so desired.
+Serial groups must contain at least two elements.
 
-where VISX is 1 or 0 depending on whether FMUX's window should be shown or not.
-Example:
+To step all FMUs in parallel, put all <f> in the same <p>:
 
-    -w 0:1:1:0
+    -G "<p><f>0</f><f>1</f><f>2</f></p>"
 
-which means: show simulator windows for FMU1 and FMU2, but not FMU0 or FMU3.
-Note that multiple "-w"'s can be used to break up a list:
+To step all FMUs in series, put all <f> in the same <s> and put the <s> in the root <p>:
 
-    -w 0 -w 1 -w 1 -w 0
+    -G "<p><s><f>0</f><f>1</f><f>2</f></s></p>"
 
-Unlike -p, -c and -C order is significant for visibility lists. The following is *not* equivalent to the previous example:
+More complicated arrangements are of course possible.
+This example steps two serial groups with two FMUs each in parallel, with a fifth FMU parallel to all of them for good measure:
 
-    -w 1 -w 1 -w 0 -w 0
+    -G "<p> \\
+          <s> \\
+            <f>0</f> \\
+            <f>1</f> \\
+          </s> \\
+          <s> \\
+            <f>2</f> \\
+            <f>3</f> \\
+          </s> \\
+          <f>4</f> \\
+        </p>"
 
-By default no windows are shown (batch mode).
+
+All FMU IDs must occur exactly once in the XML.
+See FmiGo.xsd (installed under bin/) for more information about the syntax.
+If no -g or -G is specified, or if there is one or more ModelExchange FMU, then all FMUs are stepped in parallel (Jacobi).
 .TP
-.B \-g STEPPING_ORDER_SPEC
-FMU stepping order list. Used in serial algorithms. Should be a comma separated list of FMU indices. If the list starts with 0, then the first FMU will be stepped, and its output values will be transferred through their connections (if any).
+.B \-g SERIAL_EXECUTION_ORDER_LIST
+Serial FMU execution order, as a comma-separated list of FMU IDs.
+This is a simpler legacy way of specifying serial execution order.
 Example:
 
     -g 0,2,1
 
-Which means: step FMU0 -> FMU2 -> FMU1.
-Like other lists stepping order lists can also be broken up. This is equivalent to the previous example:
+Which means: step FMU0 -> FMU2 -> FMU1. Equivalent to this execution order XML:
+
+    -G "<p><s><f>0</f><f>2</f><f>1</f></s></p>"
+
+Like other lists stepping order lists can also be broken up. The same example can also be written like this:
 
     -g 0 -g 2 -g 1
 
-Order is significant, just like visibility lists. If no -g is specified then FMUs are stepped in numerical order (FMU0 -> FMU1 -> FMU2 etc.).
+The number of entries in -g must match the number of FMUs in the system.
+If no -g or -G is specified, or if there is one or more ModelExchange FMU, then all FMUs are stepped in parallel (Jacobi).
 .TP
 .B \-c WEAK_CONNECTIONS
 Weak connection specification list. Represents which FMU and value reference to connect from and what to connect to. Syntax is
@@ -362,15 +387,32 @@ Just like weak connections, variable references can be resolved by name. So the 
 
 Default is no strong connections. Specifying strong connections is incompatible with using the Gauss-Seidel stepper (-m gs).
 .TP
+.B \-w VISIBILITIES
+Visibility specification list. Specifies which FMUs should show their simulator application windows. Syntax is
+
+    -w VIS0:VIS1:VIS2...
+
+where VISX is 1 or 0 depending on whether FMUX's window should be shown or not.
+Example:
+
+    -w 0:1:1:0
+
+which means: show simulator windows for FMU1 and FMU2, but not FMU0 or FMU3.
+Note that multiple "-w"'s can be used to break up a list:
+
+    -w 0 -w 1 -w 1 -w 0
+
+Unlike -p, -c and -C order is significant for visibility lists. The following is *not* equivalent to the previous example:
+
+    -w 1 -w 1 -w 0 -w 0
+
+By default no windows are shown (batch mode).
+.TP
 .B \-d TIMESTEP
 Timestep size. Default is 0.1.
 .TP
 .B \-f OUTFORMAT
 Output file format. Can be "csv" (default) or "tikz". Use -H to print header with CSV output. TikZ output always uses a header.
-.TP
-.B \-m METHOD
-Stepping method. Available methods are "jacobi" (Jacobi, parallel) and "gs" (Gauss-Seidel, serial). Default is "jacobi".
-When strong coupling is used only "jacobi" is possible.
 .TP
 .B \-o OUTFILE
 Result output file. Default is STDOUT.
@@ -442,4 +484,4 @@ Simulating four strongly coupled spring systems for 100 s at 100 Hz and writing 
         tcp://localhost:3000 tcp://localhost:3001 tcp://localhost:3002 tcp://localhost:3003 > results/output-N4-h0.01.csv
 
 .SH "ABOUT"
-The app was built by Stefan Hedman at UMIT Research Lab 2013. Large parts were rewritten by Tomas Härdin at UMIT Research Lab 2014 - 2017.
+The app was built by Stefan Hedman at UMIT Research Lab 2013. Large parts were rewritten by Tomas Härdin at UMIT Research Lab 2014 - 2018.

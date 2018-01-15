@@ -802,7 +802,8 @@ int main(int argc, char *argv[] ) {
     fmigo::globals::timer.rotate("setup");
 
     /// reduce amount of output if wanted. 
-    int write_period = (maxSamples>0) ? ceil( nsteps / maxSamples) : 1;
+    int write_period = (maxSamples>0) ?
+      (int) ceil( (double) nsteps / (double) maxSamples) : 1;
     auto fileFormat = fmigo::globals::fileFormat;
     //run
     while ((endTime < 0 || step < nsteps) && master->running) {

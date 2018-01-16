@@ -795,7 +795,7 @@ int main(int argc, char *argv[] ) {
     //switch to running mode, pause if we should
     master->initing = false;
     master->running = true;
-    master->paused = startPaused;
+    master->paused = startPaused; 
     master->resetT1();
 
     fmigo::globals::timer.dont_rotate = false;
@@ -804,6 +804,8 @@ int main(int argc, char *argv[] ) {
     /// reduce amount of output if wanted. 
     int write_period = (maxSamples>0) ?
       (int) ceil( (double) nsteps / (double) maxSamples) : 1;
+    
+    
     auto fileFormat = fmigo::globals::fileFormat;
     //run
     while ((endTime < 0 || step < nsteps) && master->running) {

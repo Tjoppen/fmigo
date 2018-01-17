@@ -2,6 +2,7 @@
 #define FMIGO_TIMER_H
 
 #include <chrono>
+#include <string>
 #include <map>
 
 namespace fmigo {

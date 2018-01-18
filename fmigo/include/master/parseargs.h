@@ -7,6 +7,7 @@
 #include <vector>
 #include <deque>
 #include <map>
+#include <set>
 #include "common/CSV-parser.h"
 
 namespace fmitcp_master {
@@ -55,13 +56,19 @@ enum FILEFORMAT {
     none,   // special output format meaning "don't printf() anything"
 };
 
-enum METHOD {
-    jacobi,
-    gs,
-    me
+fmi2_base_type_enu_t type_from_char(std::string type);
+
+
+class Rend {
+public:
+    //FMUs that need to be done before this rend will trigger its children
+    std::set<int> parents;
+
+    //child FMUs that will be triggered
+    std::set<int> children;
 };
 
-fmi2_base_type_enu_t type_from_char(std::string type);
+std::string executionOrderToString(const std::vector<Rend>& rends);
 
 /**
  * @brief Parses the command line arguments and stores in the given variable pointer targets.
@@ -80,9 +87,8 @@ void parseArguments( int argc,
                     char* csv_separator,
                     std::string *outFilePath,
                     enum FILEFORMAT * fileFormat,
-                    enum METHOD * method,
                     int * realtimeMode,
-                    std::vector<int> *stepOrder,
+                    std::vector<Rend> *executionOrder,
                     std::vector<int> *fmuVisibilities,
                     std::vector<strongconnection> *strongConnections,
                     std::string *hdf5Filename,

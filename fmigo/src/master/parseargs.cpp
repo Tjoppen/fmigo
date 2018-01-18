@@ -17,6 +17,7 @@
 
 #include "master/parseargs.h"
 #include "master/globals.h"
+#include <expat.h>
 
 using namespace fmitcp_master;
 using namespace common;
@@ -127,6 +128,308 @@ static deque<string> escapeSplit(string str, char delim) {
   return ret;
 }
 
+
+/**
+ * ExecutionOrder stuff starts here.
+ * There's two stages: first the ExecutionOrder XML is parsed.
+ * The parser makes use of expat and can take ExecutionOrder XML with or without namespaces.
+ * In other words both of the following strings parse to the same thing:
+ *
+ *  <fmigo:p xmlns:fmigo="http://umit.math.umu.se/FmiGo.xsd"><fmigo:f>0</fmigo:f><fmigo:f>1</fmigo:f></fmigo:p>
+ *
+ * and
+ *
+ *  <p><f>0</f><f>1</f></p>
+ *
+ * After the parsing stage the resulting ExecutionOrder tree in memory is transformed to the rendezvous structure needed by StrongMaster.
+ */
+
+struct Serial;
+
+/**
+ * Since order doesn't matter for parallel execution groups we can collect FMU indices and serials neatly in this struct.
+ */
+struct Parallel {
+    std::set<int> fmus;
+    std::vector<Serial> serials;
+};
+
+/**
+ * Order is significant for serial execution groups.
+ * Since something like <f/><s/><f/> must be kept track of in that order we have SerialElement as kind of a union between int and Parallel.
+ * We can't use an actual union however since Parallel has a non-trivial destructor.
+ */
+struct SerialElement {
+    Parallel p;
+    int f;
+    bool is_p; //If true, use p. If false, use f.
+};
+
+struct Serial {
+    std::vector<SerialElement> elements;
+};
+
+/**
+ * Expat parser state
+ */
+struct ParserStruct {
+    ParserStruct() {
+        depth = 0;
+        text = 0;
+        size = 0;
+        pointers[0] = &p;
+    }
+
+    int depth;
+
+    //element text content. used for parsing <f>
+    char *text;
+    size_t size;
+
+    //the structure that we're parsing
+    Parallel p;
+
+    //This is a stack of pointers into ParserStruct::p.
+    //We don't need to keep more pointers than this since parsing is done depth-first.
+    //Additionally, a push_back on Parallel::serials or Serial::elements would invalidate the associated pointer,
+    //if were doing breadth-first parsing.
+    //Finally, since we know the nesting is alternating <p> and <s>, we let even indices mean Parallel* and odd indices mean Serial*
+#define MAX_DEPTH 256
+    void *pointers[MAX_DEPTH];
+};
+
+static void freeMemory(ParserStruct *state) {
+    free(state->text);
+    state->text = NULL;
+    state->size = 0;
+}
+
+//checks if tag is <expected> or <fmigo:expected> aka <http://umit.math.umu.se/FmiGo.xsd:expected>
+#define NS_SEPARATOR ':'
+static bool tagMatches(const char *tag, const char *expected) {
+    if (!strcmp(tag, expected)) {
+        return true;
+    } else {
+        ostringstream oss;
+        oss << "http://umit.math.umu.se/FmiGo.xsd" << NS_SEPARATOR << expected;
+        return oss.str() == tag;
+    }
+}
+
+static void startElement(void *opaque, const XML_Char *name, const XML_Char **atts)
+{
+    ParserStruct *state = (ParserStruct*)opaque;
+
+    if (tagMatches(name, "f")) {
+        //<f>
+        //not much to do except NULL the pointer at this level in case we want to print it
+        //this makes valgrind happier
+        state->pointers[state->depth] = NULL;
+    } else {
+        if (state->depth % 2 == 0) {
+            //<p>, might be root element
+            if (!tagMatches(name, "p")) {
+                fatal("Expected <p> tag at depth %i, got <%s>\n", state->depth, name);
+            }
+            if (state->depth > 0) {
+                //definitely <s><p>
+                //allocate new <p>-type SerialElement in Serial one level up in the stack
+                Serial *s = (Serial*)state->pointers[state->depth-1];
+                SerialElement se;
+                se.is_p = true;
+                s->elements.push_back(se);
+                state->pointers[state->depth] = &s->elements[s->elements.size()-1].p;
+            } //else root element, no need to do anything since it is already allocated
+        } else {
+            //<p><s>
+            if (!tagMatches(name, "s")) {
+                fatal("Expected <s> tag at depth %i, got <%s>\n", state->depth, name);
+            }
+            //opposite here, allocate a new Serial in the Parallel one level up (possibly root <p>)
+            Parallel *p = (Parallel*)state->pointers[state->depth-1];
+            Serial s;
+            p->serials.push_back(s);
+            state->pointers[state->depth] = &p->serials[p->serials.size()-1];
+        }
+    }
+
+    state->depth++;
+    if (state->depth >= MAX_DEPTH) {
+        fatal("Stepping order spec too deep. Maximum depth is %i\n", MAX_DEPTH);
+    }
+    freeMemory(state);
+}
+
+static void characterDataHandler(void *opaque, const XML_Char *s, int len)
+{
+    ParserStruct *state = (ParserStruct*)opaque;
+
+    //may be multiple times with non-null terminated string data, so we need to keep accumulating + terminating
+    if ((state->text = (char*)realloc(state->text, state->size + len + 1)) == NULL) {
+        fatal("Failed to realloc() in characterDataHandler\n");
+    }
+
+    memcpy(&state->text[state->size], s, len);
+    state->size += len;
+    state->text[state->size] = 0;
+}
+
+static void endElement(void *opaque, const XML_Char *name)
+{
+    ParserStruct *state = (ParserStruct*)opaque;
+    state->depth--;
+
+    if (tagMatches(name, "f")) {
+        //</f>
+        if (state->size == 0) {
+            fatal("<f> tag missing content\n");
+        }
+
+        int f = atoi(state->text);
+
+        //put parsed value in the right place
+        if (state->depth % 2 == 1) {
+            //%s =  0  1
+            //     <p><f></f>
+            Parallel *p = (Parallel*)state->pointers[state->depth-1];
+            p->fmus.insert(f);
+        } else {
+            //%s =  0  1
+            //     <s><f></f>
+            Serial *s = (Serial*)state->pointers[state->depth-1];
+            SerialElement se;
+            se.f = f;
+            se.is_p = false;
+            s->elements.push_back(se);
+        }
+    } else {
+        if (state->depth % 2 == 0) {
+            //</p>
+        } else {
+            //</s>
+        }
+    }
+
+    freeMemory(state);
+}
+
+struct TraverseRet {
+    std::set<int> head;
+    std::set<int> tail;
+};
+
+TraverseRet traverse(Serial s, std::vector<Rend> *rends, int parent_rend);
+
+TraverseRet traverse(Parallel p, std::vector<Rend> *rends, int parent_rend) {
+    TraverseRet ret;
+    ret.head = p.fmus;
+    ret.tail = p.fmus;
+
+    for (Serial s : p.serials) {
+        TraverseRet ret2 = traverse(s, rends, parent_rend);
+        for (int i : ret2.head) {
+            ret.head.insert(i);
+        }
+        for (int i : ret2.tail) {
+            ret.tail.insert(i);
+        }
+    }
+
+    return ret;
+}
+
+TraverseRet traverse(Serial s, std::vector<Rend> *rends, int parent_rend) {
+    TraverseRet ret;
+    if (s.elements.size() <= 1) {
+        fatal("serial elements in execution order must have two or more elements, got %zu\n", s.elements.size());
+    }
+    size_t x;
+    for (x = 0; x < s.elements.size() - 1; x++) {
+        TraverseRet ret2;
+        if (s.elements[x].is_p) {
+            ret2 = traverse(s.elements[x].p, rends, parent_rend);
+        } else {
+            ret2.head.insert(s.elements[x].f);
+            ret2.tail.insert(s.elements[x].f);
+        }
+
+        //populate & emit rend with black set
+        Rend r;
+        r.parents = ret2.tail;
+        for (int i : ret2.head) {
+            (*rends)[parent_rend].children.insert(i);
+        }
+        rends->push_back(r);
+        parent_rend = rends->size() - 1;
+    }
+
+    //handle last element
+    if (s.elements[x].is_p) {
+        TraverseRet ret2 = traverse(s.elements[x].p, rends, parent_rend);
+        ret.tail = ret2.tail;
+        (*rends)[parent_rend].children = ret2.tail;
+    } else {
+        ret.tail.insert(s.elements[x].f);
+        (*rends)[parent_rend].children.insert(s.elements[x].f);
+    }
+
+    return ret;
+}
+
+std::vector<Rend> executionOrderFromXML(std::string xml) {
+    //first parse the XML into tree form
+    //deal with namespaces
+    XML_Parser parser = XML_ParserCreateNS(NULL, NS_SEPARATOR);
+    ParserStruct state;
+
+    XML_SetUserData(parser, &state);
+    XML_SetElementHandler(parser, startElement, endElement);
+    XML_SetCharacterDataHandler(parser, characterDataHandler);
+
+    if (XML_Parse(parser, xml.c_str(), xml.length(), 1) == XML_STATUS_ERROR) {
+      fatal("%s at line %lu\n",
+            XML_ErrorString(XML_GetErrorCode(parser)),
+            XML_GetCurrentLineNumber(parser));
+    }
+    XML_ParserFree(parser);
+
+    //traverse the tree
+    std::vector<Rend> rends;
+    rends.push_back(Rend());
+    TraverseRet ret = traverse(state.p, &rends, 0);
+    for (int i : ret.head) {
+        rends[0].children.insert(i);
+    }
+
+    Rend r;
+    r.parents = ret.tail;
+    rends.push_back(r);
+
+    return rends;
+}
+
+std::string fmitcp_master::executionOrderToString(const std::vector<Rend>& rends) {
+    ostringstream oss;
+    int x = 0;
+    for (Rend r : rends) {
+        oss << "rend " << x << endl;
+        for (int i : r.parents) {
+            oss << " parent " << i << endl;
+        }
+        for (int i : r.children) {
+            oss << " child " << i << endl;
+        }
+        x++;
+    }
+    return oss.str();
+}
+
+enum METHOD {
+    method_none,   // not specified
+    jacobi, // backward compatibility: -g 0|1|2|...
+    gs,     // backward compatibility: -g 0,1,2,...
+};
+
 void fmitcp_master::parseArguments( int argc,
                     char *argv[],
                     std::vector<std::string> *fmuFilePaths,
@@ -138,9 +441,8 @@ void fmitcp_master::parseArguments( int argc,
                     char* csv_separator,
                     std::string *outFilePath,
                     enum FILEFORMAT * fileFormat,
-                    enum METHOD * method,
                     int * realtimeMode,
-                    std::vector<int> *stepOrder,
+                    std::vector<Rend> *executionOrder,
                     std::vector<int> *fmuVisibilities,
                     vector<strongconnection> *strongConnections,
                     string *hdf5Filename,
@@ -156,6 +458,8 @@ void fmitcp_master::parseArguments( int argc,
                     int* maxSamples ) {
     int index, c;
     opterr = 0;
+    METHOD method = method_none;
+    vector<int> g;  //-g
 
 #ifdef USE_MPI
     //world = master at 0, FMUs at 1..N
@@ -173,7 +477,7 @@ void fmitcp_master::parseArguments( int argc,
 
     vector<char*> argv2 = make_char_vector(argvstore);
 
-    while ((c = getopt (argv2.size(), argv2.data(), "rl:ht:c:d:s:o:p:f:m:g:w:C:5:F:NM:a:z:ZLHV:DeS:")) != -1){
+    while ((c = getopt (argv2.size(), argv2.data(), "rl:ht:c:d:s:o:p:f:m:g:w:C:5:F:NM:a:z:ZLHV:DeS:G:")) != -1){
         int n, skip, l, cont, i, numScanned, stop, vis;
         deque<string> parts;
         if (optarg) parts = escapeSplit(optarg, ':');
@@ -300,12 +604,11 @@ void fmitcp_master::parseArguments( int argc,
             break;
 
         case 'm':
+            warning("-m is deprecated (method = %s)\n", optarg);
             if(strcmp(optarg,"jacobi") == 0){
-                *method = jacobi;
+                method = jacobi;
             } else if(strcmp(optarg,"gs") == 0){
-                *method = gs;
-            } else if(strcmp(optarg,"me") == 0){
-                *method = me;
+                method = gs;
             } else {
                 fatal("Method \"%s\" not recognized. Use \"jacobi\" or \"gs\".\n",optarg);
             }
@@ -320,30 +623,21 @@ void fmitcp_master::parseArguments( int argc,
             break;
 
         case 'g':
-            // Step order spec
-            n=0;
-            skip=0;
-            l=strlen(optarg);
-            cont=1;
-            i=0;
-            int scannedInt;
-            stop = 2;
-            while(cont && (n=sscanf(&optarg[skip],"%d", &scannedInt))!=-1 && skip<l){
-                // Now skip everything before the n'th comma
-                char* pos = strchr(&optarg[skip],',');
-                if(pos==NULL){
-                    stop--;
-                    if(stop == 0){
-                        cont=0;
-                        break;
-                    }
-                    stepOrder->push_back(scannedInt);
-                    break;
-                }
-                stepOrder->push_back(scannedInt);
-                skip += pos-&optarg[skip]+1; // Dunno why this works... See http://www.cplusplus.com/reference/cstring/strchr/
-                i++;
+            // Old step order spec
+            if (executionOrder->size() != 0) {
+                fatal("Do not use -g and -G together\n");
             }
+            for (string s : escapeSplit(optarg, ',')) {
+                g.push_back(atoi(s.c_str()));
+            }
+            break;
+
+        case 'G':
+            // XML based step order
+            if (g.size() != 0) {
+                fatal("Do not use -g and -G together\n");
+            }
+            *executionOrder = executionOrderFromXML(optarg);
             break;
 
         case 'h':
@@ -562,14 +856,35 @@ void fmitcp_master::parseArguments( int argc,
         checkFMUIndex(it, i, numFMUs);
     }
 
-    // Default step order is all FMUs in their current order
-    if (stepOrder->size() == 0){
-        for(c=0; c<(int)numFMUs; c++){
-            stepOrder->push_back(c);
+    if (method == jacobi || (method == method_none && executionOrder->size() == 0)) {
+        if (g.size() != 0) {
+            fatal("You may not use -g and -m jacobi together\n");
         }
-    } else if (stepOrder->size() != numFMUs) {
-        fatal("Step order/FMU count mismatch: %zu vs %zu\n", stepOrder->size(), numFMUs);
-    }
+        debug("generate jacobi\n");
+        *executionOrder = vector<Rend>(2, Rend());
+        for (size_t x = 0; x < numFMUs; x++) {
+            (*executionOrder)[0].children.insert(x);
+            (*executionOrder)[1].parents.insert(x);
+        }
+    } else if (method == gs) {
+        if (g.size() == 0) {
+            //default stepOrders
+            for (size_t x = 0; x < numFMUs; x++) {
+                g.push_back(x);
+            }
+        }
+        if (g.size() != numFMUs) {
+            fatal("The number of entries in -g (%i) does not match the number of FMUs (%i)\n", (int)g.size(), (int)numFMUs);
+        }
 
-    return; // OK
+        //construct serial execution order
+        //g[0] -> g[1] -> ... -> g[N-1]
+        debug("generate gs\n");
+        *executionOrder = vector<Rend>(numFMUs+1, Rend());
+        for (size_t x = 0; x < numFMUs; x++) {
+            (*executionOrder)[x].children.insert(g[x]);
+            (*executionOrder)[x+1].parents.insert(g[x]);
+        }
+
+    }
 }

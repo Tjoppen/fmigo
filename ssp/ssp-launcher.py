@@ -453,6 +453,7 @@ class SystemStructure:
         # Return None if no fmigo:MasterArguments
         self.timestep = None
         self.duration = None
+        self.executionorder = None
 
         annotations = find_elements(root, 'ssd:Annotations', 'ssc:Annotation')
         for annotation in annotations[1]:
@@ -475,6 +476,13 @@ class SystemStructure:
                     arg.text = None
                     remove_if_empty(annotation[0], arg)
 
+                remove_if_empty(annotation, annotation[0])
+            elif type == 'se.umu.math.umit.fmigo-master.executionorder':
+                if 'fmigo' in schemas:
+                    schemas['fmigo'].assertValid(annotation[0])
+
+                self.executionorder = annotation[0][0]
+                annotation[0].remove(self.executionorder)
                 remove_if_empty(annotation, annotation[0])
             else:
                 eprint('WARNING: Found unknown Annotation of type "%s"' % type)
@@ -901,6 +909,36 @@ def parse_ssp(ssp_path, cleanup_zip = True, residual_is_error = False):
 
         kinematicconns.extend(['-C', ','.join(conn)])
 
+    executionorder = []
+    if not root_system.structure.executionorder is None:
+        # Set for keeping track of which FMUs we've seen in the ExecutionOrder
+        fmuids = set()
+
+        def traverse(p, tag):
+            # p -> s -> p ...
+            sp = 's' if tag == 'p' else 'p'
+            for child in p:
+                if child.tag == '{%s}%s' % (ns['fmigo'], sp):
+                    traverse(child, sp)
+                elif child.tag == '{%s}c' % ns['fmigo']:
+                    # <c> Component. Resolve to int, change to <f>
+                    fmuid = fmumap[child.text.strip()]
+                    if fmuid in fmuids:
+                        raise SSPException('%s is specified in ExecutionOrder more than once' % child.text)
+                    fmuids.add(fmuid)
+                    child.text = '%i' % fmuid
+                    child.tag = '{%s}f' % ns['fmigo']
+                else:
+                    raise SSPException('Execution order has unknown tag <%s> inside <%s>' % (child.tag, tag))
+
+        # root_system.structure.executionorder is <p>
+        traverse(root_system.structure.executionorder, 'p');
+
+        if len(fmuids) != len(fmumap):
+            raise SSPException('You must specify every FMU if ExecutionOrder is used')
+
+        executionorder = ['-G', etree.tostring(root_system.structure.executionorder).decode()]
+
     # -N only if holonomic=false
     holonomic_arg = ['-N'] if holonomic is False else []
 
@@ -922,6 +960,7 @@ def parse_ssp(ssp_path, cleanup_zip = True, residual_is_error = False):
     'timestep':         root_system.structure.timestep, # None if no fmigo:MasterArguments
     'duration':         root_system.structure.duration, # None if no fmigo:MasterArguments
     'masterarguments':  root_system.structure.arguments + holonomic_arg,
+    'executionorder':   executionorder,
     }
 
     #return flatconns, flatparams, kinematicconns, csvs, unzipped_ssp, d, \
@@ -1100,8 +1139,9 @@ if __name__ == '__main__':
       ssp_dict['kinematicconns'] +\
       ssp_dict['csvs'] +\
       ssp_dict['masterarguments'] +\
+      ssp_dict['executionorder'] +\
       parse.args
-    pipeinput = " ".join(['"%s"' % s for s in pipelist])
+    pipeinput = " ".join(['"%s"' % s.replace('"','\\"') for s in pipelist])
     eprint("(cd %s && %s <<< '%s')" % (d, " ".join(args), pipeinput))
 
     if parse.dry_run:

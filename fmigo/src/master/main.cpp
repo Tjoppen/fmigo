@@ -581,6 +581,15 @@ static void run_server(string fmuPath, string hdf5Filename) {
 }
 #endif
 
+static bool hasModelExchangeFMUs(vector<FMIClient*> clients) {
+    for(FMIClient *client : clients) {
+        if (client->getFmuKind() == fmi2_fmu_kind_me) {
+            return true;
+        }
+    }
+    return false;
+}
+
 int main(int argc, char *argv[] ) {
     //count everything from here to before the main loop into "setup"
     fmigo::globals::timer.dont_rotate = true;
@@ -604,9 +613,8 @@ int main(int argc, char *argv[] ) {
     vector<deque<string> > params;
     char csv_separator = ',';
     string outFilePath = "";
-    METHOD method = jacobi;
     int realtimeMode = 0;
-    vector<int> stepOrder;
+    vector<Rend> executionOrder;
     vector<int> fmuVisibilities;
     vector<strongconnection> scs;
     string fieldnameFilename;
@@ -621,7 +629,7 @@ int main(int argc, char *argv[] ) {
     parseArguments(
             argc, argv, &fmuURIs, &connections, &params, &endTime, &timeStep,
             &fmigo_loglevel, &csv_separator, &outFilePath, &fmigo::globals::fileFormat,
-            &method, &realtimeMode, &stepOrder, &fmuVisibilities,
+            &realtimeMode, &executionOrder, &fmuVisibilities,
             &scs, &hdf5Filename, &fieldnameFilename, &holonomic, &compliance,
             &command_port, &results_port, &startPaused, &solveLoops, &useHeadersInCSV, &csv_fmu, &maxSamples
     );
@@ -678,23 +686,23 @@ int main(int argc, char *argv[] ) {
 
     connectionNamesToVr(connections,scs,clients);
     vector<WeakConnection> weakConnections = setupWeakConnections(connections, clients);
-    Solver *solver = setupConstraintsAndSolver(scs, clients);
 
     BaseMaster *master = NULL;
     string fieldnames = getFieldnames(clients);
 
-    if (scs.size()) {
-        if (method != jacobi) {
-            fatal("Can only do Jacobi stepping for weak connections when also doing strong coupling\n");
+    if (hasModelExchangeFMUs(clients)) {
+        if (scs.size()) {
+            fatal("Cannot do ModelExchange and kinematic coupling at the same time currently\n");
         }
-
-        solver->setSpookParams(relaxation,compliance,timeStep);
-        StrongMaster *sm = new StrongMaster(context, clients, weakConnections, solver, holonomic);
+        master = (BaseMaster*)new JacobiMaster(context, clients, weakConnections);
+    } else {
+        Solver *solver = setupConstraintsAndSolver(scs, clients);
+        if (solver) {
+            solver->setSpookParams(relaxation,compliance,timeStep);
+        }
+        StrongMaster *sm = new StrongMaster(context, clients, weakConnections, solver, holonomic, executionOrder);
         master = sm;
         fieldnames += sm->getForceFieldnames();
-    } else {
-        master = (method == gs) ?           (BaseMaster*)new GaussSeidelMaster(context, clients, weakConnections, stepOrder) :
-                                            (BaseMaster*)new JacobiMaster(context, clients, weakConnections);
     }
 
     master->zmqControl = command_port > 0;

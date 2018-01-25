@@ -1071,6 +1071,7 @@ if __name__ == '__main__':
 
     # If we are working with TCP, create tcp://localhost:port for all given local hosts
     # If no ports are given then try to find some free TCP ports
+    popens = []
     if parse.ports != None:
         ports = []
         tcpIPport = []
@@ -1113,7 +1114,7 @@ if __name__ == '__main__':
         # Everything looks OK; start servers
         for i in range(len(fmus)):
             fmigo_server = get_fmu_server(fmus[i].path, 'fmigo-server')
-            subprocess.Popen([fmigo_server,'-p', str(ports[i]), fmus[i].relpath(d)], cwd=d)
+            popens.append(subprocess.Popen([fmigo_server,'-p', str(ports[i]), fmus[i].relpath(d)], cwd=d))
 
         #read connections and parameters from stdin, since they can be quite many
         #stdin because we want to avoid leaving useless files on the filesystem
@@ -1151,6 +1152,10 @@ if __name__ == '__main__':
         p = subprocess.Popen(args, stdin=subprocess.PIPE)
         p.communicate(input=pipeinput.encode('utf-8'))
         ret = p.returncode  #ret can be None
+
+        # Wait for server Popen()s to terminate
+        for p in popens:
+          p.wait()
 
     if ret == 0:
         if ssp_dict['unzipped_ssp']:

@@ -119,7 +119,8 @@ namespace fmitcp_master {
         void handleZmqControl();
 
         void queueValueRequests();
-        void deleteCachedValues();
+        //if cset_set == true then only delete values for FMUs whose ID is in cset
+        void deleteCachedValues(bool cset_set = false, const std::set<int>& cset = std::set<int>());
     };
 };
 

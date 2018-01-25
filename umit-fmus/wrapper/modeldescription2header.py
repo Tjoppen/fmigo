@@ -110,8 +110,7 @@ def modeldescription2header(args_xml, args_wrapper, file=sys.stdout):
           if meFmuType:
               if 'derivative' in R.attrib:
                   states[vr] = (SV[int(R.attrib['derivative']) - 1].attrib['name'], start)
-                  start = float(R.attrib['derivative']) if 'derivative' in R.attrib else 0
-                  derivatives[vr] = (name, start)
+                  derivatives[vr] = name
           reals[vr] = (name, start, should_output)
 
       elif I != None or E != None:
@@ -247,7 +246,7 @@ static const modelDescription_t defaults = {
 #define DERIVATIVES { %s }
 ''' % (
       ', '.join(['VR_'+value[0].upper() for key,value in states.items()]),
-      ', '.join(['VR_'+value[0].upper() for key,value in derivatives.items()]),
+      ', '.join(['VR_'+value.upper() for key,value in derivatives.items()]),
       ), file=file)
       print('static void update_all(modelDescription_t *md);', file=file)
 

@@ -135,18 +135,19 @@ if(WIN32)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/3dparty/zeromq/4.2.0-master/include) #zmq.hpp
     link_directories("${ZMQ_PREFIX}/src/zmq-ext-build/lib/${CMAKE_BUILD_TYPE}")
 
-elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/3dparty/zeromq/4.2.0-master/include)
 else(WIN32)
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/3dparty/zeromq/4.2.0-master/include)
     # TODO: tell the user what's needed?
-	include(FindProtobuf)
-	find_package(Protobuf REQUIRED)
-	include_directories(${PROTOBUF_INCLUDE_DIR})
-	link_directories(${PROTOBUF_LIBRARY_DIR})
+    include(FindProtobuf)
+    find_package(Protobuf REQUIRED)
+    include_directories(${PROTOBUF_INCLUDE_DIR})
+    link_directories(${PROTOBUF_LIBRARY_DIR})
 
-    include_directories(/usr/include/hdf5/serial)
-    include_directories(/usr/include/suitesparse)
-    link_directories(/usr/lib/x86_64-linux-gnu/hdf5/serial)
+    if (NOT APPLE)
+        include_directories(/usr/include/hdf5/serial)
+        include_directories(/usr/include/suitesparse)
+        link_directories(/usr/lib/x86_64-linux-gnu/hdf5/serial)
+    endif()
 endif(WIN32)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/strong-coupling-core/include)
@@ -159,6 +160,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_VERSION}/src/Util/i
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_VERSION}/src/XML/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_VERSION}/src/ZIP/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_VERSION}/ThirdParty/FMI/default)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_VERSION}/ThirdParty/Expat/expat-2.1.0/lib)
 
 if (APPLE)
     # For Macports
@@ -169,6 +171,10 @@ if (APPLE)
 
     if (EXISTS /opt/local/lib)
         link_directories(/opt/local/lib)
+    endif()
+
+    if (EXISTS /usr/local/lib)
+        link_directories(/usr/local/lib)
     endif()
 
 endif()

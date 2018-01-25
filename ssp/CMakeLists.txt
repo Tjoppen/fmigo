@@ -77,9 +77,7 @@ install(FILES
   FmiGo.xsd
   DESTINATION bin)
 
-# I'm not sure why these don't build with GPL disabled, but this
-# seems to be the case with 64-bit builds on MSVC12 at least
-if (USE_GPL AND BUILD_FMUS)
+if (BUILD_FMUS)
   # We don't have very many FMUs in our SSPs, so we can list each
   # one without having to use a generator to parse SystemStructure.ssd
   add_ssp(ssp-test                        SpringChainSystem         clutch2)
@@ -90,4 +88,5 @@ if (USE_GPL AND BUILD_FMUS)
   add_ssp(examples/parameters-inline      ParametersInline          clutch2)
   add_ssp(examples/parameters-external    ParametersExternal        clutch2)
   add_ssp(examples/strange_variable_names StrangeVarNames           strange_variable_names)
+  add_ssp(examples/execution-order        ExecutionOrder            clutch2)
 endif ()

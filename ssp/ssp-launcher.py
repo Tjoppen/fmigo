@@ -453,6 +453,7 @@ class SystemStructure:
         # Return None if no fmigo:MasterArguments
         self.timestep = None
         self.duration = None
+        self.executionorder = None
 
         annotations = find_elements(root, 'ssd:Annotations', 'ssc:Annotation')
         for annotation in annotations[1]:
@@ -475,6 +476,13 @@ class SystemStructure:
                     arg.text = None
                     remove_if_empty(annotation[0], arg)
 
+                remove_if_empty(annotation, annotation[0])
+            elif type == 'se.umu.math.umit.fmigo-master.executionorder':
+                if 'fmigo' in schemas:
+                    schemas['fmigo'].assertValid(annotation[0])
+
+                self.executionorder = annotation[0][0]
+                annotation[0].remove(self.executionorder)
                 remove_if_empty(annotation, annotation[0])
             else:
                 eprint('WARNING: Found unknown Annotation of type "%s"' % type)
@@ -901,6 +909,36 @@ def parse_ssp(ssp_path, cleanup_zip = True, residual_is_error = False):
 
         kinematicconns.extend(['-C', ','.join(conn)])
 
+    executionorder = []
+    if not root_system.structure.executionorder is None:
+        # Set for keeping track of which FMUs we've seen in the ExecutionOrder
+        fmuids = set()
+
+        def traverse(p, tag):
+            # p -> s -> p ...
+            sp = 's' if tag == 'p' else 'p'
+            for child in p:
+                if child.tag == '{%s}%s' % (ns['fmigo'], sp):
+                    traverse(child, sp)
+                elif child.tag == '{%s}c' % ns['fmigo']:
+                    # <c> Component. Resolve to int, change to <f>
+                    fmuid = fmumap[child.text.strip()]
+                    if fmuid in fmuids:
+                        raise SSPException('%s is specified in ExecutionOrder more than once' % child.text)
+                    fmuids.add(fmuid)
+                    child.text = '%i' % fmuid
+                    child.tag = '{%s}f' % ns['fmigo']
+                else:
+                    raise SSPException('Execution order has unknown tag <%s> inside <%s>' % (child.tag, tag))
+
+        # root_system.structure.executionorder is <p>
+        traverse(root_system.structure.executionorder, 'p');
+
+        if len(fmuids) != len(fmumap):
+            raise SSPException('You must specify every FMU if ExecutionOrder is used')
+
+        executionorder = ['-G', etree.tostring(root_system.structure.executionorder).decode()]
+
     # -N only if holonomic=false
     holonomic_arg = ['-N'] if holonomic is False else []
 
@@ -922,6 +960,7 @@ def parse_ssp(ssp_path, cleanup_zip = True, residual_is_error = False):
     'timestep':         root_system.structure.timestep, # None if no fmigo:MasterArguments
     'duration':         root_system.structure.duration, # None if no fmigo:MasterArguments
     'masterarguments':  root_system.structure.arguments + holonomic_arg,
+    'executionorder':   executionorder,
     }
 
     #return flatconns, flatparams, kinematicconns, csvs, unzipped_ssp, d, \
@@ -1019,7 +1058,12 @@ if __name__ == '__main__':
 
     parse = parser.parse_args()
 
-    ssp_dict = parse_ssp(parse.ssp, False, parse.residual_is_error)
+    try:
+        ssp_dict = parse_ssp(parse.ssp, False, parse.residual_is_error)
+    except Exception as e:
+        print('Exception during SSP parsing: {}'.format(e))
+        raise e
+
     d = ssp_dict['temp_dir']
 
     duration = ssp_dict['duration'] if not ssp_dict['duration'] is None else 10
@@ -1027,6 +1071,7 @@ if __name__ == '__main__':
 
     # If we are working with TCP, create tcp://localhost:port for all given local hosts
     # If no ports are given then try to find some free TCP ports
+    popens = []
     if parse.ports != None:
         ports = []
         tcpIPport = []
@@ -1069,7 +1114,7 @@ if __name__ == '__main__':
         # Everything looks OK; start servers
         for i in range(len(fmus)):
             fmigo_server = get_fmu_server(fmus[i].path, 'fmigo-server')
-            subprocess.Popen([fmigo_server,'-p', str(ports[i]), fmus[i].relpath(d)], cwd=d)
+            popens.append(subprocess.Popen([fmigo_server,'-p', str(ports[i]), fmus[i].relpath(d)], cwd=d))
 
         #read connections and parameters from stdin, since they can be quite many
         #stdin because we want to avoid leaving useless files on the filesystem
@@ -1095,8 +1140,9 @@ if __name__ == '__main__':
       ssp_dict['kinematicconns'] +\
       ssp_dict['csvs'] +\
       ssp_dict['masterarguments'] +\
+      ssp_dict['executionorder'] +\
       parse.args
-    pipeinput = " ".join(['"%s"' % s for s in pipelist])
+    pipeinput = " ".join(['"%s"' % s.replace('"','\\"') for s in pipelist])
     eprint("(cd %s && %s <<< '%s')" % (d, " ".join(args), pipeinput))
 
     if parse.dry_run:
@@ -1106,6 +1152,10 @@ if __name__ == '__main__':
         p = subprocess.Popen(args, stdin=subprocess.PIPE)
         p.communicate(input=pipeinput.encode('utf-8'))
         ret = p.returncode  #ret can be None
+
+        # Wait for server Popen()s to terminate
+        for p in popens:
+          p.wait()
 
     if ret == 0:
         if ssp_dict['unzipped_ssp']:

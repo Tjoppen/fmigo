@@ -1,4 +1,9 @@
-cmake_minimum_required(VERSION 2.8)
+if (WIN32)
+  # Needed due to SOURCE_SUBDIR
+  cmake_minimum_required(VERSION 3.7.2)
+else ()
+  cmake_minimum_required(VERSION 2.8)
+endif ()
 
 #enable testing
 enable_testing()

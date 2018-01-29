@@ -419,6 +419,7 @@
         causality="parameter"
         variability="fixed">
       <Integer start="2"/>
+
     </ScalarVariable>
     <!-- index="39"-->
     <ScalarVariable 
@@ -454,6 +455,29 @@
       <Boolean start="false"/>
     </ScalarVariable>   
 
+
+
+    <!-- index="????"-->
+    <ScalarVariable 
+        name="reltol"
+        valueReference="2001"
+        description="Relative tolerance"
+        causality="parameter"
+        variability="fixed">
+      <Real start="1e-6"/>
+    </ScalarVariable>   
+
+    <!-- index="????"-->
+    <ScalarVariable 
+        name="abstol"
+        valueReference="2002"
+        description="Absolute tolerance"
+        causality="parameter"
+        variability="fixed">
+      <Real start="1e-6"/>
+    </ScalarVariable>   
+
+    
   </ModelVariables>
 
 

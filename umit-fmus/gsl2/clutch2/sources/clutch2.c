@@ -343,13 +343,16 @@ static fmi2Status clutch_init(ModelInstance *comp) {
     fprintf(stderr, "Invalid choice of integrator : %d.  Defaulting to rkf45. \n", s->md.integrator); 
     s->md.integrator = rkf45;
   }
-  s->simulation.sim = cgsl_init_simulation(
+
+  s->simulation.sim = cgsl_init_simulation_tolerance(
     cgsl_model_default_alloc(get_initial_states_size(s), initials, s, clutch, jac_clutch, NULL, sync_out, 0),
-    //rkf45, 1e-5, 0, 0, s->md.octave_output, s->md.octave_output ? fopen("clutch2.m", "w") : NULL
-    s->md.integrator, 1e-6, 0, 0, s->md.octave_output, s->md.octave_output ? fopen(s->md.octave_output_file, "w") : NULL
-    );
+    s->md.integrator, 1e-6, 0, 0, s->md.octave_output, s->md.octave_output
+    ? fopen(s->md.octave_output_file, "w") : NULL,
+    s->md.reltol, s->md.abstol);
+
   s->simulation.last_gear = s->md.gear;
   s->simulation.delta_phi = 0;
+
   return fmi2OK;
 }
 

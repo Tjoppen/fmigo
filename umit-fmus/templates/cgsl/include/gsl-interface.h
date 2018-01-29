@@ -178,6 +178,18 @@ enum cgsl_integrator_ids
  *  \TODO: fix semantics for saving.  Use a filename
  *   instead of descriptor?  Open and close file automatically?
  */
+cgsl_simulation cgsl_init_simulation_tolerance(
+  cgsl_model * model, /** the model we work on */
+        enum cgsl_integrator_ids integrator, /** Integrator ID   */
+        double h,                    /** Initial time-step: must be non-zero, even  with variable step*/
+        int fixed_step,		     /** Boolean */
+        int save,		     /** Boolean */
+        int print,		     /** Boolean  */
+  FILE *f,		             /** File descriptor if 'save' is enabled  */
+  double reltol, double abstol
+  );
+
+  
 cgsl_simulation cgsl_init_simulation(
   cgsl_model * model, /** the model we work on */
         enum cgsl_integrator_ids integrator, /** Integrator ID   */

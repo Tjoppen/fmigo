@@ -134,17 +134,21 @@ int cgsl_step_to(void * _s,  double comm_point, double comm_step ) {
 void * cgsl_default_get_model_param(const cgsl_model *m){
     return m->parameters;
 }
+
+
 /**
  * Note: we use pass-by-value semantics for all structs anywhere possible.
  */
-cgsl_simulation cgsl_init_simulation(
+cgsl_simulation cgsl_init_simulation_tolerance(
   cgsl_model * model, /** the model we work on */
   enum cgsl_integrator_ids integrator,
   double h,           //must be non-zero, even with variable step
   int fixed_step,     //if non-zero, use a fixed step of h
   int save,
   int print,
-  FILE *f)
+  FILE *f,
+  double reltol,
+  double abstol)
 {
 
   cgsl_simulation sim;
@@ -152,7 +156,7 @@ cgsl_simulation cgsl_init_simulation(
   sim.model                  = model;
   sim.model->get_model_parameters = cgsl_default_get_model_param;
   sim.i.step_type            =  cgsl_get_integrator( integrator );
-  sim.i.control              = gsl_odeiv2_control_y_new (1e-6, 0.0); /** \TODO: IN-TEXT-DEFAULT  */
+  sim.i.control              = gsl_odeiv2_control_y_new (reltol, abstol); /** \TODO: IN-TEXT-DEFAULT  */
 
   /** pass model definition to gsl integration structure */
   sim.i.system.function      = model->function;
@@ -190,6 +194,22 @@ cgsl_simulation cgsl_init_simulation(
   return sim;
 
 }
+
+
+/**
+ * Note: we use pass-by-value semantics for all structs anywhere possible.
+ */
+cgsl_simulation cgsl_init_simulation(
+  cgsl_model * model, /** the model we work on */
+  enum cgsl_integrator_ids integrator,
+  double h,           //must be non-zero, even with variable step
+  int fixed_step,     //if non-zero, use a fixed step of h
+  int save,
+  int print,
+  FILE *f)
+  {
+    return cgsl_init_simulation_tolerance(model, integrator, h, fixed_step, save, print, f, 1e-6, 0.0);
+  }
 
 void cgsl_model_default_free(cgsl_model *model) {
     free(model->x);

@@ -455,7 +455,7 @@ void fmitcp_master::parseArguments( int argc,
                     bool *solveLoops,
                     bool *useHeadersInCSV,
                     fmigo_csv_fmu *csv_fmu,
-                    int* maxSamples ) {
+                    int* maxSamples, double *relaxation ) {
     int index, c;
     opterr = 0;
     METHOD method = method_none;
@@ -477,7 +477,7 @@ void fmitcp_master::parseArguments( int argc,
 
     vector<char*> argv2 = make_char_vector(argvstore);
 
-    while ((c = getopt (argv2.size(), argv2.data(), "rl:ht:c:d:s:o:p:f:m:g:w:C:5:F:NM:a:z:ZLHV:DeS:G:")) != -1){
+    while ((c = getopt (argv2.size(), argv2.data(), "rl:ht:c:d:s:o:p:f:m:g:w:C:5:F:NM:a:z:ZLHV:DeS:G:R")) != -1){
         int n, skip, l, cont, i, numScanned, stop, vis;
         deque<string> parts;
         if (optarg) parts = escapeSplit(optarg, ':');
@@ -700,6 +700,9 @@ void fmitcp_master::parseArguments( int argc,
 
         case 'M':
             *compliance = atof(optarg);
+            break;
+        case 'R':
+            *relaxation = atof(optarg);
             break;
 
         case 'a':

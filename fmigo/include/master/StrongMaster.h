@@ -62,9 +62,11 @@ public:
 
     //StrongMaster adds some extra columns to the CSV output, this returns the names of those columns
     //the returned strings begins with a space
-    std::string getForceFieldnames() const;
+    std::string getFieldNames() const;
 
     int getNumForceOutputs() const;
+
+  virtual void writeFields(bool last) ;
 };
 }
 

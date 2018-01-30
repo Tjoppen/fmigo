@@ -481,7 +481,7 @@ void StrongMaster::runIteration(double t, double dt) {
     }
 }
 
-string StrongMaster::getForceFieldnames() const {
+string StrongMaster::getFieldNames() const {
     char separator = fmigo::globals::getSeparator();
 
     ostringstream oss;
@@ -505,6 +505,8 @@ string StrongMaster::getForceFieldnames() const {
             }
         }
     }
+    if ( m_strongCouplingSolver )
+      oss << m_strongCouplingSolver->getViolationsNames(separator);
     return oss.str();
 }
 
@@ -523,4 +525,17 @@ int StrongMaster::getNumForceOutputs() const {
     }
   }
   return ret;
+}
+
+void StrongMaster::writeFields(bool last) {
+  if ( last ) {
+//finish off with zeroes for any extra forces
+    int n = getNumForceOutputs();
+    for (int i = 0; i < n; i++) {
+      fprintf(fmigo::globals::outfile, "%c0", fmigo::globals::getSeparator());
+    }
+  }
+    if (m_strongCouplingSolver)
+      m_strongCouplingSolver->writeViolations(fmigo::globals::outfile, fmigo::globals::getSeparator());
+
 }

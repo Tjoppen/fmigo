@@ -101,7 +101,7 @@ void parseArguments( int argc,
                     bool *solveLoops,
                     bool *useHeadersInCSV,
                      fmigo_csv_fmu *csv_fmu,
-                     int * maxSamples
+                     int * maxSamples, double * relaxation
                     );
 }
 

@@ -64,7 +64,8 @@ namespace fmitcp_master {
             get_storage().allocate_storage(states,indicators);
         }
 #endif
-
+      virtual std::string getFieldNames() const {return "";}
+      virtual void writeFields(bool last=false) {}
         void solveLoops();
         virtual void prepare() {};
         virtual void runIteration(double t, double dt) = 0;

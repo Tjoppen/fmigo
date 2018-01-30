@@ -606,7 +606,7 @@ int main(int argc, char *argv[] ) {
     double timeStep = 0.1;
     double endTime = 10;
     double relativeTolerance = 0.0001;
-    double relaxation = 4,
+    double relaxation = 2,
            compliance = 0;
     vector<string> fmuURIs;
     vector<connection> connections;
@@ -631,7 +631,7 @@ int main(int argc, char *argv[] ) {
             &fmigo_loglevel, &csv_separator, &outFilePath, &fmigo::globals::fileFormat,
             &realtimeMode, &executionOrder, &fmuVisibilities,
             &scs, &hdf5Filename, &fieldnameFilename, &holonomic, &compliance,
-            &command_port, &results_port, &startPaused, &solveLoops, &useHeadersInCSV, &csv_fmu, &maxSamples
+            &command_port, &results_port, &startPaused, &solveLoops, &useHeadersInCSV, &csv_fmu, &maxSamples, &relaxation
     );
 
 #ifdef USE_MPI
@@ -702,7 +702,6 @@ int main(int argc, char *argv[] ) {
         }
         StrongMaster *sm = new StrongMaster(context, clients, weakConnections, solver, holonomic, executionOrder);
         master = sm;
-        fieldnames += sm->getForceFieldnames();
     }
 
     master->zmqControl = command_port > 0;
@@ -722,15 +721,7 @@ int main(int argc, char *argv[] ) {
         fatal("-Z requires -z\n");
     }
 
-    if (useHeadersInCSV || fmigo::globals::fileFormat == tikz) {
-        fprintf(fmigo::globals::outfile, "%s\n",fieldnames.c_str());
-    }
-
-    if (fieldnameFilename.length() > 0) {
-        ofstream ofs(fieldnameFilename.c_str());
-        ofs << fieldnames;
-        ofs << endl;
-    }
+    
 
     //init
     for (size_t x = 0; x < clients.size(); x++) {
@@ -788,6 +779,16 @@ int main(int argc, char *argv[] ) {
     //prepare solver and all that
     master->prepare();
 
+    fieldnames += master->getFieldNames();
+    if (useHeadersInCSV || fmigo::globals::fileFormat == tikz) {
+        fprintf(fmigo::globals::outfile, "%s\n",fieldnames.c_str());
+    }
+
+    if (fieldnameFilename.length() > 0) {
+        ofstream ofs(fieldnameFilename.c_str());
+        ofs << fieldnames;
+        ofs << endl;
+    }
     //double t = 0;
     int step = 0;
     int nsteps = (int)round(endTime / timeStep);
@@ -860,7 +861,8 @@ int main(int argc, char *argv[] ) {
         }
 
         if (fmigo::globals::fileFormat != none) {
-            fprintf(fmigo::globals::outfile, "\n");
+          master->writeFields(false);
+          fprintf(fmigo::globals::outfile, "\n");
         }
     }
     fmigo::globals::timer.rotate("pre_shutdown");
@@ -869,12 +871,9 @@ int main(int argc, char *argv[] ) {
       printOutputs(endTime, master, clients);
       char separator = fmigo::globals::getSeparator();
 
-      //finish off with zeroes for any extra forces
-      int n = master->getNumForceOutputs();
-      for (int i = 0; i < n; i++) {
-          fprintf(fmigo::globals::outfile, "%c0", separator);
-      }
+      
 
+      master->writeFields(true);
       fprintf(fmigo::globals::outfile, "\n");
     }
 

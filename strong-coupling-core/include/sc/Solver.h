@@ -23,6 +23,8 @@ private:
     std::vector<Connector*> m_connectors;
     mutable std::vector<Equation*> eqs;
     std::vector<double> rhs;
+    std::vector<double> g;
+    std::vector<double> gv;
     std::vector<int> Ap;
     std::vector<int> Ai;
     std::vector<double> lambda;
@@ -116,6 +118,10 @@ public:
      * Updates all constraints.
      */
     void updateConstraints();
+
+  std::string getViolationsNames(char sep) const;
+  void writeViolations(FILE * f, char sep );
+  
 };
 
 }

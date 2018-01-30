@@ -7,6 +7,7 @@
 #include <cmath>
 #include <algorithm>
 #include <iostream>
+#include <sstream>
 
 using namespace sc;
 using namespace std;
@@ -84,17 +85,9 @@ const std::vector<Equation*>& Solver::getEquations() const{
 void Solver::setSpookParams(double relaxation, double compliance, double timeStep){
   
   m_b =  1./(1. + 4. * relaxation );
-  m_a =  4*m_b / timeStep; //timeStep; TODO: looks like it's the sqrt of the step!
+  m_a =  4*m_b / timeStep; 
   m_epsilon = 4. * compliance * m_b / timeStep/timeStep;
   m_timeStep = timeStep;
-#if 0 
-  std::cerr << "Spook parameters:   "
-       << "Relaxation: " <<  relaxation
-       << "  Compliance: " <<  compliance
-       << "  Step: " <<  timeStep
-       << "  A: " <<  m_a
-       << "  B: " <<  m_b <<   std::endl;
-#endif 
 }
 
 void Solver::resetConstraintForces(){
@@ -181,13 +174,19 @@ void Solver::solve(bool holonomic, int printDebugInfo){
 
     // Compute RHS
     rhs.resize(numRows);
+    g.resize(numRows);
+    gv.resize(numRows);
     for(i=0; i<neq; ++i){
         Equation * eq = eqs[i];
-        double  Z = eq->getFutureVelocity(), 
-                GW = eq->getVelocity(),
-                g = eq->getViolation();
+        double  Z = eq->getFutureVelocity(); 
+        double  GW = eq->getVelocity();
+
+        gv[i] = GW;
+        
+        g[i] = eq->getViolation();
+
         if (holonomic) {
-          rhs[i] =  (  -m_a * g +  m_b*GW -  Z  ); 
+          rhs[i] =  (  -m_a * g[i] +  m_b*GW -  Z  ); 
         } else {
             rhs[i] =           - Z; 
         }
@@ -419,4 +418,26 @@ Constraint * Solver::getConstraint(int i){
 /// Get a constraint
 int Solver::getNumConstraints(){
     return m_constraints.size();
+}
+string Solver::getViolationsNames(char sep ) const {
+  ostringstream oss;
+  
+  for (int i = 0; i < eqs.size(); ++i){
+    oss << sep << "eq" << i << "_g"; 
+  }
+  for (int i = 0; i < eqs.size(); ++i){
+    oss << sep << "eq" << i << "_gv"; 
+  }
+  return oss.str();
+}
+
+void Solver::writeViolations(FILE * f, char sep ){
+
+  for (int i = 0; i < eqs.size(); ++i){
+    fprintf(f, "%c%+.16le", sep, g[i]);
+  }
+  for (int i = 0; i < eqs.size(); ++i){
+    fprintf(f, "%c%+.16le", sep, gv[i]);
+  }
+  
 }

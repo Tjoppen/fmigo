@@ -109,11 +109,6 @@ namespace fmitcp_master {
 
         void wait();
 
-        //implemented by StrongMaster to allow the main loop to fill in zeroes for the forces in the last row in the CSV output
-        virtual int getNumForceOutputs() const {
-          return 0;
-        }
-
         void resetT1();
         //wait for t1, advance t1 by timeStep
         void waitupT1(double timeStep);

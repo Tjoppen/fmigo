@@ -96,6 +96,8 @@ void StrongMaster::prepare() {
             }
         }
     }
+
+    forces.resize(getNumForces());
 }
 
 void StrongMaster::getDirectionalDerivative(fmitcp_proto::fmi2_kinematic_req& kin, const Vec3& seedVec, const vector<int>& accelerationRefs, const vector<int>& forceRefs) {
@@ -390,6 +392,8 @@ void StrongMaster::stepKinematicFmus(double t, double dt) {
 
     //distribute forces
     char separator = fmigo::globals::getSeparator();
+    //offset into this->forces
+    int forceofs = 0;
     for (int id : open) {
         FMIClient *client = m_clients[id];
         for (int j = 0; j < client->numConnectors(); j++) {
@@ -397,31 +401,43 @@ void StrongMaster::stepKinematicFmus(double t, double dt) {
             vector<double> vec;
             vec.reserve(6);
 
+            vector<int> fvrs = sc->getForceValueRefs();
+            vector<int> tvrs = sc->getTorqueValueRefs();
+
             //dump force/torque
             if (sc->hasForce()) {
-                if (fmigo::globals::fileFormat != none) {
-                    fprintf(fmigo::globals::outfile, "%c%+.16le%c%+.16le%c%+.16le", separator, sc->m_force.x(), separator, sc->m_force.y(), separator, sc->m_force.z());
-                }
+                this->forces[forceofs++] = sc->m_force.x();
                 vec.push_back(sc->m_force.x());
-                vec.push_back(sc->m_force.y());
-                vec.push_back(sc->m_force.z());
+
+                if (fvrs.size() > 1) {
+                  this->forces[forceofs++] = sc->m_force.y();
+                  this->forces[forceofs++] = sc->m_force.z();
+                  vec.push_back(sc->m_force.y());
+                  vec.push_back(sc->m_force.z());
+                }
             }
 
             if (sc->hasTorque()) {
-                if (fmigo::globals::fileFormat != none) {
-                    fprintf(fmigo::globals::outfile, "%c%+.16le%c%+.16le%c%+.16le", separator, sc->m_torque.x(), separator, sc->m_torque.y(), separator, sc->m_torque.z());
-                }
+                //only set/print one torque for shafts
+                this->forces[forceofs++] = sc->m_torque.x();
                 vec.push_back(sc->m_torque.x());
-                vec.push_back(sc->m_torque.y());
-                vec.push_back(sc->m_torque.z());
+
+                if (tvrs.size() > 1) {
+                  this->forces[forceofs++] = sc->m_torque.y();
+                  this->forces[forceofs++] = sc->m_torque.z();
+                  vec.push_back(sc->m_torque.y());
+                  vec.push_back(sc->m_torque.z());
+                }
             }
 
-            vector<int> fvrs = sc->getForceValueRefs();
-            vector<int> tvrs = sc->getTorqueValueRefs();
             fvrs.insert(fvrs.end(), tvrs.begin(), tvrs.end());
 
             queueMessage(client, fmi2_import_set_real(fvrs, vec));
         }
+    }
+
+    if ((size_t)forceofs != forces.size()) {
+      fatal("forceofs != forces.size()\n");
     }
 
     //do actual step
@@ -494,14 +510,18 @@ string StrongMaster::getFieldNames() const {
 
             if (sc->hasForce()) {
                 oss << separator << basename.str() << "force_x";
-                oss << separator << basename.str() << "force_y";
-                oss << separator << basename.str() << "force_z";
+                if (sc->getAccelerationValueRefs().size() > 1) {
+                  oss << separator << basename.str() << "force_y";
+                  oss << separator << basename.str() << "force_z";
+                }
             }
 
             if (sc->hasTorque()) {
                 oss << separator << basename.str() << "torque_x";
-                oss << separator << basename.str() << "torque_y";
-                oss << separator << basename.str() << "torque_z";
+                if (sc->getAngularAccelerationValueRefs().size() > 1) {
+                  oss << separator << basename.str() << "torque_y";
+                  oss << separator << basename.str() << "torque_z";
+                }
             }
         }
     }
@@ -510,17 +530,17 @@ string StrongMaster::getFieldNames() const {
     return oss.str();
 }
 
-int StrongMaster::getNumForceOutputs() const {
+int StrongMaster::getNumForces() const {
   int ret = 0;
   for (size_t i=0; i<m_clients.size(); i++){
     FMIClient *client = m_clients[i];
     for (int j = 0; j < client->numConnectors(); j++) {
       StrongConnector *sc = client->getConnector(j);
       if (sc->hasForce()) {
-        ret += 3;
+        ret += sc->getAccelerationValueRefs().size();
       }
       if (sc->hasTorque()) {
-        ret += 3;
+        ret += sc->getAngularAccelerationValueRefs().size();
       }
     }
   }
@@ -528,14 +548,20 @@ int StrongMaster::getNumForceOutputs() const {
 }
 
 void StrongMaster::writeFields(bool last) {
+  char sep = fmigo::globals::getSeparator();
   if ( last ) {
-//finish off with zeroes for any extra forces
-    int n = getNumForceOutputs();
+    //finish off with zeroes for any extra forces
+    int n = getNumForces();
     for (int i = 0; i < n; i++) {
-      fprintf(fmigo::globals::outfile, "%c0", fmigo::globals::getSeparator());
+      fprintf(fmigo::globals::outfile, "%c0", sep);
+    }
+  } else {
+    for (double f : this->forces) {
+      fprintf(fmigo::globals::outfile, "%c%+.16le", sep, f);
     }
   }
-    if (m_strongCouplingSolver)
-      m_strongCouplingSolver->writeViolations(fmigo::globals::outfile, fmigo::globals::getSeparator());
 
+  if (m_strongCouplingSolver) {
+    m_strongCouplingSolver->writeViolations(fmigo::globals::outfile, sep);
+  }
 }

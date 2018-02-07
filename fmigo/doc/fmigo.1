@@ -440,11 +440,12 @@ Set compliance for kinematic solver (real value, default = 0.0).
 .TP
 .B \-R RELAXATION
 Set relaxation time for the kinematic stepper.  This is units of the time
-step so that for a value of less than "2", 
-the constraint violations decrease by a factor of 1/(1+4*relaxation) per
-step.  Above "2" the decrease slows down.   TO BE CONTINUED.
-
-
+step.  For a a value of less than "2", the constraint violations decrease by a
+factor of 1/(1+4*relaxation) per step.  Above "2" the decrease slows down.
+TO BE CONTINUED.
+.EQ
+        area = \(tau
+.EN
 .TP
 .B \-a ARGSFILENAME
 Add extra arguments parsed from file with given name, or stdin if filename is -.

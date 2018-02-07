@@ -188,6 +188,10 @@ void Server::setStartValues() {
         fmi2_base_type_enu_t type = fmi2_import_get_variable_base_type(var);
         fmi2_causality_enu_t causality = fmi2_import_get_causality(var);
 
+        if (!var) {
+            continue;
+        }
+
         if (fmi2_xml_get_variable_has_start(var)) {
             if (fmi2_import_get_variability(var) == fmi2_variability_enu_constant) {
                 debug("skip VR %i\n", vr);
@@ -196,7 +200,7 @@ void Server::setStartValues() {
 
             if (causality != fmi2_causality_enu_parameter &&
                 causality != fmi2_causality_enu_input) {
-                debug("skip VR %i %f\n", vr, fmi2_xml_get_real_variable_start(fmi2_xml_get_variable_as_real(var)));
+                debug("skip VR %i\n", vr);
                 continue;
             }
 

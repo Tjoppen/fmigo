@@ -625,13 +625,15 @@ int main(int argc, char *argv[] ) {
     fmigo_csv_fmu csv_fmu;
     string hdf5Filename;
     int maxSamples = -1;
+    bool writeSolverFields = false;
 
     parseArguments(
             argc, argv, &fmuURIs, &connections, &params, &endTime, &timeStep,
             &fmigo_loglevel, &csv_separator, &outFilePath, &fmigo::globals::fileFormat,
             &realtimeMode, &executionOrder, &fmuVisibilities,
             &scs, &hdf5Filename, &fieldnameFilename, &holonomic, &compliance,
-            &command_port, &results_port, &startPaused, &solveLoops, &useHeadersInCSV, &csv_fmu, &maxSamples, &relaxation
+            &command_port, &results_port, &startPaused, &solveLoops, &useHeadersInCSV, &csv_fmu, &maxSamples, &relaxation,
+            &writeSolverFields
     );
 
 #ifdef USE_MPI
@@ -779,7 +781,10 @@ int main(int argc, char *argv[] ) {
     //prepare solver and all that
     master->prepare();
 
-    fieldnames += master->getFieldNames();
+    if (writeSolverFields) {
+      fieldnames += master->getFieldNames();
+    }
+
     if (useHeadersInCSV || fmigo::globals::fileFormat == tikz) {
         fprintf(fmigo::globals::outfile, "%s\n",fieldnames.c_str());
     }
@@ -861,7 +866,9 @@ int main(int argc, char *argv[] ) {
         }
 
         if (fmigo::globals::fileFormat != none) {
-          master->writeFields(false);
+          if (writeSolverFields) {
+            master->writeFields(false);
+          }
           fprintf(fmigo::globals::outfile, "\n");
         }
     }
@@ -869,11 +876,11 @@ int main(int argc, char *argv[] ) {
 
     if (fmigo::globals::fileFormat != none) {
       printOutputs(endTime, master, clients);
-      char separator = fmigo::globals::getSeparator();
 
-      
+      if (writeSolverFields) {
+        master->writeFields(true);
+      }
 
-      master->writeFields(true);
       fprintf(fmigo::globals::outfile, "\n");
     }
 

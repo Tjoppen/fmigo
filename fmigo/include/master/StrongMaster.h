@@ -53,6 +53,10 @@ class StrongMaster : public JacobiMaster {
     //steps kinematic FMUs
     //all kinematic FMUs must be in the open set before calling this function
     void stepKinematicFmus(double t, double dt);
+
+    //computed forces, for writeFields()
+    std::vector<double> forces;
+    int getNumForces() const;
 public:
     StrongMaster(zmq::context_t &context, std::vector<FMIClient*> slaves, std::vector<WeakConnection> weakConnections,
                  sc::Solver *strongCouplingSolver, bool holonomic, const std::vector<Rend>& rends);
@@ -64,9 +68,7 @@ public:
     //the returned strings begins with a space
     std::string getFieldNames() const;
 
-    int getNumForceOutputs() const;
-
-  virtual void writeFields(bool last) ;
+    virtual void writeFields(bool last) ;
 };
 }
 

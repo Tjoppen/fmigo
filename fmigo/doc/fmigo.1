@@ -13,7 +13,7 @@ over TCP/IP
 
 .SH SYNOPSIS (TCP/IP)
 .B fmigo-master
-.RB [ " \-rltcdsopfmgwC5NMazZLHDeG " ]
+.RB [ " \-rltcdsopfmgwC5NMazZLHDeGRE " ]
 .I URLs
 .br
 .B fmigo-server --port PORT
@@ -117,6 +117,14 @@ Solve algebraic loops in initialization mode. Requires GPL and GNU GSL.
 .TP
 .B \-H
 Print CSV header.
+.TP
+.B \-E
+Print solver fields in CSV/TikZ output.
+This includes things like constraint violations, mobilities and forces.
+Only sensible when using kinematic constraints, else nothing extra is printed.
+
+TODO put the column name format here
+
 .TP
 .B \-D
 Always compute numerical directional derivatives, regardless of the value of providesDirectionalDerivatives in all FMUs' modelDescription.xml.

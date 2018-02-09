@@ -338,7 +338,9 @@ static fmi2Status wrapper_instantiate(ModelInstance *comp)  {
 static fmi2Status wrapper_setup_experiment(ModelInstance *comp,
         fmi2Boolean toleranceDefined, fmi2Real tolerance,
         fmi2Real startTime, fmi2Boolean stopTimeDefined, fmi2Real stopTime) {
-    return (fmi2Status)fmi2_import_setup_experiment(comp->s.simulation.FMU, toleranceDefined, tolerance, startTime, stopTimeDefined, stopTime) ;
+    // Calling this on Dymola FMUs with toleranceDefined = true gave this:
+    //fmi2SetupExperiment: tolerance control not supported for fmuType fmi2ModelExchange, setting toleranceDefined to fmi2False
+    return (fmi2Status)fmi2_import_setup_experiment(comp->s.simulation.FMU, false, 0.0, startTime, stopTimeDefined, stopTime) ;
 }
 
 static fmi2Status wrapper_enter_init(ModelInstance *comp) {

@@ -5,6 +5,7 @@ import tempfile
 import shutil
 import os
 import subprocess
+import zipfile
 from wrapper.modeldescription2header import modeldescription2header
 from wrapper.xml2wrappedxml import xml2wrappedxml
 
@@ -42,6 +43,17 @@ if __name__ == '__main__':
     default='Release',
     type=str,
     help='Build type (default: Release)'
+  )
+  parser.add_argument(
+    '-d',
+    dest='directional',
+    action='append',
+    help='''Contents of resources/directional.txt. Can be used in two ways:
+    either one -d per line (python wrapper.py -d "0 1 2" -d "3 4 5" in.fmu out.fmu)
+    or a single -d if newlines in the given string are appropriately escaped.
+    In other words all -d options are joined by newlines and the resulting string
+    is written to resources/directional.txt in the output FMU.
+    '''
   )
   args = parser.parse_args()
 
@@ -139,5 +151,16 @@ wrap_existing_fmu2("%s" "%s" "${CMAKE_CURRENT_BINARY_DIR}")
     exit(1)
 
   os.chdir(cwd)
-  shutil.move(os.path.join(build, 'sources/%s.fmu' % modelIdentifier), args.outputfmu)
+  builtfmu = os.path.join(build, 'sources/%s.fmu' % modelIdentifier)
+
+  # Add directional.txt to zip
+  if not args.directional is None:
+    s = '\n'.join(args.directional)
+    if s[-1] != '\n':
+      s = s + '\n'
+
+    with zipfile.ZipFile(builtfmu, 'a') as z:
+      z.writestr('resources/directional.txt', s)
+
+  shutil.move(builtfmu, args.outputfmu)
   shutil.rmtree(d)

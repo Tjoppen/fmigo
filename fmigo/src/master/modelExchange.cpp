@@ -178,7 +178,8 @@ void ModelExchangeStepper::init_fmu_model(fmu_model &m,  const std::vector<FMICl
     m.model->pre_step = NULL;
     m.model->free = cgsl_model_default_free;//freeFMUModel;
 
-    p->FMIGO_ME_ENTER_CONTINUOUS_TIME_MODE(me_clients);
+    // Dymola FMUs claim we've already entered continuous mode at this point
+    //p->FMIGO_ME_ENTER_CONTINUOUS_TIME_MODE(me_clients);
 
     for(auto client: clients)
         p->FMIGO_ME_GET_CONTINUOUS_STATES(client);

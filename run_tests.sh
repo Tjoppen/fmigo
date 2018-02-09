@@ -47,6 +47,18 @@ rm temp
 python umit-fmus/wrapper.py -t Debug   ${FMUS_DIR}/me/bouncingBall/bouncingBall.fmu ${BUILD_DIR}/bouncingBall_wrapped_Debug.fmu
 python umit-fmus/wrapper.py -t Release ${FMUS_DIR}/me/bouncingBall/bouncingBall.fmu ${BUILD_DIR}/bouncingBall_wrapped_Release.fmu
 
+# Test -d option for adding resources/directional.txt
+python umit-fmus/wrapper.py -d "0 1 2" -d "3 4 5" ${FMUS_DIR}/me/bouncingBall/bouncingBall.fmu ${BUILD_DIR}/bouncingBall_wrapped_directional.fmu
+# Check that the file actually has directional.txt and the source FMU in it
+python <<EOF
+import zipfile
+z = zipfile.ZipFile('${BUILD_DIR}/bouncingBall_wrapped_directional.fmu', 'r')
+for f in ['resources/directional.txt', 'resources/bouncingBall.fmu']:
+  if not f in z.namelist():
+    print('No %s in wrapped FMU' % f)
+    exit(1)
+EOF
+
 # Test alternative MPI command line
 mpiexec -np 1 fmigo-mpi -f none \
   : -np 1 fmigo-mpi ${FMUS_DIR}/gsl2/clutch2/clutch2.fmu

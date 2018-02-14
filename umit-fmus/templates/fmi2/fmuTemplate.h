@@ -54,10 +54,12 @@ typedef enum {
 } ModelState;
 
 #ifndef WIN32
+#ifndef max
 //Tomas: needed since fmuTemplate_impl.h doesn't define it
 static inline int max(int a, int b) {
     return a > b ? a : b;
 }
+#endif
 #endif
 
 //making a special macro for this because reasons

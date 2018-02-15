@@ -13,6 +13,18 @@
 #include <stdbool.h>
 #include "gsl-interface.h"
 
+#include "modelDescription.h"
+
+//having hand-written getters and setters
+#define HAVE_GENERATED_GETTERS_SETTERS  //for letting the template know that we have our own getters and setters
+
+// This check serves two purposes:
+// - protect against senseless zero-real FMUs
+// - avoid compilation problems on Windows (me_simulation::partials becoming [0])
+#if NUMBER_OF_REALS == 0
+#error NUMBER_OF_REALS == 0 does not make sense for ModelExchange
+#endif
+
 typedef struct Backup
 {
     double t;
@@ -24,6 +36,25 @@ typedef struct Backup
     unsigned long failed_steps;
     fmi2_event_info_t eventInfo;
 }Backup;
+
+typedef struct {
+    fmi2ValueReference unknown, known, vr;
+} partial_t;
+
+typedef struct {
+    cgsl_simulation sim;
+
+    //we're guaranteed never to need more than (number of reals)^2 partials
+    //this could be optimized slightly, using number of real inputs * number of real outputs
+    //doing it this way avoids a bunch of allocations
+    partial_t partials[NUMBER_OF_REALS*NUMBER_OF_REALS];
+    size_t npartials;
+
+    fmi2_import_t *FMU;
+    char* dir;
+    jm_callbacks m_jmCallbacks;
+    Backup m_backup;
+} me_simulation;
 
 void restoreStates(cgsl_simulation *sim, Backup *backup);
 void storeStates(cgsl_simulation *sim, Backup *backup);
@@ -441,37 +472,6 @@ void runIteration(cgsl_simulation *sim, double t, double dt) {
         storeStates(sim, &p->m_backup);
     }
 }
-
-#include "modelDescription.h"
-
-//having hand-written getters and setters
-#define HAVE_GENERATED_GETTERS_SETTERS  //for letting the template know that we have our own getters and setters
-
-// This check serves two purposes:
-// - protect against senseless zero-real FMUs
-// - avoid compilation problems on Windows (me_simulation::partials becoming [0])
-#if NUMBER_OF_REALS == 0
-#error NUMBER_OF_REALS == 0 does not make sense for ModelExchange
-#endif
-
-typedef struct {
-    fmi2ValueReference unknown, known, vr;
-} partial_t;
-
-typedef struct {
-    cgsl_simulation sim;
-
-    //we're guaranteed never to need more than (number of reals)^2 partials
-    //this could be optimized slightly, using number of real inputs * number of real outputs
-    //doing it this way avoids a bunch of allocations
-    partial_t partials[NUMBER_OF_REALS*NUMBER_OF_REALS];
-    size_t npartials;
-
-    fmi2_import_t *FMU;
-    char* dir;
-    jm_callbacks m_jmCallbacks;
-    Backup m_backup;
-} me_simulation;
 
 #define SIMULATION_TYPE    me_simulation
 #include "fmuTemplate.h"

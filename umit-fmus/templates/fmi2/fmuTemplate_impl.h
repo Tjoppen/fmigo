@@ -27,12 +27,6 @@
 
 static fmi2String logCategoriesNames[] = {"logAll", "logError", "logFmiCall", "logEvent"};
 
-// array of value references of states
-#if NUMBER_OF_STATES>0
-fmi2ValueReference vrStates[NUMBER_OF_STATES] = STATES;
-fmi2ValueReference vrDerivatives[NUMBER_OF_STATES] = DERIVATIVES;
-#endif
-
 // ---------------------------------------------------------------------------
 // Private helpers logger
 // ---------------------------------------------------------------------------
@@ -781,6 +775,13 @@ fmi2Status fmi2GetStringStatus(fmi2Component c, const fmi2StatusKind s, fmi2Stri
 // Functions for FMI for Model Exchange
 // ---------------------------------------------------------------------------
 #else
+
+// array of value references of states
+#if NUMBER_OF_STATES>0
+static const fmi2ValueReference vrStates[NUMBER_OF_STATES] = STATES;
+static const fmi2ValueReference vrDerivatives[NUMBER_OF_STATES] = DERIVATIVES;
+#endif
+
 /* Enter and exit the different modes */
 fmi2Status fmi2EnterEventMode(fmi2Component c) {
     ModelInstance *comp = (ModelInstance *)c;

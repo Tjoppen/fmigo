@@ -107,10 +107,9 @@ def modeldescription2header(args_xml, args_wrapper, file=sys.stdout):
               error(args_xml +' contains multiple Reals with VR='+str(vr))
               exit(1)
           start = float(R.attrib['start']) if 'start' in R.attrib else 0
-          if meFmuType:
-              if 'derivative' in R.attrib:
-                  states[vr] = (SV[int(R.attrib['derivative']) - 1].attrib['name'], start)
-                  derivatives[vr] = name
+          if 'derivative' in R.attrib:
+              states[vr] = (SV[int(R.attrib['derivative']) - 1].attrib['name'], start)
+              derivatives[vr] = name
           reals[vr] = (name, start, should_output)
 
       elif I != None or E != None:
@@ -151,6 +150,26 @@ def modeldescription2header(args_xml, args_wrapper, file=sys.stdout):
       else:
           error('Variable "%s" has unknown/unsupported type' % name)
           exit(1)
+
+  # Validate <Derivatives>
+  dervrs = set(derivatives.keys())
+  for der in root.find('ModelStructure').find('Derivatives').findall('Unknown'):
+    index = int(der.attrib['index'])-1
+    vr = int(SV[index].attrib['valueReference'])
+    if not vr in dervrs:
+      error(
+        'Real with VR=%i does not have "derivative" attribute set despite being listed in <Derivatives> in %s'
+          % (vr, args_xml)
+      )
+      exit(1)
+    dervrs.remove(vr)
+
+  if len(dervrs) > 0:
+    error(
+      'The following Reals derivative VRs are not listed under <ModelStructure><Derivatives>: %s in %s'
+        % (','.join([str(d) for d in dervrs]), args_xml)
+    )
+    exit(1)
 
   print('''#ifndef MODELDESCRIPTION_H
 #define MODELDESCRIPTION_H

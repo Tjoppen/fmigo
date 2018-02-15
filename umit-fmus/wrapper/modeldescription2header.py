@@ -67,7 +67,9 @@ def modeldescription2header(args_xml, args_wrapper, file=sys.stdout):
   if vas != None:
       for tool in vas.findall('Tool'):
           if tool.attrib['name'] == 'fmigo':
-              fmuFilename = tool.find('fmu').text
+              fmuelem = tool.find('fmu')
+              fmuFilename = fmuelem.text
+              ni = fmuelem.attrib['numberOfEventIndicators']
 
   for sv in SV:
       # Make names C compatible

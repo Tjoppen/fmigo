@@ -29,10 +29,10 @@ typedef struct Backup
 {
     double t;
     double h;
-    double *dydt;
-    fmi2_real_t* ei;
-    fmi2_real_t* ei_b;
-    fmi2_real_t* x;
+    double dydt[NUMBER_OF_STATES];
+    fmi2_real_t ei[NUMBER_OF_EVENT_INDICATORS];
+    fmi2_real_t ei_b[NUMBER_OF_EVENT_INDICATORS];
+    fmi2_real_t x[NUMBER_OF_STATES];
     unsigned long failed_steps;
     fmi2_event_info_t eventInfo;
 }Backup;
@@ -60,8 +60,6 @@ void restoreStates(cgsl_simulation *sim, Backup *backup);
 void storeStates(cgsl_simulation *sim, Backup *backup);
 void runIteration(cgsl_simulation *sim, double t, double dt);
 void prepare(cgsl_simulation *sim, fmi2_import_t *FMU, enum cgsl_integrator_ids integrator);
-void allocateBackup(Backup *backup, void *params);
-void freeBackup(Backup *backup);
 
 #include "math.h"
 #ifndef max
@@ -77,9 +75,6 @@ typedef struct TimeLoop
 } TimeLoop;
 
 typedef struct fmu_parameters {
-    int nx;
-    int ni;
-
     double t_ok;
     double t_past;
     int count;                    /* number of function evaluations */
@@ -137,13 +132,13 @@ static int fmu_function(double t, const double x[], double dxdt[], void* params)
     if(p->stateEvent)return GSL_SUCCESS;
 
     fmi2_import_set_time(p->FMU, t);
-    fmi2_import_set_continuous_states(p->FMU, x, p->nx);
+    fmi2_import_set_continuous_states(p->FMU, x, NUMBER_OF_STATES);
 
-    fmi2_import_get_derivatives(p->FMU, dxdt, p->nx);
+    fmi2_import_get_derivatives(p->FMU, dxdt, NUMBER_OF_STATES);
 
-    if(p->ni){
-        fmi2_import_get_event_indicators(p->FMU, p->m_backup.ei, p->ni);
-        if(past_event(p->m_backup.ei_b, p->m_backup.ei, p->ni)){
+    if(NUMBER_OF_EVENT_INDICATORS){
+        fmi2_import_get_event_indicators(p->FMU, p->m_backup.ei, NUMBER_OF_EVENT_INDICATORS);
+        if(past_event(p->m_backup.ei_b, p->m_backup.ei, NUMBER_OF_EVENT_INDICATORS)){
             p->stateEvent = true;
             p->t_past = t;
             return GSL_SUCCESS;
@@ -156,29 +151,8 @@ static int fmu_function(double t, const double x[], double dxdt[], void* params)
     return GSL_SUCCESS;
 }
 
-void allocateBackup(Backup *backup, void *params){
-    fmu_parameters *p = (fmu_parameters*)params;
-    backup->ei          = (fmi2_real_t*)calloc(p->ni, sizeof(fmi2_real_t));
-    backup->ei_b        = (fmi2_real_t*)calloc(p->ni, sizeof(fmi2_real_t));
-    backup->x           = (double*)calloc(p->nx, sizeof(double));
-    backup->dydt        = (double*)calloc(p->nx, sizeof(double));
-    if(!backup->ei || !backup->ei_b || !backup->x || !backup->dydt){
-        //freeFMUModel(m);
-        perror("WeakMaster:ModelExchange:allocateBackup ERROR -  could not allocate memory");
-        exit(1);
-    }
-}
-
-void freeBackup(Backup *backup) {
-  free(backup->ei);
-  free(backup->ei_b);
-  free(backup->x);
-  free(backup->dydt);
-}
-
 static void me_model_free(cgsl_model *model) {
   fmu_parameters* p = get_p(model);
-  freeBackup(&p->m_backup);
   free(p);
   cgsl_model_default_free(model);
 }
@@ -194,24 +168,40 @@ void init_fmu_model(cgsl_model **m, fmi2_import_t *FMU){
     fmu_parameters* p = (fmu_parameters*)calloc(1,sizeof(fmu_parameters));
 
     p->FMU        = FMU;
-    p->nx         = fmi2_import_get_number_of_continuous_states(p->FMU);
-    p->ni         = fmi2_import_get_number_of_event_indicators(p->FMU);
+
+    //sanity check NUMBER_OF_STATES and NUMBER_OF_EVENT_INDICATORS
+    int nx = fmi2_import_get_number_of_continuous_states(p->FMU);
+    int ni = fmi2_import_get_number_of_event_indicators(p->FMU);
+
+    if (nx != NUMBER_OF_STATES) {
+      fprintf(stderr,
+        "fmi2_import_get_number_of_continuous_states != NUMBER_OF_STATES (%i != %i)\n",
+        nx, NUMBER_OF_STATES
+      );
+      exit(1);
+    }
+    if (ni != NUMBER_OF_EVENT_INDICATORS) {
+      fprintf(stderr,
+        "fmi2_import_get_number_of_event_indicators != NUMBER_OF_EVENT_INDICATORS (%i != %i)\n",
+        ni, NUMBER_OF_EVENT_INDICATORS
+      );
+      exit(1);
+    }
+
     p->t_ok       = 0;
     p->t_past     = 0;
     p->stateEvent = false;
     p->count      = 0;
 
-    allocateBackup(&p->m_backup, p);
-
-    *m = cgsl_model_default_alloc(p->nx, NULL, p, fmu_function, NULL, NULL, NULL, 0);
+    *m = cgsl_model_default_alloc(NUMBER_OF_STATES, NULL, p, fmu_function, NULL, NULL, NULL, 0);
     (*m)->free = me_model_free;
 
     p->m_backup.t = 0;
     p->m_backup.h = 0;
 
     fmi2_status_t status;
-    status = fmi2_import_get_continuous_states(p->FMU, (*m)->x,        p->nx);
-    status = fmi2_import_get_continuous_states(p->FMU, (*m)->x_backup, p->nx);
+    status = fmi2_import_get_continuous_states(p->FMU, (*m)->x,        NUMBER_OF_STATES);
+    status = fmi2_import_get_continuous_states(p->FMU, (*m)->x_backup, NUMBER_OF_STATES);
 }
 
 /** prepare()
@@ -240,7 +230,7 @@ void restoreStates(cgsl_simulation *sim, Backup *backup){
     //restore previous states
 
 
-    memcpy(sim->model->x,backup->x,p->nx * sizeof(sim->model->x[0]));
+    memcpy(sim->model->x,backup->x,NUMBER_OF_STATES * sizeof(sim->model->x[0]));
 
     memcpy(sim->i.evolution->dydt_out, backup->dydt,
            sim->model->n_variables * sizeof(backup->dydt[0]));
@@ -250,7 +240,7 @@ void restoreStates(cgsl_simulation *sim, Backup *backup){
     sim->h = backup->h;
 
     fmi2_import_set_time(p->FMU, sim->t);
-    fmi2_import_set_continuous_states(p->FMU, sim->model->x, p->nx);
+    fmi2_import_set_continuous_states(p->FMU, sim->model->x, NUMBER_OF_STATES);
 
     gsl_odeiv2_evolve_reset(sim->i.evolution);
     gsl_odeiv2_step_reset(sim->i.step);
@@ -266,9 +256,9 @@ void restoreStates(cgsl_simulation *sim, Backup *backup){
 void storeStates(cgsl_simulation *sim, Backup *backup){
     fmu_parameters* p = get_p(sim->model);
 
-    fmi2_import_get_continuous_states(p->FMU, backup->x,    p->nx);
-    fmi2_import_get_event_indicators (p->FMU, backup->ei_b, p->ni);
-    memcpy(sim->model->x,backup->x,p->nx * sizeof(backup->x[0]));
+    fmi2_import_get_continuous_states(p->FMU, backup->x,    NUMBER_OF_STATES);
+    fmi2_import_get_event_indicators (p->FMU, backup->ei_b, NUMBER_OF_EVENT_INDICATORS);
+    memcpy(sim->model->x,backup->x,NUMBER_OF_STATES * sizeof(backup->x[0]));
 
     backup->failed_steps = sim->i.evolution->failed_steps;
     backup->t = sim->t;
@@ -340,7 +330,7 @@ fmi2_real_t absmin(fmi2_real_t* v, size_t n){
 void stepToEvent(cgsl_simulation *sim, Backup *backup, TimeLoop *timeLoop){
     double tol = 1e-9;
     fmu_parameters* p = get_p(sim->model);
-    while(!hasStateEvent(sim) && !(absmin(backup->ei,p->ni) < tol || timeLoop->dt_new < tol)){
+    while(!hasStateEvent(sim) && !(absmin(backup->ei,NUMBER_OF_EVENT_INDICATORS) < tol || timeLoop->dt_new < tol)){
         getGoldenNewTime(sim, backup, timeLoop);
         me_step(sim, timeLoop);
         if(timeLoop->dt_new == 0){
@@ -383,7 +373,7 @@ void newDiscreteStates(cgsl_simulation *sim, Backup *backup){
     eventInfo.newDiscreteStatesNeeded = true;
     eventInfo.terminateSimulation = false;
 
-    if(p->ni){
+    if(NUMBER_OF_EVENT_INDICATORS){
         while(eventInfo.newDiscreteStatesNeeded){
             fmi2_import_new_discrete_states(p->FMU, &eventInfo);
             if(eventInfo.terminateSimulation){
@@ -793,8 +783,6 @@ static fmi2Status wrapper_exit_init(ModelInstance *comp) {
         return status;
     }
 
-    allocateBackup(&comp->s.simulation.m_backup, comp->s.simulation.sim.model->parameters);
-
     strlcpy(path, comp->fmuResourceLocation, sizeof(path));
     strlcat(path, "/directional.txt",        sizeof(path));
 
@@ -832,7 +820,6 @@ static void wrapper_free(me_simulation me) {
   fmi2_import_free(me.FMU);
   fmi_import_rmdir(&me.m_jmCallbacks, me.dir);
   free(me.dir);
-  freeBackup(&me.m_backup);
   cgsl_free_simulation(me.sim);
 }
 

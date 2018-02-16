@@ -25,14 +25,20 @@
 #error NUMBER_OF_REALS == 0 does not make sense for ModelExchange
 #endif
 
+#if NUMBER_OF_REAL_OUTPUTS == 0
+#error NUMBER_OF_REAL_OUTPUTS == 0 is suspicious
+#endif
+
+static const int real_output_vrs[] = REAL_OUTPUT_VRS;
+
 typedef struct Backup
 {
     double t;
     double h;
-    double dydt[NUMBER_OF_STATES];
+    double dydt[NUMBER_OF_STATES+NUMBER_OF_REAL_OUTPUTS];
     fmi2_real_t ei[NUMBER_OF_EVENT_INDICATORS];
     fmi2_real_t ei_b[NUMBER_OF_EVENT_INDICATORS];
-    fmi2_real_t x[NUMBER_OF_STATES];
+    fmi2_real_t x[NUMBER_OF_STATES+NUMBER_OF_REAL_OUTPUTS];
     unsigned long failed_steps;
     fmi2_event_info_t eventInfo;
 }Backup;
@@ -135,6 +141,8 @@ static int fmu_function(double t, const double x[], double dxdt[], void* params)
     fmi2_import_set_continuous_states(p->FMU, x, NUMBER_OF_STATES);
 
     fmi2_import_get_derivatives(p->FMU, dxdt, NUMBER_OF_STATES);
+    //filter outputs
+    fmi2_import_get_real(p->FMU, real_output_vrs, NUMBER_OF_REAL_OUTPUTS, &dxdt[NUMBER_OF_STATES]);
 
     if(NUMBER_OF_EVENT_INDICATORS){
         fmi2_import_get_event_indicators(p->FMU, p->m_backup.ei, NUMBER_OF_EVENT_INDICATORS);
@@ -193,7 +201,7 @@ void init_fmu_model(cgsl_model **m, fmi2_import_t *FMU){
     p->stateEvent = false;
     p->count      = 0;
 
-    *m = cgsl_model_default_alloc(NUMBER_OF_STATES, NULL, p, fmu_function, NULL, NULL, NULL, 0);
+    *m = cgsl_model_default_alloc(NUMBER_OF_STATES+NUMBER_OF_REAL_OUTPUTS, NULL, p, fmu_function, NULL, NULL, NULL, 0);
     (*m)->free = me_model_free;
 
     p->m_backup.t = 0;
@@ -230,7 +238,7 @@ void restoreStates(cgsl_simulation *sim, Backup *backup){
     //restore previous states
 
 
-    memcpy(sim->model->x,backup->x,NUMBER_OF_STATES * sizeof(sim->model->x[0]));
+    memcpy(sim->model->x,backup->x,(NUMBER_OF_STATES+NUMBER_OF_REAL_OUTPUTS) * sizeof(sim->model->x[0]));
 
     memcpy(sim->i.evolution->dydt_out, backup->dydt,
            sim->model->n_variables * sizeof(backup->dydt[0]));
@@ -258,7 +266,7 @@ void storeStates(cgsl_simulation *sim, Backup *backup){
 
     fmi2_import_get_continuous_states(p->FMU, backup->x,    NUMBER_OF_STATES);
     fmi2_import_get_event_indicators (p->FMU, backup->ei_b, NUMBER_OF_EVENT_INDICATORS);
-    memcpy(sim->model->x,backup->x,NUMBER_OF_STATES * sizeof(backup->x[0]));
+    memcpy(sim->model->x,backup->x,(NUMBER_OF_STATES+NUMBER_OF_REAL_OUTPUTS) * sizeof(backup->x[0]));
 
     backup->failed_steps = sim->i.evolution->failed_steps;
     backup->t = sim->t;

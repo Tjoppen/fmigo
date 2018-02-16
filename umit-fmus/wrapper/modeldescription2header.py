@@ -54,6 +54,10 @@ def modeldescription2header(args_xml, args_wrapper, file=sys.stdout):
 
 
   reals = OrderedDict()
+  # Like reals just only output variables
+  # More specifically this is all Real variablse appearing in <Outputs>,
+  # which may have causality="output" or causality="local"
+  realoutputs = OrderedDict()
   ints  = OrderedDict()
   bools = OrderedDict()
   states = OrderedDict()
@@ -173,6 +177,12 @@ def modeldescription2header(args_xml, args_wrapper, file=sys.stdout):
     )
     exit(1)
 
+  for out in root.find('ModelStructure').find('Outputs').findall('Unknown'):
+    index = int(out.attrib['index'])-1
+    vr = int(SV[index].attrib['valueReference'])
+    if not SV[index].find('Real') is None:
+      realoutputs[vr] = reals[vr]
+
   print('''#ifndef MODELDESCRIPTION_H
 #define MODELDESCRIPTION_H
 #include "FMI2/fmi2Functions.h" //for fmi2Real etc.
@@ -184,6 +194,7 @@ def modeldescription2header(args_xml, args_wrapper, file=sys.stdout):
 #define HAVE_DIRECTIONAL_DERIVATIVE %i
 #define CAN_GET_SET_FMU_STATE %i
 #define NUMBER_OF_REALS %i
+#define NUMBER_OF_REAL_OUTPUTS %i
 #define NUMBER_OF_INTEGERS %i
 #define NUMBER_OF_BOOLEANS %i
 #define NUMBER_OF_STRINGS %i
@@ -201,6 +212,7 @@ struct ModelInstance;
       1 if providesDirectionalDerivative else 0,
       1 if canGetAndSetFMUstate else 0,
       len(reals),
+      len(realoutputs),
       len(ints),
       len(bools),
       len(strs),
@@ -248,11 +260,13 @@ static const modelDescription_t defaults = {
 %s
 %s
 %s''' % (
-      '\n'.join(['#define VR_'+value[0].upper()+' '+str(key) for key,value in reals.items() if value[2]]),
-      '\n'.join(['#define VR_'+value[0].upper()+' '+str(key) for key,value in ints.items() if value[2]]),
-      '\n'.join(['#define VR_'+value[0].upper()+' '+str(key) for key,value in bools.items() if value[2]]),
-      '\n'.join(['#define VR_'+value[0].upper()+' '+str(key) for key,value in strs.items() if value[2]]),
+      '\n'.join(['#define VR_'+value[0].upper()+' '+str(key) for key,value in reals.items()]),
+      '\n'.join(['#define VR_'+value[0].upper()+' '+str(key) for key,value in ints.items()]),
+      '\n'.join(['#define VR_'+value[0].upper()+' '+str(key) for key,value in bools.items()]),
+      '\n'.join(['#define VR_'+value[0].upper()+' '+str(key) for key,value in strs.items()]),
   ), file=file)
+
+  print('#define REAL_OUTPUT_VRS {%s}' % ','.join(['VR_'+value[0].upper() for key,value in realoutputs.items()]), file=file)
 
   if not args_wrapper:
       print('''

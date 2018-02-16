@@ -108,8 +108,8 @@
 
   <ModelStructure>
     <Outputs>
+      <Unknown index="9"/>
       <Unknown index="10"/>
-      <Unknown index="11"/>
     </Outputs>
     <Derivatives/>
     <DiscreteStates/>

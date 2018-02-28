@@ -237,11 +237,15 @@ void restoreStates(cgsl_simulation *sim, Backup *backup){
     fmu_parameters* p = get_p(sim->model);
     //restore previous states
 
+    if (NUMBER_OF_STATES+NUMBER_OF_REAL_OUTPUTS != sim->model->n_variables) {
+        fprintf(stderr, "NUMBER_OF_STATES+NUMBER_OF_REAL_OUTPUTS != sim->model->n_variables\n");
+        exit(1);
+    }
 
     memcpy(sim->model->x,backup->x,(NUMBER_OF_STATES+NUMBER_OF_REAL_OUTPUTS) * sizeof(sim->model->x[0]));
 
     memcpy(sim->i.evolution->dydt_out, backup->dydt,
-           sim->model->n_variables * sizeof(backup->dydt[0]));
+           (NUMBER_OF_STATES+NUMBER_OF_REAL_OUTPUTS) * sizeof(backup->dydt[0]));
 
     sim->i.evolution->failed_steps = backup->failed_steps;
     sim->t = backup->t;

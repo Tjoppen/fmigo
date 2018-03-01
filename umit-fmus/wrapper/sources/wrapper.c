@@ -60,6 +60,15 @@ typedef struct {
     char* dir;
     jm_callbacks m_jmCallbacks;
     Backup m_backup;
+
+    //for filter
+    //TODO: make get/set work with this
+    int num_averaged_outputs;
+    //Values move from averaged_outputs[1] to averaged_outputs[0]. In other words,
+    // averaged_outputs[1] has the values that were most recently computed,
+    // averaged_outputs[0] has the values from before that.
+    //If num_averaged_outputs == 0 then only averaged_outputs[1] has sensible values.
+    fmi2_real_t averaged_outputs[2][NUMBER_OF_REAL_OUTPUTS];
 } me_simulation;
 
 void restoreStates(cgsl_simulation *sim, Backup *backup);
@@ -143,6 +152,11 @@ static int fmu_function(double t, const double x[], double dxdt[], void* params)
     fmi2_import_get_derivatives(p->FMU, dxdt, NUMBER_OF_STATES);
     //filter outputs
     fmi2_import_get_real(p->FMU, real_output_vrs, NUMBER_OF_REAL_OUTPUTS, &dxdt[NUMBER_OF_STATES]);
+    /*fprintf(stderr, "t=%f: dxdt[NUMBER_OF_STATES..end] = {", t);
+    for (int i = 0; i < NUMBER_OF_REAL_OUTPUTS; i++) {
+        fprintf(stderr, "%f ", dxdt[NUMBER_OF_STATES+i]);
+    }
+    fprintf(stderr, "}\n");*/
 
     if(NUMBER_OF_EVENT_INDICATORS){
         fmi2_import_get_event_indicators(p->FMU, p->m_backup.ei, NUMBER_OF_EVENT_INDICATORS);
@@ -268,9 +282,9 @@ void restoreStates(cgsl_simulation *sim, Backup *backup){
 void storeStates(cgsl_simulation *sim, Backup *backup){
     fmu_parameters* p = get_p(sim->model);
 
-    fmi2_import_get_continuous_states(p->FMU, backup->x,    NUMBER_OF_STATES);
+    fmi2_import_get_continuous_states(p->FMU, sim->model->x,NUMBER_OF_STATES);
     fmi2_import_get_event_indicators (p->FMU, backup->ei_b, NUMBER_OF_EVENT_INDICATORS);
-    memcpy(sim->model->x,backup->x,(NUMBER_OF_STATES+NUMBER_OF_REAL_OUTPUTS) * sizeof(backup->x[0]));
+    memcpy(backup->x, sim->model->x, (NUMBER_OF_STATES+NUMBER_OF_REAL_OUTPUTS) * sizeof(backup->x[0]));
 
     backup->failed_steps = sim->i.evolution->failed_steps;
     backup->t = sim->t;
@@ -490,7 +504,36 @@ void runIteration(cgsl_simulation *sim, double t, double dt) {
 #include "strlcpy.h"
 
 static fmi2Status generated_fmi2GetReal(ModelInstance *comp, const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Real value[]) {
-    return (fmi2Status)fmi2_import_get_real(comp->s.simulation.FMU,vr,nvr,value);
+    //first grab all requested reals, not bothering to check uf any of them are filtered
+    fmi2Status ret = (fmi2Status)fmi2_import_get_real(comp->s.simulation.FMU,vr,nvr,value);
+
+    //check if this is a request for a filtered output
+    //but first, check if we have done any filtering at all yet
+#if 0
+    if (comp->s.simulation.num_averaged_outputs > 0) {
+        //check for matches in real_output_vrs
+        for (size_t i = 0; i < nvr; i++) {
+            for (int j = 0; j < NUMBER_OF_REAL_OUTPUTS; j++) {
+                if (vr[i] == real_output_vrs[j]) {
+                    //do we have two averages to average (sinc^2) or just one (sinc)?
+                    //fprintf(stderr, "VR %i: %f -> ", vr[i], value[i]);
+                    if (comp->s.simulation.num_averaged_outputs == 1) {
+                        value[i] = comp->s.simulation.averaged_outputs[1][j];
+                    } else {
+                        //fprintf(stderr, "0.5*(%f + %f) = ",
+                        //    comp->s.simulation.averaged_outputs[0][j],
+                        //    comp->s.simulation.averaged_outputs[1][j]);
+                        value[i] = 0.5*(comp->s.simulation.averaged_outputs[0][j] +
+                                        comp->s.simulation.averaged_outputs[1][j]);
+                    }
+                    //fprintf(stderr, "%f\n", value[i]);
+                }
+            }
+        }
+    }
+#endif
+
+    return ret;
 }
 
 static fmi2Status generated_fmi2SetReal(ModelInstance *comp, modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Real value[]) {
@@ -654,8 +697,23 @@ static fmi2Status getPartial(ModelInstance *comp, fmi2ValueReference vr, fmi2Val
 }
 
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
-    //fprintf(stderr,"do step run iteration\n");
+    //clear averages
+    for (int i = 0; i < NUMBER_OF_REAL_OUTPUTS; i++) {
+        s->simulation.sim.model->x[NUMBER_OF_STATES+i] = 0;
+    }
+
     runIteration(&s->simulation.sim, currentCommunicationPoint,communicationStepSize);
+
+    //rotate averages
+    for (int i = 0; i < NUMBER_OF_REAL_OUTPUTS; i++) {
+        s->simulation.averaged_outputs[0][i] = s->simulation.averaged_outputs[1][i];
+        s->simulation.averaged_outputs[1][i] = s->simulation.sim.model->x[NUMBER_OF_STATES+i] / communicationStepSize;
+        //fprintf(stderr, "mean %i: %f\n", i, s->simulation.averaged_outputs[1][i]);
+    }
+
+    if (s->simulation.num_averaged_outputs < 2) {
+        s->simulation.num_averaged_outputs++;
+    }
 }
 
 //extern "C"{

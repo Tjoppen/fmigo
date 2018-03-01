@@ -150,6 +150,7 @@ static int fmu_function(double t, const double x[], double dxdt[], void* params)
     fmi2_import_set_continuous_states(p->FMU, x, NUMBER_OF_STATES);
 
     fmi2_import_get_derivatives(p->FMU, dxdt, NUMBER_OF_STATES);
+#ifdef WRAPPER_USE_FILTER
     //filter outputs
     fmi2_import_get_real(p->FMU, real_output_vrs, NUMBER_OF_REAL_OUTPUTS, &dxdt[NUMBER_OF_STATES]);
     /*fprintf(stderr, "t=%f: dxdt[NUMBER_OF_STATES..end] = {", t);
@@ -157,6 +158,7 @@ static int fmu_function(double t, const double x[], double dxdt[], void* params)
         fprintf(stderr, "%f ", dxdt[NUMBER_OF_STATES+i]);
     }
     fprintf(stderr, "}\n");*/
+#endif
 
     if(NUMBER_OF_EVENT_INDICATORS){
         fmi2_import_get_event_indicators(p->FMU, p->m_backup.ei, NUMBER_OF_EVENT_INDICATORS);
@@ -215,7 +217,11 @@ void init_fmu_model(cgsl_model **m, fmi2_import_t *FMU){
     p->stateEvent = false;
     p->count      = 0;
 
+#ifdef WRAPPER_USE_FILTER
     *m = cgsl_model_default_alloc(NUMBER_OF_STATES+NUMBER_OF_REAL_OUTPUTS, NULL, p, fmu_function, NULL, NULL, NULL, 0);
+#else
+    *m = cgsl_model_default_alloc(NUMBER_OF_STATES,                        NULL, p, fmu_function, NULL, NULL, NULL, 0);
+#endif
     (*m)->free = me_model_free;
 
     p->m_backup.t = 0;
@@ -251,15 +257,20 @@ void restoreStates(cgsl_simulation *sim, Backup *backup){
     fmu_parameters* p = get_p(sim->model);
     //restore previous states
 
+#ifdef WRAPPER_USE_FILTER
     if (NUMBER_OF_STATES+NUMBER_OF_REAL_OUTPUTS != sim->model->n_variables) {
         fprintf(stderr, "NUMBER_OF_STATES+NUMBER_OF_REAL_OUTPUTS != sim->model->n_variables\n");
+#else
+    if (NUMBER_OF_STATES                        != sim->model->n_variables) {
+        fprintf(stderr, "NUMBER_OF_STATES != sim->model->n_variables\n");
+#endif
         exit(1);
     }
 
-    memcpy(sim->model->x,backup->x,(NUMBER_OF_STATES+NUMBER_OF_REAL_OUTPUTS) * sizeof(sim->model->x[0]));
+    memcpy(sim->model->x,backup->x,sim->model->n_variables * sizeof(sim->model->x[0]));
 
     memcpy(sim->i.evolution->dydt_out, backup->dydt,
-           (NUMBER_OF_STATES+NUMBER_OF_REAL_OUTPUTS) * sizeof(backup->dydt[0]));
+           sim->model->n_variables * sizeof(backup->dydt[0]));
 
     sim->i.evolution->failed_steps = backup->failed_steps;
     sim->t = backup->t;
@@ -284,7 +295,7 @@ void storeStates(cgsl_simulation *sim, Backup *backup){
 
     fmi2_import_get_continuous_states(p->FMU, sim->model->x,NUMBER_OF_STATES);
     fmi2_import_get_event_indicators (p->FMU, backup->ei_b, NUMBER_OF_EVENT_INDICATORS);
-    memcpy(backup->x, sim->model->x, (NUMBER_OF_STATES+NUMBER_OF_REAL_OUTPUTS) * sizeof(backup->x[0]));
+    memcpy(backup->x, sim->model->x, sim->model->n_variables * sizeof(backup->x[0]));
 
     backup->failed_steps = sim->i.evolution->failed_steps;
     backup->t = sim->t;
@@ -509,7 +520,7 @@ static fmi2Status generated_fmi2GetReal(ModelInstance *comp, const modelDescript
 
     //check if this is a request for a filtered output
     //but first, check if we have done any filtering at all yet
-#if 0
+#ifdef WRAPPER_USE_FILTER
     if (comp->s.simulation.num_averaged_outputs > 0) {
         //check for matches in real_output_vrs
         for (size_t i = 0; i < nvr; i++) {
@@ -697,13 +708,16 @@ static fmi2Status getPartial(ModelInstance *comp, fmi2ValueReference vr, fmi2Val
 }
 
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
+#ifdef WRAPPER_USE_FILTER
     //clear averages
     for (int i = 0; i < NUMBER_OF_REAL_OUTPUTS; i++) {
         s->simulation.sim.model->x[NUMBER_OF_STATES+i] = 0;
     }
+#endif
 
     runIteration(&s->simulation.sim, currentCommunicationPoint,communicationStepSize);
 
+#ifdef WRAPPER_USE_FILTER
     //rotate averages
     for (int i = 0; i < NUMBER_OF_REAL_OUTPUTS; i++) {
         s->simulation.averaged_outputs[0][i] = s->simulation.averaged_outputs[1][i];
@@ -714,6 +728,7 @@ static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real comm
     if (s->simulation.num_averaged_outputs < 2) {
         s->simulation.num_averaged_outputs++;
     }
+#endif
 }
 
 //extern "C"{

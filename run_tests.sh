@@ -46,6 +46,8 @@ rm temp
 # Test wrapper, both Debug and Release
 python umit-fmus/wrapper.py -t Debug   ${FMUS_DIR}/me/bouncingBall/bouncingBall.fmu ${BUILD_DIR}/bouncingBall_wrapped_Debug.fmu
 python umit-fmus/wrapper.py -t Release ${FMUS_DIR}/me/bouncingBall/bouncingBall.fmu ${BUILD_DIR}/bouncingBall_wrapped_Release.fmu
+python umit-fmus/wrapper.py -f -t Debug   ${FMUS_DIR}/me/bouncingBall/bouncingBall.fmu ${BUILD_DIR}/bouncingBall_wrapped_filter_Debug.fmu
+python umit-fmus/wrapper.py -f -t Release ${FMUS_DIR}/me/bouncingBall/bouncingBall.fmu ${BUILD_DIR}/bouncingBall_wrapped_filter_Release.fmu
 
 # Test -d option for adding resources/directional.txt
 python umit-fmus/wrapper.py -d "0 1 2" -d "3 4 5" ${FMUS_DIR}/me/bouncingBall/bouncingBall.fmu ${BUILD_DIR}/bouncingBall_wrapped_directional.fmu
@@ -60,7 +62,8 @@ for f in ['resources/directional.txt', 'resources/bouncingBall.fmu']:
 EOF
 
 # Give wrapped FMUs a test run
-for f in bouncingBall_wrapped_Debug.fmu bouncingBall_wrapped_Release.fmu bouncingBall_wrapped_directional.fmu
+for f in bouncingBall_wrapped_Debug.fmu bouncingBall_wrapped_Release.fmu bouncingBall_wrapped_directional.fmu \
+ bouncingBall_wrapped_filter_Debug.fmu bouncingBall_wrapped_filter_Release.fmu
 do
   echo Making sure $f runs
   mpiexec -np 2 fmigo-mpi ${BUILD_DIR}/$f > /dev/null

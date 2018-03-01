@@ -53,6 +53,7 @@ def xml2wrappedxml(args_xml, args_fmu, args_identifier, file=sys.stdout):
   guid2 = "".join(guid2)
 
   # Transform from ME to CS
+  ni = root.attrib['numberOfEventIndicators']
   del root.attrib['numberOfEventIndicators']
 
   root.attrib['modelName']      = args_identifier
@@ -108,7 +109,10 @@ def xml2wrappedxml(args_xml, args_fmu, args_identifier, file=sys.stdout):
   mvs.addprevious(vas)
   tool = etree.SubElement(vas, 'Tool')
   tool.attrib['name'] = 'fmigo'
-  etree.SubElement(tool, 'fmu').text = os.path.basename(fmu)
+  fmuelem = etree.SubElement(tool, 'fmu')
+  fmuelem.text = os.path.basename(fmu)
+  # Store original numberOfEventIndicators
+  fmuelem.attrib['numberOfEventIndicators'] = ni
 
   print(etree.tostring(root, pretty_print=True, encoding='unicode'), file=file)
 

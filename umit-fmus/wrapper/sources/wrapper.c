@@ -10,9 +10,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
+#include "gsl-interface.h"
 
-//#include "modelDescription_me.h"
-#include "modelExchange.h"
 #include "modelDescription.h"
 
 //having hand-written getters and setters
@@ -24,6 +24,24 @@
 #if NUMBER_OF_REALS == 0
 #error NUMBER_OF_REALS == 0 does not make sense for ModelExchange
 #endif
+
+#if NUMBER_OF_REAL_OUTPUTS == 0
+#error NUMBER_OF_REAL_OUTPUTS == 0 is suspicious
+#endif
+
+static const int real_output_vrs[] = REAL_OUTPUT_VRS;
+
+typedef struct Backup
+{
+    double t;
+    double h;
+    double dydt[NUMBER_OF_STATES+NUMBER_OF_REAL_OUTPUTS];
+    fmi2_real_t ei[NUMBER_OF_EVENT_INDICATORS];
+    fmi2_real_t ei_b[NUMBER_OF_EVENT_INDICATORS];
+    fmi2_real_t x[NUMBER_OF_STATES+NUMBER_OF_REAL_OUTPUTS];
+    unsigned long failed_steps;
+    fmi2_event_info_t eventInfo;
+}Backup;
 
 typedef struct {
     fmi2ValueReference unknown, known, vr;
@@ -42,7 +60,445 @@ typedef struct {
     char* dir;
     jm_callbacks m_jmCallbacks;
     Backup m_backup;
+
+    //for filter
+    //TODO: make get/set work with this
+    int num_averaged_outputs;
+    //Values move from averaged_outputs[1] to averaged_outputs[0]. In other words,
+    // averaged_outputs[1] has the values that were most recently computed,
+    // averaged_outputs[0] has the values from before that.
+    //If num_averaged_outputs == 0 then only averaged_outputs[1] has sensible values.
+    fmi2_real_t averaged_outputs[2][NUMBER_OF_REAL_OUTPUTS];
 } me_simulation;
+
+void restoreStates(cgsl_simulation *sim, Backup *backup);
+void storeStates(cgsl_simulation *sim, Backup *backup);
+void runIteration(cgsl_simulation *sim, double t, double dt);
+void prepare(cgsl_simulation *sim, fmi2_import_t *FMU, enum cgsl_integrator_ids integrator);
+
+#include "math.h"
+#ifndef max
+#define max(a,b) ((a>b) ? a : b)
+#endif
+#ifndef min
+#define min(a,b) ((a<b) ? a : b)
+#endif
+
+typedef struct TimeLoop
+{
+    fmi2_real_t t_safe, dt_new, t_crossed, t_end;
+} TimeLoop;
+
+typedef struct fmu_parameters {
+    double t_ok;
+    double t_past;
+    int count;                    /* number of function evaluations */
+
+    bool stateEvent;
+
+    fmi2_import_t *FMU;
+    Backup m_backup;
+} fmu_parameters;
+
+//#define signbits(a,b) ((a > 0)? ( (b > 0) ? 1 : 0) : (b<=0)? 1: 0)
+/** get_p
+ *  Extracts the parameters from the model
+ *
+ *  @param m Model
+ */
+fmu_parameters* get_p(cgsl_model* m){
+    return (fmu_parameters*)(m->parameters);
+}
+
+/** getSafeAndCrossed()
+ *  Extracts safe and crossed time found by fmu_function
+ */
+void getSafeAndCrossed(cgsl_simulation *sim, TimeLoop *timeLoop){
+    fmu_parameters *p = get_p(sim->model);
+    timeLoop->t_safe    = p->t_ok;//max( timeLoop->t_safe,    t_ok);
+    timeLoop->t_crossed = p->t_past;//min( timeLoop->t_crossed, t_past);
+}
+
+bool past_event(fmi2_real_t* a, fmi2_real_t* b, int i){
+
+    i--;
+    for(;i>=0;i--){
+        if(signbit( a[i] ) != signbit( b[i] ))
+            return true;
+    }
+    return false;
+}
+
+/** fmu_function
+ *  function needed by cgsl_simulation to get and set the current
+ *  states and derivatives
+ *
+ *  @param t Input time
+ *  @param x Input states vector
+ *  @param dxdt Output derivatives
+ *  @param params Contains model specific parameters
+ */
+static int fmu_function(double t, const double x[], double dxdt[], void* params)
+{
+    // make local variables
+    fmu_parameters* p = (fmu_parameters*)params;
+
+    ++p->count; /* count function evaluations */
+    if(p->stateEvent)return GSL_SUCCESS;
+
+    fmi2_import_set_time(p->FMU, t);
+    fmi2_import_set_continuous_states(p->FMU, x, NUMBER_OF_STATES);
+
+    fmi2_import_get_derivatives(p->FMU, dxdt, NUMBER_OF_STATES);
+#ifdef WRAPPER_USE_FILTER
+    //filter outputs
+    fmi2_import_get_real(p->FMU, real_output_vrs, NUMBER_OF_REAL_OUTPUTS, &dxdt[NUMBER_OF_STATES]);
+    /*fprintf(stderr, "t=%f: dxdt[NUMBER_OF_STATES..end] = {", t);
+    for (int i = 0; i < NUMBER_OF_REAL_OUTPUTS; i++) {
+        fprintf(stderr, "%f ", dxdt[NUMBER_OF_STATES+i]);
+    }
+    fprintf(stderr, "}\n");*/
+#endif
+
+    if(NUMBER_OF_EVENT_INDICATORS){
+        fmi2_import_get_event_indicators(p->FMU, p->m_backup.ei, NUMBER_OF_EVENT_INDICATORS);
+        if(past_event(p->m_backup.ei_b, p->m_backup.ei, NUMBER_OF_EVENT_INDICATORS)){
+            p->stateEvent = true;
+            p->t_past = t;
+            return GSL_SUCCESS;
+        } else{
+            p->stateEvent = false;
+            p->t_ok = t;
+        }
+    }
+
+    return GSL_SUCCESS;
+}
+
+static void me_model_free(cgsl_model *model) {
+  fmu_parameters* p = get_p(model);
+  free(p);
+  cgsl_model_default_free(model);
+}
+
+/** init_fmu_model
+ *  Setup all parameters and function pointers needed by fmu_model
+ *
+ *  @param m The fmu_model we are working on
+ *  @param client A vector with clients
+ */
+
+void init_fmu_model(cgsl_model **m, fmi2_import_t *FMU){
+    fmu_parameters* p = (fmu_parameters*)calloc(1,sizeof(fmu_parameters));
+
+    p->FMU        = FMU;
+
+    //sanity check NUMBER_OF_STATES and NUMBER_OF_EVENT_INDICATORS
+    int nx = fmi2_import_get_number_of_continuous_states(p->FMU);
+    int ni = fmi2_import_get_number_of_event_indicators(p->FMU);
+
+    if (nx != NUMBER_OF_STATES) {
+      fprintf(stderr,
+        "fmi2_import_get_number_of_continuous_states != NUMBER_OF_STATES (%i != %i)\n",
+        nx, NUMBER_OF_STATES
+      );
+      exit(1);
+    }
+    if (ni != NUMBER_OF_EVENT_INDICATORS) {
+      fprintf(stderr,
+        "fmi2_import_get_number_of_event_indicators != NUMBER_OF_EVENT_INDICATORS (%i != %i)\n",
+        ni, NUMBER_OF_EVENT_INDICATORS
+      );
+      exit(1);
+    }
+
+    p->t_ok       = 0;
+    p->t_past     = 0;
+    p->stateEvent = false;
+    p->count      = 0;
+
+#ifdef WRAPPER_USE_FILTER
+    *m = cgsl_model_default_alloc(NUMBER_OF_STATES+NUMBER_OF_REAL_OUTPUTS, NULL, p, fmu_function, NULL, NULL, NULL, 0);
+#else
+    *m = cgsl_model_default_alloc(NUMBER_OF_STATES,                        NULL, p, fmu_function, NULL, NULL, NULL, 0);
+#endif
+    (*m)->free = me_model_free;
+
+    p->m_backup.t = 0;
+    p->m_backup.h = 0;
+
+    fmi2_status_t status;
+    status = fmi2_import_get_continuous_states(p->FMU, (*m)->x,        NUMBER_OF_STATES);
+    status = fmi2_import_get_continuous_states(p->FMU, (*m)->x_backup, NUMBER_OF_STATES);
+}
+
+/** prepare()
+ *  Setup everything
+ */
+void prepare(cgsl_simulation *sim, fmi2_import_t *FMU, enum cgsl_integrator_ids integrator) {
+    init_fmu_model(&sim->model, FMU);
+    // set up a gsl_simulation for each client
+    *sim = cgsl_init_simulation(sim->model,
+                                 integrator, /* integrator: Runge-Kutta Prince Dormand pair order 7-8 */
+                                 1e-10,
+                                 0,
+                                 0,
+                                 0, NULL
+                                 );
+}
+
+/** restoreStates()
+ *  Restores all values needed by the simulations to restart
+ *  before the event
+ *
+ *  @param sim The simulation
+ */
+void restoreStates(cgsl_simulation *sim, Backup *backup){
+    fmu_parameters* p = get_p(sim->model);
+    //restore previous states
+
+#ifdef WRAPPER_USE_FILTER
+    if (NUMBER_OF_STATES+NUMBER_OF_REAL_OUTPUTS != sim->model->n_variables) {
+        fprintf(stderr, "NUMBER_OF_STATES+NUMBER_OF_REAL_OUTPUTS != sim->model->n_variables\n");
+#else
+    if (NUMBER_OF_STATES                        != sim->model->n_variables) {
+        fprintf(stderr, "NUMBER_OF_STATES != sim->model->n_variables\n");
+#endif
+        exit(1);
+    }
+
+    memcpy(sim->model->x,backup->x,sim->model->n_variables * sizeof(sim->model->x[0]));
+
+    memcpy(sim->i.evolution->dydt_out, backup->dydt,
+           sim->model->n_variables * sizeof(backup->dydt[0]));
+
+    sim->i.evolution->failed_steps = backup->failed_steps;
+    sim->t = backup->t;
+    sim->h = backup->h;
+
+    fmi2_import_set_time(p->FMU, sim->t);
+    fmi2_import_set_continuous_states(p->FMU, sim->model->x, NUMBER_OF_STATES);
+
+    gsl_odeiv2_evolve_reset(sim->i.evolution);
+    gsl_odeiv2_step_reset(sim->i.step);
+    gsl_odeiv2_driver_reset(sim->i.driver);
+}
+
+/** storeStates()
+ *  Stores all values needed by the simulations to restart
+ *  from a state before an event
+ *
+ *  @param sim The simulation
+ */
+void storeStates(cgsl_simulation *sim, Backup *backup){
+    fmu_parameters* p = get_p(sim->model);
+
+    fmi2_import_get_continuous_states(p->FMU, sim->model->x,NUMBER_OF_STATES);
+    fmi2_import_get_event_indicators (p->FMU, backup->ei_b, NUMBER_OF_EVENT_INDICATORS);
+    memcpy(backup->x, sim->model->x, sim->model->n_variables * sizeof(backup->x[0]));
+
+    backup->failed_steps = sim->i.evolution->failed_steps;
+    backup->t = sim->t;
+    backup->h = sim->h;
+
+    memcpy(backup->dydt, sim->i.evolution->dydt_out,
+           sim->model->n_variables * sizeof(backup->dydt[0]));
+}
+
+/** hasStateEvent()
+ *  Retrieve stateEvent status
+ *  Returns true if at least one simulation crossed an event
+ *
+ *  @param sim The simulation
+ */
+bool hasStateEvent(cgsl_simulation *sim){
+    return get_p(sim->model)->stateEvent;
+}
+
+/** getGoldenNewTime()
+ *  Calculates a time step which brings solution closer to the event
+ *  Uses the golden ratio to get t_crossed and t_safe to converge
+ *  to the event time
+ *
+ *  @param sim The simulation
+ */
+void getGoldenNewTime(cgsl_simulation *sim, Backup* backup, TimeLoop *timeLoop){
+    // golden ratio
+    double phi = (1 + sqrt(5)) / 2;
+    /* passed solution, need to reduce tEnd */
+    if(hasStateEvent(sim)){
+        getSafeAndCrossed(sim, timeLoop);
+        restoreStates(sim, backup);
+        timeLoop->dt_new = (timeLoop->t_crossed - sim->t) / phi;
+    } else { // havent passed solution, increase step
+        storeStates(sim, backup);
+        timeLoop->t_safe = max(timeLoop->t_safe, sim->t);
+        timeLoop->dt_new = timeLoop->t_crossed - sim->t - (timeLoop->t_crossed - timeLoop->t_safe) / phi;
+    }
+}
+
+/** me_step()
+ *  Run cgsl_step_to the simulation
+ *
+ *  @param sim The simulation
+ */
+void me_step(cgsl_simulation *sim, TimeLoop *timeLoop){
+    fmu_parameters *p = get_p(sim->model);
+    p->stateEvent = false;
+    p->t_past = max(p->t_past, sim->t + timeLoop->dt_new);
+    p->t_ok = sim->t;
+
+    cgsl_step_to(sim, sim->t, timeLoop->dt_new);
+}
+
+fmi2_real_t absmin(fmi2_real_t* v, size_t n){
+    fmi2_real_t min = v[0];
+    for(; n>1; n--){
+        if(min > v[n-1]) min = v[n-1];
+    }
+    return min;
+}
+/** stepToEvent()
+ *  To be runned when an event is crossed.
+ *  Finds the event and returns a state immediately after the event
+ *
+ *  @param sim The simulation
+ */
+void stepToEvent(cgsl_simulation *sim, Backup *backup, TimeLoop *timeLoop){
+    double tol = 1e-9;
+    fmu_parameters* p = get_p(sim->model);
+    while(!hasStateEvent(sim) && !(absmin(backup->ei,NUMBER_OF_EVENT_INDICATORS) < tol || timeLoop->dt_new < tol)){
+        getGoldenNewTime(sim, backup, timeLoop);
+        me_step(sim, timeLoop);
+        if(timeLoop->dt_new == 0){
+            fprintf(stderr,"stepToEvent: dt == 0, abort\n");
+            exit(1);
+        }
+        if(hasStateEvent(sim)){
+            // step back to where event occured
+            restoreStates(sim, backup);
+            getSafeAndCrossed(sim, timeLoop);
+            timeLoop->dt_new = timeLoop->t_safe - sim->t;
+            me_step(sim, timeLoop);
+            if(!hasStateEvent(sim)) storeStates(sim, backup);
+            else{
+                fprintf(stderr,"stepToEvent: failed at stepping to safe time, aborting\n");
+                exit(1);
+            }
+            timeLoop->dt_new = timeLoop->t_crossed - sim->t;
+            me_step(sim, timeLoop);
+            if(!hasStateEvent(sim)){
+                fprintf(stderr,"stepToEvent: failed at stepping to event \n");
+                exit(1);
+            }
+        }
+    }
+}
+
+/** newDiscreteStates()
+ *  Should be used where a new discrete state ends and another begins.
+ *  Store the current state of the simulation
+ */
+void newDiscreteStates(cgsl_simulation *sim, Backup *backup){
+    fmu_parameters* p = get_p(sim->model);
+    // start at a new state
+    fmi2_import_enter_event_mode(p->FMU);
+
+    // todo loop until newDiscreteStatesNeeded == false
+
+    fmi2_event_info_t eventInfo;
+    eventInfo.newDiscreteStatesNeeded = true;
+    eventInfo.terminateSimulation = false;
+
+    if(NUMBER_OF_EVENT_INDICATORS){
+        while(eventInfo.newDiscreteStatesNeeded){
+            fmi2_import_new_discrete_states(p->FMU, &eventInfo);
+            if(eventInfo.terminateSimulation){
+                fprintf(stderr,"modelExchange.c: terminated simulation\n");
+                exit(1);
+            }
+        }
+    }
+
+    fmi2_import_enter_continuous_time_mode(p->FMU);
+
+    // store the current state of all running FMUs
+    storeStates(sim, backup);
+}
+
+/** safeTimeStep()
+ *  Make sure we take small first step when we're at on event
+ *  @param sim The simulation
+ */
+void safeTimeStep(cgsl_simulation *sim, TimeLoop *timeLoop){
+    // if sims has a state event do not step to far
+    if(hasStateEvent(sim)){
+        double absmin = 0;//m_baseMaster->get_storage().absmin(STORAGE::indicators);
+        timeLoop->dt_new = sim->h * (absmin > 0 ? absmin:0.00001);
+    }else
+        timeLoop->dt_new = timeLoop->t_end - sim->t;
+}
+
+/** getSafeTime()
+ *
+ *  @param clients Vector with clients
+ *  @param t The current time
+ *  @param dt Timestep, input and output
+ */
+void getSafeTime(cgsl_simulation *sim, double t, double *dt, Backup *backup){
+    if(backup->eventInfo.nextEventTimeDefined)
+        *dt = min(*dt, backup->eventInfo.nextEventTime - t);
+}
+
+/** runIteration()
+ *  @param t The current time
+ *  @param dt The timestep to be taken
+ */
+void runIteration(cgsl_simulation *sim, double t, double dt) {
+    TimeLoop timeLoop;
+    fmu_parameters* p = get_p(sim->model);
+
+    timeLoop.t_safe = t;
+    timeLoop.t_crossed = t; //not used before getSafeAndCrossed() I think, but best to be safe
+    timeLoop.t_end = t + dt;
+    timeLoop.dt_new = dt;
+
+    getSafeTime(sim, t, &timeLoop.dt_new, &p->m_backup);
+    newDiscreteStates(sim, &p->m_backup);
+
+    while( timeLoop.t_safe < timeLoop.t_end ){
+        me_step(sim, &timeLoop);
+
+        if (hasStateEvent(sim)){
+
+            getSafeAndCrossed(sim, &timeLoop);
+
+            // restore and step to before the event
+            restoreStates(sim, &p->m_backup);
+            timeLoop.dt_new = timeLoop.t_safe - sim->t;
+            me_step(sim, &timeLoop);
+
+            // store and step to the event
+            if(!hasStateEvent(sim)) storeStates(sim, &p->m_backup);
+            timeLoop.dt_new = timeLoop.t_crossed - sim->t;
+            me_step(sim, &timeLoop);
+
+            // step closer to the event location
+            if(hasStateEvent(sim))
+                stepToEvent(sim, &p->m_backup, &timeLoop);
+
+        }
+        else {
+            timeLoop.t_safe = sim->t;
+            timeLoop.t_crossed = timeLoop.t_end;
+        }
+
+        safeTimeStep(sim, &timeLoop);
+        if(hasStateEvent(sim))
+            newDiscreteStates(sim, &p->m_backup);
+        storeStates(sim, &p->m_backup);
+    }
+}
 
 #define SIMULATION_TYPE    me_simulation
 #include "fmuTemplate.h"
@@ -59,7 +515,36 @@ typedef struct {
 #include "strlcpy.h"
 
 static fmi2Status generated_fmi2GetReal(ModelInstance *comp, const modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, fmi2Real value[]) {
-    return (fmi2Status)fmi2_import_get_real(comp->s.simulation.FMU,vr,nvr,value);
+    //first grab all requested reals, not bothering to check uf any of them are filtered
+    fmi2Status ret = (fmi2Status)fmi2_import_get_real(comp->s.simulation.FMU,vr,nvr,value);
+
+    //check if this is a request for a filtered output
+    //but first, check if we have done any filtering at all yet
+#ifdef WRAPPER_USE_FILTER
+    if (comp->s.simulation.num_averaged_outputs > 0) {
+        //check for matches in real_output_vrs
+        for (size_t i = 0; i < nvr; i++) {
+            for (int j = 0; j < NUMBER_OF_REAL_OUTPUTS; j++) {
+                if (vr[i] == real_output_vrs[j]) {
+                    //do we have two averages to average (sinc^2) or just one (sinc)?
+                    //fprintf(stderr, "VR %i: %f -> ", vr[i], value[i]);
+                    if (comp->s.simulation.num_averaged_outputs == 1) {
+                        value[i] = comp->s.simulation.averaged_outputs[1][j];
+                    } else {
+                        //fprintf(stderr, "0.5*(%f + %f) = ",
+                        //    comp->s.simulation.averaged_outputs[0][j],
+                        //    comp->s.simulation.averaged_outputs[1][j]);
+                        value[i] = 0.5*(comp->s.simulation.averaged_outputs[0][j] +
+                                        comp->s.simulation.averaged_outputs[1][j]);
+                    }
+                    //fprintf(stderr, "%f\n", value[i]);
+                }
+            }
+        }
+    }
+#endif
+
+    return ret;
 }
 
 static fmi2Status generated_fmi2SetReal(ModelInstance *comp, modelDescription_t *md, const fmi2ValueReference vr[], size_t nvr, const fmi2Real value[]) {
@@ -223,8 +708,27 @@ static fmi2Status getPartial(ModelInstance *comp, fmi2ValueReference vr, fmi2Val
 }
 
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
-    //fprintf(stderr,"do step run iteration\n");
+#ifdef WRAPPER_USE_FILTER
+    //clear averages
+    for (int i = 0; i < NUMBER_OF_REAL_OUTPUTS; i++) {
+        s->simulation.sim.model->x[NUMBER_OF_STATES+i] = 0;
+    }
+#endif
+
     runIteration(&s->simulation.sim, currentCommunicationPoint,communicationStepSize);
+
+#ifdef WRAPPER_USE_FILTER
+    //rotate averages
+    for (int i = 0; i < NUMBER_OF_REAL_OUTPUTS; i++) {
+        s->simulation.averaged_outputs[0][i] = s->simulation.averaged_outputs[1][i];
+        s->simulation.averaged_outputs[1][i] = s->simulation.sim.model->x[NUMBER_OF_STATES+i] / communicationStepSize;
+        //fprintf(stderr, "mean %i: %f\n", i, s->simulation.averaged_outputs[1][i]);
+    }
+
+    if (s->simulation.num_averaged_outputs < 2) {
+        s->simulation.num_averaged_outputs++;
+    }
+#endif
 }
 
 //extern "C"{
@@ -364,8 +868,6 @@ static fmi2Status wrapper_exit_init(ModelInstance *comp) {
         return status;
     }
 
-    allocateBackup(&comp->s.simulation.m_backup, comp->s.simulation.sim.model->parameters);
-
     strlcpy(path, comp->fmuResourceLocation, sizeof(path));
     strlcat(path, "/directional.txt",        sizeof(path));
 
@@ -403,7 +905,6 @@ static void wrapper_free(me_simulation me) {
   fmi2_import_free(me.FMU);
   fmi_import_rmdir(&me.m_jmCallbacks, me.dir);
   free(me.dir);
-  freeBackup(&me.m_backup);
   cgsl_free_simulation(me.sim);
 }
 

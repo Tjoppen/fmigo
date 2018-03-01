@@ -34,7 +34,7 @@
                     description="Angular velocity"
                     causality="output"
                     initial="exact">
-      <Real start="0"/>
+      <Real start="0" derivative="1"/>
     </ScalarVariable>
 
     
@@ -43,7 +43,7 @@
                     description="Angular acceleration"              
                     causality="output" 
                     initial="exact">
-      <Real start="0"/>
+      <Real start="0" derivative="2"/>
     </ScalarVariable>
     <ScalarVariable name="tau"        
                     valueReference="3"  

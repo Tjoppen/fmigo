@@ -27,12 +27,6 @@
 
 static fmi2String logCategoriesNames[] = {"logAll", "logError", "logFmiCall", "logEvent"};
 
-// array of value references of states
-#if NUMBER_OF_STATES>0
-fmi2ValueReference vrStates[NUMBER_OF_STATES] = STATES;
-fmi2ValueReference vrDerivatives[NUMBER_OF_STATES] = DERIVATIVES;
-#endif
-
 // ---------------------------------------------------------------------------
 // Private helpers logger
 // ---------------------------------------------------------------------------
@@ -485,7 +479,7 @@ fmi2Status fmi2SetReal (fmi2Component c, const fmi2ValueReference vr[], size_t n
         int N = get_initial_states_size(&comp->s);
         double *initials = calloc(N, sizeof(double));
         get_initial_states(&comp->s, initials);
-        sync_out(0.0, N, initials, &comp->s);
+        sync_out(0.0, 0.0, N, initials, &comp->s);
         free(initials);
     }
 #endif
@@ -781,6 +775,13 @@ fmi2Status fmi2GetStringStatus(fmi2Component c, const fmi2StatusKind s, fmi2Stri
 // Functions for FMI for Model Exchange
 // ---------------------------------------------------------------------------
 #else
+
+// array of value references of states
+#if NUMBER_OF_STATES>0
+static const fmi2ValueReference vrStates[NUMBER_OF_STATES] = STATES;
+static const fmi2ValueReference vrDerivatives[NUMBER_OF_STATES] = DERIVATIVES;
+#endif
+
 /* Enter and exit the different modes */
 fmi2Status fmi2EnterEventMode(fmi2Component c) {
     ModelInstance *comp = (ModelInstance *)c;

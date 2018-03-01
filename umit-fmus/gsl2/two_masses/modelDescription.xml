@@ -378,16 +378,6 @@
       <Real />
     </ScalarVariable>
 
-    <!-- index="0"-->
-    <ScalarVariable 
-        name="filter_length"
-        valueReference="98"
-        description="Length of EPCE FIR filter (0 = disable)"
-        causality="parameter"
-        variability="fixed">
-      <Integer start="0"/>
-    </ScalarVariable>
-
     <ScalarVariable 
         name="octave_output"
         valueReference="97"
@@ -398,7 +388,6 @@
     </ScalarVariable>
 
 
-    <!-- index="41"-->
     <ScalarVariable 
         name="integrator"
         valueReference="201"
@@ -421,7 +410,7 @@
         variability="fixed">
       <Integer start="2"/>
     </ScalarVariable>
-    <!-- index="39"-->
+
     <ScalarVariable 
         name="octave_output_file"
         valueReference="202"
@@ -436,7 +425,6 @@
       </Annotations>
     </ScalarVariable>
 
-    <!-- index="44"-->
     <ScalarVariable 
         name="reset_dx_e"
         valueReference="203"
@@ -445,7 +433,6 @@
         variability="fixed">
       <Boolean start="false"/>
     </ScalarVariable>
-    <!-- index="45"-->
      <ScalarVariable 
         name="reset_dx_s"
         valueReference="204"

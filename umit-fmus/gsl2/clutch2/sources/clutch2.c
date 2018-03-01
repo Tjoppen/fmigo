@@ -307,7 +307,7 @@ static void get_initial_states(state_t *s, double *initials) {
   }
 }
 
-static int sync_out(double t, double dt, const double outputs[], void * params) {
+static int sync_out(double t, double dt, int n, const double outputs[], void * params) {
 
   state_t *s = params;
   double dxdt[6];
@@ -333,11 +333,6 @@ static fmi2Status clutch_init(ModelInstance *comp) {
   /** system size and layout depends on which dx's are integrated */
   double initials[6];
   get_initial_states(s, initials);
-
-  if (s->md.filter_length != 0) {
-    fprintf(stderr, "filter_length = %i not allowed at the moment\n", s->md.filter_length);
-    exit(1);
-  }
 
   if ( s->md.integrator < rk2 || s->md.integrator > msbdf ) {
     fprintf(stderr, "Invalid choice of integrator : %d.  Defaulting to rkf45. \n", s->md.integrator); 

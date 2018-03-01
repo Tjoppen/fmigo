@@ -88,7 +88,7 @@ static int jac_coupled_sho (double t, const double x[], double *dfdx, double dfd
   return GSL_SUCCESS;
 }
 
-static int epce_post_step(double t, int n, const double outputs[], void * params) {
+static int epce_post_step(double t, double dt, int n, const double outputs[], void * params) {
     state_t *s = params;
 
     s->md.x = outputs[0];
@@ -115,12 +115,7 @@ static fmi2Status coupled_sho_init(ModelInstance *comp) {
     }
 
     s->simulation.sim = cgsl_init_simulation(
-        cgsl_epce_default_model_init(
-            cgsl_model_default_alloc(3, initials, s, coupled_sho, jac_coupled_sho, NULL, NULL, 0),
-            s->md.filter_length,
-            epce_post_step,
-            s
-        ),
+        cgsl_model_default_alloc(3, initials, s, coupled_sho, jac_coupled_sho, NULL, epce_post_step, 0),
         rkf45, 1e-5, 0, 0, s->md.dump_data, f
     );
     return fmi2OK;

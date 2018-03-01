@@ -37,10 +37,11 @@ typedef int (* ode_jacobian_ptr ) (double t, const double y[], double * dfdy, do
 /** Pre/post step callbacks
  *      t: Start of the current time step (communicationPoint)
  *     dt: Length of the current time step (communicationStepSize)
+ *      n: Size of system
  *      y: For pre, the values of the variables before stepping. For post, after.
  * params: Opaque pointer
  */
-typedef int (* pre_post_step_ptr ) (double t, double dt, const double y[], void * params);
+typedef int (* pre_post_step_ptr ) (double t, double dt, int n, const double y[], void * params);
 
 enum cgsl_callback_actions{
   CGSL_RESTART = 1                     // multistep integrators need a reset when
@@ -223,34 +224,6 @@ void cgsl_simulation_set_variable_step( cgsl_simulation * s );
 /** Get/set FMU state */
 void cgsl_simulation_get( cgsl_simulation *s );
 void cgsl_simulation_set( cgsl_simulation *s );
-
-typedef int (*epce_post_step_ptr) (
-  double t, 
-    int n,                          /** Number of variables */
-    const double outputs[],         /** Outputs. Filtered or not, depending
-                                     * on filter_length */
-    void * params                   /** User pointer */
-);
-
-cgsl_model * cgsl_epce_model_init( cgsl_model  *m, cgsl_model *f,
-        int filter_length,
-        epce_post_step_ptr epce_post_step,
-        void *epce_post_step_params
-);
-
-/**
- * Allocate an EPCE filtered model for the given model with the default filter:
- *
- *  zdot = x
- *
- * The corresponding Jacobian is the identity matrix.
- */
-cgsl_model * cgsl_epce_default_model_init(
-        cgsl_model  *m,
-        int filter_length,
-        epce_post_step_ptr epce_post_step,
-        void *epce_post_step_params
-);
 
 #ifdef __cplusplus
 }

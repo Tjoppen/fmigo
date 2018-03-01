@@ -97,7 +97,7 @@ static void get_initial_states(state_t *s, double *initials) {
   initials[2] = 0;
 }
 
-static int sync_out(double t, int n, const double outputs[], void * params) {
+static int sync_out(double t, double dt, int n, const double outputs[], void * params) {
   state_t *s = params;
   double dxdt[3];
 
@@ -119,12 +119,7 @@ static fmi2Status engine2_init(ModelInstance *comp) {
   get_initial_states(s, initials);
 
   s->simulation = cgsl_init_simulation(
-    cgsl_epce_default_model_init(
-      cgsl_model_default_alloc(get_initial_states_size(s), initials, s, engine2, jac_engine2, NULL, NULL, 0),
-      s->md.filter_length,
-      sync_out,
-      s
-    ),
+    cgsl_model_default_alloc(get_initial_states_size(s), initials, s, engine2, jac_engine2, NULL, sync_out, 0),
     s->md.integrator, 1e-6, 0, 0, s->md.octave_output, s->md.octave_output ? fopen(s->md.octave_output_file, "w") : NULL
   );
   //s->simulation.file = fopen( "engine2.m", "w+" );

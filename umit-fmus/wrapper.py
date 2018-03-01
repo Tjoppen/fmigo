@@ -55,6 +55,12 @@ if __name__ == '__main__':
     is written to resources/directional.txt in the output FMU.
     '''
   )
+  parser.add_argument(
+    '-f',
+    dest='filter',
+    action='store_true',
+    help='''Enable EPCE filter''',
+  )
   args = parser.parse_args()
 
   modelIdentifier = args.modelIdentifier if args.modelIdentifier != None else os.path.basename(args.outputfmu).split('.')[0]
@@ -96,6 +102,11 @@ project(wrapper)
 
 include(CheckIncludeFiles)
 check_include_files(fmilib.h HAVE_FMILIB_H)
+option(WRAPPER_USE_FILTER "Use EPCE filter on outputs?" OFF)
+
+if (WRAPPER_USE_FILTER)
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DWRAPPER_USE_FILTER")
+endif ()
 
 # Don't bother building FMILib if we have one installed systemwide
 # Assume it's a good version. We can't really check if it is >= 2.0.1 unfortunately
@@ -142,6 +153,7 @@ wrap_existing_fmu2("%s" "%s" "${CMAKE_CURRENT_BINARY_DIR}")
     '-DFMILIB_BUILD_SHARED_LIB=OFF',
     '-DFMILIB_INSTALL_SUBLIBS=OFF',
     '-DFMILIB_GENERATE_DOXYGEN_DOC=OFF',
+    '-DWRAPPER_USE_FILTER=' + ('ON' if args.filter else 'OFF'),
     '-DCMAKE_BUILD_TYPE=%s' % args.build_type,
     '--no-warn-unused-cli', # Don't warn about FMILIB_* being unused in case of using system FMILib
   ]

@@ -59,6 +59,13 @@ for f in ['resources/directional.txt', 'resources/bouncingBall.fmu']:
     exit(1)
 EOF
 
+# Give wrapped FMUs a test run
+for f in bouncingBall_wrapped_Debug.fmu bouncingBall_wrapped_Release.fmu bouncingBall_wrapped_directional.fmu
+do
+  echo Making sure $f runs
+  mpiexec -np 2 fmigo-mpi ${BUILD_DIR}/$f > /dev/null
+done
+
 # Test alternative MPI command line
 mpiexec -np 1 fmigo-mpi -f none \
   : -np 1 fmigo-mpi ${FMUS_DIR}/gsl2/clutch2/clutch2.fmu

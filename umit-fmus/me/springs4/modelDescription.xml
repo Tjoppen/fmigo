@@ -112,6 +112,42 @@
         causality="output">
       <Real/>
     </ScalarVariable>
+    <ScalarVariable
+        name="dx1"
+        valueReference="111"
+        description="integral of ddx1"
+        variability="continuous"
+        initial="exact"
+        causality="output">
+      <Real start="0"/>
+    </ScalarVariable>
+    <ScalarVariable
+        name="ddx1"
+        valueReference="112"
+        description="d(dx1) = v1 - v1_i"
+        variability="continuous"
+        initial="exact"
+        causality="output">
+      <Real start="0" derivative="11"/>
+    </ScalarVariable>
+    <ScalarVariable
+        name="dx2"
+        valueReference="113"
+        description="integral of ddx2"
+        variability="continuous"
+        initial="exact"
+        causality="output">
+      <Real start="0"/>
+    </ScalarVariable>
+    <ScalarVariable
+        name="ddx2"
+        valueReference="114"
+        description="d(dx2) = v2 - v2_i"
+        variability="continuous"
+        initial="exact"
+        causality="output">
+      <Real start="0" derivative="13"/>
+    </ScalarVariable>
 
     <!-- internal parameter -->
     <ScalarVariable
@@ -189,27 +225,9 @@
       <Real start="0"/>
     </ScalarVariable>
     <ScalarVariable
-        name="x1_i"
-        valueReference="19"
-        description="driving position"
-        variability="continuous"
-        initial="approx"
-        causality="input" >
-      <Real start="0"/>
-    </ScalarVariable>
-    <ScalarVariable
         name="v1_i"
         valueReference="20"
         description="driving velocity"
-        variability="continuous"
-        initial="approx"
-        causality="input" >
-      <Real start="0"/>
-    </ScalarVariable>
-    <ScalarVariable
-        name="x2_i"
-        valueReference="21"
-        description="driving position"
         variability="continuous"
         initial="approx"
         causality="input" >
@@ -274,6 +292,8 @@
       <Unknown index="3"/>
       <Unknown index="7"/>
       <Unknown index="8"/>
+      <Unknown index="12"/>
+      <Unknown index="14"/>
     </Derivatives>
     <DiscreteStates/>
     <InitialUnknowns />

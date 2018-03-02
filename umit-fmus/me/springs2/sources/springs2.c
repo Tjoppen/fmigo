@@ -5,14 +5,17 @@
 
 static void update_all(modelDescription_t *md){
     double fi = - md->k_internal * (md->x1 - md->x2) - md->gamma_internal * (md->v1 - md->v2);//out
-    md->fc1 = md->k1 * (md->x1 - md->x1_i) + md->gamma1 * (md->v1 - md->v1_i);//out
-    md->fc2 = md->k2 * (md->x2 - md->x2_i) + md->gamma2 * (md->v2 - md->v2_i);//out
+    md->fc1 = md->k1 * md->dx1 + md->gamma1 * (md->v1 - md->v1_i);//out
+    md->fc2 = md->k2 * md->dx2 + md->gamma2 * (md->v2 - md->v2_i);//out
 
     md->minv1 = 1.0/md->m1;
     md->minv2 = 1.0/md->m2;
 
     md->a1 = (fi - md->fc1 + md->f1) * md->minv1;
     md->a2 = (-fi- md->fc2 + md->f2) * md->minv2;
+
+    md->ddx1 = md->v1 - md->v1_i;
+    md->ddx2 = md->v2 - md->v2_i;
 }
 
 static fmi2Status getEventIndicator(const modelDescription_t *md, size_t ni, fmi2Real eventIndicators[]){

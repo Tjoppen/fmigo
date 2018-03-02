@@ -523,8 +523,10 @@ static fmi2Status generated_fmi2GetReal(ModelInstance *comp, const modelDescript
 #ifdef WRAPPER_USE_FILTER
     if (comp->s.simulation.num_averaged_outputs > 0) {
         //check for matches in real_output_vrs
-        for (size_t i = 0; i < nvr; i++) {
-            for (int j = 0; j < NUMBER_OF_REAL_OUTPUTS; j++) {
+        size_t i;
+        int j;
+        for (i = 0; i < nvr; i++) {
+            for (j = 0; j < NUMBER_OF_REAL_OUTPUTS; j++) {
                 if (vr[i] == real_output_vrs[j]) {
                     //do we have two averages to average (sinc^2) or just one (sinc)?
                     //fprintf(stderr, "VR %i: %f -> ", vr[i], value[i]);
@@ -710,7 +712,8 @@ static fmi2Status getPartial(ModelInstance *comp, fmi2ValueReference vr, fmi2Val
 static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
 #ifdef WRAPPER_USE_FILTER
     //clear averages
-    for (int i = 0; i < NUMBER_OF_REAL_OUTPUTS; i++) {
+    int i;
+    for (i = 0; i < NUMBER_OF_REAL_OUTPUTS; i++) {
         s->simulation.sim.model->x[NUMBER_OF_STATES+i] = 0;
     }
 #endif
@@ -719,7 +722,7 @@ static void doStep(state_t *s, fmi2Real currentCommunicationPoint, fmi2Real comm
 
 #ifdef WRAPPER_USE_FILTER
     //rotate averages
-    for (int i = 0; i < NUMBER_OF_REAL_OUTPUTS; i++) {
+    for (i = 0; i < NUMBER_OF_REAL_OUTPUTS; i++) {
         s->simulation.averaged_outputs[0][i] = s->simulation.averaged_outputs[1][i];
         s->simulation.averaged_outputs[1][i] = s->simulation.sim.model->x[NUMBER_OF_STATES+i] / communicationStepSize;
         //fprintf(stderr, "mean %i: %f\n", i, s->simulation.averaged_outputs[1][i]);

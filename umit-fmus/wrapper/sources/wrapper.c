@@ -30,7 +30,7 @@
 #error NUMBER_OF_REAL_OUTPUTS == 0 is suspicious
 #endif
 
-static const int real_output_vrs[] = REAL_OUTPUT_VRS;
+static const fmi2_value_reference_t real_output_vrs[] = REAL_OUTPUT_VRS;
 
 typedef struct Backup
 {

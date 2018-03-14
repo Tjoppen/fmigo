@@ -170,6 +170,25 @@ function (add_wrapped dir sourcetarget)
 endfunction ()
 
 
+function (add_wrapped_filter dir sourcetarget)
+  set(target "wrapper_filtered_${sourcetarget}")
+  set(srcxml "${${sourcetarget}_xmldir}/modelDescription.xml")
+  set(dstxml ${CMAKE_CURRENT_BINARY_DIR}/${dir}/modelDescription.xml)
+
+  add_custom_command(
+    OUTPUT ${dstxml}
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/${dir}
+    COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/wrapper/xml2wrappedxml.py
+         -x ${srcxml} -f "${${sourcetarget}_fmu}" -i ${target} > ${dstxml}
+    DEPENDS ${srcxml} ${sourcetarget} ${CMAKE_CURRENT_SOURCE_DIR}/wrapper/xml2wrappedxml.py)
+  add_custom_target(${target}_xml DEPENDS ${dstxml})
+
+  add_fmu_internal("${CMAKE_CURRENT_SOURCE_DIR}/${dir}" "${CMAKE_CURRENT_BINARY_DIR}/${dir}" "${CMAKE_CURRENT_BINARY_DIR}/${dir}" "${target}" "wrapper/sources/wrapper.c" "cgsl;fmilib" "wrapper/sources" FALSE "-w" "${target}_xml" "${${sourcetarget}_fmu}")
+  add_dependencies(${target} ${sourcetarget}_fmu_target)
+  
+  set_target_properties(${target} PROPERTIES COMPILE_DEFINITIONS WRAPPER_USE_FILTER)
+endfunction ()
+
 function (add_wrapped_fmu dir sourcetarget sourcefmu)
   set(target wrapperfmu_${sourcetarget})
   set(dstxml ${CMAKE_CURRENT_BINARY_DIR}/${dir}/modelDescription.xml)

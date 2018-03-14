@@ -55,6 +55,8 @@ add_wrapped(meWrapper/springs                   springs)
 add_wrapped(meWrapper/springs2                  springs2)
 add_wrapped(meWrapper/springs3                  springs3)
 add_wrapped(meWrapper/springs4                  springs4)
+add_wrapped_filter(meWrapperFiltered/springs2                  springs2)
+
 
 # These generate the modelDescription from the source FMU
 add_wrapped_fmu(meWrapperFmu/bouncingBall       bouncingBall    "${bouncingBall_fmu}")

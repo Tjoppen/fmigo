@@ -3,6 +3,7 @@
 //We need to do this in most binaries which is part of our project, but not all.
 //So we can't just stick it in cgsl and be done, a gentler touch is required.
 #ifdef WIN32
+#pragma once //have only needed to do this on WIN32 so far, since dd52c39
 #ifdef _INC_MATH
 #error Include hypotmath.h only. It also includes math.h for you
 #endif

@@ -1,3 +1,4 @@
+#include "hypotmath.h"
 #ifndef WIN32
 #include <unistd.h>
 #else
@@ -29,15 +30,15 @@
 #error NUMBER_OF_REAL_OUTPUTS == 0 is suspicious
 #endif
 
-static const int real_output_vrs[] = REAL_OUTPUT_VRS;
+static const fmi2_value_reference_t real_output_vrs[] = REAL_OUTPUT_VRS;
 
 typedef struct Backup
 {
     double t;
     double h;
     double dydt[NUMBER_OF_STATES+NUMBER_OF_REAL_OUTPUTS];
-    fmi2_real_t ei[NUMBER_OF_EVENT_INDICATORS];
-    fmi2_real_t ei_b[NUMBER_OF_EVENT_INDICATORS];
+    fmi2_real_t ei[NUMBER_OF_EVENT_INDICATORS+1]; //+1 for when NUMBER_OF_EVENT_INDICATORS=0
+    fmi2_real_t ei_b[NUMBER_OF_EVENT_INDICATORS+1];
     fmi2_real_t x[NUMBER_OF_STATES+NUMBER_OF_REAL_OUTPUTS];
     unsigned long failed_steps;
     fmi2_event_info_t eventInfo;

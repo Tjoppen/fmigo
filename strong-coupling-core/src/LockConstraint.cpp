@@ -16,7 +16,11 @@ LockConstraint::LockConstraint(
     const Vec3& localAnchorB,
     const Quat& localOrientationA,
     const Quat& localOrientationB
-) : BallJointConstraint(connA,connB,localAnchorA,localAnchorB) {
+) : BallJointConstraint(connA,connB,localAnchorA,localAnchorB),
+    m_xr(connA, connB),
+    m_yr(connA, connB),
+    m_zr(connA, connB)
+{
     addEquation(&m_xr);
     addEquation(&m_yr);
     addEquation(&m_zr);
@@ -25,13 +29,6 @@ LockConstraint::LockConstraint(
     m_xr.setG( 0, 0, 0,-1, 0, 0, 0, 0, 0, 1, 0, 0);
     m_yr.setG( 0, 0, 0, 0,-1, 0, 0, 0, 0, 0, 1, 0);
     m_zr.setG( 0, 0, 0, 0, 0,-1, 0, 0, 0, 0, 0, 1);
-
-    m_xr.setConnectors(connA,connB);
-    m_yr.setConnectors(connA,connB);
-    m_zr.setConnectors(connA,connB);
-    m_xr.setDefault();
-    m_yr.setDefault();
-    m_zr.setDefault();
 }
 
 void LockConstraint::update(){

@@ -11,20 +11,17 @@ BallJointConstraint::BallJointConstraint(
     Connector* connB,
     const Vec3& localAnchorA,
     const Vec3& localAnchorB
-) : Constraint(connA,connB){
+) : Constraint(connA,connB),
+    m_x(connA, connB),
+    m_y(connA, connB),
+    m_z(connA, connB)
+{
     addEquation(&m_x);
     addEquation(&m_y);
     addEquation(&m_z);
 
     m_localAnchorA.copy(localAnchorA);
     m_localAnchorB.copy(localAnchorB);
-
-    m_x.setConnectors(connA,connB);
-    m_y.setConnectors(connA,connB);
-    m_z.setConnectors(connA,connB);
-    m_x.setDefault();
-    m_y.setDefault();
-    m_z.setDefault();
 }
 
 BallJointConstraint::~BallJointConstraint(){}

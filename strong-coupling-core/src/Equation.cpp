@@ -3,13 +3,13 @@
 using namespace sc;
 using namespace std;
 
-Equation::Equation(){
+Equation::Equation(const vector<Connector*>& connectors) : m_connectors(connectors) {
     setDefault();
 }
 
 Equation::Equation(Connector * connA, Connector * connB){
-    m_connA = connA;
-    m_connB = connB;
+    m_connectors.push_back(connA);
+    m_connectors.push_back(connB);
 
     // Set default solver params
     setDefault();
@@ -27,17 +27,10 @@ void Equation::setRelativeVelocity(double v){
     m_relativeVelocity = v;
 }
 
-void Equation::setConnectors(Connector* cA, Connector* cB) {
-    m_connA = cA;
-    m_connB = cB;
-    m_connectors.push_back(m_connA);
-    m_connectors.push_back(m_connB);
-}
-
 void Equation::setDefaultViolation(){
     Vec3 zero;
-    m_g = m_G_A.multiply(m_connA->m_position, zero) +
-          m_G_B.multiply(m_connB->m_position, zero);
+    m_g = m_G_A.multiply(m_connectors[0]->m_position, zero) +
+          m_G_B.multiply(m_connectors[1]->m_position, zero);
 }
 
 void Equation::setViolation(double g){

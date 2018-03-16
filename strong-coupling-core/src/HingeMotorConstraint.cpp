@@ -14,11 +14,11 @@ HingeMotorConstraint::HingeMotorConstraint(
     const Vec3& localAxisA,
     const Vec3& localAxisB,
     double relativeVelocity
-) : Constraint(connA,connB) {
+) : Constraint(connA,connB),
+    m_equation(connA, connB)
+{
     addEquation(&m_equation);
     m_equation.setRelativeVelocity(relativeVelocity);
-    m_equation.setConnectors(connA,connB);
-    m_equation.setDefault();
     m_localAxisA = localAxisA;
     m_localAxisB = localAxisB;
 }

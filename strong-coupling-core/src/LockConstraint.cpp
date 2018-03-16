@@ -43,13 +43,13 @@ void LockConstraint::update(){
     Vec3 z(0,0,1);
     Vec3 zero(0,0,0);
 
-    Vec3 xi = m_connA->m_quaternion . multiplyVector( x );
-    Vec3 yi = m_connA->m_quaternion . multiplyVector( y );
-    Vec3 zi = m_connA->m_quaternion . multiplyVector( z );
+    Vec3 xi = m_connectors[0]->m_quaternion . multiplyVector( x );
+    Vec3 yi = m_connectors[0]->m_quaternion . multiplyVector( y );
+    Vec3 zi = m_connectors[0]->m_quaternion . multiplyVector( z );
 
-    Vec3 xj = m_connB->m_quaternion . multiplyVector( x );
-    Vec3 yj = m_connB->m_quaternion . multiplyVector( y );
-    Vec3 zj = m_connB->m_quaternion . multiplyVector( z );
+    Vec3 xj = m_connectors[1]->m_quaternion . multiplyVector( x );
+    Vec3 yj = m_connectors[1]->m_quaternion . multiplyVector( y );
+    Vec3 zj = m_connectors[1]->m_quaternion . multiplyVector( z );
 
     int i = -1;
 

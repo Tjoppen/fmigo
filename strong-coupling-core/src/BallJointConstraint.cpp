@@ -42,8 +42,8 @@ void BallJointConstraint::update(){
     Vec3 z(0,0,1);
 
     // Get world oriented attachment vectors
-    Vec3 ri = m_connA->m_quaternion.multiplyVector(m_localAnchorA);
-    Vec3 rj = m_connB->m_quaternion.multiplyVector(m_localAnchorB);
+    Vec3 ri = m_connectors[0]->m_quaternion.multiplyVector(m_localAnchorA);
+    Vec3 rj = m_connectors[1]->m_quaternion.multiplyVector(m_localAnchorB);
 
     //printf("ri=%g %g %g\n", ri[0], ri[1], ri[2]);
     //printf("rj=%g %g %g\n", rj[0], rj[1], rj[2]);
@@ -54,7 +54,7 @@ void BallJointConstraint::update(){
     //      = G * W
     //      ... and same for y and z
 
-    Vec3 gvec = m_connB->m_position + rj - m_connA->m_position - ri;
+    Vec3 gvec = m_connectors[1]->m_position + rj - m_connectors[0]->m_position - ri;
     m_x.setViolation(gvec.dot(x));
     m_y.setViolation(gvec.dot(y));
     m_z.setViolation(gvec.dot(z));

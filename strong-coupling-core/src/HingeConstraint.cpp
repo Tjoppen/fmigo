@@ -28,8 +28,8 @@ HingeConstraint::HingeConstraint(
 
 void HingeConstraint::update(){
 
-    Quat qA = m_connA->m_quaternion;
-    Quat qB = m_connB->m_quaternion;
+    Quat qA = m_connectors[0]->m_quaternion;
+    Quat qB = m_connectors[1]->m_quaternion;
 
     // Local vector in A that is orthogonal to its pivot
     Vec3 nA_local = m_localAnchorA.cross(m_localPivotA);

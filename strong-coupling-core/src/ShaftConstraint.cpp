@@ -25,5 +25,5 @@ ShaftConstraint::~ShaftConstraint() {
 
 void ShaftConstraint::update() {
     //our violation is simply the difference in angle between the two shafts
-    m_eq.setViolation(m_connB->m_shaftAngle - m_connA->m_shaftAngle);
+    m_eq.setViolation(m_connectors[1]->m_shaftAngle - m_connectors[0]->m_shaftAngle);
 }

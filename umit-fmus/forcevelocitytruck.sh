@@ -30,7 +30,19 @@ run_kinematic_clutch() {
     DT2=$(printf "%03i\n" $(bc -l <<< "$dt * 100" | sed -e "s/\\..*//"))
     METHOD=jacobi
     GAIN=0.2
-    OUTNAME="clutch-h-$METHOD-$DT2-gain-$GAIN.csv"
+    echo $DT2
+    OUTNAME="clutch-$METHOD-$DT2-gain-$GAIN.csv"
+
+    x="mpiexec -np 5 fmigo-mpi $NN -F fieldnames.txt \
+	    -m $METHOD \
+	    -t 100 -d 0.01 -p\
+            0,8,$GAIN \
+	    -C shaft,0,1,0,1,2,3,0,1,2,3 -C shaft,1,2,5,6,7,8,0,1,2,3 -C shaft,2,3,6,7,8,9,0,1,2,3 -c 3,1,0,6 \
+            ${FMUS_DIR}/kinematictruck/engine/engine.fmu \
+            ${FMUS_DIR}/kinematictruck/kinclutch/kinclutch.fmu \
+            ${FMUS_DIR}/kinematictruck/gearbox2/gearbox2.fmu \
+            ${FMUS_DIR}/kinematictruck/body/body.fmu  > $OUTNAME"
+    echo $x
 
     mpiexec -np 5 fmigo-mpi $NN -F fieldnames.txt \
 	    -m $METHOD \
@@ -42,12 +54,7 @@ run_kinematic_clutch() {
             ${FMUS_DIR}/kinematictruck/gearbox2/gearbox2.fmu \
             ${FMUS_DIR}/kinematictruck/body/body.fmu  > $OUTNAME
 
-            #sed -e "s/,/ /g" < out.csv > out.ssv    #CSV -> space separated values
-            #mv out.csv $OUTNAME
-
-            #handle_kinematic_clutch_result
 }
 
 run_kinematic_clutch
-
 python2 plotforcevelocity.py $OUTNAME

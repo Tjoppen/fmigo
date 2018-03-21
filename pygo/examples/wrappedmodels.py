@@ -55,6 +55,11 @@ class two_bodies(module):
                     name="two_masses",
                     connectors={"in" : ["x1", "v1", "a1", "f1"],
                                 "out": ["x2","v2","a2","f2"]},
+                    ## this will create aliases in the HDF5 files.  One can
+                    ## specify the connections either using the aliased
+                    ## names or the original names in the
+                    ## modelDescription.xml file.  This applies to both
+                    ## inputs and outputs. 
                     inputs = {
                             "in_x1": "x1_i", "in_v1": "v1_i", "in_f1": "f1",
                             "in_x2": "x2_i", "in_v2": "v2_i", "in_f2": "f2"
@@ -110,13 +115,18 @@ def make_parameters(filtered, N, init, masses, isprings, csprings, kinematic=Fal
 
     if kinematic:
         for i in range(N-1):
-            couplings += ("m%d" %i, "out", "m%d" %(i+1), "in"),
+            # one can either use a 4-tuple using aliased signals: 
+            #couplings += ("m%d" %i, "out", "m%d" %(i+1), "in"),
+            # or directly use the named value references or simply value
+            # references in a 10-tuple
+            couplings+= ("m%d" %i, "x1", "v1", "a1", "f1",
+                                "m%d" %(i+1), "x2","v2","a2","f2"),
     else:
         for i in range(N-1):
             # this is hard wired to go left to right,
             #  output velocity, input forces
-            signals += ("m%d" %i, "out_v2", "m%d" %(i+1), "in_v1"),
-            signals += ("m%d" %(i+1), "out_f1", "m%d" %(i), "in_f2"),
+            signals += ("m%d" %i, "v2", "m%d" %(i+1), "v1_i"),
+            signals += ("m%d" %(i+1), "fc1", "m%d" %(i), "in_f2"),
 
     return fmus, couplings, signals
 
@@ -165,7 +175,7 @@ tend = 10
 ## We want to prune the following case:
 ## kinematic and not parallel and filtered (makes no sense)
 ##
-for step in []:   #[1e-1, 1e-2, 1e-3, 1e-4]:
+for step in [1e-2]:   #[1e-1, 1e-2, 1e-3, 1e-4]:
     for kinematic in [True, False]:
         for filtered in [True, False]:
             for parallel in [True, False]:

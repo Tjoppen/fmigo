@@ -186,10 +186,15 @@ class simulation:
         c = []
         self.is_kinematic = True if self.couplings else False
         for i in self.couplings:
-            c += ["-C", "shaft,%d,%d,%s,%s" %
-                  (self.fmus[i[0]].id, self.fmus[i[2]].id, 
-                   ",".join(self.fmus[i[0]].connectors[i[1]]),
-                   ",".join(self.fmus[i[2]].connectors[i[3]]))]
+            if len(i) == 4:
+                c += ["-C", "shaft,%d,%d,%s,%s" %
+                      (self.fmus[i[0]].id, self.fmus[i[2]].id, 
+                       ",".join(self.fmus[i[0]].connectors[i[1]]),
+                       ",".join(self.fmus[i[2]].connectors[i[3]]))]
+            else:
+                c+= ["-C", "shaft,%d,%d,%s,%s,%s,%s,%s,%s,%s,%s"
+                     %(self.fmus[i[0]].id, self.fmus[i[5]].id,
+                       i[1], i[2], i[3], i[4], i[6], i[7], i[8], i[9])]
         self.cmd_couplings = c
 
     def init_signals(self):
@@ -197,9 +202,12 @@ class simulation:
         if self.signals:
             for i in self.signals:
                 c+= ["-c", "%d,%s,%d,%s" % (self.fmus[i[0]].id,
-                                            self.fmus[i[0]].outputs[i[1]], 
+                                            self.fmus[i[0]].outputs[i[1]] 
+                                            if hasattr(self.fmus[i[0]], "outputs") and i[1] in self.fmus[i[0]].outputs else i[1], 
                                             self.fmus[i[2]].id,
-                                            self.fmus[i[2]].inputs[i[3]])]
+                                            self.fmus[i[2]].inputs[i[3]] if hasattr(self.fmus[i[2]], "inputs") and i[3] in self.fmus[i[2]].inputs else i[3]
+                                            )
+                     ]
             self.cmd_signals = c
     # find the runtime resources dependencies  and paths, which would
     # include the AGX paths and environment variables. 

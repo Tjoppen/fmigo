@@ -53,8 +53,13 @@ python umit-fmus/wrapper.py -f -t Release ${FMUS_DIR}/me/bouncingBall/bouncingBa
 
 # Test -d option for adding resources/directional.txt
 python umit-fmus/wrapper.py -d "0 1 2" -d "3 4 5" ${FMUS_DIR}/me/bouncingBall/bouncingBall.fmu ${BUILD_DIR}/bouncingBall_wrapped_directional.fmu
-# Check that the file actually has directional.txt and the source FMU in it
-python <<EOF
+
+# Can't do the following on msys2 bash + python2/3
+# For some reason python wants unmangled filenames
+if [[ ! "$(uname)" = *"MINGW"* ]]
+then
+  # Check that the file actually has directional.txt and the source FMU in it
+  python <<EOF
 import zipfile
 z = zipfile.ZipFile('${BUILD_DIR}/bouncingBall_wrapped_directional.fmu', 'r')
 for f in ['resources/directional.txt', 'resources/bouncingBall.fmu']:
@@ -62,6 +67,7 @@ for f in ['resources/directional.txt', 'resources/bouncingBall.fmu']:
     print('No %s in wrapped FMU' % f)
     exit(1)
 EOF
+fi
 
 # Give wrapped FMUs a test run
 for f in bouncingBall_wrapped_Debug.fmu bouncingBall_wrapped_Release.fmu bouncingBall_wrapped_directional.fmu \

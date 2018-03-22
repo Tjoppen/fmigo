@@ -116,7 +116,9 @@ def make_parameters(filtered, N, init, masses, isprings, csprings, kinematic=Fal
     if kinematic:
         for i in range(N-1):
             # one can either use a 4-tuple using aliased signals: 
+
             #couplings += ("m%d" %i, "out", "m%d" %(i+1), "in"),
+
             # or directly use the named value references or simply value
             # references in a 10-tuple
             couplings+= ("m%d" %i, "x1", "v1", "a1", "f1",
@@ -163,32 +165,3 @@ class chain_mass_springs(simulation):
                             % ( "filtered" if filtered else "", N, "kinematic" if kinematic else "signals")
         )
 
-## try this thing
-N = 3
-init = [[1,0,0,0]] + [[0,0,0,0]]*(N-1)
-masses = [[1,2]]*N
-isprings = [[1,0]]*N
-mu = 1/ ( 1/ masses[0][0] + 1/masses[0][1]) 
-k = 3
-tend = 10
-##
-## We want to prune the following case:
-## kinematic and not parallel and filtered (makes no sense)
-##
-for step in [1e-2]:   #[1e-1, 1e-2, 1e-3, 1e-4]:
-    for kinematic in [True, False]:
-        for filtered in [True, False]:
-            for parallel in [True, False]:
-                cd = not (kinematic  and filtered ) and  not (kinematic and not parallel) 
-                if cd:
-                    if not kinematic:
-                        c = mu*(k*2*math.pi/step)**2
-                        d = 2*0.7*math.sqrt(c*mu)
-                        csprings = [[c,d,0,0]]*N
-                        csprings[0] = [0,0,0,0]
-                    else:
-                        csprings = [[0,0,0,0]]*N
-                    sim  = chain_mass_springs(filtered, N, init, masses, isprings, csprings, kinematic=kinematic)
-                    sim.simulate(tend, step, mode="mpi", parallel=parallel, datafile="chain")
-
-                         

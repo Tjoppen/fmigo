@@ -131,8 +131,8 @@ static int vrFromKeyName(FMIClient* client, string key){
   }
 }
 
-#define toVR(type, index)                                   \
-  vrFromKeyName(clients[it->type##FMU],it->vrORname[index])
+#define toVR(i, index)                                   \
+  vrFromKeyName(clients[it->fmus[i]],it->vrORname[index])
 
 static Solver* setupConstraintsAndSolver(vector<strongconnection> strongConnections, vector<FMIClient*> clients) {
     if (strongConnections.size() == 0) {
@@ -154,21 +154,21 @@ static Solver* setupConstraintsAndSolver(vector<strongconnection> strongConnecti
                         t == 'b' ? "ball joint" : "lock", it->vrORname.size());
             }
 
-            StrongConnector *scA = findOrCreateBallLockConnector(clients[it->fromFMU],
-                                       toVR(from,0), toVR(from,1), toVR(from,2),
-                                       toVR(from,3), toVR(from,4), toVR(from,5),
-                                       toVR(from,6), toVR(from,7), toVR(from,8),
-                                       toVR(from,9), toVR(from,10), toVR(from,11), toVR(from,12),
-                                       toVR(from,13), toVR(from,14), toVR(from,15),
-                                       toVR(from,16), toVR(from,17), toVR(from,18) );
+            StrongConnector *scA = findOrCreateBallLockConnector(clients[it->fmus[0]],
+                                       toVR(0,0), toVR(0,1), toVR(0,2),
+                                       toVR(0,3), toVR(0,4), toVR(0,5),
+                                       toVR(0,6), toVR(0,7), toVR(0,8),
+                                       toVR(0,9), toVR(0,10), toVR(0,11), toVR(0,12),
+                                       toVR(0,13), toVR(0,14), toVR(0,15),
+                                       toVR(0,16), toVR(0,17), toVR(0,18) );
 
-            StrongConnector *scB = findOrCreateBallLockConnector(clients[it->toFMU],
-                                       toVR(to,19), toVR(to,20), toVR(to,21),
-                                       toVR(to,22), toVR(to,23), toVR(to,24),
-                                       toVR(to,25), toVR(to,26), toVR(to,27),
-                                       toVR(to,28), toVR(to,29), toVR(to,30), toVR(to,31),
-                                       toVR(to,32), toVR(to,33), toVR(to,34),
-                                       toVR(to,35), toVR(to,36), toVR(to,37) );
+            StrongConnector *scB = findOrCreateBallLockConnector(clients[it->fmus[1]],
+                                       toVR(1,19), toVR(1,20), toVR(1,21),
+                                       toVR(1,22), toVR(1,23), toVR(1,24),
+                                       toVR(1,25), toVR(1,26), toVR(1,27),
+                                       toVR(1,28), toVR(1,29), toVR(1,30), toVR(1,31),
+                                       toVR(1,32), toVR(1,33), toVR(1,34),
+                                       toVR(1,35), toVR(1,36), toVR(1,37) );
 
             con = t == 'b' ? new BallJointConstraint(scA, scB, Vec3(), Vec3())
                            : new LockConstraint(scA, scB, Vec3(), Vec3(), Quat(), Quat());
@@ -181,11 +181,11 @@ static Solver* setupConstraintsAndSolver(vector<strongconnection> strongConnecti
                 fatal("Bad shaft specification: need 8 VRs ([shaft angle + angular velocity + angular acceleration + torque] x 2)\n");
             }
 
-            StrongConnector *scA = findOrCreateShaftConnector(clients[it->fromFMU],
-                                       toVR(from,0), toVR(from,1), toVR(from,2), toVR(from,3));
+            StrongConnector *scA = findOrCreateShaftConnector(clients[it->fmus[0]],
+                                       toVR(0,0), toVR(0,1), toVR(0,2), toVR(0,3));
 
-            StrongConnector *scB = findOrCreateShaftConnector(clients[it->toFMU],
-                                       toVR(to,4), toVR(to,5), toVR(to,6), toVR(to,7));
+            StrongConnector *scB = findOrCreateShaftConnector(clients[it->fmus[1]],
+                                       toVR(1,4), toVR(1,5), toVR(1,6), toVR(1,7));
 
             con = new ShaftConstraint(scA, scB);
             break;

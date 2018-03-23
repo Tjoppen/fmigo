@@ -361,6 +361,7 @@ where SCONNX has the following syntax:
     SCONNX=TYPE,FMU0,FMU1,[PARAMS]
 
 FMU0 and FMU1 are the two sides of the strong coupling.
+It is also possible to have strong connections involving more than two FMUs, see "multiway" further down.
 PARAMS depend on TYPE, and TYPE is the type of connection:
 
     [ball|lock]:
@@ -381,17 +382,44 @@ Examples:
 
 Meaning: Connect a shaft between FMU0 and FMU1, with VRs shaftAngle=20, angularVelocity=19, angularAcceleration=14 and torque=17 on both sides
 
-    -C\ lock,0,1,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18
+    -C\ lock,0,1,\\
+            0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,\\
+            0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18
 
-Meaning: Create a lock constraints between FMU0 and FMU1 with VRs pos={0,1,2}, acc={3,4,5}, force={6,7,8}, quat={9,10,11,12}, angAcc={13,14,15} and torque={16,17,18} on both sides.
+Meaning: Create a lock constraints between FMU0 and FMU1 w  ith VRs pos={0,1,2}, acc={3,4,5}, force={6,7,8}, quat={9,10,11,12}, angAcc={13,14,15} and torque={16,17,18} on both sides.
 
 Note that like all lists you can concatenate the strong connection specifications with colon characters, but the result is hardly readable:
 
-    -C\ shaft,0,1,20,19,14,17,20,19,14,17:lock,0,1,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18:ball,1,2,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18
+    -C\ shaft,0,1,\\
+            20,19,14,17,20,19,14,17:\\
+        lock,0,1,\\
+            0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,\\
+            0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18:\\
+        ball,1,2,\\
+            0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,\\
+            0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18
 
 Just like weak connections, variable references can be resolved by name. So the following is also OK:
 
-    -C\ shaft,0,1,theta1,omega1,alpha1,tau1,angle2,angularVelocity2,angularAcceleration2,torque2
+    -C\ shaft,0,1,\\
+        theta1,omega1,alpha1,tau1,\\
+        angle2,angularVelocity2,angularAcceleration2,torque2
+
+It is also possible to specify multi-way shaft-like constraints using the "multiway" strong connection,
+which is useful for things like differential gears.
+Such contraints involve N FMUs (N>=2) and an extra weight in each connector specification.
+The syntax is:
+
+    SCONNX=multiway,N,FMU0,FMU1 ... FMU(N-1),[shaftAngle,angularVelocity,angularAcceleration,torque,weight]xN
+
+The following example will constrain the average angle and velocity of the connectors on FMU 1 and 2 to be equal to the angle and velocity on FMU 0:
+
+    -C multiway,3,0,1,2,\\
+        phi,omega,alpha,tau,-1,\\
+        omega,alpha,tau,0.5,\\
+        omega,alpha,tau,0.5
+
+The -1, 0.5 and 0.5 are then the weights.
 
 Default is no strong connections. Specifying strong connections is incompatible with using the Gauss-Seidel stepper (-m gs).
 .TP

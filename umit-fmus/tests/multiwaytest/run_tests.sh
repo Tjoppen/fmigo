@@ -26,16 +26,16 @@ testit() {
   # Check that the angle and angular velocity constraints converge to small values
   # Column indices:
   #                  t = 1
-  #             angles = 2, 6, 11
-  # angular velocities = 3, 7, 12
+  #             angles = 2, 6, 16
+  # angular velocities = 3, 7, 17
   # Last line in output should weighted sum to some small value
   t=$( tail -n1 springs2.csv | cut -d, -f1)
   a1=$(tail -n1 springs2.csv | cut -d, -f2)
   a2=$(tail -n1 springs2.csv | cut -d, -f6)
-  a3=$(tail -n1 springs2.csv | cut -d, -f11)
+  a3=$(tail -n1 springs2.csv | cut -d, -f16)
   w1=$(tail -n1 springs2.csv | cut -d, -f3)
   w2=$(tail -n1 springs2.csv | cut -d, -f7)
-  w3=$(tail -n1 springs2.csv | cut -d, -f12)
+  w3=$(tail -n1 springs2.csv | cut -d, -f17)
 
   python <<EOF
 d = abs(-1 * $a1 + $g * $a2 + $g * $a2)

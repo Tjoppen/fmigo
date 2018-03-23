@@ -143,15 +143,11 @@ static Solver* setupConstraintsAndSolver(vector<strongconnection> strongConnecti
     for (auto it = strongConnections.begin(); it != strongConnections.end(); it++) {
         //NOTE: this leaks memory, but I don't really care since it's only setup
         Constraint *con;
-        char t = tolower(it->type[0]);
 
-        switch (t) {
-        case 'b':
-        case 'l':
-        {
+        if (it->type == "ball" || it->type == "lock") {
             if (it->vrORname.size() != 38) {
                 fatal("Bad %s specification: need 38 VRs ([XYZpos + XYZacc + XYZforce + Quat + XYZrotAcc + XYZtorque] x 2), got %zu\n",
-                        t == 'b' ? "ball joint" : "lock", it->vrORname.size());
+                        it->type == "ball" ? "ball joint" : "lock", it->vrORname.size());
             }
 
             StrongConnector *scA = findOrCreateBallLockConnector(clients[it->fmus[0]],
@@ -170,13 +166,9 @@ static Solver* setupConstraintsAndSolver(vector<strongconnection> strongConnecti
                                        toVR(1,32), toVR(1,33), toVR(1,34),
                                        toVR(1,35), toVR(1,36), toVR(1,37) );
 
-            con = t == 'b' ? new BallJointConstraint(scA, scB, Vec3(), Vec3())
-                           : new LockConstraint(scA, scB, Vec3(), Vec3(), Quat(), Quat());
-
-            break;
-        }
-        case 's':
-        {
+            con = it->type == "ball" ? new BallJointConstraint(scA, scB, Vec3(), Vec3())
+                                     : new LockConstraint(scA, scB, Vec3(), Vec3(), Quat(), Quat());
+        } else if (it->type == "shaft") {
             if (it->vrORname.size() != 8) {
                 fatal("Bad shaft specification: need 8 VRs ([shaft angle + angular velocity + angular acceleration + torque] x 2)\n");
             }
@@ -188,9 +180,7 @@ static Solver* setupConstraintsAndSolver(vector<strongconnection> strongConnecti
                                        toVR(1,4), toVR(1,5), toVR(1,6), toVR(1,7));
 
             con = new ShaftConstraint(scA, scB);
-            break;
-        }
-        default:
+        } else {
             fatal("Unknown strong connector type: %s\n", it->type.c_str());
         }
 

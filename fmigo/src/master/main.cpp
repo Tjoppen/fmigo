@@ -18,6 +18,7 @@
 #include <sc/BallJointConstraint.h>
 #include <sc/LockConstraint.h>
 #include <sc/ShaftConstraint.h>
+#include <sc/MultiWayConstraint.h>
 #include "master/StrongMaster.h"
 #ifndef WIN32
 #include <sys/time.h>
@@ -131,8 +132,8 @@ static int vrFromKeyName(FMIClient* client, string key){
   }
 }
 
-#define toVR(type, index)                                   \
-  vrFromKeyName(clients[it->type##FMU],it->vrORname[index])
+#define toVR(i, index)                                   \
+  vrFromKeyName(clients[it->fmus[i]],it->vrORname[index])
 
 static Solver* setupConstraintsAndSolver(vector<strongconnection> strongConnections, vector<FMIClient*> clients) {
     if (strongConnections.size() == 0) {
@@ -143,54 +144,60 @@ static Solver* setupConstraintsAndSolver(vector<strongconnection> strongConnecti
     for (auto it = strongConnections.begin(); it != strongConnections.end(); it++) {
         //NOTE: this leaks memory, but I don't really care since it's only setup
         Constraint *con;
-        char t = tolower(it->type[0]);
 
-        switch (t) {
-        case 'b':
-        case 'l':
-        {
+        if (it->type == "ball" || it->type == "lock") {
             if (it->vrORname.size() != 38) {
                 fatal("Bad %s specification: need 38 VRs ([XYZpos + XYZacc + XYZforce + Quat + XYZrotAcc + XYZtorque] x 2), got %zu\n",
-                        t == 'b' ? "ball joint" : "lock", it->vrORname.size());
+                        it->type == "ball" ? "ball joint" : "lock", it->vrORname.size());
             }
 
-            StrongConnector *scA = findOrCreateBallLockConnector(clients[it->fromFMU],
-                                       toVR(from,0), toVR(from,1), toVR(from,2),
-                                       toVR(from,3), toVR(from,4), toVR(from,5),
-                                       toVR(from,6), toVR(from,7), toVR(from,8),
-                                       toVR(from,9), toVR(from,10), toVR(from,11), toVR(from,12),
-                                       toVR(from,13), toVR(from,14), toVR(from,15),
-                                       toVR(from,16), toVR(from,17), toVR(from,18) );
+            StrongConnector *scA = findOrCreateBallLockConnector(clients[it->fmus[0]],
+                                       toVR(0,0), toVR(0,1), toVR(0,2),
+                                       toVR(0,3), toVR(0,4), toVR(0,5),
+                                       toVR(0,6), toVR(0,7), toVR(0,8),
+                                       toVR(0,9), toVR(0,10), toVR(0,11), toVR(0,12),
+                                       toVR(0,13), toVR(0,14), toVR(0,15),
+                                       toVR(0,16), toVR(0,17), toVR(0,18) );
 
-            StrongConnector *scB = findOrCreateBallLockConnector(clients[it->toFMU],
-                                       toVR(to,19), toVR(to,20), toVR(to,21),
-                                       toVR(to,22), toVR(to,23), toVR(to,24),
-                                       toVR(to,25), toVR(to,26), toVR(to,27),
-                                       toVR(to,28), toVR(to,29), toVR(to,30), toVR(to,31),
-                                       toVR(to,32), toVR(to,33), toVR(to,34),
-                                       toVR(to,35), toVR(to,36), toVR(to,37) );
+            StrongConnector *scB = findOrCreateBallLockConnector(clients[it->fmus[1]],
+                                       toVR(1,19), toVR(1,20), toVR(1,21),
+                                       toVR(1,22), toVR(1,23), toVR(1,24),
+                                       toVR(1,25), toVR(1,26), toVR(1,27),
+                                       toVR(1,28), toVR(1,29), toVR(1,30), toVR(1,31),
+                                       toVR(1,32), toVR(1,33), toVR(1,34),
+                                       toVR(1,35), toVR(1,36), toVR(1,37) );
 
-            con = t == 'b' ? new BallJointConstraint(scA, scB, Vec3(), Vec3())
-                           : new LockConstraint(scA, scB, Vec3(), Vec3(), Quat(), Quat());
-
-            break;
-        }
-        case 's':
-        {
+            con = it->type == "ball" ? new BallJointConstraint(scA, scB, Vec3(), Vec3())
+                                     : new LockConstraint(scA, scB, Vec3(), Vec3(), Quat(), Quat());
+        } else if (it->type == "shaft") {
             if (it->vrORname.size() != 8) {
                 fatal("Bad shaft specification: need 8 VRs ([shaft angle + angular velocity + angular acceleration + torque] x 2)\n");
             }
 
-            StrongConnector *scA = findOrCreateShaftConnector(clients[it->fromFMU],
-                                       toVR(from,0), toVR(from,1), toVR(from,2), toVR(from,3));
+            StrongConnector *scA = findOrCreateShaftConnector(clients[it->fmus[0]],
+                                       toVR(0,0), toVR(0,1), toVR(0,2), toVR(0,3));
 
-            StrongConnector *scB = findOrCreateShaftConnector(clients[it->toFMU],
-                                       toVR(to,4), toVR(to,5), toVR(to,6), toVR(to,7));
+            StrongConnector *scB = findOrCreateShaftConnector(clients[it->fmus[1]],
+                                       toVR(1,4), toVR(1,5), toVR(1,6), toVR(1,7));
 
             con = new ShaftConstraint(scA, scB);
-            break;
-        }
-        default:
+        } else if (it->type == "multiway") {
+            if (it->vrORname.size() != it->fmus.size() * 5) {
+                fatal("Bad multiway constraint specification: each FMU must have exactly 5 values. "
+                      "The first four are VRs like shaft constraints (shaft angle + angular velocity + angular acceleration + torque), "
+                      "last in each group of five is the weight. Example: -C multiway,3,0,1,2,phi,omega,alpha,tau,-1,omega,alpha,tau,2,omega,alpha,tau,2\n");
+            }
+
+            vector<Connector*> scs;
+            vector<double> weights;
+            for (size_t i = 0; i < it->fmus.size(); i++) {
+                StrongConnector *scA = findOrCreateShaftConnector(clients[it->fmus[i]],
+                                            toVR(i,i*5), toVR(i,i*5+1), toVR(i,i*5+2), toVR(i,i*5+3));
+                weights.push_back(atof(it->vrORname[i*5+4].c_str()));
+                scs.push_back(scA);
+            }
+            con = new MultiWayConstraint(scs, weights);
+        } else {
             fatal("Unknown strong connector type: %s\n", it->type.c_str());
         }
 
@@ -546,7 +553,7 @@ static int connectionNamesToVr(std::vector<connection> &connections,
 
     for(size_t i = 0; i < strongConnections.size(); i++){
       size_t j = 0;
-      if(strongConnections[i].vrORname.size()%2 != 0){
+      if(strongConnections[i].vrORname.size()%2 != 0 && strongConnections[i].type != "multiway"){
         fatal("strong connection needs even number of connections for fmu0 and fmu1\n");
       }
     }

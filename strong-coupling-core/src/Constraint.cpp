@@ -5,8 +5,13 @@
 using namespace sc;
 
 Constraint::Constraint(Connector* connA, Connector* connB){
-    m_connA = connA;
-    m_connB = connB;
+    m_connectors.push_back(connA);
+    m_connectors.push_back(connB);
+}
+
+Constraint::Constraint(const std::vector<Connector*>& connectors) :
+    m_connectors(connectors)
+{
 }
 
 Constraint::~Constraint(){}
@@ -17,8 +22,9 @@ int Constraint::getNumEquations(){
 
 void Constraint::addEquation(Equation * eq){
     //add equation to its own connectors' lists of equations
-    m_connA->m_equations.push_back(eq);
-    m_connB->m_equations.push_back(eq);
+    for (Connector *c : m_connectors) {
+        c->m_equations.push_back(eq);
+    }
     m_equations.push_back(eq);
 }
 

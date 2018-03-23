@@ -11,24 +11,19 @@ namespace sc {
 class Equation {
 
 private:
-    Connector * m_connA;
-    Connector * m_connB;
-    JacobianElement m_G_A;
-    JacobianElement m_G_B;
+    std::vector<JacobianElement> m_Gs;
     double m_g;
     double m_relativeVelocity;
+    void setDefault();
 
 public:
     //index in system (row/column in S)
     int m_index;
     std::vector<Connector*> m_connectors;
 
-    Equation();
+    Equation(const std::vector<Connector*>&);
     Equation(Connector*,Connector*);
     virtual ~Equation();
-
-    void setDefault();
-    void setConnectors(Connector *,Connector *);
 
     // for figuring out which jacobians we need
     bool m_isSpatial, m_isRotational;
@@ -38,25 +33,37 @@ public:
         return m_g;
     }
     void setViolation(double g);
-    void setDefaultViolation();
 
     /// Get constraint velocity, G*W
     void setRelativeVelocity(double);
 
     double getVelocity() const {
-        return  m_G_A.multiply(m_connA->m_velocity, m_connA->m_angularVelocity) +
-                m_G_B.multiply(m_connB->m_velocity, m_connB->m_angularVelocity) + m_relativeVelocity;
+        double ret = m_relativeVelocity;
+        for (size_t i = 0; i < m_Gs.size(); i++) {
+            ret += m_Gs[i].multiply(m_connectors[i]->m_velocity, m_connectors[i]->m_angularVelocity);
+        }
+        return ret;
     }
 
     double getFutureVelocity() const {
-        return  m_G_A.multiply(m_connA->m_futureVelocity, m_connA->m_futureAngularVelocity) +
-                m_G_B.multiply(m_connB->m_futureVelocity, m_connB->m_futureAngularVelocity);
+        double ret = 0;
+        for (size_t i = 0; i < m_Gs.size(); i++) {
+            ret += m_Gs[i].multiply(m_connectors[i]->m_futureVelocity, m_connectors[i]->m_futureAngularVelocity);
+        }
+        return ret;
     }
 
+    //set specific Jacobian element
+    void setG(  size_t i,
+                double,double,double,
+                double,double,double);
+
+    //legacy API
     void setG(  double,double,double,
                 double,double,double,
                 double,double,double,
                 double,double,double);
+    //legacy API
     void setG(  const Vec3& spatialA,
                 const Vec3& rotationalA,
                 const Vec3& spatialB,
@@ -64,14 +71,13 @@ public:
 
     bool haveOverlappingFMUs(Equation *other) const;
     JacobianElement& jacobianElementForConnector(Connector *conn) {
-        if (conn == m_connA) {
-            return m_G_A;
-        } else if (conn == m_connB) {
-            return m_G_B;
-        } else {
-            fprintf(stderr, "Attempted to jacobianElementForConnector() with connector which is not part of the Equation\n");
-            exit(1);
+        for (size_t i = 0; i < m_Gs.size(); i++) {
+            if (conn == m_connectors[i]) {
+                return m_Gs[i];
+            }
         }
+        fprintf(stderr, "Attempted to jacobianElementForConnector() with connector which is not part of the Equation\n");
+        exit(1);
     }
 };
 

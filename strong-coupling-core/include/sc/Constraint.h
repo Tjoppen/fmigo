@@ -15,12 +15,12 @@ class Constraint {
 protected:
     std::vector<Equation*> m_equations;
     void addEquation(Equation * eq);
-    Connector * m_connA;
-    Connector * m_connB;
+    std::vector<Connector*> m_connectors;
 
 public:
 
     Constraint(Connector*, Connector*);
+    Constraint(const std::vector<Connector*>& connectors);
     virtual ~Constraint();
 
     /// Arbitrary data from the user

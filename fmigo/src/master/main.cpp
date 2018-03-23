@@ -18,6 +18,7 @@
 #include <sc/BallJointConstraint.h>
 #include <sc/LockConstraint.h>
 #include <sc/ShaftConstraint.h>
+#include <sc/MultiWayConstraint.h>
 #include "master/StrongMaster.h"
 #ifndef WIN32
 #include <sys/time.h>
@@ -180,6 +181,21 @@ static Solver* setupConstraintsAndSolver(vector<strongconnection> strongConnecti
                                        toVR(1,4), toVR(1,5), toVR(1,6), toVR(1,7));
 
             con = new ShaftConstraint(scA, scB);
+        } else if (it->type == "multiway") {
+            if (it->vrORname.size() != it->fmus.size() * 4) {
+                fatal("Bad multiway constraint specification: each FMU must have exactly 5 values. "
+                      "The first four are VRs like shaft constraints (shaft angle + angular velocity + angular acceleration + torque), "
+                      "last in each group of five is the weight. Example: -C multiway,3,0,1,2,phi,omega,alpha,tau,-1,omega,alpha,tau,2,omega,alpha,tau,2\n");
+            }
+
+            vector<Connector*> scs;
+            vector<double> weights;
+            for (size_t i = 0; i < it->fmus.size(); i++) {
+                StrongConnector *scA = findOrCreateShaftConnector(clients[it->fmus[i]],
+                                            toVR(i,i*5), toVR(i,i*5+1), toVR(i,i*5+2), toVR(i,i*5+3));
+                weights.push_back(atof(it->vrORname[i*5+4].c_str()));
+            }
+            con = new MultiWayConstraint(scs, weights);
         } else {
             fatal("Unknown strong connector type: %s\n", it->type.c_str());
         }

@@ -1,4 +1,6 @@
-from python_stuff.h5load import *
+import sys
+sys.path.insert(0, "../lib")
+from h5load import *
 from pylab import *
 import re
 import pickle as pickle 
@@ -34,17 +36,19 @@ def get_length(s):
 
 def get_simulations(N=5):
     ## this will pull all kinematic simulations and sort them in order of length first and communication step second
-    kin  = sorted( package_simulations(mlocate_nodes(f.root, "Group", conds = [
+    kin  = sorted( package_simulations(mlocate_nodes(f.root, "Group",
+                                                     conds = [
         match_value("kinematic", "coupling"),
         match_value(lambda x: get_length(x) == N, "variant"),
     ] ), f, close_file=False),
-                   key=lambda y: (get_length(y.get_attr("variant")), float(y.get_attr("comm_step") ) ), reverse=True )
+                   key=lambda y:
+                   (get_length(y.get_attr("variant")), float(y.get_attr("comm_step") ) ), reverse=True )
 
     filtered_parallel  = sorted( package_simulations(mlocate_nodes(f.root, "Group", conds = [
         match_value("signals", "coupling"),
         match_value(re.compile("filtered_.*"), "variant"),
         match_value(re.compile("True"), "parallel"),
-        match_value(lambda x: get_length(x) == N, "variant"),
+        #match_value(lambda x: get_length(x) == N, "variant"),
     ] ), f, close_file=False),
                                  key=lambda y: (get_length(y.get_attr("variant")), float(y.get_attr("comm_step") ) ), reverse=True )
 
@@ -52,7 +56,7 @@ def get_simulations(N=5):
         match_value("signals", "coupling"),
         match_value(re.compile("filtered_.*"), "variant"),
         match_value(re.compile("False"), "parallel"),
-        match_value(lambda x: get_length(x) == N, "variant"),
+        #match_value(lambda x: get_length(x) == N, "variant"),
     ] ), f, close_file=False),
                                    key=lambda y: (get_length(y.get_attr("variant")), float(y.get_attr("comm_step") ) ), reverse=True )
 
@@ -62,7 +66,7 @@ def get_simulations(N=5):
         match_value("signals", "coupling"),
         match_value(re.compile("plain_.*"), "variant"),
         match_value(re.compile("[Tt]rue"), "parallel"),
-        match_value(lambda x: get_length(x) == N, "variant"),
+        #match_value(lambda x: get_length(x) == N, "variant"),
     ] ), f, close_file=False),
                               key=lambda y: (get_length(y.get_attr("variant")), float(y.get_attr("comm_step") ) ), reverse=True )
 
@@ -135,18 +139,23 @@ def convergence(f, l):
             lgd += [ "dx, " + s + ": %1.1f" % (polyfit(log10(dt), log10(dx), 1)[0]) ] 
             lgd += [ "dv, " + s + ": %1.1f" % (polyfit(log10(dt), log10(dv), 1)[0]) ] 
 
-    legend(lgd)
-    xlabel("time step [s]")
-    ylabel("rms violation")
-    title("Convergence plot for N = %d" % get_length(m.get_attr("variant")))
+    if lgd:
+        legend(lgd)
+        xlabel("time step [s]")
+        ylabel("rms violation")
+        title("Convergence plot for N = %d" % get_length(m.get_attr("variant")))
+    else:
+        print("oops!  nothing to plot!")
         
 
-N = 3
+N =10 
 
 try:
     f = open("wdata.pickle", "rb")
     all = pickle.load(f)
     f.close()
+    if not all or get_length(all[0][0].get_attr("variant") ) != N :
+        throw
 except:
     all = get_simulations(N=N)
     f = open('wdata.pickle', "wb")
@@ -155,7 +164,7 @@ except:
 
 
 
-
+'''
 
 all = [all[-2], all[-1]]
 if all:
@@ -178,3 +187,4 @@ for k,v in vanilla.fmus.items():
 
 legend(lgd)
 show()
+'''

@@ -109,7 +109,6 @@ def make_parameters(filtered, N, init, masses, isprings, csprings, kinematic=Fal
             parameters["gamma1"] = str(0)
             parameters["k2"]     = str(0)
             parameters["gamma2"] = str(0)
-
         
         fmus["m%d" % i]  = two_bodies(filtered, parameters=parameters)
 
@@ -117,18 +116,18 @@ def make_parameters(filtered, N, init, masses, isprings, csprings, kinematic=Fal
         for i in range(N-1):
             # one can either use a 4-tuple using aliased signals: 
 
-            #couplings += ("m%d" %i, "out", "m%d" %(i+1), "in"),
+            couplings += ("m%d" %i, "out", "m%d" %(i+1), "in"),
 
             # or directly use the named value references or simply value
             # references in a 10-tuple
-            couplings+= ("m%d" %i, "x1", "v1", "a1", "f1",
-                                "m%d" %(i+1), "x2","v2","a2","f2"),
+            # couplings+= ("m%d" %i, "x1", "v1", "a1", "f1",
+            #                    "m%d" %(i+1), "x2","v2","a2","f2"),
     else:
         for i in range(N-1):
             # this is hard wired to go left to right,
             #  output velocity, input forces
-            signals += ("m%d" %i, "v2", "m%d" %(i+1), "v1_i"),
-            signals += ("m%d" %(i+1), "fc1", "m%d" %(i), "in_f2"),
+            signals += ("m%d" %i, "out_v2", "m%d" %(i+1), "out_v1"),
+            signals += ("m%d" %(i+1), "out_f1", "m%d" %(i), "in_f2"),
 
     return fmus, couplings, signals
 

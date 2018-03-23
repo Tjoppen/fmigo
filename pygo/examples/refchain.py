@@ -7,6 +7,7 @@ import scipy
 from scipy import sparse
 from scipy.linalg import expm
 import hashlib
+import pickle
 
 def join_struct_arrays2(arrays):
     newdtype = sum((a.dtype.descr for a in arrays), [])
@@ -30,6 +31,47 @@ def pack_data(t, x, v):
     for i in range(0, v.shape[1]):
         newrecarray["v%d" %(i+1)] = v[:, i]
     return newrecarray
+def pickle_data(t, x, v, config):
+    l = {"t" : t, "x" : x, "v" : v, "config" : config}
+    h = hashlib.md5(str(config).encode("utf8")).hexdigest()
+    fname = h + ".pickle"
+    f = open(fname, "wb")
+    pickle.dump(l, f)
+    f.close()
+    return fname
+
+def get_pickle_data(t, config):
+    """ Either open a file with the data or run reference simulation. 
+        In all cases, the data is interpolated to the given time array.
+    """
+    
+    h = hashlib.md5(str(config).encode("utf8")).hexdigest()
+    d = {}
+    fname = "data/" + h + ".pickle"
+
+    try: 
+        f = open(fname, "rb")
+        d = pickle.load(f)
+        f.close()
+        
+    except:
+        if float(config["k"])  == float(0):
+            s = spring_chain(config["init"], config["masses"], config["isprings"])
+            print("doing ref")
+        else:
+            print("doing split")
+            s = split_string(config["step"], config["init"], config["masses"],
+                             config["isprings"], k=config["k"])
+
+        s.doit(config["tend"], h=config["min_p"]/20)
+        d = {"t" : s.t, "x" : s.x, "v": s.v, "config" : config}
+
+        f = open(fname, "wb")
+        pickle.dump(d , f)
+        f.close()
+        
+    return interp.interp1d(d["t"], d["x"], kind="cubic", axis=0)(t), interp.interp1d(d["t"], d["v"], kind="cubic", axis=0)(t), d
+        
 """
 implementation of a spring damper chain with alternating spring damper
 constants. 
@@ -309,14 +351,29 @@ class spring_chain(spring):
     def __call__(self, t, z):
         return self.A * z
 if __name__ == "__main__":
-    N = 3
-    init = [[1,0,0,0]] + [[0,0,0,0]]*(N-1)
-    masses = [[1,2]]*N
-    isprings = [[1,0]]*N
-    k = 3.0
-    configref = {"N" : N, "init" : init, "masses" : masses, "isprings" : isprings, "k" : k }
-    init = np.array(init)
-    md5hashref = hashlib.md5(str(configref).encode("utf8"))
+    N = 10
+    init = np.array([[1,0,0,0]] + [[0,0,0,0]]*(N-1))
+    masses = np.array([[1,2]]*N)
+    isprings = np.array([[1,0]]*N)
+    max_samples= 1000
+    k = 3
+    mu = 1.0/ ( 1/ masses[0][0] + 1/masses[0][1]) 
+    min_p, max_p = get_min_max_period(masses, isprings)
+    min_p
+    max_p
+    tend  = 3*max_p
+    config = {"N" : int(N),
+              "init" : init,
+              "masses" : masses,
+              "isprings" : isprings,
+              "k" : float(k),
+              "tend" : float(tend),
+              "min_p" : float(min_p),
+              "step" : min_p/20
+    }
+
+
+    
     
     
     eps = 1e-16            # machine precision
@@ -326,9 +383,10 @@ if __name__ == "__main__":
     NPP = 10
     step = min_p / NPP
     if True:
-        s1 = spring_chain(init,masses, isprings)
-        s0 = split_string(step, init,masses, isprings, k=k)
-        s0.doit(tend, h=step)
+        s1 = spring_chain(config["init"],config["masses"], config["isprings"])
+        s0 = split_string(config["step"], config["init"],config["masses"],
+                          config["isprings"], k=config["k"])
+        s0.doit(config["tend"], h=config["step"])
         t0 = np.linspace(10, s0.t[-1], 200)
         s0.sample(t0)
         py.figure(1)
@@ -342,3 +400,5 @@ if __name__ == "__main__":
         except:
             pass
         py.show()
+
+

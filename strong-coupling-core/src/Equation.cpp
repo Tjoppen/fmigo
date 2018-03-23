@@ -7,7 +7,7 @@ Equation::Equation(const vector<Connector*>& connectors) :
         m_Gs(connectors.size(), JacobianElement()),
         m_connectors(connectors) {
     if (connectors.size() < 2) {
-        fprintf(stderr, "Too few connectors in Equation\n");
+        fprintf(stderr, "Too few connectors in Equation: %zu\n", connectors.size());
         exit(1);
     }
     setDefault();

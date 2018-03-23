@@ -182,7 +182,7 @@ static Solver* setupConstraintsAndSolver(vector<strongconnection> strongConnecti
 
             con = new ShaftConstraint(scA, scB);
         } else if (it->type == "multiway") {
-            if (it->vrORname.size() != it->fmus.size() * 4) {
+            if (it->vrORname.size() != it->fmus.size() * 5) {
                 fatal("Bad multiway constraint specification: each FMU must have exactly 5 values. "
                       "The first four are VRs like shaft constraints (shaft angle + angular velocity + angular acceleration + torque), "
                       "last in each group of five is the weight. Example: -C multiway,3,0,1,2,phi,omega,alpha,tau,-1,omega,alpha,tau,2,omega,alpha,tau,2\n");
@@ -194,6 +194,7 @@ static Solver* setupConstraintsAndSolver(vector<strongconnection> strongConnecti
                 StrongConnector *scA = findOrCreateShaftConnector(clients[it->fmus[i]],
                                             toVR(i,i*5), toVR(i,i*5+1), toVR(i,i*5+2), toVR(i,i*5+3));
                 weights.push_back(atof(it->vrORname[i*5+4].c_str()));
+                scs.push_back(scA);
             }
             con = new MultiWayConstraint(scs, weights);
         } else {
@@ -552,7 +553,7 @@ static int connectionNamesToVr(std::vector<connection> &connections,
 
     for(size_t i = 0; i < strongConnections.size(); i++){
       size_t j = 0;
-      if(strongConnections[i].vrORname.size()%2 != 0){
+      if(strongConnections[i].vrORname.size()%2 != 0 && strongConnections[i].type != "multiway"){
         fatal("strong connection needs even number of connections for fmu0 and fmu1\n");
       }
     }

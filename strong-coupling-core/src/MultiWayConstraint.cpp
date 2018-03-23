@@ -29,6 +29,7 @@ MultiWayConstraint::~MultiWayConstraint() {
 
 void MultiWayConstraint::update() {
     //our violation is simply the difference in angle between the two shafts
+    //TODO: is this holonomic?
     double g = 0;
     for (size_t i = 0; i < m_weights.size(); i++) {
         g += m_connectors[i]->m_shaftAngle * m_weights[i];

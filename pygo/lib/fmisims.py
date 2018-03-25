@@ -202,10 +202,11 @@ class simulation:
         if self.signals:
             for i in self.signals:
                 c+= ["-c", "%d,%s,%d,%s" % (self.fmus[i[0]].id,
-                                            self.fmus[i[0]].outputs[i[1]] 
-                                            if hasattr(self.fmus[i[0]], "outputs") and i[1] in self.fmus[i[0]].outputs else i[1], 
+                                            self.fmus[i[0]].outputs[i[1]]
+                                            if hasattr(self.fmus[i[0]], "outputs") and i[1] in self.fmus[i[0]].outputs else i[1],
                                             self.fmus[i[2]].id,
-                                            self.fmus[i[2]].inputs[i[3]] if hasattr(self.fmus[i[2]], "inputs") and i[3] in self.fmus[i[2]].inputs else i[3]
+                                            self.fmus[i[2]].inputs[i[3]]
+                                            if hasattr(self.fmus[i[2]], "inputs")  and i[3] in self.fmus[i[2]].inputs  else i[3]
                                             )
                      ]
             self.cmd_signals = c

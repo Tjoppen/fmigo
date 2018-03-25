@@ -126,7 +126,7 @@ def make_parameters(filtered, N, init, masses, isprings, csprings, kinematic=Fal
         for i in range(N-1):
             # this is hard wired to go left to right,
             #  output velocity, input forces
-            signals += ("m%d" %i, "out_v2", "m%d" %(i+1), "out_v1"),
+            signals += ("m%d" %i, "out_v2", "m%d" %(i+1), "in_v1"),
             signals += ("m%d" %(i+1), "out_f1", "m%d" %(i), "in_f2"),
 
     return fmus, couplings, signals

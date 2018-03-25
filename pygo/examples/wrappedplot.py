@@ -4,6 +4,7 @@ from h5load import *
 from pylab import *
 import re
 import pickle as pickle 
+import numpy as np
 
 
 eps=1e-16
@@ -23,7 +24,6 @@ def count_steps(data):
     i.get_attr("comm_step")
     return len(d)
 
-f = tb.open_file("chain.h5")
 
 
 def get_length(s):
@@ -34,49 +34,89 @@ def get_length(s):
          n = int(x.group(0))
      return n
 
-def get_simulations(N=5):
-    ## this will pull all kinematic simulations and sort them in order of length first and communication step second
-    kin  = sorted( package_simulations(mlocate_nodes(f.root, "Group",
-                                                     conds = [
-        match_value("kinematic", "coupling"),
-        match_value(lambda x: get_length(x) == N, "variant"),
-    ] ), f, close_file=False),
-                   key=lambda y:
-                   (get_length(y.get_attr("variant")), float(y.get_attr("comm_step") ) ), reverse=True )
+class match_config():
+    def __init__(self, c, f):
+        self.config = c
+        self.fields = f         # a list
 
-    filtered_parallel  = sorted( package_simulations(mlocate_nodes(f.root, "Group", conds = [
-        match_value("signals", "coupling"),
-        match_value(re.compile("filtered_.*"), "variant"),
-        match_value(re.compile("True"), "parallel"),
-        #match_value(lambda x: get_length(x) == N, "variant"),
-    ] ), f, close_file=False),
-                                 key=lambda y: (get_length(y.get_attr("variant")), float(y.get_attr("comm_step") ) ), reverse=True )
+    def update(self, f):
+        self.fields += list(f)
 
-    filtered_sequential  = sorted( package_simulations(mlocate_nodes(f.root, "Group", conds = [
-        match_value("signals", "coupling"),
-        match_value(re.compile("filtered_.*"), "variant"),
-        match_value(re.compile("False"), "parallel"),
-        #match_value(lambda x: get_length(x) == N, "variant"),
-    ] ), f, close_file=False),
-                                   key=lambda y: (get_length(y.get_attr("variant")), float(y.get_attr("comm_step") ) ), reverse=True )
+    def __call__(self, v):
+        gotit = True
+        for f in self.fields:
+            if type(self.config[f]) == np.ndarray:
+                gotit &= ( self.config[f] == v[f] ).all()
+            else:
+                gotit &= (self.config[f] == v[f])
+        return gotit
+
+def get_simulations(fname, config ):
+    """ Here we pull all simulations which have the right number of
+    elements and sort them according to time step.  This is split into
+    categories: 
+    -- kinematic
+    -- filtered and parallel
+    -- filtered and sequential
+    -- not filtered and parallel
+    -- not filtered and sequential
+    We also make sure that we have a matching configuration in terms of
+    initial conditions, spring constants, and 'k' factor.  
+    """
+    f = tb.open_file(fname)
+
+    ## kinematic coupling implies k == float(0) by definition so the
+    ## 'config' dictionary for these simulation always has k == float(0)
+    ## which means that if we want to match a given config, then we have to
+    ## ignore k
+    match_conf = match_config(config, ["N", "masses", "isprings"])
+    kin  = sorted(
+        package_simulations(
+            mlocate_nodes(f.root, "Group", conds = [
+                match_value("kinematic", "coupling"),
+                match_value(match_conf, "config"),
+            ] ), f, close_file=False),
+        key=lambda y: float(y.get_attr("comm_step")  ), reverse=True )
+
+    match_conf.update("k")
+
+    filtered_parallel  = sorted(
+        package_simulations(mlocate_nodes(f.root, "Group", conds = [
+            match_value("signals", "coupling"),
+            #match_value(match_conf, "config"),
+            match_value(re.compile("filtered_.*"), "variant"),
+            match_value(re.compile("True"), "parallel"),
+        ] ), f, close_file=False),
+        key=lambda y: float(y.get_attr("comm_step") ), reverse=True )
+
+    filtered_sequential  = sorted(
+        package_simulations(mlocate_nodes(f.root, "Group", conds = [
+            #match_value(match_conf, "config"),
+            match_value("signals", "coupling"),
+            match_value(re.compile("filtered_.*"), "variant"),
+            match_value(re.compile("False"), "parallel"),
+        ] ), f, close_file=False),
+        key=lambda y: float(y.get_attr("comm_step") ), reverse=True )
 
 
 
-    plain_parallel  = sorted( package_simulations(mlocate_nodes(f.root, "Group", conds = [
-        match_value("signals", "coupling"),
-        match_value(re.compile("plain_.*"), "variant"),
-        match_value(re.compile("[Tt]rue"), "parallel"),
-        #match_value(lambda x: get_length(x) == N, "variant"),
-    ] ), f, close_file=False),
-                              key=lambda y: (get_length(y.get_attr("variant")), float(y.get_attr("comm_step") ) ), reverse=True )
+    plain_parallel  = sorted(
+        package_simulations(mlocate_nodes(f.root, "Group", conds = [
+            #match_value(match_conf, "config"),
+            match_value("signals", "coupling"),
+            match_value(re.compile("plain_.*"), "variant"),
+            match_value(re.compile("[Tt]rue"), "parallel"),
+        ] ), f, close_file=False),
+        key=lambda y:  float(y.get_attr("comm_step") ), reverse=True )
 
-    plain_sequential  = sorted( package_simulations(mlocate_nodes(f.root, "Group", conds = [
-        match_value("signals", "coupling"),
-        match_value(re.compile("plain_.*"), "variant"),
-        match_value(re.compile("False"), "parallel"),
-        match_value(lambda x: get_length(x) == N, "variant"),
-    ] ), f, close_file=True),
-                                key=lambda y: (get_length(y.get_attr("variant")), float(y.get_attr("comm_step") ) ), reverse=True )
+    plain_sequential  = sorted(
+        package_simulations(mlocate_nodes(f.root, "Group", conds = [
+            match_value("signals", "coupling"),
+            #match_value(match_conf, "config"),
+            match_value(re.compile("plain_.*"), "variant"),
+            match_value(re.compile("False"), "parallel"),
+        ] ), f, close_file=True),
+        key=lambda y: float(y.get_attr("comm_step") ), reverse=True )
 
     return [kin, filtered_parallel, filtered_sequential, plain_parallel, plain_sequential]
 
@@ -148,8 +188,20 @@ def convergence(f, l):
         print("oops!  nothing to plot!")
         
 
-N =10 
 
+
+
+### A few things to do: 
+### 
+### First, check that 'all'  is defined and has the right type: if not,
+### read from that file.
+### If 'all'  is defined, check that it contains sims for the right 'N' 
+### If there's nothing in the hdf5 for N, then rerun the simulations for
+### that.
+### 
+### 
+
+'''
 try:
     f = open("wdata.pickle", "rb")
     all = pickle.load(f)
@@ -161,7 +213,7 @@ except:
     f = open('wdata.pickle', "wb")
     pickle.dump(all, f)
     f.close() 
-
+'''
 
 
 '''

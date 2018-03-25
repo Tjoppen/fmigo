@@ -1,6 +1,8 @@
 import numpy as np
 import re
-from python_stuff.fmisims import patch_string
+import sys
+sys.path.insert(0, "../lib")
+from fmisims import patch_string
 import tables as tb
 from matplotlib.mlab import find
 from numpy.lib.recfunctions import append_fields
@@ -51,8 +53,6 @@ class match_value:
         v = None
         if hasattr(attrs, self.name):
             v = attrs[self.name]
-            #print("looking for attribute : %s  with value %s: got %s" % (self.name , self.condition, v))
-            #print("looking for attribute : %s  with value %s of type %s: got %s" % (self.name , self.condition, type(self.condition), v))
             if self.condition:
                 if hasattr(self.type, "__contains__") and self.type!= type(""):
                     found = v in self.condition 

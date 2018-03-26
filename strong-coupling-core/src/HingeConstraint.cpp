@@ -16,21 +16,20 @@ HingeConstraint::HingeConstraint(
     const Vec3& localAnchorB,
     const Vec3& localPivotA,
     const Vec3& localPivotB
-) : BallJointConstraint(connA,connB,localAnchorA,localAnchorB) {
+) : BallJointConstraint(connA,connB,localAnchorA,localAnchorB),
+    m_equationA(connA, connB),
+    m_equationB(connA, connB)
+{
     addEquation(&m_equationA);
     addEquation(&m_equationB);
-    m_equationA.setConnectors(connA,connB);
-    m_equationB.setConnectors(connA,connB);
-    m_equationA.setDefault();
-    m_equationB.setDefault();
     m_localPivotA = localPivotA;
     m_localPivotB = localPivotB;
 }
 
 void HingeConstraint::update(){
 
-    Quat qA = m_connA->m_quaternion;
-    Quat qB = m_connB->m_quaternion;
+    Quat qA = m_connectors[0]->m_quaternion;
+    Quat qB = m_connectors[1]->m_quaternion;
 
     // Local vector in A that is orthogonal to its pivot
     Vec3 nA_local = m_localAnchorA.cross(m_localPivotA);

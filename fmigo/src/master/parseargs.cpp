@@ -46,15 +46,6 @@ fmi2_base_type_enu_t fmitcp_master::type_from_char(string type) {
     }
 }
 
-template<typename T> void checkFMUIndex(T it, int i, size_t numFMUs) {
-    if(it->fromFMU < 0 || (size_t)it->fromFMU >= numFMUs){
-        fatal("Connection %d connects from FMU %d, which does not exist.\n", i, it->fromFMU);
-    }
-    if(it->toFMU < 0 || (size_t)it->toFMU >= numFMUs){
-        fatal("Connection %d connects to FMU %d, which does not exist.\n", i, it->toFMU);
-    }
-}
-
 static vector<char*> make_char_vector(vector<string>& vec) {
     vector<char*> ret;
     for (size_t x = 0; x < vec.size(); x++) {
@@ -564,10 +555,18 @@ void fmitcp_master::parseArguments( int argc,
                 }
 
                 sc.type    = values[0];
-                sc.fromFMU = atoi(values[1].c_str());
-                sc.toFMU   = atoi(values[2].c_str());
+                int N = 2, ofs = 1;
+                if (sc.type == "multiway") {
+                    N = atoi(values[ofs++].c_str());
+                    if (N < 2) {
+                        fatal("Multiway constraints must have N>=2, got %i\n", N);
+                    }
+                }
+                for (int x = 0; x < N; x++, ofs++) {
+                    sc.fmus.push_back(atoi(values[ofs].c_str()));
+                }
 
-                for (auto it2 = values.begin() + 3; it2 != values.end(); it2++) {
+                for (auto it2 = values.begin() + ofs; it2 != values.end(); it2++) {
                     sc.vrORname.push_back(it2->c_str());
                 }
 
@@ -858,12 +857,21 @@ void fmitcp_master::parseArguments( int argc,
     // Check if connections refer to nonexistant FMU index
     int i = 0;
     for (auto it = connections->begin(); it != connections->end(); it++, i++) {
-        checkFMUIndex(it, i, numFMUs);
+        if(it->fromFMU < 0 || (size_t)it->fromFMU >= numFMUs){
+            fatal("Connection %d connects from FMU %d, which does not exist.\n", i, it->fromFMU);
+        }
+        if(it->toFMU < 0 || (size_t)it->toFMU >= numFMUs){
+            fatal("Connection %d connects to FMU %d, which does not exist.\n", i, it->toFMU);
+        }
     }
 
     i = 0;
     for (auto it = strongConnections->begin(); it != strongConnections->end(); it++, i++) {
-        checkFMUIndex(it, i, numFMUs);
+        for (int fmu : it->fmus) {
+            if(fmu < 0 || (size_t)fmu >= numFMUs){
+                fatal("Strong connection %d connects from FMU %d, which does not exist.\n", i, fmu);
+            }
+        }
     }
 
     if (method == jacobi || (method == method_none && executionOrder->size() == 0)) {

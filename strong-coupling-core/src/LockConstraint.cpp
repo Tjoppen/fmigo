@@ -16,7 +16,11 @@ LockConstraint::LockConstraint(
     const Vec3& localAnchorB,
     const Quat& localOrientationA,
     const Quat& localOrientationB
-) : BallJointConstraint(connA,connB,localAnchorA,localAnchorB) {
+) : BallJointConstraint(connA,connB,localAnchorA,localAnchorB),
+    m_xr(connA, connB),
+    m_yr(connA, connB),
+    m_zr(connA, connB)
+{
     addEquation(&m_xr);
     addEquation(&m_yr);
     addEquation(&m_zr);
@@ -25,13 +29,6 @@ LockConstraint::LockConstraint(
     m_xr.setG( 0, 0, 0,-1, 0, 0, 0, 0, 0, 1, 0, 0);
     m_yr.setG( 0, 0, 0, 0,-1, 0, 0, 0, 0, 0, 1, 0);
     m_zr.setG( 0, 0, 0, 0, 0,-1, 0, 0, 0, 0, 0, 1);
-
-    m_xr.setConnectors(connA,connB);
-    m_yr.setConnectors(connA,connB);
-    m_zr.setConnectors(connA,connB);
-    m_xr.setDefault();
-    m_yr.setDefault();
-    m_zr.setDefault();
 }
 
 void LockConstraint::update(){
@@ -46,13 +43,13 @@ void LockConstraint::update(){
     Vec3 z(0,0,1);
     Vec3 zero(0,0,0);
 
-    Vec3 xi = m_connA->m_quaternion . multiplyVector( x );
-    Vec3 yi = m_connA->m_quaternion . multiplyVector( y );
-    Vec3 zi = m_connA->m_quaternion . multiplyVector( z );
+    Vec3 xi = m_connectors[0]->m_quaternion . multiplyVector( x );
+    Vec3 yi = m_connectors[0]->m_quaternion . multiplyVector( y );
+    Vec3 zi = m_connectors[0]->m_quaternion . multiplyVector( z );
 
-    Vec3 xj = m_connB->m_quaternion . multiplyVector( x );
-    Vec3 yj = m_connB->m_quaternion . multiplyVector( y );
-    Vec3 zj = m_connB->m_quaternion . multiplyVector( z );
+    Vec3 xj = m_connectors[1]->m_quaternion . multiplyVector( x );
+    Vec3 yj = m_connectors[1]->m_quaternion . multiplyVector( y );
+    Vec3 zj = m_connectors[1]->m_quaternion . multiplyVector( z );
 
     int i = -1;
 

@@ -11,6 +11,7 @@ SET(SRCS
     src/HingeMotorConstraint.cpp
     src/JacobianElement.cpp
     src/LockConstraint.cpp
+    src/MultiWayConstraint
     src/ShaftConstraint.cpp
     src/Mat3.cpp
     src/Quat.cpp
@@ -28,6 +29,7 @@ SET(HEADERS
     include/sc/HingeMotorConstraint.h
     include/sc/JacobianElement.h
     include/sc/LockConstraint.h
+    include/sc/MultiWayConstraint.h
     include/sc/ShaftConstraint.h
     include/sc/Mat3.h
     include/sc/Quat.h

@@ -18,7 +18,6 @@ add_fmu(gsl2/two_masses                 two_masses                      "cgsl")
 
 # Non-GSL Co-Simulation FMUs (internal verlet integrator typically)
 add_fmu(impulse                         impulse                         "")
-add_fmu(lumpedrod                       lumpedrod                       "")
 add_fmu(kinematictruck/body             body                            "")
 add_fmu(kinematictruck/engine           engine                          "")
 add_fmu(kinematictruck/gearbox2         gearbox2                        "")

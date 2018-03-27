@@ -18,7 +18,7 @@ RUN apt-get install --yes \
         protobuf-compiler protobuf-c-compiler libprotobuf-dev \
         libsuitesparse-dev libzmqpp-dev libhdf5-dev \
         libopenmpi-dev libgsl-dev valgrind \
-        python-pip python-dev libxml2-dev libxslt1-dev
+        python-pip python-dev libxml2-dev libxslt1-dev ccache
 RUN apt-get install -y python-numpy python-scipy python-matplotlib
 RUN apt-get install -y python3-pip
 
@@ -40,6 +40,7 @@ RUN pip3 install -r requirements.txt
 # Finally, make us run as gitlab-ci
 USER gitlab-ci
 WORKDIR /home/gitlab-ci/umit
+RUN export PATH=/usr/lib/ccache:$PATH
 
 # docker doesn't copy empty directories for some reason
 RUN mkdir 3rdparty/FMILibrary-2.0.1/ThirdParty/Expat/expat-2.1.0/src

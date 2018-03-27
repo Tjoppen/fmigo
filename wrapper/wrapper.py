@@ -82,7 +82,7 @@ if __name__ == '__main__':
   mdh.close()
 
   # FmuBase.cmake contains lots of useful utilities..
-  shutil.copy(os.path.join(wrapper_path, '../FmuBase.cmake'), sources)
+  shutil.copy(os.path.join(wrapper_path, '../Buildstuff/FmuBase.cmake'), sources)
   shutil.copytree(os.path.join(wrapper_path), os.path.join(sources, 'wrapper'))
   shutil.copytree(os.path.join(wrapper_path, '../umit-fmus/templates'), os.path.join(sources, 'umit-fmus/templates'))
   shutil.copytree(os.path.join(wrapper_path, '../3rdparty/FMILibrary-2.0.1'), os.path.join(sources, '3rdparty/FMILibrary-2.0.1'))

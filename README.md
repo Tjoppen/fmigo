@@ -47,7 +47,7 @@ mkdir -p build && cd build && cmake -G Ninja .. && ninja install
 
 ## Ubuntu / Debian
 
-Inspect the relevant Dockerfile in Dockerfiles/ to find the list of required packages and potential distribution quirks that need attention.
+Inspect the relevant Dockerfile in Buildstuff/ to find the list of required packages and potential distribution quirks that need attention.
 
 ## Arch
 

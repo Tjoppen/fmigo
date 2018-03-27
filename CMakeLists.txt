@@ -10,7 +10,7 @@ find_package(Threads REQUIRED)
 #enable testing
 enable_testing()
 # Includes which tests that should be skipped
-configure_file(${CMAKE_SOURCE_DIR}/CTestCustom.cmake ${CMAKE_BINARY_DIR})
+configure_file(${CMAKE_SOURCE_DIR}/Buildstuff/CTestCustom.cmake ${CMAKE_BINARY_DIR})
 
 if(CMAKE_VERSION VERSION_GREATER "3.3")
     #suppress warning about libexpat.a
@@ -451,7 +451,7 @@ if (WIN32)
 endif ()
 
 if (BUILD_FMUS)
-    include(FmuBase.cmake)
+    include(Buildstuff/FmuBase.cmake)
 
     # GSL Co-Simulation FMUs
     add_fmu(umit-fmus/gsl/clutch                      clutch                          "cgsl")

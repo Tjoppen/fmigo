@@ -25,8 +25,6 @@ add_fmu(me/springs2                     springs2                        "")
 add_fmu(me/springs3                     springs3                        "")
 add_fmu(me/springs4                     springs4                        "")
 add_fmu(me/bouncingBall                 bouncingBall                    "")
-add_fmu(me/bouncingBallWithSpring       bouncingBallWithSprings         "")
-add_fmu(me/fixedPoint                   fixedPoint                      "")
 
 # Wrap Model-Exchange FMUs into Co-Simulation FMUs using GSL for integrating
 # The ME FMUs are taken as-is and put into resources/ in the outer FMU

@@ -10,7 +10,7 @@
     name="ParametersInline">
   <ssd:System name="ParametersInline" description="Example showing how to inline parameters values+mappings in ParameterBinding">
     <ssd:Elements>
-      <ssd:Component name="FMU0" source="resources/clutch2.fmu" type="application/x-fmu-sharedlibrary">
+      <ssd:Component name="FMU0" source="resources/clutch.fmu" type="application/x-fmu-sharedlibrary">
         <ssd:ParameterBindings>
           <ssd:ParameterBinding>
             <ssd:ParameterValues>

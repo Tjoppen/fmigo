@@ -11,13 +11,13 @@
             <ssd:Connector name="Out2" kind="output"/>
         </ssd:Connectors-->
         <ssd:Elements>
-            <ssd:Component name="FMU0" source="resources/clutch2.fmu" type="application/x-fmu-sharedlibrary">
+            <ssd:Component name="FMU0" source="resources/clutch.fmu" type="application/x-fmu-sharedlibrary">
                 <ssd:Connectors>
                     <ssd:Connector name="x_e"     kind="output"/>
                     <ssd:Connector name="v_e"     kind="output"/>
                 </ssd:Connectors>
             </ssd:Component>
-            <ssd:Component name="FMU1" source="resources/clutch2.fmu" type="application/x-fmu-sharedlibrary">
+            <ssd:Component name="FMU1" source="resources/clutch.fmu" type="application/x-fmu-sharedlibrary">
                 <ssd:Connectors>
                     <ssd:Connector name="x_in_s"  kind="input"/>
                     <ssd:Connector name="v_in_s"  kind="input"/>
@@ -25,7 +25,7 @@
                     <ssd:Connector name="v_e"     kind="output"/>
                 </ssd:Connectors>
             </ssd:Component>
-            <ssd:Component name="FMU2" source="resources/clutch2.fmu" type="application/x-fmu-sharedlibrary">
+            <ssd:Component name="FMU2" source="resources/clutch.fmu" type="application/x-fmu-sharedlibrary">
                 <ssd:Connectors>
                     <ssd:Connector name="x_in_s"  kind="input"/>
                     <ssd:Connector name="v_in_s"  kind="input"/>

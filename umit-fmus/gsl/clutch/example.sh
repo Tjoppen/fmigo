@@ -11,10 +11,10 @@ mpirun -np 3 fmigo-mpi -t 10 \
   -C shaft,0,1,34,35,36,26,0,1,2,3 \
   -p i,0,98,2 -p 0,13,0:0,15,0 -p 0,12,1:0,14,1 -p 0,28,1  \
   -p 1,4,1 \
-  clutch2.fmu ../../kinematictruck/body/body.fmu > out.csv
+  clutch.fmu ../../kinematictruck/body/body.fmu > out.csv
 
 octave --no-gui --persist --eval "
-d=load('clutch2.m');
+d=load('clutch.m');
 d2=load('out.csv');
 %plot(d(:,1),d(:,2:end));
 %axis([0,1,-2,20]);
@@ -40,7 +40,7 @@ mpirun -np 3 fmigo-mpi -t 150 \
   -p b,0,97,true \
   -p 1,14,10000 \
   -p i,0,98,2:i,1,98,2 -p 0,13,1:0,15,1:1,13,1:1,15,1 -p 0,28,1:1,28,1  \
-  clutch2.fmu clutch2.fmu > out.csv
+  clutch.fmu clutch.fmu > out.csv
   
 octave --no-gui --persist --eval "d=load('out.csv'); plot(d(:,1), d(:,[2,6,10,14]));"
-#octave --no-gui --persist --eval "d=load('clutch2.m'); plot(d(:,1), d(:,2:end));"
+#octave --no-gui --persist --eval "d=load('clutch.m'); plot(d(:,1), d(:,2:end));"

@@ -8,12 +8,12 @@
                  position difference between this module and the coupled
                  one is estimated by integrating the velocity difference
                  internally."
-    modelName="clutch2"
+    modelName="clutch"
     guid="{6985712a-2b8e-4ebb-9b6c-05d89b0ec1c8}"
     numberOfEventIndicators="0">
 
   <CoSimulation
-      modelIdentifier="clutch2"
+      modelIdentifier="clutch"
       canHandleVariableCommunicationStepSize="true"
       canGetAndSetFMUstate="true"
       providesDirectionalDerivative="true"/>
@@ -380,7 +380,7 @@
     <ScalarVariable 
         name="octave_output"
         valueReference="97"
-        description="Dump Octave data to clutch2.m?"
+        description="Dump Octave data to clutch.m?"
         causality="parameter"
         variability="fixed">
       <Boolean start="false"/>
@@ -417,7 +417,7 @@
         description="file for internal dump?"
         causality="parameter"
         variability="fixed">
-      <String start="clutch2.m"/>
+      <String start="clutch.m"/>
       <Annotations>
         <Tool name="fmigo">
           <size>1024</size>

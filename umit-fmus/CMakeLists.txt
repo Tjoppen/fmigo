@@ -4,7 +4,7 @@ include(FmuBase.cmake)
 
 
 # GSL Co-Simulation FMUs
-add_fmu(gsl2/clutch2                    clutch2                         "cgsl")
+add_fmu(gsl/clutch                      clutch                          "cgsl")
 
 # Non-GSL Co-Simulation FMUs (internal verlet integrator typically)
 add_fmu(kinematictruck/body             body                            "")

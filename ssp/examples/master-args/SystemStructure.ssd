@@ -8,7 +8,7 @@
     name="MasterArguments">
   <ssd:System name="MasterArguments" description="Example how to use fmigo:MasterArguments">
     <ssd:Elements>
-      <ssd:Component name="FMU0" source="resources/clutch2.fmu" type="application/x-fmu-sharedlibrary" />
+      <ssd:Component name="FMU0" source="resources/clutch.fmu" type="application/x-fmu-sharedlibrary" />
     </ssd:Elements>
   </ssd:System>
 

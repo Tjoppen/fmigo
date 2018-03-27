@@ -21,25 +21,25 @@ fi
 
 # Check -f none
 touch empty_file
-mpiexec -np 2 fmigo-mpi -f none ${FMUS_DIR}/gsl2/clutch2/clutch2.fmu | diff empty_file -
+mpiexec -np 2 fmigo-mpi -f none ${FMUS_DIR}/gsl/clutch/clutch.fmu | diff empty_file -
 rm empty_file
 echo Option \"-f none\" works correctly
 
 # Check that bad parameters give expected failure
-# First clutch2 is run with setting VRs which don't exist, but with proper values
+# First clutch is run with setting VRs which don't exist, but with proper values
 # Then it is run with values which are just plain wrong
 # The log is grep'd for the expected errors
 for t in "r,0,1234,111" "i,0,1234,111" "b,0,1234,true" "s,0,1234,111"
 do
   #                                                                          Success = failure
-  mpiexec -np 2 fmigo-mpi -p $t ${FMUS_DIR}/gsl2/clutch2/clutch2.fmu &> temp && exit 1         || echo -n
+  mpiexec -np 2 fmigo-mpi -p $t ${FMUS_DIR}/gsl/clutch/clutch.fmu &> temp && exit 1         || echo -n
   grep "Couldn't find variable"   temp > /dev/null
   echo Setting incorrect $t fails as expected
 done
 for t in "0,x0_e,notreal" "0,gear,notint" "0,octave_output,notbool"
 do
   #                                                                          Success = failure
-  mpiexec -np 2 fmigo-mpi -p $t ${FMUS_DIR}/gsl2/clutch2/clutch2.fmu &> temp && exit 1         || echo -n
+  mpiexec -np 2 fmigo-mpi -p $t ${FMUS_DIR}/gsl/clutch/clutch.fmu &> temp && exit 1         || echo -n
   grep "does not look like a"   temp > /dev/null
   echo Setting incorrect $t fails as expected
 done
@@ -79,8 +79,8 @@ done
 
 # Test alternative MPI command line
 mpiexec -np 1 fmigo-mpi -f none \
-  : -np 1 fmigo-mpi ${FMUS_DIR}/gsl2/clutch2/clutch2.fmu
-  : -np 1 fmigo-mpi ${FMUS_DIR}/gsl2/clutch2/clutch2.fmu
+  : -np 1 fmigo-mpi ${FMUS_DIR}/gsl/clutch/clutch.fmu
+  : -np 1 fmigo-mpi ${FMUS_DIR}/gsl/clutch/clutch.fmu
 
 # Test ZMQ control + starting paused
 # "python" instead of "python2" or "python3" to pick up the right variant

@@ -5,7 +5,7 @@ popd
 
 # Designed not to oversubscribe on 8-core machine (ThinkPad W540)
 N=7
-FMU=${FMUS_DIR}/gsl2/clutch2/clutch2.fmu
+FMU=${FMUS_DIR}/gsl/clutch/clutch.fmu
 FMUS=
 CONNS=
 

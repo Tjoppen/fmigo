@@ -1,7 +1,7 @@
 # USAGE: add_ssp(directory target-name fmu [fmu ...])
 #
 # fmus should be given with "naked" names to which suitable suffixes can be added,
-# such as "clutch2" -> "clutch2_fmu" and "clutch2_fmu_target". This is required
+# such as "clutch" -> "clutch_fmu" and "clutch_fmu_target". This is required
 # for DEPENDS to work correctly.
 #
 function (add_ssp dir sspname)
@@ -80,13 +80,13 @@ install(FILES
 if (BUILD_FMUS)
   # We don't have very many FMUs in our SSPs, so we can list each
   # one without having to use a generator to parse SystemStructure.ssd
-  add_ssp(ssp-test                        SpringChainSystem         clutch2)
+  add_ssp(ssp-test                        SpringChainSystem         clutch)
   add_ssp(ssp-work-reports                WorkReportHolonomic       engine      gearbox2    body)
-  add_ssp(examples/kinematic              KinematicExample          clutch2)
-  add_ssp(examples/kinematic-nonholonomic KinematicNHExample        clutch2)
-  add_ssp(examples/master-args            MasterArguments           clutch2)
-  add_ssp(examples/parameters-inline      ParametersInline          clutch2)
-  add_ssp(examples/parameters-external    ParametersExternal        clutch2)
+  add_ssp(examples/kinematic              KinematicExample          clutch)
+  add_ssp(examples/kinematic-nonholonomic KinematicNHExample        clutch)
+  add_ssp(examples/master-args            MasterArguments           clutch)
+  add_ssp(examples/parameters-inline      ParametersInline          clutch)
+  add_ssp(examples/parameters-external    ParametersExternal        clutch)
   add_ssp(examples/strange_variable_names StrangeVarNames           strange_variable_names)
-  add_ssp(examples/execution-order        ExecutionOrder            clutch2)
+  add_ssp(examples/execution-order        ExecutionOrder            clutch)
 endif ()

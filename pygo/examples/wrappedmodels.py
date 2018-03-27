@@ -5,7 +5,7 @@ import math
 umit="../../release/umit-fmus/"
 pfmu  = umit + "meWrapper/springs2/wrapper_springs2.fmu"
 ffmu = umit + "meWrapperFiltered/springs2/wrapper_filtered_springs2.fmu"
-cfmu = umit + "gsl2/clutch2/clutch2.fmu"
+cfmu = umit + "gsl/clutch/clutch.fmu"
 
 class clutch(module):
     """ Modules with two point masses hooked by a spring.  This was first

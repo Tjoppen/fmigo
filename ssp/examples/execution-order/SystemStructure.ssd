@@ -8,11 +8,11 @@
     name="ExecutionOrder">
   <ssd:System name="ExecutionOrder" description="Example how to use fmigo:ExecutionOrder">
     <ssd:Elements>
-      <ssd:Component name="FMU0" source="resources/clutch2.fmu" type="application/x-fmu-sharedlibrary" />
-      <ssd:Component name="FMU1" source="resources/clutch2.fmu" type="application/x-fmu-sharedlibrary" />
-      <ssd:Component name="FMU2" source="resources/clutch2.fmu" type="application/x-fmu-sharedlibrary" />
-      <ssd:Component name="FMU3" source="resources/clutch2.fmu" type="application/x-fmu-sharedlibrary" />
-      <ssd:Component name="FMU4" source="resources/clutch2.fmu" type="application/x-fmu-sharedlibrary" />
+      <ssd:Component name="FMU0" source="resources/clutch.fmu" type="application/x-fmu-sharedlibrary" />
+      <ssd:Component name="FMU1" source="resources/clutch.fmu" type="application/x-fmu-sharedlibrary" />
+      <ssd:Component name="FMU2" source="resources/clutch.fmu" type="application/x-fmu-sharedlibrary" />
+      <ssd:Component name="FMU3" source="resources/clutch.fmu" type="application/x-fmu-sharedlibrary" />
+      <ssd:Component name="FMU4" source="resources/clutch.fmu" type="application/x-fmu-sharedlibrary" />
     </ssd:Elements>
   </ssd:System>
 

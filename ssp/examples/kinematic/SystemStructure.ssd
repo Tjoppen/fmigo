@@ -8,7 +8,7 @@
     name="KinematicExample">
   <ssd:System name="KinematicExample" description="Example showing how to connect three FMUs using kinematic shaft contraints">
     <ssd:Elements>
-      <ssd:Component name="FMU0" source="resources/clutch2.fmu" type="application/x-fmu-sharedlibrary">
+      <ssd:Component name="FMU0" source="resources/clutch.fmu" type="application/x-fmu-sharedlibrary">
         <ssd:Annotations>
           <ssc:Annotation type="se.umu.math.umit.ssp.physicalconnectors">
             <fmigo:PhysicalConnectors>
@@ -23,7 +23,7 @@
           </ssc:Annotation>
         </ssd:Annotations>
       </ssd:Component>
-      <ssd:Component name="FMU1" source="resources/clutch2.fmu" type="application/x-fmu-sharedlibrary">
+      <ssd:Component name="FMU1" source="resources/clutch.fmu" type="application/x-fmu-sharedlibrary">
         <ssd:Annotations>
           <ssc:Annotation type="se.umu.math.umit.ssp.physicalconnectors">
             <fmigo:PhysicalConnectors>
@@ -45,7 +45,7 @@
           </ssc:Annotation>
         </ssd:Annotations>
       </ssd:Component>
-      <ssd:Component name="FMU2" source="resources/clutch2.fmu" type="application/x-fmu-sharedlibrary">
+      <ssd:Component name="FMU2" source="resources/clutch.fmu" type="application/x-fmu-sharedlibrary">
         <ssd:Annotations>
           <ssc:Annotation type="se.umu.math.umit.ssp.physicalconnectors">
             <fmigo:PhysicalConnectors>

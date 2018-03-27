@@ -10,7 +10,7 @@
     name="ParametersExternal">
   <ssd:System name="ParametersExternal" description="Example showing how to external parameters values+mappings in ParameterBinding">
     <ssd:Elements>
-      <ssd:Component name="FMU0" source="resources/clutch2.fmu" type="application/x-fmu-sharedlibrary">
+      <ssd:Component name="FMU0" source="resources/clutch.fmu" type="application/x-fmu-sharedlibrary">
         <ssd:ParameterBindings>
           <ssd:ParameterBinding source="resources/Values.ssv">
             <ssd:ParameterMapping source="resources/Mappings.ssm" />

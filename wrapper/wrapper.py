@@ -6,8 +6,8 @@ import shutil
 import os
 import subprocess
 import zipfile
-from wrapper.modeldescription2header import modeldescription2header
-from wrapper.xml2wrappedxml import xml2wrappedxml
+from modeldescription2header import modeldescription2header
+from xml2wrappedxml import xml2wrappedxml
 
 if __name__ == '__main__':
   # Figure out where this script is located
@@ -15,7 +15,7 @@ if __name__ == '__main__':
   # need a proper base path for the stuff we need to pull in.
   scriptpath = os.path.split(sys.argv[0])[0]
   cwd = os.getcwd()
-  umit_fmus = os.path.join(cwd, scriptpath)
+  wrapper_path = os.path.join(cwd, scriptpath)
 
   parser = argparse.ArgumentParser(description='''
   Wrap a ModelExchange FMU (.fmu file) into CoSimulation using GNU GSL as an integrator.
@@ -82,11 +82,11 @@ if __name__ == '__main__':
   mdh.close()
 
   # FmuBase.cmake contains lots of useful utilities..
-  shutil.copy(os.path.join(umit_fmus, 'FmuBase.cmake'), sources)
-  shutil.copytree(os.path.join(umit_fmus, 'wrapper'), os.path.join(sources, 'wrapper'))
-  shutil.copytree(os.path.join(umit_fmus, 'templates'), os.path.join(sources, 'templates'))
-  shutil.copytree(os.path.join(umit_fmus, '../3rdparty/FMILibrary-2.0.1'), os.path.join(sources, 'FMILibrary-2.0.1'))
-  shutil.copytree(os.path.join(umit_fmus, 'wingsl'), os.path.join(sources, 'wingsl'))
+  shutil.copy(os.path.join(wrapper_path, '../FmuBase.cmake'), sources)
+  shutil.copytree(os.path.join(wrapper_path), os.path.join(sources, 'wrapper'))
+  shutil.copytree(os.path.join(wrapper_path, '../umit-fmus/templates'), os.path.join(sources, 'umit-fmus/templates'))
+  shutil.copytree(os.path.join(wrapper_path, '../3rdparty/FMILibrary-2.0.1'), os.path.join(sources, 'FMILibrary-2.0.1'))
+  shutil.copytree(os.path.join(wrapper_path, '../umit-fmus/wingsl'), os.path.join(sources, 'wingsl'))
 
   cmake = open(os.path.join(d, 'CMakeLists.txt'), 'w')
   cmake.write('''

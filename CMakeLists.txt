@@ -451,7 +451,50 @@ if (WIN32)
 endif ()
 
 if (BUILD_FMUS)
-    add_subdirectory(umit-fmus)
+    include(FmuBase.cmake)
+
+    # GSL Co-Simulation FMUs
+    add_fmu(umit-fmus/gsl/clutch                      clutch                          "cgsl")
+
+    # Non-GSL Co-Simulation FMUs (internal verlet integrator typically)
+    add_fmu(umit-fmus/kinematictruck/body             body                            "")
+    add_fmu(umit-fmus/kinematictruck/engine           engine                          "")
+    add_fmu(umit-fmus/kinematictruck/gearbox2         gearbox2                        "")
+    add_fmu(umit-fmus/forcevelocitytruck/fvbody       fvbody                          "")
+    add_fmu(umit-fmus/forcevelocitytruck/gearbox      gearbox                         "")
+    add_fmu(umit-fmus/tests/typeconvtest              typeconvtest                    "")
+    add_fmu(umit-fmus/tests/loopsolvetest/add         add                             "")
+    add_fmu(umit-fmus/tests/loopsolvetest/sub         sub                             "")
+    add_fmu(umit-fmus/tests/loopsolvetest/mul         mul                             "")
+    add_fmu(umit-fmus/tests/stringtest                stringtest                      "")
+    add_fmu(umit-fmus/tests/strange_variable_names    strange_variable_names          "")
+
+    # Model-Exchange FMUs
+    add_fmu(umit-fmus/me/springs                      springs                         "")
+    add_fmu(umit-fmus/me/springs2                     springs2                        "")
+    add_fmu(umit-fmus/me/springs3                     springs3                        "")
+    add_fmu(umit-fmus/me/springs4                     springs4                        "")
+    add_fmu(umit-fmus/me/bouncingBall                 bouncingBall                    "")
+
+    # Wrap Model-Exchange FMUs into Co-Simulation FMUs using GSL for integrating
+    # The ME FMUs are taken as-is and put into resources/ in the outer FMU
+    # The modelDescription file is found in one of two ways:
+    #
+    # - on disc, uncompressed (plain XML file)
+    # - from inside the source FMU
+
+    # These generate the modelDescription from XML
+    add_wrapped(umit-fmus/meWrapper/bouncingBall              bouncingBall)
+    add_wrapped(umit-fmus/meWrapper/springs                   springs)
+    add_wrapped(umit-fmus/meWrapper/springs2                  springs2)
+    add_wrapped(umit-fmus/meWrapper/springs3                  springs3)
+    add_wrapped(umit-fmus/meWrapper/springs4                  springs4)
+    add_wrapped_filter(umit-fmus/meWrapperFiltered/springs2                  springs2)
+
+
+    # These generate the modelDescription from the source FMU
+    add_wrapped_fmu(umit-fmus/meWrapperFmu/bouncingBall       bouncingBall    "${bouncingBall_fmu}")
+    add_wrapped_fmu(umit-fmus/meWrapperFmu/springs2           springs2        "${springs2_fmu}")
 endif ()
 
 add_subdirectory(ssp)

@@ -48,16 +48,16 @@ function (add_fmu_internal srcdir dstdir xmldir target extra_srcs libs extra_inc
   set(binaries_dir ${CMAKE_CURRENT_BINARY_DIR}/${target}/binaries)
 
   set(srcs
-    templates/fmi2/fmuTemplate.h
-    templates/fmi2/fmuTemplate_impl.h
-    templates/fmi2/strlcpy.h
+    umit-fmus/templates/fmi2/fmuTemplate.h
+    umit-fmus/templates/fmi2/fmuTemplate_impl.h
+    umit-fmus/templates/fmi2/strlcpy.h
     ${${target}_dstdir}/sources/modelDescription.h
     ${fmu_sources}
     ${extra_srcs}
   )
 
   set(includes
-    templates/fmi2
+    umit-fmus/templates/fmi2
     ${${target}_srcdir}/sources
     ${${target}_dstdir}/sources
     ${extra_includes}
@@ -254,5 +254,5 @@ endif ()
 
 # Don't add cgsl twice
 if (NOT TARGET cgsl)
-    add_subdirectory(templates/cgsl)
+    add_subdirectory(umit-fmus/templates/cgsl)
 endif ()

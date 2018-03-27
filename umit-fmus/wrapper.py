@@ -85,7 +85,7 @@ if __name__ == '__main__':
   shutil.copy(os.path.join(umit_fmus, 'FmuBase.cmake'), sources)
   shutil.copytree(os.path.join(umit_fmus, 'wrapper'), os.path.join(sources, 'wrapper'))
   shutil.copytree(os.path.join(umit_fmus, 'templates'), os.path.join(sources, 'templates'))
-  shutil.copytree(os.path.join(umit_fmus, '../FMILibrary-2.0.1'), os.path.join(sources, 'FMILibrary-2.0.1'))
+  shutil.copytree(os.path.join(umit_fmus, '../3rdparty/FMILibrary-2.0.1'), os.path.join(sources, 'FMILibrary-2.0.1'))
   shutil.copytree(os.path.join(umit_fmus, 'wingsl'), os.path.join(sources, 'wingsl'))
 
   cmake = open(os.path.join(d, 'CMakeLists.txt'), 'w')

@@ -41,6 +41,8 @@ SET(FMIGO_VERSION ${FMIGO_MAJOR_VERSION}.${FMIGO_MINOR_VERSION}.${FMIGO_PATCH_VE
 option(BUILD_FMUS "Build example FMUs in umit-fmus/?" ON)
 option(USE_GPL "Enable GPL? Needed for GNU GSL support in master (algebraic loop solver, ModelExchange integrator)" ON)
 
+set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/install)
+
 # Need to be able to zip FMUs. Recent versions of CMake can do this with the "tar" sub-command.
 # For older CMakes we rely on "zip" being installed on the system
 # We also need to be able to copy multiple files using the "copy" sub-command, or the "cp" commands must be installed
@@ -139,11 +141,11 @@ if(WIN32)
     )
 
     include_directories("${ZMQ_PREFIX}/src/zmq-ext/include")
-    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/3dparty/zeromq/4.2.0-master/include) #zmq.hpp
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/zeromq/4.2.0-master/include) #zmq.hpp
     link_directories("${ZMQ_PREFIX}/src/zmq-ext-build/lib/${CMAKE_BUILD_TYPE}")
 
 else(WIN32)
-    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/3dparty/zeromq/4.2.0-master/include)
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/zeromq/4.2.0-master/include)
     # TODO: tell the user what's needed?
     include(FindProtobuf)
     find_package(Protobuf REQUIRED)
@@ -159,15 +161,15 @@ endif(WIN32)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/strong-coupling-core/include)
 
-set(FMILIBRARY_VERSION FMILibrary-2.0.1)
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/${FMILIBRARY_VERSION})
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_VERSION}/src/CAPI/include)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_VERSION}/src/Import/include)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_VERSION}/src/Util/include)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_VERSION}/src/XML/include)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_VERSION}/src/ZIP/include)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_VERSION}/ThirdParty/FMI/default)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_VERSION}/ThirdParty/Expat/expat-2.1.0/lib)
+set(FMILIBRARY_DIR 3rdparty/FMILibrary-2.0.1)
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/${FMILIBRARY_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_DIR}/src/CAPI/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_DIR}/src/Import/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_DIR}/src/Util/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_DIR}/src/XML/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_DIR}/src/ZIP/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_DIR}/ThirdParty/FMI/default)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_DIR}/ThirdParty/Expat/expat-2.1.0/lib)
 
 if (APPLE)
     # For Macports
@@ -187,7 +189,7 @@ if (APPLE)
 endif()
 
 add_subdirectory(strong-coupling-core)
-add_subdirectory(${FMILIBRARY_VERSION})
+add_subdirectory(${FMILIBRARY_DIR})
 
 if (USE_GPL)
   if (WIN32)

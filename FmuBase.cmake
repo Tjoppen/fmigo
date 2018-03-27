@@ -238,8 +238,8 @@ endfunction ()
 
 
 if (WIN32)
-    link_directories(${CMAKE_CURRENT_SOURCE_DIR}/wingsl/lib)
-    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/wingsl/include)
+    link_directories(${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/wingsl/lib)
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/wingsl/include)
     set(CMAKE_SHARED_LINKER_FLAGS "/SAFESEH:NO")
     set(CMAKE_EXE_LINKER_FLAGS "/SAFESEH:NO")
 

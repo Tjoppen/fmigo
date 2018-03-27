@@ -83,6 +83,6 @@ mpiexec -np 1 fmigo-mpi -f none \
 # Test ZMQ control + starting paused
 # "python" instead of "python2" or "python3" to pick up the right variant
 # on trusty vs xenial for control_pb2.py to work.
-python test_control.py
+(cd tests && python test_control.py)
 
 echo All tests OK

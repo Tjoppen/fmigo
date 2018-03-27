@@ -6,10 +6,10 @@ import time
 import io
 from numpy import * # genfromtxt, array
 import sys
-sys.path.append('src/master')
+sys.path.append('../src/master')
 import control_pb2
 
-FMUS_DIR = 'build/umit-fmus' if not 'FMUS_DIR' in os.environ else os.environ['FMUS_DIR']
+FMUS_DIR = '../build/umit-fmus' if not 'FMUS_DIR' in os.environ else os.environ['FMUS_DIR']
 fmu = os.path.join(FMUS_DIR, 'tests/typeconvtest/typeconvtest.fmu')
 
 print('ZMQ control + pause test')

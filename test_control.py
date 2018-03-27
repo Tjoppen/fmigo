@@ -6,7 +6,7 @@ import time
 import io
 from numpy import * # genfromtxt, array
 import sys
-sys.path.append('fmigo/src/master')
+sys.path.append('src/master')
 import control_pb2
 
 FMUS_DIR = 'build/umit-fmus' if not 'FMUS_DIR' in os.environ else os.environ['FMUS_DIR']

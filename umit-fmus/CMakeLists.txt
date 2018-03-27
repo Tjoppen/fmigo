@@ -5,16 +5,6 @@ include(FmuBase.cmake)
 
 # GSL Co-Simulation FMUs
 add_fmu(gsl2/clutch2                    clutch2                         "cgsl")
-add_fmu(gsl2/clutch3                    clutch3                         "cgsl")
-add_fmu(gsl2/chained_sho                chained_sho                     "cgsl")
-add_fmu(gsl2/clutch_ef                  clutch_ef                       "cgsl")
-add_fmu(gsl2/clutch                     clutch                          "cgsl")
-add_fmu(gsl2/coupled_sho                coupled_sho                     "cgsl")
-add_fmu(gsl2/mass_force                 mass_force                      "cgsl")
-add_fmu(gsl2/mass_force_fe              mass_force_fe                   "cgsl")
-add_fmu(gsl2/trailer                    trailer                         "cgsl")
-add_fmu(gsl2/engine2                    engine2                         "cgsl")
-add_fmu(gsl2/two_masses                 two_masses                      "cgsl")
 
 # Non-GSL Co-Simulation FMUs (internal verlet integrator typically)
 add_fmu(impulse                         impulse                         "")

@@ -21,7 +21,7 @@ testit() {
     ${FMUS_DIR}/meWrapper/springs2/wrapper_springs2.fmu > springs2.csv
 
   #cp springs2.csv springs2-$g.csv
-  python ../../../compare_csv.py springs2-$g.csv springs2.csv "," "1e-6"
+  python ../../../tests/compare_csv.py springs2-$g.csv springs2.csv "," "1e-6"
 
   # Check that the angle and angular velocity constraints converge to small values
   # Column indices:

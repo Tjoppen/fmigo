@@ -5,7 +5,7 @@ pushd ../../
 source boilerplate.sh
 popd
 
-COMPARE_CSV=$(pwd)/../../compare_csv.py
+COMPARE_CSV=$(pwd)/../../tests/compare_csv.py
 
 mpiexec -np 2 fmigo-mpi -t 1.5 ${FMUS_DIR}/me/bouncingBall/bouncingBall.fmu > result
 python $COMPARE_CSV result tests/bouncingBall.csv

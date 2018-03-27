@@ -4,7 +4,7 @@ echo ${FMUS_DIR}
 pushd ../../
 source boilerplate.sh
 popd
-COMPARE=../../compare_csv.py
+COMPARE=../../tests/compare_csv.py
 RESULT=result.csv
 function test(){
     WRAPPER=$1

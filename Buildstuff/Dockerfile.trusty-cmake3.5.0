@@ -59,8 +59,8 @@ RUN  chown -R gitlab-ci /home/gitlab-ci/umit
 
 # Install python requirements
 WORKDIR /home/gitlab-ci/umit
-RUN pip2 install -r requirements.txt
-RUN pip3 install -r requirements.txt
+RUN pip2 install -r Buildstuff/requirements.txt
+RUN pip3 install -r Buildstuff/requirements.txt
 
 # Finally, make us run as gitlab-ci
 USER gitlab-ci

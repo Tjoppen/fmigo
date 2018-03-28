@@ -7,6 +7,8 @@ It connects multiple Functional Mockup Units (FMUs) over ZeroMQ or MPI in a mast
 There is support for stepping both Model Exchange and Co-Simulation FMUs.
 The latter can be connected with typical weak coupling or using an algebraic constraint solver based on Claude Lacoursière's SPOOK solver.
 
+Note that support for this project is very limited until we receive further funding.
+
 What follows are some brief build and test instructions.
 There is also a section on how to set up GitLab CI.
 

@@ -7,15 +7,15 @@ for e in $(fmigo-mpi -e); do export "$e"; done
 
 if [ $USE_GPL -eq 1 ]
 then
-  (cd umit-fmus/me              && ( ./test_me.sh ||  ( echo "failed modelExchange" && exit 1 ) ) )
+  (cd tests/umit-fmus/me              && ( ./test_me.sh ||  ( echo "failed modelExchange" && exit 1 ) ) )
   # wrap me/springs2.fmu with filter enabled
-  python wrapper/wrapper.py -f ${FMUS_DIR}/me/springs2/springs2.fmu ${BUILD_DIR}/springs2_wrapped_filter.fmu
+  python $WRAPPER -f ${FMUS_DIR}/me/springs2/springs2.fmu ${BUILD_DIR}/springs2_wrapped_filter.fmu
   (cd tests/splitting/python && ( python truckstring.py --test  || ( echo "failed truckstring test" && exit 1 ) ) )
 fi
 (cd tests/work-reports       && ( ./run_tests.sh  || ( echo "failed tests in work-reports" && exit 1 ) ) )
-(cd umit-fmus/tests             && ( ./run_tests.sh ||  ( echo "failed umit-fmus tests" && exit 1 ) ) )
+(cd tests/umit-fmus/tests             && ( ./run_tests.sh ||  ( echo "failed umit-fmus tests" && exit 1 ) ) )
 (cd ${BUILD_DIR}                && ( ctest --output-on-failure || ( echo "ctest failed" && exit 1 ) ) )
-(cd umit-fmus/meWrapper         &&( ./test_wrapper.sh ||  ( echo "failed wrapper" && exit 1 ) ) )
+(cd tests/umit-fmus/meWrapper         &&( ./test_wrapper.sh ||  ( echo "failed wrapper" && exit 1 ) ) )
 
 # Check -f none
 touch empty_file
@@ -44,13 +44,13 @@ done
 rm temp
 
 # Test wrapper, both Debug and Release
-python wrapper/wrapper.py -t Debug   ${FMUS_DIR}/me/bouncingBall/bouncingBall.fmu ${BUILD_DIR}/bouncingBall_wrapped_Debug.fmu
-python wrapper/wrapper.py -t Release ${FMUS_DIR}/me/bouncingBall/bouncingBall.fmu ${BUILD_DIR}/bouncingBall_wrapped_Release.fmu
-python wrapper/wrapper.py -f -t Debug   ${FMUS_DIR}/me/bouncingBall/bouncingBall.fmu ${BUILD_DIR}/bouncingBall_wrapped_filter_Debug.fmu
-python wrapper/wrapper.py -f -t Release ${FMUS_DIR}/me/bouncingBall/bouncingBall.fmu ${BUILD_DIR}/bouncingBall_wrapped_filter_Release.fmu
+python $WRAPPER -t Debug   ${FMUS_DIR}/me/bouncingBall/bouncingBall.fmu ${BUILD_DIR}/bouncingBall_wrapped_Debug.fmu
+python $WRAPPER -t Release ${FMUS_DIR}/me/bouncingBall/bouncingBall.fmu ${BUILD_DIR}/bouncingBall_wrapped_Release.fmu
+python $WRAPPER -f -t Debug   ${FMUS_DIR}/me/bouncingBall/bouncingBall.fmu ${BUILD_DIR}/bouncingBall_wrapped_filter_Debug.fmu
+python $WRAPPER -f -t Release ${FMUS_DIR}/me/bouncingBall/bouncingBall.fmu ${BUILD_DIR}/bouncingBall_wrapped_filter_Release.fmu
 
 # Test -d option for adding resources/directional.txt
-python wrapper/wrapper.py -d "0 1 2" -d "3 4 5" ${FMUS_DIR}/me/bouncingBall/bouncingBall.fmu ${BUILD_DIR}/bouncingBall_wrapped_directional.fmu
+python $WRAPPER -d "0 1 2" -d "3 4 5" ${FMUS_DIR}/me/bouncingBall/bouncingBall.fmu ${BUILD_DIR}/bouncingBall_wrapped_directional.fmu
 
 # Can't do the following on msys2 bash + python2/3
 # For some reason python wants unmangled filenames

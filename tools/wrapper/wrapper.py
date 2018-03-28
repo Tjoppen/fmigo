@@ -82,11 +82,12 @@ if __name__ == '__main__':
   mdh.close()
 
   # FmuBase.cmake contains lots of useful utilities..
-  shutil.copy(os.path.join(wrapper_path, '../Buildstuff/FmuBase.cmake'), sources)
-  shutil.copytree(os.path.join(wrapper_path), os.path.join(sources, 'wrapper'))
-  shutil.copytree(os.path.join(wrapper_path, '../umit-fmus/templates'), os.path.join(sources, 'umit-fmus/templates'))
-  shutil.copytree(os.path.join(wrapper_path, '../3rdparty/FMILibrary-2.0.1'), os.path.join(sources, '3rdparty/FMILibrary-2.0.1'))
-  shutil.copytree(os.path.join(wrapper_path, '../3rdparty/wingsl'), os.path.join(sources, '3rdparty/wingsl'))
+  shutil.copy(os.path.join(wrapper_path, '../../Buildstuff/FmuBase.cmake'), sources)
+  shutil.copytree(os.path.join(wrapper_path), os.path.join(sources, 'tools/wrapper'))
+  shutil.copytree(os.path.join(wrapper_path, '../../tools/fmi2template'), os.path.join(sources, 'tools/fmi2template'))
+  shutil.copytree(os.path.join(wrapper_path, '../../tools/cgsl'), os.path.join(sources, 'tools/cgsl'))
+  shutil.copytree(os.path.join(wrapper_path, '../../3rdparty/FMILibrary-2.0.1'), os.path.join(sources, '3rdparty/FMILibrary-2.0.1'))
+  shutil.copytree(os.path.join(wrapper_path, '../../3rdparty/wingsl'), os.path.join(sources, '3rdparty/wingsl'))
 
   cmake = open(os.path.join(d, 'CMakeLists.txt'), 'w')
   cmake.write('''

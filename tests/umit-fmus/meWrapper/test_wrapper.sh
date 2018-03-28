@@ -1,10 +1,10 @@
 #!/bin/bash
 set -e
 echo ${FMUS_DIR}
-pushd ../../
+pushd ../../..
 source boilerplate.sh
 popd
-COMPARE=../../tests/compare_csv.py
+
 RESULT=result.csv
 function test(){
     WRAPPER=$1
@@ -15,7 +15,7 @@ function test(){
         cat  ${RESULT}
         cat  ${RESULT} > ${CHECK}
     fi
-    python ${COMPARE} ${RESULT} ${CHECK}
+    python ${COMPARE_CSV} ${RESULT} ${CHECK}
 
     rm ${RESULT}
 }

@@ -159,7 +159,7 @@ else(WIN32)
     endif()
 endif(WIN32)
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/strong-coupling-core/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/tools/strong-coupling-core/include)
 
 set(FMILIBRARY_DIR 3rdparty/FMILibrary-2.0.1)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/${FMILIBRARY_DIR})
@@ -188,7 +188,7 @@ if (APPLE)
 
 endif()
 
-add_subdirectory(strong-coupling-core)
+add_subdirectory(tools/strong-coupling-core)
 add_subdirectory(${FMILIBRARY_DIR})
 
 if (USE_GPL)
@@ -199,9 +199,8 @@ if (USE_GPL)
     set(CMAKE_EXE_LINKER_FLAGS "/SAFESEH:NO")
   endif ()
 
-  # We should have umit-fmus checked out
-  # Use its cgsl regardless of whether BUILD_FMUS is ON or not
-  add_subdirectory(umit-fmus/templates/cgsl)
+  # Use cgsl regardless of whether BUILD_FMUS is ON or not
+  add_subdirectory(tools/cgsl)
 endif ()
 
 if (NOT WIN32)
@@ -288,7 +287,7 @@ if (USE_GPL)
     include/common/fmigo_storage.h
   )
 
-  include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../umit-fmus/templates/cgsl/include)
+  include_directories(${CMAKE_CURRENT_SOURCE_DIR}/tools/cgsl/include)
 endif ()
 
 ADD_EXECUTABLE(${TCP_MASTER_NAME} ${MASTER_HEADERS} ${MASTER_SRCS})
@@ -454,27 +453,27 @@ if (BUILD_FMUS)
     include(Buildstuff/FmuBase.cmake)
 
     # GSL Co-Simulation FMUs
-    add_fmu(umit-fmus/gsl/clutch                      clutch                          "cgsl")
+    add_fmu(tests/umit-fmus/gsl/clutch                      clutch                          "cgsl")
 
     # Non-GSL Co-Simulation FMUs (internal verlet integrator typically)
-    add_fmu(umit-fmus/kinematictruck/body             body                            "")
-    add_fmu(umit-fmus/kinematictruck/engine           engine                          "")
-    add_fmu(umit-fmus/kinematictruck/gearbox2         gearbox2                        "")
-    add_fmu(umit-fmus/forcevelocitytruck/fvbody       fvbody                          "")
-    add_fmu(umit-fmus/forcevelocitytruck/gearbox      gearbox                         "")
-    add_fmu(umit-fmus/tests/typeconvtest              typeconvtest                    "")
-    add_fmu(umit-fmus/tests/loopsolvetest/add         add                             "")
-    add_fmu(umit-fmus/tests/loopsolvetest/sub         sub                             "")
-    add_fmu(umit-fmus/tests/loopsolvetest/mul         mul                             "")
-    add_fmu(umit-fmus/tests/stringtest                stringtest                      "")
-    add_fmu(umit-fmus/tests/strange_variable_names    strange_variable_names          "")
+    add_fmu(tests/umit-fmus/kinematictruck/body             body                            "")
+    add_fmu(tests/umit-fmus/kinematictruck/engine           engine                          "")
+    add_fmu(tests/umit-fmus/kinematictruck/gearbox2         gearbox2                        "")
+    add_fmu(tests/umit-fmus/forcevelocitytruck/fvbody       fvbody                          "")
+    add_fmu(tests/umit-fmus/forcevelocitytruck/gearbox      gearbox                         "")
+    add_fmu(tests/umit-fmus/tests/typeconvtest              typeconvtest                    "")
+    add_fmu(tests/umit-fmus/tests/loopsolvetest/add         add                             "")
+    add_fmu(tests/umit-fmus/tests/loopsolvetest/sub         sub                             "")
+    add_fmu(tests/umit-fmus/tests/loopsolvetest/mul         mul                             "")
+    add_fmu(tests/umit-fmus/tests/stringtest                stringtest                      "")
+    add_fmu(tests/umit-fmus/tests/strange_variable_names    strange_variable_names          "")
 
     # Model-Exchange FMUs
-    add_fmu(umit-fmus/me/springs                      springs                         "")
-    add_fmu(umit-fmus/me/springs2                     springs2                        "")
-    add_fmu(umit-fmus/me/springs3                     springs3                        "")
-    add_fmu(umit-fmus/me/springs4                     springs4                        "")
-    add_fmu(umit-fmus/me/bouncingBall                 bouncingBall                    "")
+    add_fmu(tests/umit-fmus/me/springs                      springs                         "")
+    add_fmu(tests/umit-fmus/me/springs2                     springs2                        "")
+    add_fmu(tests/umit-fmus/me/springs3                     springs3                        "")
+    add_fmu(tests/umit-fmus/me/springs4                     springs4                        "")
+    add_fmu(tests/umit-fmus/me/bouncingBall                 bouncingBall                    "")
 
     # Wrap Model-Exchange FMUs into Co-Simulation FMUs using GSL for integrating
     # The ME FMUs are taken as-is and put into resources/ in the outer FMU
@@ -484,20 +483,20 @@ if (BUILD_FMUS)
     # - from inside the source FMU
 
     # These generate the modelDescription from XML
-    add_wrapped(umit-fmus/meWrapper/bouncingBall              bouncingBall)
-    add_wrapped(umit-fmus/meWrapper/springs                   springs)
-    add_wrapped(umit-fmus/meWrapper/springs2                  springs2)
-    add_wrapped(umit-fmus/meWrapper/springs3                  springs3)
-    add_wrapped(umit-fmus/meWrapper/springs4                  springs4)
-    add_wrapped_filter(umit-fmus/meWrapperFiltered/springs2                  springs2)
+    add_wrapped(tests/umit-fmus/meWrapper/bouncingBall              bouncingBall)
+    add_wrapped(tests/umit-fmus/meWrapper/springs                   springs)
+    add_wrapped(tests/umit-fmus/meWrapper/springs2                  springs2)
+    add_wrapped(tests/umit-fmus/meWrapper/springs3                  springs3)
+    add_wrapped(tests/umit-fmus/meWrapper/springs4                  springs4)
+    add_wrapped_filter(tests/umit-fmus/meWrapperFiltered/springs2                  springs2)
 
 
     # These generate the modelDescription from the source FMU
-    add_wrapped_fmu(umit-fmus/meWrapperFmu/bouncingBall       bouncingBall    "${bouncingBall_fmu}")
-    add_wrapped_fmu(umit-fmus/meWrapperFmu/springs2           springs2        "${springs2_fmu}")
+    add_wrapped_fmu(tests/umit-fmus/meWrapperFmu/bouncingBall       bouncingBall    "${bouncingBall_fmu}")
+    add_wrapped_fmu(tests/umit-fmus/meWrapperFmu/springs2           springs2        "${springs2_fmu}")
 endif ()
 
-add_subdirectory(ssp)
+add_subdirectory(tools/ssp)
 
 # CPack setup
 set(CPACK_PACKAGE_NAME "fmigo")

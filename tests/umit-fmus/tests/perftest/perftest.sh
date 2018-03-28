@@ -1,5 +1,5 @@
 set -e
-pushd ../../..
+pushd ../../../..
 source boilerplate.sh
 popd
 

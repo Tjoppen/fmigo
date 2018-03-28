@@ -4,11 +4,13 @@ then
   export BUILD_DIR="$(pwd)/build"
 fi
 
-export FMUS_DIR="${BUILD_DIR}/umit-fmus"
+export FMUS_DIR="${BUILD_DIR}/tests/umit-fmus"
 export PATH=$BUILD_DIR/install/bin:$PATH
 export SERVER=fmigo-server
 export MASTER=fmigo-master
 export MPI_MASTER=fmigo-mpi
+export COMPARE_CSV=$(pwd)/tests/compare_csv.py
+export WRAPPER=$(pwd)/tools/wrapper/wrapper.py
 
 if [[ "`uname`" = "Windows_NT" || "`uname`" = "MINGW64"* ]]
 then

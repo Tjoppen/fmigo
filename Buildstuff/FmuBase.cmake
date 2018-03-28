@@ -48,16 +48,16 @@ function (add_fmu_internal srcdir dstdir xmldir target extra_srcs libs extra_inc
   set(binaries_dir ${CMAKE_CURRENT_BINARY_DIR}/${target}/binaries)
 
   set(srcs
-    umit-fmus/templates/fmi2/fmuTemplate.h
-    umit-fmus/templates/fmi2/fmuTemplate_impl.h
-    umit-fmus/templates/fmi2/strlcpy.h
+    tools/fmi2template/fmuTemplate.h
+    tools/fmi2template/fmuTemplate_impl.h
+    tools/fmi2template/strlcpy.h
     ${${target}_dstdir}/sources/modelDescription.h
     ${fmu_sources}
     ${extra_srcs}
   )
 
   set(includes
-    umit-fmus/templates/fmi2
+    tools/fmi2template
     ${${target}_srcdir}/sources
     ${${target}_dstdir}/sources
     ${extra_includes}
@@ -70,10 +70,10 @@ function (add_fmu_internal srcdir dstdir xmldir target extra_srcs libs extra_inc
   add_custom_command(
     OUTPUT ${${target}_dstdir}/sources/modelDescription.h
     COMMAND ${CMAKE_COMMAND} -E make_directory ${${target}_dstdir}/sources
-    COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/wrapper/modeldescription2header.py ${md2hdr_option}
+    COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/tools/wrapper/modeldescription2header.py ${md2hdr_option}
       ${${target}_xmldir}/modelDescription.xml >
       ${${target}_dstdir}/sources/modelDescription.h
-    DEPENDS ${${target}_xmldir}/modelDescription.xml ${xmldeps} ${CMAKE_CURRENT_SOURCE_DIR}/wrapper/modeldescription2header.py)
+    DEPENDS ${${target}_xmldir}/modelDescription.xml ${xmldeps} ${CMAKE_CURRENT_SOURCE_DIR}/tools/wrapper/modeldescription2header.py)
   add_custom_target(${target}_md DEPENDS ${${target}_dstdir}/sources/modelDescription.h)
   add_dependencies(${target} ${target}_md)
 
@@ -160,12 +160,12 @@ function (add_wrapped dir sourcetarget)
   add_custom_command(
     OUTPUT ${dstxml}
     COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/${dir}
-    COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/wrapper/xml2wrappedxml.py
+    COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/tools/wrapper/xml2wrappedxml.py
          -x ${srcxml} -f "${${sourcetarget}_fmu}" -i ${target} > ${dstxml}
-    DEPENDS ${srcxml} ${sourcetarget} ${CMAKE_CURRENT_SOURCE_DIR}/wrapper/xml2wrappedxml.py)
+    DEPENDS ${srcxml} ${sourcetarget} ${CMAKE_CURRENT_SOURCE_DIR}/tools/wrapper/xml2wrappedxml.py)
   add_custom_target(${target}_xml DEPENDS ${dstxml})
 
-  add_fmu_internal("${CMAKE_CURRENT_SOURCE_DIR}/${dir}" "${CMAKE_CURRENT_BINARY_DIR}/${dir}" "${CMAKE_CURRENT_BINARY_DIR}/${dir}" "${target}" "wrapper/sources/wrapper.c" "cgsl;fmilib" "wrapper/sources" FALSE "-w" "${target}_xml" "${${sourcetarget}_fmu}")
+  add_fmu_internal("${CMAKE_CURRENT_SOURCE_DIR}/${dir}" "${CMAKE_CURRENT_BINARY_DIR}/${dir}" "${CMAKE_CURRENT_BINARY_DIR}/${dir}" "${target}" "tools/wrapper/sources/wrapper.c" "cgsl;fmilib" "tools/wrapper/sources" FALSE "-w" "${target}_xml" "${${sourcetarget}_fmu}")
   add_dependencies(${target} ${sourcetarget}_fmu_target)
 endfunction ()
 
@@ -178,12 +178,12 @@ function (add_wrapped_filter dir sourcetarget)
   add_custom_command(
     OUTPUT ${dstxml}
     COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/${dir}
-    COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/wrapper/xml2wrappedxml.py
+    COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/tools/wrapper/xml2wrappedxml.py
          -x ${srcxml} -f "${${sourcetarget}_fmu}" -i ${target} > ${dstxml}
-    DEPENDS ${srcxml} ${sourcetarget} ${CMAKE_CURRENT_SOURCE_DIR}/wrapper/xml2wrappedxml.py)
+    DEPENDS ${srcxml} ${sourcetarget} ${CMAKE_CURRENT_SOURCE_DIR}/tools/wrapper/xml2wrappedxml.py)
   add_custom_target(${target}_xml DEPENDS ${dstxml})
 
-  add_fmu_internal("${CMAKE_CURRENT_SOURCE_DIR}/${dir}" "${CMAKE_CURRENT_BINARY_DIR}/${dir}" "${CMAKE_CURRENT_BINARY_DIR}/${dir}" "${target}" "wrapper/sources/wrapper.c" "cgsl;fmilib" "wrapper/sources" FALSE "-w" "${target}_xml" "${${sourcetarget}_fmu}")
+  add_fmu_internal("${CMAKE_CURRENT_SOURCE_DIR}/${dir}" "${CMAKE_CURRENT_BINARY_DIR}/${dir}" "${CMAKE_CURRENT_BINARY_DIR}/${dir}" "${target}" "tools/wrapper/sources/wrapper.c" "cgsl;fmilib" "tools/wrapper/sources" FALSE "-w" "${target}_xml" "${${sourcetarget}_fmu}")
   add_dependencies(${target} ${sourcetarget}_fmu_target)
   
   set_target_properties(${target} PROPERTIES COMPILE_DEFINITIONS WRAPPER_USE_FILTER)
@@ -196,12 +196,12 @@ function (add_wrapped_fmu dir sourcetarget sourcefmu)
   add_custom_command(
     OUTPUT ${dstxml}
     COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/${dir}
-    COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/wrapper/xml2wrappedxml.py
+    COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/tools/wrapper/xml2wrappedxml.py
          -f ${sourcefmu} -i ${target} > ${dstxml}
-    DEPENDS ${sourcefmu} ${sourcetarget}_fmu_target ${CMAKE_CURRENT_SOURCE_DIR}/wrapper/xml2wrappedxml.py)
+    DEPENDS ${sourcefmu} ${sourcetarget}_fmu_target ${CMAKE_CURRENT_SOURCE_DIR}/tools/wrapper/xml2wrappedxml.py)
   add_custom_target(${target}_xml DEPENDS ${dstxml})
 
-  add_fmu_internal("${CMAKE_CURRENT_BINARY_DIR}/${dir}" "${CMAKE_CURRENT_BINARY_DIR}/${dir}" "${CMAKE_CURRENT_BINARY_DIR}/${dir}" "${target}" "wrapper/sources/wrapper.c" "cgsl;fmilib" "wrapper/sources" FALSE "-w" "${target}_xml" "${${sourcetarget}_fmu}")
+  add_fmu_internal("${CMAKE_CURRENT_BINARY_DIR}/${dir}" "${CMAKE_CURRENT_BINARY_DIR}/${dir}" "${CMAKE_CURRENT_BINARY_DIR}/${dir}" "${target}" "tools/wrapper/sources/wrapper.c" "cgsl;fmilib" "tools/wrapper/sources" FALSE "-w" "${target}_xml" "${${sourcetarget}_fmu}")
   add_dependencies(${target} ${sourcetarget}_fmu_target)
 endfunction ()
 
@@ -223,13 +223,13 @@ function (wrap_existing_fmu2 target sourcefmu dir)
   add_custom_command(
     OUTPUT ${dstxml}
     COMMAND ${CMAKE_COMMAND} -E make_directory ${dir}
-    COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/wrapper/xml2wrappedxml.py
+    COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/tools/wrapper/xml2wrappedxml.py
          -f ${sourcefmu} -i ${target} > ${dstxml}
-    DEPENDS ${sourcefmu} ${CMAKE_CURRENT_SOURCE_DIR}/wrapper/xml2wrappedxml.py)
+    DEPENDS ${sourcefmu} ${CMAKE_CURRENT_SOURCE_DIR}/tools/wrapper/xml2wrappedxml.py)
   add_custom_target(${target}_xml DEPENDS ${dstxml})
 
   #function (add_fmu_internal dir target extra_srcs libs extra_includes console md2hdr_option xmldeps extra_resources)
-  add_fmu_internal("${dir}" "${dir}" "${dir}" "${target}" "wrapper/sources/wrapper.c" "cgsl;fmilib" "wrapper/sources" FALSE "-w" "${target}_xml" "${sourcefmu}")
+  add_fmu_internal("${dir}" "${dir}" "${dir}" "${target}" "tools/wrapper/sources/wrapper.c" "cgsl;fmilib" "tools/wrapper/sources" FALSE "-w" "${target}_xml" "${sourcefmu}")
 endfunction ()
 
 function (wrap_existing_fmu modelIdentifier sourcefmu dir)
@@ -254,5 +254,6 @@ endif ()
 
 # Don't add cgsl twice
 if (NOT TARGET cgsl)
-    add_subdirectory(umit-fmus/templates/cgsl)
+    # Only used by wrapper.py it seems
+    add_subdirectory(tools/cgsl)
 endif ()

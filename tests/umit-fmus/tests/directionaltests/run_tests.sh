@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-pushd ../../..
+pushd ../../../..
 source boilerplate.sh
 popd
 
@@ -21,7 +21,7 @@ testit() {
   # a not-exactly-the-same mobility estimate results in
   # some slight phase shifts on the forces, which throws
   # the comparison entirely off
-  python ../../../tests/compare_csv.py ref.csv ${s}.csv "," "$2" "$3" "$4"
+  python $COMPARE_CSV ref.csv ${s}.csv "," "$2" "$3" "$4"
   rm ${s}.csv
   echo "OK"
 }

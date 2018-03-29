@@ -8,6 +8,7 @@ from scipy import sparse
 from scipy.linalg import expm
 import hashlib
 import pickle
+import timeit
 
 def join_struct_arrays2(arrays):
     newdtype = sum((a.dtype.descr for a in arrays), [])
@@ -31,7 +32,8 @@ def pack_data(t, x, v):
     for i in range(0, v.shape[1]):
         newrecarray["v%d" %(i+1)] = v[:, i]
     return newrecarray
-def pickle_data(t, x, v, config):
+
+def pickle_data(config, x, v, t):
     l = {"t" : t, "x" : x, "v" : v, "config" : config}
     h = hashlib.md5(str(config).encode("utf8")).hexdigest()
     fname = h + ".pickle"
@@ -40,7 +42,20 @@ def pickle_data(t, x, v, config):
     f.close()
     return fname
 
-def get_pickle_data(t, config):
+class ref_data():
+    def __init__(self, t, x, v):
+        self.d = t
+        self.x = x
+        self.v = v
+
+    def interp(t):
+        self.ts = t
+        self.xs = interp.interp1d(d["t"], d["x"], kind="cubic", axis=0)(t)
+        self.xv = interp.interp1d(d["t"], d["v"], kind="cubic", axis=0)(t) 
+        return self
+        
+
+def get_pickle_data(config, t=False):
     """ Either open a file with the data or run reference simulation. 
         In all cases, the data is interpolated to the given time array.
     """
@@ -57,9 +72,7 @@ def get_pickle_data(t, config):
     except:
         if float(config["k"])  == float(0):
             s = spring_chain(config["init"], config["masses"], config["isprings"])
-            print("doing ref")
         else:
-            print("doing split")
             s = split_string(config["step"], config["init"], config["masses"],
                              config["isprings"], k=config["k"])
 
@@ -69,8 +82,9 @@ def get_pickle_data(t, config):
         f = open(fname, "wb")
         pickle.dump(d , f)
         f.close()
-        
-    return interp.interp1d(d["t"], d["x"], kind="cubic", axis=0)(t), interp.interp1d(d["t"], d["v"], kind="cubic", axis=0)(t), d
+    data = ref_data(d["t"], d["x"], d["v"])
+    if type(t) == np.ndarray: 
+        return data.interp(t if type(t) == np.array data.t)
         
 """
 implementation of a spring damper chain with alternating spring damper
@@ -225,6 +239,7 @@ class spring():
 
         self.data = self.collector(self, self.z0)
 
+        #if True:
         if h == 0.0:
             self.r.set_solout(self.data)
             self.r.integrate(tend)
@@ -342,16 +357,80 @@ class spring_chain(spring):
             self.z0 = z0
             
         self.t0 = t0
-        super().doit(tend, t0=self.t0)
-
-    
-
-            
+        super().doit(tend, t0=self.t0, h=h)
 
     def __call__(self, t, z):
         return self.A * z
+
+
+def make_config_uniform(N, step=float(0), k=float(3), tend = -1):
+    print("Fucking step =  %g  and k = %g" % (step, k))
+    init = np.array([[1,0,0,0]] + [[0,0,0,0]]*(N-1))
+    masses = np.array([[1,2]]*N) /  N 
+    isprings = np.array([[1,0]]*N)
+    mu = 1.0/ ( 1/ masses[0][0] + 1/masses[0][1]) 
+    min_p, max_p = get_min_max_period(masses, isprings)
+    if  k > 0 and step > 0 :
+        c = mu*(k*2*math.pi/step)**2
+        d = 2*0.7*math.sqrt(c*mu)
+        csprings = [[c,d,0,0]]*N
+        csprings[0] = [0,0,0,0]
+    else:
+        csprings = [[0,0,0,0]]*N
+
+    config = {"N" : int(N),
+              "init" : init,
+              "masses" : masses,
+              "isprings" : isprings,
+              "csprings" : csprings,
+              "step" : step, 
+              "k" : float(k),
+              "tend" : float(tend),
+              "min_p" : float(min_p),
+              "step" : min_p/20, 
+              "tend"  : 2*max_p if tend == -1 else tend
+    }
+    
+    config["step"] = step if step > 0  else min_p / 10.0
+    return config
+    
+def measure_perf(m, N = 4, factor = 2):
+    n = []
+    t = []
+    S = []
+    C = []
+    tend = 10
+    for i in range(1,m):
+        c = make_config_uniform(N)
+        c["tend"] = tend
+        C += [c]
+        n += [ N ]
+        s = spring_chain(c["init"],c["masses"], c["isprings"])
+        S += [s]
+        u = timeit.Timer(lambda: s.doit(c["tend"], h=c["step"]))
+        t += [ u.timeit(number=1) ] 
+        N *= factor
+    t = np.array(t)
+    n = np.array(n)
+    try:
+        sl = np.polyfit(np.log10(t), np.log10(n), 1)[1]
+        py.clf()
+        py.loglog(t, n)
+        py.legend(["exponent = %g" %sl])
+        py.title("Computational complexity")
+        py.show()
+    except:
+        pass
+
+    return t, n, S, C
+
+
+        
+
 if __name__ == "__main__":
-    N = 10
+    if not ( ( 'N' in vars() or 'N' in globals() ) and type(N) == type(0) ):
+        N = 10
+
     init = np.array([[1,0,0,0]] + [[0,0,0,0]]*(N-1))
     masses = np.array([[1,2]]*N)
     isprings = np.array([[1,0]]*N)
@@ -371,22 +450,18 @@ if __name__ == "__main__":
               "min_p" : float(min_p),
               "step" : min_p/20
     }
-
-
-    
-    
     
     eps = 1e-16            # machine precision
     min_p, max_p = get_min_max_period(masses, isprings)
     tend = 2*max_p
-    
     NPP = 10
     step = min_p / NPP
-    if True:
-        s1 = spring_chain(config["init"],config["masses"], config["isprings"])
+    #s1 = spring_chain(config["init"],config["masses"], config["isprings"])
+    #s1.doit(config["tend"], h=config["step"])
+    if False:
         s0 = split_string(config["step"], config["init"],config["masses"],
                           config["isprings"], k=config["k"])
-        s0.doit(config["tend"], h=config["step"])
+        #s0.doit(config["tend"], h=config["step"])
         t0 = np.linspace(10, s0.t[-1], 200)
         s0.sample(t0)
         py.figure(1)

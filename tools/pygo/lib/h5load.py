@@ -160,14 +160,20 @@ class attributes():
             return None       
 
 class sim_data():
+    """
+    This stores the data found in the HDF5 file and provides a few
+    services.
+    """
     def __init__(self, sim, fmus, metadata):
         self.sim = sim
         self.fmus = fmus
         self.metadata = metadata
+        ## constraint violations are stored as eqXXX_g 
         pos = re.compile("eq[\d]+_g")
         l = [ x for x in list(self.sim.dtype.names) if pos.fullmatch(x)]
         self.nc = len( l ) 
         self.pos = sim[l]
+        ## constraint velocity are stored as eqXXX_g 
         vel = re.compile("eq[\d]+_gv")
         l = [ x for x in list(self.sim.dtype.names) if vel.fullmatch(x)]
         self.vel = sim[l]
@@ -195,8 +201,7 @@ class sim_data():
     def set_attr(self, name, v):
         self.metadata[name] = v
     def get_n_constraints(self):
-        return  nc
-
+        return  self.nc
     def get_rms(self, x):
         return np.sqrt( np.power(x.view((x.dtype[0], len(x.dtype.names))), 2).mean(axis=1) ).view()
 

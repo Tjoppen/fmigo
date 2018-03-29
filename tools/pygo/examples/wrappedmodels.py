@@ -5,7 +5,7 @@ import math
 umit="../../release/umit-fmus/"
 pfmu  = umit + "meWrapper/springs2/wrapper_springs2.fmu"
 ffmu = umit + "meWrapperFiltered/springs2/wrapper_filtered_springs2.fmu"
-cfmu = umit + "gsl/clutch/clutch.fmu"
+cfmu = umit + "gsl2/clutch2/clutch2.fmu"
 
 class clutch(module):
     """ Modules with two point masses hooked by a spring.  This was first
@@ -78,7 +78,9 @@ class two_bodies(module):
  
 ### Now define simulations 
 
-def make_parameters(filtered, N, init, masses, isprings, csprings, kinematic=False):
+def make_parameters(filtered, N, init,
+                    masses, isprings, csprings,
+                    kinematic=False, order=0):
     """ 
     Do this as a function so we can reuse this mess for both force-velocity
     and kinematic couplings. Both types of couplings are returned.
@@ -123,11 +125,13 @@ def make_parameters(filtered, N, init, masses, isprings, csprings, kinematic=Fal
             # couplings+= ("m%d" %i, "x1", "v1", "a1", "f1",
             #                    "m%d" %(i+1), "x2","v2","a2","f2"),
     else:
-        for i in range(N-1):
-            # this is hard wired to go left to right,
-            #  output velocity, input forces
-            signals += ("m%d" %i, "out_v2", "m%d" %(i+1), "in_v1"),
-            signals += ("m%d" %(i+1), "out_f1", "m%d" %(i), "in_f2"),
+        if order == 0:
+            for i in range(N-1):
+                signals += ("m%d" %i, "out_v2", "m%d" %(i+1), "in_v1"),
+                signals += ("m%d" %(i+1), "out_f1", "m%d" %(i), "in_f2"),
+            else:
+                signals += ("m%d" %i, "out_f2", "m%d" %(i+1), "in_v1"),
+                signals += ("m%d" %(i+1), "out_v1", "m%d" %(i), "in_v2"),
 
     return fmus, couplings, signals
 
@@ -146,12 +150,13 @@ class chain_mass_springs(simulation):
     
     """
     def __init__(self, filtered, N, init, masses, isprings, csprings,
-                 kinematic = False, annotations=()):
+                 kinematic = False, annotations=(), order=0):
 
         fmus, couplings, signals = make_parameters(filtered, N, init,
                                                    masses, isprings,
                                                    csprings,
-                                                   kinematic=kinematic)
+                                                   kinematic=kinematic,
+                                                   order = order)
         
         simulation.__init__(self, fmus,
                             name = "me_wrapped_spring_damper",

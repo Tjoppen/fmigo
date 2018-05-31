@@ -9,10 +9,14 @@ The latter can be connected with typical weak coupling or using an algebraic con
 
 Note that support for this project is very limited until we receive further funding.
 
-What follows are some brief build and test instructions.
-There is also a section on how to set up GitLab CI.
+What follows are some brief build and test instructions (GNU/Linux, Windows and Mac),
+followed by a section on how to set up GitLab CI,
+followed by examples.
+There is also some stuff from the old README, which we haven't turned into tickets yet.
 
-# Pre-requisites
+# Building and test requirements
+
+## Pre-requisites
 
 CMake is meta build system required for creating the build system on all platforms.
 We support versions down to 2.8.12.2 in GitLab CI, but recommend version 3.5.1 or later.
@@ -34,7 +38,7 @@ bash 4.3.11 and 4.3.48 are confirmed working via GitLab CI.
 win-bash 0.8.5 is confirmed to *not* work however, due to the lack of subprocesses.
 More information about Windows specifics will be given in the Windows section.
 
-# GNU/Linux
+## GNU/Linux
 
 Ubuntu and Arch are our primary development platforms, and thus are the most supported.
 Ubuntu derivatives such as Lubuntu are also supported.
@@ -47,19 +51,24 @@ For example, using Ninja:
 mkdir -p build && cd build && cmake -G Ninja .. && ninja install
 ```
 
-## Ubuntu / Debian
+### Ubuntu / Debian
 
 Inspect the relevant Dockerfile in Buildstuff/ to find the list of required packages and potential distribution quirks that need attention.
 
-## Arch
+### Arch
 
 Ask Claude ;)
 
-# Windows
+### Tools required for testing on GNU/Linux
+
+Make sure bash and coreutils are installed.
+This should be the case on any GNU-ish system.
+
+## Windows
 
 There are two major paths to building on Windows: Microsoft Visual Studio 2015 and msys2.
 
-## Microsoft Visual Studio 2015
+### Microsoft Visual Studio 2015
 
 Install Microsoft Visual Studio 2015 and [MS-MPI](https://msdn.microsoft.com/en-us/library/windows/desktop/bb524831%28v=vs.85%29.aspx).
 For MS-MPI you should download and install both msmpisdk.msi and MSMpiSetup.exe.
@@ -79,7 +88,7 @@ NuGet shows some promise in this direction, but has not been experimented with s
 Note that tests only work for the 32-bit build due to the lack of a working 64-bit GNU GSL build,
 which is required for building our test FMUs.
 
-## msys2
+### msys2
 
 msys2 is a GNU-like system for Windows.
 Once set up, it may be easier to keep working than the Visual Studio approach.
@@ -89,7 +98,7 @@ Since msys2 uses pacman, see Arch above for instruction.
 GNU GSL may require special attention.
 You may also need MS-MPI as with the Visual Studio build.
 
-## Testing
+### Tools required for testing on Windows
 
 You will need bash and some basic tools like dd, seq and bc.
 These ship with msys2, so it's a good idea to always install it,
@@ -100,11 +109,11 @@ however win-bash itself is much too old so care must be taken that msys2's bash 
 Once properly set up, just run `bash run_tests_msvc14.sh` to run tests on the 32-bit build.
 As mentioned before, 64-bit tests do not yet work.
 
-# Mac
+## Mac
 
 You have two options: HomeBrew or MacPorts.
 
-## HomeBrew
+### HomeBrew
 
 ```
 brew install protobuf \
@@ -116,7 +125,7 @@ brew install protobuf \
              homebrew/science/suite-sparse
 ```
 
-## MacPorts
+### MacPorts
 
 * Does not look for umfpack, needs to be globally available
 ```
@@ -178,6 +187,10 @@ be nicer:
 # Clean docker images at midnight on the first day of every month
 0   0  1   *   *     /home/<username>/docker-cleanup.sh
 ```
+
+# Examples
+
+TODO
 
 # Old README
 

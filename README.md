@@ -28,8 +28,8 @@ Python 2.7 or 3.x is required for running the tests.
 You will also need to install some Python packages specified in requirements.txt using pip and/or pip3:
 
 ```bash
-pip install -r requirements.txt
-pip3 install -r requirements.txt
+pip install -r Buildstuff/requirements.txt
+pip3 install -r Buildstuff/requirements.txt
 ```
 
 Finally, bash is also required for running tests.
@@ -188,9 +188,70 @@ be nicer:
 0   0  1   *   *     /home/<username>/docker-cleanup.sh
 ```
 
-# Examples
+# Examples / how to make use of the programs
 
-TODO
+There are multiple ways of making use of the tools in this repository.
+
+## ssp-launcher.py
+
+*System Structure and Parameterization of Components for Virtual System Design* (SSP)
+is a way to parametrize, connect and bundle multiple FMUs in self-contained units called SSPs.
+This project includes a script called *ssp-launcher.py* under *tools/ssp*, which can be used to launch SSPs.
+We have also extended the standard to support kinematic shaft constraints and to being able to supply the *fmigo* master with extra command-line options.
+See *FmiGo.xsd* for more details on these extensions.
+
+The directory also includes some example SSPs to look at,
+and the CMake build scripts for them.
+The build scripts further depend on the example FMUs which we use
+for testing, so it might also be good to take a look at those
+(*tests/umit-fmus/kinematictruck* and *tests/umit-fmus/gsl*).
+
+It is possible to use *ssp-launcher.py* in either ZeroMQ or MPI mode.
+MPI is used by default.
+The -p option is used to switch to TCP aka ZeroMQ mode,
+and can be given zero or more explicit ports to use.
+
+## pygo
+
+*pygo* is a set of Python scripts which can be used to abstract
+and simplify connecting and running FMUs together.
+The abstraction is also useful when one has multiple FMUs that all implement the same model, but with different names for inputs and outputs (as is often the case in larger institutions).
+In this way it is quite similar to SSP,
+but instead of writing XML you write Python.
+
+## Raw fmigo / scripts
+
+To interact with fmigo directly, reading the manual is highly recommended.
+See doc/fmigo.pdf or invoke *man fmigo* after installing.
+Many of the scripts under *tests/* make use of this method of calling *fmigo*,
+but it is not necessarily the easiest way to do so.
+
+The short story on using *fmigo* directly is that each FMU gets an index starting at zero, based on its position in the master's command line.
+The master is either given some filenames to FMUs if using MPI (*fmigo-mpi*) or URLs to FMU servers if using ZeroMQ (*fmigo-master* and *fmigo-server*).
+Compare these two:
+
+```bash
+$ mpiexec -n 3 fmigo-mpi fmu0.fmu fmu1.fmu
+```
+
+versus:
+
+```bash
+$ fmigo-server -p 1234 fmu0.fmu & \
+  fmigo-server -p 1235 fmu1.fmu & \
+  fmigo-master tcp://localhost:1234 tcp://localhost:1235
+```
+
+In both cases fmu0.fmu gets index 0 and fmu1.fmu gets index 1.
+Note the *-n 3* in the arguments to mpiexec.
+The MPI world needs to be one larger than the number of FMUs involved,
+since node zero is the master and nodes 1..N are the FMUs.
+
+Connections are made between FMUs based on their indices,
+which can be two or more,
+plus a number of arguments that depends on the type of connection
+being made.
+See the manual for the exact syntax involved.
 
 # Old README
 

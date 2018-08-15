@@ -429,7 +429,6 @@ void fmitcp_master::parseArguments( int argc,
                     double* tEnd,
                     double* timeStepSize,
                     jm_log_level_enu_t *loglevel,
-                    char* csv_separator,
                     std::string *outFilePath,
                     enum FILEFORMAT * fileFormat,
                     int * realtimeMode,
@@ -471,7 +470,7 @@ void fmitcp_master::parseArguments( int argc,
 
     vector<char*> argv2 = make_char_vector(argvstore);
 
-    while ((c = getopt (argv2.size(), argv2.data(), "rl:ht:c:d:s:o:p:f:m:g:w:C:5:F:NM:a:z:ZLHV:DeS:G:RE")) != -1){
+    while ((c = getopt (argv2.size(), argv2.data(), "rl:ht:c:d:o:p:f:m:g:w:C:5:F:NM:a:z:ZLHV:DeS:G:RE")) != -1){
         int n, skip, l, cont, i, numScanned, stop, vis;
         deque<string> parts;
         if (optarg) parts = escapeSplit(optarg, ':');
@@ -648,15 +647,6 @@ void fmitcp_master::parseArguments( int argc,
 
         case 'r':
             *realtimeMode = 1;
-            break;
-
-        case 's':
-            if(strlen(optarg)==1 && isprint(optarg[0])){
-                *csv_separator = optarg[0];
-            } else {
-                printInvalidArg('s');
-                exit(1);
-            }
             break;
 
         case 'o':

@@ -618,7 +618,6 @@ int main(int argc, char *argv[] ) {
     vector<string> fmuURIs;
     vector<connection> connections;
     vector<deque<string> > params;
-    char csv_separator = ',';
     string outFilePath = "";
     int realtimeMode = 0;
     vector<Rend> executionOrder;
@@ -636,7 +635,7 @@ int main(int argc, char *argv[] ) {
 
     parseArguments(
             argc, argv, &fmuURIs, &connections, &params, &endTime, &timeStep,
-            &fmigo_loglevel, &csv_separator, &outFilePath, &fmigo::globals::fileFormat,
+            &fmigo_loglevel, &outFilePath, &fmigo::globals::fileFormat,
             &realtimeMode, &executionOrder, &fmuVisibilities,
             &scs, &hdf5Filename, &fieldnameFilename, &holonomic, &compliance,
             &command_port, &results_port, &startPaused, &solveLoops, &useHeadersInCSV, &csv_fmu, &maxSamples, &relaxation,

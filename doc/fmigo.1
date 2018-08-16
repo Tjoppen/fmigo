@@ -150,6 +150,15 @@ You can find this FMU's source code under tests/umit-fmus/tests/alltypestest/.
 
 Real values are written in scientific notation with enough decimals to be losslessly transported.
 
+If solver fields are to be output (-E),
+their naming scheme derives from the order in which the kinematic couplings are specified,
+and the number of equations in each kinematic coupling.
+For each equation the constraint violation and the speed of the violation is reported.
+For each FMU there are also some number of kinematic connectors,
+for which forces and/or torques are reported.
+Mobilities associated with each connector may also be reported.
+Since these output columns are mostly used for debugging the kinematic solver,
+further details have been left out since they are subject to change.
 .SH FLAGS
 .TP
 .B \-r
@@ -170,13 +179,11 @@ Solve algebraic loops in initialization mode. Requires GPL and GNU GSL.
 .B \-H
 Print CSV header.
 TikZ output always has a header.
-You will find more information about output formats in a separate section further down.
 .TP
 .B \-E
 Print solver fields in CSV/TikZ output.
 This includes things like constraint violations, mobilities and forces.
 Only sensible when using kinematic constraints, else nothing extra is printed.
-Again, more information about this further down.
 .TP
 .B \-D
 Always compute numerical directional derivatives, regardless of the value of providesDirectionalDerivatives in all FMUs' modelDescription.xml.

@@ -98,6 +98,58 @@ There is also an alternative syntax which produces shorter command lines but req
 .B
     mpiexec -np 3 fmigo-mpi -c 0,x,1,y fmu0.fmu fmu1.fmu
 
+
+.SH OUTPUT FORMAT
+
+The program outputs data in either CSV or TikZ (space separated) format.
+This data is written either to stdout (default) or to a file (-o).
+It is also possible to suppress the output entirely, using -f none.
+
+Whether in CSV or TikZ format, it is important to keep track each FMU's ID in order to make sense of the output.
+Each output row contains output values for one communication point.
+The first column is the time of the communication point, after which follows a number of output columns.
+Output columns are grouped by FMU ID, from lowest (0) to highest (N-1).
+The output columns are in the same order as listed in the <fmiModelDescription><ModelStructure><Outputs> element in each FMU's modelDescription.xml.
+Variables not listed in <Outputs> are not written to the output.
+The columns are named like "fmu%i_%s" in C parlance, where %i is the FMU ID and %s is the name of the variable in question.
+If FMU ID 1 has an variable listed in <Outputs> called "foo.bar" then it is written with a column name of "fmu1_foo.bar".
+
+The following are some example outputs with rows containing time, sin(time), an increasing integer, a boolean being set equal to the integer and a string of increasing length of alternating a's and double quotation marks (a"a"a").
+For all examples, FMU=build/tests/umit-fmus/tests/alltypestest/alltypestest.fmu.
+You can find this FMU's source code under tests/umit-fmus/tests/alltypestest/.
+
+  # CSV with header
+  mpiexec -np 2 fmigo-mpi -t 0.4 -d 0.1 -H $FMU
+
+    #t,fmu0_r_out,fmu0_i_out,fmu0_b_out,fmu0_s_out
+    +0.0000000000000000e+00,+0.0000000000000000e+00,0,0,""
+    +1.0000000000000001e-01,+9.9833416646828155e-02,1,1,"a"
+    +2.0000000000000001e-01,+1.9866933079506122e-01,2,1,"a"""
+    +3.0000000000000004e-01,+2.9552020666133960e-01,3,1,"a""a"
+    +4.0000000000000002e-01,+3.8941834230865052e-01,4,1,"a""a"""
+
+  # TikZ
+  mpiexec -np 2 fmigo-mpi -t 0.4 -d 0.1 -f tikz $FMU
+
+    t fmu0_r_out fmu0_i_out fmu0_b_out fmu0_s_out
+    +0.0000000000000000e+00 +0.0000000000000000e+00 0 0 ""
+    +1.0000000000000001e-01 +9.9833416646828155e-02 1 1 "a"
+    +2.0000000000000001e-01 +1.9866933079506122e-01 2 1 "a"""
+    +3.0000000000000004e-01 +2.9552020666133960e-01 3 1 "a""a"
+    +4.0000000000000002e-01 +3.8941834230865052e-01 4 1 "a""a"""
+
+  # Two copies of the same FMU, CSV with header
+  mpiexec -np 3 fmigo-mpi -t 0.4 -d 0.1 -H $FMU $FMU
+
+    #t,fmu0_r_out,fmu0_i_out,fmu0_b_out,fmu0_s_out,fmu1_r_out,fmu1_i_out,fmu1_b_out,fmu1_s_out
+    +0.0000000000000000e+00,+0.0000000000000000e+00,0,0,"",+0.0000000000000000e+00,0,0,""
+    +1.0000000000000001e-01,+9.9833416646828155e-02,1,1,"a",+9.9833416646828155e-02,1,1,"a"
+    +2.0000000000000001e-01,+1.9866933079506122e-01,2,1,"a""",+1.9866933079506122e-01,2,1,"a"""
+    +3.0000000000000004e-01,+2.9552020666133960e-01,3,1,"a""a",+2.9552020666133960e-01,3,1,"a""a"
+    +4.0000000000000002e-01,+3.8941834230865052e-01,4,1,"a""a""",+3.8941834230865052e-01,4,1,"a""a"""
+
+Real values are written in scientific notation with enough decimals to be losslessly transported.
+
 .SH FLAGS
 .TP
 .B \-r
@@ -117,14 +169,14 @@ Solve algebraic loops in initialization mode. Requires GPL and GNU GSL.
 .TP
 .B \-H
 Print CSV header.
+TikZ output always has a header.
+You will find more information about output formats in a separate section further down.
 .TP
 .B \-E
 Print solver fields in CSV/TikZ output.
 This includes things like constraint violations, mobilities and forces.
 Only sensible when using kinematic constraints, else nothing extra is printed.
-
-TODO put the column name format here
-
+Again, more information about this further down.
 .TP
 .B \-D
 Always compute numerical directional derivatives, regardless of the value of providesDirectionalDerivatives in all FMUs' modelDescription.xml.
@@ -448,7 +500,7 @@ By default no windows are shown (batch mode).
 Timestep size. Default is 0.1.
 .TP
 .B \-f OUTFORMAT
-Output file format. Can be "csv" (default) or "tikz". Use -H to print header with CSV output. TikZ output always uses a header.
+Output file format. Can be "csv" (default), "tikz" or "none". Use -H to print header with CSV output. TikZ output always uses a header.
 .TP
 .B \-o OUTFILE
 Result output file. Default is STDOUT.
@@ -508,6 +560,7 @@ If results_port is given then -f none is assumed, unless -f csv or -f tikz is sp
 
 Messages are serialized using protobuf.
 For more information, see src/master/control.proto.
+
 
 .SH EXAMPLES
 To run an FMU simulation from time 0 to 5 with timestep 0.01:

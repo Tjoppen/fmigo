@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fmiModelDescription
+  fmiVersion="2.0"
+  description="FMU that outputs data of all supported types, for documentation purposes"
+  modelName="alltypestest"
+  guid="{15f9fb7d-c33b-439a-93db-461b1f2820ba}"
+  numberOfEventIndicators="0">
+
+<CoSimulation
+  modelIdentifier="alltypestest"
+  canHandleVariableCommunicationStepSize="true"
+  canGetAndSetFMUstate="true"
+  providesDirectionalDerivative="false"/>
+
+<LogCategories>
+  <Category name="logAll"/>
+  <Category name="logError"/>
+  <Category name="logFmiCall"/>
+  <Category name="logEvent"/>
+</LogCategories>
+
+<DefaultExperiment startTime="0" stopTime="10" stepSize="0.1"/>
+
+<ModelVariables>
+  <!-- Outputs -->
+  <ScalarVariable name="r_out"
+                  valueReference="0"
+                  description=""
+                  causality="output">
+      <Real/>
+  </ScalarVariable>
+  <ScalarVariable name="i_out"
+                  valueReference="1"
+                  description=""
+                  causality="output">
+      <Integer/>
+  </ScalarVariable>
+  <ScalarVariable name="b_out"
+                  valueReference="2"
+                  description=""
+                  causality="output">
+      <Boolean/>
+  </ScalarVariable>
+  <ScalarVariable name="s_out"
+                  valueReference="3"
+                  description=""
+                  causality="output">
+      <String/>
+      <Annotations>
+        <Tool name="fmigo">
+          <size>1024</size>
+        </Tool>
+      </Annotations>
+  </ScalarVariable>
+</ModelVariables>
+
+<ModelStructure>
+  <Outputs>
+   <Unknown index="1"/>
+   <Unknown index="2"/>
+   <Unknown index="3"/>
+   <Unknown index="4"/>
+  </Outputs>
+  <Derivatives/>
+  <DiscreteStates/>
+  <InitialUnknowns />
+</ModelStructure>
+
+</fmiModelDescription>

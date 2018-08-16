@@ -467,6 +467,7 @@ if (BUILD_FMUS)
     add_fmu(tests/umit-fmus/tests/loopsolvetest/mul         mul                             "")
     add_fmu(tests/umit-fmus/tests/stringtest                stringtest                      "")
     add_fmu(tests/umit-fmus/tests/strange_variable_names    strange_variable_names          "")
+    add_fmu(tests/umit-fmus/tests/alltypestest              alltypestest                    "")
 
     # Model-Exchange FMUs
     add_fmu(tests/umit-fmus/me/springs                      springs                         "")

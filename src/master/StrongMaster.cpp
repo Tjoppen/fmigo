@@ -547,21 +547,21 @@ int StrongMaster::getNumForces() const {
   return ret;
 }
 
-void StrongMaster::writeFields(bool last) {
+void StrongMaster::writeFields(bool last, FILE *outfile) {
   char sep = fmigo::globals::getSeparator();
   if ( last ) {
     //finish off with zeroes for any extra forces
     int n = getNumForces();
     for (int i = 0; i < n; i++) {
-      fprintf(fmigo::globals::outfile, "%c0", sep);
+      fprintf(outfile, "%c0", sep);
     }
   } else {
     for (double f : this->forces) {
-      fprintf(fmigo::globals::outfile, "%c%+.16le", sep, f);
+      fprintf(outfile, "%c%+.16le", sep, f);
     }
   }
 
   if (m_strongCouplingSolver) {
-    m_strongCouplingSolver->writeViolations(fmigo::globals::outfile, sep);
+    m_strongCouplingSolver->writeViolations(outfile, sep);
   }
 }

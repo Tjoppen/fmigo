@@ -52,6 +52,9 @@ struct param {
 enum FILEFORMAT {
     csv,
     tikz,
+    mat5,       //Matlab level-5
+    mat5_zlib,  //Matlab level-5, zlib compressed
+
     none,   // special output format meaning "don't printf() anything"
 };
 

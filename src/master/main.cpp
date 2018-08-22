@@ -27,6 +27,9 @@
 #include <fstream>
 #include "control.pb.h"
 #include "master/globals.h"
+#ifdef USE_MATIO
+#include <matio.h>
+#endif
 
 using namespace fmitcp_master;
 using namespace fmitcp;
@@ -420,13 +423,134 @@ template<typename RFType, typename From> void addVectorToRepeatedField(RFType* r
     }
 }
 
-/**
-   Insert all values from the clients, starting the the global time. 
+struct MatlabOutput {
+    vector<vector<double> >  reals;
+    vector<vector<int> >     ints;
+    vector<vector<uint8_t> > bools;
+};
 
-   Separation sign is inserted after *each* value which means we have a
-   dangling separator at the end of the line when this function returns.
- */
-static void printOutputs(double t, BaseMaster *master, vector<FMIClient*>& clients) {
+#ifdef USE_MATIO
+// Reserves space for Matlab output
+static MatlabOutput reserveMatlabOutput(const vector<FMIClient*>& clients, int maxSamples, int nsteps) {
+    MatlabOutput mo;
+
+    //allocate a little more than we think we need
+    int expected_rows = maxSamples > 0 ? maxSamples : nsteps;
+    int extra = expected_rows / 100 + 1;
+    if (expected_rows > INT_MAX - extra) {
+        expected_rows = INT_MAX;
+    } else {
+        expected_rows += extra;
+    }
+
+    //initialize reals with time column
+    mo.reals.push_back(vector<double>());
+    mo.reals.back().reserve(expected_rows);
+
+    for (auto client : clients) {
+        for (const variable& var : client->getOutputs()) {
+            switch (var.type) {
+            case fmi2_base_type_real:
+                mo.reals.push_back(vector<double>());
+                mo.reals.back().reserve(expected_rows);
+                break;
+            case fmi2_base_type_int:
+                mo.ints.push_back(vector<int>());
+                mo.ints.back().reserve(expected_rows);
+                break;
+            case fmi2_base_type_bool:
+                mo.bools.push_back(vector<uint8_t>());
+                mo.bools.back().reserve(expected_rows);
+                break;
+            case fmi2_base_type_str:
+                warning("Strings are ignored in Matlab output for now\n");
+                break;
+            case fmi2_base_type_enum:
+                fatal("Enums are not allowed in Matlab output for now\n");
+                break;
+            }
+        }
+    }
+
+    return mo;
+}
+
+
+static void writeMatlabOutput(const vector<FMIClient*>& clients, const MatlabOutput& mo, const std::string& outFilePath) {
+    mat_t *matfp = Mat_CreateVer(outFilePath.c_str(), NULL, MAT_FT_MAT5);
+
+    if (!matfp) {
+        fatal("Failed to open %s\n", outFilePath.c_str());
+    }
+
+    int realofs = 0;
+    int intofs = 0;
+    int boolofs = 0;
+
+    //there's always a time column, grab the number of rows from it, then write it
+    size_t rows = mo.reals[0].size();
+    size_t dims[2] = {rows,1};
+    size_t struct_dims[2] = {1,1};
+    matio_compression comp = fmigo::globals::fileFormat == mat5 ? MAT_COMPRESSION_NONE : MAT_COMPRESSION_ZLIB;
+
+    matvar_t *timevar = Mat_VarCreate("t", MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, (void*)mo.reals[0].data(), MAT_F_DONT_COPY_DATA);
+    Mat_VarWrite(matfp, timevar, comp);
+    Mat_VarFree(timevar);
+
+    realofs++;
+
+    for (auto client : clients) {
+        vector<string> fieldnames;
+        vector<const char*> fieldnames_c_str;
+        int num_fields = 0;
+
+        for (const variable& var : client->getOutputs()) {
+            if (var.type != fmi2_base_type_str) {
+                fieldnames.push_back(var.name);
+            }
+        }
+        for (const string& str : fieldnames) {
+            fieldnames_c_str.push_back(str.c_str());
+        }
+
+        ostringstream oss;
+        oss << "fmu" << client->m_id;
+        matvar_t *fmuvar = Mat_VarCreateStruct(oss.str().c_str(), 2, struct_dims, fieldnames_c_str.data(), fieldnames_c_str.size());
+
+        int x = 0;
+        for (const variable& var : client->getOutputs()) {
+            //ignore string outputs
+            if (var.type != fmi2_base_type_str) {
+                matvar_t *field = NULL;
+                switch (var.type) {
+                case fmi2_base_type_real:
+                    field = Mat_VarCreate(NULL, MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, (void*)mo.reals[realofs++].data(), MAT_F_DONT_COPY_DATA);
+                    break;
+                case fmi2_base_type_int:
+                    field = Mat_VarCreate(NULL, MAT_C_INT32,  MAT_T_INT32,  2, dims, (void*)mo.ints[intofs++].data(),   MAT_F_DONT_COPY_DATA);
+                    break;
+                case fmi2_base_type_bool:
+                    field = Mat_VarCreate(NULL, MAT_C_UINT8,  MAT_T_UINT8,  2, dims, (void*)mo.bools[boolofs++].data(), MAT_F_DONT_COPY_DATA);
+                    break;
+                default:
+                    fatal("Unexpected variable type in writeMatlabOutput()\n");
+                }
+                Mat_VarSetStructFieldByName(fmuvar, fieldnames_c_str[x], 0, field);
+                x++;
+            }
+        }
+
+        Mat_VarWrite(matfp, fmuvar, comp);
+        Mat_VarFree(fmuvar);
+    }
+
+    Mat_Close(matfp);
+}
+#endif
+
+// Writes global time all <Outputs> in all clients to output file in desired format
+// In case of Matlab output the values are merely cached, since we must write values in columns
+static void printOutputs(double t, BaseMaster *master, vector<FMIClient*>& clients, MatlabOutput &mo, FILE *outfile, const bool matlab_output) {
     char separator = fmigo::globals::getSeparator();
 
     for (auto client : clients) {
@@ -447,21 +571,44 @@ static void printOutputs(double t, BaseMaster *master, vector<FMIClient*>& clien
     master->queueValueRequests();
     master->wait();
 
-    fprintf(fmigo::globals::outfile, "%+.16le", t);
+    //for matlab output
+    int realofs = 0;
+    int intofs = 0;
+    int boolofs = 0;
+
+    if (matlab_output) {
+        mo.reals[realofs++].push_back(t);
+    } else {
+        fprintf(outfile, "%+.16le", t);
+    }
+
     for (size_t x = 0; x < clients.size(); x++) {
         FMIClient *client = clients[x];
         for (const variable& out : client->getOutputs()) {
             switch (out.type) {
             case fmi2_base_type_real:
-                fprintf(fmigo::globals::outfile, "%c%+.16le", separator, client->getReal(out.vr));
+                if (matlab_output) {
+                    mo.reals[realofs++].push_back(client->getReal(out.vr));
+                } else {
+                    fprintf(outfile, "%c%+.16le", separator, client->getReal(out.vr));
+                }
                 break;
             case fmi2_base_type_int:
-                fprintf(fmigo::globals::outfile, "%c%i", separator, client->getInt(out.vr));
+                if (matlab_output) {
+                    mo.ints[intofs++].push_back(client->getInt(out.vr));
+                } else {
+                    fprintf(outfile, "%c%i", separator, client->getInt(out.vr));
+                }
                 break;
             case fmi2_base_type_bool:
-                fprintf(fmigo::globals::outfile, "%c%i", separator, client->getBool(out.vr));
+                if (matlab_output) {
+                    mo.bools[boolofs++].push_back(client->getBool(out.vr));
+                } else {
+                    fprintf(outfile, "%c%i", separator, client->getBool(out.vr));
+                }
                 break;
             case fmi2_base_type_str: {
+                if (!matlab_output) {
                 ostringstream oss;
                 string s = client->getString(out.vr);
                 for(char c: s){
@@ -470,7 +617,8 @@ static void printOutputs(double t, BaseMaster *master, vector<FMIClient*>& clien
                     default: oss << c;
                     }
                 }
-                fprintf(fmigo::globals::outfile, "%c\"%s\"", separator, oss.str().c_str());
+                fprintf(outfile, "%c\"%s\"", separator, oss.str().c_str());
+                }
                 break;
             }
             case fmi2_base_type_enum:
@@ -602,6 +750,7 @@ static bool hasModelExchangeFMUs(vector<FMIClient*> clients) {
 int main(int argc, char *argv[] ) {
     //count everything from here to before the main loop into "setup"
     fmigo::globals::timer.dont_rotate = true;
+    FILE *outfile = stdout;
 
 #ifdef USE_MPI
     MPI_Init(NULL, NULL);
@@ -634,6 +783,7 @@ int main(int argc, char *argv[] ) {
     string hdf5Filename;
     int maxSamples = -1;
     bool writeSolverFields = false;
+    MatlabOutput mo;
 
     parseArguments(
             argc, argv, &fmuURIs, &connections, &params, &endTime, &timeStep,
@@ -663,12 +813,30 @@ int main(int argc, char *argv[] ) {
     //world_rank == 0 below
 #endif
 
-    if (outFilePath.size()) {
-        fmigo::globals::outfile = fopen(outFilePath.c_str(), "w");
+    const bool matlab_output = fmigo::globals::fileFormat == mat5 || fmigo::globals::fileFormat == mat5_zlib;
+#ifndef USE_MATIO
+    if (matlab_output) {
+        fatal("Matlab output not enabled, recompile with -DUSE_MATIO=ON\n");
+    }
+#endif
 
-        if (!fmigo::globals::outfile) {
+    if (outFilePath.size()) {
+      //when outputing .mat libmatio takes care of opening the output file,
+      //so keep outfile pointing at stdout (we don't use it but it avoids
+      //the fclose() further down being called)
+      if (!matlab_output) {
+        outfile = fopen(outFilePath.c_str(), "w");
+
+        if (!outfile) {
             fatal("Failed to open %s\n", outFilePath.c_str());
         }
+      }
+    } else {
+#ifdef USE_MATIO
+        if (matlab_output) {
+            fatal("Cannot write Matlab output to stdout\n");
+        }
+#endif
     }
 
     zmq::context_t context(1);
@@ -793,8 +961,27 @@ int main(int argc, char *argv[] ) {
       fieldnames += master->getFieldNames();
     }
 
-    if (useHeadersInCSV || fmigo::globals::fileFormat == tikz) {
-        fprintf(fmigo::globals::outfile, "%s\n",fieldnames.c_str());
+    int step = 0;
+    double fsteps = round(endTime / timeStep);
+    int nsteps;
+    if (fsteps < 0) {
+        nsteps = 0;
+    } else if (fsteps >= INT_MAX) {
+        nsteps = INT_MAX;
+    } else {
+        nsteps = (int)fsteps;
+    }
+
+    /// reduce amount of output if wanted.
+    int write_period = (maxSamples>0) ?
+      (int) ceil( (double) nsteps / (double) maxSamples) : 1;
+
+    if ((fmigo::globals::fileFormat == csv && useHeadersInCSV) || fmigo::globals::fileFormat == tikz) {
+        fprintf(outfile, "%s\n",fieldnames.c_str());
+    } else if (matlab_output) {
+#ifdef USE_MATIO
+        mo = reserveMatlabOutput(clients, maxSamples, nsteps);
+#endif
     }
 
     if (fieldnameFilename.length() > 0) {
@@ -802,9 +989,6 @@ int main(int argc, char *argv[] ) {
         ofs << fieldnames;
         ofs << endl;
     }
-    //double t = 0;
-    int step = 0;
-    int nsteps = (int)round(endTime / timeStep);
 
     if (results_port > 0) {
         pushResults(step, 0, endTime, timeStep, push_socket, master, clients, true);
@@ -823,19 +1007,13 @@ int main(int argc, char *argv[] ) {
     fmigo::globals::timer.dont_rotate = false;
     fmigo::globals::timer.rotate("setup");
 
-    /// reduce amount of output if wanted. 
-    int write_period = (maxSamples>0) ?
-      (int) ceil( (double) nsteps / (double) maxSamples) : 1;
-    
-    
-    auto fileFormat = fmigo::globals::fileFormat;
+    //whether to suppress output of the current line
+    bool suppress_output = false;
+
     //run
     while ((endTime < 0 || step < nsteps) && master->running) {
-      if ( step % write_period  ){
-        fmigo::globals::fileFormat = none;
-      }else{
-        fmigo::globals::fileFormat = fileFormat;
-      }
+        suppress_output = step % write_period != 0;
+
         master->t = step * endTime / nsteps;
         master->handleZmqControl();
 
@@ -857,8 +1035,8 @@ int main(int argc, char *argv[] ) {
             sendUserParams(master, clients, it->second);
         }
 
-        if (fmigo::globals::fileFormat != none) {
-            printOutputs(master->t, master, clients);
+        if (fmigo::globals::fileFormat != none && !suppress_output) {
+            printOutputs(master->t, master, clients, mo, outfile, matlab_output);
         }
 
         if (realtimeMode) {
@@ -873,24 +1051,34 @@ int main(int argc, char *argv[] ) {
             pushResults(step, master->t+timeStep, endTime, timeStep, push_socket, master, clients, false);
         }
 
-        if (fmigo::globals::fileFormat != none) {
-          if (writeSolverFields) {
-            master->writeFields(false);
-          }
-          fprintf(fmigo::globals::outfile, "\n");
+        if (fmigo::globals::fileFormat != none && !suppress_output) {
+            if (!matlab_output) {
+                if (writeSolverFields) {
+                    master->writeFields(false, outfile);
+                }
+                fprintf(outfile, "\n");
+            }
         }
     }
     fmigo::globals::timer.rotate("pre_shutdown");
 
-    if (fmigo::globals::fileFormat != none) {
-      printOutputs(endTime, master, clients);
+    if (fmigo::globals::fileFormat != none && !suppress_output) {
+        printOutputs(endTime, master, clients, mo, outfile, matlab_output);
 
-      if (writeSolverFields) {
-        master->writeFields(true);
-      }
+        if (!matlab_output) {
+            if (writeSolverFields) {
+                master->writeFields(true, outfile);
+            }
 
-      fprintf(fmigo::globals::outfile, "\n");
+            fprintf(outfile, "\n");
+        }
     }
+
+#ifdef USE_MATIO
+    if (matlab_output) {
+        writeMatlabOutput(clients, mo, outFilePath);
+    }
+#endif
 
     for (FMIClient *client : clients) {
       client->terminate();
@@ -911,8 +1099,8 @@ int main(int argc, char *argv[] ) {
     MPI_Finalize();
 #endif
 
-    if (fmigo::globals::outfile != stdout) {
-        fclose(fmigo::globals::outfile);
+    if (outfile != stdout) {
+        fclose(outfile);
     }
     fflush(stdout);
     fflush(stderr);

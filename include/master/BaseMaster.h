@@ -65,7 +65,7 @@ namespace fmitcp_master {
         }
 #endif
       virtual std::string getFieldNames() const {return "";}
-      virtual void writeFields(bool last=false) {}
+      virtual void writeFields(bool last, FILE *outfile) {}
         void solveLoops();
         virtual void prepare() {};
         virtual void runIteration(double t, double dt) = 0;

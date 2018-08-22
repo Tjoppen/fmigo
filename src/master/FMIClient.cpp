@@ -141,6 +141,7 @@ void FMIClient::setVariables() {
         var2.type       = fmi2_import_get_variable_base_type(var);
         var2.causality  = fmi2_import_get_causality(var);
         var2.initial    = fmi2_import_get_initial(var);
+        var2.name       = fmi2_import_get_variable_name(var);
 
         m_outputs.push_back(var2);
     }
@@ -329,15 +330,6 @@ const std::vector<int>& FMIClient::getStrongConnectorValueReferences() const {
     m_hasComputedStrongConnectorValueReferences = true;
     return m_strongConnectorValueReferences;
 };
-
-string FMIClient::getSpaceSeparatedFieldNames(string prefix) const {
-    ostringstream oss;
-    for (size_t x = 0; x < fmi2_import_get_variable_list_size(m_fmi2Outputs); x++) {
-        fmi2_import_variable_t *var = fmi2_import_get_variable(m_fmi2Outputs, x);
-        oss << prefix << fmi2_import_get_variable_name(var);
-    }
-    return oss.str();
-}
 
 void FMIClient::sendSetX(const SendSetXType& typeRefsValues) {
     for (auto it = typeRefsValues.begin(); it != typeRefsValues.end(); it++) {

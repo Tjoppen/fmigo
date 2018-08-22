@@ -407,7 +407,9 @@ static string getFieldnames(vector<FMIClient*> clients) {
     for (auto client : clients) {
         ostringstream prefix;
         prefix << separator << "fmu" << client->m_id << "_";
-        oss << client->getSpaceSeparatedFieldNames(prefix.str());
+        for (const variable& var : client->getOutputs()) {
+            oss << prefix.str() << var.name;
+        }
     }
     return oss.str();
 }

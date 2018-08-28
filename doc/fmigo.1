@@ -99,26 +99,61 @@ There is also an alternative syntax which produces shorter command lines but req
     mpiexec -np 3 fmigo-mpi -c 0,x,1,y fmu0.fmu fmu1.fmu
 
 
-.SH OUTPUT FORMAT
+.SH OUTPUT FORMATS
 
-The program outputs data in either CSV or TikZ (space separated) format.
-This data is written either to stdout (default) or to a file (-o).
-It is also possible to suppress the output entirely, using -f none.
+The program can output data in either text based formats or binary .mat files suitable for Matlab or Octave import (compressed and uncompressed).
+The text formats are CSV and TikZ (space separated).
+This data is written either to stdout (default) or to a file (
+.I -o
+).
+Matlab output cannot be written to stdout;
+the program will halt if
+.I -f mat5
+or
+.I -f mat5_zlib
+are used without
+.I -o
+.
+It is also possible to suppress output data entirely, using
+.I -f none
+.
 
-Whether in CSV or TikZ format, it is important to keep track each FMU's ID in order to make sense of the output.
-Each output row contains output values for one communication point.
-The first column is the time of the communication point, after which follows a number of output columns.
+Whatever the output format, it is important to keep track each FMU's ID in order to make sense of the output.
+The first FMU (or server URL) listed gets ID 0, the next ID 1 and so on up to N-1.
+
+Finally,
+if solver fields are to be output (
+.I -E
+),
+their naming scheme derives from the order in which the kinematic couplings are specified,
+and the number of equations in each kinematic coupling.
+For each equation the constraint violation and the speed of the violation is reported.
+For each FMU there are also some number of kinematic connectors,
+for which forces and/or torques are reported.
+Mobilities associated with each connector may also be reported.
+Since these output columns are mostly used for debugging the kinematic solver,
+further details have been left out since they are subject to change.
+.I The truth is in the code.
+
+.SS CSV/TIKZ
+
+For CSV and TikZ output,
+each output row contains output values for one communication point.
+The first column is the time of the current communication point, after which follows a number of output columns.
 Output columns are grouped by FMU ID, from lowest (0) to highest (N-1).
 The output columns are in the same order as listed in the <fmiModelDescription><ModelStructure><Outputs> element in each FMU's modelDescription.xml.
 Variables not listed in <Outputs> are not written to the output.
 The columns are named like "fmu%i_%s" in C parlance, where %i is the FMU ID and %s is the name of the variable in question.
 If FMU ID 1 has an variable listed in <Outputs> called "foo.bar" then it is written with a column name of "fmu1_foo.bar".
 
-The following are some example outputs with rows containing time, sin(time), an increasing integer, a boolean being set equal to the integer and a string of increasing length of alternating a's and double quotation marks (a"a"a").
+The following is some example CSV/TikZ output with rows containing time, sin(time), an increasing integer,
+a boolean being set equal to the integer and a string of increasing length of alternating a's and double quotation marks (a"a"a").
 For all examples, FMU=build/tests/umit-fmus/tests/alltypestest/alltypestest.fmu.
 You can find this FMU's source code under tests/umit-fmus/tests/alltypestest/.
 
+.B
   # CSV with header
+.B
   mpiexec -np 2 fmigo-mpi -t 0.4 -d 0.1 -H $FMU
 
     #t,fmu0_r_out,fmu0_i_out,fmu0_b_out,fmu0_s_out
@@ -128,7 +163,9 @@ You can find this FMU's source code under tests/umit-fmus/tests/alltypestest/.
     +3.0000000000000004e-01,+2.9552020666133960e-01,3,1,"a""a"
     +4.0000000000000002e-01,+3.8941834230865052e-01,4,1,"a""a"""
 
+.B
   # TikZ
+.B
   mpiexec -np 2 fmigo-mpi -t 0.4 -d 0.1 -f tikz $FMU
 
     t fmu0_r_out fmu0_i_out fmu0_b_out fmu0_s_out
@@ -138,7 +175,9 @@ You can find this FMU's source code under tests/umit-fmus/tests/alltypestest/.
     +3.0000000000000004e-01 +2.9552020666133960e-01 3 1 "a""a"
     +4.0000000000000002e-01 +3.8941834230865052e-01 4 1 "a""a"""
 
+.B
   # Two copies of the same FMU, CSV with header
+.B
   mpiexec -np 3 fmigo-mpi -t 0.4 -d 0.1 -H $FMU $FMU
 
     #t,fmu0_r_out,fmu0_i_out,fmu0_b_out,fmu0_s_out,fmu1_r_out,fmu1_i_out,fmu1_b_out,fmu1_s_out
@@ -150,15 +189,53 @@ You can find this FMU's source code under tests/umit-fmus/tests/alltypestest/.
 
 Real values are written in scientific notation with enough decimals to be losslessly transported.
 
-If solver fields are to be output (-E),
-their naming scheme derives from the order in which the kinematic couplings are specified,
-and the number of equations in each kinematic coupling.
-For each equation the constraint violation and the speed of the violation is reported.
-For each FMU there are also some number of kinematic connectors,
-for which forces and/or torques are reported.
-Mobilities associated with each connector may also be reported.
-Since these output columns are mostly used for debugging the kinematic solver,
-further details have been left out since they are subject to change.
+.SS .MAT OUTPUT
+
+For .mat files,
+the output of each FMU is put in a 1x1 structure array
+named after the FMU the same way as the column prefixes in CSV/TikZ output (fmu0, fmu1 etc.).
+Inside each structure array are vectors containing each output variable and corresponding values,
+each named by the names of the corresponding output variables.
+Finally, there is a regular array containing the communication points named "t", as a sibling to all the FMU structure arrays.
+So for the last example listed in the CSV/TikZ subsection,
+if the .mat file is loaded into a variable d then it will have for example d.fmu0.r_out containing all the values of r_out in FMU 0.
+A somewhat trimmed example:
+
+.B
+  $ mpiexec -np 3 fmigo-mpi -t 0.1 -d 0.1 -f mat5 -o out.mat $FMU $FMU
+.B
+  $ octave
+.B
+  octave:1> d = load('out.mat')
+  d =
+    scalar structure containing the fields:
+      t =
+         0.00000
+         0.10000
+      fmu0 =
+        scalar structure containing the fields:
+          r_out =
+             0.000000
+             0.099833
+          i_out =
+            0
+            1
+          b_out =
+            0
+            1
+      fmu1 =
+        scalar structure containing the fields:
+          r_out = [...]
+          i_out = [...]
+          b_out = [...]
+
+If there is a lot of output data it may be beneficial to use Zlib compressed output,
+which can be enabled by requesting an output format of
+.I -f mat5_zlib
+instead of
+.I "-f mat5" .
+Strings cannot currently be output to .mat files.
+
 .SH FLAGS
 .TP
 .B \-r

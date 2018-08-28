@@ -18,6 +18,7 @@ namespace fmitcp_master {
         fmi2_base_type_enu_t type;
         fmi2_causality_enu_t causality;
         fmi2_initial_enu_t initial;
+        std::string name;
     };
     typedef std::map<std::string, variable> variable_map;
     typedef std::map<std::pair<int, fmi2_base_type_enu_t>, variable> variable_vr_map;
@@ -124,9 +125,6 @@ namespace fmitcp_master {
         void on_fmi2_import_free_fmu_state_res                  (fmitcp_proto::fmi2_status_t status);
         void on_fmi2_import_get_directional_derivative_res      (const vector<double>& dz, fmitcp_proto::fmi2_status_t status);
         void on_get_xml_res                                     (fmitcp_proto::jm_log_level_enu_t logLevel, string xml);
-
-        //returns string of field names, all of which prepended with prefix
-        std::string getSpaceSeparatedFieldNames(std::string prefix) const;
 
         void sendSetX(const SendSetXType& typeRefsValues);
     };

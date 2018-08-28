@@ -20,7 +20,7 @@ RUN apt-get install --yes \
         libopenmpi-dev libgsl-dev valgrind \
         python-pip python-dev libxml2-dev libxslt1-dev ccache
 RUN apt-get install -y python-numpy python-scipy python-matplotlib
-RUN apt-get install -y python3-pip
+RUN apt-get install -y python3-pip libmatio-dev
 
 #
 # Create user, since mpiexec doesn't like to run as root
@@ -46,6 +46,9 @@ RUN export PATH=/usr/lib/ccache:$PATH
 RUN mkdir 3rdparty/FMILibrary-2.0.1/ThirdParty/Expat/expat-2.1.0/src
 RUN mkdir build
 WORKDIR /home/gitlab-ci/umit/build
-RUN cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_FLAGS="-fsanitize=address -fsanitize=undefined" -DCMAKE_CXX_FLAGS="-fsanitize=address -fsanitize=undefined"
+# First build without libmatio, then run another build with it enabled
+RUN cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_FLAGS="-fsanitize=address -fsanitize=undefined" -DCMAKE_CXX_FLAGS="-fsanitize=address -fsanitize=undefined" -DUSE_MATIO=OFF
+RUN ninja install
+RUN cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_FLAGS="-fsanitize=address -fsanitize=undefined" -DCMAKE_CXX_FLAGS="-fsanitize=address -fsanitize=undefined" -DUSE_MATIO=ON
 RUN ninja install
 # -fsanitize causes linking issue with clang at the moment, so skip it for now

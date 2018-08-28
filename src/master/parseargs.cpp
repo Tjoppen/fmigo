@@ -593,6 +593,10 @@ void fmitcp_master::parseArguments( int argc,
                 *fileFormat = csv;
             } else if( strcmp(optarg,"tikz") == 0){
                 *fileFormat = tikz;
+            } else if( strcmp(optarg,"mat5") == 0){
+                *fileFormat = mat5;
+            } else if( strcmp(optarg,"mat5_zlib") == 0){
+                *fileFormat = mat5_zlib;
             } else if (!strcmp(optarg, "none")) {
                 *fileFormat = none;
             } else {
@@ -714,7 +718,7 @@ void fmitcp_master::parseArguments( int argc,
             } else {
               *command_port = atoi(parts[0].c_str());
               if (parts.size() == 2) {
-                //using ZMQ output disables printing, unless the user follows -z with -f csv or -f tikz
+                //using ZMQ output disables printing, unless the user follows -z with -f
                 *fileFormat = none;
                 *results_port = atoi(parts[1].c_str());
               }

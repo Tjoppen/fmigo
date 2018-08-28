@@ -41,6 +41,15 @@ SET(FMIGO_VERSION ${FMIGO_MAJOR_VERSION}.${FMIGO_MINOR_VERSION}.${FMIGO_PATCH_VE
 option(BUILD_FMUS "Build example FMUs in umit-fmus/?" ON)
 option(USE_GPL "Enable GPL? Needed for GNU GSL support in master (algebraic loop solver, ModelExchange integrator)" ON)
 
+# Enable libmatio if we find it
+find_library(MATIO_LIBRARY matio)
+if (MATIO_LIBRARY)
+    set(MATIO_DEFAULT ON)
+else ()
+    set(MATIO_DEFAULT OFF)
+endif ()
+option(USE_MATIO "Enable Matlab output via libmatio?" ${MATIO_DEFAULT})
+
 set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/install)
 
 # Need to be able to zip FMUs. Recent versions of CMake can do this with the "tar" sub-command.
@@ -288,6 +297,11 @@ if (USE_GPL)
   )
 
   include_directories(${CMAKE_CURRENT_SOURCE_DIR}/tools/cgsl/include)
+endif ()
+
+if (USE_MATIO)
+  set(EXTRALIBS ${EXTRALIBS} matio)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_MATIO")
 endif ()
 
 ADD_EXECUTABLE(${TCP_MASTER_NAME} ${MASTER_HEADERS} ${MASTER_SRCS})

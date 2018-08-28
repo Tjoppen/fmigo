@@ -68,7 +68,7 @@ public:
     //the returned strings begins with a space
     std::string getFieldNames() const;
 
-    virtual void writeFields(bool last) ;
+    virtual void writeFields(bool last, FILE *outfile) ;
 };
 }
 

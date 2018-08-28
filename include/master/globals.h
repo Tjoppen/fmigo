@@ -13,11 +13,8 @@ namespace fmigo {
      * just live in main() and that doesn't live inside a pointer.
      */
 
-    //output file formats. csv, tikz
+    //output file formats. csv, tikz, mat5, mat5_zlib
     extern fmitcp_master::FILEFORMAT fileFormat;
-
-    //output file (default = stdout)
-    extern FILE *outfile;
 
     extern fmigo::timer timer;
 

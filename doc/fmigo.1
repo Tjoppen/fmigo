@@ -56,9 +56,8 @@ connecting to a number of servers
 .I fmigo-server
 )
 , each of which serve a single FMU.
-See synopsis for syntax.
 
-.SH URLs
+.SS URLs
 Each URL specifies the address and TCP port of an FMU server. The syntax is:
 
     tcp://<address>:<port>
@@ -67,6 +66,16 @@ Examples:
 
     tcp://localhost:3000
     tcp://192.168.0.2:3000
+
+.SS EXAMPLE
+To run two servers in the background on one machine do something like:
+
+.B
+    $ fmigo-server -p 3000 example1.fmu &
+.B
+    $ fmigo-server -p 3001 example2.fmu &
+.B
+    $ fmigo-master tcp://localhost:3000 tcp://localhost:3001
 
 .SH MPI
 The MPI version of FmiGo uses a structure similar to the TCP/IP version,
@@ -98,6 +107,21 @@ There is also an alternative syntax which produces shorter command lines but req
 .B
     mpiexec -np 3 fmigo-mpi -c 0,x,1,y fmu0.fmu fmu1.fmu
 
+.SS OVERSUBSCRIPTION
+When the number of FMUs exceed the total number number of cores in the system,
+the system will become oversubscribed (number of MPI nodes > number of cores).
+This will cause CPU use to increase quadratically with the number of FMUs in certain MPI implementations that use spinlocks to increase performance.
+There are three solutions to this problem:
+.IP \[bu] 2
+Switch to a different MPI implementation (from MPICH to OpenMPI for example)
+.IP \[bu]
+Configure and build your MPI implementation without spinlocks (--with-device=ch3:sock for MPICH)
+.IP \[bu]
+Use TCP/IP instead (
+.I fmigo-master
+and
+.I fmigo-server
+)
 
 .SH OUTPUT FORMATS
 
@@ -136,7 +160,6 @@ further details have been left out since they are subject to change.
 .I The truth is in the code.
 
 .SS CSV/TIKZ
-
 For CSV and TikZ output,
 each output row contains output values for one communication point.
 The first column is the time of the current communication point, after which follows a number of output columns.
@@ -190,7 +213,6 @@ You can find this FMU's source code under tests/umit-fmus/tests/alltypestest/.
 Real values are written in scientific notation with enough decimals to be losslessly transported.
 
 .SS .MAT OUTPUT
-
 For .mat files,
 the output of each FMU is put in a 1x1 structure array
 named after the FMU the same way as the column prefixes in CSV/TikZ output (fmu0, fmu1 etc.).

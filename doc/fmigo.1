@@ -111,9 +111,14 @@ There is also an alternative syntax which produces shorter command lines but req
 When the number of FMUs exceed the total number number of cores in the system,
 the system will become oversubscribed (number of MPI nodes > number of cores).
 This will cause CPU use to increase quadratically with the number of FMUs in certain MPI implementations that use spinlocks to increase performance.
-There are three solutions to this problem:
+There are a number of solutions to this problem:
 .IP \[bu] 2
 Switch to a different MPI implementation (from MPICH to OpenMPI for example)
+.IP \[bu]
+Let the MPI implementation know how many slots each node has,
+for example by using a hostfile with OpenMPI with
+.I slots
+specified for each host.
 .IP \[bu]
 Configure and build your MPI implementation without spinlocks (--with-device=ch3:sock for MPICH)
 .IP \[bu]
@@ -122,6 +127,21 @@ Use TCP/IP instead (
 and
 .I fmigo-server
 )
+
+.SS OTHER MPI GOTCHAS
+On some setups certain MPI features are only available via either
+.I mpiexec
+or
+.I mpirun
+but not both.
+One example is Intel's MPI implementation,
+which as of September 2018 only supports shared memory when run with
+.I mpirun.
+In other words, if
+.I mpirun
+doesn't work then try switching to
+.I mpiexec
+and vice versa.
 
 .SH OUTPUT FORMATS
 

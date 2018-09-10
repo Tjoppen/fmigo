@@ -113,7 +113,7 @@ OutputRefsType getOutputWeakRefs(vector<WeakConnection> weakConnections) {
 
 template<typename T> void doit(
         InputRefsValuesType& refValues,
-        WeakConnection& wc,
+        const WeakConnection& wc,
         const std::unordered_map<int,T>& values,
         MultiValue (WeakConnection::*convert)(T) const)
 {
@@ -128,12 +128,10 @@ template<typename T> void doit(
     refValues[wc.to][wc.conn.toType].second.push_back(value);
 }
 
-InputRefsValuesType getInputWeakRefsAndValues_inner(vector<WeakConnection> weakConnections, bool have_cset, const set<int>& cset) {
+InputRefsValuesType getInputWeakRefsAndValues_inner(const vector<WeakConnection>& weakConnections, bool have_cset, const set<int>& cset) {
     InputRefsValuesType refValues; //VRs and corresponding values for each client
 
-    for (size_t x = 0; x < weakConnections.size(); x++) {
-        WeakConnection& wc = weakConnections[x];
-
+    for (const WeakConnection& wc : weakConnections) {
         if (have_cset && !cset.count(wc.to->m_id)) {
             //skip if we only want for some set of clients and wc.to isn't in it
             continue;
@@ -160,15 +158,15 @@ InputRefsValuesType getInputWeakRefsAndValues_inner(vector<WeakConnection> weakC
     return refValues;
 }
 
-InputRefsValuesType getInputWeakRefsAndValues(vector<WeakConnection> weakConnections) {
+InputRefsValuesType getInputWeakRefsAndValues(const vector<WeakConnection>& weakConnections) {
     return getInputWeakRefsAndValues_inner(weakConnections, false, set<int>());
 }
 
-InputRefsValuesType getInputWeakRefsAndValues(vector<WeakConnection> weakConnections, const set<int>& cset) {
+InputRefsValuesType getInputWeakRefsAndValues(const vector<WeakConnection>& weakConnections, const set<int>& cset) {
     return getInputWeakRefsAndValues_inner(weakConnections, true, cset);
 }
 
-SendSetXType getInputWeakRefsAndValues(vector<WeakConnection> weakConnections, FMIClient *client) {
+SendSetXType getInputWeakRefsAndValues(const vector<WeakConnection>& weakConnections, FMIClient *client) {
     set<int> cset;
     cset.insert(client->m_id);
     InputRefsValuesType temp = getInputWeakRefsAndValues_inner(weakConnections, true, cset);

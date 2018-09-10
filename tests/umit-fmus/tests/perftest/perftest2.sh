@@ -29,7 +29,17 @@ do
   #echo ---------------------
   #echo "MPI, method=$method"
   #time mpiexec -np $(python <<< "print($N + 1)") fmigo-mpi -m $method -t 10 -d 0.0005 -a - $FMUS <<< "$CONNS"|sha1sum
+ if true
+ then
+   # real 0m41,211s
+   time perf record -a -F 999 -g -- mpiexec -np $(python <<< "print($N + 1)") fmigo-mpi -m $method -t 10 -d 0.0005 -f none -a - $FMUS <<< "$CONNS"
+   perf script | ~/FlameGraph/stackcollapse-perf.pl > out.perf-folded-2
+   #~/FlameGraph/flamegraph.pl out.perf-folded-2 > perf-fmigo-mpi.svg
+   ~/FlameGraph/difffolded.pl out.perf-folded out.perf-folded-2 | ~/FlameGraph/flamegraph.pl > perf-fmigo-mpi.svg
+ fi
 
+ if false
+ then
   URIS=
   for j in $(seq 1 $N)
   do
@@ -46,7 +56,12 @@ do
 
   #echo ---------------------
   echo "ZMQ, method=$method"
-  #time valgrind --tool=callgrind --callgrind-out-file=fmigo-master.callgrind  fmigo-master -l 4 -m $method -t 5 -d 0.0005 -f none -a - $URIS <<< "$CONNS"
-  time fmigo-master -l 4 -m $method -t 50 -d 0.0005 -f none -a - $URIS <<< "$CONNS"
+  #time valgrind --tool=callgrind --callgrind-out-file=fmigo-master-2.callgrind  fmigo-master -l 4 -m $method -t 5 -d 0.0005 -f none -a - $URIS <<< "$CONNS"
+  #time fmigo-master -l 4 -m $method -t 50 -d 0.0005 -f none -a - $URIS <<< "$CONNS"
+  # real 0m17,574s
+  time perf record -a -F 999 -g -- fmigo-master -l 4 -m $method -t 5 -d 0.0005 -f none -a - $URIS <<< "$CONNS"
+  perf script | ~/FlameGraph/stackcollapse-perf.pl > out.perf-folded
+  ~/FlameGraph/flamegraph.pl out.perf-folded > perf-fmigo-master.svg
+ fi
 done
 

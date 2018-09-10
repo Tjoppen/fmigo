@@ -516,6 +516,9 @@ endif ()
 
 add_subdirectory(tools/ssp)
 
+add_executable(mpi-speed-test src/mpi-speed-test.cpp)
+install(TARGETS mpi-speed-test DESTINATION bin)
+
 # CPack setup
 set(CPACK_PACKAGE_NAME "fmigo")
 # set(CPACK_PACKAGE_VENDOR "")

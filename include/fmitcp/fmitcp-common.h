@@ -58,6 +58,18 @@ namespace fmitcp {
       }
       return (fmitcp_proto::fmitcp_message_Type)t;
   }
+
+#define CLIENTDATA_NEW 1
+#define USE_DO_STEP_S 1
+#define USE_SET_REAL_S 1
+#define USE_GET_REAL_S 1
+#define USE_3BYTE_STATUS_RES 1
+#define USE_GET_REAL_RES_S 1
+    struct do_step_s {
+        double currentcommunicationpoint;
+        double communicationstepsize;
+        bool newStep;
+    };
 }
 
 #endif

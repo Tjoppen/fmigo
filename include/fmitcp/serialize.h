@@ -33,6 +33,26 @@ namespace fmitcp {
           oss << szStr << s;
         }
 
+        static void packIntoCharVector(std::vector<char>& vec, const std::string& s) {
+          size_t sz = s.size();
+
+          if (sz > 0xFFFFFFFF) {
+            fprintf(stderr, "sz = %lu\n", sz);
+            exit(1);
+          }
+
+          vec.reserve(vec.size() + 4 + s.length());
+
+          //size of packet, including type
+          char szStr[4];
+          szStr[0] = (uint8_t)sz;
+          szStr[1] = (uint8_t)(sz>>8);
+          szStr[2] = (uint8_t)(sz>>16);
+          szStr[3] = (uint8_t)(sz>>24);
+          vec.insert(vec.end(), szStr, &szStr[4]);
+          vec.insert(vec.end(), s.c_str(), s.c_str() + s.length());
+        }
+
         static size_t parseSize(const char *data, size_t size) {
           if (size < 4) {
             fprintf(stderr, "parseSize(): not enough data\n");
@@ -101,7 +121,22 @@ namespace fmitcp {
         }
 
         template<typename C> std::string fmi2_import_get_real(const C& valueRefs) {
+#if USE_SET_REAL_S == 1
+            std::string str(2 + valueRefs.size() * (sizeof(int)), 0);
+            int *vrs =  (int*)&str[2];
+
+            str[0] = fmitcp_proto::type_fmi2_import_get_real_req & 0xFF;
+            str[1] = fmitcp_proto::type_fmi2_import_get_real_req >> 8;
+
+            int ofs = 0;
+            for (int vr : valueRefs) {
+                vrs[ofs++] = vr;
+            }
+
+            return str;
+#else
           return collection_to_req<fmitcp_proto::fmi2_import_get_real_req>(fmitcp_proto::type_fmi2_import_get_real_req, valueRefs);
+#endif
         }
 
         template<typename C> std::string fmi2_import_get_integer(const C& valueRefs) {

@@ -47,6 +47,7 @@ static void handleMessage(zmq::socket_t& socket, FMIServer& server, int port) {
       fatal("Port %i: !socket.recv(&msg)\n", port);
   }
   server.m_timer.rotate("recv");
+#if CLIENTDATA_NEW == 0
   string str = server.clientData(static_cast<char*>(msg.data()), msg.size());
 
   if (str.length() > 0) {
@@ -56,6 +57,17 @@ static void handleMessage(zmq::socket_t& socket, FMIServer& server, int port) {
     socket.send(rep, ZMQ_DONTWAIT);
     server.m_timer.rotate("send");
   }
+#else
+  const vector<char>& str = server.clientData(static_cast<char*>(msg.data()), msg.size());
+
+  if (str.size() > 0) {
+    zmq::message_t rep(str.size());
+    memcpy(rep.data(), &str[0], str.size());
+    server.m_timer.rotate("pre_send");
+    socket.send(rep, ZMQ_DONTWAIT);
+    server.m_timer.rotate("send");
+  }
+#endif
 }
 
 int main(int argc, char *argv[]) {

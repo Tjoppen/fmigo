@@ -97,7 +97,18 @@ void Client::clientDataInner(const char* data, size_t size){
         on_##type##_res(r.status());\
     }
 
+#define CHECK_WITH_STR_3BYTE(type, str) {\
+        fmitcp_proto::fmi2_status_t status = (fmitcp_proto::fmi2_status_t)data[0]; \
+        debug("< "#type"_res(status=%d)\n", status); \
+        if (!statusIsOK(status)) {\
+            fatal("FMI call "#type"() failed with status=%d\n" str, status); \
+        }\
+        on_##type##_res(status);\
+    }
+
 #define NORMAL_CASE(type) CHECK_WITH_STR(type, "")
+#define NORMAL_3BYTE_CASE(type) CHECK_WITH_STR_3BYTE(type, "")
+
 #define NOSTAT_CASE(type) {\
         type##_res r;\
         r.ParseFromArray(data, size);\
@@ -133,9 +144,28 @@ void Client::clientDataInner(const char* data, size_t size){
     case type_fmi2_import_terminate_res:                    NORMAL_CASE(fmi2_import_terminate); break;
     case type_fmi2_import_reset_res:                        NORMAL_CASE(fmi2_import_reset); break;
     case type_fmi2_import_get_real_res: {
+#if USE_GET_REAL_RES_S == 1
+        fmitcp_proto::fmi2_status_t status = (fmitcp_proto::fmi2_status_t)data[0];
+        if (!statusIsOK(status)) {
+          debug("< fmi2_import_get_real_res(values=...,status=%d)\n", status);
+          fatal("FMI call fmi2_import_get_real_res failed with status=%d\nMaybe a connection or <Output> was specified incorrectly?", status);
+        }
+        if ((size-1) / sizeof(double) != m_outgoing_reals.size()) {
+            fatal("fmi2_import_get_real_res vs m_outgoing_reals mismatch\n");
+        }
+
+        size_t x = 0;
+        double *values = (double*)&data[1];
+        for (int vr : m_outgoing_reals) {
+            m_reals.insert(make_pair(vr, values[x]));
+            x++;
+        }
+        m_outgoing_reals.clear();
+#else
         fmi2_import_get_real_res r;
         r.ParseFromArray(data, size);
         handle_get_value_res(this, r, m_outgoing_reals, m_reals);
+#endif
         break;
     }
     case type_fmi2_import_get_integer_res: {
@@ -156,7 +186,11 @@ void Client::clientDataInner(const char* data, size_t size){
         handle_get_value_res(this, r, m_outgoing_strings, m_strings);
         break;
     }
+#if USE_3BYTE_STATUS_RES == 1
+    case type_fmi2_import_set_real_res:                     CHECK_WITH_STR_3BYTE(fmi2_import_set_real, SETX_HINT); break;
+#else
     case type_fmi2_import_set_real_res:                     CHECK_WITH_STR(fmi2_import_set_real, SETX_HINT); break;
+#endif
     case type_fmi2_import_set_integer_res:                  CHECK_WITH_STR(fmi2_import_set_integer, SETX_HINT); break;
     case type_fmi2_import_set_boolean_res:                  CHECK_WITH_STR(fmi2_import_set_boolean, SETX_HINT); break;
     case type_fmi2_import_set_string_res:                   CHECK_WITH_STR(fmi2_import_set_string, SETX_HINT); break;
@@ -280,7 +314,11 @@ void Client::clientDataInner(const char* data, size_t size){
         on_fmi2_import_get_real_output_derivatives_res(r.status(),values_to_vector<double>(r));
         break;
     }
+#if USE_3BYTE_STATUS_RES == 1
+    case type_fmi2_import_do_step_res:                      NORMAL_3BYTE_CASE(fmi2_import_do_step); break;
+#else
     case type_fmi2_import_do_step_res:                      NORMAL_CASE(fmi2_import_do_step); break;
+#endif
     case type_fmi2_import_cancel_step_res:                  NORMAL_CASE(fmi2_import_cancel_step); break;
     case type_fmi2_import_get_status_res:                   CLIENT_VALUE_CASE(fmi2_import_get_status); break;
     case type_fmi2_import_get_real_status_res:              CLIENT_VALUE_CASE(fmi2_import_get_real_status); break;

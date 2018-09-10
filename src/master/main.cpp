@@ -726,12 +726,21 @@ static void run_server(string fmuPath, string hdf5Filename) {
         }
 
         //let Server handle packet, send reply back to master
+#if CLIENTDATA_NEW == 0
         std::string str = server.clientData(recv_str.c_str(), recv_str.length());
         if (str.length() > 0) {
           server.m_timer.rotate("pre_send");
           MPI_Send((void*)str.c_str(), str.length(), MPI_CHAR, rank, tag, MPI_COMM_WORLD);
           server.m_timer.rotate("send");
         }
+#else
+        const vector<char>& str = server.clientData(recv_str.c_str(), recv_str.length());
+        if (str.size() > 0) {
+          server.m_timer.rotate("pre_send");
+          MPI_Send((void*)&str[0], str.size(), MPI_CHAR, rank, tag, MPI_COMM_WORLD);
+          server.m_timer.rotate("send");
+        }
+#endif
     }
 
     MPI_Finalize();
@@ -751,6 +760,13 @@ int main(int argc, char *argv[] ) {
     //count everything from here to before the main loop into "setup"
     fmigo::globals::timer.dont_rotate = true;
     FILE *outfile = stdout;
+
+    //check endianness
+    int e = 1;
+    if (*(char*)&e != 1) {
+        //workaround: use protobuf for get_real/set_real/do_step
+        fatal("Big-endian machines not supported\n");
+    }
 
 #ifdef USE_MPI
     MPI_Init(NULL, NULL);

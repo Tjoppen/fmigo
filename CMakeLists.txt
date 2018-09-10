@@ -268,6 +268,9 @@ SET(MASTER_HEADERS
     include/master/WeakConnection.h
     include/master/WeakMasters.h
     include/master/modelExchange.h
+    include/master/BaseMaster.h
+    include/master/parseargs.h
+    include/master/StrongMaster.h
     include/common/common.h
     include/common/CSV-parser.h
     ${COMMON_HEADERS}

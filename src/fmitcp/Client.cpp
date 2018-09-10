@@ -53,6 +53,10 @@ template<typename T, typename R> void handle_get_value_res(Client *c, R &r, set<
 }
 
 void Client::clientData(const char* data, size_t size) {
+#ifdef GATHER_SIZES
+  sizes_in[size]++;
+#endif
+
   while (size > 0) {
     //size of packet, including type
     size_t packetSize = fmitcp::serialize::parseSize(data, size);
@@ -362,6 +366,19 @@ Client::~Client(){
         fatal("Had m_pendingRequests=%i in Client::~Client()\n", m_pendingRequests);
     }
     google::protobuf::ShutdownProtobufLibrary();
+
+#ifdef GATHER_SIZES
+    fprintf(stderr, "int sizes_out[][2] = {\n");
+    for (auto a : sizes_out) {
+        fprintf(stderr, "    {%zu, %zu},\n", a.first, a.second);
+    }
+    fprintf(stderr, "};\n");
+    fprintf(stderr, "int sizes_in[][2] = {\n");
+    for (auto a : sizes_in) {
+        fprintf(stderr, "    {%zu, %zu},\n", a.first, a.second);
+    }
+    fprintf(stderr, "};\n");
+#endif
 }
 
 void Client::queueMessage(const std::string& s) {
@@ -382,6 +399,10 @@ void Client::sendQueuedMessages() {
     if (s.length() == 0) {
         return;
     }
+
+#ifdef GATHER_SIZES
+    sizes_out[s.length()]++;
+#endif
 
     fmigo::globals::timer.rotate("pre_sendMessage");
     messages++;

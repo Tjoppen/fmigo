@@ -40,6 +40,11 @@ namespace fmitcp {
 
         void clientDataInner(const char* data, size_t size);
 
+#ifdef GATHER_SIZES
+        //packet sizes
+        map<size_t,size_t> sizes_out, sizes_in;
+#endif
+
     public:
         int messages;
         fmitcp_master::BaseMaster * m_master;

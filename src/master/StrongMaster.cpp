@@ -163,11 +163,18 @@ void StrongMaster::crankIt(double t, double dt, const std::set<int>& target) {
         wait();
 
         //grab the values that we requested
-        InputRefsValuesType refValues = getInputWeakRefsAndValues(m_weakConnections, toStep);
+        //clear old values, avoid allocation
+        for (auto& a : m_refValues) {
+            for (auto& b : a.second) {
+                b.second.first.clear();
+                b.second.second.clear();
+            }
+        }
+        getInputWeakRefsAndValues(m_weakConnections, toStep, m_refValues);
 
         //distribute inputs, step
         for (int id : toStep) {
-            m_clients[id]->sendSetX(refValues[m_clients[id]]);
+            m_clients[id]->sendSetX(m_refValues[m_clients[id]]);
             queueMessage(m_clients[id], fmi2_import_do_step(t, dt, true));
         }
 
@@ -229,7 +236,13 @@ void StrongMaster::stepKinematicFmus(double t, double dt) {
     //disentangle received values for set_real() further down (before do_step())
     //we shouldn't set_real() for these until we've gotten directional derivatives
     //this sets StrongMaster apart from the weak masters
-    InputRefsValuesType refValues = getInputWeakRefsAndValues(m_weakConnections, open);
+    for (auto& a : m_refValues) {
+        for (auto& b : a.second) {
+            b.second.first.clear();
+            b.second.second.clear();
+        }
+    }
+    getInputWeakRefsAndValues(m_weakConnections, open, m_refValues);
 
     vector<fmitcp_proto::fmi2_kinematic_req> kin(open.size(), fmitcp_proto::fmi2_kinematic_req());
     vector<int> kin_ofs(open.size(), 0);  //current offset into derivs
@@ -239,7 +252,7 @@ void StrongMaster::stepKinematicFmus(double t, double dt) {
     int kini = 0;
     for (int id : open) {
         id2kin[id] = kini;
-        SendSetXType it = refValues[m_clients[id]];
+        SendSetXType it = m_refValues[m_clients[id]];
         fill_kinematic_req(it, kin[kini], fmi2_base_type_real, &fmitcp_proto::fmi2_kinematic_req::mutable_reals,   &MultiValue::r);
         fill_kinematic_req(it, kin[kini], fmi2_base_type_int,  &fmitcp_proto::fmi2_kinematic_req::mutable_ints,    &MultiValue::i);
         fill_kinematic_req(it, kin[kini], fmi2_base_type_bool, &fmitcp_proto::fmi2_kinematic_req::mutable_bools,   &MultiValue::b);

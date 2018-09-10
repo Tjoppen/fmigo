@@ -57,6 +57,9 @@ class StrongMaster : public JacobiMaster {
     //computed forces, for writeFields()
     std::vector<double> forces;
     int getNumForces() const;
+
+    //for avoiding allocations in getInputWeakRefsAndValues()
+    InputRefsValuesType m_refValues;
 public:
     StrongMaster(zmq::context_t &context, std::vector<FMIClient*> slaves, std::vector<WeakConnection> weakConnections,
                  sc::Solver *strongCouplingSolver, bool holonomic, const std::vector<Rend>& rends);

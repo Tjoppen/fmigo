@@ -72,6 +72,7 @@ InputRefsValuesType getInputWeakRefsAndValues(const std::vector<WeakConnection>&
 //only request values for clients whose IDs is in cset
 InputRefsValuesType getInputWeakRefsAndValues(const std::vector<WeakConnection>& weakConnections, const std::set<int>& cset);
 SendSetXType        getInputWeakRefsAndValues(const std::vector<WeakConnection>& weakConnections, FMIClient *client);
+void                getInputWeakRefsAndValues(const std::vector<WeakConnection>& weakConnections, const std::set<int>& cset, InputRefsValuesType& refValues);
 
 }
 

@@ -128,9 +128,8 @@ template<typename T> void doit(
     refValues[wc.to][wc.conn.toType].second.push_back(value);
 }
 
-InputRefsValuesType getInputWeakRefsAndValues_inner(const vector<WeakConnection>& weakConnections, bool have_cset, const set<int>& cset) {
-    InputRefsValuesType refValues; //VRs and corresponding values for each client
-
+void getInputWeakRefsAndValues_inner(const vector<WeakConnection>& weakConnections, bool have_cset, const set<int>& cset,
+        InputRefsValuesType& refValues) {
     for (const WeakConnection& wc : weakConnections) {
         if (have_cset && !cset.count(wc.to->m_id)) {
             //skip if we only want for some set of clients and wc.to isn't in it
@@ -154,28 +153,35 @@ InputRefsValuesType getInputWeakRefsAndValues_inner(const vector<WeakConnection>
             fatal("Tried to connect enum output somewhere. Enums are not yet supported\n");
         }
     }
-
-    return refValues;
 }
 
 InputRefsValuesType getInputWeakRefsAndValues(const vector<WeakConnection>& weakConnections) {
-    return getInputWeakRefsAndValues_inner(weakConnections, false, set<int>());
+    InputRefsValuesType refValues;
+    getInputWeakRefsAndValues_inner(weakConnections, false, set<int>(), refValues);
+    return refValues;
 }
 
 InputRefsValuesType getInputWeakRefsAndValues(const vector<WeakConnection>& weakConnections, const set<int>& cset) {
-    return getInputWeakRefsAndValues_inner(weakConnections, true, cset);
+    InputRefsValuesType refValues;
+    getInputWeakRefsAndValues_inner(weakConnections, true, cset, refValues);
+    return refValues;
 }
 
 SendSetXType getInputWeakRefsAndValues(const vector<WeakConnection>& weakConnections, FMIClient *client) {
     set<int> cset;
     cset.insert(client->m_id);
-    InputRefsValuesType temp = getInputWeakRefsAndValues_inner(weakConnections, true, cset);
+    InputRefsValuesType temp;
+    getInputWeakRefsAndValues_inner(weakConnections, true, cset, temp);
     auto it = temp.find(client);
     if (it == temp.end()) {
         return SendSetXType();
     } else {
         return it->second;
     }
+}
+
+void getInputWeakRefsAndValues(const vector<WeakConnection>& weakConnections, const set<int>& cset, InputRefsValuesType& refValues) {
+    getInputWeakRefsAndValues_inner(weakConnections, true, cset, refValues);
 }
 
 }

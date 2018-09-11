@@ -4,9 +4,12 @@
 
 //#define USE_ISEND //using MPI_Send() is actually faster on granular
 
+//for dummying out memset()
+//#define memset(...)
+
 //copy-pasted from common/mpi_tools.h to make file more portable
 //using the same code is more fair
-static std::string mpi_recv_string(int world_rank_in, int *world_rank_out, int *tag) {
+static void mpi_recv_string(int world_rank_in, int *world_rank_out, int *tag, std::string &ret) {
     MPI_Status status, status2;
     int nbytes;
 
@@ -14,13 +17,11 @@ static std::string mpi_recv_string(int world_rank_in, int *world_rank_out, int *
     MPI_Probe(world_rank_in, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
     MPI_Get_count(&status, MPI_CHAR, &nbytes);
 
-    std::string ret(nbytes, 0);
+    ret.resize(nbytes);
     MPI_Recv(&ret[0], nbytes, MPI_CHAR, status.MPI_SOURCE, status.MPI_TAG, MPI_COMM_WORLD, &status2);
 
     if (world_rank_out) *world_rank_out = status.MPI_SOURCE;
     if (tag)            *tag            = status.MPI_TAG;
-
-    return ret;
 }
 
 int main(int argc, char *argv[]) {
@@ -65,8 +66,9 @@ int main(int argc, char *argv[]) {
 #define MAXSZ 13756
     char *data = (char*)malloc(MAXSZ*N);
     MPI_Request *requests = (MPI_Request*)malloc(N*sizeof(MPI_Request));
+    std::string recv_str(MAXSZ, 0);
 
-    for (int z = 0; z < 100; z++) {
+    for (int z = 0; z < 1; z++) {
     //format: {size, count}
     //master sends packets of size sizes_out to all servers
     //servers reply with sizes_in size packets
@@ -104,7 +106,7 @@ int main(int argc, char *argv[]) {
             for (int x = 0; x < N; x++) {
                 //fprintf(stderr, "master recv %i\n", x+1);
                 int rank, tag;
-                std::string recv_str = mpi_recv_string(MPI_ANY_SOURCE, &rank, &tag);
+                mpi_recv_string(MPI_ANY_SOURCE, &rank, &tag, recv_str);
             }
 
 #ifdef USE_ISEND
@@ -127,7 +129,7 @@ int main(int argc, char *argv[]) {
         while ((size_t)in_ofs < sizeof(sizes_in)/sizeof(sizes_in[0])) {
             int rank, tag;
             //fprintf(stderr, "server recv %i\n", world_rank);
-            std::string recv_str = mpi_recv_string(0, &rank, &tag);
+            mpi_recv_string(0, &rank, &tag, recv_str);
             //fprintf(stderr, "server recv %i, %zu B\n", world_rank, recv_str.length());
             memset(data, in_ofs, sizes_in[in_ofs][0]);
             MPI_Send(data, sizes_in[in_ofs][0], MPI_CHAR, 0, 0, MPI_COMM_WORLD);

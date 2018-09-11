@@ -1,7 +1,27 @@
 #include <mpi.h>
 #include <memory.h>
-//used for mpi_recv_string(), which isn't the fastest method but more fair
-#include "common/mpi_tools.h"
+#include <string>
+
+//#define USE_ISEND //using MPI_Send() is actually faster on granular
+
+//copy-pasted from common/mpi_tools.h to make file more portable
+//using the same code is more fair
+static std::string mpi_recv_string(int world_rank_in, int *world_rank_out, int *tag) {
+    MPI_Status status, status2;
+    int nbytes;
+
+    //figure out how many bytes are incoming
+    MPI_Probe(world_rank_in, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+    MPI_Get_count(&status, MPI_CHAR, &nbytes);
+
+    std::string ret(nbytes, 0);
+    MPI_Recv(&ret[0], nbytes, MPI_CHAR, status.MPI_SOURCE, status.MPI_TAG, MPI_COMM_WORLD, &status2);
+
+    if (world_rank_out) *world_rank_out = status.MPI_SOURCE;
+    if (tag)            *tag            = status.MPI_TAG;
+
+    return ret;
+}
 
 int main(int argc, char *argv[]) {
     //These were gathered by running perftest2.sh in MPI mode
@@ -29,6 +49,24 @@ int main(int argc, char *argv[]) {
         sys     0m35,314s
      */
 
+    MPI_Init(NULL, NULL);
+
+    //world = master at 0, FMUs at 1..N
+    int world_size, world_rank;
+    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+    int N = world_size - 1;
+
+    if (world_size != 8) {
+        fprintf(stderr, "world_size %i != 8, results may be inaccurate\n", world_size);
+    }
+
+    //max of all packet sizes
+#define MAXSZ 13756
+    char *data = (char*)malloc(MAXSZ*N);
+    MPI_Request *requests = (MPI_Request*)malloc(N*sizeof(MPI_Request));
+
+    for (int z = 0; z < 100; z++) {
     //format: {size, count}
     //master sends packets of size sizes_out to all servers
     //servers reply with sizes_in size packets
@@ -48,29 +86,19 @@ int main(int argc, char *argv[]) {
         {85, 19999},
         {13756, 1},
     };
-    //max of all packet sizes
-    char data[13756];
-
-    MPI_Init(NULL, NULL);
-
-    //world = master at 0, FMUs at 1..N
-    int world_size, world_rank;
-    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-    int N = world_size - 1;
-
-    if (world_size != 8) {
-        fprintf(stderr, "world_size %i != 8, results may be inaccurate\n", world_size);
-    }
 
     if (world_rank == 0) {
         int out_ofs = 0;
         int pingpongs = 0;
         while ((size_t)out_ofs < sizeof(sizes_out)/sizeof(sizes_out[0])) {
+            memset(data, out_ofs, sizes_out[out_ofs][0]*N);
             for (int x = 0; x < N; x++) {
                 //fprintf(stderr, "send %i, %i B, %i left\n", x+1, sizes_out[out_ofs][0], sizes_out[out_ofs][1]);
-                memset(data, x, sizes_out[out_ofs][0]);
-                MPI_Send(data, sizes_out[out_ofs][0], MPI_CHAR, x+1, 0, MPI_COMM_WORLD);
+#ifdef USE_ISEND
+                MPI_Isend(&data[x*sizes_out[out_ofs][0]], sizes_out[out_ofs][0], MPI_CHAR, x+1, 0, MPI_COMM_WORLD, &requests[x]);
+#else
+                MPI_Send(&data[x*sizes_out[out_ofs][0]], sizes_out[out_ofs][0], MPI_CHAR, x+1, 0, MPI_COMM_WORLD);
+#endif
             }
 
             for (int x = 0; x < N; x++) {
@@ -79,14 +107,21 @@ int main(int argc, char *argv[]) {
                 std::string recv_str = mpi_recv_string(MPI_ANY_SOURCE, &rank, &tag);
             }
 
+#ifdef USE_ISEND
+            for (int x = 0; x < N; x++) {
+                MPI_Status status;
+                MPI_Wait(&requests[x], &status);
+            }
+#endif
+
             pingpongs++;
             if (--sizes_out[out_ofs][1] == 0) {
                 out_ofs++;
             }
         }
-        fprintf(stderr, "master done\n");
+        //fprintf(stderr, "master done\n");
 
-        fprintf(stderr, "%i pingpongs\n", pingpongs);
+        //fprintf(stderr, "%i pingpongs\n", pingpongs);
     } else {
         int in_ofs = 0;
         while ((size_t)in_ofs < sizeof(sizes_in)/sizeof(sizes_in[0])) {
@@ -101,9 +136,12 @@ int main(int argc, char *argv[]) {
                 in_ofs++;
             }
         }
-        fprintf(stderr, "server done\n");
+        //fprintf(stderr, "server done\n");
     }
-    
+    }
+
+    free(requests);
+    free(data);
     MPI_Finalize();
 
     return 0;

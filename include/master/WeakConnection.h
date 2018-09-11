@@ -70,9 +70,9 @@ typedef std::map<FMIClient*, SendSetXType> InputRefsValuesType;
 
 InputRefsValuesType getInputWeakRefsAndValues(const std::vector<WeakConnection>& weakConnections);
 //only request values for clients whose IDs is in cset
-InputRefsValuesType getInputWeakRefsAndValues(const std::vector<WeakConnection>& weakConnections, const std::set<int>& cset);
+InputRefsValuesType getInputWeakRefsAndValues(const std::vector<WeakConnection>& weakConnections, const fmitcp::int_set& cset);
 SendSetXType        getInputWeakRefsAndValues(const std::vector<WeakConnection>& weakConnections, FMIClient *client);
-void                getInputWeakRefsAndValues(const std::vector<WeakConnection>& weakConnections, const std::set<int>& cset, InputRefsValuesType& refValues);
+void                getInputWeakRefsAndValues(const std::vector<WeakConnection>& weakConnections, const fmitcp::int_set& cset, InputRefsValuesType& refValues);
 
 }
 

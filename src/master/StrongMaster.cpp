@@ -33,7 +33,7 @@ StrongMaster::StrongMaster(zmq::context_t &context, vector<FMIClient*> clients, 
 
     //populate clientrend
     //sanity check rends while we're at it - it should contain all client IDs in children and parents
-    set<int> children, parents;
+    fmitcp::int_set children, parents;
 
     clientrend.resize(m_clients.size());
     for (int i = 0; i < (int)rends.size(); i++) {
@@ -131,7 +131,7 @@ void fill_kinematic_req(
     }
 }
 
-void StrongMaster::crankIt(double t, double dt, const std::set<int>& target) {
+void StrongMaster::crankIt(double t, double dt, const fmitcp::int_set& target) {
     //crank system until open set contains target,
     //or until the end if target is empty
     debug("into  crankIt: %zu %zu %zu %zu\n", done.size(), open.size(), todo.size(), target.size());
@@ -141,7 +141,7 @@ void StrongMaster::crankIt(double t, double dt, const std::set<int>& target) {
         debug("      -crankIt: %zu %zu %zu %zu\n", done.size(), open.size(), todo.size(), target.size());
 
         //only step those which are not in the target set
-        set<int> toStep;
+        fmitcp::int_set toStep;
         for (int id : open) {
             if (target.count(id) == 0) {
                 toStep.insert(id);
@@ -186,8 +186,8 @@ void StrongMaster::crankIt(double t, double dt, const std::set<int>& target) {
     debug(" out  crankIt: %zu %zu %zu %zu\n", done.size(), open.size(), todo.size(), target.size());
 }
 
-void StrongMaster::moveCranked(std::set<int> cranked) {
-    set<int> triggered_rends;
+void StrongMaster::moveCranked(fmitcp::int_set cranked) {
+    fmitcp::int_set triggered_rends;
     for (int id : cranked) {
         //poke the corresponding rend
         int v = --counters[clientrend[id]];
@@ -492,7 +492,7 @@ void StrongMaster::runIteration(double t, double dt) {
         stepKinematicFmus(t, dt);
 
         //crank the rest of the system
-        crankIt(t, dt, set<int>());
+        crankIt(t, dt, fmitcp::int_set());
     } else if (todo.size() > 0) {
         //probably broken execution order XML parsing if we got here
         fatal("open.size() == 0 but todo.size() == %i\n", (int)todo.size());

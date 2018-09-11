@@ -12,6 +12,7 @@
 //for HDF5 output
 #include <hdf5.h>
 #include <hdf5_hl.h>
+#include <unordered_set>
 
 using namespace std;
 namespace fmitcp {
@@ -71,6 +72,8 @@ namespace fmitcp {
 //this is of dubious utility
 //tests show it's sometimes faster, sometimes slower
 #define DONT_FILTER_OUTGOING_VRS 0
+
+    typedef std::unordered_set<int> int_set;
 
     struct do_step_s {
         double currentcommunicationpoint;

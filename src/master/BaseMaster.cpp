@@ -378,7 +378,7 @@ void BaseMaster::queueValueRequests() {
   }
 }
 
-void BaseMaster::deleteCachedValues(bool cset_set, const std::set<int>& cset) {
+void BaseMaster::deleteCachedValues(bool cset_set, const fmitcp::int_set& cset) {
   for (FMIClient *client : m_clients) {
     if (!cset_set || cset.count(client->m_id)) {
       client->deleteCachedValues();

@@ -36,7 +36,7 @@ static bool statusIsOK(fmitcp_proto::fmi2_status_t fmi2) {
     return fmi2 == fmitcp_proto::fmi2_status_ok;
 }
 
-template<typename T, typename R> void handle_get_value_res(Client *c, R &r, set<int>& outgoing, unordered_map<int,T>& dest) {
+template<typename T, typename R> void handle_get_value_res(Client *c, R &r, fmitcp::int_set& outgoing, unordered_map<int,T>& dest) {
   if (!statusIsOK(r.status())) {
       debug("< %s(values=...,status=%d)\n",r.GetTypeName().c_str(), r.status());
       fatal("FMI call %s failed with status=%d\nMaybe a connection or <Output> was specified incorrectly?",

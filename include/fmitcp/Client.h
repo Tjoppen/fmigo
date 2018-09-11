@@ -9,7 +9,7 @@
 #include <set>
 #include <unordered_map>
 #include <sstream>
-
+#include "fmitcp/fmitcp-common.h"
 
 using namespace std;
 
@@ -59,10 +59,10 @@ namespace fmitcp {
         std::unordered_map<int, std::string> m_strings;
 
         //set of VRs currently being requested
-        std::set<int>              m_outgoing_reals;
-        std::set<int>              m_outgoing_ints;
-        std::set<int>              m_outgoing_bools;
-        std::set<int>              m_outgoing_strings;
+        fmitcp::int_set              m_outgoing_reals;
+        fmitcp::int_set              m_outgoing_ints;
+        fmitcp::int_set              m_outgoing_bools;
+        fmitcp::int_set              m_outgoing_strings;
 
         //delete cached values
         void deleteCachedValues();
@@ -83,7 +83,7 @@ namespace fmitcp {
 #else
         template<typename T> void queueFoo(const vector<int>& vrs,
                                            const unordered_map<int,T>& values,
-                                           set<int>& outgoing) {
+                                           fmitcp::int_set& outgoing) {
           //only queue values which we haven't seen yet
           for (int vr : vrs) {
             auto it = values.find(vr);

@@ -128,7 +128,7 @@ template<typename T> void doit(
     refValues[wc.to][wc.conn.toType].second.push_back(value);
 }
 
-void getInputWeakRefsAndValues_inner(const vector<WeakConnection>& weakConnections, bool have_cset, const set<int>& cset,
+void getInputWeakRefsAndValues_inner(const vector<WeakConnection>& weakConnections, bool have_cset, const fmitcp::int_set& cset,
         InputRefsValuesType& refValues) {
     for (const WeakConnection& wc : weakConnections) {
         if (have_cset && !cset.count(wc.to->m_id)) {
@@ -157,18 +157,18 @@ void getInputWeakRefsAndValues_inner(const vector<WeakConnection>& weakConnectio
 
 InputRefsValuesType getInputWeakRefsAndValues(const vector<WeakConnection>& weakConnections) {
     InputRefsValuesType refValues;
-    getInputWeakRefsAndValues_inner(weakConnections, false, set<int>(), refValues);
+    getInputWeakRefsAndValues_inner(weakConnections, false, fmitcp::int_set(), refValues);
     return refValues;
 }
 
-InputRefsValuesType getInputWeakRefsAndValues(const vector<WeakConnection>& weakConnections, const set<int>& cset) {
+InputRefsValuesType getInputWeakRefsAndValues(const vector<WeakConnection>& weakConnections, const fmitcp::int_set& cset) {
     InputRefsValuesType refValues;
     getInputWeakRefsAndValues_inner(weakConnections, true, cset, refValues);
     return refValues;
 }
 
 SendSetXType getInputWeakRefsAndValues(const vector<WeakConnection>& weakConnections, FMIClient *client) {
-    set<int> cset;
+    fmitcp::int_set cset;
     cset.insert(client->m_id);
     InputRefsValuesType temp;
     getInputWeakRefsAndValues_inner(weakConnections, true, cset, temp);
@@ -180,7 +180,7 @@ SendSetXType getInputWeakRefsAndValues(const vector<WeakConnection>& weakConnect
     }
 }
 
-void getInputWeakRefsAndValues(const vector<WeakConnection>& weakConnections, const set<int>& cset, InputRefsValuesType& refValues) {
+void getInputWeakRefsAndValues(const vector<WeakConnection>& weakConnections, const fmitcp::int_set& cset, InputRefsValuesType& refValues) {
     getInputWeakRefsAndValues_inner(weakConnections, true, cset, refValues);
 }
 

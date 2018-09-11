@@ -25,7 +25,7 @@ class StrongMaster : public JacobiMaster {
     std::vector<int> clientrend;
 
     //kinematic FMU IDs
-    std::set<int> kins;
+    fmitcp::int_set kins;
 
     //rend counters
     //think of these like TTLs - when one reaches zero then
@@ -39,16 +39,16 @@ class StrongMaster : public JacobiMaster {
 
     //crank the system until the open set contains target
     //if target is empty then the system is cranked until all FMUs have been executed
-    std::set<int> done;
-    std::set<int> open;
-    std::set<int> todo;
-    void crankIt(double t, double dt, const std::set<int>& target);
+    fmitcp::int_set done;
+    fmitcp::int_set open;
+    fmitcp::int_set todo;
+    void crankIt(double t, double dt, const fmitcp::int_set& target);
 
     //this moves the IDs in the cranked set from open to done,
     //and figures out if any rends were triggered
     //if so those rends children are moved from todo to open
     //pass cranked by value since it is called with open in runIteration
-    void moveCranked(std::set<int> cranked);
+    void moveCranked(fmitcp::int_set cranked);
 
     //steps kinematic FMUs
     //all kinematic FMUs must be in the open set before calling this function

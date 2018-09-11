@@ -65,11 +65,12 @@ class StrongMaster : public JacobiMaster {
     //like -c foo,x,bar,y
     struct simpleconnection {
         int fromOutputVR;
-        int toInputVR;
         //to save on dereferencing "from" FMIClient*
         std::unordered_map<int, double> *fromRealsPtr;
     };
     std::unordered_map<FMIClient*, std::vector<simpleconnection> > m_simpleConnections;
+    std::unordered_map<FMIClient*, std::vector<int> > m_simpleInputsVRs;
+
     //all other connections
     std::vector<WeakConnection> m_complexConnections;
 

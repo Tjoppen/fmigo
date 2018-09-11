@@ -74,9 +74,9 @@ StrongMaster::StrongMaster(zmq::context_t &context, vector<FMIClient*> clients, 
             //simple connection
             simpleconnection sc;
             sc.fromOutputVR = wc.conn.fromOutputVR;
-            sc.toInputVR = wc.conn.toInputVR;
             sc.fromRealsPtr = &wc.from->m_reals;
             m_simpleConnections[wc.to].push_back(sc);
+            m_simpleInputsVRs[wc.to].push_back(wc.conn.toInputVR);
         } else {
             //all other connections
             m_complexConnections.push_back(wc);
@@ -118,20 +118,24 @@ void StrongMaster::initRefValues(const fmitcp::int_set& cset) {
     //clear old values, avoid allocation
     for (auto& a : m_refValues) {
         for (auto& b : a.second) {
-            b.second.first.clear();
-            b.second.second.clear();
+            //don't bother clear()ing what will be resize()d further down
+            if (    b.first != fmi2_base_type_real ||
+                    !cset.count(a.first->m_id)) {
+                b.second.first.clear();
+                b.second.second.clear();
+            }
         }
     }
 
     for (const auto& p : m_simpleConnections) {
         if (cset.count(p.first->m_id)) {
             auto& ref = m_refValues[p.first][fmi2_base_type_real];
-            for (const simpleconnection& s : p.second) {
-                MultiValue mv;  //TODO nuke MultiValue
-                mv.r = (*s.fromRealsPtr)[s.fromOutputVR];
+            ref.first = m_simpleInputsVRs[p.first];
+            ref.second.resize(p.second.size());
 
-                ref.first.push_back(s.toInputVR);
-                ref.second.push_back(mv);
+            for (size_t x = 0; x < p.second.size(); x++) {
+                const simpleconnection& s = p.second[x];
+                ref.second[x].r = (*s.fromRealsPtr)[s.fromOutputVR];
             }
         }
     }

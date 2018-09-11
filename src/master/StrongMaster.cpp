@@ -67,6 +67,20 @@ StrongMaster::StrongMaster(zmq::context_t &context, vector<FMIClient*> clients, 
 
     for (auto wc : m_weakConnections) {
         clientGetXs[wc.to->m_id][wc.from][wc.conn.fromType].push_back(wc.conn.fromOutputVR);
+        if (    wc.conn.fromType  == fmi2_base_type_real &&
+                wc.conn.toType    == fmi2_base_type_real &&
+                wc.conn.slope     == 1 &&
+                wc.conn.intercept == 0) {
+            //simple connection
+            simpleconnection sc;
+            sc.fromOutputVR = wc.conn.fromOutputVR;
+            sc.toInputVR = wc.conn.toInputVR;
+            sc.fromRealsPtr = &wc.from->m_reals;
+            m_simpleConnections[wc.to].push_back(sc);
+        } else {
+            //all other connections
+            m_complexConnections.push_back(wc);
+        }
     }
 }
 
@@ -98,6 +112,29 @@ void StrongMaster::prepare() {
     }
 
     forces.resize(getNumForces());
+}
+
+void StrongMaster::initRefValues(const fmitcp::int_set& cset) {
+    //clear old values, avoid allocation
+    for (auto& a : m_refValues) {
+        for (auto& b : a.second) {
+            b.second.first.clear();
+            b.second.second.clear();
+        }
+    }
+
+    for (const auto& p : m_simpleConnections) {
+        if (cset.count(p.first->m_id)) {
+            auto& ref = m_refValues[p.first][fmi2_base_type_real];
+            for (const simpleconnection& s : p.second) {
+                MultiValue mv;  //TODO nuke MultiValue
+                mv.r = (*s.fromRealsPtr)[s.fromOutputVR];
+
+                ref.first.push_back(s.toInputVR);
+                ref.second.push_back(mv);
+            }
+        }
+    }
 }
 
 void StrongMaster::getDirectionalDerivative(fmitcp_proto::fmi2_kinematic_req& kin, const Vec3& seedVec, const vector<int>& accelerationRefs, const vector<int>& forceRefs) {
@@ -163,14 +200,8 @@ void StrongMaster::crankIt(double t, double dt, const fmitcp::int_set& target) {
         wait();
 
         //grab the values that we requested
-        //clear old values, avoid allocation
-        for (auto& a : m_refValues) {
-            for (auto& b : a.second) {
-                b.second.first.clear();
-                b.second.second.clear();
-            }
-        }
-        getInputWeakRefsAndValues(m_weakConnections, toStep, m_refValues);
+        initRefValues(toStep);
+        getInputWeakRefsAndValues(m_complexConnections, toStep, m_refValues);
 
         //distribute inputs, step
         for (int id : toStep) {
@@ -236,13 +267,8 @@ void StrongMaster::stepKinematicFmus(double t, double dt) {
     //disentangle received values for set_real() further down (before do_step())
     //we shouldn't set_real() for these until we've gotten directional derivatives
     //this sets StrongMaster apart from the weak masters
-    for (auto& a : m_refValues) {
-        for (auto& b : a.second) {
-            b.second.first.clear();
-            b.second.second.clear();
-        }
-    }
-    getInputWeakRefsAndValues(m_weakConnections, open, m_refValues);
+    initRefValues(open);
+    getInputWeakRefsAndValues(m_complexConnections, open, m_refValues);
 
     vector<fmitcp_proto::fmi2_kinematic_req> kin(open.size(), fmitcp_proto::fmi2_kinematic_req());
     vector<int> kin_ofs(open.size(), 0);  //current offset into derivs

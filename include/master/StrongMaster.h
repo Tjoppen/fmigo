@@ -60,6 +60,21 @@ class StrongMaster : public JacobiMaster {
 
     //for avoiding allocations in getInputWeakRefsAndValues()
     InputRefsValuesType m_refValues;
+
+    //subset of m_weakConnections which are just real -> real without scaling
+    //like -c foo,x,bar,y
+    struct simpleconnection {
+        int fromOutputVR;
+        int toInputVR;
+        //to save on dereferencing "from" FMIClient*
+        std::unordered_map<int, double> *fromRealsPtr;
+    };
+    std::unordered_map<FMIClient*, std::vector<simpleconnection> > m_simpleConnections;
+    //all other connections
+    std::vector<WeakConnection> m_complexConnections;
+
+    //resets m_refValues and fills with values via m_simpleConnections
+    void initRefValues(const fmitcp::int_set& cset);
 public:
     StrongMaster(zmq::context_t &context, std::vector<FMIClient*> slaves, std::vector<WeakConnection> weakConnections,
                  sc::Solver *strongCouplingSolver, bool holonomic, const std::vector<Rend>& rends);

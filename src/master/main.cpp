@@ -713,11 +713,12 @@ static int connectionNamesToVr(std::vector<connection> &connections,
 #ifdef USE_MPI
 static void run_server(string fmuPath, string hdf5Filename) {
     FMIServer server(fmuPath, hdf5Filename);
+    std::string recv_str;
 
     for (;;) {
         int rank, tag;
         server.m_timer.rotate("pre_wait");
-        std::string recv_str = mpi_recv_string(MPI_ANY_SOURCE, &rank, &tag);
+        mpi_recv_string(0, &rank, &tag, recv_str);
         server.m_timer.rotate("wait");
 
         //shutdown command?

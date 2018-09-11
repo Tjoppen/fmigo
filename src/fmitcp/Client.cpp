@@ -430,9 +430,9 @@ void Client::sendMessageBlocking(const std::string& s) {
 void Client::receiveAndHandleMessage() {
     fmigo::globals::timer.rotate("pre_wait");
 #ifdef USE_MPI
-    std::string str = mpi_recv_string(world_rank, NULL, NULL);
+    mpi_recv_string(world_rank, NULL, NULL, m_mpi_str);
     fmigo::globals::timer.rotate("wait");
-    clientData(str.c_str(), str.length());
+    clientData(m_mpi_str.c_str(), m_mpi_str.length());
 #else
     //expect to recv a delimiter
     zmq::message_t delim;

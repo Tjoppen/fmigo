@@ -197,14 +197,14 @@ void BaseMaster::wait() {
 
 #ifdef USE_MPI
         int rank;
-        std::string str = mpi_recv_string(MPI_ANY_SOURCE, &rank, NULL);
+        mpi_recv_string(MPI_ANY_SOURCE, &rank, NULL, m_mpi_str);
         fmigo::globals::timer.rotate("wait");
 
         if (rank < 1 || rank > (int)m_clients.size()) {
             fatal("MPI rank out of bounds: %i\n", rank);
         }
 
-        m_clients[rank-1]->Client::clientData(str.c_str(), str.length());
+        m_clients[rank-1]->Client::clientData(m_mpi_str.c_str(), m_mpi_str.length());
 #else
     //all other platforms (GNU/Linux, Mac)
     //poll all clients, decrease m_pendingRequests as we see REPlies coming in

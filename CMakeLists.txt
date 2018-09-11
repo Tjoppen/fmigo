@@ -245,6 +245,7 @@ set(COMMON_HEADERS
     include/fmitcp/serialize.h
     include/fmitcp/Server.h
     include/common/timer.h
+    include/common/mpi_tools.h
 )
 
 SET(MASTER_SRCS

@@ -31,6 +31,7 @@ namespace fmitcp {
 
 #ifdef USE_MPI
         int world_rank;
+        std::string m_mpi_str;
 #else
     public:
         zmq::socket_t m_socket;

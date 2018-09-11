@@ -22,6 +22,10 @@ namespace fmitcp_master {
         int rendezvous;
         //t1 = time at which to perform next step
         std::chrono::high_resolution_clock::time_point t1;
+
+#ifdef USE_MPI
+        std::string m_mpi_str;
+#endif
     protected:
         std::vector<FMIClient*> m_clients;
         std::vector<WeakConnection> m_weakConnections;

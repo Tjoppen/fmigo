@@ -66,6 +66,12 @@ namespace fmitcp {
 #define USE_3BYTE_STATUS_RES 1
 #define USE_GET_REAL_RES_S 1
 #define SERVER_CLIENTDATA_NO_STRING_RET 1
+
+//don't bother checking if a value was already requested?
+//this is of dubious utility
+//tests show it's sometimes faster, sometimes slower
+#define DONT_FILTER_OUTGOING_VRS 0
+
     struct do_step_s {
         double currentcommunicationpoint;
         double communicationstepsize;

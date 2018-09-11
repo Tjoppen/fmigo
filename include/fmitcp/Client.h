@@ -67,6 +67,20 @@ namespace fmitcp {
         //delete cached values
         void deleteCachedValues();
 
+#if DONT_FILTER_OUTGOING_VRS == 1
+        void queueReals(const vector<int>& vrs) {
+          m_outgoing_reals.insert(vrs.begin(), vrs.end());
+        }
+        void queueInts(const vector<int>& vrs) {
+          m_outgoing_ints.insert(vrs.begin(), vrs.end());
+        }
+        void queueBools(const vector<int>& vrs) {
+          m_outgoing_bools.insert(vrs.begin(), vrs.end());
+        }
+        void queueStrings(const vector<int>& vrs) {
+          m_outgoing_strings.insert(vrs.begin(), vrs.end());
+        }
+#else
         template<typename T> void queueFoo(const vector<int>& vrs,
                                            const unordered_map<int,T>& values,
                                            set<int>& outgoing) {
@@ -91,6 +105,7 @@ namespace fmitcp {
         void queueStrings(const vector<int>& vrs) {
           queueFoo(vrs, m_strings, m_outgoing_strings);
         }
+#endif
 
         void queueValueRequests();
 

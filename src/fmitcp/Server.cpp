@@ -373,9 +373,13 @@ const vector<char>& Server::clientData(const char *data, size_t size) {
       fatal("packetSize > size\n");
     }
 
+#if SERVER_CLIENTDATA_NO_STRING_RET == 1
+    clientDataInner(data, packetSize);
+#else
     string s = clientDataInner(data, packetSize);
 
     fmitcp::serialize::packIntoCharVector(responseBuffer, s);
+#endif
 
     data += packetSize;
     size -= packetSize;
@@ -385,10 +389,11 @@ const vector<char>& Server::clientData(const char *data, size_t size) {
 }
 #endif
 
+#if SERVER_CLIENTDATA_NO_STRING_RET == 1
+void Server::clientDataInner(const char *data, size_t size) {
+#else
 string Server::clientDataInner(const char *data, size_t size) {
-  std::pair<fmitcp_proto::fmitcp_message_Type,std::string> ret;
-  ret.second = "error"; //to detect if we forgot to set ret.second somewhere below
-
+#endif
   m_timer.rotate("pre_parsing");
 
   fmitcp_proto::fmitcp_message_Type type = parseType(data, size);
@@ -425,6 +430,20 @@ string Server::clientDataInner(const char *data, size_t size) {
       ret.first = fmitcp_proto::type_fmi2_import_##type##_res; \
       ret.second = response.SerializeAsString();
 
+#if SERVER_CLIENTDATA_NO_STRING_RET == 1
+#define SERVER_NORMAL_3BYTE_RESPONSE(type) \
+    size_t ofs = responseBuffer.size(); \
+    responseBuffer.resize(ofs + 7); \
+    responseBuffer[ofs+0] = 3; \
+    responseBuffer[ofs+1] = 0; \
+    responseBuffer[ofs+2] = 0; \
+    responseBuffer[ofs+3] = 0; \
+    responseBuffer[ofs+4] = fmitcp_proto::type_fmi2_import_##type##_res & 0xFF; \
+    responseBuffer[ofs+5] = fmitcp_proto::type_fmi2_import_##type##_res >> 8; \
+    responseBuffer[ofs+6] = fmi2StatusToProtofmi2Status(status); \
+    m_timer.rotate("other"); \
+    return;
+#else
 #define SERVER_NORMAL_3BYTE_RESPONSE(type) \
     string res_str(3, 0); \
     res_str[0] = fmitcp_proto::type_fmi2_import_##type##_res & 0xFF; \
@@ -432,6 +451,7 @@ string Server::clientDataInner(const char *data, size_t size) {
     res_str[2] = fmi2StatusToProtofmi2Status(status); \
     m_timer.rotate("other"); \
     return res_str;
+#endif
 
   switch (type) {
   case fmitcp_proto::type_fmi2_import_get_version_req: {
@@ -637,8 +657,15 @@ string Server::clientDataInner(const char *data, size_t size) {
 #endif
 
 #if USE_GET_REAL_RES_S == 1
-    string res_str(3 + n*sizeof(fmi2_real_t), 0);
+    size_t ressz = 3 + n*sizeof(fmi2_real_t);
+#if SERVER_CLIENTDATA_NO_STRING_RET == 1
+    size_t rofs = responseBuffer.size();
+    responseBuffer.resize(rofs + 4 + ressz);
+    fmi2_real_t *values = (fmi2_real_t*)&responseBuffer[rofs+7];
+#else
+    string res_str(ressz, 0);
     fmi2_real_t *values = (fmi2_real_t*)&res_str[3];
+#endif
 #else
     vector<fmi2_real_t> value(n);
 
@@ -674,11 +701,23 @@ string Server::clientDataInner(const char *data, size_t size) {
     }
 
 #if USE_GET_REAL_RES_S == 1
+#if SERVER_CLIENTDATA_NO_STRING_RET == 1
+    responseBuffer[rofs+0] = ressz;
+    responseBuffer[rofs+1] = ressz >> 8;
+    responseBuffer[rofs+2] = ressz >> 16;
+    responseBuffer[rofs+3] = ressz >> 24;
+    responseBuffer[rofs+4] = fmitcp_proto::type_fmi2_import_get_real_res & 0xFF;
+    responseBuffer[rofs+5] = fmitcp_proto::type_fmi2_import_get_real_res >> 8;
+    responseBuffer[rofs+6] = fmi2StatusToProtofmi2Status(status);
+    m_timer.rotate("other");
+    return;
+#else
     res_str[0] = fmitcp_proto::type_fmi2_import_get_real_res & 0xFF;
     res_str[1] = fmitcp_proto::type_fmi2_import_get_real_res >> 8;
     res_str[2] = fmi2StatusToProtofmi2Status(status);
     m_timer.rotate("other");
     return res_str;
+#endif
 #else
     ret.first = fmitcp_proto::type_fmi2_import_get_real_res;
     ret.second = response.SerializeAsString();
@@ -1520,19 +1559,21 @@ bork:
     break; }
   }
 
-  if (ret.second == "error") {
-    fatal("error!: %i\n", ret.first);
-  }
-
   m_timer.rotate("other");
 
   if (sendResponse) {
     uint16_t t = ret.first;
     uint8_t bytes[2] = {(uint8_t)t, (uint8_t)(t>>8)};
+#if SERVER_CLIENTDATA_NO_STRING_RET == 1
+    string s = string(reinterpret_cast<char*>(bytes), 2) + ret.second;
+    fmitcp::serialize::packIntoCharVector(responseBuffer, s);
+  }
+#else
     return string(reinterpret_cast<char*>(bytes), 2) + ret.second;
   } else {
     return "";
   }
+#endif
 }
 
 void Server::sendDummyResponses(bool sendDummyResponses) {

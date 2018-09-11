@@ -65,6 +65,7 @@ namespace fmitcp {
 #define USE_GET_REAL_S 1
 #define USE_3BYTE_STATUS_RES 1
 #define USE_GET_REAL_RES_S 1
+#define SERVER_CLIENTDATA_NO_STRING_RET 1
     struct do_step_s {
         double currentcommunicationpoint;
         double communicationstepsize;

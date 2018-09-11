@@ -69,7 +69,17 @@ namespace fmitcp {
     std::vector<char> hdf5data; //this should be a map<int,vector<char>> once we start getting into having multiple FMU instances
     size_t rowsz, nrecords;
 
+private:
+    //avoid allocation
+    std::pair<fmitcp_proto::fmitcp_message_Type,std::string> ret;
+
+public:
+#if SERVER_CLIENTDATA_NO_STRING_RET == 1
+    //packs data into responseBuffer
+    void clientDataInner(const char *data, size_t size);
+#else
     std::string clientDataInner(const char *data, size_t size);
+#endif
 
   public:
 

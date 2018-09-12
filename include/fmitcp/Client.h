@@ -65,7 +65,18 @@ namespace fmitcp {
         fmitcp::int_set              m_outgoing_strings;
 
         //delete cached values
-        void deleteCachedValues();
+        void deleteCachedValues(void) {
+#ifdef DEBUG
+            //only bother with this in debug mode
+            //alternatively we could keep a "staleness" map around,
+            //marking all entries "true" in here and "false" when parsing
+            //type_fmi2_import_get_real_res and friends
+            m_reals.clear();
+            m_ints.clear();
+            m_bools.clear();
+            m_strings.clear();
+#endif
+        }
 
 #if DONT_FILTER_OUTGOING_VRS == 1
         void queueReals(const vector<int>& vrs) {

@@ -71,7 +71,11 @@ namespace fmitcp {
 //don't bother checking if a value was already requested?
 //this is of dubious utility
 //tests show it's sometimes faster, sometimes slower
+#ifdef DEBUG
 #define DONT_FILTER_OUTGOING_VRS 0
+#else
+#define DONT_FILTER_OUTGOING_VRS 1
+#endif
 
     typedef std::unordered_set<int> int_set;
 

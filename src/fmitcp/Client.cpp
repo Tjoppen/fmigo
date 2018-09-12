@@ -45,7 +45,7 @@ template<typename T, typename R> void handle_get_value_res(Client *c, R &r, fmit
 
   size_t x = 0;
   for (int vr : outgoing) {
-    dest.insert(make_pair(vr, r.values(x)));
+    dest[vr] = r.values(x);
     x++;
   }
   outgoing.clear();
@@ -161,7 +161,7 @@ void Client::clientDataInner(const char* data, size_t size){
         size_t x = 0;
         double *values = (double*)&data[1];
         for (int vr : m_outgoing_reals) {
-            m_reals.insert(make_pair(vr, values[x]));
+            m_reals[vr] = values[x];
             x++;
         }
         m_outgoing_reals.clear();
@@ -447,13 +447,6 @@ void Client::receiveAndHandleMessage() {
     fmigo::globals::timer.rotate("wait");
     clientData(static_cast<char*>(msg.data()), msg.size());
 #endif
-}
-
-void Client::deleteCachedValues() {
-  m_reals.clear();
-  m_ints.clear();
-  m_bools.clear();
-  m_strings.clear();
 }
 
 void Client::queueValueRequests() {

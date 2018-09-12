@@ -80,16 +80,25 @@ namespace fmitcp {
 
 #if DONT_FILTER_OUTGOING_VRS == 1
         void queueReals(const vector<int>& vrs) {
-          m_outgoing_reals.insert(vrs.begin(), vrs.end());
+            //microoptimization, woo!
+            for (int vr : vrs) {
+                m_outgoing_reals.insert(vr);
+            }
         }
         void queueInts(const vector<int>& vrs) {
-          m_outgoing_ints.insert(vrs.begin(), vrs.end());
+            for (int vr : vrs) {
+                m_outgoing_ints.insert(vr);
+            }
         }
         void queueBools(const vector<int>& vrs) {
-          m_outgoing_bools.insert(vrs.begin(), vrs.end());
+            for (int vr : vrs) {
+                m_outgoing_bools.insert(vr);
+            }
         }
         void queueStrings(const vector<int>& vrs) {
-          m_outgoing_strings.insert(vrs.begin(), vrs.end());
+            for (int vr : vrs) {
+                m_outgoing_strings.insert(vr);
+            }
         }
 #else
         template<typename T> void queueFoo(const vector<int>& vrs,

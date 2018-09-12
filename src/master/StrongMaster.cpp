@@ -134,7 +134,12 @@ void StrongMaster::initRefValues(const fmitcp::int_set& cset) {
     for (const auto& p : m_simpleConnections) {
         if (cset.count(p.first->m_id)) {
             SendSetXType& ref = m_refValues[p.first];
-            ref.real_vrs = m_simpleInputsVRs[p.first];
+            if (ref.real_vrs.size() == 0) {
+                ref.real_vrs = m_simpleInputsVRs[p.first];
+            } else {
+                //just truncate
+                ref.real_vrs.resize(p.second.size());
+            }
             ref.reals.resize(p.second.size());
 
             for (size_t x = 0; x < p.second.size(); x++) {

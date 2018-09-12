@@ -382,8 +382,11 @@ Client::~Client(){
 }
 
 void Client::queueMessage(const std::string& s) {
-    fmitcp::serialize::packIntoOstringstream(m_messageQueue, s);
+    fmitcp::serialize::packIntoCharVector(m_messageQueue, s);
+    bumpPendingRequests();
+}
 
+void Client::bumpPendingRequests(void) {
     if (m_master) {
         m_master->m_pendingRequests++;
     } else {
@@ -392,33 +395,31 @@ void Client::queueMessage(const std::string& s) {
 }
 
 void Client::sendQueuedMessages() {
-    string s = m_messageQueue.str();
-    m_messageQueue.str("");
-    m_messageQueue.clear();
-
-    if (s.length() == 0) {
+    if (m_messageQueue.size() == 0) {
         return;
     }
 
 #ifdef GATHER_SIZES
-    sizes_out[s.length()]++;
+    sizes_out[m_messageQueue.size()]++;
 #endif
 
     fmigo::globals::timer.rotate("pre_sendMessage");
     messages++;
 #ifdef USE_MPI
-    MPI_Send((void*)s.c_str(), s.length(), MPI_CHAR, world_rank, 0, MPI_COMM_WORLD);
+    MPI_Send((void*)m_messageQueue.data(), m_messageQueue.size(), MPI_CHAR, world_rank, 0, MPI_COMM_WORLD);
     fmigo::globals::timer.rotate("MPI_Send");
 #else
     //ZMQ_DEALERs must send two-part messages with the first part being zero-length
     zmq::message_t zero(0);
     m_socket.send(zero, ZMQ_SNDMORE);
 
-    zmq::message_t msg(s.size());
-    memcpy(msg.data(), s.data(), s.size());
+    zmq::message_t msg(m_messageQueue.size());
+    memcpy(msg.data(), m_messageQueue.data(), m_messageQueue.size());
     m_socket.send(msg);
     fmigo::globals::timer.rotate("zmq::socket::send");
 #endif
+
+    m_messageQueue.resize(0);
 }
 
 void Client::sendMessageBlocking(const std::string& s) {
@@ -451,7 +452,8 @@ void Client::receiveAndHandleMessage() {
 
 void Client::queueValueRequests() {
   if (m_outgoing_reals.size()) {
-    queueMessage(fmitcp::serialize::fmi2_import_get_real(m_outgoing_reals));
+    fmitcp::serialize::fmi2_import_get_real_fast(m_messageQueue, m_outgoing_reals);
+    bumpPendingRequests();
   }
   if (m_outgoing_ints.size()) {
     queueMessage(fmitcp::serialize::fmi2_import_get_integer(m_outgoing_ints));

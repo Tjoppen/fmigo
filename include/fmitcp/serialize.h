@@ -16,6 +16,7 @@ namespace fmitcp {
           return ret;
         }
 
+#if CLIENTDATA_NEW == 0
         static void packIntoOstringstream(std::ostringstream& oss, const std::string& s) {
           size_t sz = s.size();
 
@@ -32,6 +33,7 @@ namespace fmitcp {
           szStr[3] = (uint8_t)(sz>>24);
           oss << szStr << s;
         }
+#endif
 
         static void packIntoCharVector(std::vector<char>& vec, const std::string& s) {
           size_t sz = s.size();
@@ -118,6 +120,25 @@ namespace fmitcp {
             req.add_valuereferences(vr);
           }
           return pack(type, req);
+        }
+
+        template<typename C> void fmi2_import_get_real_fast(std::vector<char>& buffer, const C& valueRefs) {
+            size_t bofs = buffer.size();
+            size_t sz = 2 + valueRefs.size() * sizeof(int);
+            buffer.resize(bofs + 4 + sz);
+
+            buffer[bofs+0] = sz;
+            buffer[bofs+1] = sz >> 8;
+            buffer[bofs+2] = sz >> 16;
+            buffer[bofs+3] = sz >> 24;
+            buffer[bofs+4] = fmitcp_proto::type_fmi2_import_get_real_req & 0xFF;
+            buffer[bofs+5] = fmitcp_proto::type_fmi2_import_get_real_req >> 8;
+
+            int *vrs =  (int*)&buffer[bofs+6];
+            int ofs = 0;
+            for (int vr : valueRefs) {
+                vrs[ofs++] = vr;
+            }
         }
 
         template<typename C> std::string fmi2_import_get_real(const C& valueRefs) {

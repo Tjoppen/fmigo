@@ -37,7 +37,7 @@ namespace fmitcp {
         zmq::socket_t m_socket;
 #endif
 
-        std::ostringstream m_messageQueue;
+        std::vector<char> m_messageQueue;
 
         void clientDataInner(const char* data, size_t size);
 
@@ -140,6 +140,8 @@ namespace fmitcp {
         //queue a message to be sent by sendQueuedMessages()
         //helps reduce the number of MPI_Send()s performed
         void queueMessage(const std::string& s);
+
+        void bumpPendingRequests(void);
 
         //sends queued messages, unsurprisingly
         void sendQueuedMessages();

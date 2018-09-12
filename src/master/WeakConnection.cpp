@@ -19,88 +19,6 @@ WeakConnection::WeakConnection(const connection& conn, FMIClient *from, FMIClien
     conn(conn), from(from), to(to) {
 }
 
-MultiValue WeakConnection::setFromReal(double in) const {
-    MultiValue ret;
-    switch (conn.toType) {
-    case fmi2_base_type_real:
-        ret.r = in*conn.slope + conn.intercept;
-        break;
-    case fmi2_base_type_int:
-        ret.i = (int)(in*conn.slope + conn.intercept);
-        break;
-    case fmi2_base_type_bool:
-        ret.b = fabs(in * conn.slope + conn.intercept) > 0.5;
-        break;
-    case fmi2_base_type_str:
-        //we could support this, but eh..
-        fatal("Converting real -> str not supported\n");
-    case fmi2_base_type_enum:
-        fatal("Converting real -> enum not supported\n");
-    }
-    return ret;
-}
-
-MultiValue WeakConnection::setFromInteger(int in) const {
-    MultiValue ret;
-    switch (conn.toType) {
-    case fmi2_base_type_real:
-        ret.r = in*conn.slope + conn.intercept;
-        break;
-    case fmi2_base_type_int:
-        if (conn.slope == 1 && conn.intercept == 0) {
-            //special case to avoid losing precision
-            ret.i = in;
-        } else {
-            ret.i = (int)(in*conn.slope + conn.intercept);
-        }
-        break;
-    case fmi2_base_type_bool:
-        ret.b = fabs(in*conn.slope + conn.intercept) > 0.5;
-        break;
-    case fmi2_base_type_str:
-        //same here - let's avoid this for now
-        fatal("Converting int -> str not supported\n");
-    case fmi2_base_type_enum:
-        fatal("Converting int -> enum not supported\n");
-    }
-    return ret;
-}
-
-MultiValue WeakConnection::setFromBoolean(bool in) const {
-    MultiValue ret;
-    switch (conn.toType) {
-    case fmi2_base_type_real:
-        ret.r = in*conn.slope + conn.intercept;
-        break;
-    case fmi2_base_type_int:
-        ret.i = (int)(in*conn.slope + conn.intercept);
-        break;
-    case fmi2_base_type_bool:
-        //slope/intercept on bool -> bool doesn't really make sense IMO
-        if (conn.slope != 1 || conn.intercept != 0) {
-            fatal("slope or intercept specified on bool -> bool connection doesn't make sense - stopping\n");
-        }
-        ret.b = in;
-        break;
-    case fmi2_base_type_str:
-        //this one too
-        fatal("Converting bool -> str not supported\n");
-    case fmi2_base_type_enum:
-        fatal("Converting bool -> enum not supported\n");
-    }
-    return ret;
-}
-
-MultiValue WeakConnection::setFromString(std::string in) const {
-    MultiValue ret;
-    if (conn.toType != fmi2_base_type_str) {
-        fatal("String outputs may only be connected to string inputs\n");
-    }
-
-    ret.s = in;
-    return ret;
-}
-
 OutputRefsType getOutputWeakRefs(vector<WeakConnection> weakConnections) {
     OutputRefsType weakRefs;
 
@@ -111,21 +29,15 @@ OutputRefsType getOutputWeakRefs(vector<WeakConnection> weakConnections) {
     return weakRefs;
 }
 
-template<typename T> void doit(
-        InputRefsValuesType& refValues,
+template<typename T> T check(
         const WeakConnection& wc,
-        const std::unordered_map<int,T>& values,
-        MultiValue (WeakConnection::*convert)(T) const)
+        const std::unordered_map<int,T>& values)
 {
     auto it = values.find(wc.conn.fromOutputVR);
     if (it == values.end()) {
       fatal("VR %i was not requested\n", wc.conn.fromOutputVR);
     }
-
-    MultiValue value = (wc.*convert)(it->second);
-
-    refValues[wc.to][wc.conn.toType].first.push_back(wc.conn.toInputVR);
-    refValues[wc.to][wc.conn.toType].second.push_back(value);
+    return it->second;
 }
 
 void getInputWeakRefsAndValues_inner(const vector<WeakConnection>& weakConnections, bool have_cset, const fmitcp::int_set& cset,
@@ -136,19 +48,115 @@ void getInputWeakRefsAndValues_inner(const vector<WeakConnection>& weakConnectio
             continue;
         }
 
-        switch (wc.conn.fromType) {
+        SendSetXType& target = refValues[wc.to];
+        const connection& conn = wc.conn;
+
+        switch (conn.toType) {
         case fmi2_base_type_real:
-            doit(refValues, wc, wc.from->m_reals,    &WeakConnection::setFromReal);
+            target.real_vrs.push_back(conn.toInputVR);
             break;
         case fmi2_base_type_int:
-            doit(refValues, wc, wc.from->m_ints,     &WeakConnection::setFromInteger);
+            target.int_vrs.push_back(conn.toInputVR);
             break;
         case fmi2_base_type_bool:
-            doit(refValues, wc, wc.from->m_bools,    &WeakConnection::setFromBoolean);
+            target.bool_vrs.push_back(conn.toInputVR);
             break;
         case fmi2_base_type_str:
-            doit(refValues, wc, wc.from->m_strings,  &WeakConnection::setFromString);
+            target.string_vrs.push_back(conn.toInputVR);
             break;
+        case fmi2_base_type_enum:
+            fatal("Tried to connect to enum input. Enums are not yet supported\n");
+        }
+
+        switch (conn.fromType) {
+        case fmi2_base_type_real: {
+            double in = check(wc, wc.from->m_reals);
+
+            switch (conn.toType) {
+            case fmi2_base_type_real:
+                target.reals.push_back(in*conn.slope + conn.intercept);
+                break;
+            case fmi2_base_type_int:
+                target.ints.push_back((int)(in*conn.slope + conn.intercept));
+                break;
+            case fmi2_base_type_bool:
+                target.bools.push_back(fabs(in * conn.slope + conn.intercept) > 0.5);
+                break;
+            case fmi2_base_type_str:
+                fatal("Converting real -> str not supported\n");
+                break;
+            case fmi2_base_type_enum:   //make compiler happy
+                break;
+            }
+
+            break;
+        }
+        case fmi2_base_type_int: {
+            int in = check(wc, wc.from->m_ints);
+
+            switch (conn.toType) {
+            case fmi2_base_type_real:
+                target.reals.push_back(in*conn.slope + conn.intercept);
+                break;
+            case fmi2_base_type_int:
+                if (conn.slope == 1 && conn.intercept == 0) {
+                    //special case to avoid losing precision
+                    target.ints.push_back(in);
+                } else {
+                    target.ints.push_back((int)(in*conn.slope + conn.intercept));
+                }
+                break;
+            case fmi2_base_type_bool:
+                target.bools.push_back(fabs(in*conn.slope + conn.intercept) > 0.5);
+                break;
+            case fmi2_base_type_str:
+                //same here - let's avoid this for now
+                fatal("Converting int -> str not supported\n");
+                break;
+            case fmi2_base_type_enum:   //make compiler happy
+                break;
+            }
+
+            break;
+        }
+        case fmi2_base_type_bool: {
+            bool in = check(wc, wc.from->m_bools);
+
+            switch (conn.toType) {
+            case fmi2_base_type_real:
+                target.reals.push_back(in*conn.slope + conn.intercept);
+                break;
+            case fmi2_base_type_int:
+                target.ints.push_back((int)(in*conn.slope + conn.intercept));
+                break;
+            case fmi2_base_type_bool:
+                //slope/intercept on bool -> bool doesn't really make sense IMO
+                if (conn.slope != 1 || conn.intercept != 0) {
+                    fatal("slope or intercept specified on bool -> bool connection doesn't make sense - stopping\n");
+                }
+                target.bools.push_back(in);
+                break;
+            case fmi2_base_type_str:
+                //this one too
+                fatal("Converting bool -> str not supported\n");
+                break;
+            case fmi2_base_type_enum:   //make compiler happy
+                break;
+            }
+
+            break;
+        }
+        case fmi2_base_type_str: {
+            string in = check(wc, wc.from->m_strings);
+
+            if (conn.toType != fmi2_base_type_str) {
+                fatal("String outputs may only be connected to string inputs\n");
+            }
+
+            target.strings.push_back(in);
+
+            break;
+        }
         case fmi2_base_type_enum:
             fatal("Tried to connect enum output somewhere. Enums are not yet supported\n");
         }

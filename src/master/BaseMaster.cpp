@@ -45,12 +45,8 @@ int BaseMaster::loop_residual_f(const gsl_vector *x, void *params, gsl_vector *f
   InputRefsValuesType newInputs = master->initialNonReals;
   k = 0;
   for (auto& it : newInputs) {
-    for (auto& it2 : it.second) {
-      if (it2.first == fmi2_base_type_real) {
-        for (size_t j = 0; j < it2.second.second.size(); j++, k++) {
-          it2.second.second[j].r = gsl_vector_get(x, k);
-        }
-      }
+    for (size_t j = 0; j < it.second.reals.size(); j++, k++) {
+      it.second.reals[j] = gsl_vector_get(x, k);
     }
   }
   if (k != (int)x->size) {
@@ -73,25 +69,15 @@ int BaseMaster::loop_residual_f(const gsl_vector *x, void *params, gsl_vector *f
   k = 0;
   //double rtot = 0;
   for (auto it : getInputWeakRefsAndValues(master->m_weakConnections)) {
-    for (auto it2 : it.second) {
-      if (it2.first == fmi2_base_type_real) {
-        std::vector<MultiValue> mvs1 = it2.second.second;
-        for (size_t j = 0; j < mvs1.size(); j++, k++) {
+        for (size_t j = 0; j < it.second.reals.size(); j++, k++) {
           //residual = A*f(x) - x = scaled output - input
-          double r = mvs1[j].r - gsl_vector_get(x, k);
+          double r = it.second.reals[j] - gsl_vector_get(x, k);
           //rtot += r*r;
           //debug("r[%i] = %-.9f - %-.9f = %-.9f\n", k, mvs1[j].r, gsl_vector_get(x, k), r);
           //if (k>0) debug( ",");
           //debug("%-.12f", r);
           gsl_vector_set(f, k, r);
         }
-      } else {
-        //check that all non-real inputs remain unchanged
-        if (it2.second != master->initialNonReals[it.first][it2.first]) {
-          fatal("non-real input changed in loop solver. unable to guarantee convergence\n");
-        }
-      }
-    }
   }
   //debug("\nrtot = %.9f\n", rtot);
 
@@ -116,7 +102,7 @@ void BaseMaster::solveLoops() {
   //count reals
   size_t n = 0;
   for (auto it : initialNonReals) {
-    n += it.second[fmi2_base_type_real].second.size();
+    n += it.second.reals.size();
   }
 
   if (n == 0) {
@@ -134,9 +120,9 @@ void BaseMaster::solveLoops() {
   //ordering derives from map<FMIClient*, map<fmi2_base_type_enu_t, ...> >
   int ofs = 0;
   for (auto it : initialNonReals) {
-      for (auto multivalue : it.second[fmi2_base_type_real].second) {
-          //debug("x0[%i] = %f\n", ofs, multivalue.r);
-          gsl_vector_set(x0, ofs++, multivalue.r);
+      for (double r : it.second.reals) {
+          //debug("x0[%i] = %f\n", ofs, r);
+          gsl_vector_set(x0, ofs++, r);
       }
   }
 

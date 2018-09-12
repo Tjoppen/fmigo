@@ -48,7 +48,7 @@ class StrongMaster : public JacobiMaster {
     //and figures out if any rends were triggered
     //if so those rends children are moved from todo to open
     //pass cranked by value since it is called with open in runIteration
-    void moveCranked(fmitcp::int_set cranked);
+    void moveCranked(const fmitcp::int_set& cranked);
 
     //steps kinematic FMUs
     //all kinematic FMUs must be in the open set before calling this function

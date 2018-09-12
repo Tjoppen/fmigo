@@ -182,11 +182,9 @@ void StrongMaster::crankIt(double t, double dt, const fmitcp::int_set& target) {
         debug("      -crankIt: %zu %zu %zu %zu\n", done.size(), open.size(), todo.size(), target.size());
 
         //only step those which are not in the target set
-        fmitcp::int_set toStep;
-        for (int id : open) {
-            if (target.count(id) == 0) {
-                toStep.insert(id);
-            }
+        fmitcp::int_set toStep = open;
+        for (int id : target) {
+            toStep.erase(id);
         }
 
         if (toStep.size() == 0) {
@@ -195,7 +193,7 @@ void StrongMaster::crankIt(double t, double dt, const fmitcp::int_set& target) {
 
         //request inputs for the FMUs we're about to step
         for (int id : toStep) {
-            for (auto it : clientGetXs[id]) {
+            for (const auto& it : clientGetXs[id]) {
                 it.first->queueX(it.second);
             }
         }
@@ -208,9 +206,10 @@ void StrongMaster::crankIt(double t, double dt, const fmitcp::int_set& target) {
         getInputWeakRefsAndValues(m_complexConnections, toStep, m_refValues);
 
         //distribute inputs, step
+        string do_step = fmi2_import_do_step(t, dt, true);
         for (int id : toStep) {
             m_clients[id]->sendSetX(m_refValues[m_clients[id]]);
-            queueMessage(m_clients[id], fmi2_import_do_step(t, dt, true));
+            queueMessage(m_clients[id], do_step);
         }
 
         //all cached values are now bork
@@ -221,7 +220,7 @@ void StrongMaster::crankIt(double t, double dt, const fmitcp::int_set& target) {
     debug(" out  crankIt: %zu %zu %zu %zu\n", done.size(), open.size(), todo.size(), target.size());
 }
 
-void StrongMaster::moveCranked(fmitcp::int_set cranked) {
+void StrongMaster::moveCranked(const fmitcp::int_set& cranked) {
     fmitcp::int_set triggered_rends;
     for (int id : cranked) {
         //poke the corresponding rend
@@ -493,8 +492,9 @@ void StrongMaster::stepKinematicFmus(double t, double dt) {
     //do_step() makes values old
     deleteCachedValues(true, open);
 
-    //pass open by value so a copy happens
-    moveCranked(open);
+    //copy open explicitly, since moveCranked modifies open
+    fmitcp::int_set open_copy = open;
+    moveCranked(open_copy);
 }
 
 void StrongMaster::runIteration(double t, double dt) {
@@ -530,7 +530,7 @@ void StrongMaster::runIteration(double t, double dt) {
 
     //pre-fetch values for next step
     for (int id : rends[0].children) {
-        for (auto it : clientGetXs[id]) {
+        for (const auto& it : clientGetXs[id]) {
             it.first->queueX(it.second);
         }
     }

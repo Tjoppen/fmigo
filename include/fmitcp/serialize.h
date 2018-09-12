@@ -16,6 +16,7 @@ namespace fmitcp {
           return ret;
         }
 
+#if CLIENTDATA_NEW == 0
         static void packIntoOstringstream(std::ostringstream& oss, const std::string& s) {
           size_t sz = s.size();
 
@@ -31,6 +32,27 @@ namespace fmitcp {
           szStr[2] = (uint8_t)(sz>>16);
           szStr[3] = (uint8_t)(sz>>24);
           oss << szStr << s;
+        }
+#endif
+
+        static void packIntoCharVector(std::vector<char>& vec, const std::string& s) {
+          size_t sz = s.size();
+
+          if (sz > 0xFFFFFFFF) {
+            fprintf(stderr, "sz = %lu\n", sz);
+            exit(1);
+          }
+
+          vec.reserve(vec.size() + 4 + s.length());
+
+          //size of packet, including type
+          char szStr[4];
+          szStr[0] = (uint8_t)sz;
+          szStr[1] = (uint8_t)(sz>>8);
+          szStr[2] = (uint8_t)(sz>>16);
+          szStr[3] = (uint8_t)(sz>>24);
+          vec.insert(vec.end(), szStr, &szStr[4]);
+          vec.insert(vec.end(), s.c_str(), s.c_str() + s.length());
         }
 
         static size_t parseSize(const char *data, size_t size) {
@@ -100,8 +122,42 @@ namespace fmitcp {
           return pack(type, req);
         }
 
+        template<typename C> void fmi2_import_get_real_fast(std::vector<char>& buffer, const C& valueRefs) {
+            size_t bofs = buffer.size();
+            size_t sz = 2 + valueRefs.size() * sizeof(int);
+            buffer.resize(bofs + 4 + sz);
+
+            buffer[bofs+0] = sz;
+            buffer[bofs+1] = sz >> 8;
+            buffer[bofs+2] = sz >> 16;
+            buffer[bofs+3] = sz >> 24;
+            buffer[bofs+4] = fmitcp_proto::type_fmi2_import_get_real_req & 0xFF;
+            buffer[bofs+5] = fmitcp_proto::type_fmi2_import_get_real_req >> 8;
+
+            int *vrs =  (int*)&buffer[bofs+6];
+            int ofs = 0;
+            for (int vr : valueRefs) {
+                vrs[ofs++] = vr;
+            }
+        }
+
         template<typename C> std::string fmi2_import_get_real(const C& valueRefs) {
+#if USE_SET_REAL_S == 1
+            std::string str(2 + valueRefs.size() * (sizeof(int)), 0);
+            int *vrs =  (int*)&str[2];
+
+            str[0] = fmitcp_proto::type_fmi2_import_get_real_req & 0xFF;
+            str[1] = fmitcp_proto::type_fmi2_import_get_real_req >> 8;
+
+            int ofs = 0;
+            for (int vr : valueRefs) {
+                vrs[ofs++] = vr;
+            }
+
+            return str;
+#else
           return collection_to_req<fmitcp_proto::fmi2_import_get_real_req>(fmitcp_proto::type_fmi2_import_get_real_req, valueRefs);
+#endif
         }
 
         template<typename C> std::string fmi2_import_get_integer(const C& valueRefs) {

@@ -25,7 +25,7 @@ class StrongMaster : public JacobiMaster {
     std::vector<int> clientrend;
 
     //kinematic FMU IDs
-    std::set<int> kins;
+    fmitcp::int_set kins;
 
     //rend counters
     //think of these like TTLs - when one reaches zero then
@@ -39,16 +39,16 @@ class StrongMaster : public JacobiMaster {
 
     //crank the system until the open set contains target
     //if target is empty then the system is cranked until all FMUs have been executed
-    std::set<int> done;
-    std::set<int> open;
-    std::set<int> todo;
-    void crankIt(double t, double dt, const std::set<int>& target);
+    fmitcp::int_set done;
+    fmitcp::int_set open;
+    fmitcp::int_set todo;
+    void crankIt(double t, double dt, const fmitcp::int_set& target);
 
     //this moves the IDs in the cranked set from open to done,
     //and figures out if any rends were triggered
     //if so those rends children are moved from todo to open
     //pass cranked by value since it is called with open in runIteration
-    void moveCranked(std::set<int> cranked);
+    void moveCranked(const fmitcp::int_set& cranked);
 
     //steps kinematic FMUs
     //all kinematic FMUs must be in the open set before calling this function
@@ -57,6 +57,25 @@ class StrongMaster : public JacobiMaster {
     //computed forces, for writeFields()
     std::vector<double> forces;
     int getNumForces() const;
+
+    //for avoiding allocations in getInputWeakRefsAndValues()
+    InputRefsValuesType m_refValues;
+
+    //subset of m_weakConnections which are just real -> real without scaling
+    //like -c foo,x,bar,y
+    struct simpleconnection {
+        int fromOutputVR;
+        //to save on dereferencing "from" FMIClient*
+        std::unordered_map<int, double> *fromRealsPtr;
+    };
+    std::unordered_map<FMIClient*, std::vector<simpleconnection> > m_simpleConnections;
+    std::unordered_map<FMIClient*, std::vector<int> > m_simpleInputsVRs;
+
+    //all other connections
+    std::vector<WeakConnection> m_complexConnections;
+
+    //resets m_refValues and fills with values via m_simpleConnections
+    void initRefValues(const fmitcp::int_set& cset);
 public:
     StrongMaster(zmq::context_t &context, std::vector<FMIClient*> slaves, std::vector<WeakConnection> weakConnections,
                  sc::Solver *strongCouplingSolver, bool holonomic, const std::vector<Rend>& rends);

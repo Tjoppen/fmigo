@@ -22,6 +22,10 @@ namespace fmitcp_master {
         int rendezvous;
         //t1 = time at which to perform next step
         std::chrono::high_resolution_clock::time_point t1;
+
+#ifdef USE_MPI
+        std::string m_mpi_str;
+#endif
     protected:
         std::vector<FMIClient*> m_clients;
         std::vector<WeakConnection> m_weakConnections;
@@ -116,7 +120,7 @@ namespace fmitcp_master {
 
         void queueValueRequests();
         //if cset_set == true then only delete values for FMUs whose ID is in cset
-        void deleteCachedValues(bool cset_set = false, const std::set<int>& cset = std::set<int>());
+        void deleteCachedValues(bool cset_set = false, const fmitcp::int_set& cset = fmitcp::int_set());
     };
 };
 

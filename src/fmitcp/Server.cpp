@@ -329,6 +329,7 @@ fmi2_status_t Server::getDirectionalDerivatives(
     return status;
 }
 
+#if CLIENTDATA_NEW == 0
 string Server::clientData(const char *data, size_t size) {
   //split up packets
   //each one starts with a 4-byte length
@@ -355,11 +356,44 @@ string Server::clientData(const char *data, size_t size) {
 
   return oss.str();
 }
+#else
+const vector<char>& Server::clientData(const char *data, size_t size) {
+  //split up packets
+  //each one starts with a 4-byte length
+  responseBuffer.resize(0);
 
+  while (size > 0) {
+    //size of packet, including type
+    size_t packetSize = fmitcp::serialize::parseSize(data, size);
+
+    data += 4;
+    size -= 4;
+
+    if (packetSize > size) {
+      fatal("packetSize > size\n");
+    }
+
+#if SERVER_CLIENTDATA_NO_STRING_RET == 1
+    clientDataInner(data, packetSize);
+#else
+    string s = clientDataInner(data, packetSize);
+
+    fmitcp::serialize::packIntoCharVector(responseBuffer, s);
+#endif
+
+    data += packetSize;
+    size -= packetSize;
+  }
+
+  return responseBuffer;
+}
+#endif
+
+#if SERVER_CLIENTDATA_NO_STRING_RET == 1
+void Server::clientDataInner(const char *data, size_t size) {
+#else
 string Server::clientDataInner(const char *data, size_t size) {
-  std::pair<fmitcp_proto::fmitcp_message_Type,std::string> ret;
-  ret.second = "error"; //to detect if we forgot to set ret.second somewhere below
-
+#endif
   m_timer.rotate("pre_parsing");
 
   fmitcp_proto::fmitcp_message_Type type = parseType(data, size);
@@ -395,6 +429,29 @@ string Server::clientDataInner(const char *data, size_t size) {
       response.set_status(fmi2StatusToProtofmi2Status(status));        \
       ret.first = fmitcp_proto::type_fmi2_import_##type##_res; \
       ret.second = response.SerializeAsString();
+
+#if SERVER_CLIENTDATA_NO_STRING_RET == 1
+#define SERVER_NORMAL_3BYTE_RESPONSE(type) \
+    size_t ofs = responseBuffer.size(); \
+    responseBuffer.resize(ofs + 7); \
+    responseBuffer[ofs+0] = 3; \
+    responseBuffer[ofs+1] = 0; \
+    responseBuffer[ofs+2] = 0; \
+    responseBuffer[ofs+3] = 0; \
+    responseBuffer[ofs+4] = fmitcp_proto::type_fmi2_import_##type##_res & 0xFF; \
+    responseBuffer[ofs+5] = fmitcp_proto::type_fmi2_import_##type##_res >> 8; \
+    responseBuffer[ofs+6] = fmi2StatusToProtofmi2Status(status); \
+    m_timer.rotate("other"); \
+    return;
+#else
+#define SERVER_NORMAL_3BYTE_RESPONSE(type) \
+    string res_str(3, 0); \
+    res_str[0] = fmitcp_proto::type_fmi2_import_##type##_res & 0xFF; \
+    res_str[1] = fmitcp_proto::type_fmi2_import_##type##_res >> 8; \
+    res_str[2] = fmi2StatusToProtofmi2Status(status); \
+    m_timer.rotate("other"); \
+    return res_str;
+#endif
 
   switch (type) {
   case fmitcp_proto::type_fmi2_import_get_version_req: {
@@ -586,38 +643,86 @@ string Server::clientDataInner(const char *data, size_t size) {
   break; } case fmitcp_proto::type_fmi2_import_get_real_req: {
 
     // Unpack message
+#if USE_GET_REAL_S == 1
+    size_t n = size / sizeof(fmi2_value_reference_t);
+    fmi2_value_reference_t *vr = (fmi2_value_reference_t*)data;
+#else
     fmitcp_proto::fmi2_import_get_real_req r; r.ParseFromArray(data, size);
     vector<fmi2_value_reference_t> vr(r.valuereferences_size());
-    vector<fmi2_real_t> value(r.valuereferences_size());
-
-    for (int i = 0 ; i < r.valuereferences_size() ; i++) {
+    size_t n = r.valuereferences_size();
+    for (size_t i = 0 ; i < n; i++) {
       vr[i] = r.valuereferences(i);
     }
     debug("fmi2_import_get_real_req(vrs=%s)\n",arrayToString(vr).c_str());
+#endif
+
+#if USE_GET_REAL_RES_S == 1
+    size_t ressz = 3 + n*sizeof(fmi2_real_t);
+#if SERVER_CLIENTDATA_NO_STRING_RET == 1
+    size_t rofs = responseBuffer.size();
+    responseBuffer.resize(rofs + 4 + ressz);
+    fmi2_real_t *values = (fmi2_real_t*)&responseBuffer[rofs+7];
+#else
+    string res_str(ressz, 0);
+    fmi2_real_t *values = (fmi2_real_t*)&res_str[3];
+#endif
+#else
+    vector<fmi2_real_t> value(n);
 
     // Create response
     fmitcp_proto::fmi2_import_get_real_res response;
+#endif
 
     fmi2_status_t status = fmi2_status_ok;
     if (!m_sendDummyResponses) {
         // interact with FMU
+#if USE_GET_REAL_RES_S == 1
+        status = fmi2_import_get_real(m_fmi2Instance, vr, n, values);
+#else
+#if USE_GET_REAL_S == 1
+        status = fmi2_import_get_real(m_fmi2Instance, vr, n, value.data());
+#else
         status = fmi2_import_get_real(m_fmi2Instance, vr.data(), r.valuereferences_size(), value.data());
+#endif
         response.set_status(fmi2StatusToProtofmi2Status(status));
-        for (int i = 0 ; i < r.valuereferences_size() ; i++) {
+        for (size_t i = 0 ; i < n ; i++) {
             response.add_values(value[i]);
         }
+#endif
         m_timer.rotate("get_x");
     } else {
+#if USE_GET_REAL_RES_S == 0
         // Set dummy values
-        for (int i = 0 ; i < r.valuereferences_size() ; i++) {
+        for (size_t i = 0 ; i < n ; i++) {
             response.add_values(0.0);
         }
         response.set_status(fmi2StatusToProtofmi2Status(fmi2_status_ok));
+#endif
     }
 
+#if USE_GET_REAL_RES_S == 1
+#if SERVER_CLIENTDATA_NO_STRING_RET == 1
+    responseBuffer[rofs+0] = ressz;
+    responseBuffer[rofs+1] = ressz >> 8;
+    responseBuffer[rofs+2] = ressz >> 16;
+    responseBuffer[rofs+3] = ressz >> 24;
+    responseBuffer[rofs+4] = fmitcp_proto::type_fmi2_import_get_real_res & 0xFF;
+    responseBuffer[rofs+5] = fmitcp_proto::type_fmi2_import_get_real_res >> 8;
+    responseBuffer[rofs+6] = fmi2StatusToProtofmi2Status(status);
+    m_timer.rotate("other");
+    return;
+#else
+    res_str[0] = fmitcp_proto::type_fmi2_import_get_real_res & 0xFF;
+    res_str[1] = fmitcp_proto::type_fmi2_import_get_real_res >> 8;
+    res_str[2] = fmi2StatusToProtofmi2Status(status);
+    m_timer.rotate("other");
+    return res_str;
+#endif
+#else
     ret.first = fmitcp_proto::type_fmi2_import_get_real_res;
     ret.second = response.SerializeAsString();
     log_error_or_debug(status, "fmi2_import_get_real_res(status=%d,values=%s)\n",response.status(),arrayToString(value).c_str());
+#endif
 
   break; } case fmitcp_proto::type_fmi2_import_get_integer_req: {
 
@@ -708,6 +813,12 @@ string Server::clientDataInner(const char *data, size_t size) {
 
   break; } case fmitcp_proto::type_fmi2_import_set_real_req: {
 
+#if USE_SET_REAL_S == 1
+    size_t n = size / (sizeof(fmi2_value_reference_t) + sizeof(fmi2_real_t));
+    fmi2_value_reference_t *vr = (fmi2_value_reference_t*)data;
+    fmi2_real_t *value = (fmi2_real_t*)&vr[n];
+#else
+
     // Unpack message
     fmitcp_proto::fmi2_import_set_real_req r; r.ParseFromArray(data, size);
     vector<fmi2_value_reference_t> vr(r.valuereferences_size());
@@ -720,19 +831,30 @@ string Server::clientDataInner(const char *data, size_t size) {
 
     debug("fmi2_import_set_real_req(vrs=%s,values=%s)\n",
       arrayToString(vr).c_str(), arrayToString(value).c_str());
+#endif
 
     fmi2_status_t status = fmi2_status_ok;
     if (!m_sendDummyResponses) {
       // interact with FMU
       m_timer.rotate("pre_set_x");
+#if USE_SET_REAL_S == 1
+       status = fmi2_import_set_real(m_fmi2Instance, vr, n, value);
+#else
        status = fmi2_import_set_real(m_fmi2Instance, vr.data(), r.valuereferences_size(), value.data());
+#endif
        m_timer.rotate("set_x");
     }
 
+#if USE_SET_REAL_S == 0
     log_error_or_debug(status, "fmi2_import_set_real_req(vrs=%s,values=%s)\n",
       arrayToString(vr).c_str(), arrayToString(value).c_str());
+#endif
 
+#if USE_3BYTE_STATUS_RES == 1
+    SERVER_NORMAL_3BYTE_RESPONSE(set_real);
+#else
     SERVER_NORMAL_RESPONSE_NO_LOG(set_real);
+#endif
 
   break; } case fmitcp_proto::type_fmi2_import_set_integer_req: {
 
@@ -1130,21 +1252,41 @@ string Server::clientDataInner(const char *data, size_t size) {
   break; } case fmitcp_proto::type_fmi2_import_do_step_req: {
 
     // Unpack message
+#if USE_DO_STEP_S == 1
+    if (size != sizeof(do_step_s)) {
+        fatal("size mismatch for type_fmi2_import_do_step_req - %zu vs %zu\n", size, sizeof(do_step_s));
+    }
+
+    do_step_s *s = (do_step_s*)data;
+    bool newStep = s->newStep;
+
+    debug("fmi2_import_do_step_req(commPoint=%g,stepSize=%g,newStep=%d)\n", s->currentcommunicationpoint, s->communicationstepsize, newStep?1:0);
+#else
     fmitcp_proto::fmi2_import_do_step_req r; r.ParseFromArray(data, size);
     bool newStep = r.newstep();
+
     debug("fmi2_import_do_step_req(commPoint=%g,stepSize=%g,newStep=%d)\n",r.currentcommunicationpoint(),r.communicationstepsize(),newStep?1:0);
+#endif
 
     if (newStep) {
       //keep track of what the next communication point will be
       //this may not work correctly if multiple steps with newStep=false are taken
       //fmigo never does this, so this works
       //a better solution would be to tie these two values to the current FMUstate
+#if USE_DO_STEP_S == 1
+      this->currentCommunicationPoint = s->currentcommunicationpoint + s->communicationstepsize;
+#else
       this->currentCommunicationPoint = r.currentcommunicationpoint() + r.communicationstepsize();
+#endif
     }
 
     //this step size is really just a guess - it could be variable
     //but it should be good enough for computeNumericalDirectionalDerivative()
+#if USE_DO_STEP_S == 1
+    this->communicationStepSize = s->communicationstepsize;
+#else
     this->communicationStepSize = r.communicationstepsize();
+#endif
 
     if (hdf5Filename.length()) {
         //log outputs before doing anything
@@ -1156,7 +1298,11 @@ string Server::clientDataInner(const char *data, size_t size) {
     fmi2_status_t status = fmi2_status_ok;
     if (!m_sendDummyResponses) {
       // Step the FMU
+#if USE_DO_STEP_S == 1
+      status = fmi2_import_do_step(m_fmi2Instance, s->currentcommunicationpoint, s->communicationstepsize, newStep);
+#else
       status = fmi2_import_do_step(m_fmi2Instance, r.currentcommunicationpoint(), r.communicationstepsize(), newStep);
+#endif
       if (newStep) {
         m_timer.rotate("do_step");
       } else {
@@ -1164,7 +1310,11 @@ string Server::clientDataInner(const char *data, size_t size) {
       }
     }
 
+#if USE_3BYTE_STATUS_RES == 1
+    SERVER_NORMAL_3BYTE_RESPONSE(do_step);
+#else
     SERVER_NORMAL_RESPONSE(do_step);
+#endif
 
   break; } case fmitcp_proto::type_fmi2_import_cancel_step_req: {
 
@@ -1409,19 +1559,21 @@ bork:
     break; }
   }
 
-  if (ret.second == "error") {
-    fatal("error!: %i\n", ret.first);
-  }
-
   m_timer.rotate("other");
 
   if (sendResponse) {
     uint16_t t = ret.first;
     uint8_t bytes[2] = {(uint8_t)t, (uint8_t)(t>>8)};
+#if SERVER_CLIENTDATA_NO_STRING_RET == 1
+    string s = string(reinterpret_cast<char*>(bytes), 2) + ret.second;
+    fmitcp::serialize::packIntoCharVector(responseBuffer, s);
+  }
+#else
     return string(reinterpret_cast<char*>(bytes), 2) + ret.second;
   } else {
     return "";
   }
+#endif
 }
 
 void Server::sendDummyResponses(bool sendDummyResponses) {

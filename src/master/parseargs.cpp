@@ -141,7 +141,7 @@ struct Serial;
  * Since order doesn't matter for parallel execution groups we can collect FMU indices and serials neatly in this struct.
  */
 struct Parallel {
-    std::set<int> fmus;
+    fmitcp::int_set fmus;
     std::vector<Serial> serials;
 };
 
@@ -305,8 +305,8 @@ static void endElement(void *opaque, const XML_Char *name)
 }
 
 struct TraverseRet {
-    std::set<int> head;
-    std::set<int> tail;
+    fmitcp::int_set head;
+    fmitcp::int_set tail;
 };
 
 TraverseRet traverse(Serial s, std::vector<Rend> *rends, int parent_rend);

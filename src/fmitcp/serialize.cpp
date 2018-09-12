@@ -1,4 +1,5 @@
 #include "serialize.h"
+#include "fmitcp/fmitcp-common.h"
 #include <stdint.h>
 using namespace fmitcp_proto;
 using namespace std;
@@ -69,12 +70,24 @@ FMU_VOID_REQ_IMPL(fmi2_import_cancel_step)
 std::string fmitcp::serialize::fmi2_import_do_step(double currentCommunicationPoint,
                                                    double communicationStepSize,
                                                    bool newStep){
+#if USE_DO_STEP_S == 1
+    std::string str(2 + sizeof(do_step_s), 0);
+    str[0] = type_fmi2_import_do_step_req;
+    str[1] = type_fmi2_import_do_step_req >> 8;
+    do_step_s *s = (do_step_s*)&str[2];
+    s->currentcommunicationpoint = currentCommunicationPoint;
+    s->communicationstepsize = communicationStepSize;
+    s->newStep = newStep;
+
+    return str;
+#else
     fmi2_import_do_step_req req;
     req.set_currentcommunicationpoint(currentCommunicationPoint);
     req.set_communicationstepsize(communicationStepSize);
     req.set_newstep(newStep);
 
     return pack(type_fmi2_import_do_step_req, req);
+#endif
 }
 
 std::string fmitcp::serialize::fmi2_import_get_status(fmitcp_proto::fmi2_status_kind_t s){
@@ -173,6 +186,27 @@ std::string fmitcp::serialize::fmi2_import_set_debug_logging(bool loggingOn, con
 }
 
 std::string fmitcp::serialize::fmi2_import_set_real(const vector<int>& valueRefs, const vector<double>& values){
+#if USE_SET_REAL_S == 1
+    if (sizeof(int) != sizeof(fmi2_value_reference_t) ||
+        sizeof(double) != sizeof(fmi2_real_t)) {
+        fatal("int/double must be same size as fmi2_value_reference_t/fmi2_real_t\n");
+    }
+    if (valueRefs.size() != values.size()) {
+        fatal("valueRefs.size() != values.size()\n");
+    }
+
+    size_t n = valueRefs.size();
+    std::string str(2 + n * (sizeof(int) + sizeof(double)), 0);
+    int *vr =  (int*)&str[2];
+    double *value = (double*)&vr[n];
+
+    str[0] = type_fmi2_import_set_real_req & 0xFF;
+    str[1] = type_fmi2_import_set_real_req >> 8;
+    memcpy(vr, valueRefs.data(), n*sizeof(int));
+    memcpy(value, values.data(), n*sizeof(double));
+
+    return str;
+#else
     fmi2_import_set_real_req req;
     for(size_t i=0; i<valueRefs.size(); i++)
         req.add_valuereferences(valueRefs[i]);
@@ -180,6 +214,7 @@ std::string fmitcp::serialize::fmi2_import_set_real(const vector<int>& valueRefs
         req.add_values(values[i]);
 
     return pack(type_fmi2_import_set_real_req, req);
+#endif
 }
 
 std::string fmitcp::serialize::fmi2_import_set_integer(const vector<int>& valueRefs, const vector<int>& values){

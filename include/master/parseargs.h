@@ -9,6 +9,7 @@
 #include <map>
 #include <set>
 #include "common/CSV-parser.h"
+#include "fmitcp/fmitcp-common.h"
 
 namespace fmitcp_master {
 
@@ -64,10 +65,10 @@ fmi2_base_type_enu_t type_from_char(std::string type);
 class Rend {
 public:
     //FMUs that need to be done before this rend will trigger its children
-    std::set<int> parents;
+    fmitcp::int_set parents;
 
     //child FMUs that will be triggered
-    std::set<int> children;
+    fmitcp::int_set children;
 };
 
 std::string executionOrderToString(const std::vector<Rend>& rends);

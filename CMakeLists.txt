@@ -245,6 +245,7 @@ set(COMMON_HEADERS
     include/fmitcp/serialize.h
     include/fmitcp/Server.h
     include/common/timer.h
+    include/common/mpi_tools.h
 )
 
 SET(MASTER_SRCS
@@ -268,6 +269,9 @@ SET(MASTER_HEADERS
     include/master/WeakConnection.h
     include/master/WeakMasters.h
     include/master/modelExchange.h
+    include/master/BaseMaster.h
+    include/master/parseargs.h
+    include/master/StrongMaster.h
     include/common/common.h
     include/common/CSV-parser.h
     ${COMMON_HEADERS}
@@ -512,6 +516,9 @@ if (BUILD_FMUS)
 endif ()
 
 add_subdirectory(tools/ssp)
+
+add_executable(mpi-speed-test src/mpi-speed-test.cpp)
+install(TARGETS mpi-speed-test DESTINATION bin)
 
 # CPack setup
 set(CPACK_PACKAGE_NAME "fmigo")

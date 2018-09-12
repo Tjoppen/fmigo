@@ -37,6 +37,11 @@ namespace fmitcp {
     fmi2_status_t getDirectionalDerivatives(
         const fmitcp_proto::fmi2_import_get_directional_derivative_req& r,
         fmitcp_proto::fmi2_import_get_directional_derivative_res& response);
+
+    //the purpose of this vector is to minimize the amount of allocations that need to happen
+    //during every call to clientData()
+    vector<char> responseBuffer;
+
   protected:
     string m_fmuPath;
 
@@ -64,7 +69,17 @@ namespace fmitcp {
     std::vector<char> hdf5data; //this should be a map<int,vector<char>> once we start getting into having multiple FMU instances
     size_t rowsz, nrecords;
 
+private:
+    //avoid allocation
+    std::pair<fmitcp_proto::fmitcp_message_Type,std::string> ret;
+
+public:
+#if SERVER_CLIENTDATA_NO_STRING_RET == 1
+    //packs data into responseBuffer
+    void clientDataInner(const char *data, size_t size);
+#else
     std::string clientDataInner(const char *data, size_t size);
+#endif
 
   public:
 
@@ -80,9 +95,14 @@ namespace fmitcp {
     /// To be implemented in subclass
     virtual void onError(string message){};
 
+#if CLIENTDATA_NEW == 0
     //returns reply as std::string
     //if the string is empty then there was some kind of problem
     std::string clientData(const char *data, size_t size);
+#else
+    //if the char vector is empty then there was some kind of problem
+    const vector<char>& clientData(const char *data, size_t size);
+#endif
 
     /// Set to true to start ignoring the local FMU and just send back dummy responses. Good for debugging the protocol.
     void sendDummyResponses(bool);

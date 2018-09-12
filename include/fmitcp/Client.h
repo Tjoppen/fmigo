@@ -9,7 +9,7 @@
 #include <set>
 #include <unordered_map>
 #include <sstream>
-
+#include "fmitcp/fmitcp-common.h"
 
 using namespace std;
 
@@ -31,14 +31,20 @@ namespace fmitcp {
 
 #ifdef USE_MPI
         int world_rank;
+        std::string m_mpi_str;
 #else
     public:
         zmq::socket_t m_socket;
 #endif
 
-        std::ostringstream m_messageQueue;
+        std::vector<char> m_messageQueue;
 
         void clientDataInner(const char* data, size_t size);
+
+#ifdef GATHER_SIZES
+        //packet sizes
+        map<size_t,size_t> sizes_out, sizes_in;
+#endif
 
     public:
         int messages;
@@ -53,17 +59,51 @@ namespace fmitcp {
         std::unordered_map<int, std::string> m_strings;
 
         //set of VRs currently being requested
-        std::set<int>              m_outgoing_reals;
-        std::set<int>              m_outgoing_ints;
-        std::set<int>              m_outgoing_bools;
-        std::set<int>              m_outgoing_strings;
+        fmitcp::int_set              m_outgoing_reals;
+        fmitcp::int_set              m_outgoing_ints;
+        fmitcp::int_set              m_outgoing_bools;
+        fmitcp::int_set              m_outgoing_strings;
 
         //delete cached values
-        void deleteCachedValues();
+        void deleteCachedValues(void) {
+#ifdef DEBUG
+            //only bother with this in debug mode
+            //alternatively we could keep a "staleness" map around,
+            //marking all entries "true" in here and "false" when parsing
+            //type_fmi2_import_get_real_res and friends
+            m_reals.clear();
+            m_ints.clear();
+            m_bools.clear();
+            m_strings.clear();
+#endif
+        }
 
+#if DONT_FILTER_OUTGOING_VRS == 1
+        void queueReals(const vector<int>& vrs) {
+            //microoptimization, woo!
+            for (int vr : vrs) {
+                m_outgoing_reals.insert(vr);
+            }
+        }
+        void queueInts(const vector<int>& vrs) {
+            for (int vr : vrs) {
+                m_outgoing_ints.insert(vr);
+            }
+        }
+        void queueBools(const vector<int>& vrs) {
+            for (int vr : vrs) {
+                m_outgoing_bools.insert(vr);
+            }
+        }
+        void queueStrings(const vector<int>& vrs) {
+            for (int vr : vrs) {
+                m_outgoing_strings.insert(vr);
+            }
+        }
+#else
         template<typename T> void queueFoo(const vector<int>& vrs,
                                            const unordered_map<int,T>& values,
-                                           set<int>& outgoing) {
+                                           fmitcp::int_set& outgoing) {
           //only queue values which we haven't seen yet
           for (int vr : vrs) {
             auto it = values.find(vr);
@@ -85,6 +125,7 @@ namespace fmitcp {
         void queueStrings(const vector<int>& vrs) {
           queueFoo(vrs, m_strings, m_outgoing_strings);
         }
+#endif
 
         void queueValueRequests();
 
@@ -108,6 +149,8 @@ namespace fmitcp {
         //queue a message to be sent by sendQueuedMessages()
         //helps reduce the number of MPI_Send()s performed
         void queueMessage(const std::string& s);
+
+        void bumpPendingRequests(void);
 
         //sends queued messages, unsurprisingly
         void sendQueuedMessages();

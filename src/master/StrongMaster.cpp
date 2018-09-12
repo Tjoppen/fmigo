@@ -33,7 +33,7 @@ StrongMaster::StrongMaster(zmq::context_t &context, vector<FMIClient*> clients, 
 
     //populate clientrend
     //sanity check rends while we're at it - it should contain all client IDs in children and parents
-    set<int> children, parents;
+    fmitcp::int_set children, parents;
 
     clientrend.resize(m_clients.size());
     for (int i = 0; i < (int)rends.size(); i++) {
@@ -67,6 +67,20 @@ StrongMaster::StrongMaster(zmq::context_t &context, vector<FMIClient*> clients, 
 
     for (auto wc : m_weakConnections) {
         clientGetXs[wc.to->m_id][wc.from][wc.conn.fromType].push_back(wc.conn.fromOutputVR);
+        if (    wc.conn.fromType  == fmi2_base_type_real &&
+                wc.conn.toType    == fmi2_base_type_real &&
+                wc.conn.slope     == 1 &&
+                wc.conn.intercept == 0) {
+            //simple connection
+            simpleconnection sc;
+            sc.fromOutputVR = wc.conn.fromOutputVR;
+            sc.fromRealsPtr = &wc.from->m_reals;
+            m_simpleConnections[wc.to].push_back(sc);
+            m_simpleInputsVRs[wc.to].push_back(wc.conn.toInputVR);
+        } else {
+            //all other connections
+            m_complexConnections.push_back(wc);
+        }
     }
 }
 
@@ -100,6 +114,42 @@ void StrongMaster::prepare() {
     forces.resize(getNumForces());
 }
 
+void StrongMaster::initRefValues(const fmitcp::int_set& cset) {
+    //clear old values, avoid allocation
+    for (auto& a : m_refValues) {
+        //don't bother clear()ing what will be resize()d further down
+        if (!cset.count(a.first->m_id)) {
+            a.second.reals.clear();
+            a.second.real_vrs.clear();
+        }
+
+        a.second.ints.clear();
+        a.second.int_vrs.clear();
+        a.second.bools.clear();
+        a.second.bool_vrs.clear();
+        a.second.strings.clear();
+        a.second.string_vrs.clear();
+    }
+
+    for (const auto& p : m_simpleConnections) {
+        if (cset.count(p.first->m_id)) {
+            SendSetXType& ref = m_refValues[p.first];
+            if (ref.real_vrs.size() == 0) {
+                ref.real_vrs = m_simpleInputsVRs[p.first];
+            } else {
+                //just truncate
+                ref.real_vrs.resize(p.second.size());
+            }
+            ref.reals.resize(p.second.size());
+
+            for (size_t x = 0; x < p.second.size(); x++) {
+                const simpleconnection& s = p.second[x];
+                ref.reals[x] = (*s.fromRealsPtr)[s.fromOutputVR];
+            }
+        }
+    }
+}
+
 void StrongMaster::getDirectionalDerivative(fmitcp_proto::fmi2_kinematic_req& kin, const Vec3& seedVec, const vector<int>& accelerationRefs, const vector<int>& forceRefs) {
     fmitcp_proto::fmi2_import_get_directional_derivative_req* get_derivs = kin.add_get_derivs();
 
@@ -113,25 +163,23 @@ void StrongMaster::getDirectionalDerivative(fmitcp_proto::fmi2_kinematic_req& ki
 //"convenience" function for filling out setX entries in fmi2_kinematic_req
 template<typename T, typename set_x_req>
 void fill_kinematic_req(
-          const SendSetXType& it,
+          const vector<int>& vrs,
+          const vector<T>& values,
           fmitcp_proto::fmi2_kinematic_req& req,
-          fmi2_base_type_enu_t type,
-          set_x_req* (fmitcp_proto::fmi2_kinematic_req::*mutable_x)(),
-          T MultiValue::*member) {
-    if (it.count(type)) {
-        const pair<vector<int>, vector<MultiValue> > vrs_values = it.find(type)->second;
-        set_x_req* values = (req.*mutable_x)();
+          set_x_req* (fmitcp_proto::fmi2_kinematic_req::*mutable_x)()) {
+    if (values.size() > 0) {
+        set_x_req* pb_values = (req.*mutable_x)();
 
-        for (int vr : vrs_values.first) {
-            values->add_valuereferences(vr);
+        for (int vr : vrs) {
+            pb_values->add_valuereferences(vr);
         }
-        for (T value : vectorToBaseType(vrs_values.second, member)) {
-            values->add_values(value);
+        for (T value : values) {
+            pb_values->add_values(value);
         }
     }
 }
 
-void StrongMaster::crankIt(double t, double dt, const std::set<int>& target) {
+void StrongMaster::crankIt(double t, double dt, const fmitcp::int_set& target) {
     //crank system until open set contains target,
     //or until the end if target is empty
     debug("into  crankIt: %zu %zu %zu %zu\n", done.size(), open.size(), todo.size(), target.size());
@@ -141,11 +189,9 @@ void StrongMaster::crankIt(double t, double dt, const std::set<int>& target) {
         debug("      -crankIt: %zu %zu %zu %zu\n", done.size(), open.size(), todo.size(), target.size());
 
         //only step those which are not in the target set
-        set<int> toStep;
-        for (int id : open) {
-            if (target.count(id) == 0) {
-                toStep.insert(id);
-            }
+        fmitcp::int_set toStep = open;
+        for (int id : target) {
+            toStep.erase(id);
         }
 
         if (toStep.size() == 0) {
@@ -154,7 +200,7 @@ void StrongMaster::crankIt(double t, double dt, const std::set<int>& target) {
 
         //request inputs for the FMUs we're about to step
         for (int id : toStep) {
-            for (auto it : clientGetXs[id]) {
+            for (const auto& it : clientGetXs[id]) {
                 it.first->queueX(it.second);
             }
         }
@@ -163,12 +209,14 @@ void StrongMaster::crankIt(double t, double dt, const std::set<int>& target) {
         wait();
 
         //grab the values that we requested
-        InputRefsValuesType refValues = getInputWeakRefsAndValues(m_weakConnections, toStep);
+        initRefValues(toStep);
+        getInputWeakRefsAndValues(m_complexConnections, toStep, m_refValues);
 
         //distribute inputs, step
+        string do_step = fmi2_import_do_step(t, dt, true);
         for (int id : toStep) {
-            m_clients[id]->sendSetX(refValues[m_clients[id]]);
-            queueMessage(m_clients[id], fmi2_import_do_step(t, dt, true));
+            m_clients[id]->sendSetX(m_refValues[m_clients[id]]);
+            queueMessage(m_clients[id], do_step);
         }
 
         //all cached values are now bork
@@ -179,8 +227,8 @@ void StrongMaster::crankIt(double t, double dt, const std::set<int>& target) {
     debug(" out  crankIt: %zu %zu %zu %zu\n", done.size(), open.size(), todo.size(), target.size());
 }
 
-void StrongMaster::moveCranked(std::set<int> cranked) {
-    set<int> triggered_rends;
+void StrongMaster::moveCranked(const fmitcp::int_set& cranked) {
+    fmitcp::int_set triggered_rends;
     for (int id : cranked) {
         //poke the corresponding rend
         int v = --counters[clientrend[id]];
@@ -229,7 +277,8 @@ void StrongMaster::stepKinematicFmus(double t, double dt) {
     //disentangle received values for set_real() further down (before do_step())
     //we shouldn't set_real() for these until we've gotten directional derivatives
     //this sets StrongMaster apart from the weak masters
-    InputRefsValuesType refValues = getInputWeakRefsAndValues(m_weakConnections, open);
+    initRefValues(open);
+    getInputWeakRefsAndValues(m_complexConnections, open, m_refValues);
 
     vector<fmitcp_proto::fmi2_kinematic_req> kin(open.size(), fmitcp_proto::fmi2_kinematic_req());
     vector<int> kin_ofs(open.size(), 0);  //current offset into derivs
@@ -239,11 +288,11 @@ void StrongMaster::stepKinematicFmus(double t, double dt) {
     int kini = 0;
     for (int id : open) {
         id2kin[id] = kini;
-        SendSetXType it = refValues[m_clients[id]];
-        fill_kinematic_req(it, kin[kini], fmi2_base_type_real, &fmitcp_proto::fmi2_kinematic_req::mutable_reals,   &MultiValue::r);
-        fill_kinematic_req(it, kin[kini], fmi2_base_type_int,  &fmitcp_proto::fmi2_kinematic_req::mutable_ints,    &MultiValue::i);
-        fill_kinematic_req(it, kin[kini], fmi2_base_type_bool, &fmitcp_proto::fmi2_kinematic_req::mutable_bools,   &MultiValue::b);
-        fill_kinematic_req(it, kin[kini], fmi2_base_type_str,  &fmitcp_proto::fmi2_kinematic_req::mutable_strings, &MultiValue::s);
+        const SendSetXType& it = m_refValues[m_clients[id]];
+        fill_kinematic_req(it.real_vrs,   it.reals,   kin[kini], &fmitcp_proto::fmi2_kinematic_req::mutable_reals);
+        fill_kinematic_req(it.int_vrs,    it.ints,    kin[kini], &fmitcp_proto::fmi2_kinematic_req::mutable_ints);
+        fill_kinematic_req(it.bool_vrs,   it.bools,   kin[kini], &fmitcp_proto::fmi2_kinematic_req::mutable_bools);
+        fill_kinematic_req(it.string_vrs, it.strings, kin[kini], &fmitcp_proto::fmi2_kinematic_req::mutable_strings);
         kini++;
     }
 
@@ -450,8 +499,9 @@ void StrongMaster::stepKinematicFmus(double t, double dt) {
     //do_step() makes values old
     deleteCachedValues(true, open);
 
-    //pass open by value so a copy happens
-    moveCranked(open);
+    //copy open explicitly, since moveCranked modifies open
+    fmitcp::int_set open_copy = open;
+    moveCranked(open_copy);
 }
 
 void StrongMaster::runIteration(double t, double dt) {
@@ -479,7 +529,7 @@ void StrongMaster::runIteration(double t, double dt) {
         stepKinematicFmus(t, dt);
 
         //crank the rest of the system
-        crankIt(t, dt, set<int>());
+        crankIt(t, dt, fmitcp::int_set());
     } else if (todo.size() > 0) {
         //probably broken execution order XML parsing if we got here
         fatal("open.size() == 0 but todo.size() == %i\n", (int)todo.size());
@@ -487,7 +537,7 @@ void StrongMaster::runIteration(double t, double dt) {
 
     //pre-fetch values for next step
     for (int id : rends[0].children) {
-        for (auto it : clientGetXs[id]) {
+        for (const auto& it : clientGetXs[id]) {
             it.first->queueX(it.second);
         }
     }

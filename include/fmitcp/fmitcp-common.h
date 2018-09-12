@@ -12,6 +12,7 @@
 //for HDF5 output
 #include <hdf5.h>
 #include <hdf5_hl.h>
+#include <unordered_set>
 
 using namespace std;
 namespace fmitcp {
@@ -58,6 +59,31 @@ namespace fmitcp {
       }
       return (fmitcp_proto::fmitcp_message_Type)t;
   }
+
+#define CLIENTDATA_NEW 1
+#define USE_DO_STEP_S 1
+#define USE_SET_REAL_S 1
+#define USE_GET_REAL_S 1
+#define USE_3BYTE_STATUS_RES 1
+#define USE_GET_REAL_RES_S 1
+#define SERVER_CLIENTDATA_NO_STRING_RET 1
+
+//don't bother checking if a value was already requested?
+//this is of dubious utility
+//tests show it's sometimes faster, sometimes slower
+#ifdef DEBUG
+#define DONT_FILTER_OUTGOING_VRS 0
+#else
+#define DONT_FILTER_OUTGOING_VRS 1
+#endif
+
+    typedef std::unordered_set<int> int_set;
+
+    struct do_step_s {
+        double currentcommunicationpoint;
+        double communicationstepsize;
+        bool newStep;
+    };
 }
 
 #endif

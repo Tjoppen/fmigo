@@ -332,29 +332,20 @@ const std::vector<int>& FMIClient::getStrongConnectorValueReferences() const {
 };
 
 void FMIClient::sendSetX(const SendSetXType& typeRefsValues) {
-    for (auto it = typeRefsValues.begin(); it != typeRefsValues.end(); it++) {
-        if (it->second.first.size() != it->second.second.size()) {
-            fatal("VR-values count mismatch - something is wrong\n");
-        }
+    if (typeRefsValues.reals.size() > 0) {
+        queueMessage(fmi2_import_set_real   (typeRefsValues.real_vrs,   typeRefsValues.reals));
+    }
 
-        if (it->second.first.size() > 0) {
-            switch (it->first) {
-            case fmi2_base_type_real:
-                queueMessage(fmi2_import_set_real   (it->second.first, vectorToBaseType(it->second.second, &MultiValue::r)));
-                break;
-            case fmi2_base_type_int:
-                queueMessage(fmi2_import_set_integer(it->second.first, vectorToBaseType(it->second.second, &MultiValue::i)));
-                break;
-            case fmi2_base_type_bool:
-                queueMessage(fmi2_import_set_boolean(it->second.first, vectorToBaseType(it->second.second, &MultiValue::b)));
-                break;
-            case fmi2_base_type_str:
-                queueMessage(fmi2_import_set_string (it->second.first, vectorToBaseType(it->second.second, &MultiValue::s)));
-                break;
-            case fmi2_base_type_enum:
-                fatal("fmi2_base_type_enum snuck its way into FMIClient::sendSetX() somehow\n");
-            }
-        }
+    if (typeRefsValues.ints.size() > 0) {
+        queueMessage(fmi2_import_set_integer(typeRefsValues.int_vrs,    typeRefsValues.ints));
+    }
+
+    if (typeRefsValues.bools.size() > 0) {
+        queueMessage(fmi2_import_set_boolean(typeRefsValues.bool_vrs,   typeRefsValues.bools));
+    }
+
+    if (typeRefsValues.strings.size() > 0) {
+        queueMessage(fmi2_import_set_string (typeRefsValues.string_vrs, typeRefsValues.strings));
     }
 }
 //send(it->first, fmi2_import_set_real(0, 0, it->second.first, it->second.second));

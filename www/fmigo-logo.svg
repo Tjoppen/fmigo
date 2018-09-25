@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="20.455759mm"
+   height="7.2679367mm"
+   viewBox="0 0 20.455759 7.2679367"
+   version="1.1"
+   id="svg8"
+   inkscape:version="0.92.3 (2405546, 2018-03-11)"
+   sodipodi:docname="fmigo-logo.svg">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="2.1460526"
+     inkscape:cx="37.346146"
+     inkscape:cy="47.857541"
+     inkscape:document-units="mm"
+     inkscape:current-layer="g4576"
+     showgrid="false"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     inkscape:window-width="1427"
+     inkscape:window-height="1092"
+     inkscape:window-x="0"
+     inkscape:window-y="63"
+     inkscape:window-maximized="0" />
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+        <cc:license
+           rdf:resource="http://creativecommons.org/publicdomain/zero/1.0/" />
+      </cc:Work>
+      <cc:License
+         rdf:about="http://creativecommons.org/publicdomain/zero/1.0/">
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Reproduction" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Distribution" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#DerivativeWorks" />
+      </cc:License>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Base"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-22.200015,-64.269371)" />
+  <g
+     id="g3739"
+     inkscape:groupmode="layer"
+     inkscape:label="Base copy"
+     transform="translate(-22.200015,-64.269371)">
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:125%;font-family:Uroob;-inkscape-font-specification:Uroob;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="22.191906"
+       y="71.382278"
+       id="text4562"><tspan
+         sodipodi:role="line"
+         id="tspan4560"
+         x="22.191906"
+         y="71.382278"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Uroob;-inkscape-font-specification:Uroob;stroke-width:0.26458332px">FMIGo!</tspan></text>
+  </g>
+  <g
+     inkscape:label="Base copy copy"
+     inkscape:groupmode="layer"
+     id="g4576"
+     transform="translate(-22.200015,-64.269371)">
+    <text
+       id="text4574"
+       y="70.889122"
+       x="21.698753"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:125%;font-family:Uroob;-inkscape-font-specification:Uroob;letter-spacing:0px;word-spacing:0px;fill:#00b9ff;fill-opacity:1;stroke:none;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       xml:space="preserve"><tspan
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Uroob;-inkscape-font-specification:Uroob;fill:#00b9ff;fill-opacity:1;stroke-width:0.26458332px"
+         y="70.889122"
+         x="21.698753"
+         id="tspan4572"
+         sodipodi:role="line">FMIGo!</tspan></text>
+  </g>
+</svg>

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>FMIGo!</title>
+  </head>
+  <body style="margin:0 auto;padding:0.5em;max-width:50em">
+    <header style="center">
+      <div style="text-align:center">
+        <img src="fmigo-logo-plain.svg" width="50%" alt="FMIGo logo"/>
+      </div>
+    </header>
+    <nav>
+      <h1>Navigation</h1>
+      <ul>
+        <li><a href="#intro">Introduction</a></li>
+        <li><a href="#fmi">Why FMI?</a></li>
+        <li><a href="#fmigo">Why FMIGo?</a></li>
+        <li><a href="#limitations">Limitations</a></li>
+        <li><a href="#intro">Introduction</a></li>
+      </ul>
+    </nav>
+    <section>
+      <h1 id="intro">Introduction</h1>
+      <p>
+        <i>FMIGo</i> is a set of Free Software tools aimed at the
+        <a href="https://fmi-standard.org">Functional Mockup Interface (FMI) standard</a>.
+        FMI is a standard for packaging simulations into .zip files called Functional Mockup Units (FMUs).
+        Each FMU contains an XML file describing the system contained within,
+        and a set of binaries, data and possibly source code.
+        What FMIGo does is provide a backend for running such FMUs,
+        across one or more computers, using TCP/IP (ZeroMQ) or MPI for communication.
+      </p>
+      <h1 id="fmi">Why FMI?</h1>
+      <p>
+        One of the reasons FMI exists is so different simulation authoring tools can output a single standardized format.
+        For example
+        <a href="http://www.mscsoftware.com/product/adams">MSC ADAMS</a>,
+        <a href="https://www.mathworks.com/products/simulink.html">Simulink</a> and
+        <a href="https://www.algoryx.se/products/agx-dynamics/">AGX Dynamics</a> all support FMI output.
+        This means they can all be executed by tools like
+        <a href="https://pypi.org/project/PyFMI/">PyFMI</a>,
+        <a href="https://sourcesup.renater.fr/daccosim/pages/About.html">DACCOSIM</a>
+        or FMIGo.
+      </p>
+      <p>
+        It is also possible to create FMUs outside the tools mentioned above,
+        using for example
+        <a href="https://www.qtronic.de/en/fmusdk.html">QTronic's FMU SDK</a>,
+        which is licensed under the
+        <a href="http://www.opensource.org/licenses/bsd-license.html">BSD license</a>.
+      </p>
+    </section>
+    <section>
+      <h1 id="fmigo">Why FMIGo?</h1>
+      <p>
+        FMIGo 
+        <ul>
+          <li>Networked architecture allows connecting simulations that must run on separate physical machines due to licensing constraints</li>
+          <li>Ability to solve algebraic loops in initialization mode, if linked with the GNU Scientific Library (GSL) (see <a href="#license">license</a>)</li>
+          <li></li>
+          <li></li>
+        </ul>
+      </p>
+    </section>
+    <section>
+      <h1 id="limitations">Limitations</h1>
+      <p>
+        FMIGo is not for everything, so here we will list some limitations of the system:
+      </p>
+      <ul>
+        <li>
+          The overhead between steps (message packing, communication, distributing values) is roughly 120 µs
+          on an Intel® Core™ i7-860 processor with 8 threads running at 2.8 GHz.
+          This is typically an issue for systems that need to run at 1 kHz or faster,
+          such as hardware-in-the-loop (HIL) robotics systems.
+        </li>
+        <li>
+          FMIGo has very little in the form of authoring tools.
+          If you need a GUI you 
+        </li>
+      </ul>
+    </section>
+    <section>
+      <h1>How?</h1>
+      <p>
+        In order for FMIGo to be of much use,
+        you must pick some method of coupling your simulations.
+        For physical systems FMIGo provides the
+        <!-- http://umu.diva-portal.org/smash/record.jsf?pid=diva2%3A140361&dswid=-8713 -->
+        <a href="SPOOK.pdf">SPOOK solver by Claude Lacoursière</a>.
+        Another option is to use the NEPCE method developed by Edo Drenth.
+      </p>
+      <p>
+        This site will only go over the gist of how to use the programs.
+        Extensive invocation details are available in <a href="https://mimmi.math.umu.se/cosimulation/fmigo/blob/master/doc/fmigo.pdf">the manual</a>.
+      </p>
+    </section>
+    <section>
+      <h1 id="license">License</h1>
+      <p>
+        FMIGo itself is licensed under the <a href="https://en.wikipedia.org/wiki/MIT_License">MIT license</a>.
+        <a href="https://www.gnu.org/software/gsl/">GNU Scientific Library version (GSL)</a> is licensed under the
+        <a href="https://www.gnu.org/licenses/gpl.html">GNU General Public License version 3 (GPLv3)</a>,
+        and is required for FMIGo to be able to solve algebraic loops during initialization.
+        The user therefore has the choice of two license options:
+        enable loop solving (GPL, default) or disable loop solving (MIT).
+        To build without GPL, you must give cmake the option <i>-DUSE_GPL=OFF</i>.
+      </p>
+      <p>
+        For future version we may consider other license options.
+        In order to guarantee that improvements to FMIGo are never locked away behind a cloud
+        we may opt for something that fills the gap between the GPL and the
+        <a href="https://www.gnu.org/licenses/agpl-3.0.en.html">GNU Affero General Public License (AGPL)</a>.
+        Our current reading of the latter is that it is somewhat too 
+      </p>
+    </section>
+    <section>
+      <h1>Downloads</h1>
+      <p>
+        We do not maintain any builds currently,
+      </p>
+      <h2>Source code</h2>
+      <p>
+        The source code is currently hosted at
+        <a href="https://mimmi.math.umu.se/cosimulation/fmigo">mimmi.math.umu.se</a>.
+        Anonymous access is possible via Git over HTTPS:
+      </p>
+      <pre style="padding:0.5em;background:#ddd;border:1px solid #000">git clone https://mimmi.math.umu.se/cosimulation/fmigo.git</pre>
+      <p>
+        We do not maintain any builds.
+      </p>
+    </section>
+    <section>
+      <h1>News</h1>
+      <h2>2018-09-25</h2>
+      <p>Did the site</p>
+    </section>
+    <section>
+      <h1>Links</h1>
+      <ul>
+        <li><a href="https://www.modelica.org/projects">System Structure and Parameterization of Components for Virtual System Design (SSP) (modelica.org)</a></li>
+      </ul>
+    </section>
+    <section>
+      <h1>References</h1>
+      <ul>
+        <li>
+          Claude Lacoursière,
+          Tomas Härdin (2017).
+          <i>FMI Go! A simulation runtime environment with a client server architecture over multiple protocols</i>.
+          Proceedings of the 12th International Modelica Conference, Prague, Czech Republic, May 15-17, 2017,
+          pp. 653-662.
+          DOI 10.3384/ecp17132653.
+          <a href="https://www.modelica.org/events/modelica2017/proceedings/html/submissions/ecp17132653_LacoursiereHardin.pdf">
+          https://www.modelica.org/events/modelica2017/proceedings/html/submissions/ecp17132653_LacoursiereHardin.pdf</a>,
+          fetched 2018-09-25. <a href="ecp17132653_LacoursiereHardin.pdf">Mirror</a>.
+        </li>
+        <li>
+          Claude Lacoursière (2007).
+          <i>Ghosts and Machines: Regularized Variational Methods for Interactive Simulations of Multibodies with Dry Frictional Contacts</i>.
+          PhD thesis. Dept. of Computing Science, Umeå University.
+          URN: urn:nbn:se:umu:diva-1143.
+          ISBN: 978-91-7264-333-8.
+          <a href="http://umu.diva-portal.org/smash/get/diva2:140361/FULLTEXT01.pdf">http://umu.diva-portal.org/smash/get/diva2:140361/FULLTEXT01.pdf</a>,
+          fetched 2018-09-25.
+          <a href="SPOOK.pdf">Mirror</a>.
+        </li>
+      </ul>
+    </section>
+    <footer>
+    </footer>
+  </body>
+</html>
+

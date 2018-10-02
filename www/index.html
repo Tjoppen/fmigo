@@ -70,10 +70,12 @@
       </p>
       <ul>
         <li>
-          The overhead between steps (message packing, communication, distributing values) is roughly 120 µs
-          on an Intel® Core™ i7-860 processor with 8 threads running at 2.8 GHz.
-          This is typically an issue for systems that need to run at 1 kHz or faster,
+          The overhead between steps (message packing, communication, distributing values) is 54 µs
+          on an Intel® Core™ i7-860 processor with 8 threads running at 2.8 GHz,
+          on a test with 7 FMUs using MPI, not using kinematic coupling.
+          This may be an issue for systems that need to run at 1 kHz or faster,
           such as hardware-in-the-loop (HIL) robotics systems.
+          Using kinematic coupling brings the overhead up to 146 µs, again using 7 FMUs and MPI.
         </li>
         <li>
           FMIGo has very little in the form of authoring tools.

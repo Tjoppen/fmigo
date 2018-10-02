@@ -1,6 +1,7 @@
 #include <mpi.h>
 #include <memory.h>
 #include <string>
+#include <sys/time.h>
 
 //#define USE_ISEND //using MPI_Send() is actually faster on granular
 
@@ -22,6 +23,25 @@ static void mpi_recv_string(int world_rank_in, int *world_rank_out, int *tag, st
 
     if (world_rank_out) *world_rank_out = status.MPI_SOURCE;
     if (tag)            *tag            = status.MPI_TAG;
+}
+
+static void delay(int us) {
+    timeval tv, tv2;
+    gettimeofday(&tv, NULL);
+
+    tv.tv_usec = tv.tv_usec + us;
+    if (tv.tv_usec > 1000000) {
+        tv.tv_usec -= 1000000;
+        tv.tv_sec++;
+    }
+
+    for (;;) {
+        gettimeofday(&tv2, NULL);
+        if (tv2.tv_usec >= tv.tv_usec &&
+            tv2.tv_sec  >= tv.tv_sec) {
+            break;
+        }
+    }
 }
 
 int main(int argc, char *argv[]) {
@@ -60,6 +80,13 @@ int main(int argc, char *argv[]) {
 
     if (world_size != 8) {
         fprintf(stderr, "world_size %i != 8, results may be inaccurate\n", world_size);
+    }
+
+    //fake delays in microseconds
+    int fake_master = 0, fake_server = 0;
+    if (argc >= 3) {
+        fake_master = atoi(argv[1]);
+        fake_server = atoi(argv[2]);
     }
 
     //max of all packet sizes
@@ -116,6 +143,8 @@ int main(int argc, char *argv[]) {
             }
 #endif
 
+            delay(fake_master);
+
             pingpongs++;
             if (--sizes_out[out_ofs][1] == 0) {
                 out_ofs++;
@@ -131,6 +160,10 @@ int main(int argc, char *argv[]) {
             //fprintf(stderr, "server recv %i\n", world_rank);
             mpi_recv_string(0, &rank, &tag, recv_str);
             //fprintf(stderr, "server recv %i, %zu B\n", world_rank, recv_str.length());
+
+            //fake calculations
+            delay(fake_server);
+
             memset(data, in_ofs, sizes_in[in_ofs][0]);
             MPI_Send(data, sizes_in[in_ofs][0], MPI_CHAR, 0, 0, MPI_COMM_WORLD);
 

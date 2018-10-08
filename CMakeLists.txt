@@ -518,6 +518,11 @@ endif ()
 add_subdirectory(tools/ssp)
 
 add_executable(mpi-speed-test src/mpi-speed-test.cpp)
+if (NOT WIN32)
+    # OpenMPI on trusty won't compile with -std=c++11 or later
+    # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=796985
+    set_target_properties(mpi-speed-test PROPERTIES COMPILE_FLAGS -std=c++03)
+endif ()
 install(TARGETS mpi-speed-test DESTINATION bin)
 
 # CPack setup

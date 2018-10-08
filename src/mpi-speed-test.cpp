@@ -2,6 +2,7 @@
 #include <memory.h>
 #include <string>
 #include <sys/time.h>
+#include <stdlib.h>
 
 //#define USE_ISEND //using MPI_Send() is actually faster on granular
 

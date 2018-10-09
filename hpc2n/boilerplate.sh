@@ -1,9 +1,5 @@
 ml purge
-# GCC, Intel MPI and traceanalyzer
-#ml load gimpi/2018b itac/2018.1.017
-# cmake won't work if compiled with gimpi/2018b, with this error:
-# /usr/lib/x86_64-linux-gnu/libstdc++.so.6: version `GLIBCXX_3.4.22' not found (required by ./cmake)
-ml load gimpi/2017b itac/2018.1.017
+ml load gimpi/2017b itac/2017.3.030
 
 export PREFIX=/pfs/nobackup/home/t/thardin/local
 alias python=$PREFIX/bin/python3

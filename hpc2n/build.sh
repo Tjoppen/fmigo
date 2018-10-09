@@ -1,26 +1,15 @@
+# To build this you'll want to put this and boilerplate.sh one level above the fmigo directory
+# and also download the dependencies that each step uses and put them in appropriate directories.
+# The second part hasn't been automated yet.
+# An earlier version of this script would download and build cmake, but version 3.5.1 is fine.
+
 set -e
 
-#source boilerplate.sh
+# Separated out so we can bring the required variables
+# into the shell when fiddling with the build.
+source boilerplate.sh
 
-if false
-then
-	wget https://github.com/protocolbuffers/protobuf/releases/download/v3.6.1/protobuf-all-3.6.1.tar.gz
-fi
-
-
-if false
-then
-	pushd cmake
-	rm -rf cmake-3.12.2
-	tar xfvz cmake-3.12.2.tar.gz
-	cd cmake-3.12.2
-	./bootstrap --prefix=$PREFIX
-	make -j12
-	make install
-	popd
-fi
-
-if false
+if true
 then
 	pushd zmq
 	rm -rf zeromq-4.2.3
@@ -32,7 +21,7 @@ then
 	popd
 fi
 
-if false
+if true
 then
 	pushd protobuf
 	rm -rf protobuf-3.6.1
@@ -44,12 +33,8 @@ then
 	popd
 fi
 
-if false
+if true
 then
-	#pushd cpython
-	#rm -rf cpython-master
-	#unzip cpython-master.zip
-	#cd cpython-master
 	pushd python
 	rm -rf Python-3.7.0
 	tar xfvJ Python-3.7.0.tar.xz
@@ -63,7 +48,7 @@ then
 	popd
 fi
 
-if false
+if true
 then
 	pushd pip
 	python3 get-pip.py --prefix $PREFIX
@@ -78,11 +63,11 @@ then
 	rm -rf build
 	mkdir build
 	cd build
-	cmake .. -DCMAKE_CXX_FLAGS="-I$PREFIX/include" -DCMAKE_C_FLAGS="-I$PREFIX/include" -DCMAKE_EXE_LINKER_FLAGS="-L$PREFIX/lib" -DCMAKE_INSTALL_PREFIX=$PREFIX
+	cmake .. -DCMAKE_CXX_FLAGS="-I$PREFIX/include" -DCMAKE_C_FLAGS="-I$PREFIX/include" -DCMAKE_EXE_LINKER_FLAGS="-L$PREFIX/lib" -DCMAKE_INSTALL_PREFIX=$PREFIX -DUSE_TRACEANALYZER=ON
+	# call cmake a second time to tell it not to add any "impi" stuff to the link commands
+	cmake .. -DMPI_CXX_LIBRARIES="" -DMPI_C_LIBRARIES="" -DMPI_CXX_LINK_FLAGS="" -DMPI_C_LINK_FLAGS="" -DMPI_EXTRA_LIBRARY=""
 	make -j12
 	make install
-	# fmigo-mpi will have references to "impi" in its link command. mpi-speed-test does not.
-	# making fmigo-mpi dump traces requires manually editing the impi stuff out, for now
 	popd
 fi
 

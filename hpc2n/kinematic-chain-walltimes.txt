@@ -1,0 +1,20 @@
+t-an01 [~/pfs/local/src/fmigo/tests/umit-fmus/tests/perftest]$ for d in 6 12 24 48 96 192 200 220 240 255 256 260 300 310 320 330 384 768; do echo $d $(grep real fmigo-kinematic-N$d/*.out); done
+6 real 0m4.906s
+12 real 0m7.517s
+24 real 0m14.049s
+48 real 0m29.287s
+96 real 0m45.746s
+192 real 1m34.484s
+200 real 1m40.349s
+220 real 1m53.541s
+240 real 2m1.644s
+255 real 2m12.839s
+256 real 2m11.019s
+260 real 2m17.556s
+300 real 3m26.166s
+310 real 3m44.828s
+320 real 3m50.597s
+330 real 3m52.501s
+340 real 4m3.008s
+384 real 5m14.487s
+768 real 14m4.736s

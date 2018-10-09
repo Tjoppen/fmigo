@@ -1,7 +1,7 @@
 ml purge
 ml load gimpi/2017b itac/2017.3.030
 
-export PREFIX=/pfs/nobackup/home/t/thardin/local
+export PREFIX=$(pwd)/../build/local
 alias python=$PREFIX/bin/python3
 export PATH=$PREFIX/bin:$PATH
 export MANPATH=$PREFIX/man:$MANPATH:

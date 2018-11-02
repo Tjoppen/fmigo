@@ -13,6 +13,9 @@
     td {
       padding: 5px;
     }
+    .ra {
+      text-align: right;
+    }
     pre {
       padding:0.5em;background:#ddd;border:1px solid #000;overflow:auto;
     }
@@ -27,7 +30,7 @@
           <source type="image/png" media="(max-width: 968px)" srcset="fmigo-logo-600dpi.png" />
           <source type="image/png" srcset="fmigo-logo-1200dpi.png" />
           <!-- It seems Firefox will never pick the SVG, and putting image/svg+xml among the sources will make the logo not render with svg.disabled=true -->
-          <img src="fmigo-logo-plain.svg" width="50%" alt="FMIGo! logo"/>
+          <img src="fmigo-logo-plain.svg" style="width:50%" alt="FMIGo! logo"/>
         </picture>
       </div>
     </header>
@@ -118,33 +121,33 @@
       <p>
         As mentioned in the introduction, FMIGo! is a set of tools for dealing with the FMI standard.
         The main components are:
+      </p>
         <table>
           <tr>
-            <td align="right"><nobr><i>fmigo-mpi</i></nobr><br/><nobr><i>fmigo-master</i></nobr><br/><nobr><i>fmigo-server</i></nobr></td>
+            <td class="ra"><i>fmigo&#8209;mpi</i><br/><i>fmigo&#8209;master</i><br/><i>fmigo&#8209;server</i></td>
             <td>Execution backend</td>
           </tr>
           <tr>
-            <td align="right"><nobr><i>ssp-launcher.py</i></nobr></td>
+            <td class="ra"><i>ssp&#8209;launcher.py</i></td>
             <td>Python script for parsing and launching SSPs</td>
           </tr>
           <tr>
-            <td align="right"><i>pygo</i></td>
+            <td class="ra"><i>pygo</i></td>
             <td>Python library for abstracting and connecting FMUs, and for dealing with output data from the execution backend</td>
           </tr>
           <tr>
-            <td align="right"><i>wrapper</i></td>
+            <td class="ra"><i>wrapper</i></td>
             <td>A set of CMake and Python scripts plus C code for converting ModelExchange FMUs to Co-Simulation FMUs</td>
           </tr>
           <tr>
-            <td align="right"><i>cgsl</i></td>
+            <td class="ra"><i>cgsl</i></td>
             <td>Small library simplifying how we deal with the GNU Scientific Library (GSL)</td>
           </tr>
         </table>
-      </p>
-      <h2>Execution backend (fmigo-*)</h2>
+      <h2>Execution backend (fmigo&#8209;*)</h2>
       <p>
-        The execution backend consists of two sets of binaries: <nobr>fmigo-mpi</nobr> and <nobr>fmigo-master</nobr>/<nobr>fmigo-server</nobr>.
-        <nobr>fmigo-mpi</nobr> is used when communication over MPI is desired, <nobr>fmigo-master</nobr> and <nobr>fmigo-server</nobr> are used when TCP/IP (ZeroMQ) communication is desired.
+        The execution backend consists of two sets of binaries: fmigo&#8209;mpi and fmigo&#8209;master/fmigo&#8209;server.
+        fmigo&#8209;mpi is used when communication over MPI is desired, fmigo&#8209;master and fmigo&#8209;server are used when TCP/IP (ZeroMQ) communication is desired.
       </p>
       <p>
         The backend has the following properties:
@@ -208,15 +211,15 @@
         In the above example, some output column names might be <i>fmu0_theta1</i> and <i>fmu1_angle2</i>.
       </p>
 
-      <h2>ssp-launcher.py</h2>
+      <h2>ssp&#8209;launcher.py</h2>
       <p>
-        ssp-launcher.py is used for launching SSPs.
+        ssp&#8209;launcher.py is used for launching SSPs.
         It supports enough of the SSP standard for our purposes,
         plus our extensions listed in <i>tools/ssp/FmiGo.xsd</i>.
       </p>
-      <h3>Using ssp-launcher.py</h3>
+      <h3>Using ssp&#8209;launcher.py</h3>
       <p>
-        Ensure that the fmigo-* executables are in your $PATH, and invoke ssp-launcher.py on your SSP:
+        Ensure that the fmigo&#8209;* executables are in your $PATH, and invoke ssp&#8209;launcher.py on your SSP:
       </p>
       <pre>$ python ssp-launcher.py foo.ssp</pre>
       <p>
@@ -406,8 +409,6 @@
         </li>
       </ul>
     </section>
-    <footer>
-    </footer>
   </body>
 </html>
 

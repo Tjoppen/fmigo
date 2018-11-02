@@ -781,6 +781,11 @@ void fmitcp_master::parseArguments( int argc,
 #else
             printf("USE_GPL=0\n");
 #endif
+#ifdef USE_MATIO
+            printf("USE_MATIO=1\n");
+#else
+            printf("USE_MATIO=0\n");
+#endif
             exit(0);
 
         case 'E':

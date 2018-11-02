@@ -49,6 +49,7 @@ else ()
     set(MATIO_DEFAULT OFF)
 endif ()
 option(USE_MATIO "Enable Matlab output via libmatio?" ${MATIO_DEFAULT})
+option(USE_TRACEANALYZER "Add instrumentation for Intel Traceanalyzer?" OFF)
 
 set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/install)
 
@@ -518,7 +519,18 @@ endif ()
 add_subdirectory(tools/ssp)
 
 add_executable(mpi-speed-test src/mpi-speed-test.cpp)
+if (NOT WIN32)
+    # OpenMPI on trusty won't compile with -std=c++11 or later
+    # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=796985
+    set_target_properties(mpi-speed-test PROPERTIES COMPILE_FLAGS -std=c++03)
+endif ()
 install(TARGETS mpi-speed-test DESTINATION bin)
+
+if (USE_TRACEANALYZER)
+    set_target_properties(mpi-speed-test PROPERTIES LINK_FLAGS -trace)
+    set_target_properties(${MPI_MASTER_NAME} PROPERTIES LINK_FLAGS -trace)
+endif ()
+
 
 # CPack setup
 set(CPACK_PACKAGE_NAME "fmigo")

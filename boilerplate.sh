@@ -21,3 +21,6 @@ else
     ulimit -c unlimited
     ulimit -n 2048  #should be some value greater than 2*max(Nseq), probably a power of two too
 fi
+
+# Grab configuration, for figuring if we have GPL enabled or not
+for e in $(fmigo-mpi -e); do export "$e"; done

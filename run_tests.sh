@@ -2,9 +2,6 @@
 set -e
 source boilerplate.sh
 
-# Grab configuration, for figuring if we have GPL enabled or not
-for e in $(fmigo-mpi -e); do export "$e"; done
-
 if [ $USE_GPL -eq 1 ]
 then
   (cd tests/umit-fmus/me              && ( ./test_me.sh ||  ( echo "failed modelExchange" && exit 1 ) ) )

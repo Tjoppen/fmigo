@@ -1,0 +1,11 @@
+Like kinematic-chain-walltimes but no traceanalyzer instrumentation -> fast!
+
+t-an01 [~/pfs/local/src/fmigo/tests/umit-fmus/tests/perftest]$ for d in 6 12 24 48 96 192 384 768; do echo $d $(grep real noninstrumented-fmigo-kinematic-N$d/*.out); done
+6 real 0m2.999s
+12 real 0m4.355s
+24 real 0m8.386s
+48 real 0m17.200s
+96 real 0m31.659s
+192 real 1m2.680s
+384 real 2m33.075s
+768 real 7m42.266s

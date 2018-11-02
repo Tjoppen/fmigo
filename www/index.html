@@ -3,6 +3,20 @@
   <head>
     <meta charset="utf-8" />
     <title>FMIGo!</title>
+    <style>
+    h1 { font-size: 2em; }
+    h2 { font-size: 1.5em; }
+    h3 { font-size: 1.17em; }
+    table, th, td {
+      border: 1px solid black;
+    }
+    td {
+      padding: 5px;
+    }
+    pre {
+      padding:0.5em;background:#ddd;border:1px solid #000;overflow:auto;
+    }
+    </style>
   </head>
   <body style="margin:0 auto;padding:0.5em;max-width:50em">
     <header>
@@ -12,7 +26,8 @@
           <source type="image/png" media="(max-width: 484px)" srcset="fmigo-logo-300dpi.png" />
           <source type="image/png" media="(max-width: 968px)" srcset="fmigo-logo-600dpi.png" />
           <source type="image/png" srcset="fmigo-logo-1200dpi.png" />
-          <img src="fmigo-logo-plain.svg" width="50%" alt="FMIGo logo"/>
+          <!-- It seems Firefox will never pick the SVG, and putting image/svg+xml among the sources will make the logo not render with svg.disabled=true -->
+          <img src="fmigo-logo-plain.svg" width="50%" alt="FMIGo! logo"/>
         </picture>
       </div>
     </header>
@@ -21,25 +36,40 @@
       <ul>
         <li><a href="#intro">Introduction</a></li>
         <li><a href="#fmi">Why FMI?</a></li>
-        <li><a href="#fmigo">Why FMIGo?</a></li>
+        <li><a href="#ssp">Why SSP?</a></li>
+        <li><a href="#fmigo">What is FMIGo‽</a></li>
         <li><a href="#limitations">Limitations</a></li>
-        <li><a href="#intro">Introduction</a></li>
+        <li><a href="#sec">Security considerations</a></li>
+        <li><a href="#license">License</a></li>
+        <li><a href="#source">Source code</a></li>
+        <li><a href="#news">News</a></li>
+        <li><a href="#contact">Contact</a></li>
+        <li><a href="#links">Links</a></li>
+        <li><a href="#refs">References</a></li>
       </ul>
     </nav>
     <section>
       <h1 id="intro">Introduction</h1>
       <p>
-        <i>FMIGo</i> is a set of Free Software tools aimed at the
+        <i>FMIGo!</i> is a set of Free Software tools aimed at the
         <a href="https://fmi-standard.org">Functional Mockup Interface (FMI) standard</a>.
         FMI is a standard for packaging simulations into .zip files called Functional Mockup Units (FMUs).
         Each FMU contains an XML file describing the system contained within,
         and a set of binaries, data and possibly source code.
-        What FMIGo does is provide a backend for running such FMUs,
-        across one or more computers, using TCP/IP (ZeroMQ) or MPI for communication.
       </p>
+      <p>
+        What FMIGo! does is provide a backend for running FMUs,
+        across one or more computers, using TCP/IP (ZeroMQ) or MPI for communication.
+        It also provides some tools for generating FMUs,
+        tools for dealing with the backend's output data,
+        and a tool for running one or more FMUs packaged into so-called SSPs
+        (.zip files conforming to the <a href="https://www.modelica.org/projects">System Structure and Parameterization of Components for Virtual System Design</a> standard).
+      </p>
+    </section>
+    <section>
       <h1 id="fmi">Why FMI?</h1>
       <p>
-        One of the reasons FMI exists is so different simulation authoring tools can output a single standardized format.
+        One of the reasons FMI exists is so that different simulation authoring tools can output a single standardized format.
         For example
         <a href="http://www.mscsoftware.com/product/adams">MSC ADAMS</a>,
         <a href="https://www.mathworks.com/products/simulink.html">Simulink</a> and
@@ -47,111 +77,310 @@
         This means they can all be executed by tools like
         <a href="https://pypi.org/project/PyFMI/">PyFMI</a>,
         <a href="https://sourcesup.renater.fr/daccosim/pages/About.html">DACCOSIM</a>
-        or FMIGo.
+        or FMIGo!.
       </p>
       <p>
-        It is also possible to create FMUs outside the tools mentioned above,
+        It is possible to create FMUs outside the tools mentioned above,
         using for example
         <a href="https://www.qtronic.de/en/fmusdk.html">QTronic's FMU SDK</a>,
         which is licensed under the
         <a href="http://www.opensource.org/licenses/bsd-license.html">BSD license</a>.
       </p>
+      <p>
+        If co-simulating two or more FMUs, one must typically arrange for some kind of coupling between the FMUs.
+        Not all FMI tools do this, instead relying on FMU authors having sufficient know-how.
+      </p>
     </section>
     <section>
-      <h1 id="fmigo">Why FMIGo?</h1>
+      <h1 id="ssp">Why SSP?</h1>
       <p>
-        FMIGo 
+        When dealing with FMUs and their parameters,
+        it is convenient to package them into a ready-to-execute form.
+        <a href="https://www.modelica.org/projects">SSP</a> provides a way to do such packaging.
+        SSP is also useful for archiving simulations,
+        preventing bit-rot.
+      </p>
+      <p>
+        SSP also provides a way to rename connectors to/from FMUs.
+        This is very useful when dealing with FMUs coming from different teams or companies,
+        who will often use different naming conventions and units on inputs and outputs.
+      </p>
+      <p>
+        Finally, SSP is extensible.
+        Vendors can provide extra features in various ways,
+        and provide XML schemas for these extensions.
+        FMIGo! uses this property to make it possible to mark up 1-dimensional kinematic constraints between FMUs,
+        and for providing program arguments to the execution backend.
+      </p>
+    </section>
+    <section>
+      <h1 id="fmigo">What is FMIGo‽</h1>
+      <p>
+        As mentioned in the introduction, FMIGo! is a set of tools for dealing with the FMI standard.
+        The main components are:
+        <table>
+          <tr>
+            <td align="right"><nobr><i>fmigo-mpi</i></nobr><br/><nobr><i>fmigo-master</i></nobr><br/><nobr><i>fmigo-server</i></nobr></td>
+            <td>Execution backend</td>
+          </tr>
+          <tr>
+            <td align="right"><nobr><i>ssp-launcher.py</i></nobr></td>
+            <td>Python script for parsing and launching SSPs</td>
+          </tr>
+          <tr>
+            <td align="right"><i>pygo</i></td>
+            <td>Python library for abstracting and connecting FMUs, and for dealing with output data from the execution backend</td>
+          </tr>
+          <tr>
+            <td align="right"><i>wrapper</i></td>
+            <td>A set of CMake and Python scripts plus C code for converting ModelExchange FMUs to Co-Simulation FMUs</td>
+          </tr>
+          <tr>
+            <td align="right"><i>cgsl</i></td>
+            <td>Small library simplifying how we deal with the GNU Scientific Library (GSL)</td>
+          </tr>
+        </table>
+      </p>
+      <h2>Execution backend (fmigo-*)</h2>
+      <p>
+        The execution backend consists of two sets of binaries: <nobr>fmigo-mpi</nobr> and <nobr>fmigo-master</nobr>/<nobr>fmigo-server</nobr>.
+        <nobr>fmigo-mpi</nobr> is used when communication over MPI is desired, <nobr>fmigo-master</nobr> and <nobr>fmigo-server</nobr> are used when TCP/IP (ZeroMQ) communication is desired.
+      </p>
+      <p>
+        The backend has the following properties:
+      </p>
         <ul>
+          <li>Written mostly in C++14</li>
           <li>Networked architecture allows connecting simulations that must run on separate physical machines due to licensing constraints</li>
-          <li>Ability to solve algebraic loops in initialization mode, if linked with the GNU Scientific Library (GSL) (see <a href="#license">license</a>)</li>
-          <li></li>
-          <li></li>
+          <li>Ability to solve algebraic loops in initialization mode, if linked with the GNU Scientific Library (see <a href="#license">license</a>)</li>
+          <li>Various kinematic constraints (shaft, ball joint, lock, hinge etc.), assuming all involved FMUs have the required features</li>
+          <li>Ability to compute numerical directional derivatives for FMUs lacking that functionality</li>
+          <li>Ability to specify execution order, for Gauss-Seidel stepping. Not strictly allowed in the FMI standard since values must be exchanged at matching communication points, but useful in some cases</li>
         </ul>
+      <h3>Using the execution backend</h3>
+      <p>
+        First off, a word of advice: if you only have a single FMU, you are probably better off using simpler tools such as PyFMI.
+        The primary purpose of FMIGo! is to make it possible to connect two or more FMUs and have such combinations
+        run with reasonable performance without numerically blowing up.
+        With that said we can go on with the rest of this section:
+      </p>
+      <p>
+        In order for FMIGo! to be of much use,
+        you must pick some method of coupling your simulations.
+        For physical systems FMIGo! provides the
+        <!-- http://umu.diva-portal.org/smash/record.jsf?pid=diva2%3A140361&dswid=-8713 -->
+        <a href="SPOOK.pdf">SPOOK solver by Claude Lacoursière</a>.
+        Another option is to use the NEPCE method developed by Edo Drenth,
+        which involves adding sinc² filters to FMU outputs and adding striff springs+dampers to relevant inputs.
+        Some of that work can be automated using our ME→CS FMU wrapper tool.
+        Using special purpose solvers may also be necessary, such as exponential integrators.
+        FMIGo! does not provide this, unless GSL does.
+        On to the example:
+      </p>
+      <p>
+        You have two FMUs, <i>fmu0.fmu</i> and <i>fmu1.fmu</i>, that you wish to connect with a shaft constraint.
+        By default, shaft constraints are holonomic, meaning the solver will try to keep both angles and angular velocities together.
+        The solver (master) expects to be given references to angle outputs, angular velocity outputs, angular acceleration outputs, and torque inputs.
+        It also expects to be able to request the the partial derivative of angular acceleration wrt torque (mobility aka inverse mass or inverse moment of inertia).
+        Finally, the FMUs must have save/restore functionality (fmi2GetFMUState and friends).
+      </p>
+      <p>
+        If fmu0.fmu has variables outputs theta1, omega1, alpha1 and tau1,
+        and fmu1.fmu has angle2, angularVelocity2, angularAcceleration2, torque2,
+        then the invocation is:
+      </p>
+      <pre>$ mpiexec -n 3 fmigo-mpi fmu0.fmu fmu1.fmu \
+    -C shaft,0,1,\
+        theta1,omega1,alpha1,tau1,\
+        angle2,angularVelocity2,angularAcceleration2,torque2</pre>
+      <p>
+        The -n option to mpiexec must be the number of FMUs plus one.
+      </p>
+      <p>
+        Other kinematic constraints are also possible,
+        such as lock constraints, ball constraints and multiway constraints.
+        See <a href="https://mimmi.math.umu.se/cosimulation/fmigo/blob/master/doc/fmigo.pdf">the manual</a> for more information about these, and other invocation details.
+      </p>
+      <p>
+        The output of the backend can be CSV (comma separated values, default), SSV (space separated values) or Matlab .mat files.
+        Column names are "fmu%i_%s" where %i is the FMU ID (zero-based) and %s is the name of the relevant output variable.
+        Only the variables listed in &lt;Outputs&gt; in <i>modelDescription.xml</i> will end up in the output data.
+        In the above example, some output column names might be <i>fmu0_theta1</i> and <i>fmu1_angle2</i>.
+      </p>
+
+      <h2>ssp-launcher.py</h2>
+      <p>
+        ssp-launcher.py is used for launching SSPs.
+        It supports enough of the SSP standard for our purposes,
+        plus our extensions listed in <i>tools/ssp/FmiGo.xsd</i>.
+      </p>
+      <h3>Using ssp-launcher.py</h3>
+      <p>
+        Ensure that the fmigo-* executables are in your $PATH, and invoke ssp-launcher.py on your SSP:
+      </p>
+      <pre>$ python ssp-launcher.py foo.ssp</pre>
+      <p>
+        Output format is CSV by default.
+      </p>
+
+      <h2>pygo</h2>
+      <p>
+        pygo consits of some Python classes for abstracting and connecting FMUs (a bit like SSP),
+        and code for converting the output of the backend to HDF5 format.
+        <a href="#contact">Claude</a> knows more.
+      </p>
+
+      <h2>wrapper</h2>
+      <p>
+        The wrapper converts ModelExchange FMUs to Co-Simulation FMUs by adding an ODE solver,
+        partial derivatives and optional sinc² filters suitable for NEPCE coupling.
+      </p>
+      <p>
+        Example invocation, converting ME.fmu into CS.fmu in Release mode:
+      </p>
+      <pre>$ python wrapper.py -t Release ME.fmu CS.fmu</pre>
+      <p>
+        Invoke <i>python wrapper.py --help</i> for full help.
+        The resulting FMUs are subject to the <a href="https://www.gnu.org/licenses/gpl.html">GNU General Public License version 3 (GPLv3)</a>.
+      </p>
+
+      <h2>cgsl</h2>
+      <p>
+        cgsl is used as a convenience library for us, but may be of use for other people.
+        Check out <i>tools/csgl/demo</i> in the source code for an example.
       </p>
     </section>
     <section>
       <h1 id="limitations">Limitations</h1>
+      <h2>Overhead</h2>
       <p>
-        FMIGo is not for everything, so here we will list some limitations of the system:
+        There is some overhead between simulation steps due to message packing,
+        communication, factoring matrices and computing which values go where.
+        This overhead increases linearly with the number of FMUs,
+        and is higher when using kinematic coupling (SPOOK) compared to weak coupling (such as NEPCE).
+
+        This may be an issue for systems that need to run at 1 kHz or faster,
+        such as robotics or other hardware-in-the-loop (HIL) systems.
+      <p>
+        On an Intel® Core™ i7-860 processor with 8 threads running at 2.8 GHz
+        and a system with 7 FMUs we get the following overheads per step:
+        146 µs when using kinematic coupling, 54 µs when using weak coupling.
+        Keep in mind that kinematic coupling allows the system to take much larger simulation time steps,
+        which results in overall better performance for many systems.
       </p>
-      <ul>
-        <li>
-          The overhead between steps (message packing, communication, distributing values) is 54 µs
-          on an Intel® Core™ i7-860 processor with 8 threads running at 2.8 GHz,
-          on a test with 7 FMUs using MPI, not using kinematic coupling.
-          This may be an issue for systems that need to run at 1 kHz or faster,
-          such as hardware-in-the-loop (HIL) robotics systems.
-          Using kinematic coupling brings the overhead up to 146 µs, again using 7 FMUs and MPI.
-        </li>
-        <li>
-          FMIGo has very little in the form of authoring tools.
-          If you need a GUI you 
-        </li>
-      </ul>
+      <h2>Authoring tools</h2>
+      <p>
+        FMIGo! has very little in the form of authoring tools.
+        There are some command-line tools to make FMU authoring a bit easier,
+        but it is still a bit awkward.
+        We felt that developing GUI tools was outside the scope of this project.
+        There are commercial endeavours in this direction,
+        especially in the context of SSP.
+      </p>
     </section>
     <section>
-      <h1>How?</h1>
+      <h1 id="sec">Security considerations</h1>
       <p>
-        In order for FMIGo to be of much use,
-        you must pick some method of coupling your simulations.
-        For physical systems FMIGo provides the
-        <!-- http://umu.diva-portal.org/smash/record.jsf?pid=diva2%3A140361&dswid=-8713 -->
-        <a href="SPOOK.pdf">SPOOK solver by Claude Lacoursière</a>.
-        Another option is to use the NEPCE method developed by Edo Drenth.
+        The FMIGo! tools assume that the underlying infrastructure can be trusted.
+        Specifically, we do nothing to deal with the following issues:
       </p>
+      <ul>
+        <li>Malicious FMUs</li>
+        <li>Malicious data being injected into the backend traffic</li>
+        <li>Malicious NTP servers</li>
+        <li>Malicious DNS servers</li>
+        <li>Other malicious things</li>
+      </ul>
       <p>
-        This site will only go over the gist of how to use the programs.
-        Extensive invocation details are available in <a href="https://mimmi.math.umu.se/cosimulation/fmigo/blob/master/doc/fmigo.pdf">the manual</a>.
+        In other words, if you intend to connect FMIGo! to the Internet,
+        and possibly accept and execute FMUs from the wild,
+        then you should jail and firewall the entire backend.
+        The ZeroMQ control port is somewhat safe,
+        since it is only used for pausing/unpausing simulations and retreiving results.
+        This assumes both protobuf and ZeroMQ have been thoroughly tested and are immune to malicious input.
+        As always, no warranty is provided by us if something goes horribly wrong on your end.
       </p>
     </section>
     <section>
       <h1 id="license">License</h1>
       <p>
-        FMIGo itself is licensed under the <a href="https://en.wikipedia.org/wiki/MIT_License">MIT license</a>.
-        <a href="https://www.gnu.org/software/gsl/">GNU Scientific Library version (GSL)</a> is licensed under the
+        FMIGo! itself is licensed under the <a href="https://en.wikipedia.org/wiki/MIT_License">MIT license</a>.
+        The <a href="https://www.gnu.org/software/gsl/">GNU Scientific Library (GSL)</a> is licensed under the
         <a href="https://www.gnu.org/licenses/gpl.html">GNU General Public License version 3 (GPLv3)</a>,
-        and is required for FMIGo to be able to solve algebraic loops during initialization.
+        and is required for FMIGo! to be able to solve algebraic loops during initialization.
         The user therefore has the choice of two license options:
         enable loop solving (GPL, default) or disable loop solving (MIT).
         To build without GPL, you must give cmake the option <i>-DUSE_GPL=OFF</i>.
+        GSL is also required for wrapping ME FMUs into CS FMUs.
       </p>
       <p>
-        For future version we may consider other license options.
-        In order to guarantee that improvements to FMIGo are never locked away behind a cloud
+        For future versions we may consider other license options.
+        In order to guarantee that improvements to FMIGo! are never locked away behind a cloud
         we may opt for something that fills the gap between the GPL and the
         <a href="https://www.gnu.org/licenses/agpl-3.0.en.html">GNU Affero General Public License (AGPL)</a>.
-        Our current reading of the latter is that it is somewhat too 
+        Our current reading of the AGPL is that it is too strict for our needs.
       </p>
     </section>
     <section>
-      <h1>Downloads</h1>
-      <p>
-        We do not maintain any builds currently,
-      </p>
-      <h2>Source code</h2>
+      <h1 id="source">Source code</h1>
       <p>
         The source code is currently hosted at
         <a href="https://mimmi.math.umu.se/cosimulation/fmigo">mimmi.math.umu.se</a>.
         Anonymous access is possible via Git over HTTPS:
       </p>
-      <pre style="padding:0.5em;background:#ddd;border:1px solid #000">git clone https://mimmi.math.umu.se/cosimulation/fmigo.git</pre>
+      <pre>git clone https://mimmi.math.umu.se/cosimulation/fmigo.git</pre>
       <p>
-        We do not maintain any builds.
+        The code is built periodically via Jenkins and GitLab CI, for the following x86 platforms:
+      </p>
+      <ul>
+        <li>Windows 7 or later (Visual Studio 2015)</li>
+        <li>Ubuntu 14.04 LTS (Trusty Tahr)</li>
+        <li>Ubuntu 16.04 LTS (Xenial Xerus)</li>
+      </ul>
+      <p>
+        GSL (and thus loop solving) is currently disabled for 64-bit Windows builds.
+        The reason for this is the lack of decent package managers on that platform.
+        For now we are relying on a 32-bit manual build of GSL for Windows,
+        which has not been reproduced due to much headache.
+      </p>
+      <p>
+        Some users have successfully built the system on Arch Linux, and on Mac OS X.
+      </p>
+      <p>
+        We do not provide any official builds for download currently.
       </p>
     </section>
     <section>
-      <h1>News</h1>
-      <h2>2018-09-25</h2>
-      <p>Did the site</p>
+      <h1 id="news">News</h1>
+      <h2>2018-11-02</h2>
+      <p>First draft of the site published.</p>
     </section>
     <section>
-      <h1>Links</h1>
+      <h1 id="contact">Contact</h1>
+      <table>
+        <tr><th>What?</th><th>Who?</th><th>E-mail</th></tr>
+        <tr>
+          <td>Math, pygo and Arch questions</td>
+          <td>Claude Lacoursière</td>
+          <td>claude at hpc2n.umu.se</td>
+        </tr>
+        <tr>
+          <td>Most questions about the code</td>
+          <td>Tomas Härdin</td>
+          <td>tomas.hardin at umu.se</td>
+        </tr>
+      </table>
+    </section>
+    <section>
+      <h1 id="links">Links</h1>
       <ul>
-        <li><a href="https://www.modelica.org/projects">System Structure and Parameterization of Components for Virtual System Design (SSP) (modelica.org)</a></li>
+        <li>FMI: <a href="https://fmi-standard.org">Functional Mockup Interface standard</a></li>
+        <li>SSP: <a href="https://www.modelica.org/projects">System Structure and Parameterization of Components for Virtual System Design</a></li>
+        <li>GSL: <a href="https://www.gnu.org/software/gsl/">GNU Scientific Library</a></li>
       </ul>
     </section>
     <section>
-      <h1>References</h1>
+      <h1 id="refs">References</h1>
       <ul>
         <li>
           Claude Lacoursière,

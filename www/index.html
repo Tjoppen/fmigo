@@ -5,9 +5,15 @@
     <title>FMIGo!</title>
   </head>
   <body style="margin:0 auto;padding:0.5em;max-width:50em">
-    <header style="center">
+    <header>
       <div style="text-align:center">
-        <img src="fmigo-logo-plain.svg" width="50%" alt="FMIGo logo"/>
+        <picture>
+          <source type="image/png" media="(max-width: 242px)" srcset="fmigo-logo-150dpi.png" />
+          <source type="image/png" media="(max-width: 484px)" srcset="fmigo-logo-300dpi.png" />
+          <source type="image/png" media="(max-width: 968px)" srcset="fmigo-logo-600dpi.png" />
+          <source type="image/png" srcset="fmigo-logo-1200dpi.png" />
+          <img src="fmigo-logo-plain.svg" width="50%" alt="FMIGo logo"/>
+        </picture>
       </div>
     </header>
     <nav>

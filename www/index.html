@@ -174,7 +174,7 @@
         <!-- http://umu.diva-portal.org/smash/record.jsf?pid=diva2%3A140361&dswid=-8713 -->
         <a href="SPOOK.pdf">SPOOK solver by Claude Lacoursière</a>.
         Another option is to use the NEPCE method developed by Edo Drenth,
-        which involves adding sinc² filters to FMU outputs and adding striff springs+dampers to relevant inputs.
+        which involves adding sinc² filters to FMU outputs and adding stiff springs+dampers to relevant inputs.
         Some of that work can be automated using our ME→CS FMU wrapper tool.
         Using special purpose solvers may also be necessary, such as exponential integrators.
         FMIGo! does not provide this, unless GSL does.
@@ -272,6 +272,24 @@
         Keep in mind that kinematic coupling allows the system to take much larger simulation time steps,
         which results in overall better performance for many systems.
       </p>
+      <h2>MPI world size / backend network shape</h2>
+      <p>
+        At the moment the size of the MPI world must be the number of FMUs plus one.
+        This because each server only serves a single FMU, and the master is its own node.
+        The situation is similar when using TCP/IP (ZMQ) communication.
+      </p>
+      <p>
+        This MPI world / network shape increases overhead compared to using OpenMP
+        or pthreads for communicating between FMUs running on the same CPU.
+        Ideally the world size would be exactly the same as the ideal number of CPUs required
+        for running all FMUs plus the solver.
+        Getting that right is somewhat complicated,
+        which is why we've left it out for now.
+      </p>
+      <p>
+        Going to a federated system is perhaps an even better way to deal with this problem.
+        This is something we have in mind for a potential continuation of the project.
+      </p>
       <h2>Authoring tools</h2>
       <p>
         FMIGo! has very little in the form of authoring tools.
@@ -358,6 +376,7 @@
       <h1 id="news">News</h1>
       <h2>2018-11-07</h2>
       <p>Domain fmigo.net registered, site published at <a href="http://www.fmigo.net/">http://www.fmigo.net/</a>.</p>
+      <p>Added a subsection on MPI world size.</p>
       <h2>2018-11-02</h2>
       <p>First draft of the site published.</p>
     </section>

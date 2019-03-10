@@ -1,0 +1,65 @@
+FROM ubuntu:bionic
+RUN apt-get update
+
+# Tell tzdata installer that we're in Europe first, then fix it up to be Europe/Stockholm
+# echo -e "8\n49" doesn't work for some reason..
+RUN echo 8 | apt-get install --yes tzdata
+RUN echo Europe/Stockholm > /etc/timezone
+RUN dpkg-reconfigure -f noninteractive tzdata
+
+#
+# Some notes on the packages installed here where it may not be obvious why
+# they are installed:
+#
+#  build-essential: for gcc
+#              git: for being able to fetch submodules, since gitlab doesn't
+#                   do this for us yet
+#           psmisc: for killall
+#       python-dev: for pip to build psutil
+#      libxml2-dev: for lxml
+#     libxstl1-dev: for lxml
+#
+RUN apt-get install --yes \
+        build-essential cmake ninja-build git python bc psmisc \
+        protobuf-compiler protobuf-c-compiler libprotobuf-dev \
+        libsuitesparse-dev libzmqpp-dev libhdf5-dev \
+        libopenmpi-dev libgsl-dev clang valgrind \
+        python-pip python-dev libxml2-dev libxslt1-dev ccache
+RUN apt-get install -y python-numpy python-scipy python-matplotlib
+RUN apt-get install -y python3-pip libmatio-dev
+
+#
+# Create user, since mpiexec doesn't like to run as root
+#
+RUN useradd -ms /bin/bash gitlab-ci
+
+# Copy code into image
+RUN  mkdir              /home/gitlab-ci/umit
+COPY .                  /home/gitlab-ci/umit
+RUN  chown -R gitlab-ci /home/gitlab-ci/umit
+
+# Install python requirements
+WORKDIR /home/gitlab-ci/umit
+RUN pip2 install -r Buildstuff/requirements.txt
+RUN pip3 install -r Buildstuff/requirements.txt
+
+# Finally, make us run as gitlab-ci
+USER gitlab-ci
+WORKDIR /home/gitlab-ci/umit
+RUN export PATH=/usr/lib/ccache:$PATH
+
+# docker doesn't copy empty directories for some reason
+RUN mkdir 3rdparty/FMILibrary-2.0.1/ThirdParty/Expat/expat-2.1.0/src
+RUN mkdir build
+RUN mkdir build-clang
+WORKDIR /home/gitlab-ci/umit/build
+# First build without libmatio, then run another build with it enabled
+RUN cmake .. -G Ninja -DUSE_MATIO=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+RUN ninja install
+RUN cmake .. -G Ninja -DUSE_MATIO=ON  -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+RUN ninja install
+WORKDIR /home/gitlab-ci/umit/build-clang
+RUN cmake .. -G Ninja -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DUSE_MATIO=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+RUN ninja install
+RUN cmake .. -G Ninja -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DUSE_MATIO=ON  -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+RUN ninja install

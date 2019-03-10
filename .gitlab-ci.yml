@@ -34,6 +34,20 @@ build:xenial-fsanitize:
   tags:
     - shell
 
+build:bionic:
+  stage: build
+  script:
+    - docker build -t umit/bionic:$(git rev-parse HEAD)            -f Buildstuff/Dockerfile.bionic            .
+  tags:
+    - shell
+
+build:stretch:
+  stage: build
+  script:
+    - docker build -t umit/stretch:$(git rev-parse HEAD)           -f Buildstuff/Dockerfile.stretch           .
+  tags:
+    - shell
+
 test:trusty:
   stage: test
   script:
@@ -76,3 +90,21 @@ test:xenial:
 #    - build:xenial-fsanitize
 #  tags:
 #    - shell
+
+test:bionic:
+  stage: test
+  script:
+    - docker run --workdir /home/gitlab-ci/umit umit/bionic:$(git rev-parse HEAD)            bash run_tests.sh
+  dependencies:
+    - build:bionic
+  tags:
+    - shell
+
+test:stretch:
+  stage: test
+  script:
+    - docker run --workdir /home/gitlab-ci/umit umit/stretch:$(git rev-parse HEAD)           bash run_tests.sh
+  dependencies:
+    - build:stretch
+  tags:
+    - shell

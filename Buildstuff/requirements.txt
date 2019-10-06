@@ -1,4 +1,4 @@
 psutil>=2.2.1
-lxml>=3.3.3
+lxml>=3.3.3,<4.4
 pyzmq>=16.0.2
 protobuf>=3.4.0

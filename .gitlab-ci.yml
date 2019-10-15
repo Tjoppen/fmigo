@@ -48,6 +48,13 @@ build:stretch:
   tags:
     - shell
 
+build:buster:
+  stage: build
+  script:
+    - docker build -t umit/buster:$(git rev-parse HEAD)            -f Buildstuff/Dockerfile.buster            .
+  tags:
+    - shell
+
 test:trusty:
   stage: test
   script:
@@ -106,5 +113,14 @@ test:stretch:
     - docker run --workdir /home/gitlab-ci/umit umit/stretch:$(git rev-parse HEAD)           bash run_tests.sh
   dependencies:
     - build:stretch
+  tags:
+    - shell
+
+test:buster:
+  stage: test
+  script:
+    - docker run --workdir /home/gitlab-ci/umit umit/buster:$(git rev-parse HEAD)            bash run_tests.sh
+  dependencies:
+    - build:buster
   tags:
     - shell

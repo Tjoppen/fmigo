@@ -119,7 +119,7 @@ test:stretch:
 test:buster:
   stage: test
   script:
-    - docker run --workdir /home/gitlab-ci/umit umit/buster:$(git rev-parse HEAD)            bash run_tests.sh
+    - docker run --env OMPI_MCA_rmaps_base_oversubscribe=1 --workdir /home/gitlab-ci/umit umit/buster:$(git rev-parse HEAD) bash run_tests.sh
   dependencies:
     - build:buster
   tags:

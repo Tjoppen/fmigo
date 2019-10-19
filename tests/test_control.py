@@ -15,7 +15,7 @@ fmu = os.path.join(FMUS_DIR, 'tests/typeconvtest/typeconvtest.fmu')
 print('ZMQ control + pause test')
 
 # Have timestep close to duration, to test that we only delay *between* steps
-t_end = 0.7
+t_end = 3.0
 dt = 0.1
 
 control_port = 5555

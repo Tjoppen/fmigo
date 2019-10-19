@@ -88,7 +88,7 @@ def fun(t, z, force, i):
   zz = matrix(z).transpose()
   ftot = Finternal*zz
   if not force is None:
-    ftot += force
+    ftot += force.astype(ftot.dtype)
   return matrix(diag([1,1] + splitms[(i*2):(i*2+2)]))**-1 * ftot
 
 def fun0(t, z, force):
@@ -109,7 +109,7 @@ def fun3(t, z, force):
   zz = matrix(z).transpose()
   ftot = Finternal*zz
   if not force is None:
-    ftot += force
+    ftot += force.astype(ftot.dtype)
   return matrix(diag([1, splitms[6]]))**-1 * ftot
 
 # Permutes so we get all seven positions in a row, and all seven velocities after that

@@ -387,19 +387,7 @@ data = {
   "npps" : [], 
   "hs" : hs}
 
-# MS-MPI and mpich both handle oversubscribe, but openmpi doesn't
-# The following tries to detect OpenMPI by looking for "OpenRTE" in
-# the output of mpiexec --version
 cmdline_start = ['mpiexec']
-try:
-  v = subprocess.check_output(['mpiexec','--version']).decode('utf-8')
-  if 'OpenRTE' in v:
-    # Tested with mpiexec (OpenRTE) 1.10.2
-    # This is what's in Ubuntu xenial at the moment
-    cmdline_start = ['mpiexec', '-oversubscribe']
-except subprocess.CalledProcessError:
-  # MS-MPI doesn't have --version
-  pass
 
 for npp in npps:
  data["npps"].append(npp)

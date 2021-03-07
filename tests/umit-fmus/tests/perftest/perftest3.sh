@@ -10,14 +10,14 @@ FMU=${FMUS_DIR}/gsl/clutch/clutch.fmu
 FMUS="$FMU"
 CONNS=
 
-for i in $(seq 0 $(python <<< "print($N - 2)"))
+for i in $(seq 0 $(python3 <<< "print($N - 2)"))
 do
-  ip1=$(python <<< "print($i + 1)")
+  ip1=$(python3 <<< "print($i + 1)")
   CONNS="$CONNS -C shaft,$i,$ip1,x_s,v_s,a_s,force_in_s,x_e,v_e,a_e,force_in_e"
   FMUS="$FMUS $FMU"
 done
 
-echo $(python <<< "print($N - 1)") kinematic connections
+echo $(python3 <<< "print($N - 1)") kinematic connections
 
 # Walltime test
 # 100k steps
@@ -27,7 +27,7 @@ then
   #for x in `seq 1 11`
   #do
    # 100k steps
-   time mpirun -np $(python <<< "print($N + 1)") ../../../../buildi/fmigo-mpi -t 1 -d 0.0001 -f none -l 2 -a - $FMUS <<< "$CONNS"
+   time ${MPIEXEC} -np $(python3 <<< "print($N + 1)") ../../../../buildi/fmigo-mpi -t 1 -d 0.0001 -f none -l 2 -a - $FMUS <<< "$CONNS"
   #done
   #) 2>&1 | grep real | sort
 fi
@@ -39,7 +39,7 @@ then
   URIS=
   for j in $(seq 1 $N)
   do
-    PORT=$(python <<< "print(1023 + $j)")
+    PORT=$(python3 <<< "print(1023 + $j)")
     if [ $j -eq 1 ]
     then
         valgrind --tool=callgrind --callgrind-out-file=fmigo-server-2.callgrind fmigo-server -p $PORT $EXTRA -l 4 $FMU &
@@ -64,7 +64,7 @@ then
    # real 0m41,211s
    for x in `seq 1 5`
    do
-   time perf record -a -F 5000 -g -- mpiexec -np $(python <<< "print($N + 1)") fmigo-mpi -t 10 -d 0.0005 -f none -a - $FMUS <<< "$CONNS"
+   time perf record -a -F 5000 -g -- ${MPIEXEC} -np $(python3 <<< "print($N + 1)") fmigo-mpi -t 10 -d 0.0005 -f none -a - $FMUS <<< "$CONNS"
    done
    perf script | ~/FlameGraph/stackcollapse-perf.pl > out.perf-folded-2
    #~/FlameGraph/flamegraph.pl out.perf-folded-2 > perf-fmigo-mpi.svg
@@ -72,4 +72,4 @@ then
 fi
 
 #echo mpi-speed-test comparison:
-#time mpiexec -np $(python <<< "print($N + 1)") mpi-speed-test
+#time ${MPIEXEC} -np $(python3 <<< "print($N + 1)") mpi-speed-test

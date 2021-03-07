@@ -3,8 +3,7 @@
 # For some reason there isn't a convenient command for running
 # all jobs in the proper order (build -> test), hence this script.
 set -e
-for t in xenial trusty trusty-cmake3.5.0 bionic stretch buster
+for t in buster focal stretch bionic
 do
-  gitlab-ci-multi-runner exec shell build:$t && gitlab-ci-multi-runner exec shell test:$t || exit $?
+  gitlab-ci-multi-runner exec shell build:$t && gitlab-ci-multi-runner exec shell test:$t || (echo "stop @ $t, exit=$?" ; exit 1)
 done
-gitlab-ci-multi-runner exec shell build:xenial-fsanitize

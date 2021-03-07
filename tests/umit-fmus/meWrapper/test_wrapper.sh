@@ -10,12 +10,12 @@ function test(){
     WRAPPER=$1
     CHECK=$2
     #2>/dev/null
-    mpiexec -np $3 fmigo-mpi $4 ${WRAPPER} > ${RESULT}  || (echo "FAILED: " $1 && exit 1)
+    ${MPIEXEC} -np $3 fmigo-mpi $4 ${WRAPPER} > ${RESULT}  || (echo "FAILED: " $1 && exit 1)
     if [ ${REStoCHECK} = "set" ]; then
         cat  ${RESULT}
         cat  ${RESULT} > ${CHECK}
     fi
-    python ${COMPARE_CSV} ${RESULT} ${CHECK}
+    python3 ${COMPARE_CSV} ${RESULT} ${CHECK}
 
     rm ${RESULT}
 }

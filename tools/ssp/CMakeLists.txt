@@ -51,18 +51,8 @@ function (add_ssp dir sspname)
         set(option "-e")
       endif()
 
-      function(test_ssp PYTHON PYTHONNAME)
-        add_test(ssp-${sspname}-${suffix}-${PYTHONNAME}           ${PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/ssp-launcher.py ${option} -- ${${sspname}_ssp}                      -d 0.1 -t 0.1 )
-        add_test(ssp-unzipped-${sspname}-${suffix}-${PYTHONNAME}  ${PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/ssp-launcher.py ${option} -- ${${sspname}_dir}/SystemStructure.ssd  -d 0.1 -t 0.1 )
-      endfunction()
-
-      if (PYTHON2)
-        test_ssp(${PYTHON2} python2)
-      endif ()
-
-      if (PYTHON3)
-        test_ssp(${PYTHON3} python3)
-      endif ()
+      add_test(ssp-${sspname}-${suffix}          python3 ${CMAKE_CURRENT_SOURCE_DIR}/ssp-launcher.py ${option} -- ${${sspname}_ssp}                      -d 0.1 -t 0.1 )
+      add_test(ssp-unzipped-${sspname}-${suffix} python3 ${CMAKE_CURRENT_SOURCE_DIR}/ssp-launcher.py ${option} -- ${${sspname}_dir}/SystemStructure.ssd  -d 0.1 -t 0.1 )
     endforeach ()
 
 endfunction ()

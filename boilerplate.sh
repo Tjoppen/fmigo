@@ -11,6 +11,9 @@ export MASTER=fmigo-master
 export MPI_MASTER=fmigo-mpi
 export COMPARE_CSV=$(pwd)/tests/compare_csv.py
 export WRAPPER=$(pwd)/tools/wrapper/wrapper.py
+export MPIEXEC=mpiexec
+export OMPI_MCA_rmaps_base_oversubscribe=1
+export OMPI_MCA_btl_base_warn_component_unused=0
 
 if [[ "`uname`" = "Windows_NT" || "`uname`" = "MINGW64"* ]]
 then
@@ -23,4 +26,4 @@ else
 fi
 
 # Grab configuration, for figuring if we have GPL enabled or not
-for e in $(fmigo-mpi -e); do export "$e"; done
+for e in $(fmigo-master -e); do export "$e"; done

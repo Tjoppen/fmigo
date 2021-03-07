@@ -70,7 +70,7 @@ function (add_fmu_internal srcdir dstdir xmldir target extra_srcs libs extra_inc
   add_custom_command(
     OUTPUT ${${target}_dstdir}/sources/modelDescription.h
     COMMAND ${CMAKE_COMMAND} -E make_directory ${${target}_dstdir}/sources
-    COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/tools/wrapper/modeldescription2header.py ${md2hdr_option}
+    COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/tools/wrapper/modeldescription2header.py ${md2hdr_option}
       ${${target}_xmldir}/modelDescription.xml >
       ${${target}_dstdir}/sources/modelDescription.h
     DEPENDS ${${target}_xmldir}/modelDescription.xml ${xmldeps} ${CMAKE_CURRENT_SOURCE_DIR}/tools/wrapper/modeldescription2header.py)
@@ -160,7 +160,7 @@ function (add_wrapped dir sourcetarget)
   add_custom_command(
     OUTPUT ${dstxml}
     COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/${dir}
-    COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/tools/wrapper/xml2wrappedxml.py
+    COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/tools/wrapper/xml2wrappedxml.py
          -x ${srcxml} -f "${${sourcetarget}_fmu}" -i ${target} > ${dstxml}
     DEPENDS ${srcxml} ${sourcetarget} ${CMAKE_CURRENT_SOURCE_DIR}/tools/wrapper/xml2wrappedxml.py)
   add_custom_target(${target}_xml DEPENDS ${dstxml})
@@ -178,7 +178,7 @@ function (add_wrapped_filter dir sourcetarget)
   add_custom_command(
     OUTPUT ${dstxml}
     COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/${dir}
-    COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/tools/wrapper/xml2wrappedxml.py
+    COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/tools/wrapper/xml2wrappedxml.py
          -x ${srcxml} -f "${${sourcetarget}_fmu}" -i ${target} > ${dstxml}
     DEPENDS ${srcxml} ${sourcetarget} ${CMAKE_CURRENT_SOURCE_DIR}/tools/wrapper/xml2wrappedxml.py)
   add_custom_target(${target}_xml DEPENDS ${dstxml})
@@ -196,7 +196,7 @@ function (add_wrapped_fmu dir sourcetarget sourcefmu)
   add_custom_command(
     OUTPUT ${dstxml}
     COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/${dir}
-    COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/tools/wrapper/xml2wrappedxml.py
+    COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/tools/wrapper/xml2wrappedxml.py
          -f ${sourcefmu} -i ${target} > ${dstxml}
     DEPENDS ${sourcefmu} ${sourcetarget}_fmu_target ${CMAKE_CURRENT_SOURCE_DIR}/tools/wrapper/xml2wrappedxml.py)
   add_custom_target(${target}_xml DEPENDS ${dstxml})
@@ -223,7 +223,7 @@ function (wrap_existing_fmu2 target sourcefmu dir)
   add_custom_command(
     OUTPUT ${dstxml}
     COMMAND ${CMAKE_COMMAND} -E make_directory ${dir}
-    COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/tools/wrapper/xml2wrappedxml.py
+    COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/tools/wrapper/xml2wrappedxml.py
          -f ${sourcefmu} -i ${target} > ${dstxml}
     DEPENDS ${sourcefmu} ${CMAKE_CURRENT_SOURCE_DIR}/tools/wrapper/xml2wrappedxml.py)
   add_custom_target(${target}_xml DEPENDS ${dstxml})

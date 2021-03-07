@@ -8,7 +8,7 @@ testit() {
   s=$1
 
   echo "Testing $s: $5"
-  mpiexec -np 3 fmigo-mpi -t 100 \
+  ${MPIEXEC} -np 3 fmigo-mpi -t 100 \
     -C shaft,0,1,theta,omega,alpha,tau,x1,v1,a1,f1 \
     -c 1,v1,0,omega_l \
     -p 1,m1,100:1,m2,100 \
@@ -21,7 +21,7 @@ testit() {
   # a not-exactly-the-same mobility estimate results in
   # some slight phase shifts on the forces, which throws
   # the comparison entirely off
-  python $COMPARE_CSV ref.csv ${s}.csv "," "$2" "$3" "$4"
+  python3 $COMPARE_CSV ref.csv ${s}.csv "," "$2" "$3" "$4"
   rm ${s}.csv
   echo "OK"
 }

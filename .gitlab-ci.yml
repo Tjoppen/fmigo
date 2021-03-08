@@ -3,114 +3,56 @@ stages:
   - build
   - test
 
-variables:
-  GIT_SUBMODULE_STRATEGY: "recursive"
-
-build:trusty:
-  stage: build
-  script:
-    - docker build -t umit/trusty:$(git rev-parse HEAD)            -f Buildstuff/Dockerfile.trusty            .
-  tags:
-    - shell
-
-build:trusty-cmake3.5.0:
-  stage: build
-  script:
-    - docker build -t umit/trusty-cmake3.5.0:$(git rev-parse HEAD) -f Buildstuff/Dockerfile.trusty-cmake3.5.0 .
-  tags:
-    - shell
-
-build:xenial:
-  stage: build
-  script:
-    - docker build -t umit/xenial:$(git rev-parse HEAD)            -f Buildstuff/Dockerfile.xenial            .
-  tags:
-    - shell
-
-build:xenial-fsanitize:
-  stage: build
-  script:
-    - docker build -t umit/xenial-fsanitize:$(git rev-parse HEAD)  -f Buildstuff/Dockerfile.xenial-fsanitize  .
-  tags:
-    - shell
-
 build:bionic:
   stage: build
   script:
-    - docker build -t umit/bionic:$(git rev-parse HEAD)            -f Buildstuff/Dockerfile.bionic            .
+    - docker build -t umit/bionic:$(git rev-parse HEAD) -f Buildstuff/Dockerfile.bionic .
+  tags:
+    - shell
+
+build:focal:
+  stage: build
+  script:
+    - docker build -t umit/focal:$(git rev-parse HEAD) -f Buildstuff/Dockerfile.focal .
   tags:
     - shell
 
 build:stretch:
   stage: build
   script:
-    - docker build -t umit/stretch:$(git rev-parse HEAD)           -f Buildstuff/Dockerfile.stretch           .
+    - docker build -t umit/stretch:$(git rev-parse HEAD) -f Buildstuff/Dockerfile.stretch .
   tags:
     - shell
 
 build:buster:
   stage: build
   script:
-    - docker build -t umit/buster:$(git rev-parse HEAD)            -f Buildstuff/Dockerfile.buster            .
+    - docker build -t umit/buster:$(git rev-parse HEAD) -f Buildstuff/Dockerfile.buster .
   tags:
     - shell
-
-test:trusty:
-  stage: test
-  script:
-    - docker run --workdir /home/gitlab-ci/umit umit/trusty:$(git rev-parse HEAD)            bash run_tests.sh
-  dependencies:
-    - build:trusty
-  tags:
-    - shell
-
-test:trusty-cmake3.5.0:
-  stage: test
-  script:
-    - docker run --workdir /home/gitlab-ci/umit umit/trusty-cmake3.5.0:$(git rev-parse HEAD) bash run_tests.sh
-  dependencies:
-    - build:trusty-cmake3.5.0
-  tags:
-    - shell
-
-test:xenial:
-  stage: test
-  script:
-    - docker run --workdir /home/gitlab-ci/umit umit/xenial:$(git rev-parse HEAD)            bash run_tests.sh
-    - docker run --workdir /home/gitlab-ci/umit/build/install umit/xenial:$(git rev-parse HEAD) tar cz . > umit-$(git rev-parse HEAD).tar.gz
-  dependencies:
-    - build:xenial
-  artifacts:
-    paths:
-      - umit-*.tar.gz
-  tags:
-    - shell
-
-##
-## -fsanitize doesn't seem to work with openmpi, so that test is disabled for now
-##
-#test:xenial-fsanitize:
-#  stage: test
-#  script:
-#    - docker run --workdir /home/gitlab-ci/umit umit/xenial-fsanitize:$(git rev-parse HEAD)  bash run_tests.sh
-#  dependencies:
-#    - build:xenial-fsanitize
-#  tags:
-#    - shell
 
 test:bionic:
   stage: test
   script:
-    - docker run --workdir /home/gitlab-ci/umit umit/bionic:$(git rev-parse HEAD)            bash run_tests.sh
+    - docker run --workdir /home/gitlab-ci/umit umit/bionic:$(git rev-parse HEAD) bash run_tests.sh
   dependencies:
     - build:bionic
+  tags:
+    - shell
+
+test:focal:
+  stage: test
+  script:
+    - docker run --workdir /home/gitlab-ci/umit umit/focal:$(git rev-parse HEAD) bash run_tests.sh
+  dependencies:
+    - build:focal
   tags:
     - shell
 
 test:stretch:
   stage: test
   script:
-    - docker run --workdir /home/gitlab-ci/umit umit/stretch:$(git rev-parse HEAD)           bash run_tests.sh
+    - docker run --workdir /home/gitlab-ci/umit umit/stretch:$(git rev-parse HEAD) bash run_tests.sh
   dependencies:
     - build:stretch
   tags:
@@ -119,7 +61,7 @@ test:stretch:
 test:buster:
   stage: test
   script:
-    - docker run --env OMPI_MCA_rmaps_base_oversubscribe=1 --workdir /home/gitlab-ci/umit umit/buster:$(git rev-parse HEAD) bash run_tests.sh
+    - docker run --workdir /home/gitlab-ci/umit umit/buster:$(git rev-parse HEAD) bash run_tests.sh
   dependencies:
     - build:buster
   tags:

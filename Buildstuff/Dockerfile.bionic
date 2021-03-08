@@ -11,22 +11,37 @@ RUN dpkg-reconfigure -f noninteractive tzdata
 # Some notes on the packages installed here where it may not be obvious why
 # they are installed:
 #
-#  build-essential: for gcc
-#              git: for being able to fetch submodules, since gitlab doesn't
-#                   do this for us yet
-#           psmisc: for killall
-#       python-dev: for pip to build psutil
 #      libxml2-dev: for lxml
 #     libxstl1-dev: for lxml
 #
 RUN apt-get install --yes \
-        build-essential cmake ninja-build git python bc psmisc \
-        protobuf-compiler protobuf-c-compiler libprotobuf-dev \
-        libsuitesparse-dev libzmqpp-dev libhdf5-dev \
-        libopenmpi-dev libgsl-dev clang valgrind \
-        python-pip python-dev libxml2-dev libxslt1-dev ccache
-RUN apt-get install -y python-numpy python-scipy python-matplotlib
-RUN apt-get install -y python3-pip libmatio-dev
+  bc \
+  build-essential \
+  ccache \
+  clang \
+  cmake \
+  libgsl-dev \
+  libhdf5-dev \
+  libmatio-dev \
+  libopenmpi-dev \
+  libprotobuf-dev \
+  libsuitesparse-dev \
+  libxml2-dev \
+  libxslt1-dev \
+  libzmqpp-dev \
+  ninja-build \
+  protobuf-c-compiler \
+  protobuf-compiler \
+  python3 \
+  python3-lxml \
+  python3-matplotlib \
+  python3-numpy \
+  python3-protobuf \
+  python3-psutil \
+  python3-scipy \
+  python3-zmq \
+  ssh \
+  valgrind
 
 #
 # Create user, since mpiexec doesn't like to run as root
@@ -37,11 +52,6 @@ RUN useradd -ms /bin/bash gitlab-ci
 RUN  mkdir              /home/gitlab-ci/umit
 COPY .                  /home/gitlab-ci/umit
 RUN  chown -R gitlab-ci /home/gitlab-ci/umit
-
-# Install python requirements
-WORKDIR /home/gitlab-ci/umit
-RUN pip2 install -r Buildstuff/requirements.txt
-RUN pip3 install -r Buildstuff/requirements.txt
 
 # Finally, make us run as gitlab-ci
 USER gitlab-ci

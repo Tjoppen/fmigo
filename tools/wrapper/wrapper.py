@@ -160,7 +160,7 @@ wrap_existing_fmu2("%s" "%s" "${CMAKE_CURRENT_BINARY_DIR}")
   ]
 
   if  not subprocess.call(['cmake','..'] + cmake_opts) == 0 or \
-      not subprocess.call(['cmake','--build','.','--config',args.build_type]) == 0:
+      not subprocess.call(['cmake','--build','.','--config',args.build_type] + (['--','-w','dupbuild=warn'] if have_ninja else [])) == 0:
     exit(1)
 
   os.chdir(cwd)

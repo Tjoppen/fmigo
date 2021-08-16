@@ -15,6 +15,7 @@ RUN apt-get install --yes \
   clang \
   cmake \
   libczmq-dev \
+  libexpat1-dev \
   libgsl-dev \
   libhdf5-dev \
   libmatio-dev \

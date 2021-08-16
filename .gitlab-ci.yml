@@ -31,6 +31,13 @@ build:buster:
   tags:
     - shell
 
+build:bullseye:
+  stage: build
+  script:
+    - docker build -t umit/bullseye:$(git rev-parse HEAD) -f Buildstuff/Dockerfile.bullseye .
+  tags:
+    - shell
+
 test:bionic:
   stage: test
   script:
@@ -64,5 +71,14 @@ test:buster:
     - docker run --workdir /home/gitlab-ci/umit umit/buster:$(git rev-parse HEAD) bash run_tests.sh
   dependencies:
     - build:buster
+  tags:
+    - shell
+
+test:bullseye:
+  stage: test
+  script:
+    - docker run --workdir /home/gitlab-ci/umit umit/bullseye:$(git rev-parse HEAD) bash run_tests.sh
+  dependencies:
+    - build:bullseye
   tags:
     - shell

@@ -6,6 +6,7 @@
 #include "sc/Connector.h"
 #include <vector>
 #include <map>
+#include <string>
 extern "C" {
 #include "umfpack.h"
 }

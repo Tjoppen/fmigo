@@ -59,11 +59,11 @@ RUN mkdir build-clang
 WORKDIR /home/gitlab-ci/umit/build
 # First build without libmatio, then run another build with it enabled
 RUN cmake .. -G Ninja -DUSE_MATIO=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=ON
-RUN ninja install -w dupbuild=warn
+RUN ninja install
 RUN cmake .. -G Ninja -DUSE_MATIO=ON  -DCMAKE_POSITION_INDEPENDENT_CODE=ON
-RUN ninja install -w dupbuild=warn
+RUN ninja install
 WORKDIR /home/gitlab-ci/umit/build-clang
 RUN cmake .. -G Ninja -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DUSE_MATIO=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=ON
-RUN ninja install -w dupbuild=warn
+RUN ninja install
 RUN cmake .. -G Ninja -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DUSE_MATIO=ON  -DCMAKE_POSITION_INDEPENDENT_CODE=ON
-RUN ninja install -w dupbuild=warn
+RUN ninja install

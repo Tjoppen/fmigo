@@ -1,9 +1,9 @@
 FROM ubuntu:bionic
-RUN apt-get update
+RUN apt update
 
 # Tell tzdata installer that we're in Europe first, then fix it up to be Europe/Stockholm
 # echo -e "8\n49" doesn't work for some reason..
-RUN echo 8 | apt-get install --yes tzdata
+RUN echo 8 | apt install --yes tzdata
 RUN echo Europe/Stockholm > /etc/timezone
 RUN dpkg-reconfigure -f noninteractive tzdata
 
@@ -14,12 +14,13 @@ RUN dpkg-reconfigure -f noninteractive tzdata
 #      libxml2-dev: for lxml
 #     libxstl1-dev: for lxml
 #
-RUN apt-get install --yes \
+RUN apt install --yes \
   bc \
   build-essential \
   ccache \
   clang \
   cmake \
+  libexpat1-dev \
   libgsl-dev \
   libhdf5-dev \
   libmatio-dev \

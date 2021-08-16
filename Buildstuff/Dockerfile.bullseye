@@ -1,5 +1,5 @@
 FROM debian:bullseye
-RUN apt-get update
+RUN apt update
 
 #
 # Some notes on the packages installed here where it may not be obvious why
@@ -8,7 +8,7 @@ RUN apt-get update
 #      libxml2-dev: for lxml
 #     libxstl1-dev: for lxml
 #
-RUN apt-get install --yes \
+RUN apt install --yes \
   bc \
   build-essential \
   ccache \

@@ -3,7 +3,7 @@
 # For some reason there isn't a convenient command for running
 # all jobs in the proper order (build -> test), hence this script.
 set -e
-for t in buster focal stretch bionic bullseye
+for t in buster focal jammy stretch bionic bullseye
 do
   gitlab-ci-multi-runner exec shell build:$t && gitlab-ci-multi-runner exec shell test:$t || (echo "stop @ $t, exit=$?" ; exit 1)
 done

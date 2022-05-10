@@ -17,6 +17,13 @@ build:focal:
   tags:
     - shell
 
+build:jammy:
+  stage: build
+  script:
+    - docker build -t umit/jammy:$(git rev-parse HEAD) -f Buildstuff/Dockerfile.jammy .
+  tags:
+    - shell
+
 build:stretch:
   stage: build
   script:
@@ -53,6 +60,15 @@ test:focal:
     - docker run --workdir /home/gitlab-ci/umit umit/focal:$(git rev-parse HEAD) bash run_tests.sh
   dependencies:
     - build:focal
+  tags:
+    - shell
+
+test:jammy:
+  stage: test
+  script:
+    - docker run --workdir /home/gitlab-ci/umit umit/jammy:$(git rev-parse HEAD) bash run_tests.sh
+  dependencies:
+    - build:jammy
   tags:
     - shell
 

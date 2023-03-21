@@ -24,6 +24,13 @@ build:jammy:
   tags:
     - shell
 
+build:kinetic:
+  stage: build
+  script:
+    - docker build -t umit/kinetic:$(git rev-parse HEAD) -f Buildstuff/Dockerfile.kinetic .
+  tags:
+    - shell
+
 build:stretch:
   stage: build
   script:
@@ -69,6 +76,15 @@ test:jammy:
     - docker run --workdir /home/gitlab-ci/umit umit/jammy:$(git rev-parse HEAD) bash run_tests.sh
   dependencies:
     - build:jammy
+  tags:
+    - shell
+
+test:kinetic:
+  stage: test
+  script:
+    - docker run --workdir /home/gitlab-ci/umit umit/kinetic:$(git rev-parse HEAD) bash run_tests.sh
+  dependencies:
+    - build:kinetic
   tags:
     - shell
 

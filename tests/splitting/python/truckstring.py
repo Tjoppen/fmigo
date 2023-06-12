@@ -50,7 +50,7 @@ ks     = [1,  2,  4]
 
 M = diag([1.0]*4 + [1.0/m for m in masses])
 
-Aref = M* csc_matrix([
+Aref = M* matrix([
   [0,0,0,0,  1,0,0,0],
   [0,0,0,0,  0,1,0,0],
   [0,0,0,0,  0,0,1,0],
@@ -63,7 +63,7 @@ Aref = M* csc_matrix([
 ], dtype='float')
 
 # Excite the leftmost part of the system
-z0 = csc_matrix([[0,0,0,0,1,0,0,0]], dtype='float').transpose()
+z0 = matrix([[0,0,0,0,1,0,0,0]], dtype='float').transpose()
 
 # slowest mode of interest
 w = sort(abs(imag(eig(Aref)[0])))[2]
@@ -77,18 +77,18 @@ tend = P*NP
 
 # force = zb
 def fun(t, z, force, i):
-  Finternal = csc_matrix([
+  Finternal = matrix([
     [0,0,1,0],
     [0,0,0,1],
     [-ks[i], ks[i],0,0],
     [ ks[i],-ks[i],0,0],
   ], dtype='float')
 
-  zz = csc_matrix(z).transpose()
+  zz = matrix(z).transpose()
   ftot = Finternal*zz
   if not force is None:
     ftot += force.astype(ftot.dtype)
-  return csc_matrix(diag([1,1] + splitms[(i*2):(i*2+2)]))**-1 * ftot
+  return matrix(diag([1,1] + splitms[(i*2):(i*2+2)]))**-1 * ftot
 
 def fun0(t, z, force):
   return fun(t, z, force, 0)
@@ -100,16 +100,16 @@ def fun2(t, z, force):
   return fun(t, z, force, 2)
 
 def fun3(t, z, force):
-  Finternal = csc_matrix([
+  Finternal = matrix([
     [0,1],
     [0,0],
   ], dtype='float')
 
-  zz = csc_matrix(z).transpose()
+  zz = matrix(z).transpose()
   ftot = Finternal*zz
   if not force is None:
     ftot += force.astype(ftot.dtype)
-  return csc_matrix(diag([1, splitms[6]]))**-1 * ftot
+  return matrix(diag([1, splitms[6]]))**-1 * ftot
 
 # Permutes so we get all seven positions in a row, and all seven velocities after that
 perm = [0,1,4,5,8,9,12,2,3,6,7,10,11,13]
@@ -126,13 +126,13 @@ def kin_exchange(tprev, t2, zs, state):
   b = 1.0/(1+4*relaxation)
 
   # Get volation and constraint velocity
-  g = csc_matrix(row_stack([
+  g = matrix(row_stack([
     zs[0][1] - zs[1][0],
     zs[1][1] - zs[2][0],
     zs[2][1] - zs[3][0],
   ]))
 
-  gdot = csc_matrix(row_stack([
+  gdot = matrix(row_stack([
     zs[0][3] - zs[1][2],
     zs[1][3] - zs[2][2],
     zs[2][3] - zs[3][1],
@@ -170,10 +170,10 @@ def kin_exchange(tprev, t2, zs, state):
   f = (np.linalg.inv(S)*rhs) / H
 
   fs = [
-    csc_matrix([0,      0,    0, f[0]]).transpose(),
-    csc_matrix([0,      0,-f[0], f[1]]).transpose(),
-    csc_matrix([0,      0,-f[1], f[2]]).transpose(),
-    csc_matrix([0, -f[2]]             ).transpose(),
+    matrix([0,      0,    0, f[0]]).transpose(),
+    matrix([0,      0,-f[0], f[1]]).transpose(),
+    matrix([0,      0,-f[1], f[2]]).transpose(),
+    matrix([0, -f[2]]             ).transpose(),
   ]
 
   if forces is None:
@@ -192,7 +192,7 @@ def kin_exchange(tprev, t2, zs, state):
 
 def force_signals(dt, vbar, z, i, k):
   """ signal evaluation common to epce and fv"""
-  z = csc_matrix(z).reshape((7,1))
+  z = matrix(z).reshape((7,1))
   x1, x2, v1, v2, dx, zv, zf = (z[i,0] for i in range(7))
   m1 = splitms[2*i+0]
   m2 = splitms[2*i+1]
@@ -220,12 +220,12 @@ def fun_signals(t, z, inputs, i, k):
   m1 = splitms[2*i+0]
   m2 = splitms[2*i+1]
   vbar, force, dt = inputs
-  z = csc_matrix(z).reshape((7,1))
+  z = matrix(z).reshape((7,1))
   x1, x2, v1, v2, dx, zv, zf = (z[i,0] for i in range(7))
 
   fc = force_signals(dt, vbar, z, i, k)
 
-  return csc_matrix([
+  return matrix([
     v1,
     v2,
     1.0/m1*(-ks[i]*(x1-x2) + force),
@@ -257,14 +257,14 @@ def fun2_fv(t, z, inputs):
 # x,v,zv
 
 def fun3_signals(t, z, force):
-  z = csc_matrix(z).reshape((3,1))
+  z = matrix(z).reshape((3,1))
   x, v, zv = (z[i,0] for i in range(3))
   asd = [
     v,
     force / splitms[6] if not force is None else 0.0,
     v,
   ]
-  return csc_matrix(asd).transpose()
+  return matrix(asd).transpose()
 
 class epce_state:
   def __init__(self):
@@ -272,7 +272,7 @@ class epce_state:
     self.zbar = [0,0,0]
   def add_zbs(self, zbs):
     for i in range(4):
-      self.zlog[i] = column_stack([self.zlog[i], csc_matrix(zbs[i])]) if not self.zlog[i] is None else csc_matrix(zbs[i])
+      self.zlog[i] = column_stack([self.zlog[i], matrix(zbs[i])]) if not self.zlog[i] is None else matrix(zbs[i])
       if self.zlog[i].shape[1] > 2:
         self.zlog[i] = self.zlog[i][:,1:]
   def get_filtered(self):

@@ -52,6 +52,13 @@ build:bullseye:
   tags:
     - shell
 
+build:bookworm:
+  stage: build
+  script:
+    - docker build -t umit/bookworm:$(git rev-parse HEAD) -f Buildstuff/Dockerfile.bookworm .
+  tags:
+    - shell
+
 test:bionic:
   stage: test
   script:
@@ -112,5 +119,14 @@ test:bullseye:
     - docker run --workdir /home/gitlab-ci/umit umit/bullseye:$(git rev-parse HEAD) bash run_tests.sh
   dependencies:
     - build:bullseye
+  tags:
+    - shell
+
+test:bookworm:
+  stage: test
+  script:
+    - docker run --workdir /home/gitlab-ci/umit umit/bookworm:$(git rev-parse HEAD) bash run_tests.sh
+  dependencies:
+    - build:bookworm
   tags:
     - shell

@@ -3,7 +3,6 @@ from pylab import *
 from scipy import *
 from scipy.sparse import *
 from scipy.sparse.linalg  import *
-from scipy.sparse.csc  import *
 from scipy.integrate  import *
 #from scipy.linalg import expm
 import cmath
@@ -42,14 +41,14 @@ def intloop3(ts, zs, funs, exchange, state=None, perm=None):
         r.set_f_params(None)
       while r.successful() and r.t < t:
         r.integrate(t)
-      zs2[i] = matrix(r.y)
+      zs2[i] = csc_matrix(r.y)
 
     tode = concatenate((tode, [t]))
     zode = row_stack([zode, column_stack([z.transpose() for z in zs2])])
     tprev = t
 
   # Permute zode for sanity
-  return tode, matrix(zode[:,perm] if not perm is None else zode), steps.steps
+  return tode, csc_matrix(zode[:,perm] if not perm is None else zode), steps.steps
 
 def intloop2(zs, funs, exchange, state, H, tstart, tend, perm):
   # Make sure both tstart and tend become part of ts
@@ -97,7 +96,7 @@ if __name__ == '__main__':
   Mright = diag([1.0]*2 + [1.0/m for m in masses[2:4]])
 
 
-  Aref = M* matrix([
+  Aref = M* csc_matrix([
     [0,0,0,0,  1,0,0,0],
     [0,0,0,0,  0,1,0,0],
     [0,0,0,0,  0,0,1,0],
@@ -120,26 +119,26 @@ if __name__ == '__main__':
     return intloop2([zleft, zright], (lfun, rfun), exchange, state, H, tstart, tend, [0,1,4,5,2,3,6,7])
 
   # Excite the leftmost part of the system
-  z0 = matrix([[1,0,0,0,0,0,0,0]], dtype='float').transpose()
+  z0 = csc_matrix([[1,0,0,0,0,0,0,0]], dtype='float').transpose()
 
   Aphi = expm(h*Aref)
   tref = arange(0,NP*P,h)
   zref = row_stack([( matrix_power(Aphi,i) * z0).transpose() for i in range(len(tref))])
 
   # Force computation matrices
-  Finternal = matrix([
+  Finternal = csc_matrix([
     [0,0,1,0],
     [0,0,0,1],
     [-1,1,0,0],
     [1,-1,0,0],
   ], dtype='float')
-  Cleft = matrix([
+  Cleft = csc_matrix([
     [0,0,0,0],
     [0,0,0,0],
     [0,0,0,0],
     [0,-k,0,-d],
   ], dtype='float')
-  Cright = matrix([
+  Cright = csc_matrix([
     [0,0,0,0],
     [0,0,0,0],
     [-k,0,-d,0],
@@ -149,11 +148,11 @@ if __name__ == '__main__':
   # Position-position coupling
   def pospos(z0, H=h):
     def lfun(t, z, zb):
-      zz = matrix(z).transpose()
+      zz = csc_matrix(z).transpose()
       return Mleft*(Finternal*zz + Cleft*(zz-zb))
 
     def rfun(t, z, zb):
-      zz = matrix(z).transpose()
+      zz = csc_matrix(z).transpose()
       return Mright*(Finternal*zz + Cright*(zz-zb))
 
     def exchange(t, t2, zlr, state):
@@ -174,20 +173,20 @@ if __name__ == '__main__':
   # Extrapolated position-position coupling
   def extrap(z0, H=h):
     def lfun(t, z, zb):
-      zz = matrix(z).transpose()
+      zz = csc_matrix(z).transpose()
       t0 = zb[4]
       # Extrapolate dphi
       dphi = z[2] - zb[2] - (t-t0)*zb[3]
       dphi2 = [0,0,dphi,0]
-      return Mleft*(Finternal*zz + Cleft*matrix(dphi2).transpose())
+      return Mleft*(Finternal*zz + Cleft*csc_matrix(dphi2).transpose())
 
     def rfun(t, z, zb):
-      zz = matrix(z).transpose()
+      zz = csc_matrix(z).transpose()
       t0 = zb[4]
       # Extrapolate dphi
       dphi = z[0] - zb[0] - (t-t0)*zb[1]
       dphi2 = [dphi,0,0,0]
-      return Mright*(Finternal*zz + Cright*matrix(dphi2).transpose())
+      return Mright*(Finternal*zz + Cright*csc_matrix(dphi2).transpose())
 
     def exchange(t, t2, zlr, state):
       # Put time as fifth parameter to function in both
@@ -209,14 +208,14 @@ if __name__ == '__main__':
   # Just adds force to the system
   # force = zb
   def fun_force_l(t, z, force):
-    zz = matrix(z).transpose()
+    zz = csc_matrix(z).transpose()
     ftot = Finternal*zz
     if not force is None:
       ftot += force
     return Mleft*ftot
 
   def fun_force_r(t, z, force):
-    zz = matrix(z).transpose()
+    zz = csc_matrix(z).transpose()
     ftot = Finternal*zz
     if not force is None:
       ftot += force
@@ -255,9 +254,9 @@ if __name__ == '__main__':
     # Get mobilities, compute system matrix and force
     if Hmobility > 0:
       # Input unit force, step for Hmobility, compute acceleration difference
-      fz = matrix([0,0,0,0]).transpose()
-      fl = matrix([0,0,0,1]).transpose()
-      fr = matrix([0,0,1,0]).transpose()
+      fz = csc_matrix([0,0,0,0]).transpose()
+      fl = csc_matrix([0,0,0,1]).transpose()
+      fr = csc_matrix([0,0,1,0]).transpose()
 
       # Give unit forces to each system
       def exchange_force(t, t2, zlr, flfr):
@@ -286,8 +285,8 @@ if __name__ == '__main__':
     S = m1 + m2
     f = (rhs / S) / H
 
-    zb_ltr = matrix([0,0,-f,0]).transpose()
-    zb_rtl = matrix([0,0, 0,f]).transpose()
+    zb_ltr = csc_matrix([0,0,-f,0]).transpose()
+    zb_rtl = csc_matrix([0,0, 0,f]).transpose()
     return (zb_rtl, zb_ltr), steps
 
   # Hmobility = timestep used to compute mobility (0 -> use analytical value)

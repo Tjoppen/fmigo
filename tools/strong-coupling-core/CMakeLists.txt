@@ -1,5 +1,9 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12)
 
+if(CMAKE_VERSION VERSION_GREATER "3.20")
+    cmake_policy(SET CMP0115 NEW)
+endif()
+
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O3")
 
 SET(SRCS
@@ -11,7 +15,7 @@ SET(SRCS
     src/HingeMotorConstraint.cpp
     src/JacobianElement.cpp
     src/LockConstraint.cpp
-    src/MultiWayConstraint
+    src/MultiWayConstraint.cpp
     src/ShaftConstraint.cpp
     src/Mat3.cpp
     src/Quat.cpp

@@ -35,7 +35,7 @@ endif ()
 # Set default build type
 if(NOT CMAKE_BUILD_TYPE)
     message(STATUS "CMake build type set to RELEASE.")
-    set(CMAKE_BUILD_TYPE Release CACHE String "" FORCE)
+    set(CMAKE_BUILD_TYPE Release CACHE STRING "" FORCE)
 endif()
 
 SET(FMIGO_MAJOR_VERSION 0)

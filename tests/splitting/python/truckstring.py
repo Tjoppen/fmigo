@@ -170,10 +170,10 @@ def kin_exchange(tprev, t2, zs, state):
   f = (np.linalg.inv(S)*rhs) / H
 
   fs = [
-    matrix([0,      0,    0, f[0]]).transpose(),
-    matrix([0,      0,-f[0], f[1]]).transpose(),
-    matrix([0,      0,-f[1], f[2]]).transpose(),
-    matrix([0, -f[2]]             ).transpose(),
+    matrix([0,      0,    0, float(f[0])]).transpose(),
+    matrix([0,      0,-float(f[0]), float(f[1])]).transpose(),
+    matrix([0,      0,-float(f[1]), float(f[2])]).transpose(),
+    matrix([0, -float(f[2])]             ).transpose(),
   ]
 
   if forces is None:

@@ -1,5 +1,5 @@
 # This runs all test scripts we have scattered all over the place
-set -e
+set -ex
 source boilerplate.sh
 
 if [ $USE_GPL -eq 1 ]

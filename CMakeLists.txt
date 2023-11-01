@@ -1,3 +1,5 @@
+project(fmigo)
+
 if (WIN32)
   # Needed due to SOURCE_SUBDIR
   cmake_minimum_required(VERSION 3.7.2)

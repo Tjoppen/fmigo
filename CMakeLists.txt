@@ -18,6 +18,9 @@ if(CMAKE_VERSION VERSION_GREATER "3.3")
 endif()
 
 # cmake_policy(SET CMP0045 OLD)
+if(CMAKE_VERSION VERSION_GREATER "3.20")
+    cmake_policy(SET CMP0115 NEW)
+endif()
 
 if (CMAKE_VERSION VERSION_GREATER "3.0")
     # CMake Warning (dev):

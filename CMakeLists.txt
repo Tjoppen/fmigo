@@ -2,7 +2,7 @@ if (WIN32)
   # Needed due to SOURCE_SUBDIR
   cmake_minimum_required(VERSION 3.7.2)
 else ()
-  cmake_minimum_required(VERSION 2.8)
+  cmake_minimum_required(VERSION 2.8.12)
 endif ()
 
 find_package(Threads REQUIRED)

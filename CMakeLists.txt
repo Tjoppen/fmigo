@@ -15,8 +15,7 @@ enable_testing()
 configure_file(${CMAKE_SOURCE_DIR}/Buildstuff/CTestCustom.cmake ${CMAKE_BINARY_DIR})
 
 if(CMAKE_VERSION VERSION_GREATER "3.3")
-    #suppress warning about libexpat.a
-    cmake_policy(SET CMP0058 OLD)
+    cmake_policy(SET CMP0058 NEW)
 endif()
 
 # cmake_policy(SET CMP0045 OLD)

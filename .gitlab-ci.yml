@@ -24,13 +24,6 @@ build:jammy:
   tags:
     - shell
 
-build:kinetic:
-  stage: build
-  script:
-    - docker build -t umit/kinetic:$(git rev-parse HEAD) -f Buildstuff/Dockerfile.kinetic .
-  tags:
-    - shell
-
 build:stretch:
   stage: build
   script:
@@ -59,6 +52,13 @@ build:bookworm:
   tags:
     - shell
 
+build:mantic:
+  stage: build
+  script:
+    - docker build -t umit/mantic:$(git rev-parse HEAD) -f Buildstuff/Dockerfile.mantic .
+  tags:
+    - shell
+
 test:bionic:
   stage: test
   script:
@@ -83,15 +83,6 @@ test:jammy:
     - docker run --workdir /home/gitlab-ci/umit umit/jammy:$(git rev-parse HEAD) bash run_tests.sh
   dependencies:
     - build:jammy
-  tags:
-    - shell
-
-test:kinetic:
-  stage: test
-  script:
-    - docker run --workdir /home/gitlab-ci/umit umit/kinetic:$(git rev-parse HEAD) bash run_tests.sh
-  dependencies:
-    - build:kinetic
   tags:
     - shell
 
@@ -128,5 +119,14 @@ test:bookworm:
     - docker run --workdir /home/gitlab-ci/umit umit/bookworm:$(git rev-parse HEAD) bash run_tests.sh
   dependencies:
     - build:bookworm
+  tags:
+    - shell
+
+test:mantic:
+  stage: test
+  script:
+    - docker run --workdir /home/gitlab-ci/umit umit/mantic:$(git rev-parse HEAD) bash run_tests.sh
+  dependencies:
+    - build:mantic
   tags:
     - shell

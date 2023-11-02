@@ -610,7 +610,7 @@ static fmi2Status generated_fmi2SetString(ModelInstance *comp, modelDescription_
 
         for (x = 0; x < nvr; x++) {
             if (vr[x] == VR_OCTAVE_OUTPUT) {
-                strlcpy(comp->s.md.octave_output, value[x], sizeof(comp->s.md.octave_output));
+                strlcpy2(comp->s.md.octave_output, value[x], sizeof(comp->s.md.octave_output));
             } else if (fmi2_import_set_string(comp->s.simulation.FMU,&vr[x],1,&value[x]) != fmi2OK) {
                 return fmi2Error;
             }
@@ -760,9 +760,9 @@ static fmi2Status wrapper_instantiate(ModelInstance *comp)  {
 
     comp->s.simulation.m_jmCallbacks.logger(NULL,"modulename",0,"jm_string");
 
-    strlcpy(m_fmuPath, comp->fmuResourceLocation, sizeof(m_fmuPath));
-    strlcat(m_fmuPath, "/", sizeof(m_fmuPath));
-    strlcat(m_fmuPath, fmuFilename, sizeof(m_fmuPath));
+    strlcpy2(m_fmuPath, comp->fmuResourceLocation, sizeof(m_fmuPath));
+    strlcat2(m_fmuPath, "/", sizeof(m_fmuPath));
+    strlcat2(m_fmuPath, fmuFilename, sizeof(m_fmuPath));
 
     if (!(comp->s.simulation.dir = fmi_import_mk_temp_dir(&comp->s.simulation.m_jmCallbacks, NULL, "wrapper_"))) {
         fprintf(stderr, "fmi_import_mk_temp_dir() failed\n");
@@ -822,8 +822,8 @@ static fmi2Status wrapper_instantiate(ModelInstance *comp)  {
 
         {
             char *temp = fmi_import_create_URL_from_abs_path(&comp->s.simulation.m_jmCallbacks, comp->s.simulation.dir);
-            strlcpy(m_resourcePath, temp, sizeof(m_resourcePath));
-            strlcat(m_resourcePath, "/resources", sizeof(m_resourcePath));
+            strlcpy2(m_resourcePath, temp, sizeof(m_resourcePath));
+            strlcat2(m_resourcePath, "/resources", sizeof(m_resourcePath));
             comp->s.simulation.m_jmCallbacks.free(temp);
         }
     } else {
@@ -872,8 +872,8 @@ static fmi2Status wrapper_exit_init(ModelInstance *comp) {
         return status;
     }
 
-    strlcpy(path, comp->fmuResourceLocation, sizeof(path));
-    strlcat(path, "/directional.txt",        sizeof(path));
+    strlcpy2(path, comp->fmuResourceLocation, sizeof(path));
+    strlcat2(path, "/directional.txt",        sizeof(path));
 
     fp = fopen(path, "r");
 

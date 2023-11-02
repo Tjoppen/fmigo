@@ -186,7 +186,7 @@ def modeldescription2header(args_xml, args_wrapper, file=sys.stdout):
   print('''#ifndef MODELDESCRIPTION_H
 #define MODELDESCRIPTION_H
 #include "FMI2/fmi2Functions.h" //for fmi2Real etc.
-#include "strlcpy.h" //for strlcpy()
+#include "strlcpy.h" //for strlcpy2()
 
 #define MODEL_IDENTIFIER %s
 #define MODEL_GUID "%s"
@@ -319,7 +319,7 @@ static fmi2Status generated_fmi2Set%s(struct ModelInstance *comp, modelDescripti
           '\n    md->dirty = 1;\n' if meFmuType else '',
           # A bit convoluted maybe, but it works.
           # This makes sure settings strings larger than the FMU can handle results in an error, not a crash
-          '\n'.join(['        case %i: if (strlcpy(md->%s, value[i], sizeof(md->%s)) >= sizeof(md->%s)) { return fmi2Error; } break;' %
+          '\n'.join(['        case %i: if (strlcpy2(md->%s, value[i], sizeof(md->%s)) >= sizeof(md->%s)) { return fmi2Error; } break;' %
                                                     (key, value[0], value[0], value[0]) for key,value in d.items()]) if t == 'String' else
           '\n'.join(['        case %i: md->%s = value[i]; break;' % (key, value[0]) for key,value in d.items()]),
       ), file=file)

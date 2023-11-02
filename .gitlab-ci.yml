@@ -24,20 +24,6 @@ build:jammy:
   tags:
     - shell
 
-build:kinetic:
-  stage: build
-  script:
-    - docker build -t umit/kinetic:$(git rev-parse HEAD) -f Buildstuff/Dockerfile.kinetic .
-  tags:
-    - shell
-
-build:stretch:
-  stage: build
-  script:
-    - docker build -t umit/stretch:$(git rev-parse HEAD) -f Buildstuff/Dockerfile.stretch .
-  tags:
-    - shell
-
 build:buster:
   stage: build
   script:
@@ -49,6 +35,20 @@ build:bullseye:
   stage: build
   script:
     - docker build -t umit/bullseye:$(git rev-parse HEAD) -f Buildstuff/Dockerfile.bullseye .
+  tags:
+    - shell
+
+build:bookworm:
+  stage: build
+  script:
+    - docker build -t umit/bookworm:$(git rev-parse HEAD) -f Buildstuff/Dockerfile.bookworm .
+  tags:
+    - shell
+
+build:mantic:
+  stage: build
+  script:
+    - docker build -t umit/mantic:$(git rev-parse HEAD) -f Buildstuff/Dockerfile.mantic .
   tags:
     - shell
 
@@ -79,24 +79,6 @@ test:jammy:
   tags:
     - shell
 
-test:kinetic:
-  stage: test
-  script:
-    - docker run --workdir /home/gitlab-ci/umit umit/kinetic:$(git rev-parse HEAD) bash run_tests.sh
-  dependencies:
-    - build:kinetic
-  tags:
-    - shell
-
-test:stretch:
-  stage: test
-  script:
-    - docker run --workdir /home/gitlab-ci/umit umit/stretch:$(git rev-parse HEAD) bash run_tests.sh
-  dependencies:
-    - build:stretch
-  tags:
-    - shell
-
 test:buster:
   stage: test
   script:
@@ -112,5 +94,23 @@ test:bullseye:
     - docker run --workdir /home/gitlab-ci/umit umit/bullseye:$(git rev-parse HEAD) bash run_tests.sh
   dependencies:
     - build:bullseye
+  tags:
+    - shell
+
+test:bookworm:
+  stage: test
+  script:
+    - docker run --workdir /home/gitlab-ci/umit umit/bookworm:$(git rev-parse HEAD) bash run_tests.sh
+  dependencies:
+    - build:bookworm
+  tags:
+    - shell
+
+test:mantic:
+  stage: test
+  script:
+    - docker run --workdir /home/gitlab-ci/umit umit/mantic:$(git rev-parse HEAD) bash run_tests.sh
+  dependencies:
+    - build:mantic
   tags:
     - shell

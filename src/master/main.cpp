@@ -1109,11 +1109,10 @@ int main(int argc, char *argv[] ) {
     }
 
 #ifdef USE_MPI
-    //send shutdown message (tag = 1), finalize
+    //send shutdown message (tag = 1)
     for (int x = 1; x < world_size; x++) {
         MPI_Send(NULL, 0, MPI_CHAR, x, 1, MPI_COMM_WORLD);
     }
-    MPI_Finalize();
 #endif
 
     if (outfile != stdout) {
@@ -1151,9 +1150,19 @@ int main(int argc, char *argv[] ) {
     info("master:                Total: %10.2lf seconds (%.1lf ms user time)\n", total2 * 1e-6, total * 1e-3);
 #endif
 
-    } catch (zmq::error_t e) {
+    } catch (zmq::error_t& e) {
       fatal("zmq::error_t in %s: %s\n", argv[0], e.what());
     }
 
+#ifdef USE_MPI
+    // finalize last of all, per mpich documentation (https://www.mpich.org/static/docs/v3.1/www3/MPI_Finalize.html):
+    //
+    //   The number of processes running after this routine is called is undefined;
+    //   it is best not to perform much more than a return rc after calling MPI_Finalize.
+    //
+    // OpenMPI's docs do not say anything like this (https://docs.open-mpi.org/en/v5.0.0/man-openmpi/man3/MPI_Finalize.3.html)
+    // but it probably doesn't hurt to do as mpich devs suggest
+    MPI_Finalize();
+#endif
     return 0;
 }

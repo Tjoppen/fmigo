@@ -1,4 +1,4 @@
-FROM debian:stretch
+FROM debian:bookworm
 RUN apt update
 
 #
@@ -25,6 +25,7 @@ RUN apt install --yes \
   libxml2-dev \
   libxslt1-dev \
   ninja-build \
+  openmpi-bin \
   protobuf-c-compiler \
   protobuf-compiler \
   python3 \
@@ -52,8 +53,6 @@ RUN  chown -R gitlab-ci /home/gitlab-ci/umit
 USER gitlab-ci
 WORKDIR /home/gitlab-ci/umit
 RUN export PATH=/usr/lib/ccache:$PATH
-# Error out on warnings on all platforms except buster
-RUN export WERROR=-Werror
 
 # docker doesn't copy empty directories for some reason
 RUN mkdir 3rdparty/FMILibrary-2.0.1/ThirdParty/Expat/expat-2.1.0/src

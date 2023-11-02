@@ -135,7 +135,7 @@ int main(int argc, char *argv[]) {
   }
 
   return EXIT_SUCCESS;
- } catch (zmq::error_t e) {
+ } catch (zmq::error_t& e) {
       //catch any stray ZMQ exceptions
       //this should prevent "program stopped working" messages on Windows when fmigo-servers are taskkill'd
      error("zmq::error_t in %s: %s\n", argv[0], e.what());

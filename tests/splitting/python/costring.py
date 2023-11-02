@@ -3,7 +3,6 @@ from pylab import *
 from scipy import *
 from scipy.sparse import *
 from scipy.sparse.linalg  import *
-from scipy.sparse.csc  import *
 from scipy.integrate  import *
 #from scipy.linalg import expm
 import cmath

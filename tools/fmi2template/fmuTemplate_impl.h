@@ -258,7 +258,7 @@ fmi2Component fmi2Instantiate(fmi2String instanceName, fmi2Type fmuType, fmi2Str
             "fmi2Instantiate: Out of memory.");
         return NULL;
     }
-    strlcpy(comp->instanceName,        instanceName,        sizeof(comp->instanceName));
+    strlcpy2(comp->instanceName,        instanceName,        sizeof(comp->instanceName));
     comp->type = fmuType;
     comp->functions = functions;
     comp->componentEnvironment = functions->componentEnvironment;

@@ -91,14 +91,14 @@ if __name__ == '__main__':
 
   cmake = open(os.path.join(d, 'CMakeLists.txt'), 'w')
   cmake.write('''
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.12)
 add_subdirectory(sources)
 ''')
   cmake.close()
 
   cmake2 = open(os.path.join(sources, 'CMakeLists.txt'), 'w')
   cmake2.write('''
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.12)
 project(wrapper)
 
 include(CheckIncludeFiles)

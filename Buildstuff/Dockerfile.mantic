@@ -1,4 +1,4 @@
-FROM ubuntu:kinetic
+FROM ubuntu:mantic
 RUN apt update
 
 # Tell tzdata installer that we're in Europe first, then fix it up to be Europe/Stockholm

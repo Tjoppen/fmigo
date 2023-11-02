@@ -1,8 +1,10 @@
+project(fmigo)
+
 if (WIN32)
   # Needed due to SOURCE_SUBDIR
   cmake_minimum_required(VERSION 3.7.2)
 else ()
-  cmake_minimum_required(VERSION 2.8)
+  cmake_minimum_required(VERSION 2.8.12)
 endif ()
 
 find_package(Threads REQUIRED)
@@ -13,11 +15,13 @@ enable_testing()
 configure_file(${CMAKE_SOURCE_DIR}/Buildstuff/CTestCustom.cmake ${CMAKE_BINARY_DIR})
 
 if(CMAKE_VERSION VERSION_GREATER "3.3")
-    #suppress warning about libexpat.a
-    cmake_policy(SET CMP0058 OLD)
+    cmake_policy(SET CMP0058 NEW)
 endif()
 
 # cmake_policy(SET CMP0045 OLD)
+if(CMAKE_VERSION VERSION_GREATER "3.20")
+    cmake_policy(SET CMP0115 NEW)
+endif()
 
 if (CMAKE_VERSION VERSION_GREATER "3.0")
     # CMake Warning (dev):
@@ -30,7 +34,7 @@ endif ()
 # Set default build type
 if(NOT CMAKE_BUILD_TYPE)
     message(STATUS "CMake build type set to RELEASE.")
-    set(CMAKE_BUILD_TYPE Release CACHE String "" FORCE)
+    set(CMAKE_BUILD_TYPE Release CACHE STRING "" FORCE)
 endif()
 
 SET(FMIGO_MAJOR_VERSION 0)

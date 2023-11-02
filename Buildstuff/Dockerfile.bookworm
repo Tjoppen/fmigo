@@ -19,12 +19,13 @@ RUN apt install --yes \
   libgsl-dev \
   libhdf5-dev \
   libmatio-dev \
+  libopenmpi-dev \
   libprotobuf-dev \
   libsuitesparse-dev \
   libxml2-dev \
   libxslt1-dev \
-  mpich \
   ninja-build \
+  openmpi-bin \
   protobuf-c-compiler \
   protobuf-compiler \
   python3 \

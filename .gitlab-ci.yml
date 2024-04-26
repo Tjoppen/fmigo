@@ -52,6 +52,13 @@ build:mantic:
   tags:
     - shell
 
+build:noble:
+  stage: build
+  script:
+    - docker build -t umit/noble:$(git rev-parse HEAD) -f Buildstuff/Dockerfile.noble .
+  tags:
+    - shell
+
 test:bionic:
   stage: test
   script:
@@ -112,5 +119,14 @@ test:mantic:
     - docker run --workdir /home/gitlab-ci/umit umit/mantic:$(git rev-parse HEAD) bash run_tests.sh
   dependencies:
     - build:mantic
+  tags:
+    - shell
+
+test:noble:
+  stage: test
+  script:
+    - docker run --workdir /home/gitlab-ci/umit umit/noble:$(git rev-parse HEAD) bash run_tests.sh
+  dependencies:
+    - build:noble
   tags:
     - shell

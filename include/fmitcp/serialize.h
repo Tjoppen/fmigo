@@ -9,7 +9,12 @@ namespace fmitcp {
     namespace serialize {
         template<typename T> std::string pack(fmitcp_proto::fmitcp_message_Type type, T &req) {
           uint16_t t = type;
+#if GOOGLE_PROTOBUF_VERSION >= 3021000
+          // ByteSize() is deprecated on newer versions of protobuf
+          std::string ret(2 + req.ByteSizeLong(), 0);
+#else
           std::string ret(2 + req.ByteSize(), 0);
+#endif
           ret[0] = (uint8_t)t;
           ret[1] = (uint8_t)(t>>8);
           req.SerializeWithCachedSizesToArray((uint8_t*)&ret[2]);

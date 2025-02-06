@@ -45,13 +45,6 @@ build:bookworm:
   tags:
     - shell
 
-build:mantic:
-  stage: build
-  script:
-    - docker build -t umit/mantic:$(git rev-parse HEAD) -f Buildstuff/Dockerfile.mantic .
-  tags:
-    - shell
-
 build:noble:
   stage: build
   script:
@@ -110,15 +103,6 @@ test:bookworm:
     - docker run --workdir /home/gitlab-ci/umit umit/bookworm:$(git rev-parse HEAD) bash run_tests.sh
   dependencies:
     - build:bookworm
-  tags:
-    - shell
-
-test:mantic:
-  stage: test
-  script:
-    - docker run --workdir /home/gitlab-ci/umit umit/mantic:$(git rev-parse HEAD) bash run_tests.sh
-  dependencies:
-    - build:mantic
   tags:
     - shell
 

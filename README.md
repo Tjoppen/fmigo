@@ -32,11 +32,18 @@ pip install -r Buildstuff/requirements.txt
 pip3 install -r Buildstuff/requirements.txt
 ```
 
-Finally, bash is also required for running tests.
+bash is required for running tests.
 Any version released in the last ten or so years should work fine.
 bash 4.3.11 and 4.3.48 are confirmed working via GitLab CI.
 win-bash 0.8.5 is confirmed to *not* work however, due to the lack of subprocesses.
 More information about Windows specifics will be given in the Windows section.
+
+FMILibrary is handled as a submodule, so you must initialize submodules before building:
+
+```bash
+git submodule init
+git submodule update
+```
 
 ## GNU/Linux
 

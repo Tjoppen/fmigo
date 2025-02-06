@@ -86,7 +86,7 @@ if __name__ == '__main__':
   shutil.copytree(os.path.join(wrapper_path), os.path.join(sources, 'tools/wrapper'))
   shutil.copytree(os.path.join(wrapper_path, '../../tools/fmi2template'), os.path.join(sources, 'tools/fmi2template'))
   shutil.copytree(os.path.join(wrapper_path, '../../tools/cgsl'), os.path.join(sources, 'tools/cgsl'))
-  shutil.copytree(os.path.join(wrapper_path, '../../3rdparty/FMILibrary-2.0.1'), os.path.join(sources, '3rdparty/FMILibrary-2.0.1'))
+  shutil.copytree(os.path.join(wrapper_path, '../../3rdparty/FMILibrary-3.0a4'), os.path.join(sources, '3rdparty/FMILibrary-3.0a4'))
   shutil.copytree(os.path.join(wrapper_path, '../../3rdparty/wingsl'), os.path.join(sources, '3rdparty/wingsl'))
 
   cmake = open(os.path.join(d, 'CMakeLists.txt'), 'w')
@@ -110,14 +110,14 @@ if (WRAPPER_USE_FILTER)
 endif ()
 
 # Don't bother building FMILib if we have one installed systemwide
-# Assume it's a good version. We can't really check if it is >= 2.0.1 unfortunately
+# Assume it's a good version. We can't really check if it is >= 3.0a4 unfortunately
 if (NOT HAVE_FMILIB_H)
   if(CMAKE_VERSION VERSION_GREATER "3.3")
       #suppress warning about libexpat.a
       cmake_policy(SET CMP0058 OLD)
   endif()
 
-  set(FMILIBRARY_DIR 3rdparty/FMILibrary-2.0.1)
+  set(FMILIBRARY_DIR 3rdparty/FMILibrary-3.0a4)
   add_subdirectory(${FMILIBRARY_DIR})
   include_directories(${CMAKE_CURRENT_BINARY_DIR}/${FMILIBRARY_DIR})
   include_directories(${FMILIBRARY_DIR}/src/CAPI/include)

@@ -9,7 +9,6 @@
 #include "master/StrongConnector.h"
 #include "WeakConnection.h"
 #include "common/common.h"
-#include <FMI2/fmi2_functions.h>
 #include "../master/control.pb.h"
 
 namespace fmitcp_master {

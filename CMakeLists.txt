@@ -174,8 +174,9 @@ endif(WIN32)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/tools/strong-coupling-core/include)
 
-set(FMILIBRARY_DIR 3rdparty/FMILibrary-2.0.1)
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/${FMILIBRARY_DIR})
+set(FMILIBRARY_DIR 3rdparty/FMILibrary-3.0a4)
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/${FMILIBRARY_DIR}/fmilib_include)
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/${FMILIBRARY_DIR}/fmilib_config_include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_DIR}/src/CAPI/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_DIR}/src/Import/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_DIR}/src/Util/include)
@@ -202,6 +203,13 @@ if (APPLE)
 endif()
 
 add_subdirectory(tools/strong-coupling-core)
+
+# touch CMakeCache.txt because FMILibrary's CMakeLists.txt is broken
+execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/3rdparty/FMILibrary-3.0a4")
+execute_process(COMMAND ${CMAKE_COMMAND} -E touch "${CMAKE_CURRENT_BINARY_DIR}/3rdparty/FMILibrary-3.0a4/CMakeCache.txt")
+# fix miniunz.c
+execute_process(COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/miniunz.c" "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/FMILibrary-3.0a4/ThirdParty/Minizip/minizip")
+option(FMILIB_BUILD_TESTS "" OFF)
 add_subdirectory(${FMILIBRARY_DIR})
 
 if (USE_GPL)

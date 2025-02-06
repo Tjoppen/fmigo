@@ -14,6 +14,7 @@ RUN apt install --yes \
   ccache \
   clang \
   cmake \
+  git \
   libczmq-dev \
   libexpat1-dev \
   libgsl-dev \
@@ -52,10 +53,12 @@ RUN  chown -R gitlab-ci /home/gitlab-ci/umit
 # Finally, make us run as gitlab-ci
 USER gitlab-ci
 WORKDIR /home/gitlab-ci/umit
+RUN git submodule init
+RUN git submodule update
 RUN export PATH=/usr/lib/ccache:$PATH
 
 # docker doesn't copy empty directories for some reason
-RUN mkdir 3rdparty/FMILibrary-2.0.1/ThirdParty/Expat/expat-2.1.0/src
+RUN mkdir 3rdparty/FMILibrary-3.0a4/ThirdParty/Expat/expat-2.5.0/src
 RUN mkdir build
 RUN mkdir build-clang
 WORKDIR /home/gitlab-ci/umit/build

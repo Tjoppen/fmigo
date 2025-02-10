@@ -88,22 +88,24 @@ if(WIN32)
         # Assume there is only one toolchain installed and it is compatible with MSVC12
         set(MSVC_TOOLCHAIN_VERSION "")
     endif (MSVC14)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj /FS")
 
     include(ExternalProject)
 
-    set(PROTOBUF_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/protobuf-3.2.0")
+    set(PROTOBUF_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/protobuf-25.6")
 
     ExternalProject_Add(protobuf-ext
         PREFIX "${PROTOBUF_PREFIX}"
-        URL https://github.com/google/protobuf/releases/download/v3.2.0/protobuf-cpp-3.2.0.zip
-        URL_MD5 a6c76f8fd0d393370bf4b32a29273114
-        SOURCE_SUBDIR cmake
-        CONFIGURE_COMMAND ${CMAKE_COMMAND} ${PROTOBUF_PREFIX}/src/protobuf-ext/cmake -G ${CMAKE_GENERATOR} -DBUILD_SHARED_LIBS=ON
+        # 25.6 is the last version to support C++14
+        GIT_REPOSITORY https://github.com/protocolbuffers/protobuf.git
+        GIT_TAG dd4c8a7f331aac15ca501faca7e7f3b9b641ff45 # v25.6
+        CONFIGURE_COMMAND "${CMAKE_COMMAND}" "${PROTOBUF_PREFIX}/src/protobuf-ext" -G "${CMAKE_GENERATOR}" -Dprotobuf_BUILD_SHARED_LIBS=OFF -DCMAKE_CXX_FLAGS=/bigobj -Dprotobuf_BUILD_TESTS=OFF -Dprotobuf_BUILD_EXAMPLES=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF -Dprotobuf_WITH_ZLIB=OFF
         INSTALL_COMMAND ""
+        BUILD_COMMAND "${CMAKE_COMMAND}" --build . --config ${CMAKE_BUILD_TYPE}
     )
 
     include_directories("${PROTOBUF_PREFIX}/src/protobuf-ext/src")
-    include_directories("${PROTOBUF_PREFIX}/src/ex-protobuf-ext1234/protobuf-3.2.0/src")
+    include_directories("${PROTOBUF_PREFIX}/src/protobuf-ext/third_party/abseil-cpp")
     link_directories("${PROTOBUF_PREFIX}/src/protobuf-ext-build/${CMAKE_BUILD_TYPE}")
     set(PROTOBUF_BIN_DIR "${PROTOBUF_PREFIX}/src/protobuf-ext-build/${CMAKE_BUILD_TYPE}")
 
@@ -144,13 +146,14 @@ if(WIN32)
     include_directories(${HDF5_DIR}/src/hdf5-ext-build)
     link_directories(${HDF5_DIR}/src/hdf5-ext-build/bin/${CMAKE_BUILD_TYPE})
 
-    set(ZMQ_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/zeromq-4.2.3")
+    set(ZMQ_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/zeromq-4.3.5")
 
     ExternalProject_Add(zmq-ext
         PREFIX "${ZMQ_PREFIX}"
         GIT_REPOSITORY "https://github.com/zeromq/libzmq.git"
-        GIT_TAG 44f96a36521a8410378ddc83d7c4ff258da5d399
+        GIT_TAG 622fc6dde99ee172ebaa9c8628d85a7a1995a21d # v4.3.5
         INSTALL_COMMAND ""
+        BUILD_COMMAND "${CMAKE_COMMAND}" --build . --config ${CMAKE_BUILD_TYPE}
     )
 
     include_directories("${ZMQ_PREFIX}/src/zmq-ext/include")
@@ -177,6 +180,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/tools/strong-coupling-core/inclu
 set(FMILIBRARY_DIR 3rdparty/FMILibrary-3.0a4)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/${FMILIBRARY_DIR}/fmilib_include)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/${FMILIBRARY_DIR}/fmilib_config_include)
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/${FMILIBRARY_DIR}/ExpatEx/install/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_DIR}/src/CAPI/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_DIR}/src/Import/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_DIR}/src/Util/include)
@@ -410,7 +414,7 @@ ENDIF(WIN32)
 # Compile proto
 set(FMITCP_PROTOBUF_TARGETS ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.pb.cc ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp_pb2.py)
 add_custom_command(OUTPUT ${FMITCP_PROTOBUF_TARGETS}
-    COMMAND ${PROTOC} --cpp_out=. --python_out=. fmitcp.proto
+    COMMAND ${PROTOC} --cpp_out=${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp --python_out=${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.proto --proto_path ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp
     WORKING_DIRECTORY   ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp
     DEPENDS libprotobuf ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.proto)
 #can't depend on the generated files themselves because CMake is awful. create a custom target instead
@@ -529,17 +533,17 @@ endif ()
 
 add_subdirectory(tools/ssp)
 
-add_executable(mpi-speed-test src/mpi-speed-test.cpp)
 if (NOT WIN32)
+    add_executable(mpi-speed-test src/mpi-speed-test.cpp)
     # OpenMPI on trusty won't compile with -std=c++11 or later
     # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=796985
     set_target_properties(mpi-speed-test PROPERTIES COMPILE_FLAGS -std=c++03)
-endif ()
-install(TARGETS mpi-speed-test DESTINATION bin)
+    install(TARGETS mpi-speed-test DESTINATION bin)
 
-if (USE_TRACEANALYZER)
-    set_target_properties(mpi-speed-test PROPERTIES LINK_FLAGS -trace)
-    set_target_properties(${MPI_MASTER_NAME} PROPERTIES LINK_FLAGS -trace)
+    if (USE_TRACEANALYZER)
+        set_target_properties(mpi-speed-test PROPERTIES LINK_FLAGS -trace)
+        set_target_properties(${MPI_MASTER_NAME} PROPERTIES LINK_FLAGS -trace)
+    endif ()
 endif ()
 
 

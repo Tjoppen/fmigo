@@ -73,7 +73,30 @@ This should be the case on any GNU-ish system.
 
 ## Windows
 
-There are two major paths to building on Windows: Microsoft Visual Studio 2015 and msys2.
+There are three major paths to building on Windows: Microsoft Visual Studio 2022, Microsoft Visual Studio 2015 and msys2.
+
+### Microsoft Visual Studio 2022
+
+Install MS-MPI first. See the 2015 instruction for more information.
+
+The 2022 build is somewhat "minimal" compared to the old 2015 build.
+It only supports 64-bit builds.
+Because of issues with compiling and linking SuiteSparse, strong coupling must be disabled (`-DENABLE_SC=OFF`).
+Due to GSL issues all FMUs must also be disabled, as well as loop solving. `-DBUILD_FMUS=OFF -DUSE_GPL=OFF` accomplishes this.
+libmatio is a hassle on Windows, so it too must be disabled with `-DUSE_MATIO=OFF`.
+In the future some of these features may be brough back up into working condition.
+
+The following command will work under `bash.exe` (as shipped with git) and `cmd.exe`:
+
+```
+git submodule update --init
+mkdir build
+cd build
+cmake -DENABLE_SC=OFF -DBUILD_FMUS=OFF -DUSE_GPL=OFF -DUSE_MATIO=OFF ..
+cmake --build . --target install
+```
+
+The build artifacts will be copied to `build/install`.
 
 ### Microsoft Visual Studio 2015
 

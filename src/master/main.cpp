@@ -15,11 +15,13 @@
 #include "common/common.h"
 #include "master/WeakMasters.h"
 #include "master/parseargs.h"
+#ifdef ENABLE_SC
 #include <sc/BallJointConstraint.h>
 #include <sc/LockConstraint.h>
 #include <sc/ShaftConstraint.h>
 #include <sc/MultiWayConstraint.h>
 #include "master/StrongMaster.h"
+#endif
 #ifndef WIN32
 #include <sys/time.h>
 #include <unistd.h>
@@ -75,6 +77,7 @@ static vector<WeakConnection> setupWeakConnections(vector<connection> connection
     return weakConnections;
 }
 
+#ifdef ENABLE_SC
 static StrongConnector* findOrCreateBallLockConnector(FMIClient *client,
         int posX, int posY, int posZ,
         int accX, int accY, int accZ,
@@ -116,6 +119,7 @@ static StrongConnector* findOrCreateShaftConnector(FMIClient *client,
     sc->setTorqueValueRefs             (torque,     -1, -1);
     return sc;
 }
+#endif
 
 static int vrFromKeyName(FMIClient* client, string key){
 
@@ -138,6 +142,7 @@ static int vrFromKeyName(FMIClient* client, string key){
 #define toVR(i, index)                                   \
   vrFromKeyName(clients[it->fmus[i]],it->vrORname[index])
 
+#ifdef ENABLE_SC
 static Solver* setupConstraintsAndSolver(vector<strongconnection> strongConnections, vector<FMIClient*> clients) {
     if (strongConnections.size() == 0) {
         return NULL;
@@ -213,6 +218,7 @@ static Solver* setupConstraintsAndSolver(vector<strongconnection> strongConnecti
 
    return solver;
 }
+#endif
 
 static param param_from_vr_type_string(int vr, fmi2_base_type_enu_t type, string s, string varname="") {
     param p;
@@ -687,7 +693,9 @@ static void pushResults(int step, double t, double endTime, double timeStep, zmq
    Utility so variable names can be used on the command line.
  */
 static int connectionNamesToVr(std::vector<connection> &connections,
+#ifdef ENABLE_SC
                         vector<strongconnection> &strongConnections,
+#endif
                         const vector<FMIClient*> clients // could not get this to compile when defined in parseargs
                         ){
     for(size_t i = 0; i < connections.size(); i++){
@@ -701,12 +709,14 @@ static int connectionNamesToVr(std::vector<connection> &connections,
       }
     }
 
+#ifdef ENABLE_SC
     for(size_t i = 0; i < strongConnections.size(); i++){
       size_t j = 0;
       if(strongConnections[i].vrORname.size()%2 != 0 && strongConnections[i].type != "multiway"){
         fatal("strong connection needs even number of connections for fmu0 and fmu1\n");
       }
     }
+#endif
   return 0;
 }
 
@@ -790,7 +800,9 @@ int main(int argc, char *argv[] ) {
     int realtimeMode = 0;
     vector<Rend> executionOrder;
     vector<int> fmuVisibilities;
+#ifdef ENABLE_SC
     vector<strongconnection> scs;
+#endif
     string fieldnameFilename;
     bool holonomic = true;
     bool useHeadersInCSV = false;
@@ -806,7 +818,10 @@ int main(int argc, char *argv[] ) {
             argc, argv, &fmuURIs, &connections, &params, &endTime, &timeStep,
             &fmigo_loglevel, &outFilePath, &fmigo::globals::fileFormat,
             &realtimeMode, &executionOrder, &fmuVisibilities,
-            &scs, &hdf5Filename, &fieldnameFilename, &holonomic, &compliance,
+#ifdef ENABLE_SC
+            &scs,
+#endif
+            &hdf5Filename, &fieldnameFilename, &holonomic, &compliance,
             &command_port, &results_port, &startPaused, &solveLoops, &useHeadersInCSV, &csv_fmu, &maxSamples, &relaxation,
             &writeSolverFields
     );
@@ -879,25 +894,38 @@ int main(int argc, char *argv[] ) {
         (*it)->sendMessageBlocking(get_xml());
     }
 
-    connectionNamesToVr(connections,scs,clients);
+    connectionNamesToVr(
+        connections,
+#ifdef ENABLE_SC
+        scs,
+#endif
+        clients
+    );
     vector<WeakConnection> weakConnections = setupWeakConnections(connections, clients);
 
     BaseMaster *master = NULL;
     string fieldnames = getFieldnames(clients);
 
+#ifdef ENABLE_SC
     if (hasModelExchangeFMUs(clients)) {
         if (scs.size()) {
             fatal("Cannot do ModelExchange and kinematic coupling at the same time currently\n");
         }
+#endif
         master = (BaseMaster*)new JacobiMaster(context, clients, weakConnections);
+#ifdef ENABLE_SC
     } else {
-        Solver *solver = setupConstraintsAndSolver(scs, clients);
+        Solver *solver = setupConstraintsAndSolver(
+            scs,
+            clients
+        );
         if (solver) {
             solver->setSpookParams(relaxation,compliance,timeStep);
         }
         StrongMaster *sm = new StrongMaster(context, clients, weakConnections, solver, holonomic, executionOrder);
         master = sm;
     }
+#endif
 
     master->zmqControl = command_port > 0;
 

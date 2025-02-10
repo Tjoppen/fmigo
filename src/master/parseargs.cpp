@@ -434,7 +434,9 @@ void fmitcp_master::parseArguments( int argc,
                     int * realtimeMode,
                     std::vector<Rend> *executionOrder,
                     std::vector<int> *fmuVisibilities,
+#ifdef ENABLE_SC
                     vector<strongconnection> *strongConnections,
+#endif
                     string *hdf5Filename,
                     string *fieldnameFilename,
                     bool *holonomic,
@@ -544,6 +546,7 @@ void fmitcp_master::parseArguments( int argc,
             break;
 
         case 'C':
+#ifdef ENABLE_SC
             //strong connections
             for (auto it = parts.begin(); it != parts.end(); it++) {
                 deque<string> values = escapeSplit(*it, ',');
@@ -571,6 +574,9 @@ void fmitcp_master::parseArguments( int argc,
 
                 strongConnections->push_back(sc);
             }
+#else
+            fatal("Strong coupling solver disabled at compile time");
+#endif
             break;
 
         case 'd':
@@ -865,6 +871,7 @@ void fmitcp_master::parseArguments( int argc,
     }
 
     i = 0;
+#ifdef ENABLE_SC
     for (auto it = strongConnections->begin(); it != strongConnections->end(); it++, i++) {
         for (int fmu : it->fmus) {
             if(fmu < 0 || (size_t)fmu >= numFMUs){
@@ -872,6 +879,7 @@ void fmitcp_master::parseArguments( int argc,
             }
         }
     }
+#endif
 
     if (method == jacobi || (method == method_none && executionOrder->size() == 0)) {
         if (g.size() != 0) {

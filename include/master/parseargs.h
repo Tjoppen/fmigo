@@ -92,7 +92,9 @@ void parseArguments( int argc,
                     int * realtimeMode,
                     std::vector<Rend> *executionOrder,
                     std::vector<int> *fmuVisibilities,
+#ifdef ENABLE_SC
                     std::vector<strongconnection> *strongConnections,
+#endif
                     std::string *hdf5Filename,
                     std::string *fieldnameFilename,
                     bool *holonomic,

@@ -23,17 +23,23 @@ void jmCallbacksLoggerClient(jm_callbacks* c, jm_string module, jm_log_level_enu
 }
 
 #ifdef USE_MPI
-FMIClient::FMIClient(int world_rank, int id) : fmitcp::Client(world_rank), sc::Slave() {
+FMIClient::FMIClient(int world_rank, int id) : fmitcp::Client(world_rank)
 #else
-FMIClient::FMIClient(zmq::context_t &context, int id, string uri) : fmitcp::Client(context, uri), sc::Slave() {
+FMIClient::FMIClient(zmq::context_t &context, int id, string uri) : fmitcp::Client(context, uri)
 #endif
+#ifdef ENABLE_SC
+    , sc::Slave()
+#endif
+{
     m_id = id;
     m_fmi2Instance = NULL;
     m_context = NULL;
     m_fmi2Outputs = NULL;
     m_stateId = 0;
     m_fmuState = control_proto::fmu_state_State_instantiating;
+#ifdef ENABLE_SC
     m_hasComputedStrongConnectorValueReferences = false;
+#endif
 };
 
 void FMIClient::terminate() {
@@ -269,6 +275,7 @@ void FMIClient::on_fmi2_import_get_nominal_continuous_states_res   (const vector
 //void on_fmi2_import_set_boolean_res                     (int mid, fmitcp_proto::fmi2_status_t status);
 //void on_fmi2_import_set_string_res                      (int mid, fmitcp_proto::fmi2_status_t status);
 
+#ifdef ENABLE_SC
 StrongConnector * FMIClient::createConnector(){
     StrongConnector * conn = new StrongConnector(this);
     addConnector(conn);
@@ -330,6 +337,7 @@ const std::vector<int>& FMIClient::getStrongConnectorValueReferences() const {
     m_hasComputedStrongConnectorValueReferences = true;
     return m_strongConnectorValueReferences;
 };
+#endif
 
 void FMIClient::sendSetX(const SendSetXType& typeRefsValues) {
     if (typeRefsValues.reals.size() > 0) {

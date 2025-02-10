@@ -6,7 +6,9 @@
 #include <fmitcp/Client.h>
 #include <sc/Slave.h>
 #include <string>
+#ifdef ENABLE_SC
 #include "master/StrongConnector.h"
+#endif
 #include "WeakConnection.h"
 #include "common/common.h"
 #include "../master/control.pb.h"
@@ -23,13 +25,19 @@ namespace fmitcp_master {
     typedef std::map<std::pair<int, fmi2_base_type_enu_t>, variable> variable_vr_map;
 
     /// Adds high-level FMI methods to the Client, similar to FMILibrary functions.
-    class FMIClient : public fmitcp::Client, public sc::Slave {
+    class FMIClient : public fmitcp::Client
+#ifdef ENABLE_SC
+        , public sc::Slave
+#endif
+    {
 
     private:
         std::string m_xml;
         bool m_initialized;
+#ifdef ENABLE_SC
         mutable bool m_hasComputedStrongConnectorValueReferences;
         mutable std::vector<int> m_strongConnectorValueReferences;
+#endif
 
         // variables for modelDescription.xml
         jm_callbacks m_jmCallbacks;
@@ -69,6 +77,7 @@ namespace fmitcp_master {
 
         bool isInitialized();
 
+#ifdef ENABLE_SC
         /// Create a strong coupling connector for this client
         StrongConnector* createConnector();
 
@@ -80,6 +89,7 @@ namespace fmitcp_master {
 
         void setConnectorValues          (const std::vector<int>& valueRefs, const std::vector<double>& values);
         void setConnectorFutureVelocities(const std::vector<int>& valueRefs, const std::vector<double>& values);
+#endif
 
         bool hasCapability(fmi2_capabilities_enu_t cap) const;
 

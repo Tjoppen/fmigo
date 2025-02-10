@@ -54,6 +54,7 @@ else ()
 endif ()
 option(USE_MATIO "Enable Matlab output via libmatio?" ${MATIO_DEFAULT})
 option(USE_TRACEANALYZER "Add instrumentation for Intel Traceanalyzer?" OFF)
+option(ENABLE_SC "Enable strong coupling master? Disabling this removes the dependency on suitesparse" ON)
 
 set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/install)
 
@@ -107,27 +108,29 @@ if(WIN32)
     link_directories("${PROTOBUF_PREFIX}/src/protobuf-ext-build/${CMAKE_BUILD_TYPE}")
     set(PROTOBUF_BIN_DIR "${PROTOBUF_PREFIX}/src/protobuf-ext-build/${CMAKE_BUILD_TYPE}")
 
-    set(SUITESPARSE_DIR "${CMAKE_CURRENT_BINARY_DIR}/suitesparse-metis-for-windows")
+    if (ENABLE_SC)
+        set(SUITESPARSE_DIR "${CMAKE_CURRENT_BINARY_DIR}/suitesparse-metis-for-windows")
 
-    ExternalProject_Add(suitesparse-ext
-        PREFIX ${SUITESPARSE_DIR}
-        URL https://github.com/jlblancoc/suitesparse-metis-for-windows/archive/232acd3f6c2ab2539167043e31c22a1ac1f599b8.zip
-        URL_MD5 1e9b5fcdc38ec0c2aebe3d3cbd1ee8cd
-    )
+        ExternalProject_Add(suitesparse-ext
+            PREFIX ${SUITESPARSE_DIR}
+            URL https://github.com/jlblancoc/suitesparse-metis-for-windows/archive/232acd3f6c2ab2539167043e31c22a1ac1f599b8.zip
+            URL_MD5 1e9b5fcdc38ec0c2aebe3d3cbd1ee8cd
+        )
 
-    if (CMAKE_GENERATOR MATCHES "^.*Win64") # Maybe there is a better way to detect 64-bit builds?
-        link_directories($ENV{MSMPI_LIB64})
-        set(SUITESPARSE_LIBDIR ${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib64)
-    else ()
-        link_directories($ENV{MSMPI_LIB32})
-        set(SUITESPARSE_LIBDIR ${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib)
+        if (CMAKE_GENERATOR MATCHES "^.*Win64") # Maybe there is a better way to detect 64-bit builds?
+            link_directories($ENV{MSMPI_LIB64})
+            set(SUITESPARSE_LIBDIR ${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib64)
+        else ()
+            link_directories($ENV{MSMPI_LIB32})
+            set(SUITESPARSE_LIBDIR ${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib)
+        endif ()
+
+        include_directories(${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/include)
+        include_directories(${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/include/suitesparse)
+        link_directories(${SUITESPARSE_LIBDIR})
+        link_directories(${SUITESPARSE_LIBDIR}/lapack_blas_windows)
+        link_directories(${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib64) # libmetis.lib always ends up in lib64
     endif ()
-
-    include_directories(${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/include)
-    include_directories(${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/include/suitesparse)
-    link_directories(${SUITESPARSE_LIBDIR})
-    link_directories(${SUITESPARSE_LIBDIR}/lapack_blas_windows)
-    link_directories(${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib64) # libmetis.lib always ends up in lib64
 
     set(HDF5_DIR "${CMAKE_CURRENT_BINARY_DIR}/hdf5")
     ExternalProject_Add(hdf5-ext
@@ -167,7 +170,9 @@ else(WIN32)
 
     if (NOT APPLE)
         include_directories(/usr/include/hdf5/serial)
-        include_directories(/usr/include/suitesparse)
+        if (ENABLE_SC)
+            include_directories(/usr/include/suitesparse)
+        endif ()
         link_directories(/usr/lib/x86_64-linux-gnu/hdf5/serial)
     endif()
 endif(WIN32)
@@ -202,7 +207,9 @@ if (APPLE)
 
 endif()
 
-add_subdirectory(tools/strong-coupling-core)
+if (ENABLE_SC)
+    add_subdirectory(tools/strong-coupling-core)
+endif ()
 
 # touch CMakeCache.txt because FMILibrary's CMakeLists.txt is broken
 execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/3rdparty/FMILibrary-3.0a4")
@@ -227,12 +234,18 @@ endif ()
 if (NOT WIN32)
   # cl.exe has a different set of flags
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall ${WERROR} -Wno-unused-variable -Wno-unused-function -Wextra -Wno-unused-parameter")
+  if (ENABLE_SC)
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DENABLE_SC")
+  endif ()
   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -DDEBUG")
   FIND_PACKAGE(MPI REQUIRED)
   FIND_PACKAGE(Protobuf REQUIRED)
   INCLUDE_DIRECTORIES(${MPI_INCLUDE_PATH})
 else ()
+  if (ENABLE_SC)
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /DENABLE_SC")
+  endif ()
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /DDEBUG")
 endif ()
 
@@ -261,7 +274,6 @@ set(COMMON_HEADERS
 )
 
 SET(MASTER_SRCS
-    src/master/StrongConnector.cpp
     src/master/main.cpp
     src/master/FMIClient.cpp
     src/master/WeakConnection.cpp
@@ -269,12 +281,14 @@ SET(MASTER_SRCS
     src/common/CSV-parser.cpp
     src/master/BaseMaster.cpp
     src/master/parseargs.cpp
-    src/master/StrongMaster.cpp
     src/master/modelExchange.cpp
     ${COMMON_SRCS}
     src/master/control.pb.cc
     src/master/globals.cpp
 )
+if (ENABLE_SC)
+    set(MASTER_SRCS ${MASTER_SRCS} src/master/StrongConnector.cpp src/master/StrongMaster.cpp)
+endif ()
 SET(MASTER_HEADERS
     include/master/FMIClient.h
     include/master/StrongConnector.h
@@ -341,37 +355,45 @@ IF(WIN32)
         ${Boost_SYSTEM_LIBRARY}
         ${CMAKE_THREAD_LIBS_INIT})
     if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-        set(WINLIBS ${WINLIBS} ${EXTRALIBS} sc libprotobufd libzmq-${CMAKE_VS_PLATFORM_TOOLSET}-mt-gd-4_2_3 libhdf5_hl_D libumfpackd libhdf5_D
-            libamdd libblas libcholmodd libcolamdd libccolamdd libcamdd metisd suitesparseconfigd)
+        set(WINLIBS ${WINLIBS} ${EXTRALIBS} libprotobufd libzmq-${CMAKE_VS_PLATFORM_TOOLSET}-mt-gd-4_2_3 libhdf5_hl_D libhdf5_D)
+        if (ENABLE_SC)
+            set(WINLIBS ${WINLIBS} sc libumfpackd libamdd libblas libcholmodd libcolamdd libccolamdd libcamdd metisd suitesparseconfigd)
+        endif ()
     else()
-        set(WINLIBS ${WINLIBS} ${EXTRALIBS} sc libprotobuf  libzmq-${CMAKE_VS_PLATFORM_TOOLSET}-mt-4_2_3 libhdf5_hl      libumfpack  libhdf5
-            libamd  libblas libcholmod  libcolamd  libccolamd  libcamd  metis  suitesparseconfig)
+        set(WINLIBS ${WINLIBS} ${EXTRALIBS} libprotobuf  libzmq-${CMAKE_VS_PLATFORM_TOOLSET}-mt-4_2_3 libhdf5_hl      libhdf5)
+        if (ENABLE_SC)
+            set(WINLIBS ${WINLIBS} sc libumfpack  libamd  libblas libcholmod  libcolamd  libccolamd  libcamd  metis  suitesparseconfig)
+        endif ()
     endif()
     include_directories($ENV{MSMPI_INC} $ENV{MSMPI_INC}x86)
 
-    if (CMAKE_GENERATOR MATCHES "^.*Win64") # Maybe there is a better way to detect 64-bit builds?
-        install(FILES ${SUITESPARSE_LIBDIR}/lapack_blas_windows/libgcc_s_sjlj-1.dll DESTINATION bin)
-    else ()
-        install(FILES ${SUITESPARSE_LIBDIR}/lapack_blas_windows/libgcc_s_dw2-1.dll DESTINATION bin)
+    if (ENABLE_SC)
+        if (CMAKE_GENERATOR MATCHES "^.*Win64") # Maybe there is a better way to detect 64-bit builds?
+            install(FILES ${SUITESPARSE_LIBDIR}/lapack_blas_windows/libgcc_s_sjlj-1.dll DESTINATION bin)
+        else ()
+            install(FILES ${SUITESPARSE_LIBDIR}/lapack_blas_windows/libgcc_s_dw2-1.dll DESTINATION bin)
+        endif ()
     endif ()
 
     TARGET_LINK_LIBRARIES(${TCP_MASTER_NAME} ${WINLIBS})
     TARGET_LINK_LIBRARIES(${TCP_SERVER_NAME}  ${WINLIBS})
     target_link_libraries(${MPI_MASTER_NAME} ${WINLIBS} msmpi)
 
+    if (ENABLE_SC)
+        install (FILES
+            ${SUITESPARSE_LIBDIR}/lapack_blas_windows/libblas.dll
+            ${SUITESPARSE_LIBDIR}/lapack_blas_windows/libgfortran-3.dll
+            ${SUITESPARSE_LIBDIR}/lapack_blas_windows/libquadmath-0.dll
+            DESTINATION bin
+        )
+    endif ()
     if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
     INSTALL (FILES
-        ${SUITESPARSE_LIBDIR}/lapack_blas_windows/libblas.dll
-        ${SUITESPARSE_LIBDIR}/lapack_blas_windows/libgfortran-3.dll
-        ${SUITESPARSE_LIBDIR}/lapack_blas_windows/libquadmath-0.dll
         ${PROTOBUF_PREFIX}/src/protobuf-ext-build/${CMAKE_BUILD_TYPE}/libprotobufd.dll
         ${ZMQ_PREFIX}/src/zmq-ext-build/bin/${CMAKE_BUILD_TYPE}/libzmq-${CMAKE_VS_PLATFORM_TOOLSET}-mt-gd-4_2_3.dll
         DESTINATION bin)
     else()
     INSTALL (FILES
-        ${SUITESPARSE_LIBDIR}/lapack_blas_windows/libblas.dll
-        ${SUITESPARSE_LIBDIR}/lapack_blas_windows/libgfortran-3.dll
-        ${SUITESPARSE_LIBDIR}/lapack_blas_windows/libquadmath-0.dll
         ${PROTOBUF_PREFIX}/src/protobuf-ext-build/${CMAKE_BUILD_TYPE}/libprotobuf.dll
         ${ZMQ_PREFIX}/src/zmq-ext-build/bin/${CMAKE_BUILD_TYPE}/libzmq-${CMAKE_VS_PLATFORM_TOOLSET}-mt-4_2_3.dll
         DESTINATION bin)
@@ -381,8 +403,6 @@ ELSE(WIN32)
     SET(LINUXLIBS
         fmilib
         dl
-        ##sc m umfpack amd blas atlas cholmod colamd suitesparseconfig # For strong coupling
-        sc m umfpack amd blas cholmod colamd suitesparseconfig # For strong coupling
         hdf5
         hdf5_hl
         zmq
@@ -391,6 +411,9 @@ ELSE(WIN32)
         ${Boost_SYSTEM_LIBRARY}
         ${PROTOBUF_LIBRARY}
         ${CMAKE_THREAD_LIBS_INIT})
+    if (ENABLE_SC)
+        set(LINUXLIBS ${LINUXLIBS} sc m umfpack amd blas cholmod colamd suitesparseconfig) # For strong coupling
+    endif ()
     TARGET_LINK_LIBRARIES(${TCP_MASTER_NAME} ${LINUXLIBS} ${EXTRALIBS})
     TARGET_LINK_LIBRARIES(${TCP_SERVER_NAME}  ${LINUXLIBS})
 
@@ -471,7 +494,9 @@ add_dependencies(fmigo-mpi    fmilib)
 
 
 if (WIN32)
-    add_dependencies(sc suitesparse-ext)
+    if (ENABLE_SC)
+        add_dependencies(sc suitesparse-ext)
+    endif ()
     add_dependencies(fmigo-master protobuf-ext hdf5-ext zmq-ext)
     add_dependencies(fmigo-server protobuf-ext hdf5-ext zmq-ext)
     add_dependencies(fmigo-mpi    protobuf-ext hdf5-ext zmq-ext)

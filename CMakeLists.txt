@@ -89,24 +89,24 @@ if(WIN32)
         # Assume there is only one toolchain installed and it is compatible with MSVC12
         set(MSVC_TOOLCHAIN_VERSION "")
     endif (MSVC14)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj /FS")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj /FS /DPROTOBUF_USE_DLLS")
 
     include(ExternalProject)
 
-    set(PROTOBUF_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/protobuf-25.6")
+    set(PROTOBUF_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/protobuf-21.12")
 
     ExternalProject_Add(protobuf-ext
         PREFIX "${PROTOBUF_PREFIX}"
         # 25.6 is the last version to support C++14
+        # 21.12 is the last version to not require abseil-cpp
         GIT_REPOSITORY https://github.com/protocolbuffers/protobuf.git
-        GIT_TAG dd4c8a7f331aac15ca501faca7e7f3b9b641ff45 # v25.6
-        CONFIGURE_COMMAND "${CMAKE_COMMAND}" "${PROTOBUF_PREFIX}/src/protobuf-ext" -G "${CMAKE_GENERATOR}" -Dprotobuf_BUILD_SHARED_LIBS=OFF -DCMAKE_CXX_FLAGS=/bigobj -Dprotobuf_BUILD_TESTS=OFF -Dprotobuf_BUILD_EXAMPLES=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF -Dprotobuf_WITH_ZLIB=OFF
+        GIT_TAG f0dc78d7e6e331b8c6bb2d5283e06aa26883ca7c # v21.12
+        CONFIGURE_COMMAND "${CMAKE_COMMAND}" "${PROTOBUF_PREFIX}/src/protobuf-ext" -G "${CMAKE_GENERATOR}" -Dprotobuf_BUILD_SHARED_LIBS=ON -DCMAKE_CXX_FLAGS=/bigobj -Dprotobuf_BUILD_TESTS=OFF -Dprotobuf_BUILD_EXAMPLES=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF -Dprotobuf_WITH_ZLIB=OFF
         INSTALL_COMMAND ""
         BUILD_COMMAND "${CMAKE_COMMAND}" --build . --config ${CMAKE_BUILD_TYPE}
     )
 
     include_directories("${PROTOBUF_PREFIX}/src/protobuf-ext/src")
-    include_directories("${PROTOBUF_PREFIX}/src/protobuf-ext/third_party/abseil-cpp")
     link_directories("${PROTOBUF_PREFIX}/src/protobuf-ext-build/${CMAKE_BUILD_TYPE}")
     set(PROTOBUF_BIN_DIR "${PROTOBUF_PREFIX}/src/protobuf-ext-build/${CMAKE_BUILD_TYPE}")
 

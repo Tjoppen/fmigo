@@ -120,10 +120,8 @@ if(WIN32)
         )
 
         if (CMAKE_GENERATOR MATCHES "^.*Win64") # Maybe there is a better way to detect 64-bit builds?
-            link_directories($ENV{MSMPI_LIB64})
             set(SUITESPARSE_LIBDIR ${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib64)
         else ()
-            link_directories($ENV{MSMPI_LIB32})
             set(SUITESPARSE_LIBDIR ${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib)
         endif ()
 
@@ -381,6 +379,13 @@ IF(WIN32)
 
     TARGET_LINK_LIBRARIES(${TCP_MASTER_NAME} ${WINLIBS})
     TARGET_LINK_LIBRARIES(${TCP_SERVER_NAME}  ${WINLIBS})
+
+    # Only support 64-bit MSMPI
+    # Matching "Win64" doesn't work on MSVC 2022
+    # Also for some reason link_directories("$ENV{MSMPI_LIB64}") doesn't work
+    # Copying msmpi.lib into the build directory does work, so do that
+    execute_process(COMMAND ${CMAKE_COMMAND} -E copy "$ENV{MSMPI_LIB64}/msmpi.lib" "${CMAKE_CURRENT_BINARY_DIR}")
+    link_directories("${CMAKE_CURRENT_BINARY_DIR}")
     target_link_libraries(${MPI_MASTER_NAME} ${WINLIBS} msmpi)
 
     if (ENABLE_SC)

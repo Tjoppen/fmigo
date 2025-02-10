@@ -359,12 +359,12 @@ IF(WIN32)
         ${Boost_SYSTEM_LIBRARY}
         ${CMAKE_THREAD_LIBS_INIT})
     if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-        set(WINLIBS ${WINLIBS} ${EXTRALIBS} libprotobufd libzmq-${CMAKE_VS_PLATFORM_TOOLSET}-mt-gd-4_2_3 libhdf5_hl_D libhdf5_D)
+        set(WINLIBS ${WINLIBS} ${EXTRALIBS} libprotobufd libzmq-${CMAKE_VS_PLATFORM_TOOLSET}-mt-gd-4_3_5 libhdf5_hl_D libhdf5_D)
         if (ENABLE_SC)
             set(WINLIBS ${WINLIBS} sc libumfpackd libamdd libblas libcholmodd libcolamdd libccolamdd libcamdd metisd suitesparseconfigd)
         endif ()
     else()
-        set(WINLIBS ${WINLIBS} ${EXTRALIBS} libprotobuf  libzmq-${CMAKE_VS_PLATFORM_TOOLSET}-mt-4_2_3 libhdf5_hl      libhdf5)
+        set(WINLIBS ${WINLIBS} ${EXTRALIBS} libprotobuf  libzmq-${CMAKE_VS_PLATFORM_TOOLSET}-mt-4_3_5 libhdf5_hl      libhdf5)
         if (ENABLE_SC)
             set(WINLIBS ${WINLIBS} sc libumfpack  libamd  libblas libcholmod  libcolamd  libccolamd  libcamd  metis  suitesparseconfig)
         endif ()
@@ -394,12 +394,12 @@ IF(WIN32)
     if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
     INSTALL (FILES
         ${PROTOBUF_PREFIX}/src/protobuf-ext-build/${CMAKE_BUILD_TYPE}/libprotobufd.dll
-        ${ZMQ_PREFIX}/src/zmq-ext-build/bin/${CMAKE_BUILD_TYPE}/libzmq-${CMAKE_VS_PLATFORM_TOOLSET}-mt-gd-4_2_3.dll
+        ${ZMQ_PREFIX}/src/zmq-ext-build/bin/${CMAKE_BUILD_TYPE}/libzmq-${CMAKE_VS_PLATFORM_TOOLSET}-mt-gd-4_3_5.dll
         DESTINATION bin)
     else()
     INSTALL (FILES
         ${PROTOBUF_PREFIX}/src/protobuf-ext-build/${CMAKE_BUILD_TYPE}/libprotobuf.dll
-        ${ZMQ_PREFIX}/src/zmq-ext-build/bin/${CMAKE_BUILD_TYPE}/libzmq-${CMAKE_VS_PLATFORM_TOOLSET}-mt-4_2_3.dll
+        ${ZMQ_PREFIX}/src/zmq-ext-build/bin/${CMAKE_BUILD_TYPE}/libzmq-${CMAKE_VS_PLATFORM_TOOLSET}-mt-4_3_5.dll
         DESTINATION bin)
     endif()
     set(PROTOC ${PROTOBUF_BIN_DIR}/protoc)

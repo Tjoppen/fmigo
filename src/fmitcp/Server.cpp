@@ -57,7 +57,7 @@ bool isOK(jm_status_enu_t status) {
     }\
   } while (0)
 
-Server::Server(string fmuPath, std::string hdf5Filename) {
+Server::Server(string fmuPath, int rank_or_port, std::string hdf5Filename) {
   m_fmi2Outputs = NULL;
   m_fmi2Variables = NULL;
   m_fmuParsed = true;
@@ -90,8 +90,12 @@ Server::Server(string fmuPath, std::string hdf5Filename) {
   m_jmCallbacks.log_level = fmigo_loglevel;
   m_jmCallbacks.context = 0;
   // working directory
+  stringstream ss;
+  // append rank/port to directory name to help get around the "26 temp dirs max on Windows" issue
+  ss << "fmitcp_" << rank_or_port;
+  string s = ss.str();
   char* dir;
-  if (!(dir = fmi_import_mk_temp_dir(&m_jmCallbacks, NULL, "fmitcp_"))) {
+  if (!(dir = fmi_import_mk_temp_dir(&m_jmCallbacks, NULL, s.c_str()))) {
     fatal("fmi_import_mk_temp_dir() failed\n");
   }
   m_workingDir = dir; // convert to std::string

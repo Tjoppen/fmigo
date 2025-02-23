@@ -83,7 +83,7 @@ public:
 
   public:
 
-    explicit Server(string fmuPath, std::string hdf5Filename = "");
+    explicit Server(string fmuPath, int rank_or_port, std::string hdf5Filename = "");
     virtual ~Server();
 
     /// To be implemented in subclass

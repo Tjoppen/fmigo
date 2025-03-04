@@ -93,7 +93,7 @@ git submodule update --init
 mkdir build
 cd build
 cmake -DENABLE_SC=OFF -DBUILD_FMUS=OFF -DUSE_GPL=OFF -DUSE_MATIO=OFF ..
-cmake --build . --target install
+cmake --build . --config Release --target install
 ```
 
 The build artifacts will be copied to `build/install`.

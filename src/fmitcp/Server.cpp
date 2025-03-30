@@ -169,10 +169,8 @@ Server::Server(string fmuPath, int rank_or_port, std::string hdf5Filename) {
     m_fmi2Variables = fmi2_import_get_variable_list(m_fmi2Instance, sortOrder);
     m_fmi2Outputs = fmi2_import_get_outputs_list(m_fmi2Instance);
 
-#ifndef WIN32
     //prepare HDF5
     getHDF5Info();
-#endif
   } else {
     // todo add FMI 1.0 later on.
     fmi_import_free_context(m_context);

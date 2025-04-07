@@ -1613,12 +1613,29 @@ void Server::getHDF5Info() {
     field_types.push_back(H5T_NATIVE_DOUBLE);
     size_t ofs = sizeof(double);
 
+#ifdef ENABLE_HDF5_HACK
+    for (size_t x = 0; x < fmi2_import_get_variable_list_size(m_fmi2Outputs); x++) {
+        stringstream os;
+        os << x;
+        // column names like "0", "1", etc take up less space,
+        // allowing us to squeeze in under the 64k object header limit
+        columnnames.push_back(os.str());
+    }
+#endif
+
     for (size_t x = 0; x < fmi2_import_get_variable_list_size(m_fmi2Outputs); x++) {
         fmi2_import_variable_t *var = fmi2_import_get_variable(m_fmi2Outputs, x);
         fmi2_base_type_enu_t type = fmi2_import_get_variable_base_type(var);
 
         field_offset.push_back(ofs);
+#ifdef ENABLE_HDF5_HACK
+        // this is fine since getHDF5Info() is only called once,
+        // so columnnames is never resized and the strings therein
+        // are never reallocated
+        field_names.push_back(columnnames[x].c_str());
+#else
         field_names.push_back(fmi2_import_get_variable_name(var));
+#endif
         field_types.push_back(fmi2_type_to_hdf5(type));
 
         ofs += fmi2_type_size(type);

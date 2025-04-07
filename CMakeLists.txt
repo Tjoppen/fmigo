@@ -59,6 +59,7 @@ option(ENABLE_HDF5_HACK "Enable HDF5 column name hack? Necessary for perftest.py
 
 if (WIN32)
     option(USE_INTEL_MPI "Use Intel MPI instead of MS-MPI?" OFF)
+    option(INTEL_MPI_DIR "Location of Intel MPI install, including version number" "C:\\Program Files (x86)\\Intel\\oneAPI\\mpi\\2021.12")
 endif ()
 
 set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/install)
@@ -379,9 +380,8 @@ IF(WIN32)
         endif ()
     endif()
     if (USE_INTEL_MPI)
-        # TODO: look up oneAPI directory somehow. it's not directly in env
-        include_directories("C:\\Program Files (x86)\\Intel\\oneAPI\\mpi\\2021.12\\include")
-        link_directories("C:\\Program Files (x86)\\Intel\\oneAPI\\mpi\\2021.12\\lib")
+        include_directories("${INTEL_MPI_DIR}\\include")
+        link_directories("${INTEL_MPI_DIR}\\lib")
     else()
         include_directories($ENV{MSMPI_INC} $ENV{MSMPI_INC}x86)
     endif ()

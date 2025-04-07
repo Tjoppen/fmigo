@@ -57,6 +57,10 @@ option(USE_TRACEANALYZER "Add instrumentation for Intel Traceanalyzer?" OFF)
 option(ENABLE_SC "Enable strong coupling master? Disabling this removes the dependency on suitesparse" ON)
 option(ENABLE_HDF5_HACK "Enable HDF5 column name hack? Necessary for perftest.py in fmifast" OFF)
 
+if (WIN32)
+    option(USE_INTEL_MPI "Use Intel MPI instead of MS-MPI?" OFF)
+endif ()
+
 set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/install)
 
 # Need to be able to zip FMUs. Recent versions of CMake can do this with the "tar" sub-command.
@@ -374,7 +378,13 @@ IF(WIN32)
             set(WINLIBS ${WINLIBS} sc libumfpack  libamd  libblas libcholmod  libcolamd  libccolamd  libcamd  metis  suitesparseconfig)
         endif ()
     endif()
-    include_directories($ENV{MSMPI_INC} $ENV{MSMPI_INC}x86)
+    if (USE_INTEL_MPI)
+        # TODO: look up oneAPI directory somehow. it's not directly in env
+        include_directories("C:\\Program Files (x86)\\Intel\\oneAPI\\mpi\\2021.12\\include")
+        link_directories("C:\\Program Files (x86)\\Intel\\oneAPI\\mpi\\2021.12\\lib")
+    else()
+        include_directories($ENV{MSMPI_INC} $ENV{MSMPI_INC}x86)
+    endif ()
 
     if (ENABLE_SC)
         if (CMAKE_GENERATOR MATCHES "^.*Win64") # Maybe there is a better way to detect 64-bit builds?
@@ -387,13 +397,17 @@ IF(WIN32)
     TARGET_LINK_LIBRARIES(${TCP_MASTER_NAME} ${WINLIBS})
     TARGET_LINK_LIBRARIES(${TCP_SERVER_NAME}  ${WINLIBS})
 
-    # Only support 64-bit MSMPI
-    # Matching "Win64" doesn't work on MSVC 2022
-    # Also for some reason link_directories("$ENV{MSMPI_LIB64}") doesn't work
-    # Copying msmpi.lib into the build directory does work, so do that
-    execute_process(COMMAND ${CMAKE_COMMAND} -E copy "$ENV{MSMPI_LIB64}/msmpi.lib" "${CMAKE_CURRENT_BINARY_DIR}")
-    link_directories("${CMAKE_CURRENT_BINARY_DIR}")
-    target_link_libraries(${MPI_MASTER_NAME} ${WINLIBS} msmpi)
+    if (USE_INTEL_MPI)
+        target_link_libraries(${MPI_MASTER_NAME} ${WINLIBS} impi)
+    else ()
+        # Only support 64-bit MSMPI
+        # Matching "Win64" doesn't work on MSVC 2022
+        # Also for some reason link_directories("$ENV{MSMPI_LIB64}") doesn't work
+        # Copying msmpi.lib into the build directory does work, so do that
+        execute_process(COMMAND ${CMAKE_COMMAND} -E copy "$ENV{MSMPI_LIB64}/msmpi.lib" "${CMAKE_CURRENT_BINARY_DIR}")
+        link_directories("${CMAKE_CURRENT_BINARY_DIR}")
+        target_link_libraries(${MPI_MASTER_NAME} ${WINLIBS} msmpi)
+    endif ()
 
     if (ENABLE_SC)
         install (FILES

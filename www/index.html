@@ -371,14 +371,22 @@
         <li>Debian 12 (Bookworm)</li>
       </ul>
       <p>
-        Windows is currently not supported due to lack of a suitable CI server.
-        It may still work just fine, we just don't guarantee it at present.
+        Windows is supported, but only in a feature-reduced state.
+        Specifically, strong coupling and algebraic loop solving are not supported.
+        The test FMUs are also disabled, so proper testing cannot be done on Windows.
+        32-bit Windows builds are not supported.
+        The following should work on Windows 11 with Visual Studio 2022:
       </p>
+      <pre>
+git submodule init
+git submodule update
+mkdir build
+cd build
+cmake .. -DENABLE_SC=OFF -DUSE_GPL=OFF -DBUILD_FMUS=OFF
+cmake --build . --config Release
+</pre>
       <p>
-        GSL (and thus loop solving) is currently disabled for 64-bit Windows builds.
-        The reason for this is the lack of decent package managers on that platform.
-        For now we are relying on a 32-bit manual build of GSL for Windows,
-        which has not been reproduced due to much headache.
+        If Intel MPI is preferred then run cmake with <code>-DUSE_INTEL_MPI=ON -DINTEL_MPI_DIR=[Intel MPI's install directory]</code>.
       </p>
       <p>
         Some users have successfully built the system on Arch Linux, and on Mac OS X.
@@ -389,6 +397,8 @@
     </section>
     <section>
       <h1 id="news">News</h1>
+      <h2>2025-04-18</h2>
+      <p>Windows is now supported again! However, not all features are available due to depencency headaches. For now, strong coupling and algebraic loop solving are not supported.</p>
       <h2>2025-02-06</h2>
       <p>Upgraded FMILibrary to version 3.0a4. Removed support for Ubuntu 23.10 (Mantic Minotaur) due to downloads no longer being available.</p>
       <h2>2024-04-26</h2>

@@ -81,7 +81,7 @@ int main(int argc, char *argv[]) {
 
   parse_server_args(argc, argv, &fmuPath, &hdf5Filename, &debugLogging, &fmigo_loglevel, &port);
 
-  FMIServer server(fmuPath, hdf5Filename);
+  FMIServer server(fmuPath, port, hdf5Filename);
   //HACKHACK: count waiting for the master to start toward "instantiate"
   server.m_timer.dont_rotate = true;
   if (!server.isFmuParsed())

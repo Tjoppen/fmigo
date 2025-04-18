@@ -57,7 +57,7 @@ bool isOK(jm_status_enu_t status) {
     }\
   } while (0)
 
-Server::Server(string fmuPath, std::string hdf5Filename) {
+Server::Server(string fmuPath, int rank_or_port, std::string hdf5Filename) {
   m_fmi2Outputs = NULL;
   m_fmi2Variables = NULL;
   m_fmuParsed = true;
@@ -90,8 +90,12 @@ Server::Server(string fmuPath, std::string hdf5Filename) {
   m_jmCallbacks.log_level = fmigo_loglevel;
   m_jmCallbacks.context = 0;
   // working directory
+  stringstream ss;
+  // append rank/port to directory name to help get around the "26 temp dirs max on Windows" issue
+  ss << "fmitcp_" << rank_or_port;
+  string s = ss.str();
   char* dir;
-  if (!(dir = fmi_import_mk_temp_dir(&m_jmCallbacks, NULL, "fmitcp_"))) {
+  if (!(dir = fmi_import_mk_temp_dir(&m_jmCallbacks, NULL, s.c_str()))) {
     fatal("fmi_import_mk_temp_dir() failed\n");
   }
   m_workingDir = dir; // convert to std::string
@@ -165,10 +169,8 @@ Server::Server(string fmuPath, std::string hdf5Filename) {
     m_fmi2Variables = fmi2_import_get_variable_list(m_fmi2Instance, sortOrder);
     m_fmi2Outputs = fmi2_import_get_outputs_list(m_fmi2Instance);
 
-#ifndef WIN32
     //prepare HDF5
     getHDF5Info();
-#endif
   } else {
     // todo add FMI 1.0 later on.
     fmi_import_free_context(m_context);
@@ -1611,12 +1613,29 @@ void Server::getHDF5Info() {
     field_types.push_back(H5T_NATIVE_DOUBLE);
     size_t ofs = sizeof(double);
 
+#ifdef ENABLE_HDF5_HACK
+    for (size_t x = 0; x < fmi2_import_get_variable_list_size(m_fmi2Outputs); x++) {
+        stringstream os;
+        os << x;
+        // column names like "0", "1", etc take up less space,
+        // allowing us to squeeze in under the 64k object header limit
+        columnnames.push_back(os.str());
+    }
+#endif
+
     for (size_t x = 0; x < fmi2_import_get_variable_list_size(m_fmi2Outputs); x++) {
         fmi2_import_variable_t *var = fmi2_import_get_variable(m_fmi2Outputs, x);
         fmi2_base_type_enu_t type = fmi2_import_get_variable_base_type(var);
 
         field_offset.push_back(ofs);
+#ifdef ENABLE_HDF5_HACK
+        // this is fine since getHDF5Info() is only called once,
+        // so columnnames is never resized and the strings therein
+        // are never reallocated
+        field_names.push_back(columnnames[x].c_str());
+#else
         field_names.push_back(fmi2_import_get_variable_name(var));
+#endif
         field_types.push_back(fmi2_type_to_hdf5(type));
 
         ofs += fmi2_type_size(type);

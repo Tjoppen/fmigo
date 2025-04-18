@@ -55,6 +55,12 @@ endif ()
 option(USE_MATIO "Enable Matlab output via libmatio?" ${MATIO_DEFAULT})
 option(USE_TRACEANALYZER "Add instrumentation for Intel Traceanalyzer?" OFF)
 option(ENABLE_SC "Enable strong coupling master? Disabling this removes the dependency on suitesparse" ON)
+option(ENABLE_HDF5_HACK "Enable HDF5 column name hack? Necessary for perftest.py in fmifast" OFF)
+
+if (WIN32)
+    option(USE_INTEL_MPI "Use Intel MPI instead of MS-MPI?" OFF)
+    option(INTEL_MPI_DIR "Location of Intel MPI install, including version number" "C:\\Program Files (x86)\\Intel\\oneAPI\\mpi\\2021.12")
+endif ()
 
 set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/install)
 
@@ -89,22 +95,24 @@ if(WIN32)
         # Assume there is only one toolchain installed and it is compatible with MSVC12
         set(MSVC_TOOLCHAIN_VERSION "")
     endif (MSVC14)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj /FS /DPROTOBUF_USE_DLLS")
 
     include(ExternalProject)
 
-    set(PROTOBUF_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/protobuf-3.2.0")
+    set(PROTOBUF_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/protobuf-21.12")
 
     ExternalProject_Add(protobuf-ext
         PREFIX "${PROTOBUF_PREFIX}"
-        URL https://github.com/google/protobuf/releases/download/v3.2.0/protobuf-cpp-3.2.0.zip
-        URL_MD5 a6c76f8fd0d393370bf4b32a29273114
-        SOURCE_SUBDIR cmake
-        CONFIGURE_COMMAND ${CMAKE_COMMAND} ${PROTOBUF_PREFIX}/src/protobuf-ext/cmake -G ${CMAKE_GENERATOR} -DBUILD_SHARED_LIBS=ON
+        # 25.6 is the last version to support C++14
+        # 21.12 is the last version to not require abseil-cpp
+        GIT_REPOSITORY https://github.com/protocolbuffers/protobuf.git
+        GIT_TAG f0dc78d7e6e331b8c6bb2d5283e06aa26883ca7c # v21.12
+        CONFIGURE_COMMAND "${CMAKE_COMMAND}" "${PROTOBUF_PREFIX}/src/protobuf-ext" -G "${CMAKE_GENERATOR}" -Dprotobuf_BUILD_SHARED_LIBS=ON -DCMAKE_CXX_FLAGS=/bigobj -Dprotobuf_BUILD_TESTS=OFF -Dprotobuf_BUILD_EXAMPLES=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF -Dprotobuf_WITH_ZLIB=OFF
         INSTALL_COMMAND ""
+        BUILD_COMMAND "${CMAKE_COMMAND}" --build . --config ${CMAKE_BUILD_TYPE}
     )
 
     include_directories("${PROTOBUF_PREFIX}/src/protobuf-ext/src")
-    include_directories("${PROTOBUF_PREFIX}/src/ex-protobuf-ext1234/protobuf-3.2.0/src")
     link_directories("${PROTOBUF_PREFIX}/src/protobuf-ext-build/${CMAKE_BUILD_TYPE}")
     set(PROTOBUF_BIN_DIR "${PROTOBUF_PREFIX}/src/protobuf-ext-build/${CMAKE_BUILD_TYPE}")
 
@@ -118,10 +126,8 @@ if(WIN32)
         )
 
         if (CMAKE_GENERATOR MATCHES "^.*Win64") # Maybe there is a better way to detect 64-bit builds?
-            link_directories($ENV{MSMPI_LIB64})
             set(SUITESPARSE_LIBDIR ${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib64)
         else ()
-            link_directories($ENV{MSMPI_LIB32})
             set(SUITESPARSE_LIBDIR ${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib)
         endif ()
 
@@ -147,13 +153,14 @@ if(WIN32)
     include_directories(${HDF5_DIR}/src/hdf5-ext-build)
     link_directories(${HDF5_DIR}/src/hdf5-ext-build/bin/${CMAKE_BUILD_TYPE})
 
-    set(ZMQ_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/zeromq-4.2.3")
+    set(ZMQ_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/zeromq-4.3.5")
 
     ExternalProject_Add(zmq-ext
         PREFIX "${ZMQ_PREFIX}"
         GIT_REPOSITORY "https://github.com/zeromq/libzmq.git"
-        GIT_TAG 44f96a36521a8410378ddc83d7c4ff258da5d399
+        GIT_TAG 622fc6dde99ee172ebaa9c8628d85a7a1995a21d # v4.3.5
         INSTALL_COMMAND ""
+        BUILD_COMMAND "${CMAKE_COMMAND}" --build . --config ${CMAKE_BUILD_TYPE}
     )
 
     include_directories("${ZMQ_PREFIX}/src/zmq-ext/include")
@@ -182,6 +189,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/tools/strong-coupling-core/inclu
 set(FMILIBRARY_DIR 3rdparty/FMILibrary-3.0a4)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/${FMILIBRARY_DIR}/fmilib_include)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/${FMILIBRARY_DIR}/fmilib_config_include)
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/${FMILIBRARY_DIR}/ExpatEx/install/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_DIR}/src/CAPI/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_DIR}/src/Import/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_DIR}/src/Util/include)
@@ -237,6 +245,9 @@ if (NOT WIN32)
   if (ENABLE_SC)
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DENABLE_SC")
   endif ()
+  if (ENABLE_HDF5_HACK)
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DENABLE_HDF5_HACK")
+  endif ()
   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -DDEBUG")
   FIND_PACKAGE(MPI REQUIRED)
@@ -245,6 +256,9 @@ if (NOT WIN32)
 else ()
   if (ENABLE_SC)
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /DENABLE_SC")
+  endif ()
+  if (ENABLE_HDF5_HACK)
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /DENABLE_HDF5_HACK")
   endif ()
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /DDEBUG")
 endif ()
@@ -355,17 +369,22 @@ IF(WIN32)
         ${Boost_SYSTEM_LIBRARY}
         ${CMAKE_THREAD_LIBS_INIT})
     if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-        set(WINLIBS ${WINLIBS} ${EXTRALIBS} libprotobufd libzmq-${CMAKE_VS_PLATFORM_TOOLSET}-mt-gd-4_2_3 libhdf5_hl_D libhdf5_D)
+        set(WINLIBS ${WINLIBS} ${EXTRALIBS} libprotobufd libzmq-${CMAKE_VS_PLATFORM_TOOLSET}-mt-gd-4_3_5 libhdf5_hl_D libhdf5_D)
         if (ENABLE_SC)
             set(WINLIBS ${WINLIBS} sc libumfpackd libamdd libblas libcholmodd libcolamdd libccolamdd libcamdd metisd suitesparseconfigd)
         endif ()
     else()
-        set(WINLIBS ${WINLIBS} ${EXTRALIBS} libprotobuf  libzmq-${CMAKE_VS_PLATFORM_TOOLSET}-mt-4_2_3 libhdf5_hl      libhdf5)
+        set(WINLIBS ${WINLIBS} ${EXTRALIBS} libprotobuf  libzmq-${CMAKE_VS_PLATFORM_TOOLSET}-mt-4_3_5 libhdf5_hl      libhdf5)
         if (ENABLE_SC)
             set(WINLIBS ${WINLIBS} sc libumfpack  libamd  libblas libcholmod  libcolamd  libccolamd  libcamd  metis  suitesparseconfig)
         endif ()
     endif()
-    include_directories($ENV{MSMPI_INC} $ENV{MSMPI_INC}x86)
+    if (USE_INTEL_MPI)
+        include_directories("${INTEL_MPI_DIR}\\include")
+        link_directories("${INTEL_MPI_DIR}\\lib")
+    else()
+        include_directories($ENV{MSMPI_INC} $ENV{MSMPI_INC}x86)
+    endif ()
 
     if (ENABLE_SC)
         if (CMAKE_GENERATOR MATCHES "^.*Win64") # Maybe there is a better way to detect 64-bit builds?
@@ -377,7 +396,18 @@ IF(WIN32)
 
     TARGET_LINK_LIBRARIES(${TCP_MASTER_NAME} ${WINLIBS})
     TARGET_LINK_LIBRARIES(${TCP_SERVER_NAME}  ${WINLIBS})
-    target_link_libraries(${MPI_MASTER_NAME} ${WINLIBS} msmpi)
+
+    if (USE_INTEL_MPI)
+        target_link_libraries(${MPI_MASTER_NAME} ${WINLIBS} impi)
+    else ()
+        # Only support 64-bit MSMPI
+        # Matching "Win64" doesn't work on MSVC 2022
+        # Also for some reason link_directories("$ENV{MSMPI_LIB64}") doesn't work
+        # Copying msmpi.lib into the build directory does work, so do that
+        execute_process(COMMAND ${CMAKE_COMMAND} -E copy "$ENV{MSMPI_LIB64}/msmpi.lib" "${CMAKE_CURRENT_BINARY_DIR}")
+        link_directories("${CMAKE_CURRENT_BINARY_DIR}")
+        target_link_libraries(${MPI_MASTER_NAME} ${WINLIBS} msmpi)
+    endif ()
 
     if (ENABLE_SC)
         install (FILES
@@ -390,12 +420,12 @@ IF(WIN32)
     if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
     INSTALL (FILES
         ${PROTOBUF_PREFIX}/src/protobuf-ext-build/${CMAKE_BUILD_TYPE}/libprotobufd.dll
-        ${ZMQ_PREFIX}/src/zmq-ext-build/bin/${CMAKE_BUILD_TYPE}/libzmq-${CMAKE_VS_PLATFORM_TOOLSET}-mt-gd-4_2_3.dll
+        ${ZMQ_PREFIX}/src/zmq-ext-build/bin/${CMAKE_BUILD_TYPE}/libzmq-${CMAKE_VS_PLATFORM_TOOLSET}-mt-gd-4_3_5.dll
         DESTINATION bin)
     else()
     INSTALL (FILES
         ${PROTOBUF_PREFIX}/src/protobuf-ext-build/${CMAKE_BUILD_TYPE}/libprotobuf.dll
-        ${ZMQ_PREFIX}/src/zmq-ext-build/bin/${CMAKE_BUILD_TYPE}/libzmq-${CMAKE_VS_PLATFORM_TOOLSET}-mt-4_2_3.dll
+        ${ZMQ_PREFIX}/src/zmq-ext-build/bin/${CMAKE_BUILD_TYPE}/libzmq-${CMAKE_VS_PLATFORM_TOOLSET}-mt-4_3_5.dll
         DESTINATION bin)
     endif()
     set(PROTOC ${PROTOBUF_BIN_DIR}/protoc)
@@ -433,7 +463,7 @@ ENDIF(WIN32)
 # Compile proto
 set(FMITCP_PROTOBUF_TARGETS ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.pb.cc ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp_pb2.py)
 add_custom_command(OUTPUT ${FMITCP_PROTOBUF_TARGETS}
-    COMMAND ${PROTOC} --cpp_out=. --python_out=. fmitcp.proto
+    COMMAND ${PROTOC} --cpp_out=${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp --python_out=${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.proto --proto_path ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp
     WORKING_DIRECTORY   ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp
     DEPENDS libprotobuf ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.proto)
 #can't depend on the generated files themselves because CMake is awful. create a custom target instead
@@ -554,17 +584,17 @@ endif ()
 
 add_subdirectory(tools/ssp)
 
-add_executable(mpi-speed-test src/mpi-speed-test.cpp)
 if (NOT WIN32)
+    add_executable(mpi-speed-test src/mpi-speed-test.cpp)
     # OpenMPI on trusty won't compile with -std=c++11 or later
     # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=796985
     set_target_properties(mpi-speed-test PROPERTIES COMPILE_FLAGS -std=c++03)
-endif ()
-install(TARGETS mpi-speed-test DESTINATION bin)
+    install(TARGETS mpi-speed-test DESTINATION bin)
 
-if (USE_TRACEANALYZER)
-    set_target_properties(mpi-speed-test PROPERTIES LINK_FLAGS -trace)
-    set_target_properties(${MPI_MASTER_NAME} PROPERTIES LINK_FLAGS -trace)
+    if (USE_TRACEANALYZER)
+        set_target_properties(mpi-speed-test PROPERTIES LINK_FLAGS -trace)
+        set_target_properties(${MPI_MASTER_NAME} PROPERTIES LINK_FLAGS -trace)
+    endif ()
 endif ()
 
 

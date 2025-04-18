@@ -73,6 +73,10 @@ private:
     //avoid allocation
     std::pair<fmitcp_proto::fmitcp_message_Type,std::string> ret;
 
+#ifdef ENABLE_HDF5_HACK
+    std::vector<std::string> columnnames;
+#endif
+
 public:
 #if SERVER_CLIENTDATA_NO_STRING_RET == 1
     //packs data into responseBuffer
@@ -83,7 +87,7 @@ public:
 
   public:
 
-    explicit Server(string fmuPath, std::string hdf5Filename = "");
+    explicit Server(string fmuPath, int rank_or_port, std::string hdf5Filename = "");
     virtual ~Server();
 
     /// To be implemented in subclass

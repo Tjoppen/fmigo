@@ -19,8 +19,8 @@
 // Define own server
 class FMIServer : public fmitcp::Server {
 public:
-  FMIServer(string fmuPath, string hdf5Filename)
-   : Server(fmuPath, hdf5Filename) {}
+  FMIServer(string fmuPath, int rank_or_port, string hdf5Filename)
+   : Server(fmuPath, rank_or_port, hdf5Filename) {}
   ~FMIServer() {};
   void onClientConnect() {
     //m_pump->exitEventLoop();

@@ -721,8 +721,8 @@ static int connectionNamesToVr(std::vector<connection> &connections,
 }
 
 #ifdef USE_MPI
-static void run_server(string fmuPath, string hdf5Filename) {
-    FMIServer server(fmuPath, hdf5Filename);
+static void run_server(string fmuPath, int rank, string hdf5Filename) {
+    FMIServer server(fmuPath, rank, hdf5Filename);
     std::string recv_str;
 
     for (;;) {
@@ -836,9 +836,9 @@ int main(int argc, char *argv[] ) {
           //checked in parseArguments()
           fatal("This should never happen\n");
         } else if (fmuURIs.size() == 1) {
-          run_server(fmuURIs[0], hdf5Filename);
+          run_server(fmuURIs[0], world_rank, hdf5Filename);
         } else {
-          run_server(fmuURIs[world_rank-1], hdf5Filename);
+          run_server(fmuURIs[world_rank-1], world_rank, hdf5Filename);
         }
         return 0;
     }

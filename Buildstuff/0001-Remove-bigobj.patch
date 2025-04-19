@@ -1,0 +1,25 @@
+From 07d3bb9bb71ec08499c696c572a7fad4db54e1fd Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Tomas=20H=C3=A4rdin?= <git@haerdin.se>
+Date: Fri, 18 Apr 2025 23:24:32 +0200
+Subject: [PATCH] Remove /bigobj
+
+---
+ CMakeLists.txt | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 04cb3303a..ba54d34b3 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -261,8 +261,6 @@ if (MSVC)
+     /wd4800 # 'type' : forcing value to bool 'true' or 'false' (performance warning)
+     /wd4996 # The compiler encountered a deprecated declaration.
+   )
+-  # Allow big object
+-  add_definitions(/bigobj)
+   string(REPLACE "/" "\\" PROTOBUF_SOURCE_WIN32_PATH ${protobuf_SOURCE_DIR})
+   string(REPLACE "/" "\\" PROTOBUF_BINARY_WIN32_PATH ${protobuf_BINARY_DIR})
+   string(REPLACE "." ","  protobuf_RC_FILEVERSION "${protobuf_VERSION}")
+-- 
+2.39.5
+

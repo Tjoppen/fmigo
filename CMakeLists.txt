@@ -95,7 +95,14 @@ if(WIN32)
         # Assume there is only one toolchain installed and it is compatible with MSVC12
         set(MSVC_TOOLCHAIN_VERSION "")
     endif (MSVC14)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj /FS /DPROTOBUF_USE_DLLS")
+
+    if ("${CMAKE_CXX_COMPILER}" MATCHES "icx")
+        set(PROTOBUF_CXX_FLAGS "")
+    else ()
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj /FS")
+        set(PROTOBUF_CXX_FLAGS "/bigobj")
+    endif ()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /DPROTOBUF_USE_DLLS")
 
     include(ExternalProject)
 
@@ -107,9 +114,10 @@ if(WIN32)
         # 21.12 is the last version to not require abseil-cpp
         GIT_REPOSITORY https://github.com/protocolbuffers/protobuf.git
         GIT_TAG f0dc78d7e6e331b8c6bb2d5283e06aa26883ca7c # v21.12
-        CONFIGURE_COMMAND "${CMAKE_COMMAND}" "${PROTOBUF_PREFIX}/src/protobuf-ext" -G "${CMAKE_GENERATOR}" -Dprotobuf_BUILD_SHARED_LIBS=ON -DCMAKE_CXX_FLAGS=/bigobj -Dprotobuf_BUILD_TESTS=OFF -Dprotobuf_BUILD_EXAMPLES=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF -Dprotobuf_WITH_ZLIB=OFF
+        CONFIGURE_COMMAND "${CMAKE_COMMAND}" "${PROTOBUF_PREFIX}/src/protobuf-ext" -G "${CMAKE_GENERATOR}" -Dprotobuf_BUILD_SHARED_LIBS=ON -DCMAKE_CXX_FLAGS=${PROTOBUF_CXX_FLAGS} -Dprotobuf_BUILD_TESTS=OFF -Dprotobuf_BUILD_EXAMPLES=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF -Dprotobuf_WITH_ZLIB=OFF
         INSTALL_COMMAND ""
         BUILD_COMMAND "${CMAKE_COMMAND}" --build . --config ${CMAKE_BUILD_TYPE}
+        PATCH_COMMAND git reset --hard && git apply "${CMAKE_CURRENT_SOURCE_DIR}/Buildstuff/0001-Remove-bigobj.patch"
     )
 
     include_directories("${PROTOBUF_PREFIX}/src/protobuf-ext/src")

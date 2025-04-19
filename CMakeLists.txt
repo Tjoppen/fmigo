@@ -167,6 +167,7 @@ if(WIN32)
         PREFIX "${ZMQ_PREFIX}"
         GIT_REPOSITORY "https://github.com/zeromq/libzmq.git"
         GIT_TAG 622fc6dde99ee172ebaa9c8628d85a7a1995a21d # v4.3.5
+        CMAKE_ARGS "-DBUILD_SHARED=OFF"
         INSTALL_COMMAND ""
         BUILD_COMMAND "${CMAKE_COMMAND}" --build . --config ${CMAKE_BUILD_TYPE}
     )

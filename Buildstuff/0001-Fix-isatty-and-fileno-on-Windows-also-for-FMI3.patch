@@ -1,0 +1,28 @@
+From 35d47bfd046bb4c972ea9f7367d37f8cd820cf14 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Tomas=20H=C3=A4rdin?= <git@haerdin.se>
+Date: Fri, 18 Apr 2025 22:25:46 +0200
+Subject: [PATCH] Fix isatty() and fileno() on Windows also for FMI3
+
+---
+ src/XML/src-gen/FMI3/lex.yyfmi3.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/src/XML/src-gen/FMI3/lex.yyfmi3.c b/src/XML/src-gen/FMI3/lex.yyfmi3.c
+index e47a2ce..7bf00ad 100644
+--- a/src/XML/src-gen/FMI3/lex.yyfmi3.c
++++ b/src/XML/src-gen/FMI3/lex.yyfmi3.c
+@@ -530,6 +530,11 @@ static const flex_int16_t yy_chk[81] =
+  * The user has a chance to override it with an option.
+  */
+ #include <unistd.h>
++#else
++/*windows compatibility case*/
++#include <io.h>
++#define isatty _isatty
++#define fileno _fileno
+ #endif
+     
+ #ifndef YY_EXTRA_TYPE
+-- 
+2.39.5
+

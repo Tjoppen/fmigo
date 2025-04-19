@@ -230,6 +230,10 @@ endif ()
 # touch CMakeCache.txt because FMILibrary's CMakeLists.txt is broken
 execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/3rdparty/FMILibrary-3.0a4")
 execute_process(COMMAND ${CMAKE_COMMAND} -E touch "${CMAKE_CURRENT_BINARY_DIR}/3rdparty/FMILibrary-3.0a4/CMakeCache.txt")
+# get FMIL to a known state
+execute_process(COMMAND git reset --hard WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/FMILibrary-3.0a4")
+# fix lex.yyfmi3.c
+execute_process(COMMAND git apply "${CMAKE_CURRENT_SOURCE_DIR}/Buildstuff/0001-Fix-isatty-and-fileno-on-Windows-also-for-FMI3.patch" WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/FMILibrary-3.0a4")
 # fix miniunz.c
 execute_process(COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/miniunz.c" "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/FMILibrary-3.0a4/ThirdParty/Minizip/minizip")
 option(FMILIB_BUILD_TESTS "" OFF)

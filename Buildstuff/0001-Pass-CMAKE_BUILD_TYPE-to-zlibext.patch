@@ -1,0 +1,24 @@
+From 425ae232796ffef85377d27da2bd5750c2b957ed Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Tomas=20H=C3=A4rdin?= <git@haerdin.se>
+Date: Fri, 18 Apr 2025 23:45:17 +0200
+Subject: [PATCH] Pass CMAKE_BUILD_TYPE to zlibext
+
+---
+ Config.cmake/fmizlib.cmake | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Config.cmake/fmizlib.cmake b/Config.cmake/fmizlib.cmake
+index 20b5ac7..ae2132f 100644
+--- a/Config.cmake/fmizlib.cmake
++++ b/Config.cmake/fmizlib.cmake
+@@ -54,6 +54,7 @@ else() # build zlib from ThirdParty/zlib
+         -DSKIP_INSTALL_HEADERS:BOOLEAN=OFF
+         -DSKIP_INSTALL_ALL:BOOLEAN=OFF
+         -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_BINARY_DIR}/zlibext/install
++        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+     )
+ 
+     ExternalProject_Add_Step(
+-- 
+2.39.5
+

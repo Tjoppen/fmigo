@@ -55,8 +55,6 @@ USER gitlab-ci
 WORKDIR /home/gitlab-ci/umit
 RUN export PATH=/usr/lib/ccache:$PATH
 
-# docker doesn't copy empty directories for some reason
-RUN mkdir 3rdparty/FMILibrary-3.0a4/ThirdParty/Expat/expat-2.5.0/src
 RUN mkdir build
 RUN mkdir build-clang
 WORKDIR /home/gitlab-ci/umit/build

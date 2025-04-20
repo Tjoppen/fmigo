@@ -105,6 +105,10 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}/fmi-library-ext-prefix/src/fmi-l
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/fmi-library-ext-prefix/src/fmi-library-ext-build/ExpatEx/install/include)
 link_directories(${CMAKE_CURRENT_BINARY_DIR}/fmi-library-ext-prefix/src/fmi-library-ext-build/zlibext/Debug)
 link_directories(${CMAKE_CURRENT_BINARY_DIR}/fmi-library-ext-prefix/src/fmi-library-ext-build/zlibext/Release)
+link_directories(${CMAKE_CURRENT_BINARY_DIR}/fmi-library-ext-prefix/src/fmi-library-ext-build/zlibext)
+link_directories(${CMAKE_CURRENT_BINARY_DIR}/fmi-library-ext-prefix/src/fmi-library-ext-build)
+link_directories(${CMAKE_CURRENT_BINARY_DIR}/fmi-library-ext-prefix/src/fmi-library-ext-build/ExpatEx)
+link_directories(${CMAKE_CURRENT_BINARY_DIR}/fmi-library-ext-prefix/src/fmi-library-ext-build/Config.cmake/Minizip)
 
 if (USE_EXTERNAL_LIBZMQ)
     set(ZMQ_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/zeromq-4.3.5")
@@ -113,7 +117,7 @@ if (USE_EXTERNAL_LIBZMQ)
         PREFIX "${ZMQ_PREFIX}"
         GIT_REPOSITORY "https://github.com/zeromq/libzmq.git"
         GIT_TAG 622fc6dde99ee172ebaa9c8628d85a7a1995a21d # v4.3.5
-        CMAKE_ARGS "-DBUILD_SHARED=OFF;-DBUILD_STATIC=ON;-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE};-DWITH_TLS=OFF"
+        CMAKE_ARGS "-DBUILD_SHARED=ON;-DBUILD_STATIC=OFF;-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE};-DWITH_TLS=OFF"
         INSTALL_COMMAND ""
         BUILD_COMMAND "${CMAKE_COMMAND}" --build . --config ${CMAKE_BUILD_TYPE}
     )
@@ -146,9 +150,8 @@ if (USE_EXTERNAL_LIBPROTOBUF)
         # 21.12 is the last version to not require abseil-cpp
         GIT_REPOSITORY https://github.com/protocolbuffers/protobuf.git
         GIT_TAG f0dc78d7e6e331b8c6bb2d5283e06aa26883ca7c # v21.12
-        CONFIGURE_COMMAND "${CMAKE_COMMAND}" "${PROTOBUF_PREFIX}/src/protobuf-ext" -G "${CMAKE_GENERATOR}" -Dprotobuf_BUILD_SHARED_LIBS=ON -DCMAKE_CXX_FLAGS=${PROTOBUF_CXX_FLAGS} -Dprotobuf_BUILD_TESTS=OFF -Dprotobuf_BUILD_EXAMPLES=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF -Dprotobuf_WITH_ZLIB=OFF
+        CONFIGURE_COMMAND "${CMAKE_COMMAND}" "${PROTOBUF_PREFIX}/src/protobuf-ext" -G "${CMAKE_GENERATOR}" -Dprotobuf_BUILD_SHARED_LIBS=ON -DCMAKE_CXX_FLAGS=${PROTOBUF_CXX_FLAGS} -Dprotobuf_BUILD_TESTS=OFF -Dprotobuf_BUILD_EXAMPLES=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF -Dprotobuf_WITH_ZLIB=OFF -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
         INSTALL_COMMAND ""
-        BUILD_COMMAND "${CMAKE_COMMAND}" --build . --config ${CMAKE_BUILD_TYPE}
         PATCH_COMMAND git reset --hard && git apply "${CMAKE_CURRENT_SOURCE_DIR}/Buildstuff/0001-Remove-bigobj.patch"
     )
 
@@ -372,7 +375,6 @@ IF(WIN32)
     # Multi-threade
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MT")
     SET(WINLIBS
-        fmilib
         shlwapi
         ws2_32
         mswsock
@@ -382,13 +384,31 @@ IF(WIN32)
         ${Boost_FILESYSTEM_LIBRARY}
         ${Boost_SYSTEM_LIBRARY}
         ${CMAKE_THREAD_LIBS_INIT})
+
+    if (CMAKE_GENERATOR MATCHES "Ninja")
+        set(WINLIBS ${WINLIBS} fmiimport fmicapi jmutils fmixml libexpat fmizip minizip)
+    else ()
+        set(WINLIBS ${WINLIBS} fmilib)
+    endif ()
+
     if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-        set(WINLIBS ${WINLIBS} ${EXTRALIBS} libprotobufd libzmq-${CMAKE_VS_PLATFORM_TOOLSET}-mt-gd-4_3_5 ${HDF5_DEBUG_LIBS})
+        set(WINLIBS ${WINLIBS} ${EXTRALIBS} libprotobufd ${HDF5_DEBUG_LIBS})
+        if (CMAKE_GENERATOR MATCHES "Ninja")
+            # icx via ninja
+            set(WINLIBS ${WINLIBS} libzmq-mt-gd-4_3_5)
+        else ()
+            set(WINLIBS ${WINLIBS} libzmq-${CMAKE_VS_PLATFORM_TOOLSET}-mt-gd-4_3_5)
+        endif ()
         if (ENABLE_SC)
             set(WINLIBS ${WINLIBS} sc libumfpackd libamdd libblas libcholmodd libcolamdd libccolamdd libcamdd metisd suitesparseconfigd)
         endif ()
     else()
-        set(WINLIBS ${WINLIBS} ${EXTRALIBS} libprotobuf  libzmq-${CMAKE_VS_PLATFORM_TOOLSET}-mt-4_3_5 ${HDF5_RELEASE_LIBS})
+        set(WINLIBS ${WINLIBS} ${EXTRALIBS} libprotobuf ${HDF5_RELEASE_LIBS})
+        if (CMAKE_GENERATOR MATCHES "Ninja")
+            set(WINLIBS ${WINLIBS} libzmq-mt-4_3_5)
+        else ()
+            set(WINLIBS ${WINLIBS} libzmq-${CMAKE_VS_PLATFORM_TOOLSET}-mt-4_3_5)
+        endif ()
         if (ENABLE_SC)
             set(WINLIBS ${WINLIBS} sc libumfpack  libamd  libblas libcholmod  libcolamd  libccolamd  libcamd  metis  suitesparseconfig)
         endif ()
@@ -431,19 +451,7 @@ IF(WIN32)
             DESTINATION bin
         )
     endif ()
-    if (MSVC)
-        if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-            INSTALL (FILES
-                ${PROTOBUF_PREFIX}/src/protobuf-ext-build/${CMAKE_BUILD_TYPE}/libprotobufd.dll
-                ${ZMQ_PREFIX}/src/zmq-ext-build/bin/${CMAKE_BUILD_TYPE}/libzmq-${CMAKE_VS_PLATFORM_TOOLSET}-mt-gd-4_3_5.dll
-                DESTINATION bin)
-        else()
-            INSTALL (FILES
-                ${PROTOBUF_PREFIX}/src/protobuf-ext-build/${CMAKE_BUILD_TYPE}/libprotobuf.dll
-                ${ZMQ_PREFIX}/src/zmq-ext-build/bin/${CMAKE_BUILD_TYPE}/libzmq-${CMAKE_VS_PLATFORM_TOOLSET}-mt-4_3_5.dll
-                DESTINATION bin)
-        endif()
-    else ()
+    if (CMAKE_GENERATOR MATCHES "Ninja")
         # icx via ninja
         if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
             INSTALL (FILES
@@ -456,6 +464,18 @@ IF(WIN32)
                 ${ZMQ_PREFIX}/src/zmq-ext-build/bin/libzmq-mt-4_3_5.dll
                 DESTINATION bin)
         endif ()
+    else ()
+        if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+            INSTALL (FILES
+                ${PROTOBUF_PREFIX}/src/protobuf-ext-build/${CMAKE_BUILD_TYPE}/libprotobufd.dll
+                ${ZMQ_PREFIX}/src/zmq-ext-build/bin/${CMAKE_BUILD_TYPE}/libzmq-${CMAKE_VS_PLATFORM_TOOLSET}-mt-gd-4_3_5.dll
+                DESTINATION bin)
+        else()
+            INSTALL (FILES
+                ${PROTOBUF_PREFIX}/src/protobuf-ext-build/${CMAKE_BUILD_TYPE}/libprotobuf.dll
+                ${ZMQ_PREFIX}/src/zmq-ext-build/bin/${CMAKE_BUILD_TYPE}/libzmq-${CMAKE_VS_PLATFORM_TOOLSET}-mt-4_3_5.dll
+                DESTINATION bin)
+        endif()
     endif ()
     set(PROTOC ${PROTOBUF_BIN_DIR}/protoc)
 ELSE(WIN32)

@@ -3,7 +3,7 @@ add_executable (fmigoStorage
   ../src/common/fmigo_storage.cpp
   ../src/common/common.cpp
 )
-add_dependencies(fmigoStorage fmitcp_pb control_pb)
+add_dependencies(fmigoStorage fmitcp_pb control_pb fmi-library-ext)
 
 add_test(ctest_fmigoStorage_run fmigoStorage)
 #add_test(ctest_fmigoStorage_valgrind valgrind --leak-check=full --error-exitcode=1 ${CMAKE_CURRENT_BINARY_DIR}/fmigoStorage)

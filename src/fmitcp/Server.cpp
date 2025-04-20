@@ -66,6 +66,7 @@ Server::Server(string fmuPath, int rank_or_port, std::string hdf5Filename) {
   lastStateId = -1;
   nextStateId = 0;
   m_sendDummyResponses = false;
+  m_freed = false;
 
   if(m_fmuPath == "dummy"){
     m_sendDummyResponses = true;
@@ -559,6 +560,7 @@ string Server::clientDataInner(const char *data, size_t size) {
     ret.first = fmitcp_proto::type_fmi2_import_free_instance_res;
     ret.second = resetRes.SerializeAsString();
     debug("fmi2_import_free_instance_res()\n");
+    m_freed = true;
 
   break; } case fmitcp_proto::type_fmi2_import_setup_experiment_req: {
 

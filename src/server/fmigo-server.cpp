@@ -17,30 +17,6 @@ using namespace fmitcp;
 jm_log_level_enu_t fmigo_loglevel = jm_log_level_warning;
 bool alwaysComputeNumericalDirectionalDerivatives = false;
 
-class mymonitor : public zmq::monitor_t {
-public:
-  virtual void on_event_disconnected(const zmq_event_t &event_, const char* addr_) {
-    //stop monitor when client disconnects, fall back into start_monitor()
-    abort();
-  }
-};
-
-//std::thread ctor can't pass socket_t&/context_t& into start_monitor() for some reason, resort to pointers
-static void start_monitor(zmq::socket_t *socket, zmq::context_t *context) {
-  mymonitor mon;
-
-  //monitor until client disconnects
-  mon.monitor(*socket, "inproc://monitor");
-
-  //send stop message to main thread
-  zmq::socket_t stopper2(*context, ZMQ_PAIR);
-  stopper2.connect("inproc://stopper");
-  zmq::message_t msg(0);    //zero-length message works well enough
-  stopper2.send(msg);
-
-  //at this point this thraed is going to be waiting for join()
-}
-
 static void handleMessage(zmq::socket_t& socket, FMIServer& server, int port) {
   zmq::message_t msg;
   if (!socket.recv(&msg)) {
@@ -95,42 +71,21 @@ int main(int argc, char *argv[]) {
   zmq::socket_t socket(context, ZMQ_REP);
   socket.bind(oss.str().c_str());
 
-  //use monitor + inproc PAIR to stop when the client disconnects
-  //maybe there's an easier way? the ZMQ documentation has this to say (http://zeromq.org/area:faq):
-  //
-  // How can I be notified that a peer has connected/disconnected from my socket?
-  //
-  // ZeroMQ sockets can bind and/or connect to multiple peers simultaneously.
-  // The sockets also transparently provide asynchronous connection and
-  // reconnection facilities. At this time, none of the sockets will provide
-  // notification of peer connect/disconnect. This feature is being
-  // investigated for a future release.
-  //
-  zmq::socket_t stopper(context, ZMQ_PAIR);
-  stopper.bind("inproc://stopper");
-
-  std::thread monitor_thread(start_monitor, &socket, &context);
-
   for (;;) {
     zmq::pollitem_t items[2];
     items[0].socket = (void*)socket;
     items[0].events = ZMQ_POLLIN;
-    items[1].socket = (void*)stopper;
-    items[1].events = ZMQ_POLLIN;
 
     server.m_timer.rotate("pre_poll");
     //wait indefinitely, for now
-    int n = zmq::poll(items, 2, -1);
+    int n = zmq::poll(items, 1, -1);
     server.m_timer.rotate("poll");
 
     if (items[0].revents & ZMQ_POLLIN) {
       handleMessage(socket, server, port);
-    }
-
-    if (items[1].revents & ZMQ_POLLIN) {
-      //client disconnected - join monitor thread and stop
-      monitor_thread.join();
-      break;
+      if (server.m_freed) {
+        break;
+      }
     }
   }
 

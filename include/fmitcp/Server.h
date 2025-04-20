@@ -85,6 +85,10 @@ public:
     std::string clientDataInner(const char *data, size_t size);
 #endif
 
+    // set to true when fmi2_import_free_instance() is called
+    // this serves as the signal to stop the server
+    bool m_freed;
+
   public:
 
     explicit Server(string fmuPath, int rank_or_port, std::string hdf5Filename = "");

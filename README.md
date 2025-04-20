@@ -38,13 +38,6 @@ bash 4.3.11 and 4.3.48 are confirmed working via GitLab CI.
 win-bash 0.8.5 is confirmed to *not* work however, due to the lack of subprocesses.
 More information about Windows specifics will be given in the Windows section.
 
-FMILibrary is handled as a submodule, so you must initialize submodules before building:
-
-```bash
-git submodule init
-git submodule update
-```
-
 ## GNU/Linux
 
 Ubuntu and Arch are our primary development platforms, and thus are the most supported.
@@ -89,7 +82,6 @@ In the future some of these features may be brough back up into working conditio
 The following command will work under `bash.exe` (as shipped with git) and `cmd.exe`:
 
 ```
-git submodule update --init
 mkdir build
 cd build
 cmake -DENABLE_SC=OFF -DBUILD_FMUS=OFF -DUSE_GPL=OFF -DUSE_MATIO=OFF ..

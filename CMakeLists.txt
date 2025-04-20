@@ -60,7 +60,14 @@ option(ENABLE_HDF5_HACK "Enable HDF5 column name hack? Necessary for perftest.py
 if (WIN32)
     option(USE_INTEL_MPI "Use Intel MPI instead of MS-MPI?" OFF)
     option(INTEL_MPI_DIR "Location of Intel MPI install, including version number" "C:\\Program Files (x86)\\Intel\\oneAPI\\mpi\\2021.12")
+    option(USE_EXTERNAL_LIBZMQ "Use external libzmq?" ON)
+    option(USE_EXTERNAL_LIBPROTOBUF "Use external libprotobuf?" ON)
+else ()
+    option(USE_EXTERNAL_LIBZMQ "Use external libzmq?" OFF)
+    option(USE_EXTERNAL_LIBPROTOBUF "Use external libprotobuf?" OFF)
 endif ()
+# This is only useful during development
+option(USE_PROTOC "Use protoc to regenerate source files as needed?" OFF)
 
 set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/install)
 
@@ -82,29 +89,50 @@ endif ()
 
 find_program(PYTHON3 python3)
 
-# Download/install protobuf, umfpack as needed
-if(WIN32)
+set(FMILIB_INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/fmi-library-install)
+include(ExternalProject)
+ExternalProject_Add(fmi-library-ext
+    GIT_REPOSITORY https://github.com/modelon-community/fmi-library.git
+    GIT_TAG 29fe5c4b36e44814fcf3dd69bdcad2667fe51478 # 3.0a4
+    CMAKE_ARGS "-DCMAKE_INSTALL_PREFIX:STRING=${FMILIB_INSTALL_DIR};-DFMILIB_BUILD_STATIC_LIB=ON;-DFMILIB_BUILD_SHARED_LIB=ON;-DFMILIB_BUILD_TESTS=OFF;-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER};-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER};-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
+    PATCH_COMMAND "git;reset;--hard;&&;git;apply;${CMAKE_CURRENT_SOURCE_DIR}/Buildstuff/0001-Fix-isatty-and-fileno-on-Windows-also-for-FMI3.patch;&&;git;apply;${CMAKE_CURRENT_SOURCE_DIR}/Buildstuff/0001-Pass-CMAKE_BUILD_TYPE-to-zlibext.patch"
+    INSTALL_COMMAND "${CMAKE_COMMAND}" --build . --target install
+)
+link_directories(${FMILIB_INSTALL_DIR}/lib)
+include_directories(${FMILIB_INSTALL_DIR}/include)
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/fmi-library-ext-prefix/src/fmi-library-ext/src/XML)
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/fmi-library-ext-prefix/src/fmi-library-ext/src/XML/include)
+
+if (USE_EXTERNAL_LIBZMQ)
+    set(ZMQ_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/zeromq-4.3.5")
+
+    ExternalProject_Add(zmq-ext
+        PREFIX "${ZMQ_PREFIX}"
+        GIT_REPOSITORY "https://github.com/zeromq/libzmq.git"
+        GIT_TAG 622fc6dde99ee172ebaa9c8628d85a7a1995a21d # v4.3.5
+        CMAKE_ARGS "-DBUILD_SHARED=OFF;-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE};-DWITH_TLS=OFF"
+        INSTALL_COMMAND ""
+        BUILD_COMMAND "${CMAKE_COMMAND}" --build . --config ${CMAKE_BUILD_TYPE}
+    )
+
+    include_directories("${ZMQ_PREFIX}/src/zmq-ext/include")
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/zeromq/4.2.0-master/include) #zmq.hpp
+    link_directories("${ZMQ_PREFIX}/src/zmq-ext-build/lib/${CMAKE_BUILD_TYPE}")
+    link_directories("${ZMQ_PREFIX}/src/zmq-ext-build/lib")
+endif ()
+
+if (USE_EXTERNAL_LIBPROTOBUF)
     add_definitions(-D_SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS) # required by protobuf-ext
     add_definitions(-DPROTOBUF_USE_DLLS) # required to use protobuf, now that we've switched to DLLs
 
-    if (MSVC14)
-        set(MSVC_TOOLCHAIN_VERSION "/p:VisualStudioVersion=14.0")
-    elseif (MSV12)
-        set(MSVC_TOOLCHAIN_VERSION "/p:VisualStudioVersion=12.0")
-    else (MSVC14)
-        # Assume there is only one toolchain installed and it is compatible with MSVC12
-        set(MSVC_TOOLCHAIN_VERSION "")
-    endif (MSVC14)
-
-    if ("${CMAKE_CXX_COMPILER}" MATCHES "icx")
-        set(PROTOBUF_CXX_FLAGS "")
-    else ()
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj /FS")
-        set(PROTOBUF_CXX_FLAGS "/bigobj")
+    set(PROTOBUF_CXX_FLAGS "")
+    if (WIN32)
+        if (MSVC)
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj /FS")
+            set(PROTOBUF_CXX_FLAGS "/bigobj")
+        endif ()
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /DPROTOBUF_USE_DLLS")
     endif ()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /DPROTOBUF_USE_DLLS")
-
-    include(ExternalProject)
 
     set(PROTOBUF_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/protobuf-21.12")
 
@@ -122,7 +150,26 @@ if(WIN32)
 
     include_directories("${PROTOBUF_PREFIX}/src/protobuf-ext/src")
     link_directories("${PROTOBUF_PREFIX}/src/protobuf-ext-build/${CMAKE_BUILD_TYPE}")
+    link_directories("${PROTOBUF_PREFIX}/src/protobuf-ext-build")
     set(PROTOBUF_BIN_DIR "${PROTOBUF_PREFIX}/src/protobuf-ext-build/${CMAKE_BUILD_TYPE}")
+    set(PROTOBUF_LIBRARY protobuf)
+else ()
+    include(FindProtobuf)
+    find_package(Protobuf REQUIRED)
+    include_directories(${PROTOBUF_INCLUDE_DIR})
+    link_directories(${PROTOBUF_LIBRARY_DIR})
+endif ()
+
+# Download/install protobuf, umfpack as needed
+if(WIN32)
+    if (MSVC14)
+        set(MSVC_TOOLCHAIN_VERSION "/p:VisualStudioVersion=14.0")
+    elseif (MSV12)
+        set(MSVC_TOOLCHAIN_VERSION "/p:VisualStudioVersion=12.0")
+    else (MSVC14)
+        # Assume there is only one toolchain installed and it is compatible with MSVC12
+        set(MSVC_TOOLCHAIN_VERSION "")
+    endif (MSVC14)
 
     if (ENABLE_SC)
         set(SUITESPARSE_DIR "${CMAKE_CURRENT_BINARY_DIR}/suitesparse-metis-for-windows")
@@ -160,30 +207,8 @@ if(WIN32)
     include_directories(${HDF5_DIR}/src/hdf5-ext/hdf5-1.8.17/hl/src)
     include_directories(${HDF5_DIR}/src/hdf5-ext-build)
     link_directories(${HDF5_DIR}/src/hdf5-ext-build/bin/${CMAKE_BUILD_TYPE})
-
-    set(ZMQ_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/zeromq-4.3.5")
-
-    ExternalProject_Add(zmq-ext
-        PREFIX "${ZMQ_PREFIX}"
-        GIT_REPOSITORY "https://github.com/zeromq/libzmq.git"
-        GIT_TAG 622fc6dde99ee172ebaa9c8628d85a7a1995a21d # v4.3.5
-        CMAKE_ARGS "-DBUILD_SHARED=OFF"
-        INSTALL_COMMAND ""
-        BUILD_COMMAND "${CMAKE_COMMAND}" --build . --config ${CMAKE_BUILD_TYPE}
-    )
-
-    include_directories("${ZMQ_PREFIX}/src/zmq-ext/include")
-    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/zeromq/4.2.0-master/include) #zmq.hpp
-    link_directories("${ZMQ_PREFIX}/src/zmq-ext-build/lib/${CMAKE_BUILD_TYPE}")
-
+    link_directories(${HDF5_DIR}/src/hdf5-ext-build/bin)
 else(WIN32)
-    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/zeromq/4.2.0-master/include)
-    # TODO: tell the user what's needed?
-    include(FindProtobuf)
-    find_package(Protobuf REQUIRED)
-    include_directories(${PROTOBUF_INCLUDE_DIR})
-    link_directories(${PROTOBUF_LIBRARY_DIR})
-
     if (NOT APPLE)
         include_directories(/usr/include/hdf5/serial)
         if (ENABLE_SC)
@@ -194,18 +219,6 @@ else(WIN32)
 endif(WIN32)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/tools/strong-coupling-core/include)
-
-set(FMILIBRARY_DIR 3rdparty/FMILibrary-3.0a4)
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/${FMILIBRARY_DIR}/fmilib_include)
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/${FMILIBRARY_DIR}/fmilib_config_include)
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/${FMILIBRARY_DIR}/ExpatEx/install/include)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_DIR}/src/CAPI/include)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_DIR}/src/Import/include)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_DIR}/src/Util/include)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_DIR}/src/XML/include)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_DIR}/src/ZIP/include)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_DIR}/ThirdParty/FMI/default)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${FMILIBRARY_DIR}/ThirdParty/Expat/expat-2.1.0/lib)
 
 if (APPLE)
     # For Macports
@@ -227,18 +240,6 @@ endif()
 if (ENABLE_SC)
     add_subdirectory(tools/strong-coupling-core)
 endif ()
-
-# touch CMakeCache.txt because FMILibrary's CMakeLists.txt is broken
-execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/3rdparty/FMILibrary-3.0a4")
-execute_process(COMMAND ${CMAKE_COMMAND} -E touch "${CMAKE_CURRENT_BINARY_DIR}/3rdparty/FMILibrary-3.0a4/CMakeCache.txt")
-# get FMIL to a known state
-execute_process(COMMAND git reset --hard WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/FMILibrary-3.0a4")
-# fix lex.yyfmi3.c
-execute_process(COMMAND git apply "${CMAKE_CURRENT_SOURCE_DIR}/Buildstuff/0001-Fix-isatty-and-fileno-on-Windows-also-for-FMI3.patch" WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/FMILibrary-3.0a4")
-# fix miniunz.c
-execute_process(COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/miniunz.c" "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/FMILibrary-3.0a4/ThirdParty/Minizip/minizip")
-option(FMILIB_BUILD_TESTS "" OFF)
-add_subdirectory(${FMILIBRARY_DIR})
 
 if (USE_GPL)
   if (WIN32)
@@ -264,7 +265,6 @@ if (NOT WIN32)
   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -DDEBUG")
   FIND_PACKAGE(MPI REQUIRED)
-  FIND_PACKAGE(Protobuf REQUIRED)
   INCLUDE_DIRECTORIES(${MPI_INCLUDE_PATH})
 else ()
   if (ENABLE_SC)
@@ -430,17 +430,32 @@ IF(WIN32)
             DESTINATION bin
         )
     endif ()
-    if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-    INSTALL (FILES
-        ${PROTOBUF_PREFIX}/src/protobuf-ext-build/${CMAKE_BUILD_TYPE}/libprotobufd.dll
-        ${ZMQ_PREFIX}/src/zmq-ext-build/bin/${CMAKE_BUILD_TYPE}/libzmq-${CMAKE_VS_PLATFORM_TOOLSET}-mt-gd-4_3_5.dll
-        DESTINATION bin)
-    else()
-    INSTALL (FILES
-        ${PROTOBUF_PREFIX}/src/protobuf-ext-build/${CMAKE_BUILD_TYPE}/libprotobuf.dll
-        ${ZMQ_PREFIX}/src/zmq-ext-build/bin/${CMAKE_BUILD_TYPE}/libzmq-${CMAKE_VS_PLATFORM_TOOLSET}-mt-4_3_5.dll
-        DESTINATION bin)
-    endif()
+    if (MSVC)
+        if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+            INSTALL (FILES
+                ${PROTOBUF_PREFIX}/src/protobuf-ext-build/${CMAKE_BUILD_TYPE}/libprotobufd.dll
+                ${ZMQ_PREFIX}/src/zmq-ext-build/bin/${CMAKE_BUILD_TYPE}/libzmq-${CMAKE_VS_PLATFORM_TOOLSET}-mt-gd-4_3_5.dll
+                DESTINATION bin)
+        else()
+            INSTALL (FILES
+                ${PROTOBUF_PREFIX}/src/protobuf-ext-build/${CMAKE_BUILD_TYPE}/libprotobuf.dll
+                ${ZMQ_PREFIX}/src/zmq-ext-build/bin/${CMAKE_BUILD_TYPE}/libzmq-${CMAKE_VS_PLATFORM_TOOLSET}-mt-4_3_5.dll
+                DESTINATION bin)
+        endif()
+    else ()
+        # icx via ninja
+        if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+            INSTALL (FILES
+                    ${PROTOBUF_PREFIX}/src/protobuf-ext-build/libprotobufd.dll
+                    ${ZMQ_PREFIX}/src/zmq-ext-build/bin/libzmq-mt-gd-4_3_5.dll
+                    DESTINATION bin)
+        else ()
+            INSTALL (FILES
+                ${PROTOBUF_PREFIX}/src/protobuf-ext-build/libprotobuf.dll
+                ${ZMQ_PREFIX}/src/zmq-ext-build/bin/libzmq-mt-4_3_5.dll
+                DESTINATION bin)
+        endif ()
+    endif ()
     set(PROTOC ${PROTOBUF_BIN_DIR}/protoc)
 ELSE(WIN32)
     SET(LINUXLIBS
@@ -473,29 +488,31 @@ ELSE(WIN32)
     set(PROTOC protoc)
 ENDIF(WIN32)
 
-# Compile proto
-set(FMITCP_PROTOBUF_TARGETS ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.pb.cc ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp_pb2.py)
-add_custom_command(OUTPUT ${FMITCP_PROTOBUF_TARGETS}
-    COMMAND ${PROTOC} --cpp_out=${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp --python_out=${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.proto --proto_path ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp
-    WORKING_DIRECTORY   ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp
-    DEPENDS libprotobuf ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.proto)
-#can't depend on the generated files themselves because CMake is awful. create a custom target instead
-add_custom_target(fmitcp_pb DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.pb.cc)
+if (USE_PROTOC)
+    # Compile proto
+    set(FMITCP_PROTOBUF_TARGETS ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.pb.cc ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp_pb2.py)
+    add_custom_command(OUTPUT ${FMITCP_PROTOBUF_TARGETS}
+        COMMAND ${PROTOC} --cpp_out=${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp --python_out=${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.proto --proto_path ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp
+        WORKING_DIRECTORY   ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp
+        DEPENDS libprotobuf ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.proto)
+    #can't depend on the generated files themselves because CMake is awful. create a custom target instead
+    add_custom_target(fmitcp_pb DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/src/fmitcp/fmitcp.pb.cc)
 
-set(MASTER_CONTROL_PROTOBUF_TARGETS ${CMAKE_CURRENT_SOURCE_DIR}/src/master/control.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/src/master/control.pb.cc ${CMAKE_CURRENT_SOURCE_DIR}/src/master/control_pb2.py)
-add_custom_command(OUTPUT ${MASTER_CONTROL_PROTOBUF_TARGETS}
-    COMMAND ${PROTOC} --cpp_out=. --python_out=. control.proto
-    WORKING_DIRECTORY   ${CMAKE_CURRENT_SOURCE_DIR}/src/master
-    DEPENDS libprotobuf ${CMAKE_CURRENT_SOURCE_DIR}/src/master/control.proto)
-#same here
-add_custom_target(control_pb DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/master/control.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/src/master/control.pb.cc)
+    set(MASTER_CONTROL_PROTOBUF_TARGETS ${CMAKE_CURRENT_SOURCE_DIR}/src/master/control.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/src/master/control.pb.cc ${CMAKE_CURRENT_SOURCE_DIR}/src/master/control_pb2.py)
+    add_custom_command(OUTPUT ${MASTER_CONTROL_PROTOBUF_TARGETS}
+        COMMAND ${PROTOC} --cpp_out=. --python_out=. control.proto
+        WORKING_DIRECTORY   ${CMAKE_CURRENT_SOURCE_DIR}/src/master
+        DEPENDS libprotobuf ${CMAKE_CURRENT_SOURCE_DIR}/src/master/control.proto)
+    #same here
+    add_custom_target(control_pb DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/master/control.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/src/master/control.pb.cc)
 
-# Install compiled protbuf files
-install(FILES ${FMITCP_PROTOBUF_TARGETS} ${MASTER_CONTROL_PROTOBUF_TARGETS} DESTINATION protobuf)
+    # Install compiled protbuf files
+    install(FILES ${FMITCP_PROTOBUF_TARGETS} ${MASTER_CONTROL_PROTOBUF_TARGETS} DESTINATION protobuf)
 
-add_dependencies(${TCP_MASTER_NAME} fmitcp_pb control_pb)
-add_dependencies(${TCP_SERVER_NAME} fmitcp_pb control_pb)
-add_dependencies(${MPI_MASTER_NAME} fmitcp_pb control_pb)
+    add_dependencies(${TCP_MASTER_NAME} fmitcp_pb control_pb)
+    add_dependencies(${TCP_SERVER_NAME} fmitcp_pb control_pb)
+    add_dependencies(${MPI_MASTER_NAME} fmitcp_pb control_pb)
+endif ()
 
 
 # Manpage stuff
@@ -532,17 +549,23 @@ INSTALL(TARGETS ${TCP_MASTER_NAME} ${TCP_SERVER_NAME} ${MPI_MASTER_NAME} DESTINA
 
 add_subdirectory(tests)
 
-add_dependencies(fmigo-master fmilib)
-add_dependencies(fmigo-mpi    fmilib)
+add_dependencies(fmigo-master fmi-library-ext)
+add_dependencies(fmigo-server fmi-library-ext)
+add_dependencies(fmigo-mpi    fmi-library-ext)
 
+if (USE_EXTERNAL_LIBZMQ)
+    add_dependencies(fmigo-master zmq-ext)
+    add_dependencies(fmigo-server zmq-ext)
+    add_dependencies(fmigo-mpi    zmq-ext)
+endif ()
 
 if (WIN32)
     if (ENABLE_SC)
         add_dependencies(sc suitesparse-ext)
     endif ()
-    add_dependencies(fmigo-master protobuf-ext hdf5-ext zmq-ext)
-    add_dependencies(fmigo-server protobuf-ext hdf5-ext zmq-ext)
-    add_dependencies(fmigo-mpi    protobuf-ext hdf5-ext zmq-ext)
+    add_dependencies(fmigo-master protobuf-ext hdf5-ext)
+    add_dependencies(fmigo-server protobuf-ext hdf5-ext)
+    add_dependencies(fmigo-mpi    protobuf-ext hdf5-ext)
     add_dependencies(fmitcp_pb    protobuf-ext)
     add_dependencies(control_pb   protobuf-ext)
 endif ()

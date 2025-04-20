@@ -52,8 +52,6 @@ RUN  chown -R gitlab-ci /home/gitlab-ci/umit
 # Finally, make us run as gitlab-ci
 USER gitlab-ci
 WORKDIR /home/gitlab-ci/umit
-RUN git submodule init
-RUN git submodule update
 RUN export PATH=/usr/lib/ccache:$PATH
 
 # docker doesn't copy empty directories for some reason

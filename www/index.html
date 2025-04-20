@@ -381,20 +381,21 @@
 mkdir build
 cd build
 cmake .. -DENABLE_SC=OFF -DUSE_GPL=OFF -DBUILD_FMUS=OFF
-cmake --build . --config Release
+cmake --build . --config Release --target install
 </pre>
       <p>
         If Intel MPI is preferred then run cmake with <code>-DUSE_INTEL_MPI=ON -DINTEL_MPI_DIR=[Intel MPI's install directory]</code>.
       </p>
       <p>
         If you want to use Intel's C/C++ compiler (icx) then you must first run setvars.bat in <code>C:\Program Files (x86)\Intel\oneAPI</code>.
-        You must also use the Ninja generator with CMake.
+        You must also use the Ninja generator with CMake, and build protobuf-ext explicitly.
       <p>
       <pre>
 mkdir build
 cd build
 cmake .. -DENABLE_SC=OFF -DUSE_GPL=OFF -DBUILD_FMUS=OFF -DCMAKE_BUILD_TYPE=Release -GNinja
-ninja
+ninja protobuf-ext
+ninja install
 </pre>
         Some users have successfully built the system on Arch Linux, and on Mac OS X.
       </p>

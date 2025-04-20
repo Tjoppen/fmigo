@@ -102,6 +102,9 @@ link_directories(${FMILIB_INSTALL_DIR}/lib)
 include_directories(${FMILIB_INSTALL_DIR}/include)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/fmi-library-ext-prefix/src/fmi-library-ext/src/XML)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/fmi-library-ext-prefix/src/fmi-library-ext/src/XML/include)
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/fmi-library-ext-prefix/src/fmi-library-ext-build/ExpatEx/install/include)
+link_directories(${CMAKE_CURRENT_BINARY_DIR}/fmi-library-ext-prefix/src/fmi-library-ext-build/zlibext/Debug)
+link_directories(${CMAKE_CURRENT_BINARY_DIR}/fmi-library-ext-prefix/src/fmi-library-ext-build/zlibext/Release)
 
 if (USE_EXTERNAL_LIBZMQ)
     set(ZMQ_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/zeromq-4.3.5")
@@ -110,14 +113,15 @@ if (USE_EXTERNAL_LIBZMQ)
         PREFIX "${ZMQ_PREFIX}"
         GIT_REPOSITORY "https://github.com/zeromq/libzmq.git"
         GIT_TAG 622fc6dde99ee172ebaa9c8628d85a7a1995a21d # v4.3.5
-        CMAKE_ARGS "-DBUILD_SHARED=OFF;-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE};-DWITH_TLS=OFF;-DBUILD_SHARED=ON"
+        CMAKE_ARGS "-DBUILD_SHARED=OFF;-DBUILD_STATIC=ON;-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE};-DWITH_TLS=OFF"
         INSTALL_COMMAND ""
         BUILD_COMMAND "${CMAKE_COMMAND}" --build . --config ${CMAKE_BUILD_TYPE}
     )
 
     include_directories("${ZMQ_PREFIX}/src/zmq-ext/include")
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/zeromq/4.2.0-master/include) #zmq.hpp
-    link_directories("${ZMQ_PREFIX}/src/zmq-ext-build/lib/${CMAKE_BUILD_TYPE}")
+    link_directories("${ZMQ_PREFIX}/src/zmq-ext-build/lib/Debug")
+    link_directories("${ZMQ_PREFIX}/src/zmq-ext-build/lib/Release")
     link_directories("${ZMQ_PREFIX}/src/zmq-ext-build/lib")
 endif ()
 
@@ -149,7 +153,8 @@ if (USE_EXTERNAL_LIBPROTOBUF)
     )
 
     include_directories("${PROTOBUF_PREFIX}/src/protobuf-ext/src")
-    link_directories("${PROTOBUF_PREFIX}/src/protobuf-ext-build/${CMAKE_BUILD_TYPE}")
+    link_directories("${PROTOBUF_PREFIX}/src/protobuf-ext-build/Debug")
+    link_directories("${PROTOBUF_PREFIX}/src/protobuf-ext-build/Release")
     link_directories("${PROTOBUF_PREFIX}/src/protobuf-ext-build")
     set(PROTOBUF_BIN_DIR "${PROTOBUF_PREFIX}/src/protobuf-ext-build/${CMAKE_BUILD_TYPE}")
     set(PROTOBUF_LIBRARY protobuf)
@@ -200,8 +205,8 @@ if(WIN32)
         CMAKE_ARGS "-DCMAKE_INSTALL_PREFIX:STRING=${HDF5_INSTALL_DIR};-DBUILD_SHARED_LIBS:BOOL=OFF;-DHDF5_BUILD_TOOLS:BOOL=OFF;-DHDF5_BUILD_UTILS:BOOL=OFF;-DBUILD_TESTING:BOOL=OFF;-DHDF5_BUILD_EXAMPLES:BOOL=OFF;-DHDF5_BUILD_JAVA:BOOL=OFF;-DHDF5_BUILD_FORTRAN:BOOL=OFF;-DHDF5_BUILD_CPP_LIB:BOOL=OFF;-DHDF5_ENABLE_Z_LIB_SUPPORT:BOOL=OFF;-DHDF5_ENABLE_SZIP_SUPPORT:BOOL=OFF;-DHDF5_PACKAGE_EXTLIBS:BOOL=ON;-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
     )
 
-    set(HDF5_RELEASE_LIBS libhdf5   libhdf5_hl   shlwapi zlibstatic)
-    set(HDF5_DEBUG_LIBS   libhdf5_D libhdf5_hl_D shlwapi zlibstatic)
+    set(HDF5_RELEASE_LIBS libhdf5   libhdf5_hl   shlwapi zlib)
+    set(HDF5_DEBUG_LIBS   libhdf5_D libhdf5_hl_D shlwapi zlibd)
     link_directories(${HDF5_INSTALL_DIR}/lib)
     include_directories(${HDF5_INSTALL_DIR}/include)
 else(WIN32)
@@ -383,7 +388,7 @@ IF(WIN32)
             set(WINLIBS ${WINLIBS} sc libumfpackd libamdd libblas libcholmodd libcolamdd libccolamdd libcamdd metisd suitesparseconfigd)
         endif ()
     else()
-        set(WINLIBS ${WINLIBS} ${EXTRALIBS} libprotobuf  libzmq-${CMAKE_VS_PLATFORM_TOOLSET}-mt-s-4_3_5 ${HDF5_RELEASE_LIBS})
+        set(WINLIBS ${WINLIBS} ${EXTRALIBS} libprotobuf  libzmq-${CMAKE_VS_PLATFORM_TOOLSET}-mt-4_3_5 ${HDF5_RELEASE_LIBS})
         if (ENABLE_SC)
             set(WINLIBS ${WINLIBS} sc libumfpack  libamd  libblas libcholmod  libcolamd  libccolamd  libcamd  metis  suitesparseconfig)
         endif ()

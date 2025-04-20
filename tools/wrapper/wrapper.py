@@ -87,6 +87,8 @@ if __name__ == '__main__':
   shutil.copytree(os.path.join(wrapper_path, '../../tools/fmi2template'), os.path.join(sources, 'tools/fmi2template'))
   shutil.copytree(os.path.join(wrapper_path, '../../tools/cgsl'), os.path.join(sources, 'tools/cgsl'))
   shutil.copytree(os.path.join(wrapper_path, '../../3rdparty/wingsl'), os.path.join(sources, '3rdparty/wingsl'))
+  shutil.copy(os.path.join(wrapper_path, '../../Buildstuff/0001-Fix-isatty-and-fileno-on-Windows-also-for-FMI3.patch'), sources)
+  shutil.copy(os.path.join(wrapper_path, '../../Buildstuff/0001-Pass-CMAKE_BUILD_TYPE-to-zlibext.patch'), sources)
 
   cmake = open(os.path.join(d, 'CMakeLists.txt'), 'w')
   cmake.write('''
@@ -122,7 +124,7 @@ if (NOT HAVE_FMILIB_H)
       GIT_REPOSITORY https://github.com/modelon-community/fmi-library.git
       GIT_TAG 29fe5c4b36e44814fcf3dd69bdcad2667fe51478 # 3.0a4
       CMAKE_ARGS "-DCMAKE_INSTALL_PREFIX:STRING=${FMILIB_INSTALL_DIR};-DFMILIB_BUILD_STATIC_LIB=ON;-DFMILIB_BUILD_SHARED_LIB=ON;-DFMILIB_BUILD_TESTS=OFF;-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER};-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER};-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
-      PATCH_COMMAND "git;reset;--hard;&&;git;apply;${CMAKE_CURRENT_SOURCE_DIR}/Buildstuff/0001-Fix-isatty-and-fileno-on-Windows-also-for-FMI3.patch;&&;git;apply;${CMAKE_CURRENT_SOURCE_DIR}/Buildstuff/0001-Pass-CMAKE_BUILD_TYPE-to-zlibext.patch"
+      PATCH_COMMAND "git;reset;--hard;&&;git;apply;${CMAKE_CURRENT_SOURCE_DIR}/0001-Fix-isatty-and-fileno-on-Windows-also-for-FMI3.patch;&&;git;apply;${CMAKE_CURRENT_SOURCE_DIR}/0001-Pass-CMAKE_BUILD_TYPE-to-zlibext.patch"
       INSTALL_COMMAND "${CMAKE_COMMAND}" --build . --target install
   )
   link_directories(${FMILIB_INSTALL_DIR}/lib)

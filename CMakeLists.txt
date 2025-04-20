@@ -391,6 +391,7 @@ IF(WIN32)
         set(WINLIBS ${WINLIBS} fmilib)
     endif ()
 
+    # TODO: don't depend on CMAKE_BUILD_TYPE here
     if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
         set(WINLIBS ${WINLIBS} ${EXTRALIBS} libprotobufd ${HDF5_DEBUG_LIBS})
         if (CMAKE_GENERATOR MATCHES "Ninja")

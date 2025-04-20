@@ -193,22 +193,20 @@ if(WIN32)
         link_directories(${SUITESPARSE_DIR}/src/suitesparse-ext-build/install/lib64) # libmetis.lib always ends up in lib64
     endif ()
 
-    set(HDF5_DIR "${CMAKE_CURRENT_BINARY_DIR}/hdf5")
+    set(HDF5_INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/hdf5-install)
     ExternalProject_Add(hdf5-ext
-        PREFIX  ${HDF5_DIR}
-        URL     "https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8/hdf5-1.8.17/src/CMake-hdf5-1.8.17.zip"
-        URL_MD5 "8cc32abfbe9cc8815386372783301257"
-        CONFIGURE_COMMAND ${CMAKE_COMMAND}          ${HDF5_DIR}/src/hdf5-ext/hdf5-1.8.17 -G ${CMAKE_GENERATOR}
-        BUILD_COMMAND     ${CMAKE_COMMAND} -E chdir ${HDF5_DIR}/src/hdf5-ext-build msbuild HDF5.sln /p:Configuration=${CMAKE_BUILD_TYPE} ${MSVC_TOOLCHAIN_VERSION}
-        INSTALL_COMMAND   ""
+        GIT_REPOSITORY https://github.com/HDFGroup/hdf5.git
+        GIT_TAG 7bf340440909d468dbb3cf41f0ea0d87f5050cea # hdf5-1.14.6
+        CMAKE_ARGS "-DCMAKE_INSTALL_PREFIX:STRING=${HDF5_INSTALL_DIR};-DBUILD_SHARED_LIBS:BOOL=OFF;-DHDF5_BUILD_TOOLS:BOOL=OFF;-DHDF5_BUILD_UTILS:BOOL=OFF;-DBUILD_TESTING:BOOL=OFF;-DHDF5_BUILD_EXAMPLES:BOOL=OFF;-DHDF5_BUILD_JAVA:BOOL=OFF;-DHDF5_BUILD_FORTRAN:BOOL=OFF;-DHDF5_BUILD_CPP_LIB:BOOL=OFF;-DHDF5_ENABLE_Z_LIB_SUPPORT:BOOL=OFF;-DHDF5_ENABLE_SZIP_SUPPORT:BOOL=OFF;-DHDF5_PACKAGE_EXTLIBS:BOOL=ON;-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
     )
 
-    include_directories(${HDF5_DIR}/src/hdf5-ext/hdf5-1.8.17/src)
-    include_directories(${HDF5_DIR}/src/hdf5-ext/hdf5-1.8.17/hl/src)
-    include_directories(${HDF5_DIR}/src/hdf5-ext-build)
-    link_directories(${HDF5_DIR}/src/hdf5-ext-build/bin/${CMAKE_BUILD_TYPE})
-    link_directories(${HDF5_DIR}/src/hdf5-ext-build/bin)
+    set(HDF5_RELEASE_LIBS libhdf5   libhdf5_hl   shlwapi zlibstatic)
+    set(HDF5_DEBUG_LIBS   libhdf5_D libhdf5_hl_D shlwapi zlibstatic)
+    link_directories(${HDF5_INSTALL_DIR}/lib)
+    include_directories(${HDF5_INSTALL_DIR}/include)
 else(WIN32)
+    set(HDF5_RELEASE_LIBS hdf5_serial_hl hdf5_serial)
+    set(HDF5_DEBUG_LIBS ${HDF5_RELEASE_LIBS})
     if (NOT APPLE)
         include_directories(/usr/include/hdf5/serial)
         if (ENABLE_SC)
@@ -380,12 +378,12 @@ IF(WIN32)
         ${Boost_SYSTEM_LIBRARY}
         ${CMAKE_THREAD_LIBS_INIT})
     if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-        set(WINLIBS ${WINLIBS} ${EXTRALIBS} libprotobufd libzmq-${CMAKE_VS_PLATFORM_TOOLSET}-mt-gd-4_3_5 libhdf5_hl_D libhdf5_D)
+        set(WINLIBS ${WINLIBS} ${EXTRALIBS} libprotobufd libzmq-${CMAKE_VS_PLATFORM_TOOLSET}-mt-gd-4_3_5 ${HDF5_DEBUG_LIBS})
         if (ENABLE_SC)
             set(WINLIBS ${WINLIBS} sc libumfpackd libamdd libblas libcholmodd libcolamdd libccolamdd libcamdd metisd suitesparseconfigd)
         endif ()
     else()
-        set(WINLIBS ${WINLIBS} ${EXTRALIBS} libprotobuf  libzmq-${CMAKE_VS_PLATFORM_TOOLSET}-mt-4_3_5 libhdf5_hl      libhdf5)
+        set(WINLIBS ${WINLIBS} ${EXTRALIBS} libprotobuf  libzmq-${CMAKE_VS_PLATFORM_TOOLSET}-mt-s-4_3_5 ${HDF5_RELEASE_LIBS})
         if (ENABLE_SC)
             set(WINLIBS ${WINLIBS} sc libumfpack  libamd  libblas libcholmod  libcolamd  libccolamd  libcamd  metis  suitesparseconfig)
         endif ()
@@ -459,8 +457,7 @@ ELSE(WIN32)
     SET(LINUXLIBS
         fmilib
         dl
-        hdf5
-        hdf5_hl
+        ${HDF5_RELEASE_LIBS}
         zmq
         ${MPI_LIBRARIES}
         ${Boost_FILESYSTEM_LIBRARY}

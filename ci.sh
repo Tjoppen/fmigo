@@ -15,6 +15,7 @@ do
   # Build with msbuild and cl
   ssh $WINDOWS_HOSTNAME "\
   cd fmigo &&\
+  git fetch &&\
   git reset --hard $(git rev-parse HEAD) &&\
   rd /s /q build-cl &&\
   mkdir build-cl &&\
@@ -27,6 +28,7 @@ do
   cd \"\\Program Files (x86)\\Intel\\oneAPI\" &&\
   setvars &&\
   cd %HOME%\\fmigo &&\
+  git fetch &&\
   git reset --hard $(git rev-parse HEAD) &&\
   rd /s /q build-icx &&\
   mkdir build-icx &&\

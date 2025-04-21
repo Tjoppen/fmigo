@@ -86,8 +86,9 @@ if __name__ == '__main__':
   shutil.copytree(os.path.join(wrapper_path), os.path.join(sources, 'tools/wrapper'))
   shutil.copytree(os.path.join(wrapper_path, '../../tools/fmi2template'), os.path.join(sources, 'tools/fmi2template'))
   shutil.copytree(os.path.join(wrapper_path, '../../tools/cgsl'), os.path.join(sources, 'tools/cgsl'))
-  shutil.copytree(os.path.join(wrapper_path, '../../3rdparty/FMILibrary-3.0a4'), os.path.join(sources, '3rdparty/FMILibrary-3.0a4'))
   shutil.copytree(os.path.join(wrapper_path, '../../3rdparty/wingsl'), os.path.join(sources, '3rdparty/wingsl'))
+  shutil.copy(os.path.join(wrapper_path, '../../Buildstuff/0001-Fix-isatty-and-fileno-on-Windows-also-for-FMI3.patch'), sources)
+  shutil.copy(os.path.join(wrapper_path, '../../Buildstuff/0001-Pass-CMAKE_BUILD_TYPE-to-zlibext.patch'), sources)
 
   cmake = open(os.path.join(d, 'CMakeLists.txt'), 'w')
   cmake.write('''
@@ -117,15 +118,19 @@ if (NOT HAVE_FMILIB_H)
       cmake_policy(SET CMP0058 OLD)
   endif()
 
-  set(FMILIBRARY_DIR 3rdparty/FMILibrary-3.0a4)
-  add_subdirectory(${FMILIBRARY_DIR})
-  include_directories(${CMAKE_CURRENT_BINARY_DIR}/${FMILIBRARY_DIR})
-  include_directories(${FMILIBRARY_DIR}/src/CAPI/include)
-  include_directories(${FMILIBRARY_DIR}/src/Import/include)
-  include_directories(${FMILIBRARY_DIR}/src/Util/include)
-  include_directories(${FMILIBRARY_DIR}/src/XML/include)
-  include_directories(${FMILIBRARY_DIR}/src/ZIP/include)
-  include_directories(${FMILIBRARY_DIR}/ThirdParty/FMI/default)
+  set(FMILIB_INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/fmi-library-install)
+  include(ExternalProject)
+  ExternalProject_Add(fmi-library-ext
+      GIT_REPOSITORY https://github.com/modelon-community/fmi-library.git
+      GIT_TAG 29fe5c4b36e44814fcf3dd69bdcad2667fe51478 # 3.0a4
+      CMAKE_ARGS "-DCMAKE_INSTALL_PREFIX:STRING=${FMILIB_INSTALL_DIR};-DFMILIB_BUILD_STATIC_LIB=ON;-DFMILIB_BUILD_SHARED_LIB=ON;-DFMILIB_BUILD_TESTS=OFF;-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER};-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER};-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
+      PATCH_COMMAND "git;reset;--hard;&&;git;apply;${CMAKE_CURRENT_SOURCE_DIR}/0001-Fix-isatty-and-fileno-on-Windows-also-for-FMI3.patch;&&;git;apply;${CMAKE_CURRENT_SOURCE_DIR}/0001-Pass-CMAKE_BUILD_TYPE-to-zlibext.patch"
+      INSTALL_COMMAND "${CMAKE_COMMAND}" --build . --target install
+  )
+  link_directories(${FMILIB_INSTALL_DIR}/lib)
+  include_directories(${FMILIB_INSTALL_DIR}/include)
+  include_directories(${CMAKE_CURRENT_BINARY_DIR}/fmi-library-ext-prefix/src/fmi-library-ext/src/XML)
+  include_directories(${CMAKE_CURRENT_BINARY_DIR}/fmi-library-ext-prefix/src/fmi-library-ext/src/XML/include)
 endif ()
 
 include(FmuBase.cmake)

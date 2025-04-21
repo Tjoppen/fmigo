@@ -18,38 +18,30 @@ There is also some stuff from the old README, which we haven't turned into ticke
 
 ## Pre-requisites
 
-CMake is meta build system required for creating the build system on all platforms.
-We support versions down to 2.8.12.2 in GitLab CI, but recommend version 3.5.1 or later.
+CMake is a meta build system required for creating the build system on all platforms.
+We support versions down to 3.10.2 in GitLab CI.
 
 We recommend using Ninja for building on platforms where it is available,
-since it is much faster than msbuild and make (at least when using CMake generated Makefiles).
+since it is much faster than `msbuild` and `make` (at least when using CMake generated Makefiles).
 
-Python 2.7 or 3.x is required for running the tests.
+Python 3 is required for running the tests.
+Python versions down to 3.6.9 are supported.
 You will also need to install some Python packages specified in requirements.txt using pip and/or pip3:
 
 ```bash
-pip install -r Buildstuff/requirements.txt
 pip3 install -r Buildstuff/requirements.txt
 ```
 
 bash is required for running tests.
 Any version released in the last ten or so years should work fine.
-bash 4.3.11 and 4.3.48 are confirmed working via GitLab CI.
+bash 4.4.20 is confirmed working via GitLab CI.
 win-bash 0.8.5 is confirmed to *not* work however, due to the lack of subprocesses.
 More information about Windows specifics will be given in the Windows section.
 
-FMILibrary is handled as a submodule, so you must initialize submodules before building:
-
-```bash
-git submodule init
-git submodule update
-```
-
 ## GNU/Linux
 
-Ubuntu and Arch are our primary development platforms, and thus are the most supported.
-Ubuntu derivatives such as Lubuntu are also supported.
-Debian testing is also likely to work.
+Debian and Arch are our primary development platforms, and thus are the most supported.
+Ubuntu is tested with Gitlab CI.
 
 After getting the required packages installed, you build as you would any other CMake project.
 For example, using Ninja:
@@ -73,11 +65,9 @@ This should be the case on any GNU-ish system.
 
 ## Windows
 
-There are three major paths to building on Windows: Microsoft Visual Studio 2022, Microsoft Visual Studio 2015 and msys2.
+There are two major paths to building on Windows: Microsoft Visual Studio 2022 or Intel's C/C++ compiler (icx).
 
 ### Microsoft Visual Studio 2022
-
-Install MS-MPI first. See the 2015 instruction for more information.
 
 The 2022 build is somewhat "minimal" compared to the old 2015 build.
 It only supports 64-bit builds.
@@ -86,58 +76,47 @@ Due to GSL issues all FMUs must also be disabled, as well as loop solving. `-DBU
 libmatio is a hassle on Windows, so it too must be disabled with `-DUSE_MATIO=OFF`.
 In the future some of these features may be brough back up into working condition.
 
-The following command will work under `bash.exe` (as shipped with git) and `cmd.exe`:
+Install either MS-MPI or Intel MPI and set `USE_INTEL_MPI` accordingly.
+By default MS-MPI is assumed.
+
+The following command will work in `cmd.exe` with MS-MPI installed:
 
 ```
-git submodule update --init
 mkdir build
 cd build
-cmake -DENABLE_SC=OFF -DBUILD_FMUS=OFF -DUSE_GPL=OFF -DUSE_MATIO=OFF ..
+cmake .. -DENABLE_SC=OFF -DUSE_GPL=OFF -DBUILD_FMUS=OFF -DCMAKE_BUILD_TYPE=Release
 cmake --build . --config Release --target install
 ```
 
 The build artifacts will be copied to `build/install`.
 
-### Microsoft Visual Studio 2015
+### Intel icx
 
-Install Microsoft Visual Studio 2015 and [MS-MPI](https://msdn.microsoft.com/en-us/library/windows/desktop/bb524831%28v=vs.85%29.aspx).
-For MS-MPI you should download and install both msmpisdk.msi and MSMpiSetup.exe.
+Intel's C/C++ compiler icx can be used to compile FMIGo on Windows.
+After installing it, you must set up its environment variables using `setvars.bat` in the oneAPI directory:
 
-If you have everything set up correctly then the following commands should work in cmd.exe: cmake, msbuild, mpiexec.
-If not then you need to point %PATH% to where these programs are located.
+```
+cd "\Program Files (x86)\Intel\oneAPI"
+setvars
+```
 
-Finally, run the appropriate .bat file for 32-bit or 64-bit builds:
+After this, in the same terminal, `cd` back into FMIGo's directory and configure in Release mode with the Ninja generator.
+You must build `protobuf-ext` explicitly before running `ninja install`.
 
-* build\_msvc14.bat for a 32-bit build
-* build\_msvc14\_win64.bat for a 64-bit build (can't be tested currently)
+```
+mkdir build-icx
+cd build-icx
+cmake .. -DENABLE_SC=OFF -DUSE_GPL=OFF -DBUILD_FMUS=OFF -DCMAKE_BUILD_TYPE=Release -GNinja
+ninja protobuf-ext
+ninja install
+```
 
-The build will take quite a bit of time due to having to build all dependencies.
-This may change if Windows ever gets a package manager.
-NuGet shows some promise in this direction, but has not been experimented with so far.
+As with MSVC, build artifacts will end up in `build/install`.
 
-Note that tests only work for the 32-bit build due to the lack of a working 64-bit GNU GSL build,
-which is required for building our test FMUs.
+### Testing
 
-### msys2
-
-msys2 is a GNU-like system for Windows.
-Once set up, it may be easier to keep working than the Visual Studio approach.
-It is not yet covered by CI however.
-
-Since msys2 uses pacman, see Arch above for instruction.
-GNU GSL may require special attention.
-You may also need MS-MPI as with the Visual Studio build.
-
-### Tools required for testing on Windows
-
-You will need bash and some basic tools like dd, seq and bc.
-These ship with msys2, so it's a good idea to always install it,
-even if you're doing a Visual Studio build.
-These tools also ship with [win-bash](https://sourceforge.net/projects/win-bash/),
-however win-bash itself is much too old so care must be taken that msys2's bash is used instead in that case.
-
-Once properly set up, just run `bash run_tests_msvc14.sh` to run tests on the 32-bit build.
-As mentioned before, 64-bit tests do not yet work.
+Testing is currently not done on Windows.
+Only compilation is done.
 
 ## Mac
 

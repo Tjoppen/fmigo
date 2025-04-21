@@ -1,0 +1,24 @@
+From 1a61ca2a7522f58cd0901dde5783e6d73b08a9d1 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Tomas=20H=C3=A4rdin?= <git@haerdin.se>
+Date: Mon, 21 Apr 2025 08:27:38 +0200
+Subject: [PATCH] miniunz.c: Add missing #include <sys/stat.h>
+
+---
+ ThirdParty/Minizip/minizip/miniunz.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/ThirdParty/Minizip/minizip/miniunz.c b/ThirdParty/Minizip/minizip/miniunz.c
+index 2264705..5206a15 100644
+--- a/ThirdParty/Minizip/minizip/miniunz.c
++++ b/ThirdParty/Minizip/minizip/miniunz.c
+@@ -53,6 +53,7 @@
+ #else
+ # include <unistd.h>
+ # include <utime.h>
++# include <sys/stat.h>
+ #endif
+ 
+ 
+-- 
+2.39.5
+

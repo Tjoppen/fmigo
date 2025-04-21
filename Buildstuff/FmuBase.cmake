@@ -66,6 +66,7 @@ function (add_fmu_internal srcdir dstdir xmldir target extra_srcs libs extra_inc
   add_library(${target} SHARED
     ${srcs}
   )
+  add_dependencies(${target} fmi-library-ext)
 
   add_custom_command(
     OUTPUT ${${target}_dstdir}/sources/modelDescription.h

@@ -359,6 +359,9 @@
       </p>
       <pre>git clone https://github.com/Tjoppen/fmigo.git</pre>
       <p>
+        See README.md for build instructions.
+      </p>
+      <p>
         The code is built periodically via GitLab CI, for the following x86 platforms:
       </p>
       <ul>
@@ -369,24 +372,13 @@
         <li>Debian 10 (Buster)</li>
         <li>Debian 11 (Bullseye)</li>
         <li>Debian 12 (Bookworm)</li>
+        <li>Windows 11 (Visual Studio 2022 and/or Intel icx)</li>
       </ul>
       <p>
         Windows is supported, but only in a feature-reduced state.
         Specifically, strong coupling and algebraic loop solving are not supported.
         The test FMUs are also disabled, so proper testing cannot be done on Windows.
         32-bit Windows builds are not supported.
-        The following should work on Windows 11 with Visual Studio 2022:
-      </p>
-      <pre>
-git submodule init
-git submodule update
-mkdir build
-cd build
-cmake .. -DENABLE_SC=OFF -DUSE_GPL=OFF -DBUILD_FMUS=OFF
-cmake --build . --config Release
-</pre>
-      <p>
-        If Intel MPI is preferred then run cmake with <code>-DUSE_INTEL_MPI=ON -DINTEL_MPI_DIR=[Intel MPI's install directory]</code>.
       </p>
       <p>
         Some users have successfully built the system on Arch Linux, and on Mac OS X.

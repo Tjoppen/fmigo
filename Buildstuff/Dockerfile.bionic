@@ -58,24 +58,24 @@ RUN  chown -R gitlab-ci /home/gitlab-ci/umit
 # Finally, make us run as gitlab-ci
 USER gitlab-ci
 WORKDIR /home/gitlab-ci/umit
-RUN git submodule init
-RUN git submodule update
 RUN export PATH=/usr/lib/ccache:$PATH
 # Error out on warnings on all platforms except buster
 RUN export WERROR=-Werror
 
-# docker doesn't copy empty directories for some reason
-RUN mkdir 3rdparty/FMILibrary-3.0a4/ThirdParty/Expat/expat-2.5.0/src
 RUN mkdir build
 RUN mkdir build-clang
 WORKDIR /home/gitlab-ci/umit/build
+RUN export OMPI_CC=gcc
+RUN export OMPI_CXX=g++
 # First build without libmatio and libsc, then run another build with both enabled
-RUN cmake .. -G Ninja -DUSE_MATIO=OFF -DENABLE_SC=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+RUN cmake .. -G Ninja -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpic++ -DUSE_MATIO=OFF -DENABLE_SC=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DUSE_PROTOC=ON
 RUN ninja install
-RUN cmake .. -G Ninja -DUSE_MATIO=ON  -DENABLE_SC=ON  -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+RUN cmake .. -G Ninja -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpic++ -DUSE_MATIO=ON  -DENABLE_SC=ON  -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DUSE_PROTOC=ON
 RUN ninja install
 WORKDIR /home/gitlab-ci/umit/build-clang
-RUN cmake .. -G Ninja -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DUSE_MATIO=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+RUN export OMPI_CC=clang
+RUN export OMPI_CXX=clang++
+RUN cmake .. -G Ninja -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpic++ -DUSE_MATIO=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=ON  -DUSE_PROTOC=ON
 RUN ninja install
-RUN cmake .. -G Ninja -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DUSE_MATIO=ON  -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+RUN cmake .. -G Ninja -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpic++ -DUSE_MATIO=ON  -DCMAKE_POSITION_INDEPENDENT_CODE=ON  -DUSE_PROTOC=ON
 RUN ninja install

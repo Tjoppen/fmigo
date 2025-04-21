@@ -359,6 +359,9 @@
       </p>
       <pre>git clone https://github.com/Tjoppen/fmigo.git</pre>
       <p>
+        See README.md for build instructions.
+      </p>
+      <p>
         The code is built periodically via GitLab CI, for the following x86 platforms:
       </p>
       <ul>
@@ -376,28 +379,7 @@
         Specifically, strong coupling and algebraic loop solving are not supported.
         The test FMUs are also disabled, so proper testing cannot be done on Windows.
         32-bit Windows builds are not supported.
-        The following should work on Windows 11 with Visual Studio 2022:
       </p>
-      <pre>
-mkdir build
-cd build
-cmake .. -DENABLE_SC=OFF -DUSE_GPL=OFF -DBUILD_FMUS=OFF -DCMAKE_BUILD_TYPE=Release
-cmake --build . --config Release --target install
-</pre>
-      <p>
-        If Intel MPI is preferred then run cmake with <code>-DUSE_INTEL_MPI=ON -DINTEL_MPI_DIR=[Intel MPI's install directory]</code>.
-      </p>
-      <p>
-        If you want to use Intel's C/C++ compiler (icx) then you must first run setvars.bat in <code>C:\Program Files (x86)\Intel\oneAPI</code>.
-        You must also use the Ninja generator with CMake, and build protobuf-ext explicitly.
-      </p>
-      <pre>
-mkdir build
-cd build
-cmake .. -DENABLE_SC=OFF -DUSE_GPL=OFF -DBUILD_FMUS=OFF -DCMAKE_BUILD_TYPE=Release -GNinja
-ninja protobuf-ext
-ninja install
-</pre>
       <p>
         Some users have successfully built the system on Arch Linux, and on Mac OS X.
       </p>

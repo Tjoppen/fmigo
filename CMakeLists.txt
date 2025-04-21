@@ -90,7 +90,7 @@ ExternalProject_Add(fmi-library-ext
     GIT_REPOSITORY https://github.com/modelon-community/fmi-library.git
     GIT_TAG 29fe5c4b36e44814fcf3dd69bdcad2667fe51478 # 3.0a4
     CMAKE_ARGS "-DCMAKE_INSTALL_PREFIX:STRING=${FMILIB_INSTALL_DIR};-DFMILIB_BUILD_STATIC_LIB=ON;-DFMILIB_BUILD_SHARED_LIB=ON;-DFMILIB_BUILD_TESTS=OFF;-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER};-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER};-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
-    PATCH_COMMAND "git;reset;--hard;&&;git;apply;${CMAKE_CURRENT_SOURCE_DIR}/Buildstuff/0001-Fix-isatty-and-fileno-on-Windows-also-for-FMI3.patch;&&;git;apply;${CMAKE_CURRENT_SOURCE_DIR}/Buildstuff/0001-Pass-CMAKE_BUILD_TYPE-to-zlibext.patch;&&;git;apply;${CMAKE_CURRENT_SOURCE_DIR}/Buildstuff/0001-miniunz.c-Add-missing-include-sys-stat.h.patch"
+    PATCH_COMMAND "git;reset;--hard;&&;git;apply;--ignore-whitespace;${CMAKE_CURRENT_SOURCE_DIR}/Buildstuff/0001-Fix-isatty-and-fileno-on-Windows-also-for-FMI3.patch;&&;git;apply;--ignore-whitespace;${CMAKE_CURRENT_SOURCE_DIR}/Buildstuff/0001-Pass-CMAKE_BUILD_TYPE-to-zlibext.patch;&&;git;apply;--ignore-whitespace;${CMAKE_CURRENT_SOURCE_DIR}/Buildstuff/0001-miniunz.c-Add-missing-include-sys-stat.h.patch"
     INSTALL_COMMAND "${CMAKE_COMMAND}" --build . --target install
 )
 link_directories(${FMILIB_INSTALL_DIR}/lib)
@@ -147,7 +147,7 @@ if (USE_EXTERNAL_LIBPROTOBUF)
         GIT_TAG f0dc78d7e6e331b8c6bb2d5283e06aa26883ca7c # v21.12
         CONFIGURE_COMMAND "${CMAKE_COMMAND}" "${PROTOBUF_PREFIX}/src/protobuf-ext" -G "${CMAKE_GENERATOR}" -Dprotobuf_BUILD_SHARED_LIBS=ON -DCMAKE_CXX_FLAGS=${PROTOBUF_CXX_FLAGS} -Dprotobuf_BUILD_TESTS=OFF -Dprotobuf_BUILD_EXAMPLES=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF -Dprotobuf_WITH_ZLIB=OFF -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
         INSTALL_COMMAND ""
-        PATCH_COMMAND git reset --hard && git apply "${CMAKE_CURRENT_SOURCE_DIR}/Buildstuff/0001-Remove-bigobj.patch"
+        PATCH_COMMAND git reset --hard && git apply --ignore-whitespace "${CMAKE_CURRENT_SOURCE_DIR}/Buildstuff/0001-Remove-bigobj.patch"
     )
 
     include_directories("${PROTOBUF_PREFIX}/src/protobuf-ext/src")

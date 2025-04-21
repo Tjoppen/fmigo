@@ -369,6 +369,7 @@
         <li>Debian 10 (Buster)</li>
         <li>Debian 11 (Bullseye)</li>
         <li>Debian 12 (Bookworm)</li>
+        <li>Windows 11 (Visual Studio 2022 and/or Intel icx)</li>
       </ul>
       <p>
         Windows is supported, but only in a feature-reduced state.
@@ -389,7 +390,7 @@ cmake --build . --config Release --target install
       <p>
         If you want to use Intel's C/C++ compiler (icx) then you must first run setvars.bat in <code>C:\Program Files (x86)\Intel\oneAPI</code>.
         You must also use the Ninja generator with CMake, and build protobuf-ext explicitly.
-      <p>
+      </p>
       <pre>
 mkdir build
 cd build
@@ -397,6 +398,7 @@ cmake .. -DENABLE_SC=OFF -DUSE_GPL=OFF -DBUILD_FMUS=OFF -DCMAKE_BUILD_TYPE=Relea
 ninja protobuf-ext
 ninja install
 </pre>
+      <p>
         Some users have successfully built the system on Arch Linux, and on Mac OS X.
       </p>
       <p>

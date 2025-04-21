@@ -65,6 +65,8 @@ RUN export WERROR=-Werror
 RUN mkdir build
 RUN mkdir build-clang
 WORKDIR /home/gitlab-ci/umit/build
+RUN export OMPI_CC=gcc
+RUN export OMPI_CXX=g++
 # First build without libmatio and libsc, then run another build with both enabled
 RUN cmake .. -G Ninja -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpic++ -DUSE_MATIO=OFF -DENABLE_SC=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DUSE_PROTOC=ON
 RUN ninja install

@@ -15,23 +15,23 @@ do
   # Build with msbuild and cl
   ssh $WINDOWS_HOSTNAME "\
   cd fmigo &&\
-  git reset --hard &&\
+  git reset --hard $(git rev-parse HEAD) &&\
   rd /s /q build-cl &&\
   mkdir build-cl &&\
   cd build-cl &&\
   cmake .. -DENABLE_SC=OFF -DUSE_GPL=OFF -DBUILD_FMUS=OFF -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} &&\
-  cmake --build . --config ${CMAKE_BUILD_TYPE} --target install"
+  cmake --build . --config ${CMAKE_BUILD_TYPE} --target install" || (echo "stop @ cl.exe ${CMAKE_BUILD_TYPE}, exit=$?" ; exit 1)
 
   # Build with ninja and icx
   ssh $WINDOWS_HOSTNAME "\
   cd \"\\Program Files (x86)\\Intel\\oneAPI\" &&\
   setvars &&\
   cd %HOME%\\fmigo &&\
-  git reset --hard &&\
+  git reset --hard $(git rev-parse HEAD) &&\
   rd /s /q build-icx &&\
   mkdir build-icx &&\
   cd build-icx &&\
   cmake .. -DENABLE_SC=OFF -DUSE_GPL=OFF -DBUILD_FMUS=OFF -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -GNinja &&\
   ninja protobuf-ext &&\
-  ninja install"
+  ninja install" || (echo "stop @ icx.exe ${CMAKE_BUILD_TYPE}, exit=$?" ; exit 1)
 done

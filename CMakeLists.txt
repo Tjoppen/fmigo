@@ -112,7 +112,7 @@ if (USE_EXTERNAL_LIBZMQ)
         PREFIX "${ZMQ_PREFIX}"
         GIT_REPOSITORY "https://github.com/zeromq/libzmq.git"
         GIT_TAG 622fc6dde99ee172ebaa9c8628d85a7a1995a21d # v4.3.5
-        CMAKE_ARGS "-DBUILD_SHARED=ON;-DBUILD_STATIC=OFF;-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE};-DWITH_TLS=OFF"
+        CMAKE_ARGS "-DBUILD_SHARED=ON;-DBUILD_STATIC=OFF;-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE};-DWITH_TLS=OFF;-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER};-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}"
         INSTALL_COMMAND ""
         BUILD_COMMAND "${CMAKE_COMMAND}" --build . --config ${CMAKE_BUILD_TYPE}
     )
@@ -491,13 +491,9 @@ ELSE(WIN32)
     TARGET_LINK_LIBRARIES(${TCP_MASTER_NAME} ${LINUXLIBS} ${EXTRALIBS})
     TARGET_LINK_LIBRARIES(${TCP_SERVER_NAME}  ${LINUXLIBS})
 
-    # MPI stuff. Linux only for now
-    # NOTE: switching to MPI compilers. This seems to work fine, surprisingly
     # mpicc/cxx uses gcc/g++, which needs -Wno-literal-suffix on trusty
     # Sometimes clang gets picked up which lacks -Wno-literal-suffix on trusty, hence -Wno-unknown-warning-option
     target_compile_options(${MPI_MASTER_NAME} PRIVATE -Wno-unknown-warning-option -Wno-literal-suffix)
-    set(CMAKE_C_COMPILER   mpicc)
-    set(CMAKE_CXX_COMPILER mpicxx)
     target_link_libraries(${MPI_MASTER_NAME} ${LINUXLIBS} ${EXTRALIBS})
 
     add_custom_target(libprotobuf)  #fake target

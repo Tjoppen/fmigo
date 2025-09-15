@@ -109,6 +109,7 @@ option(WRAPPER_USE_FILTER "Use EPCE filter on outputs?" OFF)
 if (WRAPPER_USE_FILTER)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DWRAPPER_USE_FILTER")
 endif ()
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-incompatible-pointer-types -Wno-implicit-function-declaration")
 
 # Don't bother building FMILib if we have one installed systemwide
 # Assume it's a good version. We can't really check if it is >= 3.0a4 unfortunately

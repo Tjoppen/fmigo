@@ -3,6 +3,7 @@ project(fmigo)
 cmake_minimum_required(VERSION 3.10.2)
 
 find_package(Threads REQUIRED)
+find_package(MPI REQUIRED)
 
 #enable testing
 enable_testing()
@@ -499,7 +500,7 @@ ELSE(WIN32)
     # mpicc/cxx uses gcc/g++, which needs -Wno-literal-suffix on trusty
     # Sometimes clang gets picked up which lacks -Wno-literal-suffix on trusty, hence -Wno-unknown-warning-option
     target_compile_options(${MPI_MASTER_NAME} PRIVATE -Wno-unknown-warning-option -Wno-literal-suffix)
-    target_link_libraries(${MPI_MASTER_NAME} ${LINUXLIBS} ${EXTRALIBS})
+    target_link_libraries(${MPI_MASTER_NAME} ${LINUXLIBS} ${EXTRALIBS} MPI::MPI_CXX)
 
     add_custom_target(libprotobuf)  #fake target
     set(PROTOC protoc)
@@ -647,6 +648,7 @@ add_subdirectory(tools/ssp)
 
 if (NOT WIN32)
     add_executable(mpi-speed-test src/mpi-speed-test.cpp)
+    target_link_libraries(mpi-speed-test MPI::MPI_CXX)
     # OpenMPI on trusty won't compile with -std=c++11 or later
     # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=796985
     set_target_properties(mpi-speed-test PROPERTIES COMPILE_FLAGS -std=c++03)

@@ -6,7 +6,8 @@ WINDOWS_HOSTNAME=desktop
 set -e
 for t in bionic focal jammy buster bullseye bookworm noble trixie
 do
-  gitlab-ci-multi-runner exec shell build:$t && gitlab-ci-multi-runner exec shell test:$t || (echo "stop @ $t, exit=$?" ; exit 1)
+  docker build -t umit/$t:$(git rev-parse HEAD) -f Buildstuff/Dockerfile.$t . || (echo "stop @ $t build, exit=$?" ; exit 1)
+  docker run --workdir /home/gitlab-ci/umit umit/$t:$(git rev-parse HEAD) bash run_tests.sh || (echo "stop @ $t test, exit=$?" ; exit 1)
 done
 
 # TODO: make Debug build work

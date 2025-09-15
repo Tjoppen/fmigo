@@ -11,7 +11,8 @@ export MASTER=fmigo-master
 export MPI_MASTER=fmigo-mpi
 export COMPARE_CSV=$(pwd)/tests/compare_csv.py
 export WRAPPER=$(pwd)/tools/wrapper/wrapper.py
-export MPIEXEC="mpiexec --map-by :OVERSUBSCRIBE"
+export MPIEXEC=mpiexec
+export OMPI_MCA_mpi_yield_when_idle=1  # oversubscribe
 export OMPI_MCA_rmaps_base_oversubscribe=1
 export OMPI_MCA_btl_base_warn_component_unused=0
 

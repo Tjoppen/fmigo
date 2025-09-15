@@ -1123,7 +1123,8 @@ if __name__ == '__main__':
     else:
         #read connections and parameters from stdin, since they can be quite many
         #stdin because we want to avoid leaving useless files on the filesystem
-        args   = ['mpiexec','-n', '1','fmigo-mpi']
+        mpiexec = [os.environ.get('MPIEXEC', 'mpiexec')] + os.environ.get('MPIEXEC_OPTIONS', '').split()
+        args   = mpiexec + ['-n', '1','fmigo-mpi']
         append = []
 
         for fmu in fmus:

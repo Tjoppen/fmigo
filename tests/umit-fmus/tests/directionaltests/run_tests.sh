@@ -8,7 +8,7 @@ testit() {
   s=$1
 
   echo "Testing $s: $5"
-  ${MPIEXEC} -np 3 fmigo-mpi -t 100 \
+  ${MPIEXEC} ${MPIEXEC_OPTIONS} -np 3 fmigo-mpi -t 100 \
     -C shaft,0,1,theta,omega,alpha,tau,x1,v1,a1,f1 \
     -c 1,v1,0,omega_l \
     -p 1,m1,100:1,m2,100 \

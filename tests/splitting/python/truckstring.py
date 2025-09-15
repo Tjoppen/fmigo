@@ -386,7 +386,7 @@ data = {
   "npps" : [], 
   "hs" : hs}
 
-cmdline_start = ['mpiexec']
+cmdline_start = [os.environ.get('MPIEXEC', 'mpiexec')] + os.environ.get('MPIEXEC_OPTIONS', '').split()
 
 for npp in npps:
  data["npps"].append(npp)

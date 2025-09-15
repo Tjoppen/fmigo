@@ -8,7 +8,7 @@ testit() {
   g=$1
 
   echo "Testing multiway differential with g=$g"
-  ${MPIEXEC} -np 4 fmigo-mpi -t 10 \
+  ${MPIEXEC} ${MPIEXEC_OPTIONS} -np 4 fmigo-mpi -t 10 \
     -C multiway,3,0,1,2,theta,omega,alpha,tau,-1,x1,v1,a1,f1,${g},x1,v1,a1,f1,${g} \
     -c 0,omega,0,omega_l \
     -p 0,kp,10 \

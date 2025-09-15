@@ -19,8 +19,8 @@ bool alwaysComputeNumericalDirectionalDerivatives = false;
 
 static void handleMessage(zmq::socket_t& socket, FMIServer& server, int port) {
   zmq::message_t msg;
-  if (!socket.recv(&msg)) {
-      fatal("Port %i: !socket.recv(&msg)\n", port);
+  if (!socket.recv(msg, zmq::recv_flags::none)) {
+      fatal("Port %i: !socket.recv(msg, zmq::recv_flags::none)\n", port);
   }
   server.m_timer.rotate("recv");
 #if CLIENTDATA_NEW == 0
@@ -30,7 +30,7 @@ static void handleMessage(zmq::socket_t& socket, FMIServer& server, int port) {
     zmq::message_t rep(str.length());
     memcpy(rep.data(), str.data(), str.length());
     server.m_timer.rotate("pre_send");
-    socket.send(rep, ZMQ_DONTWAIT);
+    socket.send(rep, zmq::send_flags::dontwait);
     server.m_timer.rotate("send");
   }
 #else
@@ -40,7 +40,7 @@ static void handleMessage(zmq::socket_t& socket, FMIServer& server, int port) {
     zmq::message_t rep(str.size());
     memcpy(rep.data(), &str[0], str.size());
     server.m_timer.rotate("pre_send");
-    socket.send(rep, ZMQ_DONTWAIT);
+    socket.send(rep, zmq::send_flags::dontwait);
     server.m_timer.rotate("send");
   }
 #endif
@@ -78,7 +78,7 @@ int main(int argc, char *argv[]) {
 
     server.m_timer.rotate("pre_poll");
     //wait indefinitely, for now
-    int n = zmq::poll(items, 1, -1);
+    int n = zmq::poll(items, 1, std::chrono::milliseconds{-1});
     server.m_timer.rotate("poll");
 
     if (items[0].revents & ZMQ_POLLIN) {

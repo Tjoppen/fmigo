@@ -686,7 +686,7 @@ static void pushResults(int step, double t, double endTime, double timeStep, zmq
     string str = results.SerializeAsString();
     zmq::message_t rep(str.length());
     memcpy(rep.data(), str.data(), str.length());
-    push_socket.send(rep);
+    push_socket.send(rep, zmq::send_flags::none);
 }
 
 /**

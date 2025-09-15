@@ -66,6 +66,11 @@ option(USE_PROTOC "Use protoc to regenerate source files as needed?" OFF)
 
 set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/install)
 
+if (UNIX)
+    # Necessary since Debian trixie for minizip to compile
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-incompatible-pointer-types")
+endif ()
+
 # Need to be able to zip FMUs. Recent versions of CMake can do this with the "tar" sub-command.
 # For older CMakes we rely on "zip" being installed on the system
 # We also need to be able to copy multiple files using the "copy" sub-command, or the "cp" commands must be installed

@@ -52,6 +52,13 @@ build:noble:
   tags:
     - shell
 
+build:trixie:
+  stage: build
+  script:
+    - docker build -t umit/trixie:$(git rev-parse HEAD) -f Buildstuff/Dockerfile.trixie .
+  tags:
+    - shell
+
 test:bionic:
   stage: test
   script:
@@ -112,5 +119,14 @@ test:noble:
     - docker run --workdir /home/gitlab-ci/umit umit/noble:$(git rev-parse HEAD) bash run_tests.sh
   dependencies:
     - build:noble
+  tags:
+    - shell
+
+test:trixie:
+  stage: test
+  script:
+    - docker run --workdir /home/gitlab-ci/umit umit/trixie:$(git rev-parse HEAD) bash run_tests.sh
+  dependencies:
+    - build:trixie
   tags:
     - shell

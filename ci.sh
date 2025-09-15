@@ -4,7 +4,7 @@
 # all jobs in the proper order (build -> test), hence this script.
 WINDOWS_HOSTNAME=desktop
 set -e
-for t in bionic focal jammy buster bullseye bookworm noble
+for t in bionic focal jammy buster bullseye bookworm noble trixie
 do
   gitlab-ci-multi-runner exec shell build:$t && gitlab-ci-multi-runner exec shell test:$t || (echo "stop @ $t, exit=$?" ; exit 1)
 done

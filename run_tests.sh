@@ -74,7 +74,7 @@ done
 
 # Test alternative MPI command line
 ${MPIEXEC} ${MPIEXEC_OPTIONS} -np 1 fmigo-mpi -f none \
-  : -np 1 fmigo-mpi ${FMUS_DIR}/gsl/clutch/clutch.fmu
+  : -np 1 fmigo-mpi ${FMUS_DIR}/gsl/clutch/clutch.fmu \
   : -np 1 fmigo-mpi ${FMUS_DIR}/gsl/clutch/clutch.fmu
 
 # Test ZMQ control + starting paused

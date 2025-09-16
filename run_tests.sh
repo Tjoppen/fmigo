@@ -26,15 +26,27 @@ echo Option \"-f none\" works correctly
 # The log is grep'd for the expected errors
 for t in "r,0,1234,111" "i,0,1234,111" "b,0,1234,true" "s,0,1234,111"
 do
-  #                                                                          Success = failure
-  ${MPIEXEC} ${MPIEXEC_OPTIONS} -np 2 fmigo-mpi -p $t ${FMUS_DIR}/gsl/clutch/clutch.fmu &> temp && exit 1         || echo -n
+  if [ "$MPICH" -eq "1" ]
+  then
+    # mpich doesn't always exit with a non-zero exit code as of trixie
+    # See https://github.com/pmodels/mpich/issues/7057
+    ${MPIEXEC} ${MPIEXEC_OPTIONS} -np 2 fmigo-mpi -p $t ${FMUS_DIR}/gsl/clutch/clutch.fmu &> temp || echo -n
+  else
+    # Success = failure
+    ${MPIEXEC} ${MPIEXEC_OPTIONS} -np 2 fmigo-mpi -p $t ${FMUS_DIR}/gsl/clutch/clutch.fmu &> temp && exit 1 || echo -n
+  fi
   grep "Couldn't find variable"   temp > /dev/null
   echo Setting incorrect $t fails as expected
 done
 for t in "0,x0_e,notreal" "0,gear,notint" "0,octave_output,notbool"
 do
-  #                                                                          Success = failure
-  ${MPIEXEC} ${MPIEXEC_OPTIONS} -np 2 fmigo-mpi -p $t ${FMUS_DIR}/gsl/clutch/clutch.fmu &> temp && exit 1         || echo -n
+  if [ "$MPICH" -eq "1" ]
+  then
+    ${MPIEXEC} ${MPIEXEC_OPTIONS} -np 2 fmigo-mpi -p $t ${FMUS_DIR}/gsl/clutch/clutch.fmu &> temp || echo -n
+  else
+    # Success = failure
+    ${MPIEXEC} ${MPIEXEC_OPTIONS} -np 2 fmigo-mpi -p $t ${FMUS_DIR}/gsl/clutch/clutch.fmu &> temp && exit 1 || echo -n
+  fi
   grep "does not look like a"   temp > /dev/null
   echo Setting incorrect $t fails as expected
 done

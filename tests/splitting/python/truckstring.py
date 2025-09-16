@@ -431,7 +431,14 @@ for npp in npps:
 
   tref = d[:,0]
 
-  zref = row_stack([( matrix_power(Aphi,i) * z0).transpose() for i in range(len(tref))])
+  stack = []
+  for i in range(len(tref)):
+    A = matrix_power(Aphi,i)
+    if issparse(A):
+      A = A.todense()
+    stack.append((A * z0).transpose())
+
+  zref = np.vstack(stack)
 
   print('holonomic = ' + str(holonomic) + ', npp = ' + str(npp) + ': simulation')
   ts, zs, steps = intloop3(

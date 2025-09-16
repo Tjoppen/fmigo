@@ -411,11 +411,11 @@ void Client::sendQueuedMessages() {
 #else
     //ZMQ_DEALERs must send two-part messages with the first part being zero-length
     zmq::message_t zero(0);
-    m_socket.send(zero, zmq::send_flags::sndmore);
+    m_socket.send(zero, ZMQ_SNDMORE);
 
     zmq::message_t msg(m_messageQueue.size());
     memcpy(msg.data(), m_messageQueue.data(), m_messageQueue.size());
-    m_socket.send(msg, zmq::send_flags::none);
+    m_socket.send(msg);
     fmigo::globals::timer.rotate("zmq::socket::send");
 #endif
 
@@ -437,14 +437,14 @@ void Client::receiveAndHandleMessage() {
 #else
     //expect to recv a delimiter
     zmq::message_t delim;
-    m_socket.recv(delim, zmq::recv_flags::none);
+    m_socket.recv(&delim);
 
     if (delim.size() != 0) {
         fatal("Expected to recv zero-length delimiter, got %zu B instead\n", delim.size());
     }
 
     zmq::message_t msg;
-    m_socket.recv(msg, zmq::recv_flags::none);
+    m_socket.recv(&msg);
     fmigo::globals::timer.rotate("wait");
     clientData(static_cast<char*>(msg.data()), msg.size());
 #endif

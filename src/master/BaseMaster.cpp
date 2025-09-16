@@ -206,7 +206,7 @@ void BaseMaster::wait() {
 #define ZMQ_POLL_MSEC    1           //  zmq_poll is msec
 #endif
 
-    int n = zmq::poll(items.data(), m_clients.size(), std::chrono::milliseconds{1000});
+    int n = zmq::poll(items.data(), m_clients.size(), ZMQ_POLL_MSEC*1000);
     fmigo::globals::timer.rotate("wait");
     if (!n) {
         debug("polled %li sockets, %i pending (%i/%i), no new events\n", m_clients.size(), m_pendingRequests, numPolls, maxPolls);
@@ -273,7 +273,7 @@ void BaseMaster::handleZmqControl() {
     zmq::message_t msg;
 
     //paused means we do blocking polls to avoid wasting CPU time
-    while (rep_socket.recv(msg, paused ? zmq::recv_flags::none : zmq::recv_flags::dontwait) && (initing || running)) {
+    while (rep_socket.recv(&msg, paused ? 0 : ZMQ_NOBLOCK) && (initing || running)) {
         //got something - make sure it's a control_message with correct
         //version and command set
         control_proto::control_message ctrl;
@@ -353,7 +353,7 @@ void BaseMaster::handleZmqControl() {
             string str = state.SerializeAsString();
             zmq::message_t rep(str.length());
             memcpy(rep.data(), str.data(), str.length());
-            rep_socket.send(rep, zmq::send_flags::none);
+            rep_socket.send(rep);
     }
   }
 }

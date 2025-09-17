@@ -38,3 +38,5 @@ do
   ninja protobuf-ext &&\
   ninja install" || (echo "stop @ icx.exe ${CMAKE_BUILD_TYPE}, exit=$?" ; exit 1)
 done
+
+echo "All builds and tests passed"

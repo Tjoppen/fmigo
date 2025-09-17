@@ -248,11 +248,6 @@ if (WIN32)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 endif ()
 
-if (UNIX)
-    # Treat warnings as errors, especially implicit-function-declaration
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror")
-endif ()
-
 # Don't add cgsl twice
 if (NOT TARGET cgsl)
     # Only used by wrapper.py it seems

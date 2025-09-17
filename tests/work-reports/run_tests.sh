@@ -16,7 +16,7 @@ do
         NN="-N"
     fi
 
-    ${MPIEXEC} -np 4 fmigo-mpi $NN -f tikz -t $t -d $dt -p 0,8,$GAIN -C shaft,0,1,0,1,2,3,0,1,2,3 -C shaft,1,2,6,7,8,9,0,1,2,3 -c 2,1,0,6 \
+    ${MPIEXEC} ${MPIEXEC_OPTIONS} -np 4 fmigo-mpi $NN -f tikz -t $t -d $dt -p 0,8,$GAIN -C shaft,0,1,0,1,2,3,0,1,2,3 -C shaft,1,2,6,7,8,9,0,1,2,3 -c 2,1,0,6 \
             ${FMUS_DIR}/kinematictruck/engine/engine.fmu \
             ${FMUS_DIR}/kinematictruck/gearbox2/gearbox2.fmu \
             ${FMUS_DIR}/kinematictruck/body/body.fmu  > out.tikz.data
@@ -39,7 +39,7 @@ do
         do
             DT2=$(printf "%04i\n" $(bc -l <<< "$dt * 1000" | sed -e "s/\\..*//"))
             GAIN2=$(printf "%03i\n" $(bc -l <<< "$gain * 10" | sed -e "s/\\..*//"))
-            ${MPIEXEC} -np 4 fmigo-mpi -t $t -m $method -d $dt -p 0,8,$gain  -c 0,0,1,0:0,1,1,1:1,2,0,3 -c 1,4,2,0:1,5,2,1:2,2,1,6 -c 1,5,0,6 \
+            ${MPIEXEC} ${MPIEXEC_OPTIONS} -np 4 fmigo-mpi -t $t -m $method -d $dt -p 0,8,$gain  -c 0,0,1,0:0,1,1,1:1,2,0,3 -c 1,4,2,0:1,5,2,1:2,2,1,6 -c 1,5,0,6 \
                     ${FMUS_DIR}/kinematictruck/engine/engine.fmu \
                     ${FMUS_DIR}/forcevelocitytruck/gearbox/gearbox.fmu \
                     ${FMUS_DIR}/forcevelocitytruck/fvbody/fvbody.fmu  > out.csv

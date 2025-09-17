@@ -28,7 +28,7 @@ for method in jacobi gs
 do
   echo ---------------------
   echo "MPI, method=$method"
-  time ${MPIEXEC} -np $(python3 <<< "print($N + 1)") fmigo-mpi -m $method -t 10 -d 0.0005 -a - $FMUS <<< "$CONNS"|sha1sum
+  time ${MPIEXEC} ${MPIEXEC_OPTIONS} -np $(python3 <<< "print($N + 1)") fmigo-mpi -m $method -t 10 -d 0.0005 -a - $FMUS <<< "$CONNS"|sha1sum
 
   URIS=
   for j in $(seq 1 $N)

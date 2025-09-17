@@ -27,7 +27,7 @@ then
   #for x in `seq 1 11`
   #do
    # 100k steps
-   time ${MPIEXEC} -np $(python3 <<< "print($N + 1)") ../../../../buildi/fmigo-mpi -t 1 -d 0.0001 -f none -l 2 -a - $FMUS <<< "$CONNS"
+   time ${MPIEXEC} ${MPIEXEC_OPTIONS} -np $(python3 <<< "print($N + 1)") ../../../../buildi/fmigo-mpi -t 1 -d 0.0001 -f none -l 2 -a - $FMUS <<< "$CONNS"
   #done
   #) 2>&1 | grep real | sort
 fi
@@ -64,7 +64,7 @@ then
    # real 0m41,211s
    for x in `seq 1 5`
    do
-   time perf record -a -F 5000 -g -- ${MPIEXEC} -np $(python3 <<< "print($N + 1)") fmigo-mpi -t 10 -d 0.0005 -f none -a - $FMUS <<< "$CONNS"
+   time perf record -a -F 5000 -g -- ${MPIEXEC} ${MPIEXEC_OPTIONS} -np $(python3 <<< "print($N + 1)") fmigo-mpi -t 10 -d 0.0005 -f none -a - $FMUS <<< "$CONNS"
    done
    perf script | ~/FlameGraph/stackcollapse-perf.pl > out.perf-folded-2
    #~/FlameGraph/flamegraph.pl out.perf-folded-2 > perf-fmigo-mpi.svg
@@ -72,4 +72,4 @@ then
 fi
 
 #echo mpi-speed-test comparison:
-#time ${MPIEXEC} -np $(python3 <<< "print($N + 1)") mpi-speed-test
+#time ${MPIEXEC} ${MPIEXEC_OPTIONS} -np $(python3 <<< "print($N + 1)") mpi-speed-test

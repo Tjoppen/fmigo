@@ -1,4 +1,4 @@
-FROM debian:buster
+FROM debian:trixie
 RUN apt update
 
 #
@@ -20,6 +20,7 @@ RUN apt install --yes \
   libgsl-dev \
   libhdf5-dev \
   libmatio-dev \
+  libmpich-dev \
   libprotobuf-dev \
   libsuitesparse-dev \
   libxml2-dev \

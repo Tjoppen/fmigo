@@ -21,9 +21,12 @@ dt = 0.1
 control_port = 5555
 results_port = 5556
 
+mpiexec = [os.environ.get('MPIEXEC', 'mpiexec')] + os.environ.get('MPIEXEC_OPTIONS', '').split()
+
 # Realtime, ZMQ control, start paused, no output
-proc = subprocess.Popen([
-  'mpiexec', '-np', '2', 'fmigo-mpi',
+proc = subprocess.Popen(
+  mpiexec + [
+    '-np', '2', 'fmigo-mpi',
     '-t', str(t_end),
     '-d', str(dt),
     '-r',
@@ -125,8 +128,9 @@ else:
 print('ZMQ parameter control + results test..')
 
 # *Not* realtime, ZMQ control, start paused, CSV output
-proc = subprocess.Popen([
-  'mpiexec', '-np', '2', 'fmigo-mpi',
+proc = subprocess.Popen(
+  mpiexec + [
+    '-np', '2', 'fmigo-mpi',
     '-t', '1',
     '-d', '1',
     '-z', '%i:%i' % (control_port, results_port),

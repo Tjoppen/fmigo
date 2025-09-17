@@ -59,9 +59,6 @@ RUN  chown -R gitlab-ci /home/gitlab-ci/umit
 USER gitlab-ci
 WORKDIR /home/gitlab-ci/umit
 RUN export PATH=/usr/lib/ccache:$PATH
-# Error out on warnings on all platforms except buster
-RUN export WERROR=-Werror
-
 RUN mkdir build
 RUN mkdir build-clang
 WORKDIR /home/gitlab-ci/umit/build

@@ -294,7 +294,8 @@ class simulation:
             if not convertonly:
                 time.sleep(1)
         elif self.mode == "mpi":
-            cmd = ['mpiexec', '-oversubscribe', '-np', str(1),'fmigo-mpi'] + opts
+            mpiexec = [os.environ.get('MPIEXEC', 'mpiexec')] + os.environ.get('MPIEXEC_OPTIONS', '').split()
+            cmd = mpiexec + ['-np', str(1),'fmigo-mpi'] + opts
             for n,i in self.fmus.items():
                 cmd += [":", "-np", str(1)]
                 if i.prefixcmd:

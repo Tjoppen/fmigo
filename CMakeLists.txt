@@ -3,6 +3,7 @@ project(fmigo)
 cmake_minimum_required(VERSION 3.10.2)
 
 find_package(Threads REQUIRED)
+find_package(MPI REQUIRED)
 
 #enable testing
 enable_testing()
@@ -86,10 +87,15 @@ find_program(PYTHON3 python3)
 
 set(FMILIB_INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/fmi-library-install)
 include(ExternalProject)
+if (WIN32)
+    set(FMILIBRARY_C_FLAGS "")
+else ()
+    set(FMILIBRARY_C_FLAGS "-Wno-incompatible-pointer-types -Wno-implicit-function-declaration")
+endif ()
 ExternalProject_Add(fmi-library-ext
     GIT_REPOSITORY https://github.com/modelon-community/fmi-library.git
     GIT_TAG 29fe5c4b36e44814fcf3dd69bdcad2667fe51478 # 3.0a4
-    CMAKE_ARGS "-DCMAKE_INSTALL_PREFIX:STRING=${FMILIB_INSTALL_DIR};-DFMILIB_BUILD_STATIC_LIB=ON;-DFMILIB_BUILD_SHARED_LIB=ON;-DFMILIB_BUILD_TESTS=OFF;-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER};-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER};-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
+    CMAKE_ARGS "-DCMAKE_INSTALL_PREFIX:STRING=${FMILIB_INSTALL_DIR};-DFMILIB_BUILD_STATIC_LIB=ON;-DFMILIB_BUILD_SHARED_LIB=ON;-DFMILIB_BUILD_TESTS=OFF;-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER};-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER};-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE};-DCMAKE_C_FLAGS=${FMILIBRARY_C_FLAGS}"
     PATCH_COMMAND "git;reset;--hard;&&;git;apply;--ignore-whitespace;${CMAKE_CURRENT_SOURCE_DIR}/Buildstuff/0001-Fix-isatty-and-fileno-on-Windows-also-for-FMI3.patch;&&;git;apply;--ignore-whitespace;${CMAKE_CURRENT_SOURCE_DIR}/Buildstuff/0001-Pass-CMAKE_BUILD_TYPE-to-zlibext.patch;&&;git;apply;--ignore-whitespace;${CMAKE_CURRENT_SOURCE_DIR}/Buildstuff/0001-miniunz.c-Add-missing-include-sys-stat.h.patch"
     INSTALL_COMMAND "${CMAKE_COMMAND}" --build . --target install
 )
@@ -256,7 +262,7 @@ endif ()
 
 if (NOT WIN32)
   # cl.exe has a different set of flags
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall ${WERROR} -Wno-unused-variable -Wno-unused-function -Wextra -Wno-unused-parameter")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall -Wno-unused-variable -Wno-unused-function -Wextra -Wno-unused-parameter")
   if (ENABLE_SC)
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DENABLE_SC")
   endif ()
@@ -499,7 +505,7 @@ ELSE(WIN32)
     # mpicc/cxx uses gcc/g++, which needs -Wno-literal-suffix on trusty
     # Sometimes clang gets picked up which lacks -Wno-literal-suffix on trusty, hence -Wno-unknown-warning-option
     target_compile_options(${MPI_MASTER_NAME} PRIVATE -Wno-unknown-warning-option -Wno-literal-suffix)
-    target_link_libraries(${MPI_MASTER_NAME} ${LINUXLIBS} ${EXTRALIBS})
+    target_link_libraries(${MPI_MASTER_NAME} ${LINUXLIBS} ${EXTRALIBS} MPI::MPI_CXX)
 
     add_custom_target(libprotobuf)  #fake target
     set(PROTOC protoc)
@@ -644,20 +650,6 @@ if (BUILD_FMUS)
 endif ()
 
 add_subdirectory(tools/ssp)
-
-if (NOT WIN32)
-    add_executable(mpi-speed-test src/mpi-speed-test.cpp)
-    # OpenMPI on trusty won't compile with -std=c++11 or later
-    # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=796985
-    set_target_properties(mpi-speed-test PROPERTIES COMPILE_FLAGS -std=c++03)
-    install(TARGETS mpi-speed-test DESTINATION bin)
-
-    if (USE_TRACEANALYZER)
-        set_target_properties(mpi-speed-test PROPERTIES LINK_FLAGS -trace)
-        set_target_properties(${MPI_MASTER_NAME} PROPERTIES LINK_FLAGS -trace)
-    endif ()
-endif ()
-
 
 # CPack setup
 set(CPACK_PACKAGE_NAME "fmigo")

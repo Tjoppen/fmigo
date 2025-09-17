@@ -123,7 +123,7 @@ if (NOT HAVE_FMILIB_H)
   ExternalProject_Add(fmi-library-ext
       GIT_REPOSITORY https://github.com/modelon-community/fmi-library.git
       GIT_TAG 29fe5c4b36e44814fcf3dd69bdcad2667fe51478 # 3.0a4
-      CMAKE_ARGS "-DCMAKE_INSTALL_PREFIX:STRING=${FMILIB_INSTALL_DIR};-DFMILIB_BUILD_STATIC_LIB=ON;-DFMILIB_BUILD_SHARED_LIB=ON;-DFMILIB_BUILD_TESTS=OFF;-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER};-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER};-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
+      CMAKE_ARGS "-DCMAKE_INSTALL_PREFIX:STRING=${FMILIB_INSTALL_DIR};-DFMILIB_BUILD_STATIC_LIB=ON;-DFMILIB_BUILD_SHARED_LIB=ON;-DFMILIB_BUILD_TESTS=OFF;-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER};-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER};-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE};-DCMAKE_C_FLAGS=-Wno-incompatible-pointer-types -Wno-implicit-function-declaration"
       PATCH_COMMAND "git;reset;--hard;&&;git;apply;${CMAKE_CURRENT_SOURCE_DIR}/0001-Fix-isatty-and-fileno-on-Windows-also-for-FMI3.patch;&&;git;apply;${CMAKE_CURRENT_SOURCE_DIR}/0001-Pass-CMAKE_BUILD_TYPE-to-zlibext.patch"
       INSTALL_COMMAND "${CMAKE_COMMAND}" --build . --target install
   )
@@ -165,7 +165,7 @@ wrap_existing_fmu2("%s" "%s" "${CMAKE_CURRENT_BINARY_DIR}")
   ]
 
   if  not subprocess.call(['cmake','..'] + cmake_opts) == 0 or \
-      not subprocess.call(['cmake','--build','.','--config',args.build_type] + (['--','-w','dupbuild=warn'] if have_ninja else [])) == 0:
+      not subprocess.call(['cmake','--build','.','--config',args.build_type]) == 0:
     exit(1)
 
   os.chdir(cwd)
